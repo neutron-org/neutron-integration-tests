@@ -1,0 +1,14 @@
+node_modules/
+yarn-error.log
+keystore.db
+yarn.lock
+contracts/artifacts/*
+.jest
+
+# IDEs
+*.iml
+.idea
+.DS_Store
+*_action.json
+
+write-file-atomic*
