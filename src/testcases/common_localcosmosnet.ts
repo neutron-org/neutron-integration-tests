@@ -3,6 +3,7 @@ import * as cosmos from '@cosmos-client/core';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
+import Long from 'long';
 
 const config = require('../config.json');
 
@@ -10,6 +11,7 @@ export type Wallet = {
   address: cosmos.cosmosclient.AccAddress;
   account: cosmos.proto.cosmos.auth.v1beta1.BaseAccount;
   pubKey: cosmos.cosmosclient.PubKey;
+  privKey: cosmos.cosmosclient.PrivKey;
 };
 
 export const mnemonicToWallet = async (
@@ -43,6 +45,7 @@ export const mnemonicToWallet = async (
     address,
     account,
     pubKey,
+    privKey,
   };
 };
 
@@ -52,12 +55,13 @@ export const disconnectValidator = async (name: string) => {
 };
 
 export class TestStateLocalCosmosTestNet {
+  denom: 'stake';
   sdk_1: cosmos.cosmosclient.CosmosSDK;
   sdk_2: cosmos.cosmosclient.CosmosSDK;
   wallets: Record<string, Wallet>;
   contractPath: string;
   init = async () => {
-    this.contractPath = '../neutron-contracts/artifacts';
+    this.contractPath = '../lido-interchain-staking-contracts/artifacts';
     cosmos.cosmosclient.config.setBech32Prefix({
       accAddr: 'neutron',
       accPub: 'neutronpub',
@@ -69,11 +73,12 @@ export class TestStateLocalCosmosTestNet {
 
     this.sdk_1 = new cosmos.cosmosclient.CosmosSDK(
       process.env.NODE1_URL || 'http://localhost:1316',
-      'testchain',
+      'test-1',
     );
+
     this.sdk_2 = new cosmos.cosmosclient.CosmosSDK(
       process.env.NODE2_URL || 'http://localhost:1317',
-      'testchain',
+      'test-2',
     );
 
     this.wallets = {
@@ -92,9 +97,39 @@ export class TestStateLocalCosmosTestNet {
     const msg = new cosmwasmproto.cosmwasm.wasm.v1.MsgStoreCode({
       sender: this.wallets.demo1.address.toString(),
       wasm_byte_code: await fsPromise.readFile(
-        path.resolve(this.contractPath, 'neutron_interchain_txs.wasm'),
+        path.resolve(this.contractPath, 'lido_interchain_hub.wasm'),
       ),
+      instantiate_permission: null,
     });
-    console.log(msg);
+
+    const txBody = new cosmos.proto.cosmos.tx.v1beta1.TxBody({
+      messages: [cosmos.cosmosclient.codec.instanceToProtoAny(msg)],
+    });
+    console.log(txBody);
+    const authInfo = new cosmos.proto.cosmos.tx.v1beta1.AuthInfo({
+      signer_infos: [],
+      fee: {
+        amount: [{ denom: this.denom, amount: '250000' }],
+        gas_limit: Long.fromString('5000000'),
+      },
+    });
+
+    const txBuilder = new cosmos.cosmosclient.TxBuilder(
+      this.sdk_1,
+      txBody,
+      authInfo,
+    );
+
+    const signDocBytes = txBuilder.signDocBytes(
+      this.wallets.demo1.account.account_number,
+    );
+
+    txBuilder.addSignature(this.wallets.demo1.privKey.sign(signDocBytes));
+
+    const res = await cosmos.rest.tx.simulate(this.sdk_1, {
+      tx_bytes: txBuilder.txBytes(),
+    });
+
+    console.log(res);
   }
 }

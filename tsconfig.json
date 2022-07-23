@@ -5,7 +5,8 @@
     "module": "commonjs",
     "lib": ["esnext"],
     "outDir": "lib",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "esModuleInterop": true
   },
   "include": ["./src/**/*"],
   "exclude": ["./src/**/*.test.ts"]
