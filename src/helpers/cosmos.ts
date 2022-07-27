@@ -15,7 +15,9 @@ const PREFIX = process.env.ADDRESS_PREFIX || 'neutron';
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
+  denom: string;
   constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
+    this.denom = DENOM;
     this.sdk = sdk;
     this.wallet = wallet;
   }
@@ -110,6 +112,38 @@ export class CosmosWrapper {
     ]);
 
     return attributes._contract_address;
+  }
+
+  async execute(
+    contract: string,
+    msg: string,
+    funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+  ): Promise<string> {
+    const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
+      sender: this.wallet.address.toString(),
+      contract,
+      msg: Buffer.from(msg),
+      funds,
+    });
+    const res = await this.execTx(msgExecute, {
+      gas_limit: Long.fromString('2000000'),
+      amount: [{ denom: this.denom, amount: '10000' }],
+    });
+
+    return res?.tx_response.txhash;
+  }
+
+  async msgSend(to: string, amount: string): Promise<string> {
+    const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
+      from_address: this.wallet.address.toString(),
+      to_address: to,
+      amount: [{ denom: this.denom, amount }],
+    });
+    const res = await this.execTx(msgSend, {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.denom, amount: '1000' }],
+    });
+    return res?.tx_response.txhash;
   }
 }
 
