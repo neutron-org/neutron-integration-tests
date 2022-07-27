@@ -2,7 +2,6 @@ import { rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosWrapper } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import _ from 'lodash';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -46,14 +45,6 @@ describe('Neutron / Simple', () => {
   });
 
   describe('IBC', () => {
-    let startWalletBalance: string;
-    beforeAll(async () => {
-      const balances = await rest.bank.allBalances(
-        cm.sdk,
-        testState.wallets.demo1.address,
-      );
-      startWalletBalance = _.get(balances, 'data.balances.0.amount', '0');
-    });
     test('transfer to contract', async () => {
       const res = await cm.msgSend(contractAddress.toString(), '10000');
       expect(res).not.toEqual('');
@@ -79,24 +70,19 @@ describe('Neutron / Simple', () => {
       );
       expect(res.length).toBeGreaterThan(0);
     });
-    test('check contract balance', async () => {
-      const balances = await rest.bank.allBalances(
-        cm.sdk,
-        contractAddress as unknown as AccAddress,
-      );
-      expect(balances.data.balances).toEqual([
-        { amount: '9000', denom: 'stake' },
-      ]);
-    });
+
     test('check wallet balance', async () => {
       const balances = await rest.bank.allBalances(
-        cm.sdk,
+        testState.sdk_2,
         testState.wallets.demo1.address,
       );
-      expect(
-        parseInt(startWalletBalance) -
-          parseInt(_.get(balances, 'data.balances.0.amount', '0')),
-      ).toEqual(21000); // so you know 1000 + gas fees 🤖
+      expect(balances.data.balances).toEqual([
+        {
+          amount: '3000',
+          denom:
+            'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+        },
+      ]);
     });
   });
 });

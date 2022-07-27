@@ -1,4 +1,5 @@
 import { promises as fsPromise } from 'fs';
+import { ibcproto } from '@cosmos-client/ibc';
 import { cosmosclient, rest, proto } from '@cosmos-client/core';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 
@@ -9,8 +10,7 @@ import { wait } from './sleep';
 import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 const DENOM = process.env.DENOM || 'stake';
-const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '7000');
-const PREFIX = process.env.ADDRESS_PREFIX || 'neutron';
+const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '10000');
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
