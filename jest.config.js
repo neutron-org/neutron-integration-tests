@@ -1,4 +1,7 @@
-module.exports = {
+const ch = require('child_process');
+const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
+
+const config = {
   cacheDirectory: '.jest/cache',
   coverageDirectory: '.jest/coverage',
   bail: true,
@@ -24,4 +27,16 @@ module.exports = {
       },
     ],
   },
+};
+
+let oneStop = false;
+
+module.exports = () => {
+  process.on('exit', () => {
+    if (oneStop) return;
+    oneStop = true;
+    console.log('Stopping cosmopark');
+    ch.execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
+  });
+  return config;
 };

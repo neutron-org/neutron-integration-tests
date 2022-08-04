@@ -4,7 +4,13 @@ import { wait } from './sleep';
 
 const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
 
+let alreadySetUp = false;
+
 export const setup = async (host: string) => {
+  if (alreadySetUp) {
+    console.log('already set up');
+    return;
+  }
   try {
     execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
@@ -13,9 +19,11 @@ export const setup = async (host: string) => {
   console.log('Starting container... it may take long');
   execSync(`cd ${NEUTRON_DIR} && make start-cosmopark`);
   await waitForHTTP(host);
+  alreadySetUp = true;
 };
 
 export const teardown = () => {
+  console.log('Stopping cosmopark');
   execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
 };
 
