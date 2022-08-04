@@ -35,4 +35,16 @@ yarn test:short:redistribution
 yarn test:short:slashing
 ```
 
+#### 5. Environment variables you can redefine
+
+```
+NEUTRON_DIR
+DENOM
+CONTRACTS_PATH
+CHAIN_ID
+ADDRESS_PREFIX
+NODE1_URL
+NODE2_URL
+```
+
 **Note: it is recommended to clear env with `make restart` before each run to reset the state.**

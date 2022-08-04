@@ -1,20 +1,22 @@
 import axios from 'axios';
 import { execSync } from 'child_process';
 import { wait } from './sleep';
-export const setup = async (host: string, imageName = 'neutron') => {
+
+const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
+
+export const setup = async (host: string) => {
   try {
-    execSync(`docker stop neutron 2>&1`);
+    execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
   } catch (e) {}
-  await wait(2000); //docker just don't allow to run at once it stopped with same name
-  execSync(
-    `docker run --rm --name neutron -d -p 1316:1316 -p 1317:1317 -p 26657:26657 -p 26656:26656 -p 16657:16657 -p 16656:16656 ${imageName}`,
-  );
+  await wait(2000);
+  console.log('Starting container... it may take long');
+  execSync(`cd ${NEUTRON_DIR} && make start-cosmopark`);
   await waitForHTTP(host);
 };
 
 export const teardown = () => {
-  execSync(`docker stop neutron`);
+  execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
 };
 
 export const waitForHTTP = async (
