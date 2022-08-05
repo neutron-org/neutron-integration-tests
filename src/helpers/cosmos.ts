@@ -1,16 +1,31 @@
 import { promises as fsPromise } from 'fs';
-import { ibcproto } from '@cosmos-client/ibc';
 import { cosmosclient, rest, proto } from '@cosmos-client/core';
-import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-
+import { cosmwasmproto, cosmwasmrest } from '@cosmos-client/cosmwasm';
+import axios from 'axios';
 import { Wallet, CodeId } from '../types';
 import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
 import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
 
 const DENOM = process.env.DENOM || 'stake';
 const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '10000');
+
+type ChannelsList = {
+  channels: {
+    state: string;
+    ordering: string;
+    counterparty: {
+      port_id: string;
+      channel_id: string;
+    };
+    connection_hops: string[];
+    version: string;
+    port_id: string;
+    channel_id: string;
+  }[];
+};
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
@@ -114,7 +129,7 @@ export class CosmosWrapper {
     return attributes._contract_address;
   }
 
-  async execute(
+  async executeContract(
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
@@ -133,6 +148,26 @@ export class CosmosWrapper {
     return res?.tx_response.txhash;
   }
 
+  async queryContract(contract: string): Promise<void> {
+    const x = await cosmwasmrest.wasm.contractInfo(
+      this.sdk,
+      contract as unknown as AccAddress,
+    );
+    console.log(x);
+    // const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
+    //   sender: this.wallet.address.toString(),
+    //   contract,
+    //   msg: Buffer.from(msg),
+    //   funds,
+    // });
+    // const res = await this.execTx(msgExecute, {
+    //   gas_limit: Long.fromString('2000000'),
+    //   amount: [{ denom: this.denom, amount: '10000' }],
+    // });
+
+    // return res?.tx_response.txhash;
+  }
+
   async msgSend(to: string, amount: string): Promise<string> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
@@ -144,6 +179,13 @@ export class CosmosWrapper {
       amount: [{ denom: this.denom, amount: '1000' }],
     });
     return res?.tx_response.txhash;
+  }
+
+  async listIBCChannels(): Promise<ChannelsList> {
+    const req = await axios.get<ChannelsList>(
+      `${this.sdk.url}/ibc/core/channel/v1/channels`,
+    );
+    return req.data;
   }
 }
 

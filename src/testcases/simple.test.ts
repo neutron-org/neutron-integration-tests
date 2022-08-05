@@ -14,10 +14,6 @@ describe('Neutron / Simple', () => {
     cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
   });
 
-  afterAll(() => {
-    testState.finish();
-  });
-
   describe('Wallets', () => {
     test('Addresses', () => {
       expect(testState.wallets.demo1.address.toString()).toEqual(
@@ -59,7 +55,7 @@ describe('Neutron / Simple', () => {
       ]);
     });
     test('execute contract', async () => {
-      const res = await cm.execute(
+      const res = await cm.executeContract(
         contractAddress,
         JSON.stringify({
           send: {

@@ -22,11 +22,6 @@ export const setup = async (host: string) => {
   alreadySetUp = true;
 };
 
-export const teardown = () => {
-  console.log('Stopping cosmopark');
-  execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
-};
-
 export const waitForHTTP = async (
   host = 'http://127.0.0.1:1316',
   path = 'blocks/5',
