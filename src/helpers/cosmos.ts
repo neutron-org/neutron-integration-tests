@@ -194,7 +194,7 @@ type TxResponseType = Awaited<ReturnType<typeof rest.tx.getTx>>;
 export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
-  attributes: [string],
+  attributes: string[],
 ): Record<typeof attributes[number], string> | Record<string, never> => {
   const events =
     (
