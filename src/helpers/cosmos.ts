@@ -1,16 +1,15 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, rest, proto } from '@cosmos-client/core';
-import { cosmwasmproto, cosmwasmrest } from '@cosmos-client/cosmwasm';
+import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
 import { Wallet, CodeId } from '../types';
 import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
 import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
 
 const DENOM = process.env.DENOM || 'stake';
-const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '10000');
+export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '10000');
 
 type ChannelsList = {
   channels: {
@@ -125,7 +124,6 @@ export class CosmosWrapper {
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
     ]);
-
     return attributes._contract_address;
   }
 
@@ -148,24 +146,21 @@ export class CosmosWrapper {
     return res?.tx_response.txhash;
   }
 
-  async queryContract(contract: string): Promise<void> {
-    const x = await cosmwasmrest.wasm.contractInfo(
-      this.sdk,
-      contract as unknown as AccAddress,
+  async queryContract<T>(
+    contract: string,
+    query: Record<string, unknown>,
+  ): Promise<T> {
+    const req = await axios.get<{
+      result: { smart: string };
+      height: number;
+    }>(
+      `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
+        JSON.stringify(query),
+      ).toString('base64')}?encoding=base64`,
     );
-    console.log(x);
-    // const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
-    //   sender: this.wallet.address.toString(),
-    //   contract,
-    //   msg: Buffer.from(msg),
-    //   funds,
-    // });
-    // const res = await this.execTx(msgExecute, {
-    //   gas_limit: Long.fromString('2000000'),
-    //   amount: [{ denom: this.denom, amount: '10000' }],
-    // });
-
-    // return res?.tx_response.txhash;
+    return JSON.parse(
+      Buffer.from(req.data.result.smart, 'base64').toString(),
+    ) as T;
   }
 
   async msgSend(to: string, amount: string): Promise<string> {

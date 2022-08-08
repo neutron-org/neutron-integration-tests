@@ -3,12 +3,19 @@ import { execSync } from 'child_process';
 import { wait } from './sleep';
 
 const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
+const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
+  ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
+  : 10;
 
 let alreadySetUp = false;
 
 export const setup = async (host: string) => {
   if (alreadySetUp) {
     console.log('already set up');
+    return;
+  }
+  if (process.env.NO_DOCKER) {
+    console.log('NO_DOCKER ENV provided');
     return;
   }
   try {
@@ -24,7 +31,7 @@ export const setup = async (host: string) => {
 
 export const waitForHTTP = async (
   host = 'http://127.0.0.1:1316',
-  path = 'blocks/5',
+  path = `blocks/${BLOCKS_COUNT_BEFORE_START}`,
   timeout = 280000,
 ) => {
   const start = Date.now();

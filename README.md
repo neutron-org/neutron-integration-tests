@@ -14,7 +14,7 @@ docker build . -t wasm-n
 yarn
 ```
 
-#### 2. Put Lido artifacts in the `./lido-cosmos-contracts/artifacts` directory
+#### 2. Put Lido artifacts in the `./contracts/artifacts` directory
 
 #### 3. Run the 4-validators LocalTerra set up
 
@@ -45,6 +45,8 @@ CHAIN_ID
 ADDRESS_PREFIX
 NODE1_URL
 NODE2_URL
+BLOCKS_COUNT_BEFORE_START
+NO_DOCKER
 ```
 
 **Note: it is recommended to clear env with `make restart` before each run to reset the state.**
