@@ -3,16 +3,21 @@ import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import 'jest-extended';
 import { wait } from '../helpers/sleep';
+import { rest } from '@cosmos-client/core';
+import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
+  let cm2: CosmosWrapper;
   let contractAddress: string;
+  let icaAdress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
   });
 
   describe('Interchain Tx', () => {
@@ -52,6 +57,44 @@ describe('Neutron / Interchain TXs', () => {
       }>(contractAddress, { ica: {} });
       expect(ica.interchain_account_address).toStartWith('neutron');
       expect(ica.interchain_account_address.length).toEqual(66);
+      icaAdress = ica.interchain_account_address;
+    });
+    test('add some money to ICA', async () => {
+      const res = await cm2.msgSend(icaAdress.toString(), '10000');
+      expect(res.length).toBeGreaterThan(0);
+    });
+    test('delegate', async () => {
+      const res = await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            delegator: icaAdress,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '2000',
+          },
+        }),
+      );
+      console.log({ res });
+      console.log({ icaAdress });
+      expect(res.length).toBeGreaterThan(0);
+    });
+    test('check validator state', async () => {
+      const res = await rest.staking.delegatorDelegations(
+        cm2.sdk,
+        icaAdress as unknown as AccAddress,
+      );
+      expect(res.data.delegation_responses).toEqual([
+        {
+          balance: { amount: '2000', denom: 'stake' },
+          delegation: {
+            delegator_address:
+              'neutron1hfxm6slsnrhfmcap6q66zl0uwaq8fy3t6xqfmfhfmp6eaupaphnqxtevrc',
+            shares: '2000.000000000000000000',
+            validator_address:
+              'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx',
+          },
+        },
+      ]);
     });
   });
 });

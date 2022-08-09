@@ -142,7 +142,9 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('2000000'),
       amount: [{ denom: this.denom, amount: '10000' }],
     });
-
+    if (res.tx_response.code !== 0) {
+      throw new Error(res.tx_response.raw_log);
+    }
     return res?.tx_response.txhash;
   }
 
@@ -215,6 +217,11 @@ export const getEventAttributesFromTx = (
 };
 
 export const mnemonicToWallet = async (
+  walletType: {
+    fromPublicKey: (
+      k: cosmosclient.PubKey,
+    ) => cosmosclient.AccAddress | cosmosclient.ValAddress;
+  },
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
 ): Promise<Wallet> => {
@@ -223,25 +230,26 @@ export const mnemonicToWallet = async (
   });
 
   const pubKey = privKey.pubKey();
-  const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
+  const address = walletType.fromPublicKey(pubKey);
+  let account = null;
+  // eslint-disable-next-line no-prototype-builtins
+  if (cosmosclient.ValAddress !== walletType) {
+    account = await rest.auth
+      .account(sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
 
-  // get account info
-  const account = await rest.auth
-    .account(sdk, address)
-    .then((res) =>
-      cosmosclient.codec.protoJSONToInstance(
-        cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
-      ),
-    )
-    .catch((e) => {
-      console.log(e);
-      throw e;
-    });
-
-  if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
-    throw new Error("can't get account");
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
   }
-
   return {
     address,
     account,
