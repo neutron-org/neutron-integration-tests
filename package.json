@@ -4,7 +4,8 @@
   "description": "Neutron chain integration tests",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand -b src/testcases/interchaintx",
+    "test": "jest --runInBand -b src/testcases",
+    "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/simple",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
