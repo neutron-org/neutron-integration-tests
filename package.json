@@ -11,7 +11,7 @@
     "fmt": "eslint ./src --fix"
   },
   "author": "Neutron",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@cosmos-client/core": "0.45.13",
