@@ -7,7 +7,7 @@ Clone neutron from git@github.com:neutron-org/neutron.git and relayer git@github
 #### 1. Copy artifacts into contracts folder
 
 ```shell
-cp -r ./../neuton-contracts/artifacts ./contracts
+cp -r ./../neutron-contracts/artifacts ./contracts
 ```
 
 #### 2.Install dependencies with command
