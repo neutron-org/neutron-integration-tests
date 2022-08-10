@@ -68,14 +68,11 @@ describe('Neutron / Interchain TXs', () => {
         contractAddress,
         JSON.stringify({
           delegate: {
-            delegator: icaAdress,
             validator: testState.wallets.val2.address.toString(),
             amount: '2000',
           },
         }),
       );
-      console.log({ res });
-      console.log({ icaAdress });
       expect(res.length).toBeGreaterThan(0);
     });
     test('check validator state', async () => {
@@ -87,8 +84,7 @@ describe('Neutron / Interchain TXs', () => {
         {
           balance: { amount: '2000', denom: 'stake' },
           delegation: {
-            delegator_address:
-              'neutron1hfxm6slsnrhfmcap6q66zl0uwaq8fy3t6xqfmfhfmp6eaupaphnqxtevrc',
+            delegator_address: icaAdress,
             shares: '2000.000000000000000000',
             validator_address:
               'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx',
