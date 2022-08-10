@@ -42,5 +42,3 @@ NO_DOCKER
 ```
 src/config.json
 ```
-
-**Note: it is recommended to clear env with `make restart` before each run to reset the state.**
