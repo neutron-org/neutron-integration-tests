@@ -14,6 +14,7 @@ const config = {
       statements: 95,
     },
   },
+  setupFilesAfterEnv: ['jest-extended/all'],
   transform: {
     '^.+\\.tsx?$': [
       'esbuild-jest',
