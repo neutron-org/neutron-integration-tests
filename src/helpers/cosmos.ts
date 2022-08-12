@@ -71,9 +71,7 @@ export class CosmosWrapper {
 
     const code = res.data?.tx_response.code;
     if (code !== 0) {
-      throw new Error(
-        `broadcast error: ${JSON.stringify(res.data?.tx_response)}`,
-      );
+      throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
     await wait(BLOCK_TIME);
