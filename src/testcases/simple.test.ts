@@ -43,7 +43,7 @@ describe('Neutron / Simple', () => {
   describe('IBC', () => {
     test('transfer to contract', async () => {
       const res = await cm.msgSend(contractAddress.toString(), '10000');
-      expect(res).not.toEqual('');
+      expect(res.length).toBeGreaterThan(0);
     });
     test('check balance', async () => {
       const balances = await rest.bank.allBalances(
