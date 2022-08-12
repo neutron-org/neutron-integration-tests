@@ -4,7 +4,7 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import 'jest-extended';
 import { wait } from '../helpers/sleep';
 import { rest } from '@cosmos-client/core';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -51,7 +51,7 @@ describe('Neutron / Interchain TXs', () => {
       ]);
     });
     test('get ica address', async () => {
-      await wait(BLOCK_TIME * 10);
+      await wait(BLOCK_TIME * 20);
       const ica = await cm.queryContract<{
         interchain_account_address: string;
       }>(contractAddress, { ica: {} });

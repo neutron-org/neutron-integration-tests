@@ -9,7 +9,7 @@ import { wait } from './sleep';
 import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 const DENOM = process.env.DENOM || 'stake';
-export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '10000');
+export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
 
 type ChannelsList = {
   channels: {
@@ -74,7 +74,7 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-    await wait(BLOCK_TIME);
+    await wait(BLOCK_TIME * 5);
     this.wallet.account.sequence++;
     const data = (await rest.tx.getTx(this.sdk, txhash)).data;
 
