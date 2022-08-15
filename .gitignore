@@ -11,3 +11,7 @@ contracts/artifacts/*
 *_action.json
 
 write-file-atomic*
+
+# test contracts build results
+src/test_contracts/target
+src/test_contracts/utils/check_contract/target
