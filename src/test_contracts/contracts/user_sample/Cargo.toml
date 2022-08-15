@@ -36,12 +36,9 @@ cosmwasm-std = { version = "1.0.0", features = ["staking"] }
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 base64 = "0.13.0"
-
-# TODO: replace with sane imports once neutron-contracts repo sources are open
-interchain_queries = { path = "../../../../../neutron-contracts/packages/interchain_queries", default-features = false, version = "0.1.0"}
-neutron_sudo = { path = "../../../../../neutron-contracts/packages/neutron_sudo", default-features = false, version = "0.1.0"}
-neutron_bindings = {path = "../../../../../neutron-contracts/packages/bindings"}
-
+interchain_queries = { git = "https://github.com/neutron-org/neutron-contracts", default-features = false, version = "0.1.0"}
+neutron_sudo = { git = "https://github.com/neutron-org/neutron-contracts", default-features = false, version = "0.1.0"}
+neutron_bindings = {git = "https://github.com/neutron-org/neutron-contracts"}
 prost = "0.10"
 cosmos-sdk-proto = { version = "0.12.2", default-features = false }
 serde-json-wasm = "0.4.1"

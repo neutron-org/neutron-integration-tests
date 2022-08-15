@@ -1,1 +1,1 @@
-c8bc685aeca2ae73edebb743f0db9fc5bf3727ea25527604cf433210e4c2bb89  target/wasm32-unknown-unknown/release/user_sample.wasm
+a4ff84aee1a02ed8bf647244ecff6ac4d40201cb411b25227f494b61f6db53e7  target/wasm32-unknown-unknown/release/user_sample.wasm

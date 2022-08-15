@@ -344,6 +344,7 @@ dependencies = [
 [[package]]
 name = "interchain_queries"
 version = "0.1.0"
+source = "git+https://github.com/neutron-org/neutron-contracts#b7ba2f9d9585a86f702284e9a4d06bd834eb257c"
 dependencies = [
  "base64",
  "bech32",
@@ -395,6 +396,7 @@ checksum = "04c3b4822ccebfa39c02fc03d1534441b22ead323fa0f48bb7ddd8e6ba076a40"
 [[package]]
 name = "neutron_bindings"
 version = "1.0.0"
+source = "git+https://github.com/neutron-org/neutron-contracts#b7ba2f9d9585a86f702284e9a4d06bd834eb257c"
 dependencies = [
  "cosmwasm-std",
  "schemars",
@@ -404,6 +406,7 @@ dependencies = [
 [[package]]
 name = "neutron_sudo"
 version = "0.1.0"
+source = "git+https://github.com/neutron-org/neutron-contracts#b7ba2f9d9585a86f702284e9a4d06bd834eb257c"
 dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-std",
