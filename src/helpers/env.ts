@@ -26,6 +26,7 @@ export const setup = async (host: string) => {
   console.log('Starting container... it may take long');
   execSync(`cd ${NEUTRON_DIR} && make start-cosmopark`);
   await waitForHTTP(host);
+  await waitForChannel(host);
   alreadySetUp = true;
 };
 
@@ -48,4 +49,25 @@ export const waitForHTTP = async (
     await wait(1000);
   }
   throw new Error('No port opened');
+};
+
+export const waitForChannel = async (
+  host = 'http://127.0.0.1:1316',
+  timeout = 100000,
+) => {
+  const start = Date.now();
+
+  while (Date.now() < start + timeout) {
+    try {
+      const r = await axios.get(`${host}/ibc/core/channel/v1/channels`, {
+        timeout: 1000,
+      });
+      if (r.data.channels.length > 0) {
+        return;
+      }
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+    await wait(1000);
+  }
+  throw new Error('No channel opened');
 };

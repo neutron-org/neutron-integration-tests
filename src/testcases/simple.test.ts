@@ -1,6 +1,7 @@
 import { rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
+import { wait } from '../helpers/sleep';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
@@ -68,6 +69,7 @@ describe('Neutron / Simple', () => {
     });
 
     test('check wallet balance', async () => {
+      await wait(BLOCK_TIME * 10);
       const balances = await rest.bank.allBalances(
         testState.sdk_2,
         testState.wallets.demo1.address,
