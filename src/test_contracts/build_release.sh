@@ -1,4 +1,5 @@
-export NEUTRON_PATH=/Users/ssotnikov/projects/neutron-contracts/packages
+# put your path to the neutron-contracts packages folder
+export NEUTRON_PATH=~/projects/neutron-contracts/packages
 
 docker run --rm -v "$(pwd)":/code \
     --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
