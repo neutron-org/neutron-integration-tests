@@ -1,5 +1,6 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, rest, proto } from '@cosmos-client/core';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
 import { Wallet, CodeId } from '../types';
@@ -25,6 +26,21 @@ type ChannelsList = {
     channel_id: string;
   }[];
 };
+
+// BalancesResponse is the response model for the bank balances query.
+type BalancesResponse = {
+  balances: Balance[],
+  pagination: {
+    next_key: string,
+    total: string,
+  }
+}
+
+// Balance represents a single asset balance of an account.
+type Balance = {
+  denom: string,
+  amount: string,
+}
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
@@ -175,6 +191,11 @@ export class CosmosWrapper {
       amount: [{ denom: this.denom, amount: '1000' }],
     });
     return res?.tx_response.txhash;
+  }
+
+  async queryBalances(addr: string): Promise<BalancesResponse> {
+    let balances = await rest.bank.allBalances(this.sdk, addr as unknown as AccAddress);
+    return balances.data as BalancesResponse;
   }
 
   async listIBCChannels(): Promise<ChannelsList> {

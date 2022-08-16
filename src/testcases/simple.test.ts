@@ -7,12 +7,14 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
+  let cm2: CosmosWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
   });
 
   describe('Wallets', () => {
@@ -47,11 +49,8 @@ describe('Neutron / Simple', () => {
       expect(res.length).toBeGreaterThan(0);
     });
     test('check balance', async () => {
-      const balances = await rest.bank.allBalances(
-        cm.sdk,
-        contractAddress as unknown as AccAddress,
-      );
-      expect(balances.data.balances).toEqual([
+      const balances = await cm.queryBalances(contractAddress);
+      expect(balances.balances).toEqual([
         { amount: '10000', denom: 'stake' },
       ]);
     });
@@ -70,11 +69,8 @@ describe('Neutron / Simple', () => {
 
     test('check wallet balance', async () => {
       await wait(BLOCK_TIME * 10);
-      const balances = await rest.bank.allBalances(
-        testState.sdk_2,
-        testState.wallets.demo1.address,
-      );
-      expect(balances.data.balances).toEqual([
+      const balances = await cm2.queryBalances(testState.wallets.demo1.address.toString());
+      expect(balances.balances).toEqual([
         {
           amount: '3000',
           denom:
