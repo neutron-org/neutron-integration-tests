@@ -9,6 +9,7 @@ contracts/artifacts/*
 .idea
 .DS_Store
 *_action.json
+.vscode
 
 write-file-atomic*
 
