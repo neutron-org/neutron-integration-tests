@@ -23,7 +23,7 @@ describe('Neutron / Interchain TXs', () => {
   describe('Interchain Tx', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeContract('neutron_interchain_txs.wasm');
+      codeId = await cm.storeWasm('neutron_interchain_txs.wasm');
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {

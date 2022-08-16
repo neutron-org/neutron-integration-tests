@@ -21,11 +21,11 @@ describe('Neutron / Interchain TX Query', () => {
   describe("Instantiate contract", () => {
     let codeId: string;
     test("store contract", async () => {
-      codeId = await cm.storeTestContract("user_sample.wasm");
+      codeId = await cm.storeWasm("neutron_interchain_queries.wasm");
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test("instantiate contract", async () => {
-      contractAddress = await cm.instantiate(codeId, "{}", "user_sample");
+      contractAddress = await cm.instantiate(codeId, "{}", "neutron_interchain_queries");
       expect(contractAddress).toEqual(
         "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq"
       );

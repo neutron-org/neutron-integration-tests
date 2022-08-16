@@ -29,7 +29,7 @@ describe('Neutron / Simple', () => {
   describe('Contracts', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeContract('ibc_transfer.wasm');
+      codeId = await cm.storeWasm('ibc_transfer.wasm');
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {

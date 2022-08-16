@@ -81,24 +81,13 @@ export class CosmosWrapper {
     return data;
   }
 
-  // storeContract stores the wasm code of the given contract on the blockchain.
-  async storeContract(fileName: string): Promise<CodeId> {
-    const contractsPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
-    return this.storeWasm(contractsPath, fileName)
-  }
-
-  // storeTestContract stores the wasm code of the given test contract on the blockchain.
-  async storeTestContract(fileName: string): Promise<CodeId> {
-    const contractsPath = process.env.TEST_CONTRACTS_PATH || './src/test_contracts/artifacts';
-    return this.storeWasm(contractsPath, fileName)
-  }
-
   // storeWasm stores the wasm code by the passed path on the blockchain.
-  async storeWasm(dir: string, fileName: string): Promise<CodeId> {
+  async storeWasm(fileName: string): Promise<CodeId> {
+    const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
     const msg = new cosmwasmproto.cosmwasm.wasm.v1.MsgStoreCode({
       sender: this.wallet.address.toString(),
       wasm_byte_code: await fsPromise.readFile(
-        path.resolve(dir, fileName),
+        path.resolve(contractPath, fileName),
       ),
       instantiate_permission: null,
     });
