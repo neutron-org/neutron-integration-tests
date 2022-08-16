@@ -6,7 +6,10 @@ import { Wallet, CodeId } from '../types';
 import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
-import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import {
+  CosmosTxV1beta1GetTxResponse,
+  InlineResponse20075TxResponse,
+} from '@cosmos-client/core/cjs/openapi/api';
 
 const DENOM = process.env.DENOM || 'stake';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
@@ -129,7 +132,7 @@ export class CosmosWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
-  ): Promise<string> {
+  ): Promise<InlineResponse20075TxResponse> {
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
       sender: this.wallet.address.toString(),
       contract,
@@ -143,7 +146,7 @@ export class CosmosWrapper {
     if (res.tx_response.code !== 0) {
       throw new Error(res.tx_response.raw_log);
     }
-    return res?.tx_response.txhash;
+    return res?.tx_response;
   }
 
   async queryContract<T>(
@@ -163,7 +166,10 @@ export class CosmosWrapper {
     ) as T;
   }
 
-  async msgSend(to: string, amount: string): Promise<string> {
+  async msgSend(
+    to: string,
+    amount: string,
+  ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
@@ -173,7 +179,7 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     });
-    return res?.tx_response.txhash;
+    return res?.tx_response;
   }
 
   async listIBCChannels(): Promise<ChannelsList> {

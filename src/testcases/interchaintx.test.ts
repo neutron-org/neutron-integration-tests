@@ -61,7 +61,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     test('add some money to ICA', async () => {
       const res = await cm2.msgSend(icaAdress.toString(), '10000');
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
     test('delegate', async () => {
       const res = await cm.executeContract(
@@ -73,7 +73,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         }),
       );
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
     test('check validator state', async () => {
       const res = await rest.staking.delegatorDelegations(
