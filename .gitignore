@@ -1,7 +1,7 @@
 node_modules/
 yarn-error.log
 keystore.db
-contracts/artifacts/*
+contracts/artifacts/checksums*
 .jest
 
 # IDEs
