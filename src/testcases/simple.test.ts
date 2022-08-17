@@ -74,6 +74,7 @@ describe('Neutron / Simple', () => {
         testState.sdk_2,
         testState.wallets.demo1.address,
       );
+      // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
       expect(balances.data.balances).toEqual([
         {
           amount: '3000',
