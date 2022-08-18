@@ -18,7 +18,7 @@ describe('Neutron / Interchain TX Query', () => {
     cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
   });
 
-  describe("Instantiate contract", () => {
+  describe("deploy contract", () => {
     let codeId: string;
     test("store contract", async () => {
       codeId = await cm.storeWasm("neutron_interchain_queries.wasm");
@@ -32,8 +32,8 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const watchedAddr: string = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx";
-  describe("Register interchain query", () => {
+  describe("utilise transfers query", () => {
+    const watchedAddr: string = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx";
     test("register transfers query", async () => {
       await registerTransfersQuery(
         cm,
@@ -45,7 +45,7 @@ describe('Neutron / Interchain TX Query', () => {
       );
     });
 
-    test("get registered transfers query", async () => {
+    test("check registered transfers query", async () => {
       let queryResult = await getRegisteredQueryResult(cm, contractAddress, 1);
       expect(queryResult.registered_query.id).toEqual(1);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
@@ -57,7 +57,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(queryResult.registered_query.update_period).toEqual(5);
     });
 
-    test("get recipient txs query", async () => {
+    test("handle callback on a sending", async () => {
       let balances = await cm2.queryBalances(watchedAddr);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr, '10000');
