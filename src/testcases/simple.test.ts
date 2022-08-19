@@ -12,7 +12,7 @@ describe('Neutron / Simple', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
+    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
   });
 
   describe('Wallets', () => {
@@ -71,7 +71,7 @@ describe('Neutron / Simple', () => {
     test('check wallet balance', async () => {
       await wait(BLOCK_TIME * 10);
       const balances = await rest.bank.allBalances(
-        testState.sdk_2,
+        testState.sdk2,
         testState.wallets.demo1.address,
       );
       // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2

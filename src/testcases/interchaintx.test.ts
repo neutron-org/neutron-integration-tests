@@ -16,8 +16,8 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
+    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe('Interchain Tx', () => {

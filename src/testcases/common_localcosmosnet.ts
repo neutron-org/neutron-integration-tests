@@ -12,8 +12,8 @@ export const disconnectValidator = async (name: string) => {
 };
 
 export class TestStateLocalCosmosTestNet {
-  sdk_1: cosmosclient.CosmosSDK;
-  sdk_2: cosmosclient.CosmosSDK;
+  sdk1: cosmosclient.CosmosSDK;
+  sdk2: cosmosclient.CosmosSDK;
   wallets: Record<string, Wallet>;
   init = async () => {
     const prefix = process.env.ADDRESS_PREFIX || 'neutron';
@@ -29,40 +29,40 @@ export class TestStateLocalCosmosTestNet {
     const host1 = process.env.NODE1_URL || 'http://localhost:1316';
     const host2 = process.env.NODE2_URL || 'http://localhost:1317';
 
-    this.sdk_1 = new cosmosclient.CosmosSDK(host1, config.CHAIN_ID_1);
-    this.sdk_2 = new cosmosclient.CosmosSDK(host2, config.CHAIN_ID_2);
+    this.sdk1 = new cosmosclient.CosmosSDK(host1, config.CHAIN_ID_1);
+    this.sdk2 = new cosmosclient.CosmosSDK(host2, config.CHAIN_ID_2);
 
     await setup(host1);
 
     this.wallets = {
       val1: await mnemonicToWallet(
         cosmosclient.ValAddress,
-        this.sdk_1,
+        this.sdk1,
         config.VAL_MNEMONIC_1,
       ),
       val2: await mnemonicToWallet(
         cosmosclient.ValAddress,
-        this.sdk_2,
+        this.sdk2,
         config.VAL_MNEMONIC_2,
       ),
       demo1: await mnemonicToWallet(
         cosmosclient.AccAddress,
-        this.sdk_1,
+        this.sdk1,
         config.DEMO_MNEMONIC_1,
       ),
       demo2: await mnemonicToWallet(
         cosmosclient.AccAddress,
-        this.sdk_2,
+        this.sdk2,
         config.DEMO_MNEMONIC_2,
       ),
       rly1: await mnemonicToWallet(
         cosmosclient.AccAddress,
-        this.sdk_1,
+        this.sdk1,
         config.RLY_MNEMONIC_1,
       ),
       rly2: await mnemonicToWallet(
         cosmosclient.AccAddress,
-        this.sdk_2,
+        this.sdk2,
         config.RLY_MNEMONIC_2,
       ),
     };
