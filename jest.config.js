@@ -33,11 +33,12 @@ const config = {
 let oneStop = false;
 
 module.exports = () => {
-  process.on('exit', () => {
-    if (oneStop) return;
-    oneStop = true;
-    console.log('Stopping cosmopark');
-    ch.execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
-  });
+  !process.env.NO_DOCKER &&
+    process.on('exit', () => {
+      if (oneStop) return;
+      oneStop = true;
+      console.log('Stopping cosmopark');
+      ch.execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
+    });
   return config;
 };

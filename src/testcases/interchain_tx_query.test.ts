@@ -17,8 +17,8 @@ describe("Neutron / Interchain TX Query", () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
+    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe("deploy contract", () => {
@@ -50,7 +50,7 @@ describe("Neutron / Interchain TX Query", () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk_2.chainID,
+        testState.sdk2.chainID,
         connectionId,
         query1UpdatePeriod,
         watchedAddr1,
@@ -64,7 +64,7 @@ describe("Neutron / Interchain TX Query", () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual("tx");
       expect(query.registered_query.transactions_filter).toEqual("{\"transfer.recipient\":\"" + watchedAddr1 + "\"}");
-      expect(query.registered_query.zone_id).toEqual(testState.sdk_2.chainID);
+      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
     });
@@ -74,7 +74,7 @@ describe("Neutron / Interchain TX Query", () => {
       let balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr1, sendingToAddr1_1.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom },
@@ -98,7 +98,7 @@ describe("Neutron / Interchain TX Query", () => {
       let balances = await cm2.queryBalances(differentAddr);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(differentAddr, sendingToAddr2_1.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(differentAddr);
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
@@ -122,7 +122,7 @@ describe("Neutron / Interchain TX Query", () => {
 
     test("handle failed transfer", async () => {
       const res = await cm2.msgSend(watchedAddr1, "99999999999999"); // the amount is greater than the sender has
-      expect(res.length).toBeGreaterThan(0); // hash is not empty thus tx executed
+      expect(res.txhash?.length).toBeGreaterThan(0); // hash is not empty thus tx executed
       const balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom }, // balance hasn't changed thus tx failed
@@ -149,7 +149,7 @@ describe("Neutron / Interchain TX Query", () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk_2.chainID,
+        testState.sdk2.chainID,
         connectionId,
         query2UpdatePeriod,
         watchedAddr2,
@@ -163,7 +163,7 @@ describe("Neutron / Interchain TX Query", () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual("tx");
       expect(query.registered_query.transactions_filter).toEqual("{\"transfer.recipient\":\"" + watchedAddr2 + "\"}");
-      expect(query.registered_query.zone_id).toEqual(testState.sdk_2.chainID);
+      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
     });
@@ -197,7 +197,7 @@ describe("Neutron / Interchain TX Query", () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk_2.chainID,
+        testState.sdk2.chainID,
         connectionId,
         query3UpdatePeriod,
         watchedAddr3,
@@ -211,7 +211,7 @@ describe("Neutron / Interchain TX Query", () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual("tx");
       expect(query.registered_query.transactions_filter).toEqual("{\"transfer.recipient\":\"" + watchedAddr3 + "\"}");
-      expect(query.registered_query.zone_id).toEqual(testState.sdk_2.chainID);
+      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
     });
@@ -221,7 +221,7 @@ describe("Neutron / Interchain TX Query", () => {
       let balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr3, sendingToAddr3_1.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: cm2.denom },
@@ -245,7 +245,7 @@ describe("Neutron / Interchain TX Query", () => {
     test("check second sending handling", async () => {
       addr3ExpectedBalance += sendingToAddr3_2;
       const res = await cm2.msgSend(watchedAddr3, sendingToAddr3_2.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       const balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: cm2.denom },
@@ -291,18 +291,16 @@ describe("Neutron / Interchain TX Query", () => {
           gas_limit: Long.fromString("200000"),
           amount: [{ denom: cm2.denom, amount: "1000" }],
         },
-        new Array<proto.cosmos.bank.v1beta1.MsgSend>(
-          new proto.cosmos.bank.v1beta1.MsgSend({
-            from_address: cm2.wallet.address.toString(),
-            to_address: watchedAddr1,
-            amount: [{ denom: cm2.denom, amount: sendingToAddr1_2.toString() }],
-          }),
-          new proto.cosmos.bank.v1beta1.MsgSend({
-            from_address: cm2.wallet.address.toString(),
-            to_address: watchedAddr2,
-            amount: [{ denom: cm2.denom, amount: sendingToAddr2_2.toString() }],
-          }),
-        )
+        new proto.cosmos.bank.v1beta1.MsgSend({
+          from_address: cm2.wallet.address.toString(),
+          to_address: watchedAddr1,
+          amount: [{ denom: cm2.denom, amount: sendingToAddr1_2.toString() }],
+        }),
+        new proto.cosmos.bank.v1beta1.MsgSend({
+          from_address: cm2.wallet.address.toString(),
+          to_address: watchedAddr2,
+          amount: [{ denom: cm2.denom, amount: sendingToAddr2_2.toString() }],
+        }),
       );
       expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
       let balances = await cm2.queryBalances(watchedAddr1);
@@ -382,12 +380,12 @@ describe("Neutron / Interchain TX Query", () => {
     const sendingToAddr5_1: number = 5000;
     const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
-    const query4UpdatePeriod: number = 5;
-    const query5UpdatePeriod: number = 15;
+    const query4UpdatePeriod: number = 6;
+    const query5UpdatePeriod: number = 18;
 
     // by this checks we ensure the transactions will be processed in the desired order
     test("validate update periods", async () => {
-      expect(query5UpdatePeriod).toBeGreaterThanOrEqual(15);
+      expect(query5UpdatePeriod).toBeGreaterThanOrEqual(18);
       expect(query5UpdatePeriod).toBeGreaterThanOrEqual(query4UpdatePeriod * 3);
     });
 
@@ -395,7 +393,7 @@ describe("Neutron / Interchain TX Query", () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk_2.chainID,
+        testState.sdk2.chainID,
         connectionId,
         query4UpdatePeriod,
         watchedAddr4,
@@ -403,7 +401,7 @@ describe("Neutron / Interchain TX Query", () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk_2.chainID,
+        testState.sdk2.chainID,
         connectionId,
         query5UpdatePeriod,
         watchedAddr5,
@@ -415,7 +413,7 @@ describe("Neutron / Interchain TX Query", () => {
       let balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([]);
       let res = await cm2.msgSend(watchedAddr5, sendingToAddr5_1.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([
         { amount: addr5ExpectedBalance.toString(), denom: cm2.denom },
@@ -429,7 +427,7 @@ describe("Neutron / Interchain TX Query", () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual("tx");
       expect(query.registered_query.transactions_filter).toEqual("{\"transfer.recipient\":\"" + watchedAddr4 + "\"}");
-      expect(query.registered_query.zone_id).toEqual(testState.sdk_2.chainID);
+      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
 
@@ -439,7 +437,7 @@ describe("Neutron / Interchain TX Query", () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual("tx");
       expect(query.registered_query.transactions_filter).toEqual("{\"transfer.recipient\":\"" + watchedAddr5 + "\"}");
-      expect(query.registered_query.zone_id).toEqual(testState.sdk_2.chainID);
+      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);
     });
@@ -450,7 +448,7 @@ describe("Neutron / Interchain TX Query", () => {
       let balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([]);
       let res = await cm2.msgSend(watchedAddr4, sendingToAddr4_1.toString());
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
         { amount: addr4ExpectedBalance.toString(), denom: cm2.denom },
@@ -493,7 +491,7 @@ describe("Neutron / Interchain TX Query", () => {
 const registerTransfersQuery =
   async (cm: CosmosWrapper, contractAddress: string, zoneId: string,
     connectionId: string, updatePeriod: number, recipient: string) => {
-    const txHash = await cm.executeContract(
+    const res = await cm.executeContract(
       contractAddress,
       JSON.stringify({
         register_transfers_query: {
@@ -504,8 +502,8 @@ const registerTransfersQuery =
         }
       })
     );
-    expect(txHash.length).toBeGreaterThan(0);
-    const tx = await rest.tx.getTx(cm.sdk, txHash);
+    expect(res.code).toEqual(0);
+    const tx = await rest.tx.getTx(cm.sdk, res.txhash!);
     expect(tx?.data.tx_response?.code).toEqual(0);
 
     const attributes = getEventAttributesFromTx(tx?.data, "wasm", [

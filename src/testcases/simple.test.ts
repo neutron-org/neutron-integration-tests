@@ -13,8 +13,8 @@ describe('Neutron / Simple', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
+    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe('Wallets', () => {
@@ -46,7 +46,7 @@ describe('Neutron / Simple', () => {
   describe('IBC', () => {
     test('transfer to contract', async () => {
       const res = await cm.msgSend(contractAddress.toString(), '10000');
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
     test('check balance', async () => {
       const balances = await cm.queryBalances(contractAddress);
@@ -64,12 +64,13 @@ describe('Neutron / Simple', () => {
           },
         }),
       );
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
 
     test('check wallet balance', async () => {
       await wait(BLOCK_TIME * 10);
       const balances = await cm2.queryBalances(testState.wallets.demo1.address.toString());
+      // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
       expect(balances.balances).toEqual([
         {
           amount: '3000',

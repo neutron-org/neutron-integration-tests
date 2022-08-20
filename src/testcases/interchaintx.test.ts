@@ -16,8 +16,8 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
+    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe('Interchain Tx', () => {
@@ -61,7 +61,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     test('add some money to ICA', async () => {
       const res = await cm2.msgSend(icaAdress.toString(), '10000');
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
     test('delegate', async () => {
       const res = await cm.executeContract(
@@ -73,7 +73,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         }),
       );
-      expect(res.length).toBeGreaterThan(0);
+      expect(res.code).toEqual(0);
     });
     test('check validator state', async () => {
       const res = await rest.staking.delegatorDelegations(
