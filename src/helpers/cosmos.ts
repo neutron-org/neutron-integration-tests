@@ -8,6 +8,7 @@ import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
 import { CosmosTxV1beta1GetTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { google } from '@cosmos-client/core/cjs/proto';
 
 const DENOM = process.env.DENOM || 'stake';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
@@ -58,6 +59,55 @@ export class CosmosWrapper {
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const txBody = new proto.cosmos.tx.v1beta1.TxBody({
       messages: [cosmosclient.codec.instanceToProtoAny(msg)],
+    });
+    const authInfo = new proto.cosmos.tx.v1beta1.AuthInfo({
+      signer_infos: [
+        {
+          public_key: cosmosclient.codec.instanceToProtoAny(this.wallet.pubKey),
+          mode_info: {
+            single: {
+              mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
+            },
+          },
+          sequence: this.wallet.account.sequence,
+        },
+      ],
+      fee,
+    });
+    const txBuilder = new cosmosclient.TxBuilder(this.sdk, txBody, authInfo);
+
+    const signDocBytes = txBuilder.signDocBytes(
+      this.wallet.account.account_number,
+    );
+
+    txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
+    const res = await rest.tx.broadcastTx(this.sdk, {
+      tx_bytes: txBuilder.txBytes(),
+      mode: rest.tx.BroadcastTxMode.Sync,
+    });
+
+    const code = res.data?.tx_response.code;
+    if (code !== 0) {
+      throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
+    }
+    const txhash = res.data?.tx_response.txhash;
+    await wait(2 * BLOCK_TIME);
+    this.wallet.account.sequence++;
+    const data = (await rest.tx.getTx(this.sdk, txhash)).data;
+
+    return data;
+  }
+
+  async execTxMultipleMessages<T>(
+    msgs: T[],
+    fee: proto.cosmos.tx.v1beta1.IFee,
+  ): Promise<CosmosTxV1beta1GetTxResponse> {
+    let protoMsgs: Array<google.protobuf.IAny> = [];
+    msgs.forEach((msg) => {
+      protoMsgs.push(cosmosclient.codec.instanceToProtoAny(msg));
+    });
+    const txBody = new proto.cosmos.tx.v1beta1.TxBody({
+      messages: protoMsgs,
     });
     const authInfo = new proto.cosmos.tx.v1beta1.AuthInfo({
       signer_infos: [
