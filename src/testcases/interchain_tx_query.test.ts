@@ -286,21 +286,24 @@ describe("Neutron / Interchain TX Query", () => {
     test("exec tx with two transfers", async () => {
       addr1ExpectedBalance += sendingToAddr1_2;
       addr2ExpectedBalance += sendingToAddr2_2;
-      const res = await cm2.execTxMultipleMessages(new Array<proto.cosmos.bank.v1beta1.MsgSend>(
-        new proto.cosmos.bank.v1beta1.MsgSend({
-          from_address: cm2.wallet.address.toString(),
-          to_address: watchedAddr1,
-          amount: [{ denom: cm2.denom, amount: sendingToAddr1_2.toString() }],
-        }),
-        new proto.cosmos.bank.v1beta1.MsgSend({
-          from_address: cm2.wallet.address.toString(),
-          to_address: watchedAddr2,
-          amount: [{ denom: cm2.denom, amount: sendingToAddr2_2.toString() }],
-        }),
-      ), {
-        gas_limit: Long.fromString("200000"),
-        amount: [{ denom: cm2.denom, amount: "1000" }],
-      });
+      const res = await cm2.execTx(
+        {
+          gas_limit: Long.fromString("200000"),
+          amount: [{ denom: cm2.denom, amount: "1000" }],
+        },
+        new Array<proto.cosmos.bank.v1beta1.MsgSend>(
+          new proto.cosmos.bank.v1beta1.MsgSend({
+            from_address: cm2.wallet.address.toString(),
+            to_address: watchedAddr1,
+            amount: [{ denom: cm2.denom, amount: sendingToAddr1_2.toString() }],
+          }),
+          new proto.cosmos.bank.v1beta1.MsgSend({
+            from_address: cm2.wallet.address.toString(),
+            to_address: watchedAddr2,
+            amount: [{ denom: cm2.denom, amount: sendingToAddr2_2.toString() }],
+          }),
+        )
+      );
       expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
       let balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
