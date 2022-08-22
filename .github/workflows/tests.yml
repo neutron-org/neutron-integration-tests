@@ -6,7 +6,7 @@ on:
 name: tests
 
 jobs:
-  clippy:
+  lint:
     name: Actions - lint
     runs-on: ubuntu-latest
     steps:
