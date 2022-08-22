@@ -22,6 +22,7 @@ yarn
 yarn test # all tests
 yarn test:simple # basic tests
 yarn test:interchaintx # interchain txs test
+yarn test:interchain_tx_query # interchain tx query test
 ```
 
 #### 4. Environment variables you can redefine
