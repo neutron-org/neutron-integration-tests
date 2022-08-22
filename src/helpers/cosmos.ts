@@ -33,18 +33,18 @@ type ChannelsList = {
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
-  balances: Balance[],
+  balances: Balance[];
   pagination: {
-    next_key: string,
-    total: string,
-  }
-}
+    next_key: string;
+    total: string;
+  };
+};
 
 // Balance represents a single asset balance of an account.
 type Balance = {
-  denom: string,
-  amount: string,
-}
+  denom: string;
+  amount: string;
+};
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
@@ -201,8 +201,8 @@ export class CosmosWrapper {
   }
 
   /**
- * msgSend processes a transfer, waits two blocks and returns the tx hash.
- */
+   * msgSend processes a transfer, waits two blocks and returns the tx hash.
+   */
   async msgSend(
     to: string,
     amount: string,
@@ -223,7 +223,10 @@ export class CosmosWrapper {
   }
 
   async queryBalances(addr: string): Promise<BalancesResponse> {
-    let balances = await rest.bank.allBalances(this.sdk, addr as unknown as AccAddress);
+    let balances = await rest.bank.allBalances(
+      this.sdk,
+      addr as unknown as AccAddress,
+    );
     return balances.data as BalancesResponse;
   }
 
