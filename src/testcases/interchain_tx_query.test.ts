@@ -48,8 +48,8 @@ describe('Neutron / Interchain TX Query', () => {
   let addr1ExpectedBalance: number = 0;
   let addr2ExpectedBalance: number = 0;
   let addr3ExpectedBalance: number = 0;
-  const sendingToAddr1_1: number = 10000;
-  const sendingToAddr2_1: number = 5000;
+  const amountToAddr1_1: number = 10000;
+  const amountToAddr2_1: number = 5000;
   const watchedAddr1: string = addr1;
   const query1UpdatePeriod: number = 10;
   describe('utilise single transfers query', () => {
@@ -79,10 +79,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('handle callback on a sending', async () => {
-      addr1ExpectedBalance += sendingToAddr1_1;
+      addr1ExpectedBalance += amountToAddr1_1;
       let balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([]);
-      const res = await cm2.msgSend(watchedAddr1, sendingToAddr1_1.toString());
+      const res = await cm2.msgSend(watchedAddr1, amountToAddr1_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
@@ -103,10 +103,10 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle callback on a sending to a different address', async () => {
       const differentAddr = addr2;
-      addr2ExpectedBalance += sendingToAddr2_1;
+      addr2ExpectedBalance += amountToAddr2_1;
       let balances = await cm2.queryBalances(differentAddr);
       expect(balances.balances).toEqual([]);
-      const res = await cm2.msgSend(differentAddr, sendingToAddr2_1.toString());
+      const res = await cm2.msgSend(differentAddr, amountToAddr2_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(differentAddr);
       expect(balances.balances).toEqual([
@@ -209,8 +209,8 @@ describe('Neutron / Interchain TX Query', () => {
 
   const watchedAddr3: string = addr3;
   const query3UpdatePeriod: number = 10;
-  const sendingToAddr3_1: number = 3000;
-  const sendingToAddr3_2: number = 4000;
+  const amountToAddr3_1: number = 3000;
+  const amountToAddr3_2: number = 4000;
   describe('check update period', () => {
     test('register transfers query', async () => {
       await registerTransfersQuery(
@@ -238,10 +238,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check first sending handling', async () => {
-      addr3ExpectedBalance += sendingToAddr3_1;
+      addr3ExpectedBalance += amountToAddr3_1;
       let balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([]);
-      const res = await cm2.msgSend(watchedAddr3, sendingToAddr3_1.toString());
+      const res = await cm2.msgSend(watchedAddr3, amountToAddr3_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
@@ -264,8 +264,8 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check second sending handling', async () => {
-      addr3ExpectedBalance += sendingToAddr3_2;
-      const res = await cm2.msgSend(watchedAddr3, sendingToAddr3_2.toString());
+      addr3ExpectedBalance += amountToAddr3_2;
+      const res = await cm2.msgSend(watchedAddr3, amountToAddr3_2.toString());
       expect(res.code).toEqual(0);
       const balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
@@ -278,7 +278,7 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: (addr3ExpectedBalance - sendingToAddr3_2).toString(),
+          amount: (addr3ExpectedBalance - amountToAddr3_2).toString(),
         },
       ]);
 
@@ -289,24 +289,24 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr3_1.toString(),
+          amount: amountToAddr3_1.toString(),
         },
         {
           recipient: watchedAddr3,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr3_2.toString(),
+          amount: amountToAddr3_2.toString(),
         },
       ]);
     });
   });
 
-  const sendingToAddr1_2: number = 2000;
-  const sendingToAddr2_2: number = 3000;
+  const amountToAddr1_2: number = 2000;
+  const amountToAddr2_2: number = 3000;
   describe('handle multiple transfers', () => {
     test('exec tx with two transfers', async () => {
-      addr1ExpectedBalance += sendingToAddr1_2;
-      addr2ExpectedBalance += sendingToAddr2_2;
+      addr1ExpectedBalance += amountToAddr1_2;
+      addr2ExpectedBalance += amountToAddr2_2;
       const res = await cm2.execTx(
         {
           gas_limit: Long.fromString('200000'),
@@ -315,12 +315,12 @@ describe('Neutron / Interchain TX Query', () => {
         new proto.cosmos.bank.v1beta1.MsgSend({
           from_address: cm2.wallet.address.toString(),
           to_address: watchedAddr1,
-          amount: [{ denom: cm2.denom, amount: sendingToAddr1_2.toString() }],
+          amount: [{ denom: cm2.denom, amount: amountToAddr1_2.toString() }],
         }),
         new proto.cosmos.bank.v1beta1.MsgSend({
           from_address: cm2.wallet.address.toString(),
           to_address: watchedAddr2,
-          amount: [{ denom: cm2.denom, amount: sendingToAddr2_2.toString() }],
+          amount: [{ denom: cm2.denom, amount: amountToAddr2_2.toString() }],
         }),
       );
       expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
@@ -349,13 +349,13 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr1,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr1_1.toString(),
+          amount: amountToAddr1_1.toString(),
         },
         {
           recipient: watchedAddr1,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr1_2.toString(),
+          amount: amountToAddr1_2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr2);
@@ -364,13 +364,13 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr2,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr2_1.toString(),
+          amount: amountToAddr2_1.toString(),
         },
         {
           recipient: watchedAddr2,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr2_2.toString(),
+          amount: amountToAddr2_2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
@@ -379,13 +379,13 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr3_1.toString(),
+          amount: amountToAddr3_1.toString(),
         },
         {
           recipient: watchedAddr3,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: sendingToAddr3_2.toString(),
+          amount: amountToAddr3_2.toString(),
         },
       ]);
     });
@@ -400,8 +400,8 @@ describe('Neutron / Interchain TX Query', () => {
     const addr5: string = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
     let addr4ExpectedBalance: number = 0;
     let addr5ExpectedBalance: number = 0;
-    const sendingToAddr4_1: number = 4000;
-    const sendingToAddr5_1: number = 5000;
+    const amountToAddr4_1: number = 4000;
+    const amountToAddr5_1: number = 5000;
     const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
     const query4UpdatePeriod: number = 6;
@@ -433,10 +433,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('make older sending', async () => {
-      addr5ExpectedBalance += sendingToAddr5_1;
+      addr5ExpectedBalance += amountToAddr5_1;
       let balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([]);
-      let res = await cm2.msgSend(watchedAddr5, sendingToAddr5_1.toString());
+      let res = await cm2.msgSend(watchedAddr5, amountToAddr5_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([
@@ -472,10 +472,10 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('make younger sending and check', async () => {
       await wait(BLOCK_TIME);
-      addr4ExpectedBalance += sendingToAddr4_1;
+      addr4ExpectedBalance += amountToAddr4_1;
       let balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([]);
-      let res = await cm2.msgSend(watchedAddr4, sendingToAddr4_1.toString());
+      let res = await cm2.msgSend(watchedAddr4, amountToAddr4_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
