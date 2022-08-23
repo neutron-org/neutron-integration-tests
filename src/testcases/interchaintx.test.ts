@@ -203,7 +203,10 @@ describe('Neutron / Interchain TXs', () => {
           },
         },
       );
-      expect(res).toMatchObject<AcknowledgementResult>({ error: 'message' });
+      expect(res).toMatchObject<AcknowledgementResult>({
+        error:
+          'ABCI code: 1: error handling packet on host chain: see events for details',
+      });
     });
 
     test('delegate and undelegate from first ICA, delegate from second ICA', async () => {
