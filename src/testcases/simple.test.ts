@@ -52,7 +52,7 @@ describe('Neutron / Simple', () => {
         contractAddress as unknown as AccAddress,
       );
       expect(balances.data.balances).toEqual([
-        { amount: '10000', denom: 'stake' },
+        { amount: '10000', denom: cm.denom },
       ]);
     });
     test('execute contract', async () => {
