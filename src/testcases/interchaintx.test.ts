@@ -79,9 +79,7 @@ describe('Neutron / Interchain TXs', () => {
       ]);
     });
     test('get ica address', async () => {
-      await wait(BLOCK_TIME * 20);
-
-      const ica1 = await cm1.queryContract<{
+      const ica1 = await cm1.queryContractWithWait<{
         interchain_account_address: string;
       }>(contractAddress, {
         interchain_account_address: {
@@ -93,7 +91,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(ica1.interchain_account_address.length).toEqual(66);
       icaAddress1 = ica1.interchain_account_address;
 
-      const ica2 = await cm1.queryContract<{
+      const ica2 = await cm1.queryContractWithWait<{
         interchain_account_address: string;
       }>(contractAddress, {
         interchain_account_address: {
@@ -165,9 +163,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res2.data.delegation_responses).toEqual([]);
     });
     test('check acknowledgement success', async () => {
-      await wait(BLOCK_TIME * 20);
-
-      const res1 = await cm1.queryContract<AcknowledgementResult>(
+      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId1 },
@@ -199,9 +195,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res.code).toEqual(0);
     });
     test('check acknowledgement error', async () => {
-      await wait(BLOCK_TIME * 20);
-
-      const res = await cm1.queryContract<AcknowledgementResult>(
+      const res = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: {
@@ -239,9 +233,7 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     test('check acknowledgements', async () => {
-      await wait(BLOCK_TIME * 20);
-
-      const res1 = await cm1.queryContract<AcknowledgementResult>(
+      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId1 },
@@ -250,7 +242,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res1).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
       });
-      const res2 = await cm1.queryContract<AcknowledgementResult>(
+      const res2 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId2 },
