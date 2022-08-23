@@ -9,29 +9,30 @@ import { AcknowledgementResult } from '../helpers/contract_types';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
+  let cm1: CosmosWrapper;
   let cm2: CosmosWrapper;
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
   const icaId1 = 'test1';
   const icaId2 = 'test2';
+  const connectionId = 'connection-0';
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk_1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk_2, testState.wallets.demo2);
+    cm1 = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe('Interchain Tx with multiple ICAs', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm('neutron_interchain_txs.wasm');
+      codeId = await cm1.storeWasm('neutron_interchain_txs.wasm');
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await cm.instantiate(
+      const res = await cm1.instantiate(
         codeId,
         JSON.stringify({}),
         'interchaintx',
@@ -42,33 +43,31 @@ describe('Neutron / Interchain TXs', () => {
       );
     });
     test('create ICA1', async () => {
-      const res = await cm.executeContract(
+      const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           register: {
-            connection_id: 'connection-0',
+            connection_id: connectionId,
             interchain_account_id: icaId1,
-            denom: 'stake',
           },
         }),
       );
       expect(res.code).toEqual(0);
     });
     test('create ICA2', async () => {
-      const res = await cm.executeContract(
+      const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           register: {
-            connection_id: 'connection-0',
+            connection_id: connectionId,
             interchain_account_id: icaId2,
-            denom: 'stake',
           },
         }),
       );
       expect(res.code).toEqual(0);
     });
     test('multiple IBC accounts created', async () => {
-      const channels = await cm.listIBCChannels();
+      const channels = await cm1.listIBCChannels();
       expect(channels.channels).toBeArray();
       expect(channels.channels).toIncludeAllPartialMembers([
         {
@@ -82,24 +81,24 @@ describe('Neutron / Interchain TXs', () => {
     test('get ica address', async () => {
       await wait(BLOCK_TIME * 20);
 
-      const ica1 = await cm.queryContract<{
+      const ica1 = await cm1.queryContract<{
         interchain_account_address: string;
       }>(contractAddress, {
         interchain_account_address: {
           interchain_account_id: icaId1,
-          connection_id: 'connection-0',
+          connection_id: connectionId,
         },
       });
       expect(ica1.interchain_account_address).toStartWith('neutron');
       expect(ica1.interchain_account_address.length).toEqual(66);
       icaAddress1 = ica1.interchain_account_address;
 
-      const ica2 = await cm.queryContract<{
+      const ica2 = await cm1.queryContract<{
         interchain_account_address: string;
       }>(contractAddress, {
         interchain_account_address: {
           interchain_account_id: icaId2,
-          connection_id: 'connection-0',
+          connection_id: connectionId,
         },
       });
       expect(ica2.interchain_account_address).toStartWith('neutron');
@@ -107,14 +106,14 @@ describe('Neutron / Interchain TXs', () => {
       icaAddress2 = ica2.interchain_account_address;
     });
     test('before delegation ack storage should be empty for both accounts', async () => {
-      const res1 = await cm.queryContract<AcknowledgementResult>(
+      const res1 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId1 },
         },
       );
       expect(res1).toBe(null);
-      const res2 = await cm.queryContract<AcknowledgementResult>(
+      const res2 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId2 },
@@ -130,7 +129,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res2.code).toEqual(0);
     });
     test('delegate from first ICA', async () => {
-      const res = await cm.executeContract(
+      const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           delegate: {
@@ -149,6 +148,7 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res1.data.delegation_responses).toEqual([
         {
+          // FIXME: 'stake'
           balance: { amount: '2000', denom: 'stake' },
           delegation: {
             delegator_address: icaAddress1,
@@ -167,16 +167,16 @@ describe('Neutron / Interchain TXs', () => {
     test('check acknowledgement success', async () => {
       await wait(BLOCK_TIME * 20);
 
-      const res1 = await cm.queryContract<AcknowledgementResult>(
+      const res1 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId1 },
         },
       );
       expect(res1).toMatchObject<AcknowledgementResult>({
-        ack: ['/cosmos.staking.v1beta1.MsgDelegate'],
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
-      const res2 = await cm.queryContract<AcknowledgementResult>(
+      const res2 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId2 },
@@ -186,7 +186,7 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     test('delegate for unknown validator from second ICA', async () => {
-      const res = await cm.executeContract(
+      const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           delegate: {
@@ -201,7 +201,7 @@ describe('Neutron / Interchain TXs', () => {
     test('check acknowledgement error', async () => {
       await wait(BLOCK_TIME * 20);
 
-      const res = await cm.queryContract<AcknowledgementResult>(
+      const res = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: {
@@ -212,8 +212,8 @@ describe('Neutron / Interchain TXs', () => {
       expect(res).toMatchObject<AcknowledgementResult>({ error: 'message' });
     });
 
-    test('delegate undelegate from first ICA, delegate from second ICA', async () => {
-      const res1 = await cm.executeContract(
+    test('delegate and undelegate from first ICA, delegate from second ICA', async () => {
+      const res1 = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           undelegate: {
@@ -225,7 +225,7 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res1.code).toEqual(0);
 
-      const res2 = await cm.executeContract(
+      const res2 = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
           delegate: {
@@ -241,25 +241,96 @@ describe('Neutron / Interchain TXs', () => {
     test('check acknowledgement success results', async () => {
       await wait(BLOCK_TIME * 20);
 
-      const res1 = await cm.queryContract<AcknowledgementResult>(
+      const res1 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId1 },
         },
       );
       expect(res1).toMatchObject<AcknowledgementResult>({
-        ack: ['/cosmos.staking.v1beta1.MsgUndelegate'],
+        success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
       });
-      const res2 = await cm.queryContract<AcknowledgementResult>(
+      const res2 = await cm1.queryContract<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: { interchain_account_id: icaId2 },
         },
       );
       expect(res2).toMatchObject<AcknowledgementResult>({
-        ack: ['/cosmos.staking.v1beta1.MsgDelegate'],
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
+
+    test('test insufficient funds tx', async () => {
+      // cleanup acks first
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          clean_ack_results: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '1000',
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+
+      // having some balance on an account,
+      // make two delegations in a raw such as there is insufficient funds for the second delegation.
+      // make sure the second delegation doesn't work;
+
+      const res1 = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '1000',
+          },
+        }),
+      );
+      expect(res1.code).toEqual(0);
+
+      const res2 = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId2,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '200000',
+          },
+        }),
+      );
+      expect(res2.code).toEqual(0);
+    });
+
+    // TODO: move inside previous test block?
+    test('check acknowledgement success', async () => {
+      await wait(BLOCK_TIME * 20);
+
+      const res1 = await cm1.queryContract<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: { interchain_account_id: icaId1 },
+        },
+      );
+      expect(res1).toMatchObject<AcknowledgementResult>({
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+      });
+      const res2 = await cm1.queryContract<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: { interchain_account_id: icaId2 },
+        },
+      );
+      expect(res2).toMatchObject<AcknowledgementResult>({
+        error: 'message',
+      });
+    });
+
+    // TODO
+    // same for undelegation: try to undelegate more than allowed by making two undelegate calls where there is no enough funds for the second call;
+    // try to submit a malicious tx on behalf of an account that doesn't belong to the fraud called.
 
     test('delegate with timeout', async () => {
       // TODO: agreed to do it as a separate task
