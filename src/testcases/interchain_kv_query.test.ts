@@ -475,7 +475,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         1,
         testState.sdk2 as CosmosSDK,
-        testState.wallets.demo2.address.toAccAddress(),
+        cm[2].wallet.address,
       );
     });
 
