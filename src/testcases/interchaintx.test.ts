@@ -238,7 +238,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res2.code).toEqual(0);
     });
 
-    test('check acknowledgement success results', async () => {
+    test('check acknowledgements', async () => {
       await wait(BLOCK_TIME * 20);
 
       const res1 = await cm1.queryContract<AcknowledgementResult>(
@@ -260,77 +260,6 @@ describe('Neutron / Interchain TXs', () => {
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
-
-    test('test insufficient funds tx', async () => {
-      // cleanup acks first
-      const res = await cm1.executeContract(
-        contractAddress,
-        JSON.stringify({
-          clean_ack_results: {
-            interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
-            amount: '1000',
-          },
-        }),
-      );
-      expect(res.code).toEqual(0);
-
-      // having some balance on an account,
-      // make two delegations in a raw such as there is insufficient funds for the second delegation.
-      // make sure the second delegation doesn't work;
-
-      const res1 = await cm1.executeContract(
-        contractAddress,
-        JSON.stringify({
-          delegate: {
-            interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
-            amount: '1000',
-          },
-        }),
-      );
-      expect(res1.code).toEqual(0);
-
-      const res2 = await cm1.executeContract(
-        contractAddress,
-        JSON.stringify({
-          delegate: {
-            interchain_account_id: icaId2,
-            validator: testState.wallets.val2.address.toString(),
-            amount: '200000',
-          },
-        }),
-      );
-      expect(res2.code).toEqual(0);
-    });
-
-    // TODO: move inside previous test block?
-    test('check acknowledgement success', async () => {
-      await wait(BLOCK_TIME * 20);
-
-      const res1 = await cm1.queryContract<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId1 },
-        },
-      );
-      expect(res1).toMatchObject<AcknowledgementResult>({
-        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
-      });
-      const res2 = await cm1.queryContract<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId2 },
-        },
-      );
-      expect(res2).toMatchObject<AcknowledgementResult>({
-        error: 'message',
-      });
-    });
-
-    // TODO
-    // same for undelegation: try to undelegate more than allowed by making two undelegate calls where there is no enough funds for the second call;
-    // try to submit a malicious tx on behalf of an account that doesn't belong to the fraud called.
 
     test('delegate with timeout', async () => {
       // TODO: agreed to do it as a separate task
