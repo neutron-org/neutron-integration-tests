@@ -209,7 +209,7 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
 
-    test('delegate and undelegate from first ICA, delegate from second ICA', async () => {
+    test('undelegate from first ICA, delegate from second ICA', async () => {
       const res1 = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
