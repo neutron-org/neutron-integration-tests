@@ -149,6 +149,31 @@ export class CosmosWrapper {
     return res?.tx_response;
   }
 
+  async queryContractWithWait<T>(
+    contract: string,
+    query: Record<string, unknown>,
+    numAttempts?: number,
+  ): Promise<T> {
+    if (typeof numAttempts === 'undefined') {
+      numAttempts = 20;
+    }
+
+    while (numAttempts > 0) {
+      const res: T = await this.queryContract<T>(contract, query).catch(
+        () => null,
+      );
+
+      if (res !== null) {
+        return res;
+      }
+
+      numAttempts--;
+      await wait(BLOCK_TIME);
+    }
+
+    return null;
+  }
+
   async queryContract<T>(
     contract: string,
     query: Record<string, unknown>,
