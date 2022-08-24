@@ -1,11 +1,9 @@
-import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
-
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import 'jest-extended';
-import { wait } from '../helpers/sleep';
 import { rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
+import { CosmosWrapper } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
+import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -204,8 +202,10 @@ describe('Neutron / Interchain TXs', () => {
         },
       );
       expect(res).toMatchObject<AcknowledgementResult>({
-        error:
+        error: [
+          'message',
           'ABCI code: 1: error handling packet on host chain: see events for details',
+        ],
       });
     });
 

@@ -1,4 +1,4 @@
 export type AcknowledgementResult =
   | { success: string[] }
-  | { error: string }
+  | { error: string[] }
   | { timeout: string };
