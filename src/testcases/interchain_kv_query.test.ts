@@ -9,6 +9,7 @@ import { wait } from '../helpers/sleep';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { max } from 'lodash';
 
 const getRegisteredQueryResult = (
   cm: CosmosWrapper,
@@ -34,6 +35,19 @@ const getRegisteredQueryResult = (
     };
   }>(contractAddress, {
     get_registered_query: {
+      query_id: queryId,
+    },
+  });
+
+const getKvCallbackStatus = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    last_update_height: number;
+  }>(contractAddress, {
+    kv_callback_stats: {
       query_id: queryId,
     },
   });
@@ -254,7 +268,7 @@ describe('Neutron / Interchain KV Query', () => {
     connectionId = 'connection-0';
     query = {
       1: { updatePeriod: 2, key: '' },
-      2: { updatePeriod: 6, key: '' },
+      2: { updatePeriod: 3, key: '' },
       3: { updatePeriod: 4, key: '' },
       4: { updatePeriod: 3, key: '' },
     };
@@ -562,6 +576,8 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         transferRecipient,
       );
+      // order is not guaranteed, sorting just for ease of further comparison
+      queryResult.transfers.sort((a, b) => +a.amount - +b.amount);
       expect(queryResult.transfers.length).toEqual(2);
       expect(queryResult.transfers[0]).toEqual({
         recipient: transferRecipient.toString(),
@@ -640,6 +656,90 @@ describe('Neutron / Interchain KV Query', () => {
         denom: cm[2].denom,
         amount: '7000',
       });
+    });
+  });
+
+  describe("Test 'kv' interchain query rollback", () => {
+    test("'kv' callbacks are not being executed on 'tx' queries", async () => {
+      const res = await getKvCallbackStatus(cm[1], contractAddress, 4);
+      expect(res.last_update_height).toEqual(0);
+    });
+
+    test("'kv' callbacks are being executed in 'kv' queries", async () => {
+      const resPrev = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      // XXX: for some reason, I have to wait for a really long time here
+      await wait(
+        max([1, 2, 3].map((i) => query[i].updatePeriod)) * 3 * BLOCK_TIME,
+      );
+      const res = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      for (const i in res) {
+        expect(resPrev[i].last_update_height).toBeLessThan(
+          res[i].last_update_height,
+        );
+      }
+    });
+
+    test('enable mock', async () => {
+      await cm[1].executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_set_kv_query_mock: {},
+        }),
+      );
+    });
+
+    test("'kv' callbacks have stopped updating, contract state is not corrupted", async () => {
+      const start = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      for (
+        let i = 0;
+        i < max([1, 2, 3].map((i) => query[i].updatePeriod)) * 3;
+        ++i
+      ) {
+        const res = await Promise.all(
+          [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+        );
+        for (const j of res) {
+          expect(j).not.toEqual(0);
+        }
+        await wait(BLOCK_TIME);
+      }
+      const end = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      expect(start).toEqual(end);
+    });
+
+    test('disable mock', async () => {
+      await cm[1].executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_unset_kv_query_mock: {},
+        }),
+      );
+    });
+
+    test("now 'kv' callbacks work again", async () => {
+      const resPrev = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      // XXX: for some reason, I have to wait for a really long time here
+      await wait(
+        max([1, 2, 3].map((i) => query[i].updatePeriod)) * 3 * BLOCK_TIME,
+      );
+      const res = await Promise.all(
+        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+      );
+      for (const i in res) {
+        expect(resPrev[i].last_update_height).toBeLessThan(
+          res[i].last_update_height,
+        );
+      }
     });
   });
 });
