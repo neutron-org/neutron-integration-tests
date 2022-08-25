@@ -56,11 +56,8 @@ const waitUntilQueryResultArrives = async (
   cm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
-  numAttempts?: number,
+  numAttempts = 20,
 ) => {
-  if (typeof numAttempts === 'undefined') {
-    numAttempts = 20;
-  }
   while (numAttempts > 0) {
     const res = await getRegisteredQueryResult(cm, contractAddress, queryId);
     numAttempts--;
