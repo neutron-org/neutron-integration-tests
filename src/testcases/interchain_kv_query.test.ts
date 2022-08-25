@@ -196,6 +196,7 @@ const registerTransfersQuery = async (
   connectionId: string,
   updatePeriod: number,
   recipient: AccAddress,
+  minHeight: number,
 ) => {
   const res = await cm.executeContract(
     contractAddress,
@@ -205,6 +206,7 @@ const registerTransfersQuery = async (
         connection_id: connectionId,
         update_period: updatePeriod,
         recipient: recipient.toString(),
+        min_height: minHeight.toString(),
       },
     }),
   );
@@ -324,6 +326,7 @@ describe('Neutron / Interchain KV Query', () => {
         connectionId,
         query[4].updatePeriod,
         transferRecipient,
+        1,
       );
     });
   });
@@ -425,9 +428,18 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.query_type).toEqual('tx');
       expect(
         JSON.parse(queryResult.registered_query.transactions_filter),
-      ).toEqual({
-        'transfer.recipient': transferRecipient.toString(),
-      });
+      ).toEqual([
+        {
+          field: 'transfer.recipient',
+          op: 'Eq',
+          value: transferRecipient.toString(),
+        },
+        {
+          field: 'tx.height',
+          op: 'Gte',
+          value: 1,
+        },
+      ]);
       expect(queryResult.registered_query.zone_id).toEqual(
         testState.sdk2.chainID,
       );
