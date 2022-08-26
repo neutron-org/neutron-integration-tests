@@ -4,6 +4,7 @@ import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosWrapper } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { wait } from '../helpers/sleep';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -255,9 +256,100 @@ describe('Neutron / Interchain TXs', () => {
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
-
     test('delegate with timeout', async () => {
-      // TODO: agreed to do it as a separate task
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '10',
+            timeout: 1,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+      await wait(20000); // we need to wait some time to make sure the hermes started timeout logic
+    });
+    test('check acknowledgements after timeout', async () => {
+      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: { interchain_account_id: icaId1 },
+        },
+      );
+      expect(res1).toMatchObject<AcknowledgementResult>({
+        timeout: 'message',
+      });
+    });
+    test('delegate after the ICA channel was closed', async () => {
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '10',
+            timeout: 1,
+          },
+        }),
+      );
+      expect(res.raw_log.includes('no active channel for this owner'));
+    });
+    test('recreate ICA1', async () => {
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          register: {
+            connection_id: connectionId,
+            interchain_account_id: icaId1,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+      await wait(20000);
+    });
+    test('delegate from first ICA after ICA recreation', async () => {
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.val2.address.toString(),
+            amount: '20',
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+    test('check acknowledgement success after ICA recreation', async () => {
+      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: { interchain_account_id: icaId1 },
+        },
+      );
+      expect(res1).toMatchObject<AcknowledgementResult>({
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+      });
+    });
+    test('check validator state after ICA recreation', async () => {
+      const res1 = await rest.staking.delegatorDelegations(
+        cm2.sdk,
+        icaAddress1 as unknown as AccAddress,
+      );
+      expect(res1.data.delegation_responses).toEqual([
+        {
+          // FIXME: 'stake'
+          balance: { amount: '1020', denom: 'stake' },
+          delegation: {
+            delegator_address: icaAddress1,
+            shares: '1020.000000000000000000',
+            validator_address:
+              'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx',
+          },
+        },
+      ]);
     });
   });
 });

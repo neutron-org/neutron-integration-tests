@@ -143,9 +143,6 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('2000000'),
       amount: [{ denom: this.denom, amount: '10000' }],
     });
-    if (res.tx_response.code !== 0) {
-      throw new Error(res.tx_response.raw_log);
-    }
     return res?.tx_response;
   }
 
