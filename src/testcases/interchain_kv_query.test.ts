@@ -639,7 +639,8 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test('now new transfer finally arrives', async () => {
+    test("after disabling mock 'tx' queries work as usual", async () => {
+      await cm[2].msgSend(transferRecipient.toString(), '8000');
       await wait((query[4].updatePeriod + 1) * BLOCK_TIME);
       const queryResult = await getQueryTransfersResult(
         cm[1],
@@ -651,7 +652,7 @@ describe('Neutron / Interchain KV Query', () => {
         recipient: transferRecipient.toString(),
         sender: cm[2].wallet.address.toString(),
         denom: cm[2].denom,
-        amount: '7000',
+        amount: '8000',
       });
     });
   });
