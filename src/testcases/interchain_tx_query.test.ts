@@ -8,8 +8,6 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { wait } from '../helpers/sleep';
 import Long from 'long';
 
-// TODO: decrease update periods for all queries once relayer is done with sync mode or a stateful
-// relayer is implemented to speed up the test.
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
@@ -195,7 +193,6 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
     });
 
-    // TODO: refine when the min height thingy is implemented
     test('handle callback on a past sending', async () => {
       const balances = await cm2.queryBalances(watchedAddr2);
       expect(balances.balances).toEqual([
