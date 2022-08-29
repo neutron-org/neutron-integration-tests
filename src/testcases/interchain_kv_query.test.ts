@@ -518,7 +518,7 @@ describe('Neutron / Interchain KV Query', () => {
         '9000',
       );
       expect(res.code).toEqual(0);
-      await wait(BLOCK_TIME * query[2].updatePeriod);
+      await wait((query[2].updatePeriod + 1) * BLOCK_TIME);
 
       await validateBalanceQuery(
         cm[1],
