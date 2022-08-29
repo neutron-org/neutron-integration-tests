@@ -1,5 +1,3 @@
-import { rest } from '@cosmos-client/core';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { wait } from '../helpers/sleep';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';

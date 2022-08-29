@@ -63,7 +63,7 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     ...msgs: T[]
   ): Promise<CosmosTxV1beta1GetTxResponse> {
-    let protoMsgs: Array<google.protobuf.IAny> = [];
+    const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
       protoMsgs.push(cosmosclient.codec.instanceToProtoAny(msg));
     });
@@ -248,7 +248,7 @@ export class CosmosWrapper {
   }
 
   async queryBalances(addr: string): Promise<BalancesResponse> {
-    let balances = await rest.bank.allBalances(
+    const balances = await rest.bank.allBalances(
       this.sdk,
       addr as unknown as AccAddress,
     );

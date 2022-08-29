@@ -15,7 +15,7 @@ describe('Neutron / Interchain TX Query', () => {
   let cm: CosmosWrapper;
   let cm2: CosmosWrapper;
   let contractAddress: string;
-  const connectionId: string = 'connection-0';
+  const connectionId = 'connection-0';
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -42,16 +42,16 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr1: string = 'neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx';
-  const addr2: string = 'neutron14uxvu22lhrazyxadaqv5d6lswu0p276ll7hrkl';
-  const addr3: string = 'neutron1m4n7gt76c4edkcpg698pwy56jkxqsre4gpgg26';
-  let addr1ExpectedBalance: number = 0;
-  let addr2ExpectedBalance: number = 0;
-  let addr3ExpectedBalance: number = 0;
-  const amountToAddr1_1: number = 10000;
-  const amountToAddr2_1: number = 5000;
+  const addr1 = 'neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx';
+  const addr2 = 'neutron14uxvu22lhrazyxadaqv5d6lswu0p276ll7hrkl';
+  const addr3 = 'neutron1m4n7gt76c4edkcpg698pwy56jkxqsre4gpgg26';
+  let addr1ExpectedBalance = 0;
+  let addr2ExpectedBalance = 0;
+  let addr3ExpectedBalance = 0;
+  const amountToAddr1_1 = 10000;
+  const amountToAddr2_1 = 5000;
   const watchedAddr1: string = addr1;
-  const query1UpdatePeriod: number = 3;
+  const query1UpdatePeriod = 3;
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       await registerTransfersQuery(
@@ -65,7 +65,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      let query = await getRegisteredQuery(cm, contractAddress, 1);
+      const query = await getRegisteredQuery(cm, contractAddress, 1);
       expect(query.registered_query.id).toEqual(1);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -92,7 +92,11 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
 
       await wait(query1UpdatePeriod * BLOCK_TIME);
-      let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
+      const deposits = await queryRecipientTxs(
+        cm,
+        contractAddress,
+        watchedAddr1,
+      );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
@@ -162,7 +166,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr2 = addr2;
-  const query2UpdatePeriod: number = 2;
+  const query2UpdatePeriod = 2;
   describe('utilise multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       await registerTransfersQuery(
@@ -176,7 +180,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      let query = await getRegisteredQuery(cm, contractAddress, 2);
+      const query = await getRegisteredQuery(cm, contractAddress, 2);
       expect(query.registered_query.id).toEqual(2);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -199,7 +203,11 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
 
       await wait(query2UpdatePeriod * BLOCK_TIME);
-      let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr2);
+      const deposits = await queryRecipientTxs(
+        cm,
+        contractAddress,
+        watchedAddr2,
+      );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr2,
@@ -212,9 +220,9 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr3: string = addr3;
-  const query3UpdatePeriod: number = 3;
-  const amountToAddr3_1: number = 3000;
-  const amountToAddr3_2: number = 4000;
+  const query3UpdatePeriod = 3;
+  const amountToAddr3_1 = 3000;
+  const amountToAddr3_2 = 4000;
   describe('check update period', () => {
     test('register transfers query', async () => {
       await registerTransfersQuery(
@@ -228,7 +236,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      let query = await getRegisteredQuery(cm, contractAddress, 3);
+      const query = await getRegisteredQuery(cm, contractAddress, 3);
       expect(query.registered_query.id).toEqual(3);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -307,8 +315,8 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const amountToAddr1_2: number = 2000;
-  const amountToAddr2_2: number = 3000;
+  const amountToAddr1_2 = 2000;
+  const amountToAddr2_2 = 3000;
   describe('handle multiple transfers', () => {
     test('exec tx with two transfers', async () => {
       addr1ExpectedBalance += amountToAddr1_2;
@@ -402,16 +410,16 @@ describe('Neutron / Interchain TX Query', () => {
   // we submit the second one, and then submit the first one, and want to make sure there is
   // no problem with submitting an older height after a younger one submitted
   describe('submit older height after younger one', () => {
-    const addr4: string = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
-    const addr5: string = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
-    let addr4ExpectedBalance: number = 0;
-    let addr5ExpectedBalance: number = 0;
-    const amountToAddr4_1: number = 4000;
-    const amountToAddr5_1: number = 5000;
+    const addr4 = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
+    const addr5 = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
+    let addr4ExpectedBalance = 0;
+    let addr5ExpectedBalance = 0;
+    const amountToAddr4_1 = 4000;
+    const amountToAddr5_1 = 5000;
     const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
-    const query4UpdatePeriod: number = 3;
-    const query5UpdatePeriod: number = 9;
+    const query4UpdatePeriod = 3;
+    const query5UpdatePeriod = 9;
 
     // by this checks we ensure the transactions will be processed in the desired order
     test('validate update periods', async () => {
@@ -442,7 +450,7 @@ describe('Neutron / Interchain TX Query', () => {
       addr5ExpectedBalance += amountToAddr5_1;
       let balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([]);
-      let res = await cm2.msgSend(watchedAddr5, amountToAddr5_1.toString());
+      const res = await cm2.msgSend(watchedAddr5, amountToAddr5_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([
@@ -485,7 +493,7 @@ describe('Neutron / Interchain TX Query', () => {
       addr4ExpectedBalance += amountToAddr4_1;
       let balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([]);
-      let res = await cm2.msgSend(watchedAddr4, amountToAddr4_1.toString());
+      const res = await cm2.msgSend(watchedAddr4, amountToAddr4_1.toString());
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
@@ -546,7 +554,7 @@ const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.sdk, res.txhash!);
+  const tx = await rest.tx.getTx(cm.sdk, res.txhash as string);
   expect(tx?.data.tx_response?.code).toEqual(0);
 
   const attributes = getEventAttributesFromTx(tx?.data, 'wasm', [
