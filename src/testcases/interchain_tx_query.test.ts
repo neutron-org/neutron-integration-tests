@@ -49,7 +49,7 @@ describe('Neutron / Interchain TX Query', () => {
   const amountToAddr1_1 = 10000;
   const amountToAddr2_1 = 5000;
   const watchedAddr1: string = addr1;
-  const query1UpdatePeriod = 3;
+  const query1UpdatePeriod = 4;
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       await registerTransfersQuery(
@@ -164,7 +164,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr2 = addr2;
-  const query2UpdatePeriod = 2;
+  const query2UpdatePeriod = 3;
   describe('utilise multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       await registerTransfersQuery(
@@ -217,7 +217,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr3: string = addr3;
-  const query3UpdatePeriod = 3;
+  const query3UpdatePeriod = 4;
   const amountToAddr3_1 = 3000;
   const amountToAddr3_2 = 4000;
   describe('check update period', () => {
@@ -415,8 +415,8 @@ describe('Neutron / Interchain TX Query', () => {
     const amountToAddr5_1 = 5000;
     const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
-    const query4UpdatePeriod = 3;
-    const query5UpdatePeriod = 9;
+    const query4UpdatePeriod = 4;
+    const query5UpdatePeriod = 12;
 
     // by this checks we ensure the transactions will be processed in the desired order
     test('validate update periods', async () => {
