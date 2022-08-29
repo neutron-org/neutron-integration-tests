@@ -51,7 +51,7 @@ describe('Neutron / Interchain TX Query', () => {
   const amountToAddr1_1: number = 10000;
   const amountToAddr2_1: number = 5000;
   const watchedAddr1: string = addr1;
-  const query1UpdatePeriod: number = 10;
+  const query1UpdatePeriod: number = 3;
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       await registerTransfersQuery(
@@ -71,7 +71,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
-        '{"transfer.recipient":"' + watchedAddr1 + '"}',
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          watchedAddr1 +
+          '"}]',
       );
       expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
@@ -160,7 +162,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr2 = addr2;
-  const query2UpdatePeriod: number = 6;
+  const query2UpdatePeriod: number = 2;
   describe('utilise multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       await registerTransfersQuery(
@@ -180,7 +182,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
-        '{"transfer.recipient":"' + watchedAddr2 + '"}',
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          watchedAddr2 +
+          '"}]',
       );
       expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
@@ -208,7 +212,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr3: string = addr3;
-  const query3UpdatePeriod: number = 10;
+  const query3UpdatePeriod: number = 3;
   const amountToAddr3_1: number = 3000;
   const amountToAddr3_2: number = 4000;
   describe('check update period', () => {
@@ -230,7 +234,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
-        '{"transfer.recipient":"' + watchedAddr3 + '"}',
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          watchedAddr3 +
+          '"}]',
       );
       expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
@@ -404,12 +410,12 @@ describe('Neutron / Interchain TX Query', () => {
     const amountToAddr5_1: number = 5000;
     const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
-    const query4UpdatePeriod: number = 6;
-    const query5UpdatePeriod: number = 18;
+    const query4UpdatePeriod: number = 3;
+    const query5UpdatePeriod: number = 9;
 
     // by this checks we ensure the transactions will be processed in the desired order
     test('validate update periods', async () => {
-      expect(query5UpdatePeriod).toBeGreaterThanOrEqual(18);
+      expect(query5UpdatePeriod).toBeGreaterThanOrEqual(9);
       expect(query5UpdatePeriod).toBeGreaterThanOrEqual(query4UpdatePeriod * 3);
     });
 
@@ -451,7 +457,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
-        '{"transfer.recipient":"' + watchedAddr4 + '"}',
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          watchedAddr4 +
+          '"}]',
       );
       expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
@@ -463,7 +471,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
-        '{"transfer.recipient":"' + watchedAddr5 + '"}',
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          watchedAddr5 +
+          '"}]',
       );
       expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
