@@ -89,7 +89,7 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait(query1UpdatePeriod * BLOCK_TIME);
+      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
@@ -116,7 +116,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
-      await wait(query1UpdatePeriod * BLOCK_TIME);
+      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
@@ -145,7 +145,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom }, // balance hasn't changed thus tx failed
       ]);
-      await wait(query1UpdatePeriod * BLOCK_TIME);
+      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
 
       // the watched address receivings are not changed
       const deposits = await queryRecipientTxs(
@@ -200,7 +200,7 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait(query2UpdatePeriod * BLOCK_TIME);
+      await wait((query2UpdatePeriod + 1) * BLOCK_TIME);
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
@@ -263,7 +263,7 @@ describe('Neutron / Interchain TX Query', () => {
       // update time hasn't come yet despite the fact the sent funds are already on the account
       expect(deposits.transfers).toEqual([]);
 
-      await wait(query3UpdatePeriod * BLOCK_TIME);
+      await wait((query3UpdatePeriod + 1) * BLOCK_TIME);
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
         {
@@ -294,7 +294,7 @@ describe('Neutron / Interchain TX Query', () => {
         },
       ]);
 
-      await wait(query3UpdatePeriod * BLOCK_TIME);
+      await wait((query3UpdatePeriod + 1) * BLOCK_TIME);
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
         {
@@ -352,7 +352,8 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check transfers handled', async () => {
       await wait(
-        Math.max(query1UpdatePeriod, query2UpdatePeriod, query3UpdatePeriod) *
+        (Math.max(query1UpdatePeriod, query2UpdatePeriod, query3UpdatePeriod) +
+          1) *
           BLOCK_TIME,
       );
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
@@ -498,7 +499,7 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr4ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait(query4UpdatePeriod * BLOCK_TIME);
+      await wait((query4UpdatePeriod + 1) * BLOCK_TIME);
       // make sure the query4 result is submitted before the query5 one
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr4);
       expect(deposits.transfers).toEqual([
@@ -512,7 +513,7 @@ describe('Neutron / Interchain TX Query', () => {
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr5);
       expect(deposits.transfers).toEqual([]);
 
-      await wait(query5UpdatePeriod * BLOCK_TIME);
+      await wait((query5UpdatePeriod + 1) * BLOCK_TIME);
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr5);
       // despite query4 tx result was of a greater remote height and was submitted before,
       // query5 tx should be submitted successfully
