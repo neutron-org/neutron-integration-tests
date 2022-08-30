@@ -139,7 +139,8 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle failed transfer', async () => {
       const res = await cm2.msgSend(watchedAddr1, '99999999999999'); // the amount is greater than the sender has
-      expect(res.txhash?.length).toBeGreaterThan(0); // hash is not empty thus tx executed
+      expect(res.txhash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
+      expect(res.code).toEqual(5); // failed to execute message: insufficient funds
       const balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom }, // balance hasn't changed thus tx failed
@@ -402,20 +403,20 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
+  const addr4 = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
+  let addr4ExpectedBalance = 0;
+  const amountToAddr4_1 = 4000;
+  const watchedAddr4: string = addr4;
+  const query4UpdatePeriod = 4;
   // this case tests the following scenario:
   // there is a tx of a remote height 10, and a tx of a remote height 20
   // we submit the second one, and then submit the first one, and want to make sure there is
   // no problem with submitting an older height after a younger one submitted
   describe('submit older height after younger one', () => {
-    const addr4 = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
     const addr5 = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
-    let addr4ExpectedBalance = 0;
     let addr5ExpectedBalance = 0;
-    const amountToAddr4_1 = 4000;
     const amountToAddr5_1 = 5000;
-    const watchedAddr4: string = addr4;
     const watchedAddr5: string = addr5;
-    const query4UpdatePeriod = 4;
     const query5UpdatePeriod = 12;
 
     // by this checks we ensure the transactions will be processed in the desired order
@@ -525,6 +526,52 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
     });
   });
+
+  describe('check contract state is reverted on failed sudo', () => {
+    // contract handles only transfers <= 20000, otherwise it ends callback with an error.
+    const amountToAddr4_2 = 21000;
+    let transfers_amount_before_sending: number;
+    test('send amount that is more than contract allows', async () => {
+      // contract tracks total amount of transfers to addresses it watches.
+      const transfers = await queryTransfersAmount(cm, contractAddress);
+      expect(transfers.amount).toBeGreaterThan(0);
+      transfers_amount_before_sending = transfers.amount;
+
+      let balances = await cm2.queryBalances(watchedAddr4);
+      expect(balances.balances).toEqual([
+        { amount: addr4ExpectedBalance.toString(), denom: cm2.denom },
+      ]);
+      const res = await cm2.msgSend(watchedAddr4, amountToAddr4_2.toString());
+      addr4ExpectedBalance += amountToAddr4_2;
+      expect(res.code).toEqual(0);
+      balances = await cm2.queryBalances(watchedAddr4);
+      expect(balances.balances).toEqual([
+        { amount: addr4ExpectedBalance.toString(), denom: cm2.denom },
+      ]);
+    });
+
+    test('check that transfer has not been recorded', async () => {
+      await wait(2 * query4UpdatePeriod * BLOCK_TIME); // double wait to make sure sudo is called
+      const deposits = await queryRecipientTxs(
+        cm,
+        contractAddress,
+        watchedAddr4,
+      );
+      expect(deposits.transfers).toEqual([
+        {
+          recipient: watchedAddr4,
+          sender: cm2.wallet.address.toString(),
+          denom: cm2.denom,
+          amount: (addr4ExpectedBalance - amountToAddr4_2).toString(),
+        },
+      ]);
+      // contract handles only transfers not greater than 20000, otherwise it ends callback with an
+      // error. on the error result, the transfers amount previously increased in the sudo func is
+      // expected to be reverted.
+      const transfers = await queryTransfersAmount(cm, contractAddress);
+      expect(transfers.amount).toEqual(transfers_amount_before_sending);
+    });
+  });
 });
 
 /**
@@ -619,4 +666,14 @@ const queryRecipientTxs = (
     get_recipient_txs: {
       recipient: recipient,
     },
+  });
+
+/**
+ * queryTransfersAmount queries the contract for recorded transfers amount.
+ */
+const queryTransfersAmount = (cm: CosmosWrapper, contractAddress: string) =>
+  cm.queryContract<{
+    amount: number;
+  }>(contractAddress, {
+    get_transfers_amount: {},
   });
