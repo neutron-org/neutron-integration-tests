@@ -52,6 +52,29 @@ const getKvCallbackStatus = (
     },
   });
 
+const watchForKvCallbackUpdates = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queries: { [key: number]: Query },
+  queryIds: number[],
+) => {
+  const statusPrev = await Promise.all(
+    queryIds.map((i) => getKvCallbackStatus(cm, contractAddress, i)),
+  );
+  // XXX: for some reason, I have to wait for a really long time here
+  await wait(
+    max(queryIds.map((i) => queries[i].updatePeriod)) * 3 * BLOCK_TIME,
+  );
+  const status = await Promise.all(
+    queryIds.map((i) => getKvCallbackStatus(cm, contractAddress, i)),
+  );
+  for (const i in status) {
+    expect(statusPrev[i].last_update_height).toBeLessThan(
+      status[i].last_update_height,
+    );
+  }
+};
+
 const waitUntilQueryResultArrives = async (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -112,30 +135,11 @@ const getQueryDelegatorDelegationsResult = (
     },
   });
 
-const getQueryTransfersResult = (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  recipient: AccAddress,
-) =>
-  cm.queryContract<{
-    transfers: {
-      recipient: string;
-      sender: string;
-      denom: string;
-      amount: string;
-    }[];
-  }>(contractAddress, {
-    get_recipient_txs: {
-      recipient: recipient.toString(),
-    },
-  });
-
 const validateQueryRegistration = (
   res: InlineResponse20075TxResponse,
   connectionId: string,
   zoneId: string,
   updatePeriod: number,
-  queryType: string,
 ) => {
   const attributes = getEventAttributesFromTx({ tx_response: res }, 'wasm', [
     // TODO: What about checking "kv_keys", too?
@@ -148,7 +152,7 @@ const validateQueryRegistration = (
   expect(attributes.action).toEqual('register_interchain_query');
   expect(attributes.connection_id).toEqual(connectionId);
   expect(attributes.zone_id).toEqual(zoneId);
-  expect(attributes.query_type).toEqual(queryType);
+  expect(attributes.query_type).toEqual('kv');
   expect(attributes.update_period).toEqual(updatePeriod.toString());
 };
 
@@ -173,7 +177,7 @@ const registerBalanceQuery = async (
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, zoneId, updatePeriod, 'kv');
+  validateQueryRegistration(res, connectionId, zoneId, updatePeriod);
 };
 
 const registerDelegatorDelegationsQuery = async (
@@ -197,31 +201,7 @@ const registerDelegatorDelegationsQuery = async (
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, zoneId, updatePeriod, 'kv');
-};
-
-const registerTransfersQuery = async (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  zoneId: string,
-  connectionId: string,
-  updatePeriod: number,
-  recipient: AccAddress,
-  minHeight: number,
-) => {
-  const res = await cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      register_transfers_query: {
-        zone_id: zoneId,
-        connection_id: connectionId,
-        update_period: updatePeriod,
-        recipient: recipient.toString(),
-        min_height: minHeight.toString(),
-      },
-    }),
-  );
-  validateQueryRegistration(res, connectionId, zoneId, updatePeriod, 'tx');
+  validateQueryRegistration(res, connectionId, zoneId, updatePeriod);
 };
 
 const validateBalanceQuery = async (
@@ -253,7 +233,6 @@ describe('Neutron / Interchain KV Query', () => {
   let contractAddress: string;
   let connectionId: string;
   let query: { [key: number]: Query };
-  let transferRecipient: AccAddress;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -267,11 +246,7 @@ describe('Neutron / Interchain KV Query', () => {
       1: { updatePeriod: 2, key: '' },
       2: { updatePeriod: 3, key: '' },
       3: { updatePeriod: 4, key: '' },
-      4: { updatePeriod: 3, key: '' },
     };
-    transferRecipient = AccAddress.fromString(
-      'neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx',
-    );
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -326,18 +301,6 @@ describe('Neutron / Interchain KV Query', () => {
         query[3].updatePeriod,
         testState.wallets.demo2.address,
         [testState.wallets.val2.address],
-      );
-    });
-
-    test('register icq #4: transfers', async () => {
-      await registerTransfersQuery(
-        cm[1],
-        contractAddress,
-        testState.sdk2.chainID,
-        connectionId,
-        query[4].updatePeriod,
-        transferRecipient,
-        1,
       );
     });
   });
@@ -426,49 +389,9 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test('get registered icq #4: transfers', async () => {
-      // since this is a tx query, waiting for `last_submitted_result_local_height` and
-      // `last_submitted_result_remote_height` to update makes zero sense
-      const queryResult = await getRegisteredQueryResult(
-        cm[1],
-        contractAddress,
-        4,
-      );
-      expect(queryResult.registered_query.id).toEqual(4);
-      expect(queryResult.registered_query.keys.length).toEqual(0);
-      expect(queryResult.registered_query.query_type).toEqual('tx');
-      expect(
-        JSON.parse(queryResult.registered_query.transactions_filter),
-      ).toEqual([
-        {
-          field: 'transfer.recipient',
-          op: 'Eq',
-          value: transferRecipient.toString(),
-        },
-        {
-          field: 'tx.height',
-          op: 'Gte',
-          value: 1,
-        },
-      ]);
-      expect(queryResult.registered_query.zone_id).toEqual(
-        testState.sdk2.chainID,
-      );
-      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
-      expect(queryResult.registered_query.update_period).toEqual(
-        query[4].updatePeriod,
-      );
-      expect(
-        queryResult.registered_query.last_submitted_result_local_height,
-      ).toEqual(0);
-      expect(
-        queryResult.registered_query.last_submitted_result_remote_height,
-      ).toEqual(0);
-    });
-
-    test("registered icq #5 doesn't exist", async () => {
+    test("registered icq #4 doesn't exist", async () => {
       await expect(
-        getRegisteredQueryResult(cm[1], contractAddress, 5),
+        getRegisteredQueryResult(cm[1], contractAddress, 4),
       ).rejects.toThrow();
     });
   });
@@ -554,41 +477,6 @@ describe('Neutron / Interchain KV Query', () => {
         (3000).toString(),
       );
     });
-
-    test('perform icq #4: transfers', async () => {
-      const queryResult = await getQueryTransfersResult(
-        cm[1],
-        contractAddress,
-        transferRecipient,
-      );
-      expect(queryResult.transfers.length).toEqual(0);
-    });
-
-    test('icq #4 updates results correctly: transfers', async () => {
-      await cm[2].msgSend(transferRecipient.toString(), '4000');
-      await cm[2].msgSend(transferRecipient.toString(), '5000');
-      await wait((query[4].updatePeriod + 1) * BLOCK_TIME);
-      const queryResult = await getQueryTransfersResult(
-        cm[1],
-        contractAddress,
-        transferRecipient,
-      );
-      // order is not guaranteed, sorting just for ease of further comparison
-      queryResult.transfers.sort((a, b) => +a.amount - +b.amount);
-      expect(queryResult.transfers.length).toEqual(2);
-      expect(queryResult.transfers[0]).toEqual({
-        recipient: transferRecipient.toString(),
-        sender: cm[2].wallet.address.toString(),
-        denom: cm[2].denom,
-        amount: '4000',
-      });
-      expect(queryResult.transfers[1]).toEqual({
-        recipient: transferRecipient.toString(),
-        sender: cm[2].wallet.address.toString(),
-        denom: cm[2].denom,
-        amount: '5000',
-      });
-    });
   });
 
   // In this test suite we aim to ensure contract state gets correctly reverted
@@ -596,89 +484,9 @@ describe('Neutron / Interchain KV Query', () => {
   // mock in aforementioned handler. When this mock is enabled, contract will
   // attempt to corrupt its state and then return error. These tests check that
   // state never gets corrupted.
-  describe("Test 'tx' interchain query rollback", () => {
-    test('enable mock', async () => {
-      await cm[1].executeContract(
-        contractAddress,
-        JSON.stringify({
-          integration_tests_set_transfers_query_mock: {
-            recipient: transferRecipient.toString(),
-            amount: '6000',
-          },
-        }),
-      );
-    });
-
-    test("mock doesn't add new transfers by itself", async () => {
-      await wait((query[4].updatePeriod + 1) * BLOCK_TIME);
-      const queryResult = await getQueryTransfersResult(
-        cm[1],
-        contractAddress,
-        transferRecipient,
-      );
-      expect(queryResult.transfers.length).toEqual(2);
-    });
-
-    test("mock doesn't let new transfers in", async () => {
-      await cm[2].msgSend(transferRecipient.toString(), '7000');
-      await wait((query[4].updatePeriod + 1) * BLOCK_TIME);
-      const queryResult = await getQueryTransfersResult(
-        cm[1],
-        contractAddress,
-        transferRecipient,
-      );
-      expect(queryResult.transfers.length).toEqual(2);
-    });
-
-    test('disable mock', async () => {
-      await cm[1].executeContract(
-        contractAddress,
-        JSON.stringify({
-          integration_tests_unset_transfers_query_mock: {},
-        }),
-      );
-    });
-
-    test("after disabling mock 'tx' queries work as usual", async () => {
-      await cm[2].msgSend(transferRecipient.toString(), '8000');
-      await wait((query[4].updatePeriod + 1) * BLOCK_TIME);
-      const queryResult = await getQueryTransfersResult(
-        cm[1],
-        contractAddress,
-        transferRecipient,
-      );
-      expect(queryResult.transfers.length).toEqual(3);
-      expect(queryResult.transfers[2]).toEqual({
-        recipient: transferRecipient.toString(),
-        sender: cm[2].wallet.address.toString(),
-        denom: cm[2].denom,
-        amount: '8000',
-      });
-    });
-  });
-
-  describe("Test 'kv' interchain query rollback", () => {
-    test("'kv' callbacks are not being executed on 'tx' queries", async () => {
-      const res = await getKvCallbackStatus(cm[1], contractAddress, 4);
-      expect(res.last_update_height).toEqual(0);
-    });
-
-    test("'kv' callbacks are being executed in 'kv' queries", async () => {
-      const resPrev = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
-      );
-      // XXX: for some reason, I have to wait for a really long time here
-      await wait(
-        max([1, 2, 3].map((i) => query[i].updatePeriod)) * 3 * BLOCK_TIME,
-      );
-      const res = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
-      );
-      for (const i in res) {
-        expect(resPrev[i].last_update_height).toBeLessThan(
-          res[i].last_update_height,
-        );
-      }
+  describe('Test icq rollback', () => {
+    test('icq callbacks are being executed', async () => {
+      await watchForKvCallbackUpdates(cm[1], contractAddress, query, [1, 2, 3]);
     });
 
     test('enable mock', async () => {
@@ -690,7 +498,7 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("'kv' callbacks have stopped updating, contract state is not corrupted", async () => {
+    test('callbacks are failing, but contract state is not corrupted', async () => {
       const start = await Promise.all(
         [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
@@ -722,22 +530,8 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("now 'kv' callbacks work again", async () => {
-      const resPrev = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
-      );
-      // XXX: for some reason, I have to wait for a really long time here
-      await wait(
-        max([1, 2, 3].map((i) => query[i].updatePeriod)) * 3 * BLOCK_TIME,
-      );
-      const res = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
-      );
-      for (const i in res) {
-        expect(resPrev[i].last_update_height).toBeLessThan(
-          res[i].last_update_height,
-        );
-      }
+    test('now callbacks work again', async () => {
+      await watchForKvCallbackUpdates(cm[1], contractAddress, query, [1, 2, 3]);
     });
   });
 });

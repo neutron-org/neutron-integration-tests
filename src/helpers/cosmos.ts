@@ -78,7 +78,7 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-    await wait(BLOCK_TIME * 5);
+    await wait(BLOCK_TIME * 2);
     this.wallet.account.sequence++;
     const data = (await rest.tx.getTx(this.sdk, txhash)).data;
 
