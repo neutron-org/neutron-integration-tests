@@ -1,9 +1,10 @@
 import 'jest-extended';
 import { rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { wait } from '../helpers/sleep';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -138,6 +139,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res.code).toEqual(0);
     });
     test('check validator state', async () => {
+      await wait(BLOCK_TIME * 10);
       const res1 = await rest.staking.delegatorDelegations(
         cm2.sdk,
         icaAddress1 as unknown as AccAddress,
@@ -236,6 +238,7 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     test('check acknowledgements', async () => {
+      await wait(BLOCK_TIME * 10);
       const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
