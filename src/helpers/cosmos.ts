@@ -1,8 +1,8 @@
 import { promises as fsPromise } from 'fs';
-import { cosmosclient, rest, proto } from '@cosmos-client/core';
+import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
-import { Wallet, CodeId } from '../types';
+import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
@@ -33,6 +33,7 @@ export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
   denom: string;
+
   constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
     this.denom = DENOM;
     this.sdk = sdk;
@@ -77,7 +78,7 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-    await wait(BLOCK_TIME * 5);
+    await wait(BLOCK_TIME * 2);
     this.wallet.account.sequence++;
     const data = (await rest.tx.getTx(this.sdk, txhash)).data;
 
@@ -201,6 +202,23 @@ export class CosmosWrapper {
       amount: [{ denom: this.denom, amount }],
     });
     const res = await this.execTx(msgSend, {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.denom, amount: '1000' }],
+    });
+    return res?.tx_response;
+  }
+
+  async msgDelegate(
+    delegatorAddress: string,
+    validatorAddress: string,
+    amount: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgDelegate = new proto.cosmos.staking.v1beta1.MsgDelegate({
+      delegator_address: delegatorAddress,
+      validator_address: validatorAddress,
+      amount: { denom: this.denom, amount: amount },
+    });
+    const res = await this.execTx(msgDelegate, {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     });
