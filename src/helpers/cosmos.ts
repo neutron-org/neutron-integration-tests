@@ -3,7 +3,7 @@ import { cosmosclient, rest, proto } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
-import { Wallet, CodeId } from '../types';
+import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
 import { wait } from './sleep';
@@ -253,6 +253,26 @@ export class CosmosWrapper {
       addr as unknown as AccAddress,
     );
     return balances.data as BalancesResponse;
+  }
+
+  async msgDelegate(
+    delegatorAddress: string,
+    validatorAddress: string,
+    amount: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgDelegate = new proto.cosmos.staking.v1beta1.MsgDelegate({
+      delegator_address: delegatorAddress,
+      validator_address: validatorAddress,
+      amount: { denom: this.denom, amount: amount },
+    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      msgDelegate,
+    );
+    return res?.tx_response;
   }
 
   async listIBCChannels(): Promise<ChannelsList> {
