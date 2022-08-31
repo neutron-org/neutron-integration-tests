@@ -145,7 +145,6 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res1.data.delegation_responses).toEqual([
         {
-          // FIXME: 'stake'
           balance: { amount: '2000', denom: cm2.denom },
           delegation: {
             delegator_address: icaAddress1,
