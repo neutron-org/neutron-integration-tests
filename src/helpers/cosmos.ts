@@ -1,5 +1,6 @@
 import { promises as fsPromise } from 'fs';
-import { cosmosclient, proto, rest } from '@cosmos-client/core';
+import { cosmosclient, rest, proto } from '@cosmos-client/core';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -10,6 +11,7 @@ import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
+import { google } from '@cosmos-client/core/cjs/proto';
 
 const DENOM = process.env.DENOM || 'stake';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
@@ -29,23 +31,44 @@ type ChannelsList = {
   }[];
 };
 
+// BalancesResponse is the response model for the bank balances query.
+type BalancesResponse = {
+  balances: Balance[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Balance represents a single asset balance of an account.
+type Balance = {
+  denom: string;
+  amount: string;
+};
+
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
   denom: string;
-
   constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
     this.denom = DENOM;
     this.sdk = sdk;
     this.wallet = wallet;
   }
 
+  /**
+   * execTx broadcasts messages, waits two blocks and returns the transaction result.
+   */
   async execTx<T>(
-    msg: T,
     fee: proto.cosmos.tx.v1beta1.IFee,
+    ...msgs: T[]
   ): Promise<CosmosTxV1beta1GetTxResponse> {
+    const protoMsgs: Array<google.protobuf.IAny> = [];
+    msgs.forEach((msg) => {
+      protoMsgs.push(cosmosclient.codec.instanceToProtoAny(msg));
+    });
     const txBody = new proto.cosmos.tx.v1beta1.TxBody({
-      messages: [cosmosclient.codec.instanceToProtoAny(msg)],
+      messages: protoMsgs,
     });
     const authInfo = new proto.cosmos.tx.v1beta1.AuthInfo({
       signer_infos: [
@@ -78,13 +101,14 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-    await wait(BLOCK_TIME * 2);
+    await wait(2 * BLOCK_TIME);
     this.wallet.account.sequence++;
     const data = (await rest.tx.getTx(this.sdk, txhash)).data;
 
     return data;
   }
 
+  // storeWasm stores the wasm code by the passed path on the blockchain.
   async storeWasm(fileName: string): Promise<CodeId> {
     const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
     const msg = new cosmwasmproto.cosmwasm.wasm.v1.MsgStoreCode({
@@ -94,10 +118,13 @@ export class CosmosWrapper {
       ),
       instantiate_permission: null,
     });
-    const data = await this.execTx(msg, {
-      amount: [{ denom: DENOM, amount: '250000' }],
-      gas_limit: Long.fromString('60000000'),
-    });
+    const data = await this.execTx(
+      {
+        amount: [{ denom: DENOM, amount: '250000' }],
+        gas_limit: Long.fromString('60000000'),
+      },
+      msg,
+    );
 
     const attributes = getEventAttributesFromTx(data, 'store_code', [
       'code_id',
@@ -118,10 +145,13 @@ export class CosmosWrapper {
       label,
       msg: Buffer.from(msg),
     });
-    const data = await this.execTx(msgInit, {
-      amount: [{ denom: DENOM, amount: '2000000' }],
-      gas_limit: Long.fromString('600000000'),
-    });
+    const data = await this.execTx(
+      {
+        amount: [{ denom: DENOM, amount: '2000000' }],
+        gas_limit: Long.fromString('600000000'),
+      },
+      msgInit,
+    );
 
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
@@ -140,10 +170,16 @@ export class CosmosWrapper {
       msg: Buffer.from(msg),
       funds,
     });
-    const res = await this.execTx(msgExecute, {
-      gas_limit: Long.fromString('2000000'),
-      amount: [{ denom: this.denom, amount: '10000' }],
-    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('2000000'),
+        amount: [{ denom: this.denom, amount: '10000' }],
+      },
+      msgExecute,
+    );
+    if (res.tx_response.code !== 0) {
+      throw new Error(res.tx_response.raw_log);
+    }
     return res?.tx_response;
   }
 
@@ -189,6 +225,9 @@ export class CosmosWrapper {
     ) as T;
   }
 
+  /**
+   * msgSend processes a transfer, waits two blocks and returns the tx hash.
+   */
   async msgSend(
     to: string,
     amount: string,
@@ -198,11 +237,22 @@ export class CosmosWrapper {
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(msgSend, {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.denom, amount: '1000' }],
-    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      msgSend,
+    );
     return res?.tx_response;
+  }
+
+  async queryBalances(addr: string): Promise<BalancesResponse> {
+    const balances = await rest.bank.allBalances(
+      this.sdk,
+      addr as unknown as AccAddress,
+    );
+    return balances.data as BalancesResponse;
   }
 
   async msgDelegate(
@@ -215,10 +265,13 @@ export class CosmosWrapper {
       validator_address: validatorAddress,
       amount: { denom: this.denom, amount: amount },
     });
-    const res = await this.execTx(msgDelegate, {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.denom, amount: '1000' }],
-    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      msgDelegate,
+    );
     return res?.tx_response;
   }
 

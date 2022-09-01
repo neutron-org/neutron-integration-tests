@@ -1,7 +1,7 @@
 node_modules/
 yarn-error.log
 keystore.db
-contracts/artifacts/*
+contracts/artifacts/checksums_intermediate.txt
 .jest
 
 # IDEs
@@ -9,5 +9,6 @@ contracts/artifacts/*
 .idea
 .DS_Store
 *_action.json
+.vscode
 
 write-file-atomic*

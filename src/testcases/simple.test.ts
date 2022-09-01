@@ -1,5 +1,3 @@
-import { rest } from '@cosmos-client/core';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { wait } from '../helpers/sleep';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -7,12 +5,14 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
+  let cm2: CosmosWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
+    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
   });
 
   describe('Wallets', () => {
@@ -47,13 +47,8 @@ describe('Neutron / Simple', () => {
       expect(res.code).toEqual(0);
     });
     test('check balance', async () => {
-      const balances = await rest.bank.allBalances(
-        cm.sdk,
-        contractAddress as unknown as AccAddress,
-      );
-      expect(balances.data.balances).toEqual([
-        { amount: '10000', denom: cm.denom },
-      ]);
+      const balances = await cm.queryBalances(contractAddress);
+      expect(balances.balances).toEqual([{ amount: '10000', denom: 'stake' }]);
     });
     test('execute contract', async () => {
       const res = await cm.executeContract(
@@ -70,12 +65,11 @@ describe('Neutron / Simple', () => {
 
     test('check wallet balance', async () => {
       await wait(BLOCK_TIME * 10);
-      const balances = await rest.bank.allBalances(
-        testState.sdk2,
-        testState.wallets.demo1.address,
+      const balances = await cm2.queryBalances(
+        testState.wallets.demo1.address.toString(),
       );
       // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
-      expect(balances.data.balances).toEqual([
+      expect(balances.balances).toEqual([
         {
           amount: '3000',
           denom:
