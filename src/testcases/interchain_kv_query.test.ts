@@ -26,7 +26,6 @@ const getRegisteredQueryResult = (
       }[];
       query_type: string;
       transactions_filter: string;
-      zone_id: string;
       connection_id: string;
       update_period: number;
       last_emitted_height: number;
@@ -138,20 +137,17 @@ const getQueryDelegatorDelegationsResult = (
 const validateQueryRegistration = (
   res: InlineResponse20075TxResponse,
   connectionId: string,
-  zoneId: string,
   updatePeriod: number,
 ) => {
   const attributes = getEventAttributesFromTx({ tx_response: res }, 'wasm', [
     // TODO: What about checking "kv_keys", too?
     'action',
     'connection_id',
-    'zone_id',
     'query_type',
     'update_period',
   ]);
   expect(attributes.action).toEqual('register_interchain_query');
   expect(attributes.connection_id).toEqual(connectionId);
-  expect(attributes.zone_id).toEqual(zoneId);
   expect(attributes.query_type).toEqual('kv');
   expect(attributes.update_period).toEqual(updatePeriod.toString());
 };
@@ -159,7 +155,6 @@ const validateQueryRegistration = (
 const registerBalanceQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
-  zoneId: string,
   connectionId: string,
   updatePeriod: number,
   denom: string,
@@ -173,17 +168,15 @@ const registerBalanceQuery = async (
         denom: denom,
         addr: addr.toString(),
         update_period: updatePeriod,
-        zone_id: zoneId,
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, zoneId, updatePeriod);
+  validateQueryRegistration(res, connectionId, updatePeriod);
 };
 
 const registerDelegatorDelegationsQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
-  zoneId: string,
   connectionId: string,
   updatePeriod: number,
   delegator: AccAddress,
@@ -195,13 +188,12 @@ const registerDelegatorDelegationsQuery = async (
       register_delegator_delegations_query: {
         delegator: delegator.toString(),
         validators: validators.map((valAddr) => valAddr.toString()),
-        zone_id: zoneId,
         connection_id: connectionId,
         update_period: updatePeriod,
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, zoneId, updatePeriod);
+  validateQueryRegistration(res, connectionId, updatePeriod);
 };
 
 const validateBalanceQuery = async (
@@ -272,7 +264,6 @@ describe('Neutron / Interchain KV Query', () => {
       await registerBalanceQuery(
         cm[1],
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query[1].updatePeriod,
         cm[2].denom,
@@ -284,7 +275,6 @@ describe('Neutron / Interchain KV Query', () => {
       await registerBalanceQuery(
         cm[1],
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query[2].updatePeriod,
         cm[2].denom,
@@ -296,7 +286,6 @@ describe('Neutron / Interchain KV Query', () => {
       await registerDelegatorDelegationsQuery(
         cm[1],
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query[3].updatePeriod,
         testState.wallets.demo2.address,
@@ -325,9 +314,6 @@ describe('Neutron / Interchain KV Query', () => {
       query[1].key = queryResult.registered_query.keys[0].key;
       expect(queryResult.registered_query.query_type).toEqual('kv');
       expect(queryResult.registered_query.transactions_filter).toEqual('');
-      expect(queryResult.registered_query.zone_id).toEqual(
-        testState.sdk2.chainID,
-      );
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
         query[1].updatePeriod,
@@ -377,9 +363,6 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.keys.length).toEqual(3);
       expect(queryResult.registered_query.query_type).toEqual('kv');
       expect(queryResult.registered_query.transactions_filter).toEqual('');
-      expect(queryResult.registered_query.zone_id).toEqual(
-        testState.sdk2.chainID,
-      );
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
         query[3].updatePeriod,
