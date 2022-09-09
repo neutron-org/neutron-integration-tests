@@ -55,7 +55,6 @@ describe('Neutron / Interchain TX Query', () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query1UpdatePeriod,
         watchedAddr1,
@@ -73,7 +72,6 @@ describe('Neutron / Interchain TX Query', () => {
           watchedAddr1 +
           '"}]',
       );
-      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
     });
@@ -171,7 +169,6 @@ describe('Neutron / Interchain TX Query', () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query2UpdatePeriod,
         watchedAddr2,
@@ -189,7 +186,6 @@ describe('Neutron / Interchain TX Query', () => {
           watchedAddr2 +
           '"}]',
       );
-      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
     });
@@ -226,7 +222,6 @@ describe('Neutron / Interchain TX Query', () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query3UpdatePeriod,
         watchedAddr3,
@@ -244,7 +239,6 @@ describe('Neutron / Interchain TX Query', () => {
           watchedAddr3 +
           '"}]',
       );
-      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
     });
@@ -430,7 +424,6 @@ describe('Neutron / Interchain TX Query', () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query4UpdatePeriod,
         watchedAddr4,
@@ -438,7 +431,6 @@ describe('Neutron / Interchain TX Query', () => {
       await registerTransfersQuery(
         cm,
         contractAddress,
-        testState.sdk2.chainID,
         connectionId,
         query5UpdatePeriod,
         watchedAddr5,
@@ -468,7 +460,6 @@ describe('Neutron / Interchain TX Query', () => {
           watchedAddr4 +
           '"}]',
       );
-      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
 
@@ -482,7 +473,6 @@ describe('Neutron / Interchain TX Query', () => {
           watchedAddr5 +
           '"}]',
       );
-      expect(query.registered_query.zone_id).toEqual(testState.sdk2.chainID);
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);
     });
@@ -582,7 +572,6 @@ describe('Neutron / Interchain TX Query', () => {
 const registerTransfersQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
-  zoneId: string,
   connectionId: string,
   updatePeriod: number,
   recipient: string,
@@ -591,7 +580,6 @@ const registerTransfersQuery = async (
     contractAddress,
     JSON.stringify({
       register_transfers_query: {
-        zone_id: zoneId,
         connection_id: connectionId,
         update_period: updatePeriod,
         recipient: recipient,
@@ -605,13 +593,11 @@ const registerTransfersQuery = async (
   const attributes = getEventAttributesFromTx(tx?.data, 'wasm', [
     'action',
     'connection_id',
-    'zone_id',
     'query_type',
     'update_period',
   ]);
   expect(attributes.action).toEqual('register_interchain_query');
   expect(attributes.connection_id).toEqual(connectionId);
-  expect(attributes.zone_id).toEqual(zoneId);
   expect(attributes.query_type).toEqual('tx');
   expect(attributes.update_period).toEqual(updatePeriod.toString());
 };
@@ -635,7 +621,6 @@ const getRegisteredQuery = (
       }[];
       query_type: string;
       transactions_filter: string;
-      zone_id: string;
       connection_id: string;
       update_period: number;
       last_emitted_height: number;
