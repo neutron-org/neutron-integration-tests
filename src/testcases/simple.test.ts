@@ -1,6 +1,7 @@
 import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { wait } from '../helpers/sleep';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { rest } from '@cosmos-client/core';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -16,13 +17,15 @@ describe('Neutron / Simple', () => {
   });
 
   describe('Wallets', () => {
-    test('Addresses', () => {
+    test('Addresses', async () => {
       expect(testState.wallets.demo1.address.toString()).toEqual(
         'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       );
       expect(testState.wallets.demo2.address.toString()).toEqual(
         'neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf',
       );
+      const blockInfo = await rest.tendermint.getLatestBlock(cm.sdk);
+      console.log(blockInfo);
     });
   });
 
