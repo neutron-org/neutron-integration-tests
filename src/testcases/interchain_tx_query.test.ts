@@ -1,9 +1,5 @@
-import { rest, proto } from '@cosmos-client/core';
-import {
-  BLOCK_TIME,
-  CosmosWrapper,
-  getEventAttributesFromTx,
-} from '../helpers/cosmos';
+import { proto, rest } from '@cosmos-client/core';
+import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { wait } from '../helpers/sleep';
 import Long from 'long';
@@ -589,17 +585,6 @@ const registerTransfersQuery = async (
   expect(res.code).toEqual(0);
   const tx = await rest.tx.getTx(cm.sdk, res.txhash as string);
   expect(tx?.data.tx_response?.code).toEqual(0);
-
-  const attributes = getEventAttributesFromTx(tx?.data, 'wasm', [
-    'action',
-    'connection_id',
-    'query_type',
-    'update_period',
-  ]);
-  expect(attributes.action).toEqual('register_interchain_query');
-  expect(attributes.connection_id).toEqual(connectionId);
-  expect(attributes.query_type).toEqual('tx');
-  expect(attributes.update_period).toEqual(updatePeriod.toString());
 };
 
 /**

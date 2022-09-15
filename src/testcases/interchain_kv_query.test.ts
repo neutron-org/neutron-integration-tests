@@ -1,14 +1,9 @@
 import { rest } from '@cosmos-client/core';
-import {
-  BLOCK_TIME,
-  CosmosWrapper,
-  getEventAttributesFromTx,
-} from '../helpers/cosmos';
+import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { wait } from '../helpers/sleep';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { max } from 'lodash';
 
 const getRegisteredQueryResult = (
@@ -133,24 +128,6 @@ const getQueryDelegatorDelegationsResult = (
     },
   });
 
-const validateQueryRegistration = (
-  res: InlineResponse20075TxResponse,
-  connectionId: string,
-  updatePeriod: number,
-) => {
-  const attributes = getEventAttributesFromTx({ tx_response: res }, 'wasm', [
-    // TODO: What about checking "kv_keys", too?
-    'action',
-    'connection_id',
-    'query_type',
-    'update_period',
-  ]);
-  expect(attributes.action).toEqual('register_interchain_query');
-  expect(attributes.connection_id).toEqual(connectionId);
-  expect(attributes.query_type).toEqual('kv');
-  expect(attributes.update_period).toEqual(updatePeriod.toString());
-};
-
 const registerBalanceQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -159,7 +136,7 @@ const registerBalanceQuery = async (
   denom: string,
   addr: AccAddress,
 ) => {
-  const res = await cm.executeContract(
+  await cm.executeContract(
     contractAddress,
     JSON.stringify({
       register_balance_query: {
@@ -170,7 +147,6 @@ const registerBalanceQuery = async (
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, updatePeriod);
 };
 
 const registerDelegatorDelegationsQuery = async (
@@ -181,7 +157,7 @@ const registerDelegatorDelegationsQuery = async (
   delegator: AccAddress,
   validators: ValAddress[],
 ) => {
-  const res = await cm.executeContract(
+  await cm.executeContract(
     contractAddress,
     JSON.stringify({
       register_delegator_delegations_query: {
@@ -192,7 +168,6 @@ const registerDelegatorDelegationsQuery = async (
       },
     }),
   );
-  validateQueryRegistration(res, connectionId, updatePeriod);
 };
 
 const validateBalanceQuery = async (
