@@ -1,8 +1,13 @@
 import { proto, rest } from '@cosmos-client/core';
-import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { wait } from '../helpers/sleep';
+import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
+import {
+  getRegisteredQuery,
+  queryTransfersAmount,
+  waitForTransfersAmount,
+} from '../helpers/icq';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -42,6 +47,7 @@ describe('Neutron / Interchain TX Query', () => {
   let addr1ExpectedBalance = 0;
   let addr2ExpectedBalance = 0;
   let addr3ExpectedBalance = 0;
+  let expectedIncomingTransfers = 0;
   const amountToAddr1_1 = 10000;
   const amountToAddr2_1 = 5000;
   const watchedAddr1: string = addr1;
@@ -77,13 +83,18 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr1, amountToAddr1_1.toString());
+      expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
@@ -110,7 +121,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
-      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
+      await waitBlocks(cm.sdk, query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
@@ -139,7 +150,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom }, // balance hasn't changed thus tx failed
       ]);
-      await wait((query1UpdatePeriod + 1) * BLOCK_TIME);
+      await waitBlocks(cm.sdk, query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the watched address receivings are not changed
       const deposits = await queryRecipientTxs(
@@ -188,11 +199,16 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle callback on a past sending', async () => {
       const balances = await cm2.queryBalances(watchedAddr2);
+      expectedIncomingTransfers++;
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait((query2UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
@@ -244,6 +260,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr3, amountToAddr3_1.toString());
+      expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
@@ -253,7 +270,11 @@ describe('Neutron / Interchain TX Query', () => {
       // update time hasn't come yet despite the fact the sent funds are already on the account
       expect(deposits.transfers).toEqual([]);
 
-      await wait((query3UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
         {
@@ -268,6 +289,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('check second sending handling', async () => {
       addr3ExpectedBalance += amountToAddr3_2;
       const res = await cm2.msgSend(watchedAddr3, amountToAddr3_2.toString());
+      expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       const balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
@@ -284,7 +306,11 @@ describe('Neutron / Interchain TX Query', () => {
         },
       ]);
 
-      await wait((query3UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
         {
@@ -314,17 +340,20 @@ describe('Neutron / Interchain TX Query', () => {
           gas_limit: Long.fromString('200000'),
           amount: [{ denom: cm2.denom, amount: '1000' }],
         },
-        new proto.cosmos.bank.v1beta1.MsgSend({
-          from_address: cm2.wallet.address.toString(),
-          to_address: watchedAddr1,
-          amount: [{ denom: cm2.denom, amount: amountToAddr1_2.toString() }],
-        }),
-        new proto.cosmos.bank.v1beta1.MsgSend({
-          from_address: cm2.wallet.address.toString(),
-          to_address: watchedAddr2,
-          amount: [{ denom: cm2.denom, amount: amountToAddr2_2.toString() }],
-        }),
+        [
+          new proto.cosmos.bank.v1beta1.MsgSend({
+            from_address: cm2.wallet.address.toString(),
+            to_address: watchedAddr1,
+            amount: [{ denom: cm2.denom, amount: amountToAddr1_2.toString() }],
+          }),
+          new proto.cosmos.bank.v1beta1.MsgSend({
+            from_address: cm2.wallet.address.toString(),
+            to_address: watchedAddr2,
+            amount: [{ denom: cm2.denom, amount: amountToAddr2_2.toString() }],
+          }),
+        ],
       );
+      expectedIncomingTransfers += 2;
       expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
       let balances = await cm2.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
@@ -341,10 +370,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check transfers handled', async () => {
-      await wait(
-        (Math.max(query1UpdatePeriod, query2UpdatePeriod, query3UpdatePeriod) +
-          1) *
-          BLOCK_TIME,
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
       );
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
       expect(deposits.transfers).toEqual([
@@ -438,6 +467,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr5, amountToAddr5_1.toString());
+      expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([
@@ -474,18 +504,22 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('make younger sending and check', async () => {
-      await wait(BLOCK_TIME);
       addr4ExpectedBalance += amountToAddr4_1;
       let balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([]);
       const res = await cm2.msgSend(watchedAddr4, amountToAddr4_1.toString());
+      expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
         { amount: addr4ExpectedBalance.toString(), denom: cm2.denom },
       ]);
 
-      await wait((query4UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers - 1,
+      );
       // make sure the query4 result is submitted before the query5 one
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr4);
       expect(deposits.transfers).toEqual([
@@ -499,7 +533,11 @@ describe('Neutron / Interchain TX Query', () => {
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr5);
       expect(deposits.transfers).toEqual([]);
 
-      await wait((query5UpdatePeriod + 1) * BLOCK_TIME);
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr5);
       // despite query4 tx result was of a greater remote height and was submitted before,
       // query5 tx should be submitted successfully
@@ -538,7 +576,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check that transfer has not been recorded', async () => {
-      await wait(2 * query4UpdatePeriod * BLOCK_TIME); // double wait to make sure sudo is called
+      await waitBlocks(cm.sdk, query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
@@ -588,36 +626,6 @@ const registerTransfersQuery = async (
 };
 
 /**
- * getRegisteredQuery queries the contract for a registered query details registered by the given
- * queryId.
- */
-const getRegisteredQuery = (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  queryId: number,
-) =>
-  cm.queryContract<{
-    registered_query: {
-      id: number;
-      owner: string;
-      keys: {
-        path: string;
-        key: string;
-      }[];
-      query_type: string;
-      transactions_filter: string;
-      connection_id: string;
-      update_period: number;
-      last_submitted_result_local_height: number;
-      last_submitted_result_remote_height: number;
-    };
-  }>(contractAddress, {
-    get_registered_query: {
-      query_id: queryId,
-    },
-  });
-
-/**
  * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
  */
 const queryRecipientTxs = (
@@ -636,14 +644,4 @@ const queryRecipientTxs = (
     get_recipient_txs: {
       recipient: recipient,
     },
-  });
-
-/**
- * queryTransfersAmount queries the contract for recorded transfers amount.
- */
-const queryTransfersAmount = (cm: CosmosWrapper, contractAddress: string) =>
-  cm.queryContract<{
-    amount: number;
-  }>(contractAddress, {
-    get_transfers_amount: {},
   });
