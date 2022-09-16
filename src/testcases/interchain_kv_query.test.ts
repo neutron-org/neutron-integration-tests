@@ -115,6 +115,21 @@ const registerBalanceQuery = async (
   );
 };
 
+const removeQuery = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) => {
+  await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      remove_interchain_query: {
+        query_id: queryId,
+      },
+    }),
+  );
+};
+
 const registerDelegatorDelegationsQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -165,7 +180,8 @@ type Query = {
 describe('Neutron / Interchain KV Query', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: { [key: number]: CosmosWrapper };
-  let contractAddress: string;
+  let contractAddress =
+    'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
   let connectionId: string;
   let query: { [key: number]: Query };
 
@@ -178,9 +194,15 @@ describe('Neutron / Interchain KV Query', () => {
     };
     connectionId = 'connection-0';
     query = {
+<<<<<<< HEAD
       1: { updatePeriod: 2 },
       2: { updatePeriod: 3 },
       3: { updatePeriod: 4 },
+=======
+      2: { updatePeriod: 2, key: '' },
+      3: { updatePeriod: 3, key: '' },
+      4: { updatePeriod: 4, key: '' },
+>>>>>>> Fix test and add query removal tests
     };
   });
 
@@ -203,44 +225,93 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Register interchain queries', () => {
-    test('register icq #1: balance', async () => {
-      await registerBalanceQuery(
-        cm[1],
-        contractAddress,
-        connectionId,
-        query[1].updatePeriod,
-        cm[2].denom,
-        testState.wallets.demo2.address,
-      );
+    describe('Deposit escrow for query', () => {
+      test('should throw exception because of not enough deposit', async () => {
+        try {
+          await cm[1].executeContract(
+            contractAddress,
+            JSON.stringify({
+              register_balance_query: {
+                connection_id: connectionId,
+                denom: cm[2].denom,
+                addr: testState.wallets.demo2.address.toString(),
+                update_period: 10,
+              },
+            }),
+          );
+        } catch (err) {
+          const error = err as Error;
+          expect(error.message).toMatch(/0stake is smaller than 1000000stake/i);
+        }
+      });
+
+      test('should escrow deposit', async () => {
+        // Top up contract address before running query
+        await cm[1].msgSend(contractAddress, '1000000');
+
+        let balances = await cm[1].queryBalances(contractAddress);
+        expect(balances.balances[0].amount).toEqual('1000000');
+
+        await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          10,
+          cm[2].denom,
+          testState.wallets.demo2.address,
+        );
+
+        balances = await cm[1].queryBalances(contractAddress);
+        expect(balances.balances.length).toEqual(0);
+      });
     });
 
-    test('register icq #2: balance', async () => {
-      await registerBalanceQuery(
-        cm[1],
-        contractAddress,
-        connectionId,
-        query[2].updatePeriod,
-        cm[2].denom,
-        testState.wallets.val2.address,
-      );
-    });
+    describe('Succesfully', () => {
+      beforeEach(async () => {
+        // Top up contract address before running query
+        await cm[1].msgSend(contractAddress, '1000000');
+      });
 
-    test('register icq #3: delegator delegations', async () => {
-      await registerDelegatorDelegationsQuery(
-        cm[1],
-        contractAddress,
-        connectionId,
-        query[3].updatePeriod,
-        testState.wallets.demo2.address,
-        [testState.wallets.val2.address],
-      );
+      test('register icq #2: balance', async () => {
+        await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          query[2].updatePeriod,
+          cm[2].denom,
+          testState.wallets.demo2.address,
+        );
+      });
+
+      test('register icq #3: balance', async () => {
+        await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          query[3].updatePeriod,
+          cm[2].denom,
+          testState.wallets.val2.address,
+        );
+      });
+
+      test('register icq #4: delegator delegations', async () => {
+        await registerDelegatorDelegationsQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          query[4].updatePeriod,
+          testState.wallets.demo2.address,
+          [testState.wallets.val2.address],
+        );
+      });
     });
   });
 
   describe('Get interchain queries', () => {
-    test('get registered icq #1: balance', async () => {
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, 1);
-      expect(queryResult.registered_query.id).toEqual(1);
+    test('get registered icq #2: balance', async () => {
+      const queryId = 2;
+      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
+      expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
@@ -253,22 +324,24 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.transactions_filter).toEqual('');
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[1].updatePeriod,
+        query[queryId].updatePeriod,
       );
     });
 
-    test('get registered icq #2: balance', async () => {
+    test('get registered icq #3: balance', async () => {
       // in this test, we only focus on parts that are different
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, 2);
+      const queryId = 3;
+      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
       expect(queryResult.registered_query.id).toEqual(2);
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[2].updatePeriod,
+        query[queryId].updatePeriod,
       );
     });
 
-    test('get registered icq #3: delegator delegations', async () => {
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, 3);
+    test('get registered icq #4: delegator delegations', async () => {
+      const queryId = 4;
+      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
       expect(queryResult.registered_query.id).toEqual(3);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
       // we expect three keys, 1 always + 2 per validator
@@ -277,20 +350,22 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.transactions_filter).toEqual('');
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[3].updatePeriod,
+        query[queryId].updatePeriod,
       );
     });
 
-    test("registered icq #4 doesn't exist", async () => {
+    test("registered icq #5 doesn't exist", async () => {
+      const queryId = 5;
       await expect(
-        getRegisteredQuery(cm[1], contractAddress, 4),
+        getRegisteredQuery(cm[1], contractAddress, queryId),
       ).rejects.toThrow();
     });
   });
 
   describe('Perform interchain queries', () => {
-    test('perform icq #1: balance', async () => {
+    test('perform icq #2: balance', async () => {
       // reduce balance of demo2 wallet
+      const queryId = 2;
       const res = await cm[2].msgSend(
         testState.wallets.rly2.address.toString(),
         '9000',
@@ -298,20 +373,21 @@ describe('Neutron / Interchain KV Query', () => {
       expect(res.code).toEqual(0);
       await waitForICQResultWithRemoteHeight(
         cm[1],
+        cm[2],
         contractAddress,
-        1,
+        queryId,
         await getRemoteHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
         cm[2],
         contractAddress,
-        1,
+        queryId,
         cm[2].wallet.address,
       );
     });
 
-    test('perform icq #2: balance', async () => {
+    test('perform icq #3: balance', async () => {
       // increase balance of val2 wallet
       const res = await cm[2].msgSend(
         testState.wallets.val2.address.toAccAddress().toString(),
@@ -350,7 +426,7 @@ describe('Neutron / Interchain KV Query', () => {
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         cm[1],
         contractAddress,
-        3,
+        queryId,
       );
       expect(interchainQueryResult.delegations[0].amount.amount).toEqual(
         (3000).toString(),
@@ -370,7 +446,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[2],
         contractAddress,
         query,
-        [1, 2, 3],
+        [2, 3, 4],
       );
     });
 
@@ -385,15 +461,15 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('callbacks are failing, but contract state is not corrupted', async () => {
       const start = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+        [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
       for (
         let i = 0;
-        i < max([1, 2, 3].map((i) => query[i].updatePeriod)) + 1;
+        i < max([2, 3, 4].map((i) => query[i].updatePeriod)) + 1;
         ++i
       ) {
         const res = await Promise.all(
-          [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+          [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
         );
         for (const j of res) {
           expect(j).not.toEqual(0);
@@ -401,7 +477,7 @@ describe('Neutron / Interchain KV Query', () => {
         await waitBlocks(cm[1].sdk, 1);
       }
       const end = await Promise.all(
-        [1, 2, 3].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
+        [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
       expect(start).toEqual(end);
     });
@@ -421,7 +497,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[2],
         contractAddress,
         query,
-        [1, 2, 3],
+        [2, 3, 4],
       );
     });
   });
