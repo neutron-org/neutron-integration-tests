@@ -2,7 +2,12 @@
 
 ### 0. Clone neutron and cosmos-query-relayer
 
-Clone neutron from git@github.com:neutron-org/neutron.git and relayer git@github.com:neutron-org/cosmos-query-relayer.git to the parent directory.
+Clone neutron and relayer to the parent directory:
+
+```
+git clone git@github.com:neutron-org/neutron.git
+git clone git@github.com:neutron-org/neutron-query-relayer.git
+```
 
 ### 1. Install dependencies with command
 
@@ -10,7 +15,7 @@ Clone neutron from git@github.com:neutron-org/neutron.git and relayer git@github
 yarn
 ```
 
-### 2. Run the tests
+### 2. Run the tests (make sure docker daemon is running)
 
 ```
 yarn test # all tests
