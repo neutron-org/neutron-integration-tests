@@ -608,7 +608,6 @@ const getRegisteredQuery = (
       transactions_filter: string;
       connection_id: string;
       update_period: number;
-      last_emitted_height: number;
       last_submitted_result_local_height: number;
       last_submitted_result_remote_height: number;
     };

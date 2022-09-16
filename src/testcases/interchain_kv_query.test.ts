@@ -23,7 +23,6 @@ const getRegisteredQueryResult = (
       transactions_filter: string;
       connection_id: string;
       update_period: number;
-      last_emitted_height: number;
       last_submitted_result_local_height: number;
       last_submitted_result_remote_height: number;
     };
@@ -293,9 +292,6 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.update_period).toEqual(
         query[1].updatePeriod,
       );
-      expect(queryResult.registered_query.last_emitted_height).toBeGreaterThan(
-        0,
-      );
       expect(
         queryResult.registered_query.last_submitted_result_remote_height,
       ).toBeGreaterThan(0);
@@ -320,9 +316,6 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.update_period).toEqual(
         query[2].updatePeriod,
       );
-      expect(queryResult.registered_query.last_emitted_height).toBeGreaterThan(
-        0,
-      );
     });
 
     test('get registered icq #3: delegator delegations', async () => {
@@ -341,9 +334,6 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
         query[3].updatePeriod,
-      );
-      expect(queryResult.registered_query.last_emitted_height).toBeGreaterThan(
-        0,
       );
     });
 
