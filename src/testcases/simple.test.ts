@@ -1,5 +1,5 @@
-import { BLOCK_TIME, CosmosWrapper } from '../helpers/cosmos';
-import { wait } from '../helpers/sleep';
+import { CosmosWrapper } from '../helpers/cosmos';
+import { waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
@@ -64,7 +64,7 @@ describe('Neutron / Simple', () => {
     });
 
     test('check wallet balance', async () => {
-      await wait(BLOCK_TIME * 10);
+      await waitBlocks(cm.sdk, 10);
       const balances = await cm2.queryBalances(
         testState.wallets.demo1.address.toString(),
       );

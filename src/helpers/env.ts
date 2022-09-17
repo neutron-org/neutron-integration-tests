@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { execSync } from 'child_process';
-import { wait } from './sleep';
+import { wait } from './wait';
 
 const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
@@ -22,7 +22,7 @@ export const setup = async (host: string) => {
     execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
   } catch (e) {}
-  await wait(2000);
+  //await wait(2000);
   console.log('Starting container... it may take long');
   execSync(`cd ${NEUTRON_DIR} && make start-cosmopark`);
   await waitForHTTP(host);
@@ -46,7 +46,7 @@ export const waitForHTTP = async (
       }
       // eslint-disable-next-line no-empty
     } catch (e) {}
-    await wait(1000);
+    await wait(10);
   }
   throw new Error('No port opened');
 };
@@ -67,7 +67,7 @@ export const waitForChannel = async (
       }
       // eslint-disable-next-line no-empty
     } catch (e) {}
-    await wait(1000);
+    await wait(10);
   }
   throw new Error('No channel opened');
 };

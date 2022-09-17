@@ -1,17 +1,18 @@
 import { promises as fsPromise } from 'fs';
-import { cosmosclient, rest, proto } from '@cosmos-client/core';
+import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { wait } from './sleep';
+import { waitBlocks } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
 import { google } from '@cosmos-client/core/cjs/proto';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 const DENOM = process.env.DENOM || 'stake';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
@@ -50,6 +51,7 @@ export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
   denom: string;
+
   constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
     this.denom = DENOM;
     this.sdk = sdk;
@@ -61,7 +63,8 @@ export class CosmosWrapper {
    */
   async execTx<T>(
     fee: proto.cosmos.tx.v1beta1.IFee,
-    ...msgs: T[]
+    msgs: T[],
+    numAttempts = 10,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -84,16 +87,20 @@ export class CosmosWrapper {
       ],
       fee,
     });
-    const txBuilder = new cosmosclient.TxBuilder(this.sdk, txBody, authInfo);
+    const txBuilder = new cosmosclient.TxBuilder(
+      this.sdk as CosmosSDK,
+      txBody,
+      authInfo,
+    );
 
     const signDocBytes = txBuilder.signDocBytes(
       this.wallet.account.account_number,
     );
 
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
-    const res = await rest.tx.broadcastTx(this.sdk, {
+    const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
-      mode: rest.tx.BroadcastTxMode.Sync,
+      mode: rest.tx.BroadcastTxMode.Async,
     });
 
     const code = res.data?.tx_response.code;
@@ -101,11 +108,17 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-    await wait(2 * BLOCK_TIME);
-    this.wallet.account.sequence++;
-    const data = (await rest.tx.getTx(this.sdk, txhash)).data;
-
-    return data;
+    while (numAttempts > 0) {
+      await waitBlocks(this.sdk, 1);
+      try {
+        numAttempts--;
+        const data = await rest.tx.getTx(this.sdk as CosmosSDK, txhash);
+        this.wallet.account.sequence++;
+        return data.data;
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+    throw new Error('failed to submit tx after 10 attempts');
   }
 
   // storeWasm stores the wasm code by the passed path on the blockchain.
@@ -123,7 +136,7 @@ export class CosmosWrapper {
         amount: [{ denom: DENOM, amount: '250000' }],
         gas_limit: Long.fromString('60000000'),
       },
-      msg,
+      [msg],
     );
 
     const attributes = getEventAttributesFromTx(data, 'store_code', [
@@ -150,7 +163,7 @@ export class CosmosWrapper {
         amount: [{ denom: DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
-      msgInit,
+      [msgInit],
     );
 
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
@@ -175,7 +188,7 @@ export class CosmosWrapper {
         gas_limit: Long.fromString('2000000'),
         amount: [{ denom: this.denom, amount: '10000' }],
       },
-      msgExecute,
+      [msgExecute],
     );
     if (res.tx_response.code !== 0) {
       throw new Error(res.tx_response.raw_log);
@@ -186,12 +199,9 @@ export class CosmosWrapper {
   async queryContractWithWait<T>(
     contract: string,
     query: Record<string, unknown>,
-    numAttempts?: number,
+    numAttempts = 20,
   ): Promise<T> {
-    if (typeof numAttempts === 'undefined') {
-      numAttempts = 20;
-    }
-
+    // TODO: reuse this fancy .catch() technique in every wait function variant
     while (numAttempts > 0) {
       const res: T = await this.queryContract<T>(contract, query).catch(
         () => null,
@@ -202,7 +212,7 @@ export class CosmosWrapper {
       }
 
       numAttempts--;
-      await wait(BLOCK_TIME);
+      await waitBlocks(this.sdk, 1);
     }
 
     return null;
@@ -242,7 +252,7 @@ export class CosmosWrapper {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: this.denom, amount: '1000' }],
       },
-      msgSend,
+      [msgSend],
     );
     return res?.tx_response;
   }
@@ -270,7 +280,7 @@ export class CosmosWrapper {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: this.denom, amount: '1000' }],
       },
-      msgDelegate,
+      [msgDelegate],
     );
     return res?.tx_response;
   }
