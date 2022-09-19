@@ -27,7 +27,6 @@ const watchForKvCallbackUpdates = async (
   neutronCm: CosmosWrapper,
   targetCm: CosmosWrapper,
   contractAddress: string,
-  queries: { [key: number]: Query },
   queryIds: number[],
 ) => {
   const statusPrev = await Promise.all(
@@ -194,15 +193,9 @@ describe('Neutron / Interchain KV Query', () => {
     };
     connectionId = 'connection-0';
     query = {
-<<<<<<< HEAD
-      1: { updatePeriod: 2 },
-      2: { updatePeriod: 3 },
-      3: { updatePeriod: 4 },
-=======
-      2: { updatePeriod: 2, key: '' },
-      3: { updatePeriod: 3, key: '' },
-      4: { updatePeriod: 4, key: '' },
->>>>>>> Fix test and add query removal tests
+      2: { updatePeriod: 2 },
+      3: { updatePeriod: 3 },
+      4: { updatePeriod: 4 },
     };
   });
 
@@ -310,7 +303,11 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Get interchain queries', () => {
     test('get registered icq #2: balance', async () => {
       const queryId = 2;
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId,
+      );
       expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
@@ -331,8 +328,12 @@ describe('Neutron / Interchain KV Query', () => {
     test('get registered icq #3: balance', async () => {
       // in this test, we only focus on parts that are different
       const queryId = 3;
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
-      expect(queryResult.registered_query.id).toEqual(2);
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.update_period).toEqual(
         query[queryId].updatePeriod,
@@ -341,8 +342,12 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('get registered icq #4: delegator delegations', async () => {
       const queryId = 4;
-      const queryResult = await getRegisteredQuery(cm[1], contractAddress, queryId);
-      expect(queryResult.registered_query.id).toEqual(3);
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
       // we expect three keys, 1 always + 2 per validator
       expect(queryResult.registered_query.keys.length).toEqual(3);
@@ -373,7 +378,6 @@ describe('Neutron / Interchain KV Query', () => {
       expect(res.code).toEqual(0);
       await waitForICQResultWithRemoteHeight(
         cm[1],
-        cm[2],
         contractAddress,
         queryId,
         await getRemoteHeight(cm[2].sdk),
@@ -389,6 +393,7 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('perform icq #3: balance', async () => {
       // increase balance of val2 wallet
+      const queryId = 3;
       const res = await cm[2].msgSend(
         testState.wallets.val2.address.toAccAddress().toString(),
         '9000',
@@ -397,21 +402,22 @@ describe('Neutron / Interchain KV Query', () => {
       await waitForICQResultWithRemoteHeight(
         cm[1],
         contractAddress,
-        2,
+        queryId,
         await getRemoteHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
         cm[2],
         contractAddress,
-        2,
+        queryId,
         testState.wallets.val2.address.toAccAddress(),
       );
     });
 
     // TODO: test this query with multiple validators, this is impossible right now
     //       because we only have one node per network in cosmopark
-    test('perform icq #3: delegator delegations', async () => {
+    test('perform icq #4: delegator delegations', async () => {
+      const queryId = 4;
       await cm[2].msgDelegate(
         testState.wallets.demo2.address.toString(),
         testState.wallets.val2.address.toString(),
@@ -420,7 +426,7 @@ describe('Neutron / Interchain KV Query', () => {
       await waitForICQResultWithRemoteHeight(
         cm[1],
         contractAddress,
-        3,
+        queryId,
         await getRemoteHeight(cm[2].sdk),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
@@ -441,13 +447,7 @@ describe('Neutron / Interchain KV Query', () => {
   // state never gets corrupted.
   describe('Test icq rollback', () => {
     test('icq callbacks are being executed', async () => {
-      await watchForKvCallbackUpdates(
-        cm[1],
-        cm[2],
-        contractAddress,
-        query,
-        [2, 3, 4],
-      );
+      await watchForKvCallbackUpdates(cm[1], cm[2], contractAddress, [2, 3, 4]);
     });
 
     test('enable mock', async () => {
@@ -492,13 +492,19 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('now callbacks work again', async () => {
-      await watchForKvCallbackUpdates(
-        cm[1],
-        cm[2],
-        contractAddress,
-        query,
-        [2, 3, 4],
-      );
+      await watchForKvCallbackUpdates(cm[1], cm[2], contractAddress, [2, 3, 4]);
+    });
+  });
+
+  describe('Remove interchain query', () => {
+    test('remove icq #1', async () => {
+      let balances = await cm[1].queryBalances(contractAddress);
+      expect(balances.balances.length).toEqual(0);
+
+      await removeQuery(cm[1], contractAddress, 1);
+
+      balances = await cm[1].queryBalances(contractAddress);
+      expect(balances.balances[0].amount).toEqual('1000000');
     });
   });
 });
