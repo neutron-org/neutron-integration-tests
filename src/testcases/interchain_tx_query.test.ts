@@ -54,6 +54,8 @@ describe('Neutron / Interchain TX Query', () => {
   const query1UpdatePeriod = 4;
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
+      // Top up contract address before running query
+      await cm.msgSend(contractAddress, '1000000');
       await registerTransfersQuery(
         cm,
         contractAddress,
@@ -173,6 +175,8 @@ describe('Neutron / Interchain TX Query', () => {
   const query2UpdatePeriod = 3;
   describe('utilise multiple transfers queries', () => {
     test('register the second transfers query', async () => {
+      // Top up contract address before running query
+      await cm.msgSend(contractAddress, '1000000');
       await registerTransfersQuery(
         cm,
         contractAddress,
@@ -231,6 +235,8 @@ describe('Neutron / Interchain TX Query', () => {
   const amountToAddr3_2 = 4000;
   describe('check update period', () => {
     test('register transfers query', async () => {
+      // Top up contract address before running query
+      await cm.msgSend(contractAddress, '1000000');
       await registerTransfersQuery(
         cm,
         contractAddress,
@@ -446,6 +452,8 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('register transfers queries', async () => {
+      // Top up contract address before running query
+      await cm.msgSend(contractAddress, '2000000');
       await registerTransfersQuery(
         cm,
         contractAddress,
