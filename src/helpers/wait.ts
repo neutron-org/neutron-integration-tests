@@ -18,7 +18,7 @@ export const getRemoteHeight = async (sdk: any) => {
 
 export const waitBlocks = async (sdk: any, n: number) => {
   const targetHeight = (await getRemoteHeight(sdk)) + n;
-  for (;;) {
+  for (; ;) {
     await wait(10);
     const currentHeight = await getRemoteHeight(sdk);
     if (currentHeight >= targetHeight) {
@@ -38,7 +38,7 @@ export const waitWithAttempts = async (
         return;
       }
       // eslint-disable-next-line no-empty
-    } catch (e) {}
+    } catch (e) { }
     numAttempts--;
     await waitBlocks(sdk, 1);
   }

@@ -51,9 +51,8 @@ export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
   denom: string;
-
-  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
-    this.denom = DENOM;
+  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet, denom: string) {
+    this.denom = denom;
     this.sdk = sdk;
     this.wallet = wallet;
   }
@@ -116,7 +115,7 @@ export class CosmosWrapper {
         this.wallet.account.sequence++;
         return data.data;
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch (e) { }
     }
     throw new Error('failed to submit tx after 10 attempts');
   }
@@ -331,6 +330,7 @@ export const mnemonicToWallet = async (
   },
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
+  addrPrefix: string,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
@@ -339,6 +339,14 @@ export const mnemonicToWallet = async (
   const pubKey = privKey.pubKey();
   const address = walletType.fromPublicKey(pubKey);
   let account = null;
+  cosmosclient.config.setBech32Prefix({
+    accAddr: addrPrefix,
+    accPub: `${addrPrefix}pub`,
+    valAddr: `${addrPrefix}valoper`,
+    valPub: `${addrPrefix}valoperpub`,
+    consAddr: `${addrPrefix}valcons`,
+    consPub: `${addrPrefix}valconspub`,
+  });
   // eslint-disable-next-line no-prototype-builtins
   if (cosmosclient.ValAddress !== walletType) {
     account = await rest.auth
@@ -357,10 +365,5 @@ export const mnemonicToWallet = async (
       throw new Error("can't get account");
     }
   }
-  return {
-    address,
-    account,
-    pubKey,
-    privKey,
-  };
+  return new Wallet(address, account, pubKey, privKey, addrPrefix);
 };

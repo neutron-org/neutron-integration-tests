@@ -19,8 +19,16 @@ describe('Neutron / Interchain TX Query', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
+    cm = new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      'stake',
+    );
+    cm2 = new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      'uatom',
+    );
   });
 
   describe('deploy contract', () => {
@@ -41,9 +49,9 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr1 = 'neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx';
-  const addr2 = 'neutron14uxvu22lhrazyxadaqv5d6lswu0p276ll7hrkl';
-  const addr3 = 'neutron1m4n7gt76c4edkcpg698pwy56jkxqsre4gpgg26';
+  const addr1 = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
+  const addr2 = 'cosmos14uxvu22lhrazyxadaqv5d6lswu0p276lmp7pvc';
+  const addr3 = 'cosmos1m4n7gt76c4edkcpg698pwy56jkxqsre4v7p2sa';
   let addr1ExpectedBalance = 0;
   let addr2ExpectedBalance = 0;
   let addr3ExpectedBalance = 0;
@@ -73,8 +81,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr1 +
-          '"}]',
+        watchedAddr1 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
@@ -194,8 +202,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr2 +
-          '"}]',
+        watchedAddr2 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
@@ -254,8 +262,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr3 +
-          '"}]',
+        watchedAddr3 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
@@ -429,7 +437,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr4 = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
+  const addr4 = 'cosmos1p0qgeqgardg73apsrc2k5efm5dcwhnvkc0y4tq';
   let addr4ExpectedBalance = 0;
   const amountToAddr4_1 = 4000;
   const watchedAddr4: string = addr4;
@@ -439,7 +447,7 @@ describe('Neutron / Interchain TX Query', () => {
   // we submit the second one, and then submit the first one, and want to make sure there is
   // no problem with submitting an older height after a younger one submitted
   describe('submit older height after younger one', () => {
-    const addr5 = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
+    const addr5 = 'cosmos1szkcj46xg65ux8t8ge9jl79azj4qltdqgz9l39';
     let addr5ExpectedBalance = 0;
     const amountToAddr5_1 = 5000;
     const watchedAddr5: string = addr5;
@@ -491,8 +499,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr4 +
-          '"}]',
+        watchedAddr4 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
@@ -504,8 +512,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr5 +
-          '"}]',
+        watchedAddr5 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);

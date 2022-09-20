@@ -11,17 +11,25 @@ describe('Neutron / Simple', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
+    cm = new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      'stake',
+    );
+    cm2 = new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      'uatom',
+    );
   });
 
   describe('Wallets', () => {
     test('Addresses', () => {
-      expect(testState.wallets.demo1.address.toString()).toEqual(
+      expect(testState.wallets.neutron.demo1.address.toString()).toEqual(
         'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       );
-      expect(testState.wallets.demo2.address.toString()).toEqual(
-        'neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf',
+      expect(testState.wallets.cosmos.demo2.address.toString()).toEqual(
+        'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
       );
     });
   });
@@ -55,7 +63,7 @@ describe('Neutron / Simple', () => {
         contractAddress,
         JSON.stringify({
           send: {
-            to: testState.wallets.demo1.address.toString(),
+            to: testState.wallets.cosmos.demo2.address.toString(),
             amount: '1000',
           },
         }),
@@ -66,16 +74,16 @@ describe('Neutron / Simple', () => {
     test('check wallet balance', async () => {
       await waitBlocks(cm.sdk, 10);
       const balances = await cm2.queryBalances(
-        testState.wallets.demo1.address.toString(),
+        testState.wallets.cosmos.demo2.address.toString(),
       );
       // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
-      expect(balances.balances).toEqual([
-        {
-          amount: '3000',
-          denom:
+      expect(
+        balances.balances.find(
+          (bal): boolean =>
+            bal.denom ==
             'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
-        },
-      ]);
+        )?.amount,
+      ).toEqual('3000');
     });
   });
 });
