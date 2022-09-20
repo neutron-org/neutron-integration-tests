@@ -1,7 +1,7 @@
 import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitWithAttempts } from '../helpers/wait';
@@ -24,12 +24,12 @@ describe('Neutron / Interchain TXs', () => {
     cm1 = new CosmosWrapper(
       testState.sdk1,
       testState.wallets.neutron.demo1,
-      'stake',
+      NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.wallets.cosmos.demo2,
-      'uatom',
+      COSMOS_DENOM,
     );
   });
 

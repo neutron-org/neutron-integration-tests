@@ -20,7 +20,7 @@ export const setup = async (host: string) => {
   try {
     execSync(`cd setup && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
-  } catch (e) { }
+  } catch (e) {}
   //await wait(2000);
   console.log('Starting container... it may take long');
   execSync(`cd setup && make start-cosmopark`);
@@ -44,7 +44,7 @@ export const waitForHTTP = async (
         return;
       }
       // eslint-disable-next-line no-empty
-    } catch (e) { }
+    } catch (e) {}
     await wait(10);
   }
   throw new Error('No port opened');
@@ -65,7 +65,7 @@ export const waitForChannel = async (
         return;
       }
       // eslint-disable-next-line no-empty
-    } catch (e) { }
+    } catch (e) {}
     await wait(10);
   }
   throw new Error('No channel opened');

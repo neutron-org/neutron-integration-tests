@@ -58,8 +58,8 @@ export class TestStateLocalCosmosTestNet {
   sdk2: cosmosclient.CosmosSDK;
   wallets: Record<string, Record<string, Wallet>>;
   init = async () => {
-    const neutron_prefix = process.env.ADDRESS_PREFIX || 'neutron';
-    const cosmos_prefix = process.env.ADDRESS_PREFIX || 'cosmos';
+    const neutron_prefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
+    const cosmos_prefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
 
     const host1 = process.env.NODE1_URL || 'http://localhost:1317';
     const host2 = process.env.NODE2_URL || 'http://localhost:1316';

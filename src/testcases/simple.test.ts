@@ -1,4 +1,4 @@
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
@@ -14,12 +14,12 @@ describe('Neutron / Simple', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.wallets.neutron.demo1,
-      'stake',
+      NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.wallets.cosmos.demo2,
-      'uatom',
+      COSMOS_DENOM,
     );
   });
 
@@ -56,7 +56,9 @@ describe('Neutron / Simple', () => {
     });
     test('check balance', async () => {
       const balances = await cm.queryBalances(contractAddress);
-      expect(balances.balances).toEqual([{ amount: '10000', denom: 'stake' }]);
+      expect(balances.balances).toEqual([
+        { amount: '10000', denom: NEUTRON_DENOM },
+      ]);
     });
     test('execute contract', async () => {
       const res = await cm.executeContract(

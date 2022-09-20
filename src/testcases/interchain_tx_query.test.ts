@@ -1,5 +1,5 @@
 import { proto, rest } from '@cosmos-client/core';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
@@ -22,12 +22,12 @@ describe('Neutron / Interchain TX Query', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.wallets.neutron.demo1,
-      'stake',
+      NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.wallets.cosmos.demo2,
-      'uatom',
+      COSMOS_DENOM,
     );
   });
 
@@ -81,8 +81,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr1 +
-        '"}]',
+          watchedAddr1 +
+          '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
@@ -202,8 +202,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr2 +
-        '"}]',
+          watchedAddr2 +
+          '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
@@ -262,8 +262,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr3 +
-        '"}]',
+          watchedAddr3 +
+          '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
@@ -499,8 +499,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr4 +
-        '"}]',
+          watchedAddr4 +
+          '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
@@ -512,8 +512,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr5 +
-        '"}]',
+          watchedAddr5 +
+          '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);

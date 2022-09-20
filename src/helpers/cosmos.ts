@@ -14,7 +14,8 @@ import {
 import { google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
-const DENOM = process.env.DENOM || 'stake';
+export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
+export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
 
 type ChannelsList = {
@@ -115,7 +116,7 @@ export class CosmosWrapper {
         this.wallet.account.sequence++;
         return data.data;
         // eslint-disable-next-line no-empty
-      } catch (e) { }
+      } catch (e) {}
     }
     throw new Error('failed to submit tx after 10 attempts');
   }
@@ -132,7 +133,7 @@ export class CosmosWrapper {
     });
     const data = await this.execTx(
       {
-        amount: [{ denom: DENOM, amount: '250000' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '250000' }],
         gas_limit: Long.fromString('60000000'),
       },
       [msg],
@@ -159,7 +160,7 @@ export class CosmosWrapper {
     });
     const data = await this.execTx(
       {
-        amount: [{ denom: DENOM, amount: '2000000' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
       [msgInit],

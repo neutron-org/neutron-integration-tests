@@ -1,5 +1,5 @@
 import { rest } from '@cosmos-client/core';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -191,12 +191,12 @@ describe('Neutron / Interchain KV Query', () => {
       1: new CosmosWrapper(
         testState.sdk1,
         testState.wallets.neutron.demo1,
-        'stake',
+        NEUTRON_DENOM,
       ),
       2: new CosmosWrapper(
         testState.sdk2,
         testState.wallets.cosmos.demo2,
-        'uatom',
+        COSMOS_DENOM,
       ),
     };
     connectionId = 'connection-0';

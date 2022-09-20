@@ -94,7 +94,7 @@ export const waitForTransfersAmount = async (
     if (amount > expectedTransfersAmount) {
       throw new Error(
         `Amount of incoming transfers ${amount} is greater than ` +
-        `expected ${expectedTransfersAmount}`,
+          `expected ${expectedTransfersAmount}`,
       );
     }
   }
