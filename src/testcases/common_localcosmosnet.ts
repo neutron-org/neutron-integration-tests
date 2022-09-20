@@ -21,12 +21,6 @@ const walletSet = async (
     config.VAL_MNEMONIC_1,
     prefix,
   ),
-  val2: await mnemonicToWallet(
-    cosmosclient.ValAddress,
-    sdk,
-    config.VAL_MNEMONIC_2,
-    prefix,
-  ),
   demo1: await mnemonicToWallet(
     cosmosclient.AccAddress,
     sdk,
