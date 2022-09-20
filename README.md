@@ -1,6 +1,6 @@
 # How to run this code?
 
-### 0. Clone neutron and cosmos-query-relayer
+### 0. Clone neutron and neutron-query-relayer
 
 Clone neutron and relayer to the parent directory:
 
@@ -23,6 +23,19 @@ yarn test:simple # basic tests
 yarn test:interchaintx # interchain txs test
 yarn test:interchain_tx_query # interchain tx query test
 yarn test:interchain_kv_query # interchain tx query test
+```
+
+## Warning
+
+Since docker-compose doesn't rebuild images on file changing, there is a chance for one to launch the tests with an
+outdated version of code if you changed something. To rebuild the images from scratch, do the following:
+
+```
+cd ../neutron
+docker rmi neutron_node
+docker rmi neutron-org/neutron-query-relayer
+make start-cosmopark
+make stop-cosmopark
 ```
 
 ## Environment variables you can redefine
