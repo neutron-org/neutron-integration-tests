@@ -15,6 +15,9 @@ build-all: build-gaia build-neutron build-hermes build-relayer
 start-cosmopark: build-neutron build-relayer
 		@docker-compose up -d 
 
+start-cosmopark-no-rebuild:
+		@docker-compose up -d 
+
 stop-cosmopark:
 		@docker-compose down -t0 --remove-orphans -v
 
