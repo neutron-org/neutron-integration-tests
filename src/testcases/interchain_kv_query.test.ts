@@ -1,5 +1,5 @@
 import { rest } from '@cosmos-client/core';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -188,8 +188,16 @@ describe('Neutron / Interchain KV Query', () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     cm = {
-      1: new CosmosWrapper(testState.sdk1, testState.wallets.demo1),
-      2: new CosmosWrapper(testState.sdk2, testState.wallets.demo2),
+      1: new CosmosWrapper(
+        testState.sdk1,
+        testState.wallets.neutron.demo1,
+        NEUTRON_DENOM,
+      ),
+      2: new CosmosWrapper(
+        testState.sdk2,
+        testState.wallets.cosmos.demo2,
+        COSMOS_DENOM,
+      ),
     };
     connectionId = 'connection-0';
     query = {
@@ -227,7 +235,7 @@ describe('Neutron / Interchain KV Query', () => {
               register_balance_query: {
                 connection_id: connectionId,
                 denom: cm[2].denom,
-                addr: testState.wallets.demo2.address.toString(),
+                addr: testState.wallets.cosmos.demo2.address.toString(),
                 update_period: 10,
               },
             }),
@@ -251,7 +259,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           10,
           cm[2].denom,
-          testState.wallets.demo2.address,
+          testState.wallets.cosmos.demo2.address,
         );
 
         balances = await cm[1].queryBalances(contractAddress);
@@ -272,7 +280,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           query[2].updatePeriod,
           cm[2].denom,
-          testState.wallets.demo2.address,
+          testState.wallets.cosmos.demo2.address,
         );
       });
 
@@ -283,7 +291,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           query[3].updatePeriod,
           cm[2].denom,
-          testState.wallets.val2.address,
+          testState.wallets.cosmos.val1.address,
         );
       });
 
@@ -293,8 +301,8 @@ describe('Neutron / Interchain KV Query', () => {
           contractAddress,
           connectionId,
           query[4].updatePeriod,
-          testState.wallets.demo2.address,
-          [testState.wallets.val2.address],
+          testState.wallets.cosmos.demo2.address,
+          [testState.wallets.cosmos.val1.address],
         );
       });
     });
@@ -372,7 +380,7 @@ describe('Neutron / Interchain KV Query', () => {
       // reduce balance of demo2 wallet
       const queryId = 2;
       const res = await cm[2].msgSend(
-        testState.wallets.rly2.address.toString(),
+        testState.wallets.cosmos.rly2.address.toString(),
         '9000',
       );
       expect(res.code).toEqual(0);
@@ -395,7 +403,7 @@ describe('Neutron / Interchain KV Query', () => {
       // increase balance of val2 wallet
       const queryId = 3;
       const res = await cm[2].msgSend(
-        testState.wallets.val2.address.toAccAddress().toString(),
+        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
         '9000',
       );
       expect(res.code).toEqual(0);
@@ -410,7 +418,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[2],
         contractAddress,
         queryId,
-        testState.wallets.val2.address.toAccAddress(),
+        testState.wallets.cosmos.val1.address.toAccAddress(),
       );
     });
 
@@ -419,8 +427,8 @@ describe('Neutron / Interchain KV Query', () => {
     test('perform icq #4: delegator delegations', async () => {
       const queryId = 4;
       await cm[2].msgDelegate(
-        testState.wallets.demo2.address.toString(),
-        testState.wallets.val2.address.toString(),
+        testState.wallets.cosmos.demo2.address.toString(),
+        testState.wallets.cosmos.val1.address.toString(),
         '3000',
       );
       await waitForICQResultWithRemoteHeight(
