@@ -5,7 +5,7 @@ services:
     container_name: neutron-node
     volumes:
       - data:/opt/neutron/data
-      - /home/swelf/src/lido/neutron-contracts/:/opt/neutron/contracts
+      - ../contracts/:/opt/neutron/contracts
     ports:
       - 1317:1317
       - 26657:26657
