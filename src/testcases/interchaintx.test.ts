@@ -1,7 +1,12 @@
 import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  getSequenceId,
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitWithAttempts } from '../helpers/wait';
@@ -138,22 +143,6 @@ describe('Neutron / Interchain TXs', () => {
       expect(ica2.interchain_account_address.length).toEqual(65);
       icaAddress2 = ica2.interchain_account_address;
     });
-    test('before delegation ack storage should be empty for both accounts', async () => {
-      const res1 = await cm1.queryContract<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId1 },
-        },
-      );
-      expect(res1).toBe(null);
-      const res2 = await cm1.queryContract<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId2 },
-        },
-      );
-      expect(res2).toBe(null);
-    });
     test('add some money to ICAs', async () => {
       const res1 = await cm2.msgSend(icaAddress1.toString(), '10000');
       expect(res1.code).toEqual(0);
@@ -177,6 +166,41 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
+      const sequenceId = getSequenceId(res.raw_log);
+
+      await waitWithAttempts(
+        cm1.sdk,
+        async () =>
+          (await cm1.queryContract<AcknowledgementResult>(contractAddress, {
+            acknowledgement_result: {
+              interchain_account_id: icaId1,
+              sequence_id: sequenceId,
+            },
+          })) != null,
+      );
+      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: {
+            interchain_account_id: icaId1,
+            sequence_id: sequenceId,
+          },
+        },
+      );
+      expect(res1).toMatchObject<AcknowledgementResult>({
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+      });
+
+      const res2 = await cm1.queryContract<AcknowledgementResult>(
+        contractAddress,
+        {
+          acknowledgement_result: {
+            interchain_account_id: icaId2,
+            sequence_id: sequenceId,
+          },
+        },
+      );
+      expect(res2).toBe(null);
     });
     test('check validator state', async () => {
       await waitWithAttempts(
@@ -210,32 +234,9 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res2.data.delegation_responses).toEqual([]);
     });
-    test('check acknowledgement success', async () => {
-      await waitWithAttempts(
-        cm1.sdk,
-        async () =>
-          (await cm1.queryContract<AcknowledgementResult>(contractAddress, {
-            acknowledgement_result: { interchain_account_id: icaId1 },
-          })) != null,
-      );
-      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId1 },
-        },
-      );
-      expect(res1).toMatchObject<AcknowledgementResult>({
-        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
-      });
+    // test('check acknowledgement success', async () => {
 
-      const res2 = await cm1.queryContract<AcknowledgementResult>(
-        contractAddress,
-        {
-          acknowledgement_result: { interchain_account_id: icaId2 },
-        },
-      );
-      expect(res2).toBe(null);
-    });
+    // });
 
     test('delegate for unknown validator from second ICA', async () => {
       await cleanAckResults(cm1, contractAddress);
@@ -251,8 +252,8 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgement error', async () => {
+      const sequenceId = getSequenceId(res.raw_log);
+
       await waitWithAttempts(
         cm1.sdk,
         async () =>
@@ -261,19 +262,21 @@ describe('Neutron / Interchain TXs', () => {
             {
               acknowledgement_result: {
                 interchain_account_id: icaId2,
+                sequence_id: sequenceId,
               },
             },
           )) != null,
       );
-      const res = await cm1.queryContractWithWait<AcknowledgementResult>(
+      const res2 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
           acknowledgement_result: {
             interchain_account_id: icaId2,
+            sequence_id: sequenceId,
           },
         },
       );
-      expect(res).toMatchObject<AcknowledgementResult>({
+      expect(res2).toMatchObject<AcknowledgementResult>({
         error: [
           'message',
           'ABCI code: 1: error handling packet on host chain: see events for details',
@@ -296,6 +299,8 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res1.code).toEqual(0);
 
+      const sequenceId1 = getSequenceId(res1.raw_log);
+
       const res2 = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
@@ -308,26 +313,32 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res2.code).toEqual(0);
-    });
 
-    test('check acknowledgements', async () => {
+      const sequenceId2 = getSequenceId(res2.raw_log);
+
       await waitWithAttempts(
         cm1.sdk,
         async () =>
           (await cm1.queryContractWithWait<AcknowledgementResult>(
             contractAddress,
             {
-              acknowledgement_result: { interchain_account_id: icaId1 },
+              acknowledgement_result: {
+                interchain_account_id: icaId1,
+                sequence_id: sequenceId1,
+              },
             },
           )) != null,
       );
-      const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
+      const qres1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
-          acknowledgement_result: { interchain_account_id: icaId1 },
+          acknowledgement_result: {
+            interchain_account_id: icaId1,
+            sequence_id: sequenceId1,
+          },
         },
       );
-      expect(res1).toMatchObject<AcknowledgementResult>({
+      expect(qres1).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
       });
 
@@ -337,17 +348,24 @@ describe('Neutron / Interchain TXs', () => {
           (await cm1.queryContractWithWait<AcknowledgementResult>(
             contractAddress,
             {
-              acknowledgement_result: { interchain_account_id: icaId2 },
+              acknowledgement_result: {
+                interchain_account_id: icaId2,
+                sequence_id: sequenceId2,
+              },
             },
           )) != null,
       );
-      const res2 = await cm1.queryContractWithWait<AcknowledgementResult>(
+
+      const qres2 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
-          acknowledgement_result: { interchain_account_id: icaId2 },
+          acknowledgement_result: {
+            interchain_account_id: icaId2,
+            sequence_id: sequenceId2,
+          },
         },
       );
-      expect(res2).toMatchObject<AcknowledgementResult>({
+      expect(qres2).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
@@ -366,15 +384,19 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgements after timeout', async () => {
+
+      const sequenceId = getSequenceId(res.raw_log);
+
       await waitWithAttempts(
         cm1.sdk,
         async () =>
           (await cm1.queryContractWithWait<AcknowledgementResult>(
             contractAddress,
             {
-              acknowledgement_result: { interchain_account_id: icaId1 },
+              acknowledgement_result: {
+                interchain_account_id: icaId1,
+                sequence_id: sequenceId,
+              },
             },
           )) != null,
         50, // we need to wait quite a lot of time to make sure hermes started timeout logic
@@ -382,7 +404,10 @@ describe('Neutron / Interchain TXs', () => {
       const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
-          acknowledgement_result: { interchain_account_id: icaId1 },
+          acknowledgement_result: {
+            interchain_account_id: icaId1,
+            sequence_id: sequenceId,
+          },
         },
       );
       expect(res1).toMatchObject<AcknowledgementResult>({
@@ -452,22 +477,29 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgement success after ICA recreation', async () => {
+
+      const sequenceId = getSequenceId(res.raw_log);
+
       await waitWithAttempts(
         cm1.sdk,
         async () =>
           (await cm1.queryContractWithWait<AcknowledgementResult>(
             contractAddress,
             {
-              acknowledgement_result: { interchain_account_id: icaId1 },
+              acknowledgement_result: {
+                interchain_account_id: icaId1,
+                sequence_id: sequenceId,
+              },
             },
           )) != null,
       );
       const res1 = await cm1.queryContractWithWait<AcknowledgementResult>(
         contractAddress,
         {
-          acknowledgement_result: { interchain_account_id: icaId1 },
+          acknowledgement_result: {
+            interchain_account_id: icaId1,
+            sequence_id: sequenceId,
+          },
         },
       );
       expect(res1).toMatchObject<AcknowledgementResult>({

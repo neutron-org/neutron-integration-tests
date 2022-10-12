@@ -368,3 +368,14 @@ export const mnemonicToWallet = async (
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
 };
+
+export const getSequenceId = (rawLog: string | undefined): number => {
+  if (!rawLog) {
+    throw 'getSequenceId: empty rawLog';
+  }
+  const events = JSON.parse(rawLog)[0]['events'];
+  const sequence = events
+    .find((e) => e['type'] === 'send_packet')
+    ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
+  return +sequence;
+};
