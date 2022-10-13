@@ -1,7 +1,7 @@
 import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitWithAttempts } from '../helpers/wait';
@@ -77,7 +77,10 @@ describe('Neutron / Interchain TXs', () => {
     test('multiple IBC accounts created', async () => {
       await waitWithAttempts(cm1.sdk, async () => {
         const channels = await cm1.listIBCChannels();
-        // wait until there is one channel for ictx and + 2 we have just created
+        // Wait until there are 3 channels:
+        // - one exists already, it is open for IBC transfers;
+        // - two more should appear soon since we are opening them implicitly
+        //   through ICA creation.
         return channels.channels.length == 3;
       });
       const channels = await cm1.listIBCChannels();
@@ -424,9 +427,10 @@ describe('Neutron / Interchain TXs', () => {
       expect(res.code).toEqual(0);
       await waitWithAttempts(cm1.sdk, async () => {
         const channels = await cm1.listIBCChannels();
-        // wait until there is one channel for ictx
-        // + 2 we have created previously
-        // + 1 we have created just now
+        // Wait until there are 4 channels:
+        // - one exists already, it is open for IBC transfers;
+        // - two channels are already opened via ICA registration before
+        // - one more, we are opening it right now
         return channels.channels.length == 4;
       });
       await waitWithAttempts(
