@@ -34,8 +34,7 @@ outdated version of code if one changed something. To rebuild the images from sc
 cd ../neutron
 docker rmi neutron_node
 docker rmi neutron-org/neutron-query-relayer
-make start-cosmopark
-make stop-cosmopark
+docker-compose build
 ```
 
 ## Environment variables you can redefine
