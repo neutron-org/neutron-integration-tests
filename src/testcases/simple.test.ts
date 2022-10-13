@@ -1,6 +1,7 @@
 import { CosmosWrapper } from '../helpers/cosmos';
 import { waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import axios from 'axios';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -76,6 +77,34 @@ describe('Neutron / Simple', () => {
             'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
         },
       ]);
+    });
+  });
+
+  describe('Swagger-ui', () => {
+    test('swagger-ui', async () => {
+      const uiLink1 = new URL('/swagger/', cm.sdk.url);
+      const yamlLink1 = new URL('/swagger/openapi.yml', cm.sdk.url);
+
+      const uiLink2 = new URL('/swagger/', cm2.sdk.url);
+      const yamlLink2 = new URL('/swagger/openapi.yml', cm2.sdk.url);
+
+      const successResponse = { status: 200 };
+      const failedResponse = { response: { status: 501 } };
+
+      expect.assertions(4);
+
+      await expect(axios.get(uiLink1.toString())).rejects.toMatchObject(
+        failedResponse,
+      );
+      await expect(axios.get(yamlLink1.toString())).rejects.toMatchObject(
+        failedResponse,
+      );
+      await expect(axios.get(uiLink2.toString())).resolves.toMatchObject(
+        successResponse,
+      );
+      await expect(axios.get(yamlLink2.toString())).resolves.toMatchObject(
+        successResponse,
+      );
     });
   });
 });
