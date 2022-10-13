@@ -29,8 +29,8 @@ services:
   hermes:
     image: hermes:0.14.1
     depends_on:
-      - "neutron-node"
-      - "gaia-node"
+      - 'neutron-node'
+      - 'gaia-node'
 
   relayer:
     image: neutron-org/neutron-query-relayer
@@ -38,8 +38,8 @@ services:
     volumes:
       - data:/data
     depends_on:
-      - "neutron-node"
-      - "gaia-node"
+      - 'neutron-node'
+      - 'gaia-node'
     ports:
       - 9999:9999
     environment:
@@ -72,6 +72,8 @@ services:
       - RELAYER_REGISTRY_ADDRESSES=
       - RELAYER_ALLOW_TX_QUERIES=true
       - RELAYER_ALLOW_KV_CALLBACKS=true
+      - RELAYER_TX_RETRY_DURATION=4s
+      - RELAYER_TX_RETRY_COUNT=10
       - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
       - LOGGER_LEVEL=debug
 volumes:

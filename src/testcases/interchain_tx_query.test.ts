@@ -60,7 +60,8 @@ describe('Neutron / Interchain TX Query', () => {
   const amountToAddr2_1 = 5000;
   const watchedAddr1: string = addr1;
   const query1UpdatePeriod = 4;
-  describe('utilise single transfers query', () => {
+
+  describe('utilize single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
       await cm.msgSend(contractAddress, '1000000');
@@ -179,9 +180,81 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
+  describe('utilize single transfers query with retry', () => {
+    test('update fake loop limit', async () => {
+      const res = await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          update_fake_loop_limit: {
+            new_fake_loop_limit: 200000,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    test('handle callback on a sending failed', async () => {
+      addr1ExpectedBalance += amountToAddr1_1;
+      const res = await cm2.msgSend(watchedAddr1, amountToAddr1_1.toString());
+      expectedIncomingTransfers++;
+      expect(res.code).toEqual(0);
+      const balances = await cm2.queryBalances(watchedAddr1);
+      expect(balances.balances).toEqual([
+        { amount: addr1ExpectedBalance.toString(), denom: cm2.denom },
+      ]);
+      await expect(
+        waitForTransfersAmount(
+          cm,
+          contractAddress,
+          expectedIncomingTransfers,
+          5,
+        ),
+      ).toReject();
+    });
+
+    test('revert fake loop limit', async () => {
+      const res = await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          update_fake_loop_limit: {
+            new_fake_loop_limit: 0,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    test('now tx should pass', async () => {
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+      );
+      const deposits = await queryRecipientTxs(
+        cm,
+        contractAddress,
+        watchedAddr1,
+      );
+      expect(deposits.transfers).toEqual([
+        {
+          recipient: watchedAddr1,
+          sender: cm2.wallet.address.toString(),
+          denom: cm2.denom,
+          amount: amountToAddr1_1.toString(),
+        },
+        {
+          recipient: watchedAddr1,
+          sender: cm2.wallet.address.toString(),
+          denom: cm2.denom,
+          amount: amountToAddr1_1.toString(),
+        },
+      ]);
+    });
+  });
+
   const watchedAddr2 = addr2;
   const query2UpdatePeriod = 3;
-  describe('utilise multiple transfers queries', () => {
+  describe('utilize multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       // Top up contract address before running query
       await cm.msgSend(contractAddress, '1000000');
@@ -391,6 +464,12 @@ describe('Neutron / Interchain TX Query', () => {
       );
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
       expect(deposits.transfers).toEqual([
+        {
+          recipient: watchedAddr1,
+          sender: cm2.wallet.address.toString(),
+          denom: cm2.denom,
+          amount: amountToAddr1_1.toString(),
+        },
         {
           recipient: watchedAddr1,
           sender: cm2.wallet.address.toString(),
