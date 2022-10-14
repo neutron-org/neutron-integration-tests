@@ -66,16 +66,16 @@ export const waitForICQResultWithRemoteHeight = async (
 };
 
 /**
- * queryTransfersAmount queries the contract for recorded transfers amount.
+ * queryTransfersNUmber queries the contract for recorded transfers number.
  */
-export const queryTransfersAmount = (
+export const queryTransfersNumber = (
   cm: CosmosWrapper,
   contractAddress: string,
 ) =>
   cm.queryContract<{
-    amount: number;
+    transfers_number: number;
   }>(contractAddress, {
-    get_transfers_amount: {},
+    get_transfers_number: {},
   });
 
 export const waitForTransfersAmount = async (
@@ -87,13 +87,13 @@ export const waitForTransfersAmount = async (
   while (numAttempts > 0) {
     numAttempts--;
     await waitBlocks(cm.sdk, 1);
-    const amount = (await queryTransfersAmount(cm, contractAddress)).amount;
-    if (amount == expectedTransfersAmount) {
+    const transfers_number = (await queryTransfersNumber(cm, contractAddress)).transfers_number;
+    if (transfers_number == expectedTransfersAmount) {
       return;
     }
-    if (amount > expectedTransfersAmount) {
+    if (transfers_number > expectedTransfersAmount) {
       throw new Error(
-        `Amount of incoming transfers ${amount} is greater than ` +
+        `The number of incoming transfers ${transfers_number} is greater than ` +
           `expected ${expectedTransfersAmount}`,
       );
     }
