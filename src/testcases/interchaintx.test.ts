@@ -313,8 +313,8 @@ describe('Neutron / Interchain TXs', () => {
         cm1.sdk,
         () => cm1.listIBCChannels(),
         (channels) =>
-          channels.channels.filter((c) => c.channel_id == 'channel-3')[0]
-            .state == 'STATE_OPEN',
+          channels.channels.find((c) => c.channel_id == 'channel-3').state ==
+          'STATE_OPEN',
       );
     });
     test('delegate from first ICA after ICA recreation', async () => {
