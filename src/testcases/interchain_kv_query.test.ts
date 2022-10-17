@@ -246,6 +246,45 @@ describe('Neutron / Interchain KV Query', () => {
         }
       });
 
+      test('should throw exception because of empty keys', async () => {
+        await expect(
+          cm[1].executeContract(
+            contractAddress,
+            JSON.stringify({
+              integration_tests_register_query_empty_keys: {
+                connection_id: connectionId,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(/keys cannot be empty/);
+      });
+
+      test('should throw exception because of empty key id', async () => {
+        await expect(
+          cm[1].executeContract(
+            contractAddress,
+            JSON.stringify({
+              integration_tests_register_query_empty_id: {
+                connection_id: connectionId,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(/keys id cannot be empty/);
+      });
+
+      test('should throw exception because of empty key path', async () => {
+        await expect(
+          cm[1].executeContract(
+            contractAddress,
+            JSON.stringify({
+              integration_tests_register_query_empty_path: {
+                connection_id: connectionId,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(/keys path cannot be empty/);
+      });
+
       test('should escrow deposit', async () => {
         // Top up contract address before running query
         await cm[1].msgSend(contractAddress, '1000000');
@@ -267,7 +306,7 @@ describe('Neutron / Interchain KV Query', () => {
       });
     });
 
-    describe('Succesfully', () => {
+    describe('Successfully', () => {
       beforeEach(async () => {
         // Top up contract address before running query
         await cm[1].msgSend(contractAddress, '1000000');
