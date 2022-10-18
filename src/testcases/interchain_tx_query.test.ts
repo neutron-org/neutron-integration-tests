@@ -489,6 +489,7 @@ describe('Neutron / Interchain TX Query', () => {
         query5UpdatePeriod,
         watchedAddr5,
       );
+      await waitBlocks(cm.sdk, 2); // wait for queries handling on init
     });
 
     test('make older sending', async () => {
