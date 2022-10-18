@@ -98,12 +98,12 @@ describe('Neutron / Interchain TXs', () => {
     test('get ica address', async () => {
       const ica1 = await getIca(cm1, contractAddress, icaId1, connectionId);
       expect(ica1.interchain_account_address).toStartWith('cosmos');
-      expect(ica1.interchain_account_address.length).toEqual(66);
+      expect(ica1.interchain_account_address.length).toEqual(65);
       icaAddress1 = ica1.interchain_account_address;
 
       const ica2 = await getIca(cm1, contractAddress, icaId2, connectionId);
       expect(ica2.interchain_account_address).toStartWith('cosmos');
-      expect(ica2.interchain_account_address.length).toEqual(66);
+      expect(ica2.interchain_account_address.length).toEqual(65);
       icaAddress2 = ica2.interchain_account_address;
     });
     test('before delegation ack storage should be empty for both accounts', async () => {
