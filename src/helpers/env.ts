@@ -21,7 +21,6 @@ export const setup = async (host: string) => {
     execSync(`cd setup && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
   } catch (e) {}
-  //await wait(2000);
   console.log('Starting container... it may take long');
   execSync(`cd setup && make start-cosmopark`);
   await waitForHTTP(host);

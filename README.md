@@ -55,7 +55,6 @@ NODE1_URL - url to the first node
 NODE2_URL - url to the second node
 BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
-BLOCK_TIME - time in ms for 1 block production
 ```
 
 ## Config
