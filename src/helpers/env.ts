@@ -2,7 +2,6 @@ import axios from 'axios';
 import { execSync } from 'child_process';
 import { wait } from './wait';
 
-const NEUTRON_DIR = process.env.NEUTRON_DIR || '../neutron';
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
   : 10;
@@ -19,19 +18,19 @@ export const setup = async (host: string) => {
     return;
   }
   try {
-    execSync(`cd ${NEUTRON_DIR} && make stop-cosmopark`);
+    execSync(`cd setup && make stop-cosmopark`);
     // eslint-disable-next-line no-empty
   } catch (e) {}
   //await wait(2000);
   console.log('Starting container... it may take long');
-  execSync(`cd ${NEUTRON_DIR} && make start-cosmopark`);
+  execSync(`cd setup && make start-cosmopark`);
   await waitForHTTP(host);
   await waitForChannel(host);
   alreadySetUp = true;
 };
 
 export const waitForHTTP = async (
-  host = 'http://127.0.0.1:1316',
+  host = 'http://127.0.0.1:1317',
   path = `blocks/${BLOCKS_COUNT_BEFORE_START}`,
   timeout = 280000,
 ) => {
@@ -52,7 +51,7 @@ export const waitForHTTP = async (
 };
 
 export const waitForChannel = async (
-  host = 'http://127.0.0.1:1316',
+  host = 'http://127.0.0.1:1317',
   timeout = 100000,
 ) => {
   const start = Date.now();

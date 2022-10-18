@@ -1,5 +1,5 @@
 import { proto, rest } from '@cosmos-client/core';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
@@ -19,8 +19,16 @@ describe('Neutron / Interchain TX Query', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
+    cm = new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+    );
+    cm2 = new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+    );
   });
 
   describe('deploy contract', () => {
@@ -41,9 +49,9 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr1 = 'neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx';
-  const addr2 = 'neutron14uxvu22lhrazyxadaqv5d6lswu0p276ll7hrkl';
-  const addr3 = 'neutron1m4n7gt76c4edkcpg698pwy56jkxqsre4gpgg26';
+  const addr1 = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
+  const addr2 = 'cosmos14uxvu22lhrazyxadaqv5d6lswu0p276lmp7pvc';
+  const addr3 = 'cosmos1m4n7gt76c4edkcpg698pwy56jkxqsre4v7p2sa';
   let addr1ExpectedBalance = 0;
   let addr2ExpectedBalance = 0;
   let addr3ExpectedBalance = 0;
@@ -429,7 +437,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr4 = 'neutron1p0qgeqgardg73apsrc2k5efm5dcwhnvkusdh38';
+  const addr4 = 'cosmos1p0qgeqgardg73apsrc2k5efm5dcwhnvkc0y4tq';
   let addr4ExpectedBalance = 0;
   const amountToAddr4_1 = 4000;
   const watchedAddr4: string = addr4;
@@ -439,7 +447,7 @@ describe('Neutron / Interchain TX Query', () => {
   // we submit the second one, and then submit the first one, and want to make sure there is
   // no problem with submitting an older height after a younger one submitted
   describe('submit older height after younger one', () => {
-    const addr5 = 'neutron1szkcj46xg65ux8t8ge9jl79azj4qltdqvavatz';
+    const addr5 = 'cosmos1szkcj46xg65ux8t8ge9jl79azj4qltdqgz9l39';
     let addr5ExpectedBalance = 0;
     const amountToAddr5_1 = 5000;
     const watchedAddr5: string = addr5;

@@ -1,7 +1,7 @@
 import 'jest-extended';
-import { rest } from '@cosmos-client/core';
+import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosWrapper } from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitWithAttempts } from '../helpers/wait';
@@ -21,8 +21,16 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm1 = new CosmosWrapper(testState.sdk1, testState.wallets.demo1);
-    cm2 = new CosmosWrapper(testState.sdk2, testState.wallets.demo2);
+    cm1 = new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+    );
+    cm2 = new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+    );
   });
 
   describe('Interchain Tx with multiple ICAs', () => {
@@ -69,7 +77,10 @@ describe('Neutron / Interchain TXs', () => {
     test('multiple IBC accounts created', async () => {
       await waitWithAttempts(cm1.sdk, async () => {
         const channels = await cm1.listIBCChannels();
-        // wait until there is one channel for ictx and + 2 we have just created
+        // Wait until there are 3 channels:
+        // - one exists already, it is open for IBC transfers;
+        // - two more should appear soon since we are opening them implicitly
+        //   through ICA creation.
         return channels.channels.length == 3;
       });
       const channels = await cm1.listIBCChannels();
@@ -103,8 +114,8 @@ describe('Neutron / Interchain TXs', () => {
           connection_id: connectionId,
         },
       });
-      expect(ica1.interchain_account_address).toStartWith('neutron');
-      expect(ica1.interchain_account_address.length).toEqual(66);
+      expect(ica1.interchain_account_address).toStartWith('cosmos');
+      expect(ica1.interchain_account_address.length).toEqual(65);
       icaAddress1 = ica1.interchain_account_address;
 
       await waitWithAttempts(cm1.sdk, async () => {
@@ -126,8 +137,8 @@ describe('Neutron / Interchain TXs', () => {
           connection_id: connectionId,
         },
       });
-      expect(ica2.interchain_account_address).toStartWith('neutron');
-      expect(ica2.interchain_account_address.length).toEqual(66);
+      expect(ica2.interchain_account_address).toStartWith('cosmos');
+      expect(ica2.interchain_account_address.length).toEqual(65);
       icaAddress2 = ica2.interchain_account_address;
     });
     test('before delegation ack storage should be empty for both accounts', async () => {
@@ -160,8 +171,11 @@ describe('Neutron / Interchain TXs', () => {
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
+            validator: (
+              testState.wallets.cosmos.val1.address as cosmosclient.ValAddress
+            ).toString(),
             amount: '2000',
+            denom: cm2.denom,
           },
         }),
       );
@@ -176,7 +190,7 @@ describe('Neutron / Interchain TXs', () => {
               cm2.sdk as CosmosSDK,
               icaAddress1 as unknown as AccAddress,
             )
-          ).data.delegation_responses.length == 1,
+          ).data.delegation_responses?.length == 1,
       );
       const res1 = await rest.staking.delegatorDelegations(
         cm2.sdk as CosmosSDK,
@@ -189,7 +203,7 @@ describe('Neutron / Interchain TXs', () => {
             delegator_address: icaAddress1,
             shares: '2000.000000000000000000',
             validator_address:
-              'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx',
+              'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
           },
         },
       ]);
@@ -235,6 +249,7 @@ describe('Neutron / Interchain TXs', () => {
             interchain_account_id: icaId2,
             validator: 'nonexistent_address',
             amount: '2000',
+            denom: cm2.denom,
           },
         }),
       );
@@ -276,8 +291,9 @@ describe('Neutron / Interchain TXs', () => {
         JSON.stringify({
           undelegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
+            validator: testState.wallets.cosmos.val1.address.toString(),
             amount: '1000',
+            denom: cm2.denom,
           },
         }),
       );
@@ -288,8 +304,9 @@ describe('Neutron / Interchain TXs', () => {
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId2,
-            validator: testState.wallets.val2.address.toString(),
+            validator: testState.wallets.cosmos.val1.address.toString(),
             amount: '2000',
+            denom: cm2.denom,
           },
         }),
       );
@@ -344,8 +361,9 @@ describe('Neutron / Interchain TXs', () => {
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
+            validator: testState.wallets.cosmos.val1.address.toString(),
             amount: '10',
+            denom: cm2.denom,
             timeout: 1,
           },
         }),
@@ -383,8 +401,9 @@ describe('Neutron / Interchain TXs', () => {
             JSON.stringify({
               delegate: {
                 interchain_account_id: icaId1,
-                validator: testState.wallets.val2.address.toString(),
+                validator: testState.wallets.cosmos.val1.address.toString(),
                 amount: '10',
+                denom: cm2.denom,
                 timeout: 1,
               },
             }),
@@ -408,9 +427,10 @@ describe('Neutron / Interchain TXs', () => {
       expect(res.code).toEqual(0);
       await waitWithAttempts(cm1.sdk, async () => {
         const channels = await cm1.listIBCChannels();
-        // wait until there is one channel for ictx
-        // + 2 we have created previously
-        // + 1 we have created just now
+        // Wait until there are 4 channels:
+        // - one exists already, it is open for IBC transfers;
+        // - two channels are already opened via ICA registration before
+        // - one more, we are opening it right now
         return channels.channels.length == 4;
       });
       await waitWithAttempts(
@@ -429,7 +449,8 @@ describe('Neutron / Interchain TXs', () => {
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.val2.address.toString(),
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            denom: cm2.denom,
             amount: '20',
           },
         }),
@@ -469,7 +490,7 @@ describe('Neutron / Interchain TXs', () => {
             delegator_address: icaAddress1,
             shares: '1020.000000000000000000',
             validator_address:
-              'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx',
+              'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
           },
         },
       ]);

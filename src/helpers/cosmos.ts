@@ -14,7 +14,8 @@ import {
 import { google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
-const DENOM = process.env.DENOM || 'stake';
+export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
+export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
 
 type ChannelsList = {
@@ -51,9 +52,8 @@ export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
   denom: string;
-
-  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet) {
-    this.denom = DENOM;
+  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet, denom: string) {
+    this.denom = denom;
     this.sdk = sdk;
     this.wallet = wallet;
   }
@@ -133,7 +133,7 @@ export class CosmosWrapper {
     });
     const data = await this.execTx(
       {
-        amount: [{ denom: DENOM, amount: '250000' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '250000' }],
         gas_limit: Long.fromString('60000000'),
       },
       [msg],
@@ -160,7 +160,7 @@ export class CosmosWrapper {
     });
     const data = await this.execTx(
       {
-        amount: [{ denom: DENOM, amount: '2000000' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
       [msgInit],
@@ -331,6 +331,7 @@ export const mnemonicToWallet = async (
   },
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
+  addrPrefix: string,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
@@ -339,6 +340,14 @@ export const mnemonicToWallet = async (
   const pubKey = privKey.pubKey();
   const address = walletType.fromPublicKey(pubKey);
   let account = null;
+  cosmosclient.config.setBech32Prefix({
+    accAddr: addrPrefix,
+    accPub: `${addrPrefix}pub`,
+    valAddr: `${addrPrefix}valoper`,
+    valPub: `${addrPrefix}valoperpub`,
+    consAddr: `${addrPrefix}valcons`,
+    consPub: `${addrPrefix}valconspub`,
+  });
   // eslint-disable-next-line no-prototype-builtins
   if (cosmosclient.ValAddress !== walletType) {
     account = await rest.auth
@@ -357,10 +366,5 @@ export const mnemonicToWallet = async (
       throw new Error("can't get account");
     }
   }
-  return {
-    address,
-    account,
-    pubKey,
-    privKey,
-  };
+  return new Wallet(address, account, pubKey, privKey, addrPrefix);
 };
