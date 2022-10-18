@@ -8,6 +8,8 @@ import {
   queryTransfersAmount,
   waitForTransfersAmount,
 } from '../helpers/icq';
+import { max } from 'lodash';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -104,6 +106,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        query1UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
         cm,
@@ -131,7 +134,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
-      await waitBlocks(cm.sdk, query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await waitBlocks(cm.sdk, query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
@@ -220,6 +223,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        query2UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
         cm,
@@ -288,6 +292,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        query3UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
@@ -305,11 +310,17 @@ describe('Neutron / Interchain TX Query', () => {
       const res = await cm2.msgSend(watchedAddr3, amountToAddr3_2.toString());
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
+      // initiate query before relayer has any chance to submit query data
+      const depositsPromise = queryRecipientTxs(
+        cm,
+        contractAddress,
+        watchedAddr3,
+      );
       const balances = await cm2.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: cm2.denom },
       ]);
-      let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
+      let deposits = await depositsPromise;
       // update time hasn't come yet despite the fact the sent funds are already on the account
       expect(deposits.transfers).toEqual([
         {
@@ -324,6 +335,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        query3UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr3);
       expect(deposits.transfers).toEqual([
@@ -388,6 +400,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        max([query1UpdatePeriod, query2UpdatePeriod]) * 2,
       );
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
       expect(deposits.transfers).toEqual([
@@ -535,6 +548,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers - 1,
+        query4UpdatePeriod * 2,
       );
       // make sure the query4 result is submitted before the query5 one
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr4);
@@ -553,6 +567,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
+        query5UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr5);
       // despite query4 tx result was of a greater remote height and was submitted before,
@@ -637,7 +652,7 @@ const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.sdk, res.txhash as string);
+  const tx = await rest.tx.getTx(cm.sdk as CosmosSDK, res.txhash as string);
   expect(tx?.data.tx_response?.code).toEqual(0);
 };
 

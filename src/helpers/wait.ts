@@ -27,20 +27,28 @@ export const waitBlocks = async (sdk: any, n: number) => {
   }
 };
 
-export const waitWithAttempts = async (
+/**
+ * getWithAttempts waits until readyFunc(getFunc()) returns true
+ * and only then returns result of getFunc()
+ */
+export const getWithAttempts = async <T>(
   sdk: any,
-  f: () => Promise<boolean>,
+  getFunc: () => Promise<T>,
+  readyFunc: (t: T) => boolean,
   numAttempts = 20,
-) => {
+): Promise<T> => {
+  let error = null;
   while (numAttempts > 0) {
-    try {
-      if (await f()) {
-        return;
-      }
-      // eslint-disable-next-line no-empty
-    } catch (e) {}
     numAttempts--;
+    try {
+      const data = await getFunc();
+      if (readyFunc(data)) {
+        return data;
+      }
+    } catch (e) {
+      error = e;
+    }
     await waitBlocks(sdk, 1);
   }
-  throw new Error('waitWithAttempts: no attempts left');
+  throw error != null ? error : new Error('getWithAttempts: no attempts left');
 };
