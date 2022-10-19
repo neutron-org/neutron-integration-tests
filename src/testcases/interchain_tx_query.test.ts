@@ -610,7 +610,9 @@ describe('Neutron / Interchain TX Query', () => {
       // error. on the error result, the transfers number previously increased in the sudo func is
       // expected to be reverted.
       const transfers = await queryTransfersNumber(cm, contractAddress);
-      expect(transfers.transfers_number).toEqual(transfers_amount_before_sending);
+      expect(transfers.transfers_number).toEqual(
+        transfers_amount_before_sending,
+      );
     });
   });
 });

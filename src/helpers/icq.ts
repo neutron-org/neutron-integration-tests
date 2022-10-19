@@ -87,7 +87,8 @@ export const waitForTransfersAmount = async (
   while (numAttempts > 0) {
     numAttempts--;
     await waitBlocks(cm.sdk, 1);
-    const transfers_number = (await queryTransfersNumber(cm, contractAddress)).transfers_number;
+    const transfers_number = (await queryTransfersNumber(cm, contractAddress))
+      .transfers_number;
     if (transfers_number == expectedTransfersAmount) {
       return;
     }
