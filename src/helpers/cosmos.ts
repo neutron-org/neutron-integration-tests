@@ -227,14 +227,13 @@ export class CosmosWrapper {
     contract: string,
     query: Record<string, unknown>,
   ): Promise<T> {
+    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
+      JSON.stringify(query),
+    ).toString('base64')}?encoding=base64`;
     const req = await axios.get<{
       result: { smart: string };
       height: number;
-    }>(
-      `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
-        JSON.stringify(query),
-      ).toString('base64')}?encoding=base64`,
-    );
+    }>(url);
     return JSON.parse(
       Buffer.from(req.data.result.smart, 'base64').toString(),
     ) as T;
