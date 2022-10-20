@@ -65,7 +65,9 @@ describe('Neutron / Simple', () => {
         contractAddress,
         JSON.stringify({
           send: {
+            channel: 'channel-0',
             to: testState.wallets.cosmos.demo2.address.toString(),
+            denom: NEUTRON_DENOM,
             amount: '1000',
           },
         }),

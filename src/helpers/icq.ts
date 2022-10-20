@@ -1,5 +1,5 @@
 import { CosmosWrapper } from './cosmos';
-import { waitBlocks } from './wait';
+import { getWithAttempts } from './wait';
 
 /**
  * getRegisteredQuery queries the contract for a registered query details registered by the given
@@ -36,67 +36,49 @@ export const getRegisteredQuery = (
  * waitForICQResultWithRemoteHeight waits until ICQ gets updated to
  * reflect data corresponding to remote height `>= targetHeight`
  */
-export const waitForICQResultWithRemoteHeight = async (
+export const waitForICQResultWithRemoteHeight = (
   cm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
   targetHeight: number,
-  numAttempts = 100,
-) => {
-  while (numAttempts > 0) {
-    numAttempts--;
-    try {
-      const queryResult = await getRegisteredQuery(
-        cm,
-        contractAddress,
-        queryId,
-      );
-      if (
-        queryResult.registered_query.last_submitted_result_remote_height >=
-        targetHeight
-      ) {
-        return;
-      }
-    } catch (e) {
-      console.log(`Warning: waitForICQResultWithRemoteHeight: ${e}`);
-    }
-    await waitBlocks(cm.sdk, 1);
-  }
-  expect(numAttempts).toBeGreaterThan(0);
-};
+  numAttempts = 20,
+) =>
+  getWithAttempts(
+    cm.sdk,
+    () => getRegisteredQuery(cm, contractAddress, queryId),
+    (query) =>
+      query.registered_query.last_submitted_result_remote_height >=
+      targetHeight,
+    numAttempts,
+  );
 
 /**
- * queryTransfersAmount queries the contract for recorded transfers amount.
+ * queryTransfersNumber queries the contract for recorded transfers number.
  */
-export const queryTransfersAmount = (
+export const queryTransfersNumber = (
   cm: CosmosWrapper,
   contractAddress: string,
 ) =>
   cm.queryContract<{
-    amount: number;
+    transfers_number: number;
   }>(contractAddress, {
-    get_transfers_amount: {},
+    get_transfers_number: {},
   });
 
-export const waitForTransfersAmount = async (
+/**
+ * waitForTransfersAmount waits until contract has `expectedTransfersAmount`
+ * number of incoming transfers stored.
+ */
+export const waitForTransfersAmount = (
   cm: CosmosWrapper,
   contractAddress: string,
   expectedTransfersAmount: number,
   numAttempts = 50,
-) => {
-  while (numAttempts > 0) {
-    numAttempts--;
-    await waitBlocks(cm.sdk, 1);
-    const amount = (await queryTransfersAmount(cm, contractAddress)).amount;
-    if (amount == expectedTransfersAmount) {
-      return;
-    }
-    if (amount > expectedTransfersAmount) {
-      throw new Error(
-        `Amount of incoming transfers ${amount} is greater than ` +
-          `expected ${expectedTransfersAmount}`,
-      );
-    }
-  }
-  expect(numAttempts).toBeGreaterThan(0);
-};
+) =>
+  getWithAttempts(
+    cm.sdk,
+    async () =>
+      (await queryTransfersNumber(cm, contractAddress)).transfers_number,
+    (amount) => amount == expectedTransfersAmount,
+    numAttempts,
+  );

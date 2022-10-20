@@ -1,6 +1,6 @@
 # How to run this code?
 
-### 0. Clone neutron, gaia and cosmos-query-relayer
+### 0. Clone neutron, gaia and neutron-query-relayer
 
 Clone neutron and relayer to the parent directory:
 
@@ -43,6 +43,18 @@ NO_DOCKER=1 yarn test # all tests
 ...
 ```
 
+## Warning
+
+Since docker-compose doesn't rebuild images on file changing, there is a chance for one to launch the tests with an
+outdated version of code if one changed something. To rebuild the images from scratch, do the following:
+
+```
+cd ../neutron
+docker rmi neutron_node
+docker rmi neutron-org/neutron-query-relayer
+docker-compose build
+```
+
 ## Environment variables you can redefine
 
 ```env
@@ -55,7 +67,6 @@ NODE1_URL - url to the first node
 NODE2_URL - url to the second node
 BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
-BLOCK_TIME - time in ms for 1 block production
 ```
 
 ## Config

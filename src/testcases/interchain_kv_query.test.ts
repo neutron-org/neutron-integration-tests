@@ -171,18 +171,17 @@ const validateBalanceQuery = async (
   );
 };
 
-// TODO: throw away this type alltogether
-type Query = {
-  updatePeriod: number;
-};
-
 describe('Neutron / Interchain KV Query', () => {
+  const connectionId = 'connection-0';
+  const updatePeriods: { [key: number]: number } = {
+    2: 2,
+    3: 4,
+    4: 3,
+  };
   let testState: TestStateLocalCosmosTestNet;
   let cm: { [key: number]: CosmosWrapper };
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-  let connectionId: string;
-  let query: { [key: number]: Query };
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -198,12 +197,6 @@ describe('Neutron / Interchain KV Query', () => {
         testState.wallets.cosmos.demo2,
         COSMOS_DENOM,
       ),
-    };
-    connectionId = 'connection-0';
-    query = {
-      2: { updatePeriod: 2 },
-      3: { updatePeriod: 3 },
-      4: { updatePeriod: 4 },
     };
   });
 
@@ -278,7 +271,7 @@ describe('Neutron / Interchain KV Query', () => {
           cm[1],
           contractAddress,
           connectionId,
-          query[2].updatePeriod,
+          updatePeriods[2],
           cm[2].denom,
           testState.wallets.cosmos.demo2.address,
         );
@@ -289,7 +282,7 @@ describe('Neutron / Interchain KV Query', () => {
           cm[1],
           contractAddress,
           connectionId,
-          query[3].updatePeriod,
+          updatePeriods[3],
           cm[2].denom,
           testState.wallets.cosmos.val1.address,
         );
@@ -300,7 +293,7 @@ describe('Neutron / Interchain KV Query', () => {
           cm[1],
           contractAddress,
           connectionId,
-          query[4].updatePeriod,
+          updatePeriods[4],
           testState.wallets.cosmos.demo2.address,
           [testState.wallets.cosmos.val1.address],
         );
@@ -329,7 +322,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.transactions_filter).toEqual('');
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[queryId].updatePeriod,
+        updatePeriods[queryId],
       );
     });
 
@@ -344,7 +337,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[queryId].updatePeriod,
+        updatePeriods[queryId],
       );
     });
 
@@ -363,7 +356,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.transactions_filter).toEqual('');
       expect(queryResult.registered_query.connection_id).toEqual(connectionId);
       expect(queryResult.registered_query.update_period).toEqual(
-        query[queryId].updatePeriod,
+        updatePeriods[queryId],
       );
     });
 
@@ -471,11 +464,7 @@ describe('Neutron / Interchain KV Query', () => {
       const start = await Promise.all(
         [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
-      for (
-        let i = 0;
-        i < max([2, 3, 4].map((i) => query[i].updatePeriod)) + 1;
-        ++i
-      ) {
+      for (let i = 0; i <= max(Object.values(updatePeriods)); ++i) {
         const res = await Promise.all(
           [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
         );
