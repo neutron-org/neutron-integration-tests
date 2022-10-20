@@ -2,7 +2,7 @@ FROM rust:1.63-bullseye
 ADD ./hermes/ /app/network/hermes/
 WORKDIR /app
 RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    curl -L "https://github.com/informalsystems/ibc-rs/releases/download/v0.14.1/hermes-v0.14.1-${PLATFORM}-unknown-linux-gnu.tar.gz" > hermes.tar.gz && \
+    curl -L "https://github.com/informalsystems/ibc-rs/releases/download/v1.0.0/hermes-v1.0.0-${PLATFORM}-unknown-linux-gnu.tar.gz" > hermes.tar.gz && \
     mkdir -p $HOME/.hermes/bin && \
     tar -C $HOME/.hermes/bin/ -vxzf hermes.tar.gz && \
     rm -f hermes.tar.gz 
@@ -10,5 +10,5 @@ ENV PATH="/root/.hermes/bin:${PATH}"
 
 CMD /app/network/hermes/restore-keys.sh && \
     /app/network/hermes/create-conn.sh && \
-    hermes -c /app/network/hermes/config.toml create channel --port-a transfer --port-b transfer test-1 connection-0 && \
+    hermes --config /app/network/hermes/config.toml create channel --a-chain test-1 --a-connection connection-0 --a-port transfer --b-port transfer && \
     /app/network/hermes/start.sh
