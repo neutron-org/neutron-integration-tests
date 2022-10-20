@@ -53,16 +53,16 @@ export const waitForICQResultWithRemoteHeight = (
   );
 
 /**
- * queryTransfersAmount queries the contract for recorded transfers amount.
+ * queryTransfersNumber queries the contract for recorded transfers number.
  */
-export const queryTransfersAmount = (
+export const queryTransfersNumber = (
   cm: CosmosWrapper,
   contractAddress: string,
 ) =>
   cm.queryContract<{
-    amount: number;
+    transfers_number: number;
   }>(contractAddress, {
-    get_transfers_amount: {},
+    get_transfers_number: {},
   });
 
 /**
@@ -77,7 +77,8 @@ export const waitForTransfersAmount = (
 ) =>
   getWithAttempts(
     cm.sdk,
-    async () => (await queryTransfersAmount(cm, contractAddress)).amount,
+    async () =>
+      (await queryTransfersNumber(cm, contractAddress)).transfers_number,
     (amount) => amount == expectedTransfersAmount,
     numAttempts,
   );
