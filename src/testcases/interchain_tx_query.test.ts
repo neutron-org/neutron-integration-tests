@@ -5,7 +5,7 @@ import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
 import {
   getRegisteredQuery,
-  queryTransfersAmount,
+  queryTransfersNumber,
   waitForTransfersAmount,
 } from '../helpers/icq';
 import { max } from 'lodash';
@@ -590,9 +590,9 @@ describe('Neutron / Interchain TX Query', () => {
     let transfers_amount_before_sending: number;
     test('send amount that is more than contract allows', async () => {
       // contract tracks total amount of transfers to addresses it watches.
-      const transfers = await queryTransfersAmount(cm, contractAddress);
-      expect(transfers.amount).toBeGreaterThan(0);
-      transfers_amount_before_sending = transfers.amount;
+      const transfers = await queryTransfersNumber(cm, contractAddress);
+      expect(transfers.transfers_number).toBeGreaterThan(0);
+      transfers_amount_before_sending = transfers.transfers_number;
 
       let balances = await cm2.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
@@ -625,8 +625,10 @@ describe('Neutron / Interchain TX Query', () => {
       // contract handles only transfers not greater than 20000, otherwise it ends callback with an
       // error. on the error result, the transfers amount previously increased in the sudo func is
       // expected to be reverted.
-      const transfers = await queryTransfersAmount(cm, contractAddress);
-      expect(transfers.amount).toEqual(transfers_amount_before_sending);
+      const transfers = await queryTransfersNumber(cm, contractAddress);
+      expect(transfers.transfers_number).toEqual(
+        transfers_amount_before_sending,
+      );
     });
   });
 });
