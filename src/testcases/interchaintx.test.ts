@@ -1,7 +1,12 @@
 import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  getSequenceId,
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getWithAttempts } from '../helpers/wait';
@@ -106,13 +111,6 @@ describe('Neutron / Interchain TXs', () => {
       expect(ica2.interchain_account_address.length).toEqual(65);
       icaAddress2 = ica2.interchain_account_address;
     });
-    test('before delegation ack storage should be empty for both accounts', async () => {
-      const [res1, res2] = await Promise.all(
-        [icaId1, icaId2].map((icaId) => getAck(cm1, contractAddress, icaId)),
-      );
-      expect(res1).toBe(null);
-      expect(res2).toBe(null);
-    });
     test('add some money to ICAs', async () => {
       const res1 = await cm2.msgSend(icaAddress1.toString(), '10000');
       expect(res1.code).toEqual(0);
@@ -121,7 +119,6 @@ describe('Neutron / Interchain TXs', () => {
       expect(res2.code).toEqual(0);
     });
     test('delegate from first ICA', async () => {
-      await cleanAckResults(cm1, contractAddress);
       const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
@@ -136,6 +133,13 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
+      const sequenceId = getSequenceId(res.raw_log);
+
+      await waitForAck(cm1, contractAddress, icaId1, sequenceId);
+      const qres = await getAck(cm1, contractAddress, icaId1, sequenceId);
+      expect(qres).toMatchObject<AcknowledgementResult>({
+        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+      });
     });
     test('check validator state', async () => {
       const res1 = await getWithAttempts(
@@ -164,19 +168,8 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res2.data.delegation_responses).toEqual([]);
     });
-    test('check acknowledgement success', async () => {
-      await waitForAck(cm1, contractAddress, icaId1);
-      const res1 = await getAck(cm1, contractAddress, icaId1);
-      expect(res1).toMatchObject<AcknowledgementResult>({
-        success: ['/cosmos.staking.v1beta1.MsgDelegate'],
-      });
-
-      const res2 = await getAck(cm1, contractAddress, icaId2);
-      expect(res2).toBe(null);
-    });
 
     test('delegate for unknown validator from second ICA', async () => {
-      await cleanAckResults(cm1, contractAddress);
       const res = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
@@ -189,11 +182,12 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgement error', async () => {
-      await waitForAck(cm1, contractAddress, icaId2);
-      const res = await getAck(cm1, contractAddress, icaId2);
-      expect(res).toMatchObject<AcknowledgementResult>({
+
+      const sequenceId = getSequenceId(res.raw_log);
+
+      await waitForAck(cm1, contractAddress, icaId2, sequenceId);
+      const qres = await getAck(cm1, contractAddress, icaId2, sequenceId);
+      expect(qres).toMatchObject<AcknowledgementResult>({
         error: [
           'message',
           'ABCI code: 1: error handling packet on host chain: see events for details',
@@ -216,6 +210,8 @@ describe('Neutron / Interchain TXs', () => {
       );
       expect(res1.code).toEqual(0);
 
+      const sequenceId1 = getSequenceId(res1.raw_log);
+
       const res2 = await cm1.executeContract(
         contractAddress,
         JSON.stringify({
@@ -228,21 +224,20 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res2.code).toEqual(0);
-    });
 
-    test('check acknowledgements', async () => {
-      await waitForAck(cm1, contractAddress, icaId1);
-      const res1 = await getAck(cm1, contractAddress, icaId1);
-      expect(res1).toMatchObject<AcknowledgementResult>({
+      const sequenceId2 = getSequenceId(res2.raw_log);
+
+      const qres1 = await waitForAck(cm1, contractAddress, icaId1, sequenceId1);
+      expect(qres1).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
       });
 
-      await waitForAck(cm1, contractAddress, icaId2);
-      const res2 = await getAck(cm1, contractAddress, icaId2);
-      expect(res2).toMatchObject<AcknowledgementResult>({
+      const qres2 = await waitForAck(cm1, contractAddress, icaId2, sequenceId2);
+      expect(qres2).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
+
     test('delegate with timeout', async () => {
       await cleanAckResults(cm1, contractAddress);
       const res = await cm1.executeContract(
@@ -258,12 +253,13 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgements after timeout', async () => {
+
+      const sequenceId = getSequenceId(res.raw_log);
+
       // timeout handling may be slow, hence we wait for up to 100 blocks here
-      await waitForAck(cm1, contractAddress, icaId1, 100);
-      const res1 = await getAck(cm1, contractAddress, icaId1);
-      expect(res1).toMatchObject<AcknowledgementResult>({
+      await waitForAck(cm1, contractAddress, icaId1, sequenceId, 100);
+      const qres1 = await getAck(cm1, contractAddress, icaId1, sequenceId);
+      expect(qres1).toMatchObject<AcknowledgementResult>({
         timeout: 'message',
       });
     });
@@ -331,11 +327,10 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
       expect(res.code).toEqual(0);
-    });
-    test('check acknowledgement success after ICA recreation', async () => {
-      await waitForAck(cm1, contractAddress, icaId1);
-      const res = await getAck(cm1, contractAddress, icaId1);
-      expect(res).toMatchObject<AcknowledgementResult>({
+      const sequenceId = getSequenceId(res.raw_log);
+
+      const qres = await waitForAck(cm1, contractAddress, icaId1, sequenceId);
+      expect(qres).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
     });
@@ -375,6 +370,7 @@ const waitForAck = (
   cm: CosmosWrapper,
   contractAddress: string,
   icaId: string,
+  sequenceId: number,
   numAttempts = 20,
 ) =>
   getWithAttempts(
@@ -383,13 +379,22 @@ const waitForAck = (
       cm.queryContract<AcknowledgementResult>(contractAddress, {
         acknowledgement_result: {
           interchain_account_id: icaId,
+          sequence_id: sequenceId,
         },
       }),
     (ack) => ack != null,
     numAttempts,
   );
 
-const getAck = (cm: CosmosWrapper, contractAddress: string, icaId: string) =>
+const getAck = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  icaId: string,
+  sequenceId: number,
+) =>
   cm.queryContract<AcknowledgementResult>(contractAddress, {
-    acknowledgement_result: { interchain_account_id: icaId },
+    acknowledgement_result: {
+      interchain_account_id: icaId,
+      sequence_id: sequenceId,
+    },
   });
