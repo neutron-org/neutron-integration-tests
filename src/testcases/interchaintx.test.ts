@@ -227,14 +227,12 @@ describe('Neutron / Interchain TXs', () => {
 
       const sequenceId2 = getSequenceId(res2.raw_log);
 
-      await waitForAck(cm1, contractAddress, icaId1, sequenceId2);
-      const qres1 = await getAck(cm1, contractAddress, icaId1, sequenceId1);
+      const qres1 = await waitForAck(cm1, contractAddress, icaId1, sequenceId1);
       expect(qres1).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
       });
 
-      await waitForAck(cm1, contractAddress, icaId2, sequenceId2);
-      const qres2 = await getAck(cm1, contractAddress, icaId2, sequenceId2);
+      const qres2 = await waitForAck(cm1, contractAddress, icaId2, sequenceId2);
       expect(qres2).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
@@ -331,8 +329,7 @@ describe('Neutron / Interchain TXs', () => {
       expect(res.code).toEqual(0);
       const sequenceId = getSequenceId(res.raw_log);
 
-      await waitForAck(cm1, contractAddress, icaId1, sequenceId);
-      const qres = await getAck(cm1, contractAddress, icaId1, sequenceId);
+      const qres = await waitForAck(cm1, contractAddress, icaId1, sequenceId);
       expect(qres).toMatchObject<AcknowledgementResult>({
         success: ['/cosmos.staking.v1beta1.MsgDelegate'],
       });
