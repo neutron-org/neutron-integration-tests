@@ -1,6 +1,11 @@
 # How to run this code?
 
-### 0. Clone neutron, gaia and neutron-query-relayer
+## Prerequisities
+
+- Docker engine
+- Node.js version 16
+
+### 1. Clone neutron, gaia and neutron-query-relayer
 
 Clone neutron and relayer to the parent directory:
 
@@ -16,24 +21,30 @@ git clone git@github.com:cosmos/gaia.git
 git checkout v7.0.3
 ```
 
-### 1. Prepare docker environment
+### 2. Prepare docker environment
 
-For the first run it's required to run `make build-all` in the setup directory to build all the docker images before you run the tests with `yarn test`
+For the first run it's required to run `make build-all` in the `setup/` directory to build all the docker images before you run the tests with `yarn test`
 
-### 2. Install dependencies with command
+### 3. Install dependencies with command
 
 ```shell
 yarn
 ```
 
-### 3. Run the tests (make sure docker daemon is running)
+### 4. Download contracts
+
+```shell
+./download_contracts.sh "neutron_audit_oak_19_09_2022_fixes"
+```
+
+### 5. Run the tests (make sure docker daemon is running)
 
 ```shell
 yarn test # all tests
 yarn test:simple # basic tests
 yarn test:interchaintx # interchain txs test
 yarn test:interchain_tx_query # interchain tx query test
-yarn test:interchain_kv_query # interchain tx query test
+yarn test:interchain_kv_query # interchain kv query test
 ```
 
 NOTE: To speed up tests you can run the cosmopark by youself with `make start-cosmopark` in the setup dir. To run test with the already running cosmopark use `NO_DOCKER` env variable.
