@@ -8,9 +8,20 @@ build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:0.14.1 .
 
 build-relayer:
-		docker build ../../neutron-query-relayer -f ../../neutron-query-relayer/Dockerfile -t neutron-org/neutron-query-relayer
+		docker build ../../neutron-query-relayer -f ../../neutron-query-relayer/Dockerfile -t neutron-org/neutron-query-relayer:base
 
-build-all: build-gaia build-neutron build-hermes build-relayer
+build-relayer-os-test: build-neutron build-relayer
+		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:os-test
+
+build-relayer-test-test: build-neutron build-relayer
+		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:test-test
+
+build-relayer-memory-test: build-relayer
+		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:memory-test
+
+build-relayer-keyring-tests: build-relayer-os-test build-relayer-test-test build-relayer-memory-test
+
+build-all: build-gaia build-neutron build-hermes build-relayer build-relayer-keyring-tests
 
 start-cosmopark: build-neutron build-relayer
 		@docker-compose up -d 

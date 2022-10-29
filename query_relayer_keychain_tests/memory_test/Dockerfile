@@ -1,7 +1,5 @@
 FROM neutron-org/neutron-query-relayer:base
 
-COPY --from=neutron-node /go/bin/neutrond /bin/
-
 RUN mv run.sh run-old.sh
 
 # preserve original run.sh
