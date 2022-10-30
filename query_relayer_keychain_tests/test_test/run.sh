@@ -6,15 +6,14 @@ ACCOUNT_NAME=test_demowallet
 
 echo "Inititalizing test keyring"
 
-echo -e "$SEED\n" | $NEUTRON_BIN keys add $ACCOUNT_NAME --recover
+echo -e "$SEED\n" | $NEUTRON_BIN keys add $ACCOUNT_NAME --recover --keyring-backend=test --keyring-dir=/root/.neutrond/
 
 echo "test keyring initialized"
 
 export RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=$ACCOUNT_NAME
-export RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=os
+export RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
 export RELAYER_NEUTRON_CHAIN_HOME_DIR=/root/.neutrond/
 
 ./run-old.sh || true
 
 sleep infinity
-

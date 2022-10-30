@@ -19,4 +19,3 @@ export RELAYER_NEUTRON_CHAIN_HOME_DIR=/root/.neutrond/
 ./run-old.sh || true
 
 sleep infinity
-

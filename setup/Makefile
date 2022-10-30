@@ -14,16 +14,16 @@ build-relayer-os-test: build-neutron build-relayer
 		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:os-test
 
 build-relayer-test-test: build-neutron build-relayer
-		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:test-test
+		docker build ../query_relayer_keychain_tests/test_test -t neutron-org/neutron-query-relayer:test-test
 
 build-relayer-memory-test: build-relayer
-		docker build ../query_relayer_keychain_tests/os_test -t neutron-org/neutron-query-relayer:memory-test
+		docker build ../query_relayer_keychain_tests/memory_test -t neutron-org/neutron-query-relayer:memory-test
 
 build-relayer-keyring-tests: build-relayer-os-test build-relayer-test-test build-relayer-memory-test
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-relayer-keyring-tests
 
-start-cosmopark: build-neutron build-relayer
+start-cosmopark: build-neutron build-relayer-keyring-tests
 		@docker-compose up -d 
 
 start-cosmopark-no-rebuild:
@@ -31,4 +31,3 @@ start-cosmopark-no-rebuild:
 
 stop-cosmopark:
 		@docker-compose down -t0 --remove-orphans -v
-
