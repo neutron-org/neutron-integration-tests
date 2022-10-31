@@ -19,7 +19,13 @@ build-relayer-test-test: build-neutron build-relayer
 build-relayer-memory-test: build-relayer
 		docker build ../query_relayer_keychain_tests/memory_test -t neutron-org/neutron-query-relayer:memory-test
 
-build-relayer-keyring-tests: build-relayer-os-test build-relayer-test-test build-relayer-memory-test
+build-relayer-pass-test: build-neutron build-relayer
+		docker build ../query_relayer_keychain_tests/pass_test -t neutron-org/neutron-query-relayer:pass-test
+
+build-relayer-file-test: build-neutron build-relayer
+		docker build ../query_relayer_keychain_tests/file_test -t neutron-org/neutron-query-relayer:file-test
+
+build-relayer-keyring-tests: build-relayer-os-test build-relayer-test-test build-relayer-memory-test build-relayer-file-test build-relayer-pass-test
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-relayer-keyring-tests
 
