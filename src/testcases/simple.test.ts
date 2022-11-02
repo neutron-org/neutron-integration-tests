@@ -1,10 +1,11 @@
 import {
+  AckFailuresResponse,
   CosmosWrapper,
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
 } from '../helpers/cosmos';
-import { waitBlocks } from '../helpers/wait';
+import { getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
@@ -222,6 +223,62 @@ describe('Neutron / Simple', () => {
           ),
         ).rejects.toThrow(/insufficient funds/);
       });
+    });
+
+    test('execute contract with failing sudo', async () => {
+      // Wait for previous transaction to be executed
+      await waitBlocks(cm.sdk, 3);
+
+      const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
+      expect(failuresBeforeCall.failures.length).toEqual(0);
+
+      // Mock sudo handler to fail
+      await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_set_sudo_failure_mock: {},
+        }),
+      );
+
+      await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          send: {
+            channel: 'channel-0',
+            to: testState.wallets.cosmos.demo2.address.toString(),
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        }),
+      );
+
+      const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
+        cm.sdk,
+        async () => cm.queryAckFailures(contractAddress),
+        // Wait until there 1 failure in the list
+        (data) => data.failures.length == 2,
+      );
+
+      expect(failuresAfterCall.failures).toEqual([
+        expect.objectContaining({
+          address: contractAddress,
+          id: '0',
+          ack_type: 'ack',
+        }),
+        expect.objectContaining({
+          address: contractAddress,
+          id: '1',
+          ack_type: 'ack',
+        }),
+      ]);
+
+      // Restore sudo handler to state
+      await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_unset_sudo_failure_mock: {},
+        }),
+      );
     });
   });
 });
