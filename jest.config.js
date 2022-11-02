@@ -36,7 +36,7 @@ module.exports = () => {
     process.on('exit', () => {
       if (oneStop) return;
       oneStop = true;
-      console.log('Stopping cosmopark');
+      console.error('Stopping cosmopark');
       ch.execSync(`cd setup && make stop-cosmopark`);
     });
   return config;
