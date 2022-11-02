@@ -1,20 +1,25 @@
 import { execSync, ExecSyncOptions } from 'child_process';
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
-async function search_keyring_in_output(signal = {}, relayer_version) {
+const lookForKeyringInContainerLogs = async (
+  relayerVersion: string,
+  signal: AbortSignal,
+) => {
   try {
-    while (true) {
-      const container_id = execSync(
-        `docker ps -q --filter ancestor=neutron-org/neutron-query-relayer:${relayer_version}`,
+    while (!signal.aborted) {
+      const containerID = execSync(
+        `docker ps -q --filter ancestor=neutron-org/neutron-query-relayer:${relayerVersion}`,
       )
         .toString()
         .trim();
-      if (container_id) {
-        const container_logs = execSync(
-          `docker logs ${container_id} 2>&1`,
+      if (containerID) {
+        const relayerContainerLogs = execSync(
+          `docker logs ${containerID} 2>&1`,
         ).toString();
         const regex =
           /['"]keyring_backend['"]\s*:\s*["'](?<keyring>[^'"]*)["']/g;
-        const match = regex.exec(container_logs);
+        const match = regex.exec(relayerContainerLogs);
         if (match) {
           return match.groups['keyring'];
         }
@@ -24,74 +29,80 @@ async function search_keyring_in_output(signal = {}, relayer_version) {
   } catch (e) {
     if (e.name !== 'AbortError') throw e;
   }
+};
+
+interface RelayerTestResult {
+  didAnyTestFailed: boolean;
+  detectedKeyring: string;
 }
 
-async function test_relayer(keyring_type) {
-  const relayer_version = `${keyring_type}-test`;
+const testRelayer = async (keyringType: string) => {
+  const relayerVersion = `${keyringType}-test`;
 
-  const jest_env = process.env;
-  jest_env['RELAYER_VERSION'] = relayer_version;
-  const exec_options: ExecSyncOptions = {
-    env: jest_env,
+  const jestEnvironment = process.env;
+  jestEnvironment['RELAYER_VERSION'] = relayerVersion;
+  const jestExecOptions: ExecSyncOptions = {
+    env: jestEnvironment,
   };
 
-  const util = require('util');
-  const exec = util.promisify(require('child_process').exec);
-
-  const jest_promise = exec(
+  const jestPromise = exec(
     'jest --runInBand -b --json src/testcases/interchain_kv_query',
-    exec_options,
+    jestExecOptions,
   );
-  const controller = new AbortController();
-  const signal = controller.signal;
-  let detected_keyring = '';
-  search_keyring_in_output(signal, relayer_version).then((val) => {
-    detected_keyring = val;
-  });
 
-  const result: any = {};
-  const jest_output = (await jest_promise).stdout;
+  const keyringLookupAbortController = new AbortController();
+  const keyringLookupAbortSignal = keyringLookupAbortController.signal;
+  let keyringFromContainerLogs = '';
+  lookForKeyringInContainerLogs(relayerVersion, keyringLookupAbortSignal).then(
+    (result) => {
+      keyringFromContainerLogs = result;
+    },
+  );
 
-  result.is_any_test_failed = JSON.parse(jest_output).numFailedTests != 0;
+  const jestOutput = (await jestPromise).stdout;
 
-  result.detected_keyring = detected_keyring;
-  controller.abort();
+  const result: RelayerTestResult = {
+    didAnyTestFailed: JSON.parse(jestOutput).numFailedTests != 0,
+    detectedKeyring: keyringFromContainerLogs,
+  };
+
+  keyringLookupAbortController.abort();
   return result;
-}
+};
 
 describe('Neutron / Relayer keyrings', () => {
   test('memory backend', async () => {
-    const keyring_type = 'memory';
-    const tests_result = await test_relayer(keyring_type);
-    expect(tests_result.is_any_test_failed).toBeFalsy();
-    expect(tests_result.detected_keyring).toEqual(keyring_type);
+    const keyringBackend = 'memory';
+    const testsResult = await testRelayer(keyringBackend);
+    expect(testsResult.didAnyTestFailed).toBeFalsy();
+    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
   });
 
   test('os backend', async () => {
-    const keyring_type = 'os';
-    const tests_result = await test_relayer(keyring_type);
-    expect(tests_result.is_any_test_failed).toBeFalsy();
-    expect(tests_result.detected_keyring).toEqual(keyring_type);
+    const keyringBackend = 'os';
+    const testsResult = await testRelayer(keyringBackend);
+    expect(testsResult.didAnyTestFailed).toBeFalsy();
+    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
   });
 
   test('test backend', async () => {
-    const keyring_type = 'test';
-    const tests_result = await test_relayer(keyring_type);
-    expect(tests_result.is_any_test_failed).toBeFalsy();
-    expect(tests_result.detected_keyring).toEqual(keyring_type);
+    const keyringBackend = 'test';
+    const testsResult = await testRelayer(keyringBackend);
+    expect(testsResult.didAnyTestFailed).toBeFalsy();
+    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
   });
 
   test('pass backend', async () => {
-    const keyring_type = 'pass';
-    const tests_result = await test_relayer(keyring_type);
-    expect(tests_result.is_any_test_failed).toBeFalsy();
-    expect(tests_result.detected_keyring).toEqual(keyring_type);
+    const keyringBackend = 'pass';
+    const testsResult = await testRelayer(keyringBackend);
+    expect(testsResult.didAnyTestFailed).toBeFalsy();
+    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
   });
 
   test('file backend', async () => {
-    const keyring_type = 'file';
-    const tests_result = await test_relayer(keyring_type);
-    expect(tests_result.is_any_test_failed).toBeFalsy();
-    expect(tests_result.detected_keyring).toEqual(keyring_type);
+    const keyringBackend = 'file';
+    const testsResult = await testRelayer(keyringBackend);
+    expect(testsResult.didAnyTestFailed).toBeFalsy();
+    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
   });
 });
