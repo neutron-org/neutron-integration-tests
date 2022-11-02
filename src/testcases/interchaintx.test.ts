@@ -111,6 +111,24 @@ describe('Neutron / Interchain TXs', () => {
       expect(ica2.interchain_account_address.length).toEqual(65);
       icaAddress2 = ica2.interchain_account_address;
     });
+    test('set payer fees', async () => {
+      const res = await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_fees: {
+            denom: cm1.denom,
+            ack_fee: '2000',
+            recv_fee: '2000',
+            timeout_fee: '2000',
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+    test('fund contract to pay fees', async () => {
+      const res = await cm1.msgSend(contractAddress, '100000');
+      expect(res.code).toEqual(0);
+    });
     test('add some money to ICAs', async () => {
       const res1 = await cm2.msgSend(icaAddress1.toString(), '10000');
       expect(res1.code).toEqual(0);
