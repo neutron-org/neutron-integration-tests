@@ -60,6 +60,10 @@ describe('Neutron / Simple', () => {
         { amount: '10000', denom: NEUTRON_DENOM },
       ]);
     });
+    test('fund contract to pay fees', async () => {
+      const res = await cm.msgSend(contractAddress, '100000');
+      expect(res.code).toEqual(0);
+    });
     test('execute contract', async () => {
       const res = await cm.executeContract(
         contractAddress,
