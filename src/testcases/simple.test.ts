@@ -255,7 +255,7 @@ describe('Neutron / Simple', () => {
       const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
         cm.sdk,
         async () => cm.queryAckFailures(contractAddress),
-        // Wait until there 1 failure in the list
+        // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
       );
 

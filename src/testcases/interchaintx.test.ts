@@ -487,6 +487,20 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
 
+      // Testing ACK failure
+      await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: cm2.denom,
+          },
+        }),
+      );
+
+      // Testing ACK timeout failure
       await cm1.executeContract(
         contractAddress,
         JSON.stringify({
@@ -504,13 +518,18 @@ describe('Neutron / Interchain TXs', () => {
         cm1.sdk,
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 1 failure in the list
-        (data) => data.failures.length == 1,
+        (data) => data.failures.length == 2,
       );
 
       expect(failuresAfterCall.failures).toEqual([
         expect.objectContaining({
           address: contractAddress,
           id: '0',
+          ack_type: 'ack',
+        }),
+        expect.objectContaining({
+          address: contractAddress,
+          id: '1',
           ack_type: 'timeout',
         }),
       ]);
