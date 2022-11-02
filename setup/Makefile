@@ -11,11 +11,11 @@ build-relayer:
 		docker build ../../neutron-query-relayer -f ../../neutron-query-relayer/Dockerfile -t neutron-org/neutron-query-relayer:base
 
 build-relayer-keyring-tests: build-neutron build-relayer
-		docker build ../query_relayer_keychain_tests/os_test     -t neutron-org/neutron-query-relayer:os-test
-		docker build ../query_relayer_keychain_tests/test_test   -t neutron-org/neutron-query-relayer:test-test
-		docker build ../query_relayer_keychain_tests/memory_test -t neutron-org/neutron-query-relayer:memory-test
-		docker build ../query_relayer_keychain_tests/pass_test   -t neutron-org/neutron-query-relayer:pass-test
-		docker build ../query_relayer_keychain_tests/file_test   -t neutron-org/neutron-query-relayer:file-test
+		docker build ./relayer_keyrings/os_test     -t neutron-org/neutron-query-relayer:os-test
+		docker build ./relayer_keyrings/test_test   -t neutron-org/neutron-query-relayer:test-test
+		docker build ./relayer_keyrings/memory_test -t neutron-org/neutron-query-relayer:memory-test
+		docker build ./relayer_keyrings/pass_test   -t neutron-org/neutron-query-relayer:pass-test
+		docker build ./relayer_keyrings/file_test   -t neutron-org/neutron-query-relayer:file-test
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-relayer-keyring-tests
 
