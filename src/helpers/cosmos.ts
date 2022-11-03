@@ -227,14 +227,13 @@ export class CosmosWrapper {
     contract: string,
     query: Record<string, unknown>,
   ): Promise<T> {
+    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
+      JSON.stringify(query),
+    ).toString('base64')}?encoding=base64`;
     const req = await axios.get<{
       result: { smart: string };
       height: number;
-    }>(
-      `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
-        JSON.stringify(query),
-      ).toString('base64')}?encoding=base64`,
-    );
+    }>(url);
     return JSON.parse(
       Buffer.from(req.data.result.smart, 'base64').toString(),
     ) as T;
@@ -372,4 +371,15 @@ export const mnemonicToWallet = async (
     }
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
+};
+
+export const getSequenceId = (rawLog: string | undefined): number => {
+  if (!rawLog) {
+    throw 'getSequenceId: empty rawLog';
+  }
+  const events = JSON.parse(rawLog)[0]['events'];
+  const sequence = events
+    .find((e) => e['type'] === 'send_packet')
+    ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
+  return +sequence;
 };

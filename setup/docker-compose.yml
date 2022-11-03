@@ -27,7 +27,7 @@ services:
       - ALLOW_ICA_EXEC=yes
 
   hermes:
-    image: hermes:0.14.1
+    image: hermes:1.0.0
     depends_on:
       - "neutron-node"
       - "gaia-node"

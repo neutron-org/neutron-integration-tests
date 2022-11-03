@@ -5,7 +5,7 @@ build-neutron:
 		@docker buildx build  --build-context app=../../neutron --build-context setup=./node -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
 
 build-hermes:
-		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:0.14.1 .
+		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.0.0 .
 
 build-relayer:
 		docker build ../../neutron-query-relayer -f ../../neutron-query-relayer/Dockerfile -t neutron-org/neutron-query-relayer:base
