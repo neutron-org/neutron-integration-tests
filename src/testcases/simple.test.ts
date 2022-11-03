@@ -1,3 +1,4 @@
+import { before } from 'lodash';
 import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
 import { waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -137,6 +138,66 @@ describe('Neutron / Simple', () => {
           10,
         );
         expect(balance).toBe(20000 - 3000 - 2333 * 2);
+      });
+    });
+    describe('Missing fee', () => {
+      beforeAll(async () => {
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: cm.denom,
+              ack_fee: '0',
+              recv_fee: '0',
+              timeout_fee: '0',
+            },
+          }),
+        );
+      });
+      test('execute contract should fail', async () => {
+        await expect(
+          cm.executeContract(
+            contractAddress,
+            JSON.stringify({
+              send: {
+                channel: 'channel-0',
+                to: testState.wallets.cosmos.demo2.address.toString(),
+                denom: NEUTRON_DENOM,
+                amount: '1000',
+              },
+            }),
+          ),
+        ).rejects.toThrow(/insufficient fee/);
+      });
+    });
+    describe('Not enough amount of tokens on contract to pay fee', () => {
+      beforeAll(async () => {
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: cm.denom,
+              ack_fee: '1000000',
+              recv_fee: '0',
+              timeout_fee: '100000',
+            },
+          }),
+        );
+      });
+      test('execute contract should fail', async () => {
+        await expect(
+          cm.executeContract(
+            contractAddress,
+            JSON.stringify({
+              send: {
+                channel: 'channel-0',
+                to: testState.wallets.cosmos.demo2.address.toString(),
+                denom: NEUTRON_DENOM,
+                amount: '1000',
+              },
+            }),
+          ),
+        ).rejects.toThrow(/insufficient funds/);
       });
     });
   });
