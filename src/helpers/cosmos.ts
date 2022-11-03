@@ -16,7 +16,6 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
-export const BLOCK_TIME = parseInt(process.env.BLOCK_TIME || '1000');
 
 type ChannelsList = {
   channels: {
@@ -59,7 +58,7 @@ export class CosmosWrapper {
   }
 
   /**
-   * execTx broadcasts messages, waits two blocks and returns the transaction result.
+   * execTx broadcasts messages and returns the transaction result.
    */
   async execTx<T>(
     fee: proto.cosmos.tx.v1beta1.IFee,
@@ -108,17 +107,24 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
+
+    let error = null;
     while (numAttempts > 0) {
       await waitBlocks(this.sdk, 1);
-      try {
-        numAttempts--;
-        const data = await rest.tx.getTx(this.sdk as CosmosSDK, txhash);
+      numAttempts--;
+      const data = await rest.tx
+        .getTx(this.sdk as CosmosSDK, txhash)
+        .catch((reason) => {
+          error = reason;
+          return null;
+        });
+      if (data != null) {
         this.wallet.account.sequence++;
         return data.data;
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
+      }
     }
-    throw new Error('failed to submit tx after 10 attempts');
+    error = error ?? new Error('failed to submit tx');
+    throw error;
   }
 
   // storeWasm stores the wasm code by the passed path on the blockchain.
@@ -201,7 +207,6 @@ export class CosmosWrapper {
     query: Record<string, unknown>,
     numAttempts = 20,
   ): Promise<T> {
-    // TODO: reuse this fancy .catch() technique in every wait function variant
     while (numAttempts > 0) {
       const res: T = await this.queryContract<T>(contract, query).catch(
         () => null,
@@ -215,21 +220,20 @@ export class CosmosWrapper {
       await waitBlocks(this.sdk, 1);
     }
 
-    return null;
+    throw new Error('failed to query contract');
   }
 
   async queryContract<T>(
     contract: string,
     query: Record<string, unknown>,
   ): Promise<T> {
+    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
+      JSON.stringify(query),
+    ).toString('base64')}?encoding=base64`;
     const req = await axios.get<{
       result: { smart: string };
       height: number;
-    }>(
-      `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
-        JSON.stringify(query),
-      ).toString('base64')}?encoding=base64`,
-    );
+    }>(url);
     return JSON.parse(
       Buffer.from(req.data.result.smart, 'base64').toString(),
     ) as T;
@@ -367,4 +371,15 @@ export const mnemonicToWallet = async (
     }
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
+};
+
+export const getSequenceId = (rawLog: string | undefined): number => {
+  if (!rawLog) {
+    throw 'getSequenceId: empty rawLog';
+  }
+  const events = JSON.parse(rawLog)[0]['events'];
+  const sequence = events
+    .find((e) => e['type'] === 'send_packet')
+    ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
+  return +sequence;
 };
