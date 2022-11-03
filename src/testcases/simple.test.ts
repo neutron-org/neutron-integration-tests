@@ -53,6 +53,7 @@ describe('Neutron / Simple', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
+        await waitBlocks(cm.sdk, 10);
         const balances = await cm.queryBalances(
           'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
         );
@@ -63,13 +64,13 @@ describe('Neutron / Simple', () => {
         );
       });
       test('transfer to contract', async () => {
-        const res = await cm.msgSend(contractAddress.toString(), '10000');
+        const res = await cm.msgSend(contractAddress.toString(), '20000');
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
         const balances = await cm.queryBalances(contractAddress);
         expect(balances.balances).toEqual([
-          { amount: '10000', denom: NEUTRON_DENOM },
+          { amount: '20000', denom: NEUTRON_DENOM },
         ]);
       });
       test('set payer fees', async () => {
@@ -78,9 +79,9 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             set_fees: {
               denom: cm.denom,
-              ack_fee: '2000',
+              ack_fee: '2333',
               recv_fee: '0',
-              timeout_fee: '2000',
+              timeout_fee: '2666',
             },
           }),
         );
@@ -125,16 +126,17 @@ describe('Neutron / Simple', () => {
             '0',
           10,
         );
-        expect((balance - relayerBalance) / 10).toBeCloseTo(272, 0);
+        expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5);
       });
-      test('contract should have spent gee', async () => {
+      test('contract should be refunded', async () => {
+        await waitBlocks(cm.sdk, 10);
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
           10,
         );
-        expect(balance).toBe(10000 - 2000);
+        expect(balance).toBe(20000 - 3000 - 2333 * 2);
       });
     });
   });
