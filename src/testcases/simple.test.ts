@@ -50,48 +50,92 @@ describe('Neutron / Simple', () => {
   });
 
   describe('IBC', () => {
-    test('transfer to contract', async () => {
-      const res = await cm.msgSend(contractAddress.toString(), '10000');
-      expect(res.code).toEqual(0);
-    });
-    test('check balance', async () => {
-      const balances = await cm.queryBalances(contractAddress);
-      expect(balances.balances).toEqual([
-        { amount: '10000', denom: NEUTRON_DENOM },
-      ]);
-    });
-    test('fund contract to pay fees', async () => {
-      const res = await cm.msgSend(contractAddress, '100000');
-      expect(res.code).toEqual(0);
-    });
-    test('execute contract', async () => {
-      const res = await cm.executeContract(
-        contractAddress,
-        JSON.stringify({
-          send: {
-            channel: 'channel-0',
-            to: testState.wallets.cosmos.demo2.address.toString(),
-            denom: NEUTRON_DENOM,
-            amount: '1000',
-          },
-        }),
-      );
-      expect(res.code).toEqual(0);
-    });
+    describe('Correct way', () => {
+      let relayerBalance = 0;
+      beforeAll(async () => {
+        const balances = await cm.queryBalances(
+          'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
+        );
+        relayerBalance = parseInt(
+          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
+            '0',
+          10,
+        );
+      });
+      test('transfer to contract', async () => {
+        const res = await cm.msgSend(contractAddress.toString(), '10000');
+        expect(res.code).toEqual(0);
+      });
+      test('check balance', async () => {
+        const balances = await cm.queryBalances(contractAddress);
+        expect(balances.balances).toEqual([
+          { amount: '10000', denom: NEUTRON_DENOM },
+        ]);
+      });
+      test('set payer fees', async () => {
+        const res = await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: cm.denom,
+              ack_fee: '2000',
+              recv_fee: '0',
+              timeout_fee: '2000',
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
 
-    test('check wallet balance', async () => {
-      await waitBlocks(cm.sdk, 10);
-      const balances = await cm2.queryBalances(
-        testState.wallets.cosmos.demo2.address.toString(),
-      );
-      // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
-      expect(
-        balances.balances.find(
-          (bal): boolean =>
-            bal.denom ==
-            'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
-        )?.amount,
-      ).toEqual('3000');
+      test('execute contract', async () => {
+        const res = await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.cosmos.demo2.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      test('check wallet balance', async () => {
+        await waitBlocks(cm.sdk, 10);
+        const balances = await cm2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
+        expect(
+          balances.balances.find(
+            (bal): boolean =>
+              bal.denom ==
+              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+          )?.amount,
+        ).toEqual('3000');
+      });
+      test('relayer must receive fee', async () => {
+        const balances = await cm.queryBalances(
+          'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
+        );
+        const balance = parseInt(
+          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
+            '0',
+          10,
+        );
+        expect((balance - relayerBalance) / 10).toBeCloseTo(272, 0);
+      });
+      test('contract should have spent gee', async () => {
+        const balances = await cm.queryBalances(contractAddress);
+        const balance = parseInt(
+          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
+            '0',
+          10,
+        );
+        expect(balance).toBe(10000 - 2000);
+      });
     });
   });
 });
