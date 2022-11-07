@@ -1,4 +1,9 @@
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  CosmosWrapper,
+  COSMOS_DENOM,
+  IBC_RELAYER_NEUTRON_ADDRESS,
+  NEUTRON_DENOM,
+} from '../helpers/cosmos';
 import { waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
@@ -54,9 +59,7 @@ describe('Neutron / Simple', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
         await waitBlocks(cm.sdk, 10);
-        const balances = await cm.queryBalances(
-          'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
-        );
+        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -118,9 +121,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('3000');
       });
       test('relayer must receive fee', async () => {
-        const balances = await cm.queryBalances(
-          'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
-        );
+        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
