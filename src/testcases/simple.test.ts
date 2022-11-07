@@ -127,7 +127,7 @@ describe('Neutron / Simple', () => {
             '0',
           10,
         );
-        expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5);
+        expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
         await waitBlocks(cm.sdk, 10);
