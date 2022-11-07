@@ -121,7 +121,7 @@ describe('Neutron / Interchain TXs', () => {
             set_fees: {
               denom: cm1.denom,
               ack_fee: '2000',
-              recv_fee: '2000',
+              recv_fee: '0',
               timeout_fee: '2000',
             },
           }),
@@ -362,7 +362,7 @@ describe('Neutron / Interchain TXs', () => {
               set_fees: {
                 denom: cm1.denom,
                 ack_fee: '9999999999',
-                recv_fee: '9999999999',
+                recv_fee: '0',
                 timeout_fee: '9999999999',
               },
             }),
@@ -375,7 +375,7 @@ describe('Neutron / Interchain TXs', () => {
               set_fees: {
                 denom: cm1.denom,
                 ack_fee: '2000',
-                recv_fee: '2000',
+                recv_fee: '0',
                 timeout_fee: '2000',
               },
             }),
