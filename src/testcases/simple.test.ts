@@ -167,7 +167,7 @@ describe('Neutron / Simple', () => {
               },
             }),
           ),
-        ).rejects.toThrow(/insufficient fee/);
+        ).rejects.toThrow(/invalid coins/);
       });
     });
     describe('Not enough amount of tokens on contract to pay fee', () => {

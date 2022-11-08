@@ -351,7 +351,7 @@ describe('Neutron / Interchain TXs', () => {
                 },
               }),
             ),
-          ).rejects.toThrow(/insufficient fee/);
+          ).rejects.toThrow(/invalid coins/);
         });
       });
       describe('insufficient funds for fee', () => {
