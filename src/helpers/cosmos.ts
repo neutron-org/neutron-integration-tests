@@ -16,6 +16,8 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
+export const IBC_RELAYER_NEUTRON_ADDRESS =
+  'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
 
 type ChannelsList = {
   channels: {
