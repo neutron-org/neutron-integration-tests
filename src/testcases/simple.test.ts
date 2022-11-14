@@ -226,9 +226,6 @@ describe('Neutron / Simple', () => {
     });
 
     test('execute contract with failing sudo', async () => {
-      // Wait for previous transaction to be executed
-      await waitBlocks(cm.sdk, 3);
-
       const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
       expect(failuresBeforeCall.failures.length).toEqual(0);
 

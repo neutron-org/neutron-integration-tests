@@ -473,8 +473,6 @@ describe('Neutron / Interchain TXs', () => {
 
     test('delegate with sudo failure', async () => {
       await cleanAckResults(cm1, contractAddress);
-      // Wait for previous transaction to be executed
-      await waitBlocks(cm1.sdk, 3);
 
       const failuresBeforeCall = await cm1.queryAckFailures(contractAddress);
       expect(failuresBeforeCall.failures.length).toEqual(0);
@@ -517,7 +515,7 @@ describe('Neutron / Interchain TXs', () => {
       const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
         cm1.sdk,
         async () => cm1.queryAckFailures(contractAddress),
-        // Wait until there 1 failure in the list
+        // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
       );
 
