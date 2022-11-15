@@ -1,6 +1,6 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto } from '@cosmos-client/ibc';
+import { ibcproto, ibcrest } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
@@ -45,6 +45,12 @@ type BalancesResponse = {
     next_key: string;
     total: string;
   };
+};
+
+// DenomTraceResponse is the response model for the ibc transfer denom trace query.
+type DenomTraceResponse = {
+  path?: string;
+  base_denom?: string;
 };
 
 // Balance represents a single asset balance of an account.
@@ -301,6 +307,14 @@ export class CosmosWrapper {
       addr as unknown as AccAddress,
     );
     return balances.data as BalancesResponse;
+  }
+
+  async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
+    const trace = await ibcrest.applications.transfer.denomTrace(
+      this.sdk,
+      ibcDenom,
+    );
+    return trace.data as DenomTraceResponse;
   }
 
   async msgDelegate(
