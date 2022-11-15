@@ -1,6 +1,6 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto, ibcrest } from '@cosmos-client/ibc';
+import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
