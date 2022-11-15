@@ -16,6 +16,4 @@ export RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=file
 export RELAYER_NEUTRON_CHAIN_KEYRING_PASSWORD=$KEYRING_PASS
 export RELAYER_NEUTRON_CHAIN_HOME_DIR=/root/.neutrond/
 
-./run-old.sh || true
-
-sleep infinity
+./run-old.sh
