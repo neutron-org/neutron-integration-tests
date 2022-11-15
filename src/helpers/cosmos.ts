@@ -1,5 +1,6 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
+import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
@@ -11,8 +12,11 @@ import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
-import { google } from '@cosmos-client/core/cjs/proto';
+import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
+import ICoin = cosmos.base.v1beta1.ICoin;
+import { ibc } from '@cosmos-client/ibc/cjs/proto';
+import IHeight = ibc.core.client.v1.IHeight;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -252,6 +256,34 @@ export class CosmosWrapper {
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
+    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      [msgSend],
+    );
+    return res?.tx_response;
+  }
+
+  /**
+   * msgSend processes an IBC transfer, waits two blocks and returns the tx hash.
+   */
+  async msgIBCTransfer(
+    source_port: string,
+    source_channel: string,
+    token: ICoin,
+    receiver: string,
+    timeout_height: IHeight,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgSend = new ibcproto.ibc.applications.transfer.v1.MsgTransfer({
+      source_port: source_port,
+      source_channel: source_channel,
+      token: token,
+      sender: this.wallet.address.toString(),
+      receiver: receiver,
+      timeout_height: timeout_height,
     });
     const res = await this.execTx(
       {

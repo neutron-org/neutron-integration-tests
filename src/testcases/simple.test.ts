@@ -76,6 +76,29 @@ describe('Neutron / Simple', () => {
           { amount: '20000', denom: NEUTRON_DENOM },
         ]);
       });
+      test('IBC transfer from a usual account', async () => {
+        const res = await cm.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: 'stake', amount: '1000' },
+          testState.wallets.cosmos.demo2.address.toString(),
+          { revision_number: 2, revision_height: 100000000 },
+        );
+        expect(res.code).toEqual(0);
+      });
+      test('check IBC token balance', async () => {
+        await waitBlocks(cm.sdk, 10);
+        const balances = await cm2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        expect(
+          balances.balances.find(
+            (bal): boolean =>
+              bal.denom ==
+              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+          )?.amount,
+        ).toEqual('1000');
+      });
       test('set payer fees', async () => {
         const res = await cm.executeContract(
           contractAddress,
@@ -111,14 +134,14 @@ describe('Neutron / Simple', () => {
         const balances = await cm2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
-        // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
+        // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(
           balances.balances.find(
             (bal): boolean =>
               bal.denom ==
               'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
           )?.amount,
-        ).toEqual('3000');
+        ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
