@@ -1,8 +1,8 @@
 build-gaia:
-		@docker buildx build  --build-context app=../../gaia --build-context setup=./node -t gaia-node -f dockerbuilds/Dockerfile.gaia --build-arg BINARY=gaiad .
+		@docker buildx build --load --build-context app=../../gaia --build-context setup=./node -t gaia-node -f dockerbuilds/Dockerfile.gaia --build-arg BINARY=gaiad .
 
 build-neutron:
-		@docker buildx build  --build-context app=../../neutron --build-context setup=./node -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
+		@docker buildx build --load --build-context app=../../neutron --build-context setup=./node -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
 
 build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.0.0 .
