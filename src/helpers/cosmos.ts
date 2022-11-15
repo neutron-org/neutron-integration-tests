@@ -310,11 +310,10 @@ export class CosmosWrapper {
   }
 
   async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
-    const trace = await ibcrest.applications.transfer.denomTrace(
-      this.sdk,
-      ibcDenom,
+    const data = axios.get<{ denom_trace: DenomTraceResponse }>(
+      `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
     );
-    return trace.data as DenomTraceResponse;
+    return data.then((res) => res.data.denom_trace);
   }
 
   async msgDelegate(
