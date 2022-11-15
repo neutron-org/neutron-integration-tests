@@ -498,6 +498,8 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
 
+      await waitBlocks(cm1.sdk, 10);
+
       // Testing ACK timeout failure
       await cm1.executeContract(
         contractAddress,
@@ -517,6 +519,7 @@ describe('Neutron / Interchain TXs', () => {
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
+        20,
       );
 
       expect(failuresAfterCall.failures).toEqual([
