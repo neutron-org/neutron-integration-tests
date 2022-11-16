@@ -47,11 +47,15 @@ const walletSet = async (
   ),
 });
 
+interface initOptions {
+  noRebuild?: boolean | undefined;
+}
+
 export class TestStateLocalCosmosTestNet {
   sdk1: cosmosclient.CosmosSDK;
   sdk2: cosmosclient.CosmosSDK;
   wallets: Record<string, Record<string, Wallet>>;
-  init = async () => {
+  init = async (options: initOptions = {}) => {
     const neutron_prefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
     const cosmos_prefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
 
@@ -61,10 +65,12 @@ export class TestStateLocalCosmosTestNet {
     this.sdk1 = new cosmosclient.CosmosSDK(host1, config.CHAIN_ID_1);
     this.sdk2 = new cosmosclient.CosmosSDK(host2, config.CHAIN_ID_2);
 
-    await setup(host1);
+    await setup(host1, options.noRebuild);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutron_prefix);
     this.wallets.cosmos = await walletSet(this.sdk2, cosmos_prefix);
   };
+
+  restart = async () => this.init({ noRebuild: true });
 }

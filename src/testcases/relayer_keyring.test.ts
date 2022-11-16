@@ -1,6 +1,12 @@
-import { execSync, ExecSyncOptions } from 'child_process';
-const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+import { execSync } from 'child_process';
+import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  registerBalanceQuery,
+  validateBalanceQuery,
+  waitForICQResultWithRemoteHeight,
+} from '../helpers/icq';
+import { getRemoteHeight } from '../helpers/wait';
 
 const lookForKeyringInContainerLogs = async (
   relayerVersion: string,
@@ -31,24 +37,12 @@ const lookForKeyringInContainerLogs = async (
   }
 };
 
-interface RelayerTestResult {
-  didAnyTestFailed: boolean;
-  detectedKeyring: string;
-}
-
 const testRelayer = async (keyringType: string) => {
   const relayerVersion = `${keyringType}-test`;
 
-  const jestEnvironment = process.env;
-  jestEnvironment['RELAYER_VERSION'] = relayerVersion;
-  const jestExecOptions: ExecSyncOptions = {
-    env: jestEnvironment,
-  };
-
-  const jestPromise = exec(
-    'jest --runInBand -b --json src/testcases/interchain_kv_query',
-    jestExecOptions,
-  );
+  process.env['RELAYER_VERSION'] = relayerVersion;
+  const testState = new TestStateLocalCosmosTestNet();
+  await testState.restart();
 
   const keyringLookupAbortController = new AbortController();
   const keyringLookupAbortSignal = keyringLookupAbortController.signal;
@@ -59,50 +53,114 @@ const testRelayer = async (keyringType: string) => {
     },
   );
 
-  const jestOutput = (await jestPromise).stdout;
+  await performKVQuery(testState);
 
-  const result: RelayerTestResult = {
-    didAnyTestFailed: JSON.parse(jestOutput).numFailedTests != 0,
-    detectedKeyring: keyringFromContainerLogs,
-  };
+  expect(keyringFromContainerLogs).toEqual(keyringType);
 
   keyringLookupAbortController.abort();
-  return result;
+};
+
+const performKVQuery = async (testState) => {
+  const cm = {
+    1: new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+    ),
+    2: new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+    ),
+  };
+
+  const connectionId = 'connection-0';
+  const updatePeriods: { [key: number]: number } = {
+    2: 2,
+    3: 4,
+    4: 3,
+  };
+
+  const codeId = await cm[1].storeWasm('neutron_interchain_queries.wasm');
+  expect(parseInt(codeId)).toBeGreaterThan(0);
+  const contractAddress = await cm[1].instantiate(
+    codeId,
+    '{}',
+    'neutron_interchain_queries',
+  );
+  // Top up contract address before running query
+  await cm[1].msgSend(contractAddress, '1000000');
+
+  let balances = await cm[1].queryBalances(contractAddress);
+  expect(balances.balances[0].amount).toEqual('1000000');
+
+  await registerBalanceQuery(
+    cm[1],
+    contractAddress,
+    connectionId,
+    10,
+    cm[2].denom,
+    testState.wallets.cosmos.demo2.address,
+  );
+
+  balances = await cm[1].queryBalances(contractAddress);
+  expect(balances.balances.length).toEqual(0);
+  // Top up contract address before running query
+  await cm[1].msgSend(contractAddress, '1000000');
+  await registerBalanceQuery(
+    cm[1],
+    contractAddress,
+    connectionId,
+    updatePeriods[2],
+    cm[2].denom,
+    testState.wallets.cosmos.demo2.address,
+  );
+  // reduce balance of demo2 wallet
+  const queryId = 2;
+  const res = await cm[2].msgSend(
+    testState.wallets.cosmos.rly2.address.toString(),
+    '9000',
+  );
+  expect(res.code).toEqual(0);
+  await waitForICQResultWithRemoteHeight(
+    cm[1],
+    contractAddress,
+    queryId,
+    await getRemoteHeight(cm[2].sdk),
+  );
+  await validateBalanceQuery(
+    cm[1],
+    cm[2],
+    contractAddress,
+    queryId,
+    cm[2].wallet.address,
+  );
 };
 
 describe('Neutron / Relayer keyrings', () => {
   test('memory backend', async () => {
-    const keyringBackend = 'memory';
-    const testsResult = await testRelayer(keyringBackend);
-    expect(testsResult.didAnyTestFailed).toBeFalsy();
-    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
+    await testRelayer('memory');
   });
 
   test('os backend', async () => {
-    const keyringBackend = 'os';
-    const testsResult = await testRelayer(keyringBackend);
-    expect(testsResult.didAnyTestFailed).toBeFalsy();
-    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
+    await testRelayer('os');
   });
 
   test('test backend', async () => {
-    const keyringBackend = 'test';
-    const testsResult = await testRelayer(keyringBackend);
-    expect(testsResult.didAnyTestFailed).toBeFalsy();
-    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
+    await testRelayer('test');
   });
 
   test('pass backend', async () => {
-    const keyringBackend = 'pass';
-    const testsResult = await testRelayer(keyringBackend);
-    expect(testsResult.didAnyTestFailed).toBeFalsy();
-    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
+    await testRelayer('pass');
   });
 
   test('file backend', async () => {
-    const keyringBackend = 'file';
-    const testsResult = await testRelayer(keyringBackend);
-    expect(testsResult.didAnyTestFailed).toBeFalsy();
-    expect(testsResult.detectedKeyring).toEqual(keyringBackend);
+    await testRelayer('file');
+  });
+
+  afterAll(async () => {
+    const testState = new TestStateLocalCosmosTestNet();
+    process.env['RELAYER_VERSION'] = 'base';
+    await testState.restart();
   });
 });

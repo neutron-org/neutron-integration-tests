@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { execSync } from 'child_process';
+import { execSync, ExecSyncOptions } from 'child_process';
 import { wait } from './wait';
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
@@ -8,8 +8,8 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
 
 let alreadySetUp = false;
 
-export const setup = async (host: string) => {
-  if (alreadySetUp) {
+export const setup = async (host: string, noRebuild = false) => {
+  if (alreadySetUp && !noRebuild) {
     console.log('already set up');
     return;
   }
@@ -22,7 +22,16 @@ export const setup = async (host: string) => {
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
-  execSync(`cd setup && make start-cosmopark`);
+  const execOptions: ExecSyncOptions = {
+    env: process.env,
+  };
+  if (noRebuild) {
+    console.log('Rebuilding and starting...');
+    execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
+  } else {
+    console.log('Starting without rebuilding');
+    execSync(`cd setup && make start-cosmopark`, execOptions);
+  }
   await waitForHTTP(host);
   await waitForChannel(host);
   alreadySetUp = true;
