@@ -531,23 +531,6 @@ describe('Neutron / Interchain KV Query', () => {
     });
   });
 
-  describe('update recipient and check', () => {
-    it("should not update recipient bc it's a KV query", async () => {
-      await expect(
-        cm[1].executeContract(
-          contractAddress,
-          JSON.stringify({
-            update_interchain_query: {
-              query_id: 1,
-              new_update_period: 4,
-              new_recipient: 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa',
-            },
-          }),
-        ),
-      ).rejects.toThrow(/wrong query type/);
-    });
-  });
-
   describe('Remove interchain query', () => {
     test('remove icq #1', async () => {
       let balances = await cm[1].queryBalances(contractAddress);

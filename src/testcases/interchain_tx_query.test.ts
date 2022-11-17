@@ -639,7 +639,7 @@ describe('Neutron / Interchain TX Query', () => {
         JSON.stringify({
           update_interchain_query: {
             query_id: 3,
-            new_update_period: 5,
+            new_update_period: query3UpdatePeriod,
             new_recipient: newWatchedAddr5,
           },
         }),
@@ -647,13 +647,12 @@ describe('Neutron / Interchain TX Query', () => {
       expect(res.code).toEqual(0);
     });
     it('seems registered transfers query is updated', async () => {
-      await waitBlocks(cm.sdk, 10);
       const query = await getRegisteredQuery(cm, contractAddress, 3);
       expect(query.registered_query.id).toEqual(3);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
       expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.update_period).toEqual(5);
+      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           newWatchedAddr5 +
@@ -670,19 +669,18 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
-        query1UpdatePeriod * 5,
+        query3UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,
         newWatchedAddr5,
       );
-      expect(deposits.transfers).toEqual([
+      expect(deposits.transfers).toMatchObject([
         {
-          recipient: watchedAddr1,
+          recipient: newWatchedAddr5,
           sender: cm2.wallet.address.toString(),
           denom: cm2.denom,
-          amount: addr1ExpectedBalance.toString(),
         },
       ]);
     });
