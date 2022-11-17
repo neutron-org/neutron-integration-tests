@@ -6,10 +6,11 @@ import {
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
+  AckFailuresResponse,
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+import { getWithAttempts, waitBlocks } from '../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../helpers/ica';
 
@@ -468,6 +469,79 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
       });
+    });
+
+    test('delegate with sudo failure', async () => {
+      await cleanAckResults(cm1, contractAddress);
+
+      const failuresBeforeCall = await cm1.queryAckFailures(contractAddress);
+      expect(failuresBeforeCall.failures.length).toEqual(0);
+
+      // Mock sudo handler to fail
+      await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_set_sudo_failure_mock: {},
+        }),
+      );
+
+      // Testing ACK failure
+      await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: cm2.denom,
+          },
+        }),
+      );
+
+      await waitBlocks(cm1.sdk, 10);
+
+      // Testing ACK timeout failure
+      await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: cm2.denom,
+            timeout: 1,
+          },
+        }),
+      );
+
+      const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
+        cm1.sdk,
+        async () => cm1.queryAckFailures(contractAddress),
+        // Wait until there 2 failure in the list
+        (data) => data.failures.length == 2,
+        20,
+      );
+
+      expect(failuresAfterCall.failures).toEqual([
+        expect.objectContaining({
+          address: contractAddress,
+          id: '0',
+          ack_type: 'ack',
+        }),
+        expect.objectContaining({
+          address: contractAddress,
+          id: '1',
+          ack_type: 'timeout',
+        }),
+      ]);
+
+      // Restore sudo handler to state
+      await cm1.executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_unset_sudo_failure_mock: {},
+        }),
+      );
     });
   });
 });

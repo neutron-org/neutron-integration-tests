@@ -1,10 +1,11 @@
 import {
+  AckFailuresResponse,
   CosmosWrapper,
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
 } from '../helpers/cosmos';
-import { waitBlocks } from '../helpers/wait';
+import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
@@ -67,13 +68,13 @@ describe('Neutron / Simple', () => {
         );
       });
       test('transfer to contract', async () => {
-        const res = await cm.msgSend(contractAddress.toString(), '20000');
+        const res = await cm.msgSend(contractAddress.toString(), '50000');
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
         const balances = await cm.queryBalances(contractAddress);
         expect(balances.balances).toEqual([
-          { amount: '20000', denom: NEUTRON_DENOM },
+          { amount: '50000', denom: NEUTRON_DENOM },
         ]);
       });
       test('IBC transfer from a usual account', async () => {
@@ -160,7 +161,7 @@ describe('Neutron / Simple', () => {
             '0',
           10,
         );
-        expect(balance).toBe(20000 - 3000 - 2333 * 2);
+        expect(balance).toBe(50000 - 3000 - 2333 * 2);
       });
     });
     describe('Missing fee', () => {
@@ -221,6 +222,101 @@ describe('Neutron / Simple', () => {
             }),
           ),
         ).rejects.toThrow(/insufficient funds/);
+      });
+    });
+
+    describe('Not enough amount of tokens on contract to pay fee', () => {
+      beforeAll(async () => {
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: cm.denom,
+              ack_fee: '1000',
+              recv_fee: '0',
+              timeout_fee: '1000',
+            },
+          }),
+        );
+      });
+      test('execute contract with failing sudo', async () => {
+        const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
+        expect(failuresBeforeCall.failures.length).toEqual(0);
+
+        // Mock sudo handler to fail
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {},
+          }),
+        );
+
+        const currentHeight = await getRemoteHeight(cm.sdk);
+
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.cosmos.demo2.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          }),
+        );
+
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.cosmos.demo2.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+              timeout_height: currentHeight + 3,
+            },
+          }),
+        );
+
+        const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
+          cm.sdk,
+          async () => cm.queryAckFailures(contractAddress),
+          // Wait until there 2 failure in the list
+          (data) => data.failures.length == 4,
+        );
+
+        console.log(failuresAfterCall.failures);
+
+        expect(failuresAfterCall.failures).toEqual([
+          expect.objectContaining({
+            address: contractAddress,
+            id: '0',
+            ack_type: 'ack',
+          }),
+          expect.objectContaining({
+            address: contractAddress,
+            id: '1',
+            ack_type: 'ack',
+          }),
+          expect.objectContaining({
+            address: contractAddress,
+            id: '2',
+            ack_type: 'timeout',
+          }),
+          expect.objectContaining({
+            address: contractAddress,
+            id: '3',
+            ack_type: 'timeout',
+          }),
+        ]);
+
+        // Restore sudo handler to state
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
       });
     });
   });
