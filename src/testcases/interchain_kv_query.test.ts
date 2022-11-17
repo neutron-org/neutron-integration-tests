@@ -4,7 +4,6 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { max } from 'lodash';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
@@ -503,7 +502,7 @@ describe('Neutron / Interchain KV Query', () => {
       const start = await Promise.all(
         [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
-      for (let i = 0; i <= max(Object.values(updatePeriods)); ++i) {
+      for (let i = 0; i <= Math.max(...Object.values(updatePeriods)); ++i) {
         const res = await Promise.all(
           [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
         );
@@ -529,6 +528,23 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('now callbacks work again', async () => {
       await watchForKvCallbackUpdates(cm[1], cm[2], contractAddress, [2, 3, 4]);
+    });
+  });
+
+  describe('update recipient and check', () => {
+    it("should not update recipient bc it's a KV query", async () => {
+      await expect(
+        cm[1].executeContract(
+          contractAddress,
+          JSON.stringify({
+            update_interchain_query: {
+              query_id: 1,
+              new_update_period: 4,
+              new_recipient: 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa',
+            },
+          }),
+        ),
+      ).rejects.toThrow(/wrong query type/);
     });
   });
 
