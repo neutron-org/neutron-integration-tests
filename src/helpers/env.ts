@@ -79,13 +79,16 @@ export const showVersions = () => {
   const servicesAndGetVersionCommands = [
     [
       'neutrond',
-      'cd setup && docker compose exec neutron-node /go/bin/neutrond version',
+      `cd setup && docker compose exec neutron-node sh -c "/go/bin/neutrond version version --long | grep '^commit\\|^version'"`,
     ],
     [
       'ICQ relayer',
       'cd setup && docker compose exec relayer neutron_query_relayer version',
     ],
-    ['gaiad', 'cd setup && docker compose exec gaia-node gaiad version 2>&1'],
+    [
+      'gaiad',
+      `cd setup && docker compose exec gaia-node sh -c "gaiad version --long 2>&1 | grep '^commit\\|^version'"`,
+    ],
     ['hermes', 'cd setup && docker compose exec hermes hermes version'],
     ['Integration tests', "git log -1 --format='%H'"],
   ];
