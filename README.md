@@ -61,7 +61,7 @@ outdated version of code if one changed something. To rebuild the images from sc
 
 ```
 cd ../neutron
-docker rmi neutron_node
+docker rmi neutron-node
 docker rmi neutron-org/neutron-query-relayer
 docker-compose build
 ```

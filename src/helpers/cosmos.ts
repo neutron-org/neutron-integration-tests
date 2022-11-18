@@ -53,6 +53,23 @@ type Balance = {
   amount: string;
 };
 
+// AckFailuresResponse is the response model for the contractmanager failures.
+export type AckFailuresResponse = {
+  failures: Failure[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Failure represents a single contractmanager failure
+type Failure = {
+  address: string;
+  id: number;
+  ack_id: number;
+  ack_type: string;
+};
+
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
@@ -301,6 +318,14 @@ export class CosmosWrapper {
       addr as unknown as AccAddress,
     );
     return balances.data as BalancesResponse;
+  }
+
+  async queryAckFailures(addr: string): Promise<AckFailuresResponse> {
+    const req = await axios.get<AckFailuresResponse>(
+      `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+    );
+
+    return req.data;
   }
 
   async msgDelegate(
