@@ -23,6 +23,7 @@ export const setup = async (host: string) => {
   } catch (e) {}
   console.log('Starting container... it may take long');
   execSync(`cd setup && make start-cosmopark`);
+  showVersions();
   await waitForHTTP(host);
   await waitForChannel(host);
   alreadySetUp = true;
@@ -68,4 +69,32 @@ export const waitForChannel = async (
     await wait(10);
   }
   throw new Error('No channel opened');
+};
+
+export const showVersions = () => {
+  if (process.env.NO_DOCKER) {
+    console.log('Cannot get versions since NO_DOCKER ENV provided');
+    return;
+  }
+  const servicesAndGetVersionCommands = [
+    [
+      'neutrond',
+      'cd setup && docker compose exec neutron-node /go/bin/neutrond version',
+    ],
+    [
+      'ICQ relayer',
+      'cd setup && docker compose exec relayer neutron_query_relayer version',
+    ],
+    ['gaiad', 'cd setup && docker compose exec gaia-node gaiad version 2>&1'],
+    ['hermes', 'cd setup && docker compose exec hermes hermes version'],
+    ['Integration tests', "git log -1 --format='%H'"],
+  ];
+  for (const service of servicesAndGetVersionCommands) {
+    try {
+      const version = execSync(service[1]).toString().trim();
+      console.log(`${service[0]} version:\n${version}`);
+    } catch (err) {
+      console.log(`Cannot get ${service[0]} version:\n${err}`);
+    }
+  }
 };
