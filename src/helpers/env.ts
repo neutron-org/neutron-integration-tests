@@ -76,26 +76,38 @@ export const showVersions = () => {
     console.log('Cannot get versions since NO_DOCKER ENV provided');
     return;
   }
-  const servicesAndGetVersionCommands = [
-    [
-      'neutrond',
-      `cd setup && docker compose exec neutron-node sh -c "/go/bin/neutrond version version --long | grep '^commit\\|^version'"`,
-    ],
+  const servicesAndGetVersionCommandsText = [
     [
       'ICQ relayer',
       'cd setup && docker compose exec relayer neutron_query_relayer version',
     ],
-    [
-      'gaiad',
-      `cd setup && docker compose exec gaia-node sh -c "gaiad version --long 2>&1 | grep '^commit\\|^version'"`,
-    ],
     ['hermes', 'cd setup && docker compose exec hermes hermes version'],
     ['Integration tests', "git log -1 --format='%H'"],
   ];
-  for (const service of servicesAndGetVersionCommands) {
+  for (const service of servicesAndGetVersionCommandsText) {
     try {
       const version = execSync(service[1]).toString().trim();
       console.log(`${service[0]} version:\n${version}`);
+    } catch (err) {
+      console.log(`Cannot get ${service[0]} version:\n${err}`);
+    }
+  }
+  const servicesAndGetVersionCommandsJson = [
+    [
+      'neutrond',
+      'cd setup && docker compose exec neutron-node /go/bin/neutrond version --long -o json',
+    ],
+    [
+      'gaiad',
+      'cd setup && docker compose exec gaia-node gaiad version --long 2>&1 -o json',
+    ],
+  ];
+  for (const service of servicesAndGetVersionCommandsJson) {
+    try {
+      const versionLong = JSON.parse(execSync(service[1]).toString().trim());
+      console.log(
+        `${service[0]} version:\nversion: ${versionLong['version']}\ncommit: ${versionLong['commit']}`,
+      );
     } catch (err) {
       console.log(`Cannot get ${service[0]} version:\n${err}`);
     }
