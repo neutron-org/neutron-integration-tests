@@ -137,7 +137,9 @@ const performKVQuery = async (testState) => {
   );
 };
 
-describe('Neutron / Relayer keyrings', () => {
+const describeDockerOnly = process.env.NO_DOCKER ? describe.skip : describe;
+
+describeDockerOnly('Neutron / Relayer keyrings', () => {
   test('memory backend', async () => {
     await testRelayer('memory');
   });
