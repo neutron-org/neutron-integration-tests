@@ -3,6 +3,7 @@ import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -155,6 +156,9 @@ export class CosmosWrapper {
     }
     const txhash = res.data?.tx_response.txhash;
 
+    console.log(res.data);
+    console.log(txhash);
+
     let error = null;
     while (numAttempts > 0) {
       await waitBlocks(this.sdk, 1);
@@ -226,13 +230,16 @@ export class CosmosWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+    sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
-      sender: this.wallet.address.toString(),
+      sender,
       contract,
       msg: Buffer.from(msg),
       funds,
     });
+    console.log(msgExecute);
+    console.log(sender);
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('2000000'),
@@ -294,6 +301,52 @@ export class CosmosWrapper {
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
+    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      [msgSend],
+    );
+    return res?.tx_response;
+  }
+
+  /**
+   * msgRemoveInterchainQuery sends transaction to remove interchain query, waits two blocks and returns the tx hash.
+   */
+  async msgRemoveInterchainQuery(
+    queryId: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgRemove =
+      new neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest(
+        {
+          query_id: queryId,
+          sender: this.wallet.address.toString(),
+        },
+      );
+
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      [msgRemove],
+    );
+    return res?.tx_response;
+  }
+
+  /**
+   * msgProposal creates proposal, adds deposit and votes.
+   */
+  async msgProposal(
+    to: string,
+    deposit: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgProp = new proto.cosmos.gov.v1beta1.MsgSubmitProposal({
+      from_address: this.wallet.address.toString(),
+      to_address: to,
+      initial_deposit: [{ denom: this.denom, deposit }],
     });
     const res = await this.execTx(
       {

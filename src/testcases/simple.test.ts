@@ -372,8 +372,6 @@ describe('Neutron / Simple', () => {
           200,
         );
 
-        console.log(failuresAfterCall.failures);
-
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
             address: contractAddress,
