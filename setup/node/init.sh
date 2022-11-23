@@ -60,10 +60,13 @@ sed -i -e "s/minimum-gas-prices = \"\"/minimum-gas-prices = \"0.0025$STAKEDENOM\
 sed -i -e 's/enabled = false/enabled = true/g' $CHAIN_DIR/$CHAINID/config/app.toml
 sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $CHAIN_DIR/$CHAINID/config/app.toml
 
-sed -i -e "s/\"denom\": \"stake\",/\"denom\": \"$STAKEDENOM\",/g" $CHAIN_DIR/$CHAINID/config/genesis.json
-sed -i -e "s/\"mint_denom\": \"stake\",/\"mint_denom\": \"$STAKEDENOM\",/g" $CHAIN_DIR/$CHAINID/config/genesis.json
-sed -i -e "s/\"bond_denom\": \"stake\"/\"bond_denom\": \"$STAKEDENOM\"/g" $CHAIN_DIR/$CHAINID/config/genesis.json
+GENESIS_FILE="${CHAIN_DIR}/${CHAINID}/config/genesis.json"
 
+sed -i -e "s/\"denom\": \"stake\",/\"denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
+sed -i -e "s/\"mint_denom\": \"stake\",/\"mint_denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
+sed -i -e "s/\"bond_denom\": \"stake\"/\"bond_denom\": \"$STAKEDENOM\"/g" $GENESIS_FILE
+sed -i -e "s/\"voting_period\":.*/\"voting_period\": \"20s\"/g" $GENESIS_FILE
+sed -i -e "s/\"quorum\":.*/\"quorum\": \"0.001000000000000000\",/g" $GENESIS_FILE
 
 if [ "x$ALLOW_ICA_EXEC" = "xyes" ]; then
   # Update host chain genesis to allow x/bank/MsgSend ICA tx execution
