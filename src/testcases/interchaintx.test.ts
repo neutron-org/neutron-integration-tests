@@ -197,6 +197,102 @@ describe('Neutron / Interchain TXs', () => {
         expect(balance).toEqual('98000');
       });
     });
+    describe('Multiple txs in single block', () => {
+      const sufficientFunds = 2000;
+      const insufficientFunds = 200000000;
+      test('delegate funds', async () => {
+        const res1 = await cm1.msgSend(
+          contractAddress.toString(),
+          sufficientFunds.toString(),
+        );
+        expect(res1.code).toEqual(0);
+        console.log('executing contracts');
+        // const results = await Promise.all([
+        const results = [
+          await cm1.executeContractNoWait(
+            contractAddress,
+            JSON.stringify({
+              delegate: {
+                interchain_account_id: icaId1,
+                validator: (
+                  testState.wallets.cosmos.val1
+                    .address as cosmosclient.ValAddress
+                ).toString(),
+                amount: sufficientFunds.toString(),
+                denom: cm2.denom,
+              },
+            }),
+            [],
+            cm1.wallet.account.sequence,
+          ),
+          await cm1.executeContractNoWait(
+            contractAddress,
+            JSON.stringify({
+              delegate: {
+                interchain_account_id: icaId1,
+                validator: (
+                  testState.wallets.cosmos.val1
+                    .address as cosmosclient.ValAddress
+                ).toString(),
+                amount: insufficientFunds.toString(),
+                denom: cm2.denom,
+              },
+            }),
+            [],
+            cm1.wallet.account.sequence + 1,
+          ),
+        ];
+        // try {
+        expect(results[0].data?.tx_response.code).toEqual(0);
+        expect(results[1].data?.tx_response.code).toEqual(0);
+        const txhashes = [
+          results[0].data?.tx_response.txhash,
+          results[1].data?.tx_response.txhash,
+        ];
+        console.log(txhashes);
+
+        const txs = await Promise.all([
+          cm1.waitTxForExec(txhashes[0]),
+          cm1.waitTxForExec(txhashes[1]),
+        ]);
+
+        console.log(txs);
+        expect(txs[0].tx_response.txhash).not.toEqual(
+          txs[1].tx_response.txhash,
+        );
+        expect(txs[0].tx_response.height).toEqual(txs[1].tx_response.height);
+        console.log('hashes and blocks checked');
+        // } catch (e) {
+        //   console.log(e);
+        //   throw e;
+        // }
+        const sequenceIds = [
+          getSequenceId(txs[0].tx_response.raw_log),
+          getSequenceId(txs[1].tx_response.raw_log),
+        ];
+        console.log('got seqs');
+        expect(sequenceIds[1]).toEqual(sequenceIds[0] + 1);
+        await Promise.all([
+          waitForAck(cm1, contractAddress, icaId1, sequenceIds[0]),
+          waitForAck(cm1, contractAddress, icaId1, sequenceIds[1]),
+        ]);
+        const qresults = await Promise.all([
+          getAck(cm1, contractAddress, icaId1, sequenceIds[0]),
+          getAck(cm1, contractAddress, icaId1, sequenceIds[1]),
+        ]);
+        expect(qresults[0]).toMatchObject<AcknowledgementResult>({
+          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+        });
+        expect(qresults[1]).toMatchObject<AcknowledgementResult>({
+          error: ['/cosmos.staking.v1beta1.MsgDelegate'],
+        });
+      });
+      // test('check contract balance', async () => {
+      //   const res = await cm1.queryBalances(contractAddress);
+      //   const balance = res.balances.find((b) => b.denom === cm1.denom)?.amount;
+      //   expect(balance).toEqual('98000');
+      // });
+    });
     describe('Error cases', () => {
       test('delegate for unknown validator from second ICA', async () => {
         const res = await cm1.executeContract(

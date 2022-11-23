@@ -80,6 +80,56 @@ export class CosmosWrapper {
     this.wallet = wallet;
   }
 
+  prepareTx<T>(
+    fee: proto.cosmos.tx.v1beta1.IFee,
+    msgs: T[],
+    seq?: string,
+  ): string {
+    const protoMsgs: Array<google.protobuf.IAny> = [];
+    msgs.forEach((msg) => {
+      protoMsgs.push(cosmosclient.codec.instanceToProtoAny(msg));
+    });
+    const txBody = new proto.cosmos.tx.v1beta1.TxBody({
+      messages: protoMsgs,
+    });
+    if (!seq) {
+      seq = this.wallet.account.sequence;
+    }
+    const authInfo = new proto.cosmos.tx.v1beta1.AuthInfo({
+      signer_infos: [
+        {
+          public_key: cosmosclient.codec.instanceToProtoAny(this.wallet.pubKey),
+          mode_info: {
+            single: {
+              mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
+            },
+          },
+          sequence: seq,
+        },
+      ],
+      fee,
+    });
+    const txBuilder = new cosmosclient.TxBuilder(
+      this.sdk as CosmosSDK,
+      txBody,
+      authInfo,
+    );
+
+    const signDocBytes = txBuilder.signDocBytes(
+      this.wallet.account.account_number,
+    );
+
+    txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
+    return txBuilder.txBytes();
+  }
+
+  async putTxInBlockAsync(txBody: string) {
+    return rest.tx.broadcastTx(this.sdk as CosmosSDK, {
+      tx_bytes: txBody,
+      mode: rest.tx.BroadcastTxMode.Async,
+    });
+  }
+
   /**
    * execTx broadcasts messages and returns the transaction result.
    */
@@ -150,6 +200,35 @@ export class CosmosWrapper {
     throw error;
   }
 
+  async waitTxForExec(
+    txhash,
+    numAttempts = 10,
+  ): Promise<CosmosTxV1beta1GetTxResponse> {
+    const totalAttempts = numAttempts;
+    let error = null;
+    while (numAttempts > 0) {
+      await waitBlocks(this.sdk, 1);
+      numAttempts--;
+      const data = await rest.tx
+        .getTx(this.sdk as CosmosSDK, txhash)
+        .catch((reason) => {
+          error = reason;
+          return null;
+        });
+      if (data != null) {
+        this.wallet.account.sequence++;
+        return data.data;
+      }
+    }
+    if (error?.response?.data?.code == 5) {
+      throw new Error(
+        `tx ${txhash} not found on ${this.sdk.chainID} after ${totalAttempts} attempts`,
+      );
+    }
+    error = error ?? new Error('failed to submit tx');
+    throw error;
+  }
+
   // storeWasm stores the wasm code by the passed path on the blockchain.
   async storeWasm(fileName: string): Promise<CodeId> {
     const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
@@ -201,6 +280,19 @@ export class CosmosWrapper {
     return attributes._contract_address;
   }
 
+  prepareExecuteContractMessage(
+    contract: string,
+    msg: string,
+    funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+  ): cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract {
+    return new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
+      sender: this.wallet.address.toString(),
+      contract,
+      msg: Buffer.from(msg),
+      funds,
+    });
+  }
+
   async executeContract(
     contract: string,
     msg: string,
@@ -223,6 +315,25 @@ export class CosmosWrapper {
       throw new Error(res.tx_response.raw_log);
     }
     return res?.tx_response;
+  }
+
+  async executeContractNoWait(
+    contract: string,
+    msg: string,
+    funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+    seq?: string,
+  ) {
+    console.log(seq);
+    const msgExecute = this.prepareExecuteContractMessage(contract, msg, funds);
+    const txBody = this.prepareTx(
+      {
+        gas_limit: Long.fromString('2000000'),
+        amount: [{ denom: this.denom, amount: '10000' }],
+      },
+      [msgExecute],
+      seq,
+    );
+    return this.putTxInBlockAsync(txBody);
   }
 
   async queryContractWithWait<T>(
