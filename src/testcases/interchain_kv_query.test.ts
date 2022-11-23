@@ -122,7 +122,8 @@ const removeQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
-) => {
+  sender: string = cm.wallet.address.toString(),
+) =>
   await cm.executeContract(
     contractAddress,
     JSON.stringify({
@@ -130,8 +131,9 @@ const removeQuery = async (
         query_id: queryId,
       },
     }),
+    [],
+    sender,
   );
-};
 
 const registerDelegatorDelegationsQuery = async (
   cm: CosmosWrapper,
@@ -225,6 +227,8 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Register interchain queries', () => {
     describe('Deposit escrow for query', () => {
       test('should throw exception because of not enough deposit', async () => {
+        expect.assertions(1);
+
         try {
           await cm[1].executeContract(
             contractAddress,
@@ -540,11 +544,45 @@ describe('Neutron / Interchain KV Query', () => {
     test('remove icq #1', async () => {
       let balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances.length).toEqual(0);
+      console.log(contractAddress);
 
       await removeQuery(cm[1], contractAddress, 1);
 
       balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances[0].amount).toEqual('1000000');
+    });
+
+    test('should fail to remove icq #2', async () => {
+      expect.assertions(1);
+
+      try {
+        const valAddr =
+          testState.wallets.neutron.valAddress1.address.toString();
+        const walletAddr = testState.wallets.neutron.demo2.address.toString();
+        console.log(valAddr);
+        console.log(walletAddr);
+        const balances = await cm[1].queryBalances(valAddr);
+        console.log(balances);
+
+        await cm[1].executeContract(
+          contractAddress,
+          JSON.stringify({
+            register_balance_query: {
+              connection_id: connectionId,
+              denom: cm[2].denom,
+              addr: testState.wallets.cosmos.demo2.address.toString(),
+              update_period: 10,
+            },
+          }),
+        );
+
+        const result = await removeQuery(cm[1], contractAddress, 2, walletAddr);
+        console.log(result);
+      } catch (err) {
+        const error = err as Error;
+        console.log(error);
+        expect(error.message).toMatch(/0stake is smaller than 1000001stake/i);
+      }
     });
   });
 });
