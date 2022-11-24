@@ -97,6 +97,11 @@ export const NeutronContract = {
   RESERVE: 'neutron_reserve.wasm',
 };
 
+cosmosclient.codec.register(
+  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+);
+
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
@@ -158,9 +163,6 @@ export class CosmosWrapper {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-
-    console.log(res.data);
-    console.log(txhash);
 
     let error = null;
     while (numAttempts > 0) {
@@ -245,8 +247,7 @@ export class CosmosWrapper {
       msg: Buffer.from(msg),
       funds,
     });
-    console.log(msgExecute);
-    console.log(sender);
+
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('2000000'),
@@ -324,14 +325,17 @@ export class CosmosWrapper {
    */
   async msgRemoveInterchainQuery(
     queryId: number,
+    sender: string,
   ): Promise<InlineResponse20075TxResponse> {
     const msgRemove =
       new neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest(
         {
           query_id: queryId,
-          sender: this.wallet.address.toString(),
+          sender,
         },
       );
+
+    console.log(msgRemove);
 
     const res = await this.execTx(
       {
@@ -346,24 +350,24 @@ export class CosmosWrapper {
   /**
    * msgProposal creates proposal, adds deposit and votes.
    */
-  async msgProposal(
+  /*async msgProposal(
     to: string,
     deposit: string,
   ): Promise<InlineResponse20075TxResponse> {
     const msgProp = new proto.cosmos.gov.v1beta1.MsgSubmitProposal({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      initial_deposit: [{ denom: this.denom, deposit }],
+      initial_deposit: [{ denom: this.denom, amount: deposit }],
     });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: this.denom, amount: '1000' }],
       },
-      [msgSend],
+      [msgProp],
     );
     return res?.tx_response;
-  }
+  }*/
 
   /**
    * msgSend processes an IBC transfer, waits two blocks and returns the tx hash.
