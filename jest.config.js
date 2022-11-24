@@ -1,10 +1,12 @@
 const ch = require('child_process');
+const { defaults } = require('jest-config');
 
 const config = {
   cacheDirectory: '.jest/cache',
   coverageDirectory: '.jest/coverage',
   bail: true,
   testTimeout: 600000,
+  moduleFileExtensions: [...defaults.moduleFileExtensions, 'cjs'],
   coverageThreshold: {
     global: {
       branches: 95,
