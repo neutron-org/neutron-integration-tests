@@ -135,6 +135,12 @@ const removeQuery = async (
     sender,
   );
 
+const removeQueryViaTx = async (
+  cm: CosmosWrapper,
+  queryId: number,
+  sender: string = cm.wallet.address.toString(),
+) => await cm.msgRemoveInterchainQuery(queryId, sender);
+
 const registerDelegatorDelegationsQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -180,7 +186,7 @@ const validateBalanceQuery = async (
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
-    2: 2,
+    2: 6,
     3: 4,
     4: 3,
   };
@@ -314,6 +320,9 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #2: balance', async () => {
+        // console.log('Height 1');
+        // const height = await getRemoteHeight(cm[1]);
+        // console.log(height);
         await registerBalanceQuery(
           cm[1],
           contractAddress,
@@ -553,31 +562,33 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('should fail to remove icq #2', async () => {
-      expect.assertions(1);
+      //expect.assertions(1);
+      const queryId = 2;
 
       try {
-        const valAddr =
-          testState.wallets.neutron.valAddress1.address.toString();
-        const walletAddr = testState.wallets.neutron.demo2.address.toString();
-        console.log(valAddr);
-        console.log(walletAddr);
-        const balances = await cm[1].queryBalances(valAddr);
+        let balances = await cm[1].queryBalances(
+          cm[1].wallet.address.toString(),
+        );
         console.log(balances);
 
-        await cm[1].executeContract(
-          contractAddress,
-          JSON.stringify({
-            register_balance_query: {
-              connection_id: connectionId,
-              denom: cm[2].denom,
-              addr: testState.wallets.cosmos.demo2.address.toString(),
-              update_period: 10,
-            },
-          }),
-        );
+        //await waitBlocks(cm[1].sdk, 15);
 
-        const result = await removeQuery(cm[1], contractAddress, 2, walletAddr);
+        const queryResult = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          queryId,
+        );
+        console.log(queryResult);
+
+        // console.log('Height 2');
+        // const height = await getRemoteHeight(cm[1]);
+        // console.log(height);
+
+        const result = await removeQueryViaTx(cm[1], queryId);
         console.log(result);
+
+        balances = await cm[1].queryBalances(cm[1].wallet.address.toString());
+        console.log(balances);
       } catch (err) {
         const error = err as Error;
         console.log(error);
