@@ -194,6 +194,56 @@ describe('Neutron / Simple', () => {
         ).rejects.toThrow(/invalid coins/);
       });
     });
+    describe('Fee in wrong denom', () => {
+      const uatom_ibc_denom =
+        'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
+      test('transfer some atoms to contract', async () => {
+        const uatom_amount = '1000';
+        const res = await cm2.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: cm2.denom, amount: uatom_amount },
+          contractAddress,
+          { revision_number: 2, revision_height: 100000000 },
+        );
+        expect(res.code).toEqual(0);
+
+        await waitBlocks(cm.sdk, 10);
+        const balances = await cm.queryBalances(contractAddress);
+        expect(
+          balances.balances.find((bal): boolean => bal.denom == uatom_ibc_denom)
+            ?.amount,
+        ).toEqual(uatom_amount);
+      });
+      test('try to set fee in atoms', async () => {
+        const res = await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: uatom_ibc_denom,
+              ack_fee: '0',
+              recv_fee: '100',
+              timeout_fee: '100',
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+
+        await expect(
+          cm.executeContract(
+            contractAddress,
+            JSON.stringify({
+              send: {
+                channel: 'channel-0',
+                to: testState.wallets.cosmos.demo2.address.toString(),
+                denom: NEUTRON_DENOM,
+                amount: '1000',
+              },
+            }),
+          ),
+        ).rejects.toThrow(/invalid coins/);
+      });
+    });
     describe('Not enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
         await cm.executeContract(
