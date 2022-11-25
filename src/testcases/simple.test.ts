@@ -221,8 +221,8 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             set_fees: {
               denom: uatom_ibc_denom,
-              ack_fee: '0',
-              recv_fee: '100',
+              ack_fee: '100',
+              recv_fee: '0',
               timeout_fee: '100',
             },
           }),
@@ -241,7 +241,7 @@ describe('Neutron / Simple', () => {
               },
             }),
           ),
-        ).rejects.toThrow(/invalid coins/);
+        ).rejects.toThrow(/insufficient fee/);
       });
     });
     describe('Not enough amount of tokens on contract to pay fee', () => {
