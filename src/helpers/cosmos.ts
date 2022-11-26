@@ -101,6 +101,10 @@ cosmosclient.codec.register(
   '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
+cosmosclient.codec.register(
+  '/cosmos.params.v1beta1.ParameterChangeProposal',
+  proto.cosmos.params.v1beta1.ParameterChangeProposal,
+);
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
@@ -120,6 +124,7 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -147,23 +152,19 @@ export class CosmosWrapper {
       txBody,
       authInfo,
     );
-
     const signDocBytes = txBuilder.signDocBytes(
       this.wallet.account.account_number,
     );
-
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
     const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
-      mode: rest.tx.BroadcastTxMode.Async,
+      mode,
     });
-
     const code = res.data?.tx_response.code;
     if (code !== 0) {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-
     let error = null;
     while (numAttempts > 0) {
       await waitBlocks(this.sdk, 1);
@@ -335,8 +336,6 @@ export class CosmosWrapper {
         },
       );
 
-    console.log(msgRemove);
-
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -348,17 +347,57 @@ export class CosmosWrapper {
   }
 
   /**
-   * msgProposal creates proposal, adds deposit and votes.
+   * msgSubmitProposal creates proposal, adds deposit and votes.
    */
-  /*async msgProposal(
-    to: string,
-    deposit: string,
+  async msgSubmitProposal(
+    wallet: Wallet,
   ): Promise<InlineResponse20075TxResponse> {
+    const msgParamChangeProposal =
+      new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+        title:
+          'Change query_submit_timeout parameter of the interchainqueries module',
+        description:
+          'Change query_submit_timeout parameter of the interchainqueries module',
+        changes: [
+          new proto.cosmos.params.v1beta1.ParamChange({
+            subspace: 'interchainqueries',
+            key: 'QuerySubmitTimeout',
+            value: '"1"',
+          }),
+        ],
+      });
+
     const msgProp = new proto.cosmos.gov.v1beta1.MsgSubmitProposal({
-      from_address: this.wallet.address.toString(),
-      to_address: to,
-      initial_deposit: [{ denom: this.denom, amount: deposit }],
+      content: cosmosclient.codec.instanceToProtoAny(msgParamChangeProposal),
+      proposer: wallet.address.toString(),
+      initial_deposit: [{ denom: this.denom, amount: '10000000' }],
     });
+
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      [msgProp],
+      10,
+      rest.tx.BroadcastTxMode.Block,
+    );
+    return res?.tx_response;
+  }
+
+  /**
+   * msgSubmitProposal creates proposal, adds deposit and votes.
+   */
+  async msgVote(
+    wallet: Wallet,
+    proposalId: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgProp = new proto.cosmos.gov.v1beta1.MsgVote({
+      option: proto.cosmos.gov.v1beta1.VoteOption.VOTE_OPTION_YES,
+      proposal_id: proposalId,
+      voter: wallet.address.toString(),
+    });
+
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -367,7 +406,28 @@ export class CosmosWrapper {
       [msgProp],
     );
     return res?.tx_response;
-  }*/
+  }
+
+  async queryProposals(): Promise<any> {
+    const balances = await rest.gov.proposals(this.sdk);
+    return balances.data;
+  }
+
+  async queryInterchainqueriesParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron/interchainqueries/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryDelegations(delegatorAddr: cosmosclient.AccAddress): Promise<any> {
+    const balances = await rest.staking.delegatorDelegations(
+      this.sdk,
+      delegatorAddr,
+    );
+    return balances.data;
+  }
 
   /**
    * msgSend processes an IBC transfer, waits two blocks and returns the tx hash.

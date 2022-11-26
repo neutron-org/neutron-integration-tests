@@ -3723,7 +3723,7 @@
                             for (var i = 0; i < message.deposit.length; ++i)
                                 $root.cosmos.base.v1beta1.Coin.encode(message.deposit[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                         if (message.submit_timeout != null && Object.hasOwnProperty.call(message, "submit_timeout"))
-                            writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.submit_timeout);
+                            writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.submit_timeout);
                         return writer;
                     };
     
@@ -3792,7 +3792,7 @@
                                     message.deposit = [];
                                 message.deposit.push($root.cosmos.base.v1beta1.Coin.decode(reader, reader.uint32()));
                                 break;
-                            case 12:
+                            case 11:
                                 message.submit_timeout = reader.uint64();
                                 break;
                             default:
@@ -46283,6 +46283,1583 @@
          */
         var ibc = {};
     
+        ibc.core = (function() {
+    
+            /**
+             * Namespace core.
+             * @memberof ibc
+             * @namespace
+             */
+            var core = {};
+    
+            core.client = (function() {
+    
+                /**
+                 * Namespace client.
+                 * @memberof ibc.core
+                 * @namespace
+                 */
+                var client = {};
+    
+                client.v1 = (function() {
+    
+                    /**
+                     * Namespace v1.
+                     * @memberof ibc.core.client
+                     * @namespace
+                     */
+                    var v1 = {};
+    
+                    v1.IdentifiedClientState = (function() {
+    
+                        /**
+                         * Properties of an IdentifiedClientState.
+                         * @memberof ibc.core.client.v1
+                         * @interface IIdentifiedClientState
+                         * @property {string|null} [client_id] IdentifiedClientState client_id
+                         * @property {google.protobuf.IAny|null} [client_state] IdentifiedClientState client_state
+                         */
+    
+                        /**
+                         * Constructs a new IdentifiedClientState.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents an IdentifiedClientState.
+                         * @implements IIdentifiedClientState
+                         * @constructor
+                         * @param {ibc.core.client.v1.IIdentifiedClientState=} [properties] Properties to set
+                         */
+                        function IdentifiedClientState(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * IdentifiedClientState client_id.
+                         * @member {string} client_id
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @instance
+                         */
+                        IdentifiedClientState.prototype.client_id = "";
+    
+                        /**
+                         * IdentifiedClientState client_state.
+                         * @member {google.protobuf.IAny|null|undefined} client_state
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @instance
+                         */
+                        IdentifiedClientState.prototype.client_state = null;
+    
+                        /**
+                         * Encodes the specified IdentifiedClientState message. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {ibc.core.client.v1.IIdentifiedClientState} message IdentifiedClientState message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        IdentifiedClientState.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.client_id != null && Object.hasOwnProperty.call(message, "client_id"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.client_id);
+                            if (message.client_state != null && Object.hasOwnProperty.call(message, "client_state"))
+                                $root.google.protobuf.Any.encode(message.client_state, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified IdentifiedClientState message, length delimited. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {ibc.core.client.v1.IIdentifiedClientState} message IdentifiedClientState message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        IdentifiedClientState.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes an IdentifiedClientState message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        IdentifiedClientState.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.IdentifiedClientState();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.client_id = reader.string();
+                                    break;
+                                case 2:
+                                    message.client_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes an IdentifiedClientState message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        IdentifiedClientState.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies an IdentifiedClientState message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        IdentifiedClientState.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.client_id != null && message.hasOwnProperty("client_id"))
+                                if (!$util.isString(message.client_id))
+                                    return "client_id: string expected";
+                            if (message.client_state != null && message.hasOwnProperty("client_state")) {
+                                var error = $root.google.protobuf.Any.verify(message.client_state);
+                                if (error)
+                                    return "client_state." + error;
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates an IdentifiedClientState message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
+                         */
+                        IdentifiedClientState.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.IdentifiedClientState)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.IdentifiedClientState();
+                            if (object.client_id != null)
+                                message.client_id = String(object.client_id);
+                            if (object.client_state != null) {
+                                if (typeof object.client_state !== "object")
+                                    throw TypeError(".ibc.core.client.v1.IdentifiedClientState.client_state: object expected");
+                                message.client_state = $root.google.protobuf.Any.fromObject(object.client_state);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from an IdentifiedClientState message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @static
+                         * @param {ibc.core.client.v1.IdentifiedClientState} message IdentifiedClientState
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        IdentifiedClientState.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.client_id = "";
+                                object.client_state = null;
+                            }
+                            if (message.client_id != null && message.hasOwnProperty("client_id"))
+                                object.client_id = message.client_id;
+                            if (message.client_state != null && message.hasOwnProperty("client_state"))
+                                object.client_state = $root.google.protobuf.Any.toObject(message.client_state, options);
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this IdentifiedClientState to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.IdentifiedClientState
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        IdentifiedClientState.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return IdentifiedClientState;
+                    })();
+    
+                    v1.ConsensusStateWithHeight = (function() {
+    
+                        /**
+                         * Properties of a ConsensusStateWithHeight.
+                         * @memberof ibc.core.client.v1
+                         * @interface IConsensusStateWithHeight
+                         * @property {ibc.core.client.v1.IHeight|null} [height] ConsensusStateWithHeight height
+                         * @property {google.protobuf.IAny|null} [consensus_state] ConsensusStateWithHeight consensus_state
+                         */
+    
+                        /**
+                         * Constructs a new ConsensusStateWithHeight.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents a ConsensusStateWithHeight.
+                         * @implements IConsensusStateWithHeight
+                         * @constructor
+                         * @param {ibc.core.client.v1.IConsensusStateWithHeight=} [properties] Properties to set
+                         */
+                        function ConsensusStateWithHeight(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ConsensusStateWithHeight height.
+                         * @member {ibc.core.client.v1.IHeight|null|undefined} height
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @instance
+                         */
+                        ConsensusStateWithHeight.prototype.height = null;
+    
+                        /**
+                         * ConsensusStateWithHeight consensus_state.
+                         * @member {google.protobuf.IAny|null|undefined} consensus_state
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @instance
+                         */
+                        ConsensusStateWithHeight.prototype.consensus_state = null;
+    
+                        /**
+                         * Encodes the specified ConsensusStateWithHeight message. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {ibc.core.client.v1.IConsensusStateWithHeight} message ConsensusStateWithHeight message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ConsensusStateWithHeight.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.height != null && Object.hasOwnProperty.call(message, "height"))
+                                $root.ibc.core.client.v1.Height.encode(message.height, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                            if (message.consensus_state != null && Object.hasOwnProperty.call(message, "consensus_state"))
+                                $root.google.protobuf.Any.encode(message.consensus_state, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ConsensusStateWithHeight message, length delimited. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {ibc.core.client.v1.IConsensusStateWithHeight} message ConsensusStateWithHeight message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ConsensusStateWithHeight.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ConsensusStateWithHeight message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ConsensusStateWithHeight.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ConsensusStateWithHeight();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.height = $root.ibc.core.client.v1.Height.decode(reader, reader.uint32());
+                                    break;
+                                case 2:
+                                    message.consensus_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ConsensusStateWithHeight message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ConsensusStateWithHeight.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ConsensusStateWithHeight message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ConsensusStateWithHeight.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.height != null && message.hasOwnProperty("height")) {
+                                var error = $root.ibc.core.client.v1.Height.verify(message.height);
+                                if (error)
+                                    return "height." + error;
+                            }
+                            if (message.consensus_state != null && message.hasOwnProperty("consensus_state")) {
+                                var error = $root.google.protobuf.Any.verify(message.consensus_state);
+                                if (error)
+                                    return "consensus_state." + error;
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ConsensusStateWithHeight message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
+                         */
+                        ConsensusStateWithHeight.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.ConsensusStateWithHeight)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.ConsensusStateWithHeight();
+                            if (object.height != null) {
+                                if (typeof object.height !== "object")
+                                    throw TypeError(".ibc.core.client.v1.ConsensusStateWithHeight.height: object expected");
+                                message.height = $root.ibc.core.client.v1.Height.fromObject(object.height);
+                            }
+                            if (object.consensus_state != null) {
+                                if (typeof object.consensus_state !== "object")
+                                    throw TypeError(".ibc.core.client.v1.ConsensusStateWithHeight.consensus_state: object expected");
+                                message.consensus_state = $root.google.protobuf.Any.fromObject(object.consensus_state);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ConsensusStateWithHeight message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @static
+                         * @param {ibc.core.client.v1.ConsensusStateWithHeight} message ConsensusStateWithHeight
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ConsensusStateWithHeight.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.height = null;
+                                object.consensus_state = null;
+                            }
+                            if (message.height != null && message.hasOwnProperty("height"))
+                                object.height = $root.ibc.core.client.v1.Height.toObject(message.height, options);
+                            if (message.consensus_state != null && message.hasOwnProperty("consensus_state"))
+                                object.consensus_state = $root.google.protobuf.Any.toObject(message.consensus_state, options);
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ConsensusStateWithHeight to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ConsensusStateWithHeight.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ConsensusStateWithHeight;
+                    })();
+    
+                    v1.ClientConsensusStates = (function() {
+    
+                        /**
+                         * Properties of a ClientConsensusStates.
+                         * @memberof ibc.core.client.v1
+                         * @interface IClientConsensusStates
+                         * @property {string|null} [client_id] ClientConsensusStates client_id
+                         * @property {Array.<ibc.core.client.v1.IConsensusStateWithHeight>|null} [consensus_states] ClientConsensusStates consensus_states
+                         */
+    
+                        /**
+                         * Constructs a new ClientConsensusStates.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents a ClientConsensusStates.
+                         * @implements IClientConsensusStates
+                         * @constructor
+                         * @param {ibc.core.client.v1.IClientConsensusStates=} [properties] Properties to set
+                         */
+                        function ClientConsensusStates(properties) {
+                            this.consensus_states = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ClientConsensusStates client_id.
+                         * @member {string} client_id
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @instance
+                         */
+                        ClientConsensusStates.prototype.client_id = "";
+    
+                        /**
+                         * ClientConsensusStates consensus_states.
+                         * @member {Array.<ibc.core.client.v1.IConsensusStateWithHeight>} consensus_states
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @instance
+                         */
+                        ClientConsensusStates.prototype.consensus_states = $util.emptyArray;
+    
+                        /**
+                         * Encodes the specified ClientConsensusStates message. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {ibc.core.client.v1.IClientConsensusStates} message ClientConsensusStates message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ClientConsensusStates.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.client_id != null && Object.hasOwnProperty.call(message, "client_id"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.client_id);
+                            if (message.consensus_states != null && message.consensus_states.length)
+                                for (var i = 0; i < message.consensus_states.length; ++i)
+                                    $root.ibc.core.client.v1.ConsensusStateWithHeight.encode(message.consensus_states[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ClientConsensusStates message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {ibc.core.client.v1.IClientConsensusStates} message ClientConsensusStates message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ClientConsensusStates.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ClientConsensusStates message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ClientConsensusStates.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ClientConsensusStates();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.client_id = reader.string();
+                                    break;
+                                case 2:
+                                    if (!(message.consensus_states && message.consensus_states.length))
+                                        message.consensus_states = [];
+                                    message.consensus_states.push($root.ibc.core.client.v1.ConsensusStateWithHeight.decode(reader, reader.uint32()));
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ClientConsensusStates message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ClientConsensusStates.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ClientConsensusStates message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ClientConsensusStates.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.client_id != null && message.hasOwnProperty("client_id"))
+                                if (!$util.isString(message.client_id))
+                                    return "client_id: string expected";
+                            if (message.consensus_states != null && message.hasOwnProperty("consensus_states")) {
+                                if (!Array.isArray(message.consensus_states))
+                                    return "consensus_states: array expected";
+                                for (var i = 0; i < message.consensus_states.length; ++i) {
+                                    var error = $root.ibc.core.client.v1.ConsensusStateWithHeight.verify(message.consensus_states[i]);
+                                    if (error)
+                                        return "consensus_states." + error;
+                                }
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ClientConsensusStates message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
+                         */
+                        ClientConsensusStates.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.ClientConsensusStates)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.ClientConsensusStates();
+                            if (object.client_id != null)
+                                message.client_id = String(object.client_id);
+                            if (object.consensus_states) {
+                                if (!Array.isArray(object.consensus_states))
+                                    throw TypeError(".ibc.core.client.v1.ClientConsensusStates.consensus_states: array expected");
+                                message.consensus_states = [];
+                                for (var i = 0; i < object.consensus_states.length; ++i) {
+                                    if (typeof object.consensus_states[i] !== "object")
+                                        throw TypeError(".ibc.core.client.v1.ClientConsensusStates.consensus_states: object expected");
+                                    message.consensus_states[i] = $root.ibc.core.client.v1.ConsensusStateWithHeight.fromObject(object.consensus_states[i]);
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ClientConsensusStates message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @static
+                         * @param {ibc.core.client.v1.ClientConsensusStates} message ClientConsensusStates
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ClientConsensusStates.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults)
+                                object.consensus_states = [];
+                            if (options.defaults)
+                                object.client_id = "";
+                            if (message.client_id != null && message.hasOwnProperty("client_id"))
+                                object.client_id = message.client_id;
+                            if (message.consensus_states && message.consensus_states.length) {
+                                object.consensus_states = [];
+                                for (var j = 0; j < message.consensus_states.length; ++j)
+                                    object.consensus_states[j] = $root.ibc.core.client.v1.ConsensusStateWithHeight.toObject(message.consensus_states[j], options);
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ClientConsensusStates to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.ClientConsensusStates
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ClientConsensusStates.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ClientConsensusStates;
+                    })();
+    
+                    v1.ClientUpdateProposal = (function() {
+    
+                        /**
+                         * Properties of a ClientUpdateProposal.
+                         * @memberof ibc.core.client.v1
+                         * @interface IClientUpdateProposal
+                         * @property {string|null} [title] ClientUpdateProposal title
+                         * @property {string|null} [description] ClientUpdateProposal description
+                         * @property {string|null} [subject_client_id] ClientUpdateProposal subject_client_id
+                         * @property {string|null} [substitute_client_id] ClientUpdateProposal substitute_client_id
+                         */
+    
+                        /**
+                         * Constructs a new ClientUpdateProposal.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents a ClientUpdateProposal.
+                         * @implements IClientUpdateProposal
+                         * @constructor
+                         * @param {ibc.core.client.v1.IClientUpdateProposal=} [properties] Properties to set
+                         */
+                        function ClientUpdateProposal(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * ClientUpdateProposal title.
+                         * @member {string} title
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @instance
+                         */
+                        ClientUpdateProposal.prototype.title = "";
+    
+                        /**
+                         * ClientUpdateProposal description.
+                         * @member {string} description
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @instance
+                         */
+                        ClientUpdateProposal.prototype.description = "";
+    
+                        /**
+                         * ClientUpdateProposal subject_client_id.
+                         * @member {string} subject_client_id
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @instance
+                         */
+                        ClientUpdateProposal.prototype.subject_client_id = "";
+    
+                        /**
+                         * ClientUpdateProposal substitute_client_id.
+                         * @member {string} substitute_client_id
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @instance
+                         */
+                        ClientUpdateProposal.prototype.substitute_client_id = "";
+    
+                        /**
+                         * Encodes the specified ClientUpdateProposal message. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {ibc.core.client.v1.IClientUpdateProposal} message ClientUpdateProposal message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ClientUpdateProposal.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.title != null && Object.hasOwnProperty.call(message, "title"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.title);
+                            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
+                            if (message.subject_client_id != null && Object.hasOwnProperty.call(message, "subject_client_id"))
+                                writer.uint32(/* id 3, wireType 2 =*/26).string(message.subject_client_id);
+                            if (message.substitute_client_id != null && Object.hasOwnProperty.call(message, "substitute_client_id"))
+                                writer.uint32(/* id 4, wireType 2 =*/34).string(message.substitute_client_id);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified ClientUpdateProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {ibc.core.client.v1.IClientUpdateProposal} message ClientUpdateProposal message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        ClientUpdateProposal.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a ClientUpdateProposal message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ClientUpdateProposal.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ClientUpdateProposal();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.title = reader.string();
+                                    break;
+                                case 2:
+                                    message.description = reader.string();
+                                    break;
+                                case 3:
+                                    message.subject_client_id = reader.string();
+                                    break;
+                                case 4:
+                                    message.substitute_client_id = reader.string();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a ClientUpdateProposal message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        ClientUpdateProposal.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a ClientUpdateProposal message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        ClientUpdateProposal.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.title != null && message.hasOwnProperty("title"))
+                                if (!$util.isString(message.title))
+                                    return "title: string expected";
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                if (!$util.isString(message.description))
+                                    return "description: string expected";
+                            if (message.subject_client_id != null && message.hasOwnProperty("subject_client_id"))
+                                if (!$util.isString(message.subject_client_id))
+                                    return "subject_client_id: string expected";
+                            if (message.substitute_client_id != null && message.hasOwnProperty("substitute_client_id"))
+                                if (!$util.isString(message.substitute_client_id))
+                                    return "substitute_client_id: string expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a ClientUpdateProposal message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
+                         */
+                        ClientUpdateProposal.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.ClientUpdateProposal)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.ClientUpdateProposal();
+                            if (object.title != null)
+                                message.title = String(object.title);
+                            if (object.description != null)
+                                message.description = String(object.description);
+                            if (object.subject_client_id != null)
+                                message.subject_client_id = String(object.subject_client_id);
+                            if (object.substitute_client_id != null)
+                                message.substitute_client_id = String(object.substitute_client_id);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a ClientUpdateProposal message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @static
+                         * @param {ibc.core.client.v1.ClientUpdateProposal} message ClientUpdateProposal
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        ClientUpdateProposal.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.title = "";
+                                object.description = "";
+                                object.subject_client_id = "";
+                                object.substitute_client_id = "";
+                            }
+                            if (message.title != null && message.hasOwnProperty("title"))
+                                object.title = message.title;
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                object.description = message.description;
+                            if (message.subject_client_id != null && message.hasOwnProperty("subject_client_id"))
+                                object.subject_client_id = message.subject_client_id;
+                            if (message.substitute_client_id != null && message.hasOwnProperty("substitute_client_id"))
+                                object.substitute_client_id = message.substitute_client_id;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this ClientUpdateProposal to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.ClientUpdateProposal
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        ClientUpdateProposal.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return ClientUpdateProposal;
+                    })();
+    
+                    v1.UpgradeProposal = (function() {
+    
+                        /**
+                         * Properties of an UpgradeProposal.
+                         * @memberof ibc.core.client.v1
+                         * @interface IUpgradeProposal
+                         * @property {string|null} [title] UpgradeProposal title
+                         * @property {string|null} [description] UpgradeProposal description
+                         * @property {cosmos.upgrade.v1beta1.IPlan|null} [plan] UpgradeProposal plan
+                         * @property {google.protobuf.IAny|null} [upgraded_client_state] UpgradeProposal upgraded_client_state
+                         */
+    
+                        /**
+                         * Constructs a new UpgradeProposal.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents an UpgradeProposal.
+                         * @implements IUpgradeProposal
+                         * @constructor
+                         * @param {ibc.core.client.v1.IUpgradeProposal=} [properties] Properties to set
+                         */
+                        function UpgradeProposal(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * UpgradeProposal title.
+                         * @member {string} title
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @instance
+                         */
+                        UpgradeProposal.prototype.title = "";
+    
+                        /**
+                         * UpgradeProposal description.
+                         * @member {string} description
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @instance
+                         */
+                        UpgradeProposal.prototype.description = "";
+    
+                        /**
+                         * UpgradeProposal plan.
+                         * @member {cosmos.upgrade.v1beta1.IPlan|null|undefined} plan
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @instance
+                         */
+                        UpgradeProposal.prototype.plan = null;
+    
+                        /**
+                         * UpgradeProposal upgraded_client_state.
+                         * @member {google.protobuf.IAny|null|undefined} upgraded_client_state
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @instance
+                         */
+                        UpgradeProposal.prototype.upgraded_client_state = null;
+    
+                        /**
+                         * Encodes the specified UpgradeProposal message. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {ibc.core.client.v1.IUpgradeProposal} message UpgradeProposal message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        UpgradeProposal.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.title != null && Object.hasOwnProperty.call(message, "title"))
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.title);
+                            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
+                            if (message.plan != null && Object.hasOwnProperty.call(message, "plan"))
+                                $root.cosmos.upgrade.v1beta1.Plan.encode(message.plan, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                            if (message.upgraded_client_state != null && Object.hasOwnProperty.call(message, "upgraded_client_state"))
+                                $root.google.protobuf.Any.encode(message.upgraded_client_state, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified UpgradeProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {ibc.core.client.v1.IUpgradeProposal} message UpgradeProposal message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        UpgradeProposal.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes an UpgradeProposal message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        UpgradeProposal.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.UpgradeProposal();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.title = reader.string();
+                                    break;
+                                case 2:
+                                    message.description = reader.string();
+                                    break;
+                                case 3:
+                                    message.plan = $root.cosmos.upgrade.v1beta1.Plan.decode(reader, reader.uint32());
+                                    break;
+                                case 4:
+                                    message.upgraded_client_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes an UpgradeProposal message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        UpgradeProposal.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies an UpgradeProposal message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        UpgradeProposal.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.title != null && message.hasOwnProperty("title"))
+                                if (!$util.isString(message.title))
+                                    return "title: string expected";
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                if (!$util.isString(message.description))
+                                    return "description: string expected";
+                            if (message.plan != null && message.hasOwnProperty("plan")) {
+                                var error = $root.cosmos.upgrade.v1beta1.Plan.verify(message.plan);
+                                if (error)
+                                    return "plan." + error;
+                            }
+                            if (message.upgraded_client_state != null && message.hasOwnProperty("upgraded_client_state")) {
+                                var error = $root.google.protobuf.Any.verify(message.upgraded_client_state);
+                                if (error)
+                                    return "upgraded_client_state." + error;
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates an UpgradeProposal message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
+                         */
+                        UpgradeProposal.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.UpgradeProposal)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.UpgradeProposal();
+                            if (object.title != null)
+                                message.title = String(object.title);
+                            if (object.description != null)
+                                message.description = String(object.description);
+                            if (object.plan != null) {
+                                if (typeof object.plan !== "object")
+                                    throw TypeError(".ibc.core.client.v1.UpgradeProposal.plan: object expected");
+                                message.plan = $root.cosmos.upgrade.v1beta1.Plan.fromObject(object.plan);
+                            }
+                            if (object.upgraded_client_state != null) {
+                                if (typeof object.upgraded_client_state !== "object")
+                                    throw TypeError(".ibc.core.client.v1.UpgradeProposal.upgraded_client_state: object expected");
+                                message.upgraded_client_state = $root.google.protobuf.Any.fromObject(object.upgraded_client_state);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from an UpgradeProposal message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @static
+                         * @param {ibc.core.client.v1.UpgradeProposal} message UpgradeProposal
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        UpgradeProposal.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                object.title = "";
+                                object.description = "";
+                                object.plan = null;
+                                object.upgraded_client_state = null;
+                            }
+                            if (message.title != null && message.hasOwnProperty("title"))
+                                object.title = message.title;
+                            if (message.description != null && message.hasOwnProperty("description"))
+                                object.description = message.description;
+                            if (message.plan != null && message.hasOwnProperty("plan"))
+                                object.plan = $root.cosmos.upgrade.v1beta1.Plan.toObject(message.plan, options);
+                            if (message.upgraded_client_state != null && message.hasOwnProperty("upgraded_client_state"))
+                                object.upgraded_client_state = $root.google.protobuf.Any.toObject(message.upgraded_client_state, options);
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this UpgradeProposal to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.UpgradeProposal
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        UpgradeProposal.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return UpgradeProposal;
+                    })();
+    
+                    v1.Height = (function() {
+    
+                        /**
+                         * Properties of an Height.
+                         * @memberof ibc.core.client.v1
+                         * @interface IHeight
+                         * @property {Long|null} [revision_number] Height revision_number
+                         * @property {Long|null} [revision_height] Height revision_height
+                         */
+    
+                        /**
+                         * Constructs a new Height.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents an Height.
+                         * @implements IHeight
+                         * @constructor
+                         * @param {ibc.core.client.v1.IHeight=} [properties] Properties to set
+                         */
+                        function Height(properties) {
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Height revision_number.
+                         * @member {Long} revision_number
+                         * @memberof ibc.core.client.v1.Height
+                         * @instance
+                         */
+                        Height.prototype.revision_number = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                        /**
+                         * Height revision_height.
+                         * @member {Long} revision_height
+                         * @memberof ibc.core.client.v1.Height
+                         * @instance
+                         */
+                        Height.prototype.revision_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                        /**
+                         * Encodes the specified Height message. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {ibc.core.client.v1.IHeight} message Height message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Height.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.revision_number != null && Object.hasOwnProperty.call(message, "revision_number"))
+                                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.revision_number);
+                            if (message.revision_height != null && Object.hasOwnProperty.call(message, "revision_height"))
+                                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.revision_height);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified Height message, length delimited. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {ibc.core.client.v1.IHeight} message Height message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Height.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes an Height message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.Height} Height
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Height.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.Height();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    message.revision_number = reader.uint64();
+                                    break;
+                                case 2:
+                                    message.revision_height = reader.uint64();
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes an Height message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.Height} Height
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Height.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies an Height message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        Height.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.revision_number != null && message.hasOwnProperty("revision_number"))
+                                if (!$util.isInteger(message.revision_number) && !(message.revision_number && $util.isInteger(message.revision_number.low) && $util.isInteger(message.revision_number.high)))
+                                    return "revision_number: integer|Long expected";
+                            if (message.revision_height != null && message.hasOwnProperty("revision_height"))
+                                if (!$util.isInteger(message.revision_height) && !(message.revision_height && $util.isInteger(message.revision_height.low) && $util.isInteger(message.revision_height.high)))
+                                    return "revision_height: integer|Long expected";
+                            return null;
+                        };
+    
+                        /**
+                         * Creates an Height message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.Height} Height
+                         */
+                        Height.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.Height)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.Height();
+                            if (object.revision_number != null)
+                                if ($util.Long)
+                                    (message.revision_number = $util.Long.fromValue(object.revision_number)).unsigned = true;
+                                else if (typeof object.revision_number === "string")
+                                    message.revision_number = parseInt(object.revision_number, 10);
+                                else if (typeof object.revision_number === "number")
+                                    message.revision_number = object.revision_number;
+                                else if (typeof object.revision_number === "object")
+                                    message.revision_number = new $util.LongBits(object.revision_number.low >>> 0, object.revision_number.high >>> 0).toNumber(true);
+                            if (object.revision_height != null)
+                                if ($util.Long)
+                                    (message.revision_height = $util.Long.fromValue(object.revision_height)).unsigned = true;
+                                else if (typeof object.revision_height === "string")
+                                    message.revision_height = parseInt(object.revision_height, 10);
+                                else if (typeof object.revision_height === "number")
+                                    message.revision_height = object.revision_height;
+                                else if (typeof object.revision_height === "object")
+                                    message.revision_height = new $util.LongBits(object.revision_height.low >>> 0, object.revision_height.high >>> 0).toNumber(true);
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from an Height message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.Height
+                         * @static
+                         * @param {ibc.core.client.v1.Height} message Height
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        Height.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.defaults) {
+                                if ($util.Long) {
+                                    var long = new $util.Long(0, 0, true);
+                                    object.revision_number = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                                } else
+                                    object.revision_number = options.longs === String ? "0" : 0;
+                                if ($util.Long) {
+                                    var long = new $util.Long(0, 0, true);
+                                    object.revision_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                                } else
+                                    object.revision_height = options.longs === String ? "0" : 0;
+                            }
+                            if (message.revision_number != null && message.hasOwnProperty("revision_number"))
+                                if (typeof message.revision_number === "number")
+                                    object.revision_number = options.longs === String ? String(message.revision_number) : message.revision_number;
+                                else
+                                    object.revision_number = options.longs === String ? $util.Long.prototype.toString.call(message.revision_number) : options.longs === Number ? new $util.LongBits(message.revision_number.low >>> 0, message.revision_number.high >>> 0).toNumber(true) : message.revision_number;
+                            if (message.revision_height != null && message.hasOwnProperty("revision_height"))
+                                if (typeof message.revision_height === "number")
+                                    object.revision_height = options.longs === String ? String(message.revision_height) : message.revision_height;
+                                else
+                                    object.revision_height = options.longs === String ? $util.Long.prototype.toString.call(message.revision_height) : options.longs === Number ? new $util.LongBits(message.revision_height.low >>> 0, message.revision_height.high >>> 0).toNumber(true) : message.revision_height;
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this Height to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.Height
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        Height.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return Height;
+                    })();
+    
+                    v1.Params = (function() {
+    
+                        /**
+                         * Properties of a Params.
+                         * @memberof ibc.core.client.v1
+                         * @interface IParams
+                         * @property {Array.<string>|null} [allowed_clients] Params allowed_clients
+                         */
+    
+                        /**
+                         * Constructs a new Params.
+                         * @memberof ibc.core.client.v1
+                         * @classdesc Represents a Params.
+                         * @implements IParams
+                         * @constructor
+                         * @param {ibc.core.client.v1.IParams=} [properties] Properties to set
+                         */
+                        function Params(properties) {
+                            this.allowed_clients = [];
+                            if (properties)
+                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                    if (properties[keys[i]] != null)
+                                        this[keys[i]] = properties[keys[i]];
+                        }
+    
+                        /**
+                         * Params allowed_clients.
+                         * @member {Array.<string>} allowed_clients
+                         * @memberof ibc.core.client.v1.Params
+                         * @instance
+                         */
+                        Params.prototype.allowed_clients = $util.emptyArray;
+    
+                        /**
+                         * Encodes the specified Params message. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
+                         * @function encode
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {ibc.core.client.v1.IParams} message Params message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Params.encode = function encode(message, writer) {
+                            if (!writer)
+                                writer = $Writer.create();
+                            if (message.allowed_clients != null && message.allowed_clients.length)
+                                for (var i = 0; i < message.allowed_clients.length; ++i)
+                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.allowed_clients[i]);
+                            return writer;
+                        };
+    
+                        /**
+                         * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
+                         * @function encodeDelimited
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {ibc.core.client.v1.IParams} message Params message or plain object to encode
+                         * @param {$protobuf.Writer} [writer] Writer to encode to
+                         * @returns {$protobuf.Writer} Writer
+                         */
+                        Params.encodeDelimited = function encodeDelimited(message, writer) {
+                            return this.encode(message, writer).ldelim();
+                        };
+    
+                        /**
+                         * Decodes a Params message from the specified reader or buffer.
+                         * @function decode
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @param {number} [length] Message length if known beforehand
+                         * @returns {ibc.core.client.v1.Params} Params
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Params.decode = function decode(reader, length) {
+                            if (!(reader instanceof $Reader))
+                                reader = $Reader.create(reader);
+                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.Params();
+                            while (reader.pos < end) {
+                                var tag = reader.uint32();
+                                switch (tag >>> 3) {
+                                case 1:
+                                    if (!(message.allowed_clients && message.allowed_clients.length))
+                                        message.allowed_clients = [];
+                                    message.allowed_clients.push(reader.string());
+                                    break;
+                                default:
+                                    reader.skipType(tag & 7);
+                                    break;
+                                }
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Decodes a Params message from the specified reader or buffer, length delimited.
+                         * @function decodeDelimited
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                         * @returns {ibc.core.client.v1.Params} Params
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        Params.decodeDelimited = function decodeDelimited(reader) {
+                            if (!(reader instanceof $Reader))
+                                reader = new $Reader(reader);
+                            return this.decode(reader, reader.uint32());
+                        };
+    
+                        /**
+                         * Verifies a Params message.
+                         * @function verify
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {Object.<string,*>} message Plain object to verify
+                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                         */
+                        Params.verify = function verify(message) {
+                            if (typeof message !== "object" || message === null)
+                                return "object expected";
+                            if (message.allowed_clients != null && message.hasOwnProperty("allowed_clients")) {
+                                if (!Array.isArray(message.allowed_clients))
+                                    return "allowed_clients: array expected";
+                                for (var i = 0; i < message.allowed_clients.length; ++i)
+                                    if (!$util.isString(message.allowed_clients[i]))
+                                        return "allowed_clients: string[] expected";
+                            }
+                            return null;
+                        };
+    
+                        /**
+                         * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                         * @function fromObject
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {Object.<string,*>} object Plain object
+                         * @returns {ibc.core.client.v1.Params} Params
+                         */
+                        Params.fromObject = function fromObject(object) {
+                            if (object instanceof $root.ibc.core.client.v1.Params)
+                                return object;
+                            var message = new $root.ibc.core.client.v1.Params();
+                            if (object.allowed_clients) {
+                                if (!Array.isArray(object.allowed_clients))
+                                    throw TypeError(".ibc.core.client.v1.Params.allowed_clients: array expected");
+                                message.allowed_clients = [];
+                                for (var i = 0; i < object.allowed_clients.length; ++i)
+                                    message.allowed_clients[i] = String(object.allowed_clients[i]);
+                            }
+                            return message;
+                        };
+    
+                        /**
+                         * Creates a plain object from a Params message. Also converts values to other types if specified.
+                         * @function toObject
+                         * @memberof ibc.core.client.v1.Params
+                         * @static
+                         * @param {ibc.core.client.v1.Params} message Params
+                         * @param {$protobuf.IConversionOptions} [options] Conversion options
+                         * @returns {Object.<string,*>} Plain object
+                         */
+                        Params.toObject = function toObject(message, options) {
+                            if (!options)
+                                options = {};
+                            var object = {};
+                            if (options.arrays || options.defaults)
+                                object.allowed_clients = [];
+                            if (message.allowed_clients && message.allowed_clients.length) {
+                                object.allowed_clients = [];
+                                for (var j = 0; j < message.allowed_clients.length; ++j)
+                                    object.allowed_clients[j] = message.allowed_clients[j];
+                            }
+                            return object;
+                        };
+    
+                        /**
+                         * Converts this Params to JSON.
+                         * @function toJSON
+                         * @memberof ibc.core.client.v1.Params
+                         * @instance
+                         * @returns {Object.<string,*>} JSON object
+                         */
+                        Params.prototype.toJSON = function toJSON() {
+                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                        };
+    
+                        return Params;
+                    })();
+    
+                    return v1;
+                })();
+    
+                return client;
+            })();
+    
+            return core;
+        })();
+    
         ibc.applications = (function() {
     
             /**
@@ -46309,603 +47886,6 @@
                      * @namespace
                      */
                     var v1 = {};
-    
-                    v1.Msg = (function() {
-    
-                        /**
-                         * Constructs a new Msg service.
-                         * @memberof ibc.applications.transfer.v1
-                         * @classdesc Represents a Msg
-                         * @extends $protobuf.rpc.Service
-                         * @constructor
-                         * @param {$protobuf.RPCImpl} rpcImpl RPC implementation
-                         * @param {boolean} [requestDelimited=false] Whether requests are length-delimited
-                         * @param {boolean} [responseDelimited=false] Whether responses are length-delimited
-                         */
-                        function Msg(rpcImpl, requestDelimited, responseDelimited) {
-                            $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
-                        }
-    
-                        (Msg.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Msg;
-    
-                        /**
-                         * Callback as used by {@link ibc.applications.transfer.v1.Msg#transfer}.
-                         * @memberof ibc.applications.transfer.v1.Msg
-                         * @typedef TransferCallback
-                         * @type {function}
-                         * @param {Error|null} error Error, if any
-                         * @param {ibc.applications.transfer.v1.MsgTransferResponse} [response] MsgTransferResponse
-                         */
-    
-                        /**
-                         * Calls Transfer.
-                         * @function transfer
-                         * @memberof ibc.applications.transfer.v1.Msg
-                         * @instance
-                         * @param {ibc.applications.transfer.v1.IMsgTransfer} request MsgTransfer message or plain object
-                         * @param {ibc.applications.transfer.v1.Msg.TransferCallback} callback Node-style callback called with the error, if any, and MsgTransferResponse
-                         * @returns {undefined}
-                         * @variation 1
-                         */
-                        Object.defineProperty(Msg.prototype.transfer = function transfer(request, callback) {
-                            return this.rpcCall(transfer, $root.ibc.applications.transfer.v1.MsgTransfer, $root.ibc.applications.transfer.v1.MsgTransferResponse, request, callback);
-                        }, "name", { value: "Transfer" });
-    
-                        /**
-                         * Calls Transfer.
-                         * @function transfer
-                         * @memberof ibc.applications.transfer.v1.Msg
-                         * @instance
-                         * @param {ibc.applications.transfer.v1.IMsgTransfer} request MsgTransfer message or plain object
-                         * @returns {Promise<ibc.applications.transfer.v1.MsgTransferResponse>} Promise
-                         * @variation 2
-                         */
-    
-                        return Msg;
-                    })();
-    
-                    v1.MsgTransfer = (function() {
-    
-                        /**
-                         * Properties of a MsgTransfer.
-                         * @memberof ibc.applications.transfer.v1
-                         * @interface IMsgTransfer
-                         * @property {string|null} [source_port] MsgTransfer source_port
-                         * @property {string|null} [source_channel] MsgTransfer source_channel
-                         * @property {cosmos.base.v1beta1.ICoin|null} [token] MsgTransfer token
-                         * @property {string|null} [sender] MsgTransfer sender
-                         * @property {string|null} [receiver] MsgTransfer receiver
-                         * @property {ibc.core.client.v1.IHeight|null} [timeout_height] MsgTransfer timeout_height
-                         * @property {Long|null} [timeout_timestamp] MsgTransfer timeout_timestamp
-                         * @property {string|null} [memo] MsgTransfer memo
-                         */
-    
-                        /**
-                         * Constructs a new MsgTransfer.
-                         * @memberof ibc.applications.transfer.v1
-                         * @classdesc Represents a MsgTransfer.
-                         * @implements IMsgTransfer
-                         * @constructor
-                         * @param {ibc.applications.transfer.v1.IMsgTransfer=} [properties] Properties to set
-                         */
-                        function MsgTransfer(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * MsgTransfer source_port.
-                         * @member {string} source_port
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.source_port = "";
-    
-                        /**
-                         * MsgTransfer source_channel.
-                         * @member {string} source_channel
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.source_channel = "";
-    
-                        /**
-                         * MsgTransfer token.
-                         * @member {cosmos.base.v1beta1.ICoin|null|undefined} token
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.token = null;
-    
-                        /**
-                         * MsgTransfer sender.
-                         * @member {string} sender
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.sender = "";
-    
-                        /**
-                         * MsgTransfer receiver.
-                         * @member {string} receiver
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.receiver = "";
-    
-                        /**
-                         * MsgTransfer timeout_height.
-                         * @member {ibc.core.client.v1.IHeight|null|undefined} timeout_height
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.timeout_height = null;
-    
-                        /**
-                         * MsgTransfer timeout_timestamp.
-                         * @member {Long} timeout_timestamp
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.timeout_timestamp = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-    
-                        /**
-                         * MsgTransfer memo.
-                         * @member {string} memo
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         */
-                        MsgTransfer.prototype.memo = "";
-    
-                        /**
-                         * Encodes the specified MsgTransfer message. Does not implicitly {@link ibc.applications.transfer.v1.MsgTransfer.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {ibc.applications.transfer.v1.IMsgTransfer} message MsgTransfer message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        MsgTransfer.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.source_port != null && Object.hasOwnProperty.call(message, "source_port"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.source_port);
-                            if (message.source_channel != null && Object.hasOwnProperty.call(message, "source_channel"))
-                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.source_channel);
-                            if (message.token != null && Object.hasOwnProperty.call(message, "token"))
-                                $root.cosmos.base.v1beta1.Coin.encode(message.token, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                            if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
-                                writer.uint32(/* id 4, wireType 2 =*/34).string(message.sender);
-                            if (message.receiver != null && Object.hasOwnProperty.call(message, "receiver"))
-                                writer.uint32(/* id 5, wireType 2 =*/42).string(message.receiver);
-                            if (message.timeout_height != null && Object.hasOwnProperty.call(message, "timeout_height"))
-                                $root.ibc.core.client.v1.Height.encode(message.timeout_height, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
-                            if (message.timeout_timestamp != null && Object.hasOwnProperty.call(message, "timeout_timestamp"))
-                                writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.timeout_timestamp);
-                            if (message.memo != null && Object.hasOwnProperty.call(message, "memo"))
-                                writer.uint32(/* id 8, wireType 2 =*/66).string(message.memo);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified MsgTransfer message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.MsgTransfer.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {ibc.applications.transfer.v1.IMsgTransfer} message MsgTransfer message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        MsgTransfer.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a MsgTransfer message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.applications.transfer.v1.MsgTransfer} MsgTransfer
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        MsgTransfer.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.applications.transfer.v1.MsgTransfer();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.source_port = reader.string();
-                                    break;
-                                case 2:
-                                    message.source_channel = reader.string();
-                                    break;
-                                case 3:
-                                    message.token = $root.cosmos.base.v1beta1.Coin.decode(reader, reader.uint32());
-                                    break;
-                                case 4:
-                                    message.sender = reader.string();
-                                    break;
-                                case 5:
-                                    message.receiver = reader.string();
-                                    break;
-                                case 6:
-                                    message.timeout_height = $root.ibc.core.client.v1.Height.decode(reader, reader.uint32());
-                                    break;
-                                case 7:
-                                    message.timeout_timestamp = reader.uint64();
-                                    break;
-                                case 8:
-                                    message.memo = reader.string();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a MsgTransfer message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.applications.transfer.v1.MsgTransfer} MsgTransfer
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        MsgTransfer.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a MsgTransfer message.
-                         * @function verify
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        MsgTransfer.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.source_port != null && message.hasOwnProperty("source_port"))
-                                if (!$util.isString(message.source_port))
-                                    return "source_port: string expected";
-                            if (message.source_channel != null && message.hasOwnProperty("source_channel"))
-                                if (!$util.isString(message.source_channel))
-                                    return "source_channel: string expected";
-                            if (message.token != null && message.hasOwnProperty("token")) {
-                                var error = $root.cosmos.base.v1beta1.Coin.verify(message.token);
-                                if (error)
-                                    return "token." + error;
-                            }
-                            if (message.sender != null && message.hasOwnProperty("sender"))
-                                if (!$util.isString(message.sender))
-                                    return "sender: string expected";
-                            if (message.receiver != null && message.hasOwnProperty("receiver"))
-                                if (!$util.isString(message.receiver))
-                                    return "receiver: string expected";
-                            if (message.timeout_height != null && message.hasOwnProperty("timeout_height")) {
-                                var error = $root.ibc.core.client.v1.Height.verify(message.timeout_height);
-                                if (error)
-                                    return "timeout_height." + error;
-                            }
-                            if (message.timeout_timestamp != null && message.hasOwnProperty("timeout_timestamp"))
-                                if (!$util.isInteger(message.timeout_timestamp) && !(message.timeout_timestamp && $util.isInteger(message.timeout_timestamp.low) && $util.isInteger(message.timeout_timestamp.high)))
-                                    return "timeout_timestamp: integer|Long expected";
-                            if (message.memo != null && message.hasOwnProperty("memo"))
-                                if (!$util.isString(message.memo))
-                                    return "memo: string expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a MsgTransfer message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.applications.transfer.v1.MsgTransfer} MsgTransfer
-                         */
-                        MsgTransfer.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.applications.transfer.v1.MsgTransfer)
-                                return object;
-                            var message = new $root.ibc.applications.transfer.v1.MsgTransfer();
-                            if (object.source_port != null)
-                                message.source_port = String(object.source_port);
-                            if (object.source_channel != null)
-                                message.source_channel = String(object.source_channel);
-                            if (object.token != null) {
-                                if (typeof object.token !== "object")
-                                    throw TypeError(".ibc.applications.transfer.v1.MsgTransfer.token: object expected");
-                                message.token = $root.cosmos.base.v1beta1.Coin.fromObject(object.token);
-                            }
-                            if (object.sender != null)
-                                message.sender = String(object.sender);
-                            if (object.receiver != null)
-                                message.receiver = String(object.receiver);
-                            if (object.timeout_height != null) {
-                                if (typeof object.timeout_height !== "object")
-                                    throw TypeError(".ibc.applications.transfer.v1.MsgTransfer.timeout_height: object expected");
-                                message.timeout_height = $root.ibc.core.client.v1.Height.fromObject(object.timeout_height);
-                            }
-                            if (object.timeout_timestamp != null)
-                                if ($util.Long)
-                                    (message.timeout_timestamp = $util.Long.fromValue(object.timeout_timestamp)).unsigned = true;
-                                else if (typeof object.timeout_timestamp === "string")
-                                    message.timeout_timestamp = parseInt(object.timeout_timestamp, 10);
-                                else if (typeof object.timeout_timestamp === "number")
-                                    message.timeout_timestamp = object.timeout_timestamp;
-                                else if (typeof object.timeout_timestamp === "object")
-                                    message.timeout_timestamp = new $util.LongBits(object.timeout_timestamp.low >>> 0, object.timeout_timestamp.high >>> 0).toNumber(true);
-                            if (object.memo != null)
-                                message.memo = String(object.memo);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a MsgTransfer message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @static
-                         * @param {ibc.applications.transfer.v1.MsgTransfer} message MsgTransfer
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        MsgTransfer.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.source_port = "";
-                                object.source_channel = "";
-                                object.token = null;
-                                object.sender = "";
-                                object.receiver = "";
-                                object.timeout_height = null;
-                                if ($util.Long) {
-                                    var long = new $util.Long(0, 0, true);
-                                    object.timeout_timestamp = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                                } else
-                                    object.timeout_timestamp = options.longs === String ? "0" : 0;
-                                object.memo = "";
-                            }
-                            if (message.source_port != null && message.hasOwnProperty("source_port"))
-                                object.source_port = message.source_port;
-                            if (message.source_channel != null && message.hasOwnProperty("source_channel"))
-                                object.source_channel = message.source_channel;
-                            if (message.token != null && message.hasOwnProperty("token"))
-                                object.token = $root.cosmos.base.v1beta1.Coin.toObject(message.token, options);
-                            if (message.sender != null && message.hasOwnProperty("sender"))
-                                object.sender = message.sender;
-                            if (message.receiver != null && message.hasOwnProperty("receiver"))
-                                object.receiver = message.receiver;
-                            if (message.timeout_height != null && message.hasOwnProperty("timeout_height"))
-                                object.timeout_height = $root.ibc.core.client.v1.Height.toObject(message.timeout_height, options);
-                            if (message.timeout_timestamp != null && message.hasOwnProperty("timeout_timestamp"))
-                                if (typeof message.timeout_timestamp === "number")
-                                    object.timeout_timestamp = options.longs === String ? String(message.timeout_timestamp) : message.timeout_timestamp;
-                                else
-                                    object.timeout_timestamp = options.longs === String ? $util.Long.prototype.toString.call(message.timeout_timestamp) : options.longs === Number ? new $util.LongBits(message.timeout_timestamp.low >>> 0, message.timeout_timestamp.high >>> 0).toNumber(true) : message.timeout_timestamp;
-                            if (message.memo != null && message.hasOwnProperty("memo"))
-                                object.memo = message.memo;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this MsgTransfer to JSON.
-                         * @function toJSON
-                         * @memberof ibc.applications.transfer.v1.MsgTransfer
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        MsgTransfer.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return MsgTransfer;
-                    })();
-    
-                    v1.MsgTransferResponse = (function() {
-    
-                        /**
-                         * Properties of a MsgTransferResponse.
-                         * @memberof ibc.applications.transfer.v1
-                         * @interface IMsgTransferResponse
-                         * @property {Long|null} [sequence] MsgTransferResponse sequence
-                         */
-    
-                        /**
-                         * Constructs a new MsgTransferResponse.
-                         * @memberof ibc.applications.transfer.v1
-                         * @classdesc Represents a MsgTransferResponse.
-                         * @implements IMsgTransferResponse
-                         * @constructor
-                         * @param {ibc.applications.transfer.v1.IMsgTransferResponse=} [properties] Properties to set
-                         */
-                        function MsgTransferResponse(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * MsgTransferResponse sequence.
-                         * @member {Long} sequence
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @instance
-                         */
-                        MsgTransferResponse.prototype.sequence = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-    
-                        /**
-                         * Encodes the specified MsgTransferResponse message. Does not implicitly {@link ibc.applications.transfer.v1.MsgTransferResponse.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {ibc.applications.transfer.v1.IMsgTransferResponse} message MsgTransferResponse message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        MsgTransferResponse.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.sequence != null && Object.hasOwnProperty.call(message, "sequence"))
-                                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.sequence);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified MsgTransferResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.MsgTransferResponse.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {ibc.applications.transfer.v1.IMsgTransferResponse} message MsgTransferResponse message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        MsgTransferResponse.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a MsgTransferResponse message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.applications.transfer.v1.MsgTransferResponse} MsgTransferResponse
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        MsgTransferResponse.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.applications.transfer.v1.MsgTransferResponse();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.sequence = reader.uint64();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a MsgTransferResponse message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.applications.transfer.v1.MsgTransferResponse} MsgTransferResponse
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        MsgTransferResponse.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a MsgTransferResponse message.
-                         * @function verify
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        MsgTransferResponse.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.sequence != null && message.hasOwnProperty("sequence"))
-                                if (!$util.isInteger(message.sequence) && !(message.sequence && $util.isInteger(message.sequence.low) && $util.isInteger(message.sequence.high)))
-                                    return "sequence: integer|Long expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a MsgTransferResponse message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.applications.transfer.v1.MsgTransferResponse} MsgTransferResponse
-                         */
-                        MsgTransferResponse.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.applications.transfer.v1.MsgTransferResponse)
-                                return object;
-                            var message = new $root.ibc.applications.transfer.v1.MsgTransferResponse();
-                            if (object.sequence != null)
-                                if ($util.Long)
-                                    (message.sequence = $util.Long.fromValue(object.sequence)).unsigned = true;
-                                else if (typeof object.sequence === "string")
-                                    message.sequence = parseInt(object.sequence, 10);
-                                else if (typeof object.sequence === "number")
-                                    message.sequence = object.sequence;
-                                else if (typeof object.sequence === "object")
-                                    message.sequence = new $util.LongBits(object.sequence.low >>> 0, object.sequence.high >>> 0).toNumber(true);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a MsgTransferResponse message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @static
-                         * @param {ibc.applications.transfer.v1.MsgTransferResponse} message MsgTransferResponse
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        MsgTransferResponse.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults)
-                                if ($util.Long) {
-                                    var long = new $util.Long(0, 0, true);
-                                    object.sequence = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                                } else
-                                    object.sequence = options.longs === String ? "0" : 0;
-                            if (message.sequence != null && message.hasOwnProperty("sequence"))
-                                if (typeof message.sequence === "number")
-                                    object.sequence = options.longs === String ? String(message.sequence) : message.sequence;
-                                else
-                                    object.sequence = options.longs === String ? $util.Long.prototype.toString.call(message.sequence) : options.longs === Number ? new $util.LongBits(message.sequence.low >>> 0, message.sequence.high >>> 0).toNumber(true) : message.sequence;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this MsgTransferResponse to JSON.
-                         * @function toJSON
-                         * @memberof ibc.applications.transfer.v1.MsgTransferResponse
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        MsgTransferResponse.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return MsgTransferResponse;
-                    })();
     
                     v1.Query = (function() {
     
@@ -49306,1583 +50286,6 @@
             })();
     
             return applications;
-        })();
-    
-        ibc.core = (function() {
-    
-            /**
-             * Namespace core.
-             * @memberof ibc
-             * @namespace
-             */
-            var core = {};
-    
-            core.client = (function() {
-    
-                /**
-                 * Namespace client.
-                 * @memberof ibc.core
-                 * @namespace
-                 */
-                var client = {};
-    
-                client.v1 = (function() {
-    
-                    /**
-                     * Namespace v1.
-                     * @memberof ibc.core.client
-                     * @namespace
-                     */
-                    var v1 = {};
-    
-                    v1.IdentifiedClientState = (function() {
-    
-                        /**
-                         * Properties of an IdentifiedClientState.
-                         * @memberof ibc.core.client.v1
-                         * @interface IIdentifiedClientState
-                         * @property {string|null} [client_id] IdentifiedClientState client_id
-                         * @property {google.protobuf.IAny|null} [client_state] IdentifiedClientState client_state
-                         */
-    
-                        /**
-                         * Constructs a new IdentifiedClientState.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents an IdentifiedClientState.
-                         * @implements IIdentifiedClientState
-                         * @constructor
-                         * @param {ibc.core.client.v1.IIdentifiedClientState=} [properties] Properties to set
-                         */
-                        function IdentifiedClientState(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * IdentifiedClientState client_id.
-                         * @member {string} client_id
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @instance
-                         */
-                        IdentifiedClientState.prototype.client_id = "";
-    
-                        /**
-                         * IdentifiedClientState client_state.
-                         * @member {google.protobuf.IAny|null|undefined} client_state
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @instance
-                         */
-                        IdentifiedClientState.prototype.client_state = null;
-    
-                        /**
-                         * Encodes the specified IdentifiedClientState message. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {ibc.core.client.v1.IIdentifiedClientState} message IdentifiedClientState message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        IdentifiedClientState.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.client_id != null && Object.hasOwnProperty.call(message, "client_id"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.client_id);
-                            if (message.client_state != null && Object.hasOwnProperty.call(message, "client_state"))
-                                $root.google.protobuf.Any.encode(message.client_state, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified IdentifiedClientState message, length delimited. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {ibc.core.client.v1.IIdentifiedClientState} message IdentifiedClientState message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        IdentifiedClientState.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes an IdentifiedClientState message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        IdentifiedClientState.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.IdentifiedClientState();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.client_id = reader.string();
-                                    break;
-                                case 2:
-                                    message.client_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes an IdentifiedClientState message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        IdentifiedClientState.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies an IdentifiedClientState message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        IdentifiedClientState.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.client_id != null && message.hasOwnProperty("client_id"))
-                                if (!$util.isString(message.client_id))
-                                    return "client_id: string expected";
-                            if (message.client_state != null && message.hasOwnProperty("client_state")) {
-                                var error = $root.google.protobuf.Any.verify(message.client_state);
-                                if (error)
-                                    return "client_state." + error;
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates an IdentifiedClientState message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.IdentifiedClientState} IdentifiedClientState
-                         */
-                        IdentifiedClientState.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.IdentifiedClientState)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.IdentifiedClientState();
-                            if (object.client_id != null)
-                                message.client_id = String(object.client_id);
-                            if (object.client_state != null) {
-                                if (typeof object.client_state !== "object")
-                                    throw TypeError(".ibc.core.client.v1.IdentifiedClientState.client_state: object expected");
-                                message.client_state = $root.google.protobuf.Any.fromObject(object.client_state);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from an IdentifiedClientState message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @static
-                         * @param {ibc.core.client.v1.IdentifiedClientState} message IdentifiedClientState
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        IdentifiedClientState.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.client_id = "";
-                                object.client_state = null;
-                            }
-                            if (message.client_id != null && message.hasOwnProperty("client_id"))
-                                object.client_id = message.client_id;
-                            if (message.client_state != null && message.hasOwnProperty("client_state"))
-                                object.client_state = $root.google.protobuf.Any.toObject(message.client_state, options);
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this IdentifiedClientState to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.IdentifiedClientState
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        IdentifiedClientState.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return IdentifiedClientState;
-                    })();
-    
-                    v1.ConsensusStateWithHeight = (function() {
-    
-                        /**
-                         * Properties of a ConsensusStateWithHeight.
-                         * @memberof ibc.core.client.v1
-                         * @interface IConsensusStateWithHeight
-                         * @property {ibc.core.client.v1.IHeight|null} [height] ConsensusStateWithHeight height
-                         * @property {google.protobuf.IAny|null} [consensus_state] ConsensusStateWithHeight consensus_state
-                         */
-    
-                        /**
-                         * Constructs a new ConsensusStateWithHeight.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents a ConsensusStateWithHeight.
-                         * @implements IConsensusStateWithHeight
-                         * @constructor
-                         * @param {ibc.core.client.v1.IConsensusStateWithHeight=} [properties] Properties to set
-                         */
-                        function ConsensusStateWithHeight(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ConsensusStateWithHeight height.
-                         * @member {ibc.core.client.v1.IHeight|null|undefined} height
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @instance
-                         */
-                        ConsensusStateWithHeight.prototype.height = null;
-    
-                        /**
-                         * ConsensusStateWithHeight consensus_state.
-                         * @member {google.protobuf.IAny|null|undefined} consensus_state
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @instance
-                         */
-                        ConsensusStateWithHeight.prototype.consensus_state = null;
-    
-                        /**
-                         * Encodes the specified ConsensusStateWithHeight message. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {ibc.core.client.v1.IConsensusStateWithHeight} message ConsensusStateWithHeight message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ConsensusStateWithHeight.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.height != null && Object.hasOwnProperty.call(message, "height"))
-                                $root.ibc.core.client.v1.Height.encode(message.height, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
-                            if (message.consensus_state != null && Object.hasOwnProperty.call(message, "consensus_state"))
-                                $root.google.protobuf.Any.encode(message.consensus_state, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ConsensusStateWithHeight message, length delimited. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {ibc.core.client.v1.IConsensusStateWithHeight} message ConsensusStateWithHeight message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ConsensusStateWithHeight.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ConsensusStateWithHeight message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ConsensusStateWithHeight.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ConsensusStateWithHeight();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.height = $root.ibc.core.client.v1.Height.decode(reader, reader.uint32());
-                                    break;
-                                case 2:
-                                    message.consensus_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ConsensusStateWithHeight message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ConsensusStateWithHeight.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ConsensusStateWithHeight message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ConsensusStateWithHeight.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.height != null && message.hasOwnProperty("height")) {
-                                var error = $root.ibc.core.client.v1.Height.verify(message.height);
-                                if (error)
-                                    return "height." + error;
-                            }
-                            if (message.consensus_state != null && message.hasOwnProperty("consensus_state")) {
-                                var error = $root.google.protobuf.Any.verify(message.consensus_state);
-                                if (error)
-                                    return "consensus_state." + error;
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ConsensusStateWithHeight message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.ConsensusStateWithHeight} ConsensusStateWithHeight
-                         */
-                        ConsensusStateWithHeight.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.ConsensusStateWithHeight)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.ConsensusStateWithHeight();
-                            if (object.height != null) {
-                                if (typeof object.height !== "object")
-                                    throw TypeError(".ibc.core.client.v1.ConsensusStateWithHeight.height: object expected");
-                                message.height = $root.ibc.core.client.v1.Height.fromObject(object.height);
-                            }
-                            if (object.consensus_state != null) {
-                                if (typeof object.consensus_state !== "object")
-                                    throw TypeError(".ibc.core.client.v1.ConsensusStateWithHeight.consensus_state: object expected");
-                                message.consensus_state = $root.google.protobuf.Any.fromObject(object.consensus_state);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ConsensusStateWithHeight message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @static
-                         * @param {ibc.core.client.v1.ConsensusStateWithHeight} message ConsensusStateWithHeight
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ConsensusStateWithHeight.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.height = null;
-                                object.consensus_state = null;
-                            }
-                            if (message.height != null && message.hasOwnProperty("height"))
-                                object.height = $root.ibc.core.client.v1.Height.toObject(message.height, options);
-                            if (message.consensus_state != null && message.hasOwnProperty("consensus_state"))
-                                object.consensus_state = $root.google.protobuf.Any.toObject(message.consensus_state, options);
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ConsensusStateWithHeight to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.ConsensusStateWithHeight
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ConsensusStateWithHeight.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ConsensusStateWithHeight;
-                    })();
-    
-                    v1.ClientConsensusStates = (function() {
-    
-                        /**
-                         * Properties of a ClientConsensusStates.
-                         * @memberof ibc.core.client.v1
-                         * @interface IClientConsensusStates
-                         * @property {string|null} [client_id] ClientConsensusStates client_id
-                         * @property {Array.<ibc.core.client.v1.IConsensusStateWithHeight>|null} [consensus_states] ClientConsensusStates consensus_states
-                         */
-    
-                        /**
-                         * Constructs a new ClientConsensusStates.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents a ClientConsensusStates.
-                         * @implements IClientConsensusStates
-                         * @constructor
-                         * @param {ibc.core.client.v1.IClientConsensusStates=} [properties] Properties to set
-                         */
-                        function ClientConsensusStates(properties) {
-                            this.consensus_states = [];
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ClientConsensusStates client_id.
-                         * @member {string} client_id
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @instance
-                         */
-                        ClientConsensusStates.prototype.client_id = "";
-    
-                        /**
-                         * ClientConsensusStates consensus_states.
-                         * @member {Array.<ibc.core.client.v1.IConsensusStateWithHeight>} consensus_states
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @instance
-                         */
-                        ClientConsensusStates.prototype.consensus_states = $util.emptyArray;
-    
-                        /**
-                         * Encodes the specified ClientConsensusStates message. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {ibc.core.client.v1.IClientConsensusStates} message ClientConsensusStates message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ClientConsensusStates.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.client_id != null && Object.hasOwnProperty.call(message, "client_id"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.client_id);
-                            if (message.consensus_states != null && message.consensus_states.length)
-                                for (var i = 0; i < message.consensus_states.length; ++i)
-                                    $root.ibc.core.client.v1.ConsensusStateWithHeight.encode(message.consensus_states[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ClientConsensusStates message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {ibc.core.client.v1.IClientConsensusStates} message ClientConsensusStates message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ClientConsensusStates.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ClientConsensusStates message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ClientConsensusStates.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ClientConsensusStates();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.client_id = reader.string();
-                                    break;
-                                case 2:
-                                    if (!(message.consensus_states && message.consensus_states.length))
-                                        message.consensus_states = [];
-                                    message.consensus_states.push($root.ibc.core.client.v1.ConsensusStateWithHeight.decode(reader, reader.uint32()));
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ClientConsensusStates message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ClientConsensusStates.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ClientConsensusStates message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ClientConsensusStates.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.client_id != null && message.hasOwnProperty("client_id"))
-                                if (!$util.isString(message.client_id))
-                                    return "client_id: string expected";
-                            if (message.consensus_states != null && message.hasOwnProperty("consensus_states")) {
-                                if (!Array.isArray(message.consensus_states))
-                                    return "consensus_states: array expected";
-                                for (var i = 0; i < message.consensus_states.length; ++i) {
-                                    var error = $root.ibc.core.client.v1.ConsensusStateWithHeight.verify(message.consensus_states[i]);
-                                    if (error)
-                                        return "consensus_states." + error;
-                                }
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ClientConsensusStates message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.ClientConsensusStates} ClientConsensusStates
-                         */
-                        ClientConsensusStates.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.ClientConsensusStates)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.ClientConsensusStates();
-                            if (object.client_id != null)
-                                message.client_id = String(object.client_id);
-                            if (object.consensus_states) {
-                                if (!Array.isArray(object.consensus_states))
-                                    throw TypeError(".ibc.core.client.v1.ClientConsensusStates.consensus_states: array expected");
-                                message.consensus_states = [];
-                                for (var i = 0; i < object.consensus_states.length; ++i) {
-                                    if (typeof object.consensus_states[i] !== "object")
-                                        throw TypeError(".ibc.core.client.v1.ClientConsensusStates.consensus_states: object expected");
-                                    message.consensus_states[i] = $root.ibc.core.client.v1.ConsensusStateWithHeight.fromObject(object.consensus_states[i]);
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ClientConsensusStates message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @static
-                         * @param {ibc.core.client.v1.ClientConsensusStates} message ClientConsensusStates
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ClientConsensusStates.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.arrays || options.defaults)
-                                object.consensus_states = [];
-                            if (options.defaults)
-                                object.client_id = "";
-                            if (message.client_id != null && message.hasOwnProperty("client_id"))
-                                object.client_id = message.client_id;
-                            if (message.consensus_states && message.consensus_states.length) {
-                                object.consensus_states = [];
-                                for (var j = 0; j < message.consensus_states.length; ++j)
-                                    object.consensus_states[j] = $root.ibc.core.client.v1.ConsensusStateWithHeight.toObject(message.consensus_states[j], options);
-                            }
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ClientConsensusStates to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.ClientConsensusStates
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ClientConsensusStates.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ClientConsensusStates;
-                    })();
-    
-                    v1.ClientUpdateProposal = (function() {
-    
-                        /**
-                         * Properties of a ClientUpdateProposal.
-                         * @memberof ibc.core.client.v1
-                         * @interface IClientUpdateProposal
-                         * @property {string|null} [title] ClientUpdateProposal title
-                         * @property {string|null} [description] ClientUpdateProposal description
-                         * @property {string|null} [subject_client_id] ClientUpdateProposal subject_client_id
-                         * @property {string|null} [substitute_client_id] ClientUpdateProposal substitute_client_id
-                         */
-    
-                        /**
-                         * Constructs a new ClientUpdateProposal.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents a ClientUpdateProposal.
-                         * @implements IClientUpdateProposal
-                         * @constructor
-                         * @param {ibc.core.client.v1.IClientUpdateProposal=} [properties] Properties to set
-                         */
-                        function ClientUpdateProposal(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * ClientUpdateProposal title.
-                         * @member {string} title
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @instance
-                         */
-                        ClientUpdateProposal.prototype.title = "";
-    
-                        /**
-                         * ClientUpdateProposal description.
-                         * @member {string} description
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @instance
-                         */
-                        ClientUpdateProposal.prototype.description = "";
-    
-                        /**
-                         * ClientUpdateProposal subject_client_id.
-                         * @member {string} subject_client_id
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @instance
-                         */
-                        ClientUpdateProposal.prototype.subject_client_id = "";
-    
-                        /**
-                         * ClientUpdateProposal substitute_client_id.
-                         * @member {string} substitute_client_id
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @instance
-                         */
-                        ClientUpdateProposal.prototype.substitute_client_id = "";
-    
-                        /**
-                         * Encodes the specified ClientUpdateProposal message. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {ibc.core.client.v1.IClientUpdateProposal} message ClientUpdateProposal message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ClientUpdateProposal.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.title != null && Object.hasOwnProperty.call(message, "title"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.title);
-                            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
-                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
-                            if (message.subject_client_id != null && Object.hasOwnProperty.call(message, "subject_client_id"))
-                                writer.uint32(/* id 3, wireType 2 =*/26).string(message.subject_client_id);
-                            if (message.substitute_client_id != null && Object.hasOwnProperty.call(message, "substitute_client_id"))
-                                writer.uint32(/* id 4, wireType 2 =*/34).string(message.substitute_client_id);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified ClientUpdateProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {ibc.core.client.v1.IClientUpdateProposal} message ClientUpdateProposal message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        ClientUpdateProposal.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a ClientUpdateProposal message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ClientUpdateProposal.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.ClientUpdateProposal();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.title = reader.string();
-                                    break;
-                                case 2:
-                                    message.description = reader.string();
-                                    break;
-                                case 3:
-                                    message.subject_client_id = reader.string();
-                                    break;
-                                case 4:
-                                    message.substitute_client_id = reader.string();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a ClientUpdateProposal message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        ClientUpdateProposal.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a ClientUpdateProposal message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        ClientUpdateProposal.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.title != null && message.hasOwnProperty("title"))
-                                if (!$util.isString(message.title))
-                                    return "title: string expected";
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                if (!$util.isString(message.description))
-                                    return "description: string expected";
-                            if (message.subject_client_id != null && message.hasOwnProperty("subject_client_id"))
-                                if (!$util.isString(message.subject_client_id))
-                                    return "subject_client_id: string expected";
-                            if (message.substitute_client_id != null && message.hasOwnProperty("substitute_client_id"))
-                                if (!$util.isString(message.substitute_client_id))
-                                    return "substitute_client_id: string expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a ClientUpdateProposal message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.ClientUpdateProposal} ClientUpdateProposal
-                         */
-                        ClientUpdateProposal.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.ClientUpdateProposal)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.ClientUpdateProposal();
-                            if (object.title != null)
-                                message.title = String(object.title);
-                            if (object.description != null)
-                                message.description = String(object.description);
-                            if (object.subject_client_id != null)
-                                message.subject_client_id = String(object.subject_client_id);
-                            if (object.substitute_client_id != null)
-                                message.substitute_client_id = String(object.substitute_client_id);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a ClientUpdateProposal message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @static
-                         * @param {ibc.core.client.v1.ClientUpdateProposal} message ClientUpdateProposal
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        ClientUpdateProposal.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.title = "";
-                                object.description = "";
-                                object.subject_client_id = "";
-                                object.substitute_client_id = "";
-                            }
-                            if (message.title != null && message.hasOwnProperty("title"))
-                                object.title = message.title;
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                object.description = message.description;
-                            if (message.subject_client_id != null && message.hasOwnProperty("subject_client_id"))
-                                object.subject_client_id = message.subject_client_id;
-                            if (message.substitute_client_id != null && message.hasOwnProperty("substitute_client_id"))
-                                object.substitute_client_id = message.substitute_client_id;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this ClientUpdateProposal to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.ClientUpdateProposal
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        ClientUpdateProposal.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return ClientUpdateProposal;
-                    })();
-    
-                    v1.UpgradeProposal = (function() {
-    
-                        /**
-                         * Properties of an UpgradeProposal.
-                         * @memberof ibc.core.client.v1
-                         * @interface IUpgradeProposal
-                         * @property {string|null} [title] UpgradeProposal title
-                         * @property {string|null} [description] UpgradeProposal description
-                         * @property {cosmos.upgrade.v1beta1.IPlan|null} [plan] UpgradeProposal plan
-                         * @property {google.protobuf.IAny|null} [upgraded_client_state] UpgradeProposal upgraded_client_state
-                         */
-    
-                        /**
-                         * Constructs a new UpgradeProposal.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents an UpgradeProposal.
-                         * @implements IUpgradeProposal
-                         * @constructor
-                         * @param {ibc.core.client.v1.IUpgradeProposal=} [properties] Properties to set
-                         */
-                        function UpgradeProposal(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * UpgradeProposal title.
-                         * @member {string} title
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @instance
-                         */
-                        UpgradeProposal.prototype.title = "";
-    
-                        /**
-                         * UpgradeProposal description.
-                         * @member {string} description
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @instance
-                         */
-                        UpgradeProposal.prototype.description = "";
-    
-                        /**
-                         * UpgradeProposal plan.
-                         * @member {cosmos.upgrade.v1beta1.IPlan|null|undefined} plan
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @instance
-                         */
-                        UpgradeProposal.prototype.plan = null;
-    
-                        /**
-                         * UpgradeProposal upgraded_client_state.
-                         * @member {google.protobuf.IAny|null|undefined} upgraded_client_state
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @instance
-                         */
-                        UpgradeProposal.prototype.upgraded_client_state = null;
-    
-                        /**
-                         * Encodes the specified UpgradeProposal message. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {ibc.core.client.v1.IUpgradeProposal} message UpgradeProposal message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        UpgradeProposal.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.title != null && Object.hasOwnProperty.call(message, "title"))
-                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.title);
-                            if (message.description != null && Object.hasOwnProperty.call(message, "description"))
-                                writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
-                            if (message.plan != null && Object.hasOwnProperty.call(message, "plan"))
-                                $root.cosmos.upgrade.v1beta1.Plan.encode(message.plan, writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
-                            if (message.upgraded_client_state != null && Object.hasOwnProperty.call(message, "upgraded_client_state"))
-                                $root.google.protobuf.Any.encode(message.upgraded_client_state, writer.uint32(/* id 4, wireType 2 =*/34).fork()).ldelim();
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified UpgradeProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {ibc.core.client.v1.IUpgradeProposal} message UpgradeProposal message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        UpgradeProposal.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes an UpgradeProposal message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        UpgradeProposal.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.UpgradeProposal();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.title = reader.string();
-                                    break;
-                                case 2:
-                                    message.description = reader.string();
-                                    break;
-                                case 3:
-                                    message.plan = $root.cosmos.upgrade.v1beta1.Plan.decode(reader, reader.uint32());
-                                    break;
-                                case 4:
-                                    message.upgraded_client_state = $root.google.protobuf.Any.decode(reader, reader.uint32());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes an UpgradeProposal message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        UpgradeProposal.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies an UpgradeProposal message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        UpgradeProposal.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.title != null && message.hasOwnProperty("title"))
-                                if (!$util.isString(message.title))
-                                    return "title: string expected";
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                if (!$util.isString(message.description))
-                                    return "description: string expected";
-                            if (message.plan != null && message.hasOwnProperty("plan")) {
-                                var error = $root.cosmos.upgrade.v1beta1.Plan.verify(message.plan);
-                                if (error)
-                                    return "plan." + error;
-                            }
-                            if (message.upgraded_client_state != null && message.hasOwnProperty("upgraded_client_state")) {
-                                var error = $root.google.protobuf.Any.verify(message.upgraded_client_state);
-                                if (error)
-                                    return "upgraded_client_state." + error;
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates an UpgradeProposal message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.UpgradeProposal} UpgradeProposal
-                         */
-                        UpgradeProposal.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.UpgradeProposal)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.UpgradeProposal();
-                            if (object.title != null)
-                                message.title = String(object.title);
-                            if (object.description != null)
-                                message.description = String(object.description);
-                            if (object.plan != null) {
-                                if (typeof object.plan !== "object")
-                                    throw TypeError(".ibc.core.client.v1.UpgradeProposal.plan: object expected");
-                                message.plan = $root.cosmos.upgrade.v1beta1.Plan.fromObject(object.plan);
-                            }
-                            if (object.upgraded_client_state != null) {
-                                if (typeof object.upgraded_client_state !== "object")
-                                    throw TypeError(".ibc.core.client.v1.UpgradeProposal.upgraded_client_state: object expected");
-                                message.upgraded_client_state = $root.google.protobuf.Any.fromObject(object.upgraded_client_state);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from an UpgradeProposal message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @static
-                         * @param {ibc.core.client.v1.UpgradeProposal} message UpgradeProposal
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        UpgradeProposal.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                object.title = "";
-                                object.description = "";
-                                object.plan = null;
-                                object.upgraded_client_state = null;
-                            }
-                            if (message.title != null && message.hasOwnProperty("title"))
-                                object.title = message.title;
-                            if (message.description != null && message.hasOwnProperty("description"))
-                                object.description = message.description;
-                            if (message.plan != null && message.hasOwnProperty("plan"))
-                                object.plan = $root.cosmos.upgrade.v1beta1.Plan.toObject(message.plan, options);
-                            if (message.upgraded_client_state != null && message.hasOwnProperty("upgraded_client_state"))
-                                object.upgraded_client_state = $root.google.protobuf.Any.toObject(message.upgraded_client_state, options);
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this UpgradeProposal to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.UpgradeProposal
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        UpgradeProposal.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return UpgradeProposal;
-                    })();
-    
-                    v1.Height = (function() {
-    
-                        /**
-                         * Properties of an Height.
-                         * @memberof ibc.core.client.v1
-                         * @interface IHeight
-                         * @property {Long|null} [revision_number] Height revision_number
-                         * @property {Long|null} [revision_height] Height revision_height
-                         */
-    
-                        /**
-                         * Constructs a new Height.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents an Height.
-                         * @implements IHeight
-                         * @constructor
-                         * @param {ibc.core.client.v1.IHeight=} [properties] Properties to set
-                         */
-                        function Height(properties) {
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Height revision_number.
-                         * @member {Long} revision_number
-                         * @memberof ibc.core.client.v1.Height
-                         * @instance
-                         */
-                        Height.prototype.revision_number = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-    
-                        /**
-                         * Height revision_height.
-                         * @member {Long} revision_height
-                         * @memberof ibc.core.client.v1.Height
-                         * @instance
-                         */
-                        Height.prototype.revision_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-    
-                        /**
-                         * Encodes the specified Height message. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {ibc.core.client.v1.IHeight} message Height message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Height.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.revision_number != null && Object.hasOwnProperty.call(message, "revision_number"))
-                                writer.uint32(/* id 1, wireType 0 =*/8).uint64(message.revision_number);
-                            if (message.revision_height != null && Object.hasOwnProperty.call(message, "revision_height"))
-                                writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.revision_height);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified Height message, length delimited. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {ibc.core.client.v1.IHeight} message Height message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Height.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes an Height message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.Height} Height
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Height.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.Height();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    message.revision_number = reader.uint64();
-                                    break;
-                                case 2:
-                                    message.revision_height = reader.uint64();
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes an Height message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.Height} Height
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Height.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies an Height message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        Height.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.revision_number != null && message.hasOwnProperty("revision_number"))
-                                if (!$util.isInteger(message.revision_number) && !(message.revision_number && $util.isInteger(message.revision_number.low) && $util.isInteger(message.revision_number.high)))
-                                    return "revision_number: integer|Long expected";
-                            if (message.revision_height != null && message.hasOwnProperty("revision_height"))
-                                if (!$util.isInteger(message.revision_height) && !(message.revision_height && $util.isInteger(message.revision_height.low) && $util.isInteger(message.revision_height.high)))
-                                    return "revision_height: integer|Long expected";
-                            return null;
-                        };
-    
-                        /**
-                         * Creates an Height message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.Height} Height
-                         */
-                        Height.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.Height)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.Height();
-                            if (object.revision_number != null)
-                                if ($util.Long)
-                                    (message.revision_number = $util.Long.fromValue(object.revision_number)).unsigned = true;
-                                else if (typeof object.revision_number === "string")
-                                    message.revision_number = parseInt(object.revision_number, 10);
-                                else if (typeof object.revision_number === "number")
-                                    message.revision_number = object.revision_number;
-                                else if (typeof object.revision_number === "object")
-                                    message.revision_number = new $util.LongBits(object.revision_number.low >>> 0, object.revision_number.high >>> 0).toNumber(true);
-                            if (object.revision_height != null)
-                                if ($util.Long)
-                                    (message.revision_height = $util.Long.fromValue(object.revision_height)).unsigned = true;
-                                else if (typeof object.revision_height === "string")
-                                    message.revision_height = parseInt(object.revision_height, 10);
-                                else if (typeof object.revision_height === "number")
-                                    message.revision_height = object.revision_height;
-                                else if (typeof object.revision_height === "object")
-                                    message.revision_height = new $util.LongBits(object.revision_height.low >>> 0, object.revision_height.high >>> 0).toNumber(true);
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from an Height message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.Height
-                         * @static
-                         * @param {ibc.core.client.v1.Height} message Height
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        Height.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.defaults) {
-                                if ($util.Long) {
-                                    var long = new $util.Long(0, 0, true);
-                                    object.revision_number = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                                } else
-                                    object.revision_number = options.longs === String ? "0" : 0;
-                                if ($util.Long) {
-                                    var long = new $util.Long(0, 0, true);
-                                    object.revision_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                                } else
-                                    object.revision_height = options.longs === String ? "0" : 0;
-                            }
-                            if (message.revision_number != null && message.hasOwnProperty("revision_number"))
-                                if (typeof message.revision_number === "number")
-                                    object.revision_number = options.longs === String ? String(message.revision_number) : message.revision_number;
-                                else
-                                    object.revision_number = options.longs === String ? $util.Long.prototype.toString.call(message.revision_number) : options.longs === Number ? new $util.LongBits(message.revision_number.low >>> 0, message.revision_number.high >>> 0).toNumber(true) : message.revision_number;
-                            if (message.revision_height != null && message.hasOwnProperty("revision_height"))
-                                if (typeof message.revision_height === "number")
-                                    object.revision_height = options.longs === String ? String(message.revision_height) : message.revision_height;
-                                else
-                                    object.revision_height = options.longs === String ? $util.Long.prototype.toString.call(message.revision_height) : options.longs === Number ? new $util.LongBits(message.revision_height.low >>> 0, message.revision_height.high >>> 0).toNumber(true) : message.revision_height;
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this Height to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.Height
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        Height.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return Height;
-                    })();
-    
-                    v1.Params = (function() {
-    
-                        /**
-                         * Properties of a Params.
-                         * @memberof ibc.core.client.v1
-                         * @interface IParams
-                         * @property {Array.<string>|null} [allowed_clients] Params allowed_clients
-                         */
-    
-                        /**
-                         * Constructs a new Params.
-                         * @memberof ibc.core.client.v1
-                         * @classdesc Represents a Params.
-                         * @implements IParams
-                         * @constructor
-                         * @param {ibc.core.client.v1.IParams=} [properties] Properties to set
-                         */
-                        function Params(properties) {
-                            this.allowed_clients = [];
-                            if (properties)
-                                for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                                    if (properties[keys[i]] != null)
-                                        this[keys[i]] = properties[keys[i]];
-                        }
-    
-                        /**
-                         * Params allowed_clients.
-                         * @member {Array.<string>} allowed_clients
-                         * @memberof ibc.core.client.v1.Params
-                         * @instance
-                         */
-                        Params.prototype.allowed_clients = $util.emptyArray;
-    
-                        /**
-                         * Encodes the specified Params message. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
-                         * @function encode
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {ibc.core.client.v1.IParams} message Params message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Params.encode = function encode(message, writer) {
-                            if (!writer)
-                                writer = $Writer.create();
-                            if (message.allowed_clients != null && message.allowed_clients.length)
-                                for (var i = 0; i < message.allowed_clients.length; ++i)
-                                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.allowed_clients[i]);
-                            return writer;
-                        };
-    
-                        /**
-                         * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
-                         * @function encodeDelimited
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {ibc.core.client.v1.IParams} message Params message or plain object to encode
-                         * @param {$protobuf.Writer} [writer] Writer to encode to
-                         * @returns {$protobuf.Writer} Writer
-                         */
-                        Params.encodeDelimited = function encodeDelimited(message, writer) {
-                            return this.encode(message, writer).ldelim();
-                        };
-    
-                        /**
-                         * Decodes a Params message from the specified reader or buffer.
-                         * @function decode
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @param {number} [length] Message length if known beforehand
-                         * @returns {ibc.core.client.v1.Params} Params
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Params.decode = function decode(reader, length) {
-                            if (!(reader instanceof $Reader))
-                                reader = $Reader.create(reader);
-                            var end = length === undefined ? reader.len : reader.pos + length, message = new $root.ibc.core.client.v1.Params();
-                            while (reader.pos < end) {
-                                var tag = reader.uint32();
-                                switch (tag >>> 3) {
-                                case 1:
-                                    if (!(message.allowed_clients && message.allowed_clients.length))
-                                        message.allowed_clients = [];
-                                    message.allowed_clients.push(reader.string());
-                                    break;
-                                default:
-                                    reader.skipType(tag & 7);
-                                    break;
-                                }
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Decodes a Params message from the specified reader or buffer, length delimited.
-                         * @function decodeDelimited
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                         * @returns {ibc.core.client.v1.Params} Params
-                         * @throws {Error} If the payload is not a reader or valid buffer
-                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                         */
-                        Params.decodeDelimited = function decodeDelimited(reader) {
-                            if (!(reader instanceof $Reader))
-                                reader = new $Reader(reader);
-                            return this.decode(reader, reader.uint32());
-                        };
-    
-                        /**
-                         * Verifies a Params message.
-                         * @function verify
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {Object.<string,*>} message Plain object to verify
-                         * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                         */
-                        Params.verify = function verify(message) {
-                            if (typeof message !== "object" || message === null)
-                                return "object expected";
-                            if (message.allowed_clients != null && message.hasOwnProperty("allowed_clients")) {
-                                if (!Array.isArray(message.allowed_clients))
-                                    return "allowed_clients: array expected";
-                                for (var i = 0; i < message.allowed_clients.length; ++i)
-                                    if (!$util.isString(message.allowed_clients[i]))
-                                        return "allowed_clients: string[] expected";
-                            }
-                            return null;
-                        };
-    
-                        /**
-                         * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                         * @function fromObject
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {Object.<string,*>} object Plain object
-                         * @returns {ibc.core.client.v1.Params} Params
-                         */
-                        Params.fromObject = function fromObject(object) {
-                            if (object instanceof $root.ibc.core.client.v1.Params)
-                                return object;
-                            var message = new $root.ibc.core.client.v1.Params();
-                            if (object.allowed_clients) {
-                                if (!Array.isArray(object.allowed_clients))
-                                    throw TypeError(".ibc.core.client.v1.Params.allowed_clients: array expected");
-                                message.allowed_clients = [];
-                                for (var i = 0; i < object.allowed_clients.length; ++i)
-                                    message.allowed_clients[i] = String(object.allowed_clients[i]);
-                            }
-                            return message;
-                        };
-    
-                        /**
-                         * Creates a plain object from a Params message. Also converts values to other types if specified.
-                         * @function toObject
-                         * @memberof ibc.core.client.v1.Params
-                         * @static
-                         * @param {ibc.core.client.v1.Params} message Params
-                         * @param {$protobuf.IConversionOptions} [options] Conversion options
-                         * @returns {Object.<string,*>} Plain object
-                         */
-                        Params.toObject = function toObject(message, options) {
-                            if (!options)
-                                options = {};
-                            var object = {};
-                            if (options.arrays || options.defaults)
-                                object.allowed_clients = [];
-                            if (message.allowed_clients && message.allowed_clients.length) {
-                                object.allowed_clients = [];
-                                for (var j = 0; j < message.allowed_clients.length; ++j)
-                                    object.allowed_clients[j] = message.allowed_clients[j];
-                            }
-                            return object;
-                        };
-    
-                        /**
-                         * Converts this Params to JSON.
-                         * @function toJSON
-                         * @memberof ibc.core.client.v1.Params
-                         * @instance
-                         * @returns {Object.<string,*>} JSON object
-                         */
-                        Params.prototype.toJSON = function toJSON() {
-                            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                        };
-    
-                        return Params;
-                    })();
-    
-                    return v1;
-                })();
-    
-                return client;
-            })();
-    
-            return core;
         })();
     
         return ibc;

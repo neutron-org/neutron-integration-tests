@@ -186,7 +186,7 @@ const validateBalanceQuery = async (
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
-    2: 6,
+    2: 10,
     3: 4,
     4: 3,
   };
@@ -210,6 +210,12 @@ describe('Neutron / Interchain KV Query', () => {
         COSMOS_DENOM,
       ),
     };
+
+    await cm[1].msgDelegate(
+      testState.wallets.neutron.demo1.address.toString(),
+      testState.wallets.neutron.val1.address.toString(),
+      '10000000000',
+    );
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -550,7 +556,7 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Remove interchain query', () => {
-    test('remove icq #1', async () => {
+    test('remove icq #1 using query owner address', async () => {
       let balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances.length).toEqual(0);
       console.log(contractAddress);
@@ -561,39 +567,81 @@ describe('Neutron / Interchain KV Query', () => {
       expect(balances.balances[0].amount).toEqual('1000000');
     });
 
-    test('should fail to remove icq #2', async () => {
-      //expect.assertions(1);
+    test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = 2;
 
-      try {
-        let balances = await cm[1].queryBalances(
-          cm[1].wallet.address.toString(),
-        );
-        console.log(balances);
+      const result = await removeQueryViaTx(cm[1], queryId);
+      console.log((result as any).raw_log);
+      expect((result as any).raw_log).toMatch(
+        /authorization failed: unauthorized/i,
+      );
+    });
 
-        //await waitBlocks(cm[1].sdk, 15);
+    test('should update `query_submit_timeout` parameter and allow to remove icq #2 from non owner', async () => {
+      const queryId = 2;
 
-        const queryResult = await getRegisteredQuery(
-          cm[1],
-          contractAddress,
-          queryId,
-        );
-        console.log(queryResult);
+      let balances = await cm[1].queryBalances(
+        testState.wallets.neutron.demo1.address.toString(),
+      );
+      console.log(balances);
 
-        // console.log('Height 2');
-        // const height = await getRemoteHeight(cm[1]);
-        // console.log(height);
+      //await waitBlocks(cm[1].sdk, 15);
 
-        const result = await removeQueryViaTx(cm[1], queryId);
-        console.log(result);
+      const delegations = await cm[1].queryDelegations(
+        testState.wallets.neutron.demo1.address,
+      );
+      console.log(delegations);
 
-        balances = await cm[1].queryBalances(cm[1].wallet.address.toString());
-        console.log(balances);
-      } catch (err) {
-        const error = err as Error;
-        console.log(error);
-        expect(error.message).toMatch(/0stake is smaller than 1000001stake/i);
-      }
+      let params = await cm[1].queryInterchainqueriesParams();
+      console.log(params);
+
+      const proposalResult = await cm[1].msgSubmitProposal(
+        testState.wallets.neutron.demo1,
+      );
+      console.log(proposalResult);
+
+      await waitBlocks(cm[1].sdk, 1);
+
+      const voteYes = await cm[1].msgVote(testState.wallets.neutron.demo1, 1);
+      console.log(voteYes);
+
+      await waitBlocks(cm[1].sdk, 3);
+
+      let queryProposals = await cm[1].queryProposals();
+      console.log(queryProposals);
+      console.log(queryProposals.proposals[0].final_tally_result);
+
+      await waitBlocks(cm[1].sdk, 20);
+
+      queryProposals = await cm[1].queryProposals();
+      console.log(queryProposals);
+      console.log(queryProposals.proposals[0].final_tally_result);
+
+      // console.log('Height 2');
+      // const height = await getRemoteHeight(cm[1]);
+      // console.log(height);
+
+      params = await cm[1].queryInterchainqueriesParams();
+      console.log(params);
+
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId,
+      );
+      console.log(queryResult);
+
+      await waitBlocks(cm[1].sdk, 4);
+
+      const result = await removeQueryViaTx(cm[1], queryId);
+      console.log(result);
+      console.log((result as any).raw_log);
+      expect((result as any).raw_log).toMatch(
+        /authorization failed: unauthorized1/i,
+      );
+
+      balances = await cm[1].queryBalances(cm[1].wallet.address.toString());
+      console.log(balances);
     });
   });
 });

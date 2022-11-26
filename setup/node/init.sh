@@ -66,6 +66,7 @@ sed -i -e "s/\"denom\": \"stake\",/\"denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
 sed -i -e "s/\"mint_denom\": \"stake\",/\"mint_denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
 sed -i -e "s/\"bond_denom\": \"stake\"/\"bond_denom\": \"$STAKEDENOM\"/g" $GENESIS_FILE
 sed -i -e "s/\"voting_period\":.*/\"voting_period\": \"20s\"/g" $GENESIS_FILE
+#sed -i -e "s/\"query_submit_timeout\":.*/\"query_submit_timeout\": 1,/g" $GENESIS_FILE
 sed -i -e "s/\"quorum\":.*/\"quorum\": \"0.001000000000000000\",/g" $GENESIS_FILE
 
 if [ "x$ALLOW_ICA_EXEC" = "xyes" ]; then
