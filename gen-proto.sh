@@ -3,7 +3,7 @@
 rm -r ./proto
 rm -r ./proto-thirdparty
 cp -r ../neutron/proto ./proto
-cp -r ../neutron/third_party/proto ./proto-thirdparty
+cp -r ../neutron/third_partyproto ./proto-thirdparty
 
 proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 proto_files=()
@@ -23,9 +23,23 @@ npx pbjs \
   --root="@neutron-org/neutron" \
   ${proto_files[@]}
 
+npx pbjs \
+  -o ./src/generated/proto.js \
+  -t static-module \
+  -w es6 \
+  --es6 \
+  --force-long \
+  --keep-case \
+  --no-create \
+  --path=./proto/ \
+  --path=./proto-thirdparty/ \
+  --root="@neutron-org/neutron" \
+  ${proto_files[@]}
+
 npx pbts \
   -o ./src/generated/proto.d.ts \
-  ./src/generated/proto.cjs
+  ./src/generated/proto.js
 
+rm ./src/generated/proto.js
 rm -r ./proto
 rm -r ./proto-thirdparty

@@ -28,6 +28,7 @@ export const getRegisteredQuery = (
       last_submitted_result_local_height: number;
       last_submitted_result_remote_height: number;
       deposit: { denom: string; amount: string }[];
+      submit_timeout: number;
     };
   }>(contractAddress, {
     get_registered_query: {
