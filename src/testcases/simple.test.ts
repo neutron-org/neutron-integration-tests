@@ -4,6 +4,7 @@ import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+  PageRequest,
 } from '../helpers/cosmos';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -317,6 +318,17 @@ describe('Neutron / Simple', () => {
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
+      });
+    });
+    describe('Failures limit test', () => {
+      test('failures with big limit returns error', async () => {
+        const pagination: PageRequest = {
+          'pagination.limit': '10000',
+          'pagination.offset': '0',
+        };
+        await expect(
+          cm.queryAckFailures(contractAddress, pagination),
+        ).rejects.toThrow(/limit is more than maximum allowed/);
       });
     });
   });
