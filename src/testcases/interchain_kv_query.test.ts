@@ -1,4 +1,4 @@
-import { rest } from '@cosmos-client/core';
+import { proto, rest } from '@cosmos-client/core';
 import {
   CosmosWrapper,
   COSMOS_DENOM,
@@ -13,6 +13,7 @@ import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '../helpers/icq';
+import { Wallet } from '../types';
 
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
@@ -105,7 +106,7 @@ const registerBalanceQuery = async (
   denom: string,
   addr: AccAddress,
 ) => {
-  await cm.executeContract(
+  const txResult = await cm.executeContract(
     contractAddress,
     JSON.stringify({
       register_balance_query: {
@@ -116,6 +117,59 @@ const registerBalanceQuery = async (
       },
     }),
   );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getEventAttribute = (
+  events: any[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events?.find(
+    (event) => event.type === eventType,
+  )?.attributes;
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
+};
+const acceptParamChangeProposal = async (
+  cm: CosmosWrapper,
+  wallet: Wallet,
+  paramChangeProposal: proto.cosmos.params.v1beta1.ParameterChangeProposal,
+) => {
+  const proposalTx = await cm.msgSubmitParamChangeProposal(
+    wallet,
+    paramChangeProposal,
+  );
+
+  const attribute = getEventAttribute(
+    (proposalTx as any).events,
+    'submit_proposal',
+    'proposal_id',
+  );
+
+  const proposalId = parseInt(attribute);
+  expect(proposalId).toBeGreaterThanOrEqual(0);
+
+  await waitBlocks(cm.sdk, 1);
+  await cm.msgVote(wallet, proposalId);
+
+  await waitBlocks(cm.sdk, 20);
 };
 
 const removeQuery = async (
@@ -186,7 +240,7 @@ const validateBalanceQuery = async (
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
-    2: 10,
+    2: 3,
     3: 4,
     4: 3,
   };
@@ -326,9 +380,6 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #2: balance', async () => {
-        // console.log('Height 1');
-        // const height = await getRemoteHeight(cm[1]);
-        // console.log(height);
         await registerBalanceQuery(
           cm[1],
           contractAddress,
@@ -577,6 +628,116 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
+    test('should check query creation with governance parameters', async () => {
+      await cm[1].msgSend(contractAddress, '1000000');
+
+      const params = await cm[1].queryInterchainqueriesParams();
+
+      const queryId = await registerBalanceQuery(
+        cm[1],
+        contractAddress,
+        connectionId,
+        2,
+        cm[2].denom,
+        testState.wallets.cosmos.demo2.address,
+      );
+
+      await waitBlocks(cm[1].sdk, 1);
+
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId!,
+      );
+
+      expect(queryResult.registered_query.deposit).toEqual(
+        params.params.query_deposit,
+      );
+      expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+        params.params.query_submit_timeout,
+      );
+    });
+
+    test('should change new query params based on governance proposal', async () => {
+      console.log('I AM HERE!!!!!!!!!!!!!!');
+      await cm[1].msgSend(contractAddress, '1000000');
+
+      const querySubmitTimeoutParam = 1;
+
+      const querySubmitTimeoutChangeProposal =
+        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+          title:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          description:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          changes: [
+            new proto.cosmos.params.v1beta1.ParamChange({
+              subspace: 'interchainqueries',
+              key: 'QuerySubmitTimeout',
+              value: `"${querySubmitTimeoutParam}"`,
+            }),
+          ],
+        });
+
+      await acceptParamChangeProposal(
+        cm[1],
+        testState.wallets.neutron.demo1,
+        querySubmitTimeoutChangeProposal,
+      );
+
+      const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
+        {
+          amount: '500',
+          denom: 'stake',
+        },
+      ];
+
+      const queryDepositChangeProposal =
+        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+          title:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          description:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          changes: [
+            new proto.cosmos.params.v1beta1.ParamChange({
+              subspace: 'interchainqueries',
+              key: 'QueryDeposit',
+              value: JSON.stringify(queryDepositParam),
+            }),
+          ],
+        });
+
+      await acceptParamChangeProposal(
+        cm[1],
+        testState.wallets.neutron.demo1,
+        queryDepositChangeProposal,
+      );
+
+      const queryId = await registerBalanceQuery(
+        cm[1],
+        contractAddress,
+        connectionId,
+        2,
+        cm[2].denom,
+        testState.wallets.cosmos.demo2.address,
+      );
+
+      await waitBlocks(cm[1].sdk, 1);
+
+      const queryResult = await getRegisteredQuery(
+        cm[1],
+        contractAddress,
+        queryId!,
+      );
+
+      console.log(queryResult.registered_query.deposit);
+
+      expect(queryResult.registered_query.deposit).toEqual(queryDepositParam);
+      expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+        '1',
+      );
+    });
+
     test('should update `query_submit_timeout` parameter and allow to remove icq #2 from non owner', async () => {
       const queryId = 2;
 
@@ -585,44 +746,37 @@ describe('Neutron / Interchain KV Query', () => {
       );
       console.log(balances);
 
-      //await waitBlocks(cm[1].sdk, 15);
-
-      const delegations = await cm[1].queryDelegations(
-        testState.wallets.neutron.demo1.address,
-      );
-      console.log(delegations);
-
       let params = await cm[1].queryInterchainqueriesParams();
       console.log(params);
 
-      const proposalResult = await cm[1].msgSubmitProposal(
+      const msgParamChangeProposal =
+        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+          title:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          description:
+            'Change query_submit_timeout parameter of the interchainqueries module',
+          changes: [
+            new proto.cosmos.params.v1beta1.ParamChange({
+              subspace: 'interchainqueries',
+              key: 'QuerySubmitTimeout',
+              value: '"1"',
+            }),
+          ],
+        });
+
+      await acceptParamChangeProposal(
+        cm[1],
         testState.wallets.neutron.demo1,
+        msgParamChangeProposal,
       );
-      console.log(proposalResult);
 
-      await waitBlocks(cm[1].sdk, 1);
-
-      const voteYes = await cm[1].msgVote(testState.wallets.neutron.demo1, 1);
-      console.log(voteYes);
-
-      await waitBlocks(cm[1].sdk, 3);
-
-      let queryProposals = await cm[1].queryProposals();
+      const queryProposals = await cm[1].queryProposals();
       console.log(queryProposals);
       console.log(queryProposals.proposals[0].final_tally_result);
-
-      await waitBlocks(cm[1].sdk, 20);
-
-      queryProposals = await cm[1].queryProposals();
-      console.log(queryProposals);
-      console.log(queryProposals.proposals[0].final_tally_result);
-
-      // console.log('Height 2');
-      // const height = await getRemoteHeight(cm[1]);
-      // console.log(height);
 
       params = await cm[1].queryInterchainqueriesParams();
       console.log(params);
+      console.log(params.params.query_deposit);
 
       const queryResult = await getRegisteredQuery(
         cm[1],

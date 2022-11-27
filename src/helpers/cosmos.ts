@@ -349,26 +349,12 @@ export class CosmosWrapper {
   /**
    * msgSubmitProposal creates proposal, adds deposit and votes.
    */
-  async msgSubmitProposal(
+  async msgSubmitParamChangeProposal(
     wallet: Wallet,
+    paramChangeProposal: proto.cosmos.params.v1beta1.ParameterChangeProposal,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgParamChangeProposal =
-      new proto.cosmos.params.v1beta1.ParameterChangeProposal({
-        title:
-          'Change query_submit_timeout parameter of the interchainqueries module',
-        description:
-          'Change query_submit_timeout parameter of the interchainqueries module',
-        changes: [
-          new proto.cosmos.params.v1beta1.ParamChange({
-            subspace: 'interchainqueries',
-            key: 'QuerySubmitTimeout',
-            value: '"1"',
-          }),
-        ],
-      });
-
     const msgProp = new proto.cosmos.gov.v1beta1.MsgSubmitProposal({
-      content: cosmosclient.codec.instanceToProtoAny(msgParamChangeProposal),
+      content: cosmosclient.codec.instanceToProtoAny(paramChangeProposal),
       proposer: wallet.address.toString(),
       initial_deposit: [{ denom: this.denom, amount: '10000000' }],
     });
