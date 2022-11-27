@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
 rm -r ./proto
-rm -r ./proto-thirdparty
 cp -r ../neutron/proto ./proto
-cp -r ../neutron/third_partyproto ./proto-thirdparty
 
 proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 proto_files=()
@@ -42,4 +40,3 @@ npx pbts \
 
 rm ./src/generated/proto.js
 rm -r ./proto
-rm -r ./proto-thirdparty
