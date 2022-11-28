@@ -6,7 +6,7 @@ import {
   NeutronContract,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRemoteHeight, waitBlocks } from '../helpers/wait';
+import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
@@ -169,7 +169,12 @@ const acceptParamChangeProposal = async (
   await waitBlocks(cm.sdk, 1);
   await cm.msgVote(wallet, proposalId);
 
-  await waitBlocks(cm.sdk, 20);
+  await getWithAttempts(
+    cm.sdk,
+    () => cm.queryProposal(proposalId.toString()),
+    (response) => response.proposal?.status === 'PROPOSAL_STATUS_PASSED',
+    20,
+  );
 };
 
 const removeQuery = async (
@@ -759,7 +764,18 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
-        await waitBlocks(cm[1].sdk, 3);
+
+        await getWithAttempts(
+          cm[1].sdk,
+          () =>
+            cm[1].queryBalances(
+              testState.wallets.neutron.demo1.address.toString(),
+            ),
+          (response) =>
+            JSON.stringify(response.balances) !==
+            JSON.stringify(balancesBeforeRegistration.balances),
+          20,
+        );
 
         const balancesAfterRemoval = await cm[1].queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
