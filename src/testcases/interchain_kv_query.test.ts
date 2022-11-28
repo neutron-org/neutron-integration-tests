@@ -610,7 +610,6 @@ describe('Neutron / Interchain KV Query', () => {
     test('remove icq #1 using query owner address', async () => {
       let balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances.length).toEqual(0);
-      console.log(contractAddress);
 
       await removeQuery(cm[1], contractAddress, 1);
 
@@ -622,180 +621,165 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 2;
 
       const result = await removeQueryViaTx(cm[1], queryId);
-      console.log((result as any).raw_log);
+
       expect((result as any).raw_log).toMatch(
         /authorization failed: unauthorized/i,
       );
     });
 
-    test('should check query creation with governance parameters', async () => {
-      await cm[1].msgSend(contractAddress, '1000000');
+    describe('Remove interchain query', () => {
+      beforeEach(async () => {
+        // Top up contract address before running query
+        await cm[1].msgSend(contractAddress, '1000000');
+      });
 
-      const params = await cm[1].queryInterchainqueriesParams();
+      test('should check query creation with governance parameters', async () => {
+        const params = await cm[1].queryInterchainqueriesParams();
 
-      const queryId = await registerBalanceQuery(
-        cm[1],
-        contractAddress,
-        connectionId,
-        2,
-        cm[2].denom,
-        testState.wallets.cosmos.demo2.address,
-      );
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          2,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
 
-      await waitBlocks(cm[1].sdk, 1);
+        await waitBlocks(cm[1].sdk, 1);
 
-      const queryResult = await getRegisteredQuery(
-        cm[1],
-        contractAddress,
-        queryId!,
-      );
+        const queryResult = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          queryId!,
+        );
 
-      expect(queryResult.registered_query.deposit).toEqual(
-        params.params.query_deposit,
-      );
-      expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
-        params.params.query_submit_timeout,
-      );
-    });
+        expect(queryResult.registered_query.deposit).toEqual(
+          params.params.query_deposit,
+        );
+        expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+          params.params.query_submit_timeout,
+        );
+      });
 
-    test('should change new query params based on governance proposal', async () => {
-      console.log('I AM HERE!!!!!!!!!!!!!!');
-      await cm[1].msgSend(contractAddress, '1000000');
+      test('should change new query params based on governance proposal', async () => {
+        const querySubmitTimeoutParam = 1;
 
-      const querySubmitTimeoutParam = 1;
+        const querySubmitTimeoutChangeProposal =
+          new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+            title:
+              'Change query_submit_timeout parameter of the interchainqueries module',
+            description:
+              'Change query_submit_timeout parameter of the interchainqueries module',
+            changes: [
+              new proto.cosmos.params.v1beta1.ParamChange({
+                subspace: 'interchainqueries',
+                key: 'QuerySubmitTimeout',
+                value: `"${querySubmitTimeoutParam}"`,
+              }),
+            ],
+          });
 
-      const querySubmitTimeoutChangeProposal =
-        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
-          title:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          description:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          changes: [
-            new proto.cosmos.params.v1beta1.ParamChange({
-              subspace: 'interchainqueries',
-              key: 'QuerySubmitTimeout',
-              value: `"${querySubmitTimeoutParam}"`,
-            }),
-          ],
+        await acceptParamChangeProposal(
+          cm[1],
+          testState.wallets.neutron.demo1,
+          querySubmitTimeoutChangeProposal,
+        );
+
+        const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
+          {
+            amount: '10000',
+            denom: 'stake',
+          },
+        ];
+
+        const queryDepositChangeProposal =
+          new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+            title:
+              'Change query_submit_timeout parameter of the interchainqueries module',
+            description:
+              'Change query_submit_timeout parameter of the interchainqueries module',
+            changes: [
+              new proto.cosmos.params.v1beta1.ParamChange({
+                subspace: 'interchainqueries',
+                key: 'QueryDeposit',
+                value: JSON.stringify(queryDepositParam),
+              }),
+            ],
+          });
+
+        await acceptParamChangeProposal(
+          cm[1],
+          testState.wallets.neutron.demo1,
+          queryDepositChangeProposal,
+        );
+
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          2,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
+
+        await waitBlocks(cm[1].sdk, 1);
+
+        const queryResult = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          queryId!,
+        );
+
+        expect(queryResult.registered_query.deposit).toEqual(queryDepositParam);
+        expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+          '1',
+        );
+
+        const interchainQueriesParams =
+          await cm[1].queryInterchainqueriesParams();
+
+        expect(interchainQueriesParams.params).toEqual({
+          query_deposit: queryDepositParam,
+          query_submit_timeout: querySubmitTimeoutParam.toString(),
         });
+      });
 
-      await acceptParamChangeProposal(
-        cm[1],
-        testState.wallets.neutron.demo1,
-        querySubmitTimeoutChangeProposal,
-      );
+      test('should remove icq and check balances updates', async () => {
+        const balancesBeforeRegistration = await cm[1].queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
 
-      const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
-        {
-          amount: '500',
-          denom: 'stake',
-        },
-      ];
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          15,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
 
-      const queryDepositChangeProposal =
-        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
-          title:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          description:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          changes: [
-            new proto.cosmos.params.v1beta1.ParamChange({
-              subspace: 'interchainqueries',
-              key: 'QueryDeposit',
-              value: JSON.stringify(queryDepositParam),
-            }),
+        await removeQueryViaTx(cm[1], queryId);
+        await waitBlocks(cm[1].sdk, 2);
+
+        const balancesAfterRemoval = await cm[1].queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
+
+        // Add fees (100) that was deducted during removeQueryViaTx call
+        const balancesAfterRemovalWithFee = {
+          ...balancesAfterRemoval,
+          balances: [
+            {
+              denom: balancesAfterRemoval.balances[0].denom,
+              amount: (
+                parseInt(balancesAfterRemoval.balances[0].amount) + 1000
+              ).toString(),
+            },
           ],
-        });
+        };
 
-      await acceptParamChangeProposal(
-        cm[1],
-        testState.wallets.neutron.demo1,
-        queryDepositChangeProposal,
-      );
-
-      const queryId = await registerBalanceQuery(
-        cm[1],
-        contractAddress,
-        connectionId,
-        2,
-        cm[2].denom,
-        testState.wallets.cosmos.demo2.address,
-      );
-
-      await waitBlocks(cm[1].sdk, 1);
-
-      const queryResult = await getRegisteredQuery(
-        cm[1],
-        contractAddress,
-        queryId!,
-      );
-
-      console.log(queryResult.registered_query.deposit);
-
-      expect(queryResult.registered_query.deposit).toEqual(queryDepositParam);
-      expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
-        '1',
-      );
-    });
-
-    test('should update `query_submit_timeout` parameter and allow to remove icq #2 from non owner', async () => {
-      const queryId = 2;
-
-      let balances = await cm[1].queryBalances(
-        testState.wallets.neutron.demo1.address.toString(),
-      );
-      console.log(balances);
-
-      let params = await cm[1].queryInterchainqueriesParams();
-      console.log(params);
-
-      const msgParamChangeProposal =
-        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
-          title:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          description:
-            'Change query_submit_timeout parameter of the interchainqueries module',
-          changes: [
-            new proto.cosmos.params.v1beta1.ParamChange({
-              subspace: 'interchainqueries',
-              key: 'QuerySubmitTimeout',
-              value: '"1"',
-            }),
-          ],
-        });
-
-      await acceptParamChangeProposal(
-        cm[1],
-        testState.wallets.neutron.demo1,
-        msgParamChangeProposal,
-      );
-
-      const queryProposals = await cm[1].queryProposals();
-      console.log(queryProposals);
-      console.log(queryProposals.proposals[0].final_tally_result);
-
-      params = await cm[1].queryInterchainqueriesParams();
-      console.log(params);
-      console.log(params.params.query_deposit);
-
-      const queryResult = await getRegisteredQuery(
-        cm[1],
-        contractAddress,
-        queryId,
-      );
-      console.log(queryResult);
-
-      await waitBlocks(cm[1].sdk, 4);
-
-      const result = await removeQueryViaTx(cm[1], queryId);
-      console.log(result);
-      console.log((result as any).raw_log);
-      expect((result as any).raw_log).toMatch(
-        /authorization failed: unauthorized1/i,
-      );
-
-      balances = await cm[1].queryBalances(cm[1].wallet.address.toString());
-      console.log(balances);
+        expect(balancesAfterRemovalWithFee).toEqual(balancesBeforeRegistration);
+      });
     });
   });
 });
