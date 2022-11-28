@@ -759,7 +759,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
-        await waitBlocks(cm[1].sdk, 2);
+        await waitBlocks(cm[1].sdk, 3);
 
         const balancesAfterRemoval = await cm[1].queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
