@@ -5,3 +5,4 @@ node_modules
 
 /.yarn/*
 /.pnp.*
+/src/generated/*
