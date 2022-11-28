@@ -11,6 +11,8 @@ import path from 'path';
 import { waitBlocks } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
+  InlineResponse20052,
+  InlineResponse20053,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
 import { cosmos, google } from '@cosmos-client/core/cjs/proto';
@@ -387,9 +389,14 @@ export class CosmosWrapper {
     return res?.tx_response;
   }
 
-  async queryProposals(): Promise<any> {
-    const balances = await rest.gov.proposals(this.sdk);
-    return balances.data;
+  async queryProposals(): Promise<InlineResponse20052> {
+    const proposals = await rest.gov.proposals(this.sdk);
+    return proposals.data;
+  }
+
+  async queryProposal(proposalId: string): Promise<InlineResponse20053> {
+    const proposal = await rest.gov.proposal(this.sdk, proposalId);
+    return proposal.data;
   }
 
   async queryInterchainqueriesParams(): Promise<any> {
