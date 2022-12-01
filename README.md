@@ -18,6 +18,7 @@ We use the Gaia network as a host network, so you need to clone it next to the n
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
+cd gaia
 git checkout v7.0.3
 ```
 
