@@ -8,7 +8,7 @@ build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.0.0 .
 
 build-relayer:
-		docker build ../../neutron-query-relayer -f ../../neutron-query-relayer/Dockerfile -t neutron-org/neutron-query-relayer:base
+		cd ../../neutron-query-relayer/ && make build-docker
 
 build-relayer-keyring-tests: build-neutron build-relayer
 		docker build ./relayer_keyrings/os_test     -t neutron-org/neutron-query-relayer:os-test

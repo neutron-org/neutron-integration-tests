@@ -8,7 +8,6 @@ import {
   queryTransfersNumber,
   waitForTransfersAmount,
 } from '../helpers/icq';
-import { max } from 'lodash';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 describe('Neutron / Interchain TX Query', () => {
@@ -62,7 +61,7 @@ describe('Neutron / Interchain TX Query', () => {
   const amountToAddr2_1 = 5000;
   const watchedAddr1: string = addr1;
   const query1UpdatePeriod = 4;
-  describe('utilise single transfers query', () => {
+  describe('utilize single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
       await cm.msgSend(contractAddress, '1000000');
@@ -184,7 +183,7 @@ describe('Neutron / Interchain TX Query', () => {
 
   const watchedAddr2 = addr2;
   const query2UpdatePeriod = 3;
-  describe('utilise multiple transfers queries', () => {
+  describe('utilize multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       // Top up contract address before running query
       await cm.msgSend(contractAddress, '1000000');
@@ -400,7 +399,7 @@ describe('Neutron / Interchain TX Query', () => {
         cm,
         contractAddress,
         expectedIncomingTransfers,
-        max([query1UpdatePeriod, query2UpdatePeriod]) * 2,
+        Math.max(...[query1UpdatePeriod, query2UpdatePeriod]) * 2,
       );
       let deposits = await queryRecipientTxs(cm, contractAddress, watchedAddr1);
       expect(deposits.transfers).toEqual([
@@ -629,6 +628,61 @@ describe('Neutron / Interchain TX Query', () => {
       expect(transfers.transfers_number).toEqual(
         transfers_amount_before_sending,
       );
+    });
+  });
+
+  describe('update recipient and check', () => {
+    const newWatchedAddr5 = 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa';
+    it('should update recipient', async () => {
+      const res = await cm.executeContract(
+        contractAddress,
+        JSON.stringify({
+          update_interchain_query: {
+            query_id: 3,
+            new_update_period: query3UpdatePeriod,
+            new_recipient: newWatchedAddr5,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+    it('seems registered transfers query is updated', async () => {
+      const query = await getRegisteredQuery(cm, contractAddress, 3);
+      expect(query.registered_query.id).toEqual(3);
+      expect(query.registered_query.owner).toEqual(contractAddress);
+      expect(query.registered_query.keys.length).toEqual(0);
+      expect(query.registered_query.query_type).toEqual('tx');
+      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
+      expect(query.registered_query.transactions_filter).toEqual(
+        '[{"field":"transfer.recipient","op":"Eq","value":"' +
+          newWatchedAddr5 +
+          '"}]',
+      );
+      expect(query.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    it('should handle callback on a sending to the new address', async () => {
+      const res = await cm2.msgSend(newWatchedAddr5, '10000');
+      expect(res.code).toEqual(0);
+      expectedIncomingTransfers++;
+      await waitForTransfersAmount(
+        cm,
+        contractAddress,
+        expectedIncomingTransfers,
+        query3UpdatePeriod * 2,
+      );
+      const deposits = await queryRecipientTxs(
+        cm,
+        contractAddress,
+        newWatchedAddr5,
+      );
+      expect(deposits.transfers).toMatchObject([
+        {
+          recipient: newWatchedAddr5,
+          sender: cm2.wallet.address.toString(),
+          denom: cm2.denom,
+        },
+      ]);
     });
   });
 });
