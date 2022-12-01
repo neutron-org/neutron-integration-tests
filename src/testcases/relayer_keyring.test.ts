@@ -41,6 +41,7 @@ const testRelayer = async (keyringType: string) => {
   const relayerVersion = `${keyringType}-test`;
 
   process.env['RELAYER_VERSION'] = relayerVersion;
+  process.env['RELAYER_IMAGE_NAME'] = `:${relayerVersion}`;
   const testState = new TestStateLocalCosmosTestNet();
   await testState.restart();
 
