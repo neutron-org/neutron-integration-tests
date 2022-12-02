@@ -23,6 +23,7 @@ export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
+const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
   channels: {
@@ -460,7 +461,5 @@ export const getContractsHashes = async (): Promise<Record<string, string>> => {
   return hashes;
 };
 
-const getContractBinary = async (fileName: string): Promise<Buffer> => {
-  const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
-  return fsPromise.readFile(path.resolve(contractPath, fileName));
-};
+const getContractBinary = async (fileName: string): Promise<Buffer> =>
+  fsPromise.readFile(path.resolve(contractPath, fileName));
