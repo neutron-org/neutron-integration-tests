@@ -53,6 +53,7 @@ describe('Neutron / Interchain TXs', () => {
           JSON.stringify({}),
           'interchaintx',
         );
+
         contractAddress = res;
         expect(res.toString()).toEqual(
           'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
@@ -104,6 +105,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
       });
+
       test('get ica address', async () => {
         const ica1 = await getIca(cm1, contractAddress, icaId1, connectionId);
         expect(ica1.interchain_account_address).toStartWith('cosmos');
@@ -115,6 +117,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(ica2.interchain_account_address.length).toEqual(65);
         icaAddress2 = ica2.interchain_account_address;
       });
+
       test('set payer fees', async () => {
         const res = await cm1.executeContract(
           contractAddress,
