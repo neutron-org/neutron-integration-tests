@@ -1,8 +1,8 @@
 import { rest } from '@cosmos-client/core';
 
-export const wait = async (n: number) =>
+export const wait = async (seconds: number) =>
   new Promise((r) => {
-    setTimeout(() => r(true), n);
+    setTimeout(() => r(true), 1000 * seconds);
   });
 
 /*
@@ -19,7 +19,7 @@ export const getRemoteHeight = async (sdk: any) => {
 export const waitBlocks = async (sdk: any, n: number) => {
   const targetHeight = (await getRemoteHeight(sdk)) + n;
   for (;;) {
-    await wait(10);
+    await wait(1);
     const currentHeight = await getRemoteHeight(sdk);
     if (currentHeight >= targetHeight) {
       break;
