@@ -4,6 +4,7 @@ import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+  EventsCollector,
 } from '../helpers/cosmos';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -27,6 +28,7 @@ describe('Neutron / Simple', () => {
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
+    (global as any).WebSocket = require('ws');
   });
 
   describe('Wallets', () => {
@@ -116,6 +118,12 @@ describe('Neutron / Simple', () => {
       });
 
       test('execute contract', async () => {
+        const ec = new EventsCollector("message.module = 'feerefunder'");
+        ec.startGatheringEvents();
+        const ec2 = new EventsCollector(
+          "lock_fees.payer = 'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq'",
+        );
+        ec2.startGatheringEvents();
         const res = await cm.executeContract(
           contractAddress,
           JSON.stringify({
@@ -128,10 +136,24 @@ describe('Neutron / Simple', () => {
           }),
         );
         expect(res.code).toEqual(0);
+        await waitBlocks(cm.sdk, 10);
+        ec.stopGatheringEvents();
+        expect(
+          ec.checkEvent(
+            'distribute_ack_fee.receiver',
+            'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
+          ),
+        ).toBeTruthy();
+        ec2.stopGatheringEvents();
+        expect(
+          ec.checkEvent(
+            'lock_fees.payer',
+            'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
+          ),
+        ).toBeTruthy();
       });
 
       test('check wallet balance', async () => {
-        await waitBlocks(cm.sdk, 10);
         const balances = await cm2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
@@ -252,6 +274,8 @@ describe('Neutron / Simple', () => {
         );
 
         const currentHeight = await getRemoteHeight(cm.sdk);
+        const ec = new EventsCollector("message.module = 'feerefunder'");
+        ec.startGatheringEvents();
 
         await cm.executeContract(
           contractAddress,
@@ -284,6 +308,13 @@ describe('Neutron / Simple', () => {
           // Wait until there 2 failure in the list
           (data) => data.failures.length == 4,
         );
+        expect(
+          ec.checkEvent(
+            'distribute_timeout_fee.receiver',
+            'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u',
+          ),
+        ).toBeTruthy();
+        ec.stopGatheringEvents();
 
         console.log(failuresAfterCall.failures);
 

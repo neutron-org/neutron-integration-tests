@@ -1,5 +1,5 @@
 import { promises as fsPromise } from 'fs';
-import { cosmosclient, proto, rest } from '@cosmos-client/core';
+import { cosmosclient, proto, rest, websocket } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
@@ -17,6 +17,11 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import IHeight = ibc.core.client.v1.IHeight;
+import { WebSocketSubject } from 'rxjs/webSocket';
+import {
+  RequestSchema,
+  ResponseSchema,
+} from '@cosmos-client/core/cjs/websocket/module';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -69,6 +74,54 @@ type Failure = {
   ack_id: number;
   ack_type: string;
 };
+
+export class EventsCollector {
+  url: string;
+  gathered_events: ResponseSchema[];
+  ws: WebSocketSubject<RequestSchema | ResponseSchema>;
+  query: string;
+  constructor(query) {
+    this.url = process.env.NODE1_WS_URL || 'ws://localhost:26657';
+    this.query = query;
+    this.gathered_events = [];
+  }
+
+  startGatheringEvents() {
+    this.ws = websocket.connect(this.url);
+    this.ws.next({
+      id: '1',
+      jsonrpc: '2.0',
+      method: 'subscribe',
+      params: [this.query],
+    });
+    const ge = this.gathered_events;
+    this.ws.subscribe({
+      next(x) {
+        // console.log(x);
+        ge.push(x);
+      },
+    });
+  }
+
+  stopGatheringEvents() {
+    this.ws.unsubscribe();
+  }
+
+  checkEvent(name: string, value: string): boolean {
+    for (const e of this.gathered_events) {
+      if (e.result?.events === undefined) {
+        continue;
+      }
+      if (e.result.events[name] === undefined) {
+        continue;
+      }
+      if (e.result.events[name].includes(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
