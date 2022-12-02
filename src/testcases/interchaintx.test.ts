@@ -522,7 +522,7 @@ describe('Neutron / Interchain TXs', () => {
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
-        20,
+        100,
       );
 
       expect(failuresAfterCall.failures).toEqual([
