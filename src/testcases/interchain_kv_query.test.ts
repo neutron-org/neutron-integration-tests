@@ -172,7 +172,7 @@ const acceptParamChangeProposal = async (
   await getWithAttempts(
     cm.sdk,
     () => cm.queryProposal(proposalId.toString()),
-    (response) => response.proposal?.status === 'PROPOSAL_STATUS_PASSED',
+    async (response) => response.proposal?.status === 'PROPOSAL_STATUS_PASSED',
     20,
   );
 };
@@ -797,7 +797,7 @@ describe('Neutron / Interchain KV Query', () => {
         await getWithAttempts(
           cm[1].sdk,
           () => getRegisteredQuery(cm[1], contractAddress, queryId),
-          (response) =>
+          async (response) =>
             response.registered_query.last_submitted_result_local_height <
             (await getRemoteHeight(cm[1].sdk)),
 

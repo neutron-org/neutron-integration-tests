@@ -367,9 +367,8 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
           async () => cm.queryAckFailures(contractAddress),
-          // Wait until there are 4 failures in the list
-          (data) => data.failures.length == 4,
-          200,
+          // Wait until there 4 failure in the list
+          async (data) => data.failures.length == 4,
         );
 
         expect(failuresAfterCall.failures).toEqual([
