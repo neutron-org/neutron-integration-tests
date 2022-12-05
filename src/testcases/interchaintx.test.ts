@@ -2,11 +2,11 @@ import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
-  getSequenceId,
-  CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
   AckFailuresResponse,
+  COSMOS_DENOM,
+  CosmosWrapper,
+  getSequenceId,
+  NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
@@ -94,7 +94,7 @@ describe('Neutron / Interchain TXs', () => {
           // - one exists already, it is open for IBC transfers;
           // - two more should appear soon since we are opening them implicitly
           //   through ICA creation.
-          (channels) => channels.channels.length == 3,
+          async (channels) => channels.channels.length == 3,
         );
         expect(channels.channels).toBeArray();
         expect(channels.channels).toIncludeAllPartialMembers([
@@ -176,7 +176,8 @@ describe('Neutron / Interchain TXs', () => {
               cm2.sdk as CosmosSDK,
               icaAddress1 as unknown as AccAddress,
             ),
-          (delegations) => delegations.data.delegation_responses?.length == 1,
+          async (delegations) =>
+            delegations.data.delegation_responses?.length == 1,
         );
         expect(res1.data.delegation_responses).toEqual([
           {
@@ -425,12 +426,12 @@ describe('Neutron / Interchain TXs', () => {
           // - one exists already, it is open for IBC transfers;
           // - two channels are already opened via ICA registration before
           // - one more, we are opening it right now
-          (channels) => channels.channels.length == 4,
+          async (channels) => channels.channels.length == 4,
         );
         await getWithAttempts(
           cm1.sdk,
           () => cm1.listIBCChannels(),
-          (channels) =>
+          async (channels) =>
             channels.channels.find((c) => c.channel_id == 'channel-3').state ==
             'STATE_OPEN',
         );
@@ -522,7 +523,7 @@ describe('Neutron / Interchain TXs', () => {
         cm1.sdk,
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
-        (data) => data.failures.length == 2,
+        async (data) => data.failures.length == 2,
         100,
       );
 
@@ -578,7 +579,7 @@ const waitForAck = (
           sequence_id: sequenceId,
         },
       }),
-    (ack) => ack != null,
+    async (ack) => ack != null,
     numAttempts,
   );
 
