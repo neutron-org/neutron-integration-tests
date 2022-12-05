@@ -17,11 +17,13 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import IHeight = ibc.core.client.v1.IHeight;
+import crypto from 'crypto';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
+const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
   channels: {
@@ -68,6 +70,13 @@ type Failure = {
   id: number;
   ack_id: number;
   ack_type: string;
+};
+
+export const NeutronContract = {
+  IBC_TRANSFER: 'ibc_transfer.wasm',
+  INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
+  INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
+  REFLECT: 'reflect.wasm',
 };
 
 export class CosmosWrapper {
@@ -152,12 +161,9 @@ export class CosmosWrapper {
 
   // storeWasm stores the wasm code by the passed path on the blockchain.
   async storeWasm(fileName: string): Promise<CodeId> {
-    const contractPath = process.env.CONTRACTS_PATH || './contracts/artifacts';
     const msg = new cosmwasmproto.cosmwasm.wasm.v1.MsgStoreCode({
       sender: this.wallet.address.toString(),
-      wasm_byte_code: await fsPromise.readFile(
-        path.resolve(contractPath, fileName),
-      ),
+      wasm_byte_code: await getContractBinary(fileName),
       instantiate_permission: null,
     });
     const data = await this.execTx(
@@ -442,3 +448,18 @@ export const getSequenceId = (rawLog: string | undefined): number => {
     ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
   return +sequence;
 };
+
+export const getContractsHashes = async (): Promise<Record<string, string>> => {
+  const hashes = {};
+  for (const key of Object.keys(NeutronContract)) {
+    const binary = await getContractBinary(NeutronContract[key]);
+    hashes[NeutronContract[key]] = crypto
+      .createHash('sha256')
+      .update(binary)
+      .digest('hex');
+  }
+  return hashes;
+};
+
+const getContractBinary = async (fileName: string): Promise<Buffer> =>
+  fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));

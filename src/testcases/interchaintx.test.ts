@@ -7,6 +7,7 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
   AckFailuresResponse,
+  NeutronContract,
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -44,7 +45,7 @@ describe('Neutron / Interchain TXs', () => {
     let codeId: string;
     describe('Setup', () => {
       test('store contract', async () => {
-        codeId = await cm1.storeWasm('neutron_interchain_txs.wasm');
+        codeId = await cm1.storeWasm(NeutronContract.INTERCHAIN_TXS);
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {

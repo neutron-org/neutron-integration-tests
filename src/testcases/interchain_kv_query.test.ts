@@ -1,5 +1,10 @@
 import { rest } from '@cosmos-client/core';
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+  NeutronContract,
+} from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -202,7 +207,7 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Instantiate interchain queries contract', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm[1].storeWasm('neutron_interchain_queries.wasm');
+      codeId = await cm[1].storeWasm(NeutronContract.INTERCHAIN_QUERIES);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
