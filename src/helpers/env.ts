@@ -61,7 +61,12 @@ export const waitForChannel = async (
       const r = await axios.get(`${host}/ibc/core/channel/v1/channels`, {
         timeout: 1000,
       });
-      if (r.data.channels.length > 0) {
+      if (
+        r.data.channels.length > 0 &&
+        r.data.channels.every(
+          (channel: any) => channel.counterparty.channel_id !== '',
+        )
+      ) {
         return;
       }
       // eslint-disable-next-line no-empty
