@@ -5,6 +5,7 @@ import {
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   PageRequest,
+  NeutronContract,
 } from '../helpers/cosmos';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -44,7 +45,7 @@ describe('Neutron / Simple', () => {
   describe('Contracts', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm('ibc_transfer.wasm');
+      codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {

@@ -11,4 +11,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD \
     curl -f http://127.0.0.1:1317/blocks/1 >/dev/null 2>&1 || exit 1
 
 CMD sh /opt/neutron/setup/init.sh && \
+    sh /opt/neutron/setup/add-consumer-section.sh && \
     sh /opt/neutron/setup/start.sh
