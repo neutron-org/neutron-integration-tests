@@ -285,6 +285,7 @@ describe('Neutron / Simple', () => {
           async () => cm.queryAckFailures(contractAddress),
           // Wait until there 2 failure in the list
           (data) => data.failures.length == 4,
+          100,
         );
 
         console.log(failuresAfterCall.failures);
