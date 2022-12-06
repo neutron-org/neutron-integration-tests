@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { execSync, ExecSyncOptions } from 'child_process';
 import { wait } from './wait';
+import { getContractsHashes } from './cosmos';
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
@@ -33,6 +34,8 @@ export const setup = async (host: string, noRebuild = false) => {
     execSync(`cd setup && make start-cosmopark`, execOptions);
   }
   showVersions();
+  await showContractsHashes();
+
   await waitForHTTP(host);
   await waitForChannel(host);
   alreadySetUp = true;
@@ -70,7 +73,12 @@ export const waitForChannel = async (
       const r = await axios.get(`${host}/ibc/core/channel/v1/channels`, {
         timeout: 1000,
       });
-      if (r.data.channels.length > 0) {
+      if (
+        r.data.channels.length > 0 &&
+        r.data.channels.every(
+          (channel: any) => channel.counterparty.channel_id !== '',
+        )
+      ) {
         return;
       }
       // eslint-disable-next-line no-empty
@@ -121,4 +129,15 @@ export const showVersions = () => {
       console.log(`Cannot get ${service[0]} version:\n${err}`);
     }
   }
+};
+
+const showContractsHashes = async () => {
+  const hashes = await getContractsHashes();
+
+  let result = 'Contracts hashes:\n';
+  for (const key of Object.keys(hashes)) {
+    result = result.concat(`${hashes[key]} ${key}\n`);
+  }
+
+  console.log(result);
 };
