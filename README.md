@@ -34,7 +34,7 @@ yarn
 ### 4. Download contracts
 
 ```shell
-./download_contracts.sh "neutron_audit_oak_19_09_2022_fixes"
+./download_contracts.sh
 ```
 
 ### 5. Run the tests (make sure docker daemon is running)
