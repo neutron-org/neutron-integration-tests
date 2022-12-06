@@ -1,7 +1,7 @@
 import {
   AckFailuresResponse,
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   NeutronContract,
@@ -311,8 +311,9 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
           async () => cm.queryAckFailures(contractAddress),
-          // Wait until there 2 failure in the list
+          // Wait until there are 4 failures in the list
           (data) => data.failures.length == 4,
+          200,
         );
 
         console.log(failuresAfterCall.failures);
