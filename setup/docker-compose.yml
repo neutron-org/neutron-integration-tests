@@ -63,6 +63,7 @@ services:
       - RELAYER_ALLOW_TX_QUERIES=true
       - RELAYER_ALLOW_KV_CALLBACKS=true
       - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
+      - RELAYER_LISTEN_ADDR=0.0.0.0:9999
       - LOGGER_LEVEL=debug
 volumes:
   data:

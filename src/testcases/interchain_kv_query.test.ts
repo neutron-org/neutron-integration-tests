@@ -498,7 +498,7 @@ describe('Neutron / Interchain KV Query', () => {
       await cm[1].executeContract(
         contractAddress,
         JSON.stringify({
-          integration_tests_set_kv_query_mock: {},
+          integration_tests_set_query_mock: {},
         }),
       );
     });
@@ -526,7 +526,7 @@ describe('Neutron / Interchain KV Query', () => {
       await cm[1].executeContract(
         contractAddress,
         JSON.stringify({
-          integration_tests_unset_kv_query_mock: {},
+          integration_tests_unset_query_mock: {},
         }),
       );
     });

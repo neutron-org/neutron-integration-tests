@@ -23,7 +23,12 @@ export const setup = async (host: string) => {
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
-  execSync(`cd setup && make start-cosmopark`);
+  if (process.env.NO_REBUILD) {
+    console.log('NO_REBUILD ENV provided. do not rebuild docker images');
+    execSync(`cd setup && make start-cosmopark-no-rebuild`);
+  } else {
+    execSync(`cd setup && make start-cosmopark`);
+  }
   showVersions();
   await showContractsHashes();
 
