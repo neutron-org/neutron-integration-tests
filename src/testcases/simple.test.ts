@@ -196,14 +196,14 @@ describe('Neutron / Simple', () => {
       });
     });
     describe('Fee in wrong denom', () => {
-      const uatom_ibc_denom =
+      const uatomIBCDenom =
         'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
       test('transfer some atoms to contract', async () => {
-        const uatom_amount = '1000';
+        const uatomAmount = '1000';
         const res = await cm2.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: cm2.denom, amount: uatom_amount },
+          { denom: cm2.denom, amount: uatomAmount },
           contractAddress,
           { revision_number: 2, revision_height: 100000000 },
         );
@@ -212,16 +212,16 @@ describe('Neutron / Simple', () => {
         await waitBlocks(cm.sdk, 10);
         const balances = await cm.queryBalances(contractAddress);
         expect(
-          balances.balances.find((bal): boolean => bal.denom == uatom_ibc_denom)
+          balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
             ?.amount,
-        ).toEqual(uatom_amount);
+        ).toEqual(uatomAmount);
       });
       test('try to set fee in atoms', async () => {
         const res = await cm.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: uatom_ibc_denom,
+              denom: uatomIBCDenom,
               ack_fee: '100',
               recv_fee: '0',
               timeout_fee: '100',
