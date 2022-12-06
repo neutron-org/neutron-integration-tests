@@ -1,10 +1,14 @@
 import { rest } from '@cosmos-client/core';
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+  NeutronContract,
+} from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { max } from 'lodash';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
@@ -203,7 +207,7 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Instantiate interchain queries contract', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm[1].storeWasm('neutron_interchain_queries.wasm');
+      codeId = await cm[1].storeWasm(NeutronContract.INTERCHAIN_QUERIES);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
@@ -503,7 +507,7 @@ describe('Neutron / Interchain KV Query', () => {
       const start = await Promise.all(
         [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
       );
-      for (let i = 0; i <= max(Object.values(updatePeriods)); ++i) {
+      for (let i = 0; i <= Math.max(...Object.values(updatePeriods)); ++i) {
         const res = await Promise.all(
           [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
         );

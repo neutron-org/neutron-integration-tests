@@ -7,6 +7,7 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
   AckFailuresResponse,
+  NeutronContract,
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -44,7 +45,7 @@ describe('Neutron / Interchain TXs', () => {
     let codeId: string;
     describe('Setup', () => {
       test('store contract', async () => {
-        codeId = await cm1.storeWasm('neutron_interchain_txs.wasm');
+        codeId = await cm1.storeWasm(NeutronContract.INTERCHAIN_TXS);
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
@@ -53,6 +54,7 @@ describe('Neutron / Interchain TXs', () => {
           JSON.stringify({}),
           'interchaintx',
         );
+
         contractAddress = res;
         expect(res.toString()).toEqual(
           'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
@@ -104,6 +106,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
       });
+
       test('get ica address', async () => {
         const ica1 = await getIca(cm1, contractAddress, icaId1, connectionId);
         expect(ica1.interchain_account_address).toStartWith('cosmos');
@@ -115,6 +118,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(ica2.interchain_account_address.length).toEqual(65);
         icaAddress2 = ica2.interchain_account_address;
       });
+
       test('set payer fees', async () => {
         const res = await cm1.executeContract(
           contractAddress,
@@ -519,7 +523,7 @@ describe('Neutron / Interchain TXs', () => {
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
-        20,
+        100,
       );
 
       expect(failuresAfterCall.failures).toEqual([
