@@ -323,7 +323,16 @@ describe('Neutron / Simple', () => {
       });
     });
     describe('Failures limit test', () => {
-      test('failures with big limit returns error', async () => {
+      test("failures with small limit doesn't return an error", async () => {
+        const pagination: PageRequest = {
+          'pagination.limit': '1',
+          'pagination.offset': '0',
+        };
+        await expect(
+          cm.queryAckFailures(contractAddress, pagination),
+        ).resolves.toReturn();
+      });
+      test('failures with big limit returns an error', async () => {
         const pagination: PageRequest = {
           'pagination.limit': '10000',
           'pagination.offset': '0',
