@@ -5,6 +5,7 @@ import {
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   NeutronContract,
+  getIBCDenom,
 } from '../helpers/cosmos';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -196,13 +197,17 @@ describe('Neutron / Simple', () => {
       });
     });
     describe('Fee in wrong denom', () => {
-      const uatomIBCDenom =
-        'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
+      const portName = 'transfer';
+      const channelName = 'channel-0';
+      const uatomIBCDenom = getIBCDenom(portName, channelName, 'uatom');
+      expect(uatomIBCDenom).toEqual(
+        'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+      );
       test('transfer some atoms to contract', async () => {
         const uatomAmount = '1000';
         const res = await cm2.msgIBCTransfer(
-          'transfer',
-          'channel-0',
+          portName,
+          channelName,
           { denom: cm2.denom, amount: uatomAmount },
           contractAddress,
           { revision_number: 2, revision_height: 100000000 },
@@ -216,7 +221,7 @@ describe('Neutron / Simple', () => {
             ?.amount,
         ).toEqual(uatomAmount);
       });
-      test('try to set fee in atoms', async () => {
+      test('try to set fee in IBC transferred atoms', async () => {
         const res = await cm.executeContract(
           contractAddress,
           JSON.stringify({
