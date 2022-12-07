@@ -48,7 +48,7 @@ const walletSet = async (
 });
 
 interface initOptions {
-  noRebuild?: boolean | undefined;
+  isRebuildNeeded?: boolean | undefined;
 }
 
 export class TestStateLocalCosmosTestNet {
@@ -65,12 +65,12 @@ export class TestStateLocalCosmosTestNet {
     this.sdk1 = new cosmosclient.CosmosSDK(host1, config.CHAIN_ID_1);
     this.sdk2 = new cosmosclient.CosmosSDK(host2, config.CHAIN_ID_2);
 
-    await setup(host1, options.noRebuild);
+    await setup(host1, options.isRebuildNeeded);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutron_prefix);
     this.wallets.cosmos = await walletSet(this.sdk2, cosmos_prefix);
   };
 
-  restart = async () => this.init({ noRebuild: true });
+  restart = async () => this.init({ isRebuildNeeded: false });
 }

@@ -9,8 +9,8 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
 
 let alreadySetUp = false;
 
-export const setup = async (host: string, noRebuild = false) => {
-  if (alreadySetUp && !noRebuild) {
+export const setup = async (host: string, isRebuildNeeded = true) => {
+  if (alreadySetUp && !isRebuildNeeded) {
     console.log('already set up');
     return;
   }
@@ -26,12 +26,12 @@ export const setup = async (host: string, noRebuild = false) => {
   const execOptions: ExecSyncOptions = {
     env: process.env,
   };
-  if (noRebuild) {
+  if (isRebuildNeeded) {
     console.log('Rebuilding and starting...');
-    execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
+    execSync(`cd setup && make start-cosmopark`, execOptions);
   } else {
     console.log('Starting without rebuilding');
-    execSync(`cd setup && make start-cosmopark`, execOptions);
+    execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
   }
   showVersions();
   await showContractsHashes();

@@ -37,12 +37,11 @@ const lookForKeyringInContainerLogs = async (
   }
 };
 
-const testRelayer = async (keyringType: string) => {
+const testRelayer = async (testState, cm1, cm2, keyringType: string) => {
   const relayerVersion = `${keyringType}-test`;
 
   process.env['RELAYER_VERSION'] = relayerVersion;
   process.env['RELAYER_IMAGE_NAME'] = `:${relayerVersion}`;
-  const testState = new TestStateLocalCosmosTestNet();
   await testState.restart();
 
   const keyringLookupAbortController = new AbortController();
@@ -54,27 +53,14 @@ const testRelayer = async (keyringType: string) => {
     },
   );
 
-  await performKVQuery(testState);
+  await performKVQuery([cm1, cm2], testState);
 
   expect(keyringFromContainerLogs).toEqual(keyringType);
 
   keyringLookupAbortController.abort();
 };
 
-const performKVQuery = async (testState) => {
-  const cm = {
-    1: new CosmosWrapper(
-      testState.sdk1,
-      testState.wallets.neutron.demo1,
-      NEUTRON_DENOM,
-    ),
-    2: new CosmosWrapper(
-      testState.sdk2,
-      testState.wallets.cosmos.demo2,
-      COSMOS_DENOM,
-    ),
-  };
-
+const performKVQuery = async (cm, testState) => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
     2: 2,
@@ -141,28 +127,46 @@ const performKVQuery = async (testState) => {
 const describeDockerOnly = process.env.NO_DOCKER ? describe.skip : describe;
 
 describeDockerOnly('Neutron / Relayer keyrings', () => {
+  let testState: TestStateLocalCosmosTestNet;
+  let cm1: CosmosWrapper;
+  let cm2: CosmosWrapper;
+
+  beforeAll(async () => {
+    testState = new TestStateLocalCosmosTestNet();
+    await testState.init();
+    cm1 = new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+    );
+    cm2 = new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+    );
+  });
+
   test('memory backend', async () => {
-    await testRelayer('memory');
+    await testRelayer(testState, cm1, cm2, 'memory');
   });
 
   test('os backend', async () => {
-    await testRelayer('os');
+    await testRelayer(testState, cm1, cm2, 'os');
   });
 
   test('test backend', async () => {
-    await testRelayer('test');
+    await testRelayer(testState, cm1, cm2, 'test');
   });
 
   test('pass backend', async () => {
-    await testRelayer('pass');
+    await testRelayer(testState, cm1, cm2, 'pass');
   });
 
   test('file backend', async () => {
-    await testRelayer('file');
+    await testRelayer(testState, cm1, cm2, 'file');
   });
 
   afterAll(async () => {
-    const testState = new TestStateLocalCosmosTestNet();
     process.env['RELAYER_VERSION'] = 'base';
     await testState.restart();
   });
