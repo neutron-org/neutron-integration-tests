@@ -328,9 +328,8 @@ describe('Neutron / Simple', () => {
           'pagination.limit': '1',
           'pagination.offset': '0',
         };
-        await expect(
-          cm.queryAckFailures(contractAddress, pagination),
-        ).resolves.toReturn();
+        const failures = await cm.queryAckFailures(contractAddress, pagination);
+        expect(failures.failures.length).toEqual(1);
       });
       test('failures with big limit returns an error', async () => {
         const pagination: PageRequest = {
