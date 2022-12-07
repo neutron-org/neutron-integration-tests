@@ -86,7 +86,7 @@ export const waitForTransfersAmount = (
     numAttempts,
   );
 
-type UnsuccessfulTx = {
+type UnsuccessfulSubmitIcqTx = {
   // QueryID is the query_id transactions was submitted for
   query_id: number;
   // SubmittedTxHash is the hash of the *remote fetched transaction* was submitted
@@ -95,8 +95,8 @@ type UnsuccessfulTx = {
   neutron_hash: string;
   // ErrorTime is the time when the error was added
   error_time: string;
-  // Type is the status of unsuccessful tx
-  type: string;
+  // Status is the status of unsuccessful tx
+  status: string;
   // Message is the more descriptive message for the error
   message: string;
 };
@@ -108,9 +108,9 @@ export type ResubmitQuery = {
 
 export const getUnsuccessfulTxs = async (
   icq_web_host: string,
-): Promise<Array<UnsuccessfulTx>> => {
+): Promise<Array<UnsuccessfulSubmitIcqTx>> => {
   const url = `${icq_web_host}/unsuccessful-txs`;
-  const req = await axios.get<Array<UnsuccessfulTx>>(url);
+  const req = await axios.get<Array<UnsuccessfulSubmitIcqTx>>(url);
   return req.data;
 };
 

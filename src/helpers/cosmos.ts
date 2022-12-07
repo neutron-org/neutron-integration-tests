@@ -96,7 +96,6 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
-    wallet = this.wallet,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -108,13 +107,13 @@ export class CosmosWrapper {
     const authInfo = new proto.cosmos.tx.v1beta1.AuthInfo({
       signer_infos: [
         {
-          public_key: cosmosclient.codec.instanceToProtoAny(wallet.pubKey),
+          public_key: cosmosclient.codec.instanceToProtoAny(this.wallet.pubKey),
           mode_info: {
             single: {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: wallet.account.sequence,
+          sequence: this.wallet.account.sequence,
         },
       ],
       fee,
@@ -125,9 +124,9 @@ export class CosmosWrapper {
       authInfo,
     );
 
-    const signDocBytes = txBuilder.signDocBytes(wallet.account.account_number);
+    const signDocBytes = txBuilder.signDocBytes(this.wallet.account.account_number);
 
-    txBuilder.addSignature(wallet.privKey.sign(signDocBytes));
+    txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
     const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
       mode: rest.tx.BroadcastTxMode.Async,
@@ -150,7 +149,7 @@ export class CosmosWrapper {
           return null;
         });
       if (data != null) {
-        wallet.account.sequence++;
+        this.wallet.account.sequence++;
         return data.data;
       }
     }
@@ -273,13 +272,9 @@ export class CosmosWrapper {
   async msgSend(
     to: string,
     amount: string,
-    from_wallet?: Wallet,
   ): Promise<InlineResponse20075TxResponse> {
-    if (from_wallet == undefined) {
-      from_wallet = this.wallet;
-    }
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
-      from_address: from_wallet.address.toString(),
+      from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
@@ -290,7 +285,7 @@ export class CosmosWrapper {
       },
       [msgSend],
       10,
-      from_wallet,
+      this.wallet,
     );
     return res?.tx_response;
   }
@@ -450,7 +445,7 @@ export const getSequenceId = (rawLog: string | undefined): number => {
   const events = JSON.parse(rawLog)[0]['events'];
   const sequence = events
     .find((e) => e['type'] === 'send_packet')
-    ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
+  ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
   return +sequence;
 };
 
