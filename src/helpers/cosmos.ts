@@ -124,7 +124,9 @@ export class CosmosWrapper {
       authInfo,
     );
 
-    const signDocBytes = txBuilder.signDocBytes(this.wallet.account.account_number);
+    const signDocBytes = txBuilder.signDocBytes(
+      this.wallet.account.account_number,
+    );
 
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
     const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
@@ -445,7 +447,7 @@ export const getSequenceId = (rawLog: string | undefined): number => {
   const events = JSON.parse(rawLog)[0]['events'];
   const sequence = events
     .find((e) => e['type'] === 'send_packet')
-  ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
+    ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
   return +sequence;
 };
 
