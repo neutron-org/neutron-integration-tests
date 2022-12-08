@@ -1,6 +1,11 @@
 import { execSync } from 'child_process';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  COSMOS_DENOM,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+  NeutronContract,
+} from '../helpers/cosmos';
 import {
   registerBalanceQuery,
   validateBalanceQuery,
@@ -9,13 +14,13 @@ import {
 import { getRemoteHeight } from '../helpers/wait';
 
 const lookForKeyringInContainerLogs = async (
-  relayerVersion: string,
+  realayerImageName: string,
   signal: AbortSignal,
 ) => {
   try {
     while (!signal.aborted) {
       const containerID = execSync(
-        `docker ps -q --filter ancestor=neutron-org/neutron-query-relayer:${relayerVersion}`,
+        `docker ps -q --filter ancestor=${realayerImageName}`,
       )
         .toString()
         .trim();
@@ -37,23 +42,42 @@ const lookForKeyringInContainerLogs = async (
   }
 };
 
-const testRelayer = async (testState, cm1, cm2, keyringType: string) => {
-  const relayerVersion = `${keyringType}-test`;
+const testRelayer = async (keyringType: string) => {
+  const testState = new TestStateLocalCosmosTestNet();
+  await testState.init();
+  const cm = {
+    neutron: new CosmosWrapper(
+      testState.sdk1,
+      testState.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+    ),
+    gaia: new CosmosWrapper(
+      testState.sdk2,
+      testState.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+    ),
+  };
 
-  process.env['RELAYER_VERSION'] = relayerVersion;
-  process.env['RELAYER_IMAGE_NAME'] = `:${relayerVersion}`;
+  const realayerImageName = `neutron-org/neutron-query-relayer:${keyringType}-test`;
+
+  process.env['RELAYER_IMAGE_NAME'] = realayerImageName;
   await testState.restart();
+  const ralayerContainerId = execSync(
+    `docker ps -q --filter ancestor=${realayerImageName}`,
+  ).toString();
+  expect(ralayerContainerId.length).toBeGreaterThan(0);
 
   const keyringLookupAbortController = new AbortController();
   const keyringLookupAbortSignal = keyringLookupAbortController.signal;
   let keyringFromContainerLogs = '';
-  lookForKeyringInContainerLogs(relayerVersion, keyringLookupAbortSignal).then(
-    (result) => {
-      keyringFromContainerLogs = result;
-    },
-  );
+  lookForKeyringInContainerLogs(
+    realayerImageName,
+    keyringLookupAbortSignal,
+  ).then((result) => {
+    keyringFromContainerLogs = result;
+  });
 
-  await performKVQuery([cm1, cm2], testState);
+  await performKVQuery(cm, testState);
 
   expect(keyringFromContainerLogs).toEqual(keyringType);
 
@@ -68,106 +92,93 @@ const performKVQuery = async (cm, testState) => {
     4: 3,
   };
 
-  const codeId = await cm[1].storeWasm('neutron_interchain_queries.wasm');
+  const codeId = await cm.neutron.storeWasm(NeutronContract.INTERCHAIN_QUERIES);
+
   expect(parseInt(codeId)).toBeGreaterThan(0);
-  const contractAddress = await cm[1].instantiate(
+
+  const contractAddress = await cm.neutron.instantiate(
     codeId,
     '{}',
     'neutron_interchain_queries',
   );
   // Top up contract address before running query
-  await cm[1].msgSend(contractAddress, '1000000');
-
-  let balances = await cm[1].queryBalances(contractAddress);
+  await cm.neutron.msgSend(contractAddress, '1000000');
+  let balances = await cm.neutron.queryBalances(contractAddress);
   expect(balances.balances[0].amount).toEqual('1000000');
 
   await registerBalanceQuery(
-    cm[1],
+    cm.neutron,
     contractAddress,
     connectionId,
     10,
-    cm[2].denom,
+    cm.gaia.denom,
     testState.wallets.cosmos.demo2.address,
   );
-
-  balances = await cm[1].queryBalances(contractAddress);
+  balances = await cm.neutron.queryBalances(contractAddress);
   expect(balances.balances.length).toEqual(0);
   // Top up contract address before running query
-  await cm[1].msgSend(contractAddress, '1000000');
+  await cm.neutron.msgSend(contractAddress, '1000000');
   await registerBalanceQuery(
-    cm[1],
+    cm.neutron,
     contractAddress,
     connectionId,
     updatePeriods[2],
-    cm[2].denom,
+    cm.gaia.denom,
     testState.wallets.cosmos.demo2.address,
   );
   // reduce balance of demo2 wallet
   const queryId = 2;
-  const res = await cm[2].msgSend(
+  const res = await cm.gaia.msgSend(
     testState.wallets.cosmos.rly2.address.toString(),
     '9000',
   );
   expect(res.code).toEqual(0);
   await waitForICQResultWithRemoteHeight(
-    cm[1],
+    cm.neutron,
     contractAddress,
     queryId,
-    await getRemoteHeight(cm[2].sdk),
+    await getRemoteHeight(cm.gaia.sdk),
   );
   await validateBalanceQuery(
-    cm[1],
-    cm[2],
+    cm.neutron,
+    cm.gaia,
     contractAddress,
     queryId,
-    cm[2].wallet.address,
+    cm.gaia.wallet.address,
   );
 };
 
 const describeDockerOnly = process.env.NO_DOCKER ? describe.skip : describe;
 
 describeDockerOnly('Neutron / Relayer keyrings', () => {
-  let testState: TestStateLocalCosmosTestNet;
-  let cm1: CosmosWrapper;
-  let cm2: CosmosWrapper;
-
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    const testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm1 = new CosmosWrapper(
-      testState.sdk1,
-      testState.wallets.neutron.demo1,
-      NEUTRON_DENOM,
-    );
-    cm2 = new CosmosWrapper(
-      testState.sdk2,
-      testState.wallets.cosmos.demo2,
-      COSMOS_DENOM,
-    );
   });
 
   test('memory backend', async () => {
-    await testRelayer(testState, cm1, cm2, 'memory');
+    await testRelayer('memory');
   });
 
   test('os backend', async () => {
-    await testRelayer(testState, cm1, cm2, 'os');
+    await testRelayer('os');
   });
 
   test('test backend', async () => {
-    await testRelayer(testState, cm1, cm2, 'test');
+    await testRelayer('test');
   });
 
   test('pass backend', async () => {
-    await testRelayer(testState, cm1, cm2, 'pass');
+    await testRelayer('pass');
   });
 
   test('file backend', async () => {
-    await testRelayer(testState, cm1, cm2, 'file');
+    await testRelayer('file');
   });
 
   afterAll(async () => {
-    process.env['RELAYER_VERSION'] = 'base';
+    process.env['RELAYER_IMAGE_NAME'] = 'neutron-org/neutron-query-relayer';
+    const testState = new TestStateLocalCosmosTestNet();
     await testState.restart();
   });
 });

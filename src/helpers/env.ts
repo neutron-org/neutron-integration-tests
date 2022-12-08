@@ -9,8 +9,8 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
 
 let alreadySetUp = false;
 
-export const setup = async (host: string, isRebuildNeeded = true) => {
-  if (alreadySetUp && !isRebuildNeeded) {
+export const setup = async (host: string) => {
+  if (alreadySetUp) {
     console.log('already set up');
     return;
   }
@@ -23,22 +23,31 @@ export const setup = async (host: string, isRebuildNeeded = true) => {
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
-  const execOptions: ExecSyncOptions = {
-    env: process.env,
-  };
-  if (isRebuildNeeded) {
-    console.log('Rebuilding and starting...');
-    execSync(`cd setup && make start-cosmopark`, execOptions);
-  } else {
-    console.log('Starting without rebuilding');
-    execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
-  }
+  execSync(`cd setup && make start-cosmopark`);
   showVersions();
   await showContractsHashes();
 
   await waitForHTTP(host);
   await waitForChannel(host);
   alreadySetUp = true;
+};
+
+export const restart = async (host: string) => {
+  if (process.env.NO_DOCKER) {
+    console.log("NO_DOCKER ENV provided, can't restart containers");
+    return;
+  }
+  execSync(`cd setup && make stop-cosmopark`);
+  const execOptions: ExecSyncOptions = {
+    env: process.env,
+  };
+  console.log('Restarting without rebuilding');
+  execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
+  showVersions();
+  await showContractsHashes();
+
+  await waitForHTTP(host);
+  await waitForChannel(host);
 };
 
 export const waitForHTTP = async (

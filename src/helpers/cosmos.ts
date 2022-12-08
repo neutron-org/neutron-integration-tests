@@ -155,6 +155,11 @@ export class CosmosWrapper {
         return data.data;
       }
     }
+
+    const rpcError = error?.response?.data?.message;
+    if (rpcError !== undefined) {
+      throw rpcError;
+    }
     error = error ?? new Error('failed to submit tx');
     throw error;
   }

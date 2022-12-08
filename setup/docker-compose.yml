@@ -33,7 +33,7 @@ services:
       - "gaia-node"
 
   relayer:
-    image: "neutron-org/neutron-query-relayer:${RELAYER_VERSION}"
+    image: "${RELAYER_IMAGE_NAME}"
     entrypoint: ./run.sh
     volumes:
       - data:/data
