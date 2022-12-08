@@ -140,5 +140,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       );
       expect(deposits.transfers.length).toEqual(5);
     });
+
+    test('resubmit nonexistent failed tx', async () => {
+      await expect(
+        postResubmitTxs(testState.icq_web_host, [
+          { query_id: 1, hash: 'nonexistent' },
+        ]),
+      ).rejects.toThrow('Request failed with status code 400');
+    });
   });
 });
