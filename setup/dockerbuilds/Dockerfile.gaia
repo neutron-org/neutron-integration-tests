@@ -19,5 +19,5 @@ EXPOSE 26656 26657 1317 9090
 USER 0
 
 CMD sh /opt/node/setup/init.sh && \
-  sh /opt/node/setup/add-gentx.sh && \
+  sh /opt/node/setup/init-gaiad.sh && \
   sh /opt/node/setup/start.sh
