@@ -43,8 +43,18 @@ const lookForKeyringInContainerLogs = async (
 };
 
 const testRelayer = async (keyringType: string) => {
+  const realayerImageName = `neutron-org/neutron-query-relayer:${keyringType}-test`;
+
+  process.env['RELAYER_IMAGE_NAME'] = realayerImageName;
+
   const testState = new TestStateLocalCosmosTestNet();
-  await testState.init();
+  await testState.restart();
+
+  const ralayerContainerId = execSync(
+    `docker ps -q --filter ancestor=${realayerImageName}`,
+  ).toString();
+  expect(ralayerContainerId.length).toBeGreaterThan(0);
+
   const cm = {
     neutron: new CosmosWrapper(
       testState.sdk1,
@@ -57,15 +67,6 @@ const testRelayer = async (keyringType: string) => {
       COSMOS_DENOM,
     ),
   };
-
-  const realayerImageName = `neutron-org/neutron-query-relayer:${keyringType}-test`;
-
-  process.env['RELAYER_IMAGE_NAME'] = realayerImageName;
-  await testState.restart();
-  const ralayerContainerId = execSync(
-    `docker ps -q --filter ancestor=${realayerImageName}`,
-  ).toString();
-  expect(ralayerContainerId.length).toBeGreaterThan(0);
 
   const keyringLookupAbortController = new AbortController();
   const keyringLookupAbortSignal = keyringLookupAbortController.signal;

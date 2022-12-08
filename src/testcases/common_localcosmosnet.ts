@@ -65,6 +65,9 @@ export class TestStateLocalCosmosTestNet {
   };
 
   restart = async () => {
+    this.host1 = process.env.NODE1_URL || 'http://localhost:1317';
+    this.host2 = process.env.NODE2_URL || 'http://localhost:1316';
+
     this.sdk1 = new cosmosclient.CosmosSDK(this.host1, config.CHAIN_ID_1);
     this.sdk2 = new cosmosclient.CosmosSDK(this.host2, config.CHAIN_ID_2);
 
