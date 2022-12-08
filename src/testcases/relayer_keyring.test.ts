@@ -48,7 +48,7 @@ const testRelayer = async (keyringType: string) => {
   process.env['RELAYER_IMAGE_NAME'] = realayerImageName;
 
   const testState = new TestStateLocalCosmosTestNet();
-  await testState.restart();
+  await testState.init();
 
   const ralayerContainerId = execSync(
     `docker ps -q --filter ancestor=${realayerImageName}`,
@@ -152,11 +152,6 @@ const performKVQuery = async (cm, testState) => {
 const describeDockerOnly = process.env.NO_DOCKER ? describe.skip : describe;
 
 describeDockerOnly('Neutron / Relayer keyrings', () => {
-  beforeAll(async () => {
-    const testState = new TestStateLocalCosmosTestNet();
-    await testState.init();
-  });
-
   test('memory backend', async () => {
     await testRelayer('memory');
   });
@@ -179,7 +174,5 @@ describeDockerOnly('Neutron / Relayer keyrings', () => {
 
   afterAll(async () => {
     process.env['RELAYER_IMAGE_NAME'] = 'neutron-org/neutron-query-relayer';
-    const testState = new TestStateLocalCosmosTestNet();
-    await testState.restart();
   });
 });

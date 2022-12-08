@@ -1,7 +1,7 @@
 import { cosmosclient } from '@cosmos-client/core';
 import { Wallet } from '../types';
 import { mnemonicToWallet } from '../helpers/cosmos';
-import { restart, setup } from '../helpers/env';
+import { setup } from '../helpers/env';
 
 const config = require('../config.json');
 
@@ -58,20 +58,6 @@ export class TestStateLocalCosmosTestNet {
     this.sdk2 = new cosmosclient.CosmosSDK(this.host2, config.CHAIN_ID_2);
 
     await setup(this.host1);
-
-    this.wallets = {};
-    this.wallets.neutron = await walletSet(this.sdk1, NEUTRON_PREFIX);
-    this.wallets.cosmos = await walletSet(this.sdk2, COSMOS_PREFIX);
-  };
-
-  restart = async () => {
-    this.host1 = process.env.NODE1_URL || 'http://localhost:1317';
-    this.host2 = process.env.NODE2_URL || 'http://localhost:1316';
-
-    this.sdk1 = new cosmosclient.CosmosSDK(this.host1, config.CHAIN_ID_1);
-    this.sdk2 = new cosmosclient.CosmosSDK(this.host2, config.CHAIN_ID_2);
-
-    await restart(this.host1);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, NEUTRON_PREFIX);
