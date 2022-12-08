@@ -50,6 +50,7 @@ $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demow
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly1 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly2 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 
+
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $CHAIN_DIR/$CHAINID/config/config.toml
 sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' $CHAIN_DIR/$CHAINID/config/config.toml
 sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' $CHAIN_DIR/$CHAINID/config/config.toml
@@ -65,11 +66,3 @@ GENESIS_FILE="${CHAIN_DIR}/${CHAINID}/config/genesis.json"
 sed -i -e "s/\"denom\": \"stake\",/\"denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
 sed -i -e "s/\"mint_denom\": \"stake\",/\"mint_denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
 sed -i -e "s/\"bond_denom\": \"stake\"/\"bond_denom\": \"$STAKEDENOM\"/g" $GENESIS_FILE
-sed -i -e "s/\"voting_period\":.*/\"voting_period\": \"20s\"/g" $GENESIS_FILE
-#sed -i -e "s/\"query_submit_timeout\":.*/\"query_submit_timeout\": 1,/g" $GENESIS_FILE
-sed -i -e "s/\"quorum\":.*/\"quorum\": \"0.001000000000000000\",/g" $GENESIS_FILE
-
-if [ "x$ALLOW_ICA_EXEC" = "xyes" ]; then
-  # Update host chain genesis to allow x/bank/MsgSend ICA tx execution
-  sed -i -e 's/\"allow_messages\":.*/\"allow_messages\": [\"\/cosmos.bank.v1beta1.MsgSend\", \"\/cosmos.staking.v1beta1.MsgDelegate\", \"\/cosmos.staking.v1beta1.MsgUndelegate\"]/g' $CHAIN_DIR/$CHAINID/config/genesis.json
-fi;
