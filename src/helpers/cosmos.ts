@@ -463,3 +463,12 @@ export const getContractsHashes = async (): Promise<Record<string, string>> => {
 
 const getContractBinary = async (fileName: string): Promise<Buffer> =>
   fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
+
+export const getIBCDenom = (portName, channelName, denom: string): string => {
+  const uatomIBCHash = crypto
+    .createHash('sha256')
+    .update(`${portName}/${channelName}/${denom}`)
+    .digest('hex')
+    .toUpperCase();
+  return `ibc/${uatomIBCHash}`;
+};
