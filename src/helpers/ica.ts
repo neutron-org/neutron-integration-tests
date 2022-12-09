@@ -9,7 +9,7 @@ export const getIca = (
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    cm.sdk,
+    cm,
     () =>
       cm.queryContract<{
         interchain_account_address: string;

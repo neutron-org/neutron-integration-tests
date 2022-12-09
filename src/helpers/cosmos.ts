@@ -8,7 +8,7 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks, getWithAttempts } from './wait';
+import { BlockWaiter, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -17,14 +17,14 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
-import ICoin = cosmos.base.v1beta1.ICoin;
-import IHeight = ibc.core.client.v1.IHeight;
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
   sendProposal,
   SendProposalInfo,
 } from './proposal';
+import ICoin = cosmos.base.v1beta1.ICoin;
+import IHeight = ibc.core.client.v1.IHeight;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -191,12 +191,19 @@ cosmosclient.codec.register(
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
+  blockWaiter: BlockWaiter;
   wallet: Wallet;
   denom: string;
 
-  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet, denom: string) {
+  constructor(
+    sdk: cosmosclient.CosmosSDK,
+    blockWaiter: BlockWaiter,
+    wallet: Wallet,
+    denom: string,
+  ) {
     this.denom = denom;
     this.sdk = sdk;
+    this.blockWaiter = blockWaiter;
     this.wallet = wallet;
   }
 
@@ -250,7 +257,7 @@ export class CosmosWrapper {
     const txhash = res.data?.tx_response.txhash;
     let error = null;
     while (numAttempts > 0) {
-      await waitBlocks(this.sdk, 1);
+      await this.blockWaiter.next();
       numAttempts--;
       const data = await rest.tx
         .getTx(this.sdk as CosmosSDK, txhash)
@@ -365,7 +372,7 @@ export class CosmosWrapper {
       }
 
       numAttempts--;
-      await waitBlocks(this.sdk, 1);
+      await this.blockWaiter.next();
     }
 
     throw new Error('failed to query contract');
@@ -480,7 +487,7 @@ export class CosmosWrapper {
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
-    await waitBlocks(this.sdk, short_pause_duration);
+    await this.blockWaiter.waitBlocks(short_pause_duration);
     pauseInfo = await this.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);

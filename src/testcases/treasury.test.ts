@@ -32,11 +32,13 @@ describe('Neutron / Treasury', () => {
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo2,
       NEUTRON_DENOM,
     );
