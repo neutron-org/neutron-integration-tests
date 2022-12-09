@@ -53,7 +53,7 @@ describe('Neutron / Simple', () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
       contractAddress = res;
       expect(res.toString()).toEqual(
-        'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
+        'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj',
       );
     });
   });
@@ -337,8 +337,6 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        const currentHeight = await getRemoteHeight(cm.sdk);
-
         await cm.executeContract(
           contractAddress,
           JSON.stringify({
@@ -350,6 +348,9 @@ describe('Neutron / Simple', () => {
             },
           }),
         );
+
+        await waitBlocks(cm.sdk, 3);
+        const currentHeight = await getRemoteHeight(cm.sdk);
 
         await cm.executeContract(
           contractAddress,
