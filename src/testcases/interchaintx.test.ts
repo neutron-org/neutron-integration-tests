@@ -2,16 +2,16 @@ import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
-  getSequenceId,
-  CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
   AckFailuresResponse,
+  COSMOS_DENOM,
+  CosmosWrapper,
+  getSequenceId,
+  NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts, waitBlocks } from '../helpers/wait';
+import { getWithAttempts } from '../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../helpers/ica';
 
@@ -31,11 +31,13 @@ describe('Neutron / Interchain TXs', () => {
     await testState.init();
     cm1 = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
+      testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
@@ -88,7 +90,7 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
-          cm1.sdk,
+          cm1,
           () => cm1.listIBCChannels(),
           // Wait until there are 3 channels:
           // - one exists already, it is open for IBC transfers;
@@ -170,7 +172,7 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('check validator state', async () => {
         const res1 = await getWithAttempts(
-          cm2.sdk,
+          cm2,
           () =>
             rest.staking.delegatorDelegations(
               cm2.sdk as CosmosSDK,
@@ -419,7 +421,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
         await getWithAttempts(
-          cm1.sdk,
+          cm1,
           async () => cm1.listIBCChannels(),
           // Wait until there are 4 channels:
           // - one exists already, it is open for IBC transfers;
@@ -428,7 +430,7 @@ describe('Neutron / Interchain TXs', () => {
           (channels) => channels.channels.length == 4,
         );
         await getWithAttempts(
-          cm1.sdk,
+          cm1,
           () => cm1.listIBCChannels(),
           (channels) =>
             channels.channels.find((c) => c.channel_id == 'channel-3').state ==
@@ -502,7 +504,7 @@ describe('Neutron / Interchain TXs', () => {
         }),
       );
 
-      await waitBlocks(cm1.sdk, 10);
+      await cm1.blockWaiter.waitBlocks(10);
 
       // Testing ACK timeout failure
       await cm1.executeContract(
@@ -519,7 +521,7 @@ describe('Neutron / Interchain TXs', () => {
       );
 
       const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-        cm1.sdk,
+        cm1,
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         (data) => data.failures.length == 2,
@@ -570,7 +572,7 @@ const waitForAck = (
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    cm.sdk,
+    cm,
     () =>
       cm.queryContract<AcknowledgementResult>(contractAddress, {
         acknowledgement_result: {

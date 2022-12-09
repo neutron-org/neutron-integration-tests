@@ -75,7 +75,9 @@ CONTRACTS_PATH - path to contracts that will be used in tests
 NEUTRON_ADDRESS_PREFIX - address prefix for neutron controller network
 COSMOS_ADDRESS_PREFIX - address prefix for gaia (cosmoshub) host network
 NODE1_URL - url to the first node
+NODE1_WS_URL - url to websocket of the first node
 NODE2_URL - url to the second node
+NODE2_WS_URL - url to websocket of the second node
 BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
 NO_REBUILD - skip containers rebuilding
