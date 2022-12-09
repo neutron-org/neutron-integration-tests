@@ -4288,6 +4288,7 @@
                      * @memberof neutron.interchainadapter.interchainqueries
                      * @interface IGenesisState
                      * @property {neutron.interchainadapter.interchainqueries.IParams|null} [params] GenesisState params
+                     * @property {Array.<neutron.interchainadapter.interchainqueries.IRegisteredQuery>|null} [registered_queries] GenesisState registered_queries
                      */
     
                     /**
@@ -4299,6 +4300,7 @@
                      * @param {neutron.interchainadapter.interchainqueries.IGenesisState=} [properties] Properties to set
                      */
                     function GenesisState(properties) {
+                        this.registered_queries = [];
                         if (properties)
                             for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
                                 if (properties[keys[i]] != null)
@@ -4314,6 +4316,14 @@
                     GenesisState.prototype.params = null;
     
                     /**
+                     * GenesisState registered_queries.
+                     * @member {Array.<neutron.interchainadapter.interchainqueries.IRegisteredQuery>} registered_queries
+                     * @memberof neutron.interchainadapter.interchainqueries.GenesisState
+                     * @instance
+                     */
+                    GenesisState.prototype.registered_queries = $util.emptyArray;
+    
+                    /**
                      * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.GenesisState.verify|verify} messages.
                      * @function encode
                      * @memberof neutron.interchainadapter.interchainqueries.GenesisState
@@ -4327,6 +4337,9 @@
                             writer = $Writer.create();
                         if (message.params != null && Object.hasOwnProperty.call(message, "params"))
                             $root.neutron.interchainadapter.interchainqueries.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.registered_queries != null && message.registered_queries.length)
+                            for (var i = 0; i < message.registered_queries.length; ++i)
+                                $root.neutron.interchainadapter.interchainqueries.RegisteredQuery.encode(message.registered_queries[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                         return writer;
                     };
     
@@ -4363,6 +4376,11 @@
                             switch (tag >>> 3) {
                             case 1:
                                 message.params = $root.neutron.interchainadapter.interchainqueries.Params.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                if (!(message.registered_queries && message.registered_queries.length))
+                                    message.registered_queries = [];
+                                message.registered_queries.push($root.neutron.interchainadapter.interchainqueries.RegisteredQuery.decode(reader, reader.uint32()));
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -4404,6 +4422,15 @@
                             if (error)
                                 return "params." + error;
                         }
+                        if (message.registered_queries != null && message.hasOwnProperty("registered_queries")) {
+                            if (!Array.isArray(message.registered_queries))
+                                return "registered_queries: array expected";
+                            for (var i = 0; i < message.registered_queries.length; ++i) {
+                                var error = $root.neutron.interchainadapter.interchainqueries.RegisteredQuery.verify(message.registered_queries[i]);
+                                if (error)
+                                    return "registered_queries." + error;
+                            }
+                        }
                         return null;
                     };
     
@@ -4424,6 +4451,16 @@
                                 throw TypeError(".neutron.interchainadapter.interchainqueries.GenesisState.params: object expected");
                             message.params = $root.neutron.interchainadapter.interchainqueries.Params.fromObject(object.params);
                         }
+                        if (object.registered_queries) {
+                            if (!Array.isArray(object.registered_queries))
+                                throw TypeError(".neutron.interchainadapter.interchainqueries.GenesisState.registered_queries: array expected");
+                            message.registered_queries = [];
+                            for (var i = 0; i < object.registered_queries.length; ++i) {
+                                if (typeof object.registered_queries[i] !== "object")
+                                    throw TypeError(".neutron.interchainadapter.interchainqueries.GenesisState.registered_queries: object expected");
+                                message.registered_queries[i] = $root.neutron.interchainadapter.interchainqueries.RegisteredQuery.fromObject(object.registered_queries[i]);
+                            }
+                        }
                         return message;
                     };
     
@@ -4440,10 +4477,17 @@
                         if (!options)
                             options = {};
                         var object = {};
+                        if (options.arrays || options.defaults)
+                            object.registered_queries = [];
                         if (options.defaults)
                             object.params = null;
                         if (message.params != null && message.hasOwnProperty("params"))
                             object.params = $root.neutron.interchainadapter.interchainqueries.Params.toObject(message.params, options);
+                        if (message.registered_queries && message.registered_queries.length) {
+                            object.registered_queries = [];
+                            for (var j = 0; j < message.registered_queries.length; ++j)
+                                object.registered_queries[j] = $root.neutron.interchainadapter.interchainqueries.RegisteredQuery.toObject(message.registered_queries[j], options);
+                        }
                         return object;
                     };
     
