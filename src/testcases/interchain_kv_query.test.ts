@@ -346,7 +346,7 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 5;
       await expect(
         getRegisteredQuery(cm[1], contractAddress, queryId),
-      ).rejects.toThrow();
+      ).rejects.toThrowError(/query wasm contract failed/);
     });
   });
 

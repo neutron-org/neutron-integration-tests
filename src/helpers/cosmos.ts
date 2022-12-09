@@ -277,7 +277,7 @@ export class CosmosWrapper {
     } catch (e) {
       const rpcError = e?.response?.data?.error;
       if (rpcError !== undefined) {
-        throw rpcError;
+        throw new Error(rpcError);
       }
       throw e;
     }
