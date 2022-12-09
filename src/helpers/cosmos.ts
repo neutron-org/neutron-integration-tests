@@ -55,6 +55,14 @@ type Balance = {
   amount: string;
 };
 
+// PageRequest is the params of pagination for request
+export type PageRequest = {
+  'pagination.key'?: string;
+  'pagination.offset'?: string;
+  'pagination.limit'?: string;
+  'pagination.count_total'?: boolean;
+};
+
 // AckFailuresResponse is the response model for the contractmanager failures.
 export type AckFailuresResponse = {
   failures: Failure[];
@@ -326,12 +334,22 @@ export class CosmosWrapper {
     return balances.data as BalancesResponse;
   }
 
-  async queryAckFailures(addr: string): Promise<AckFailuresResponse> {
-    const req = await axios.get<AckFailuresResponse>(
-      `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
-    );
-
-    return req.data;
+  async queryAckFailures(
+    addr: string,
+    pagination?: PageRequest,
+  ): Promise<AckFailuresResponse> {
+    try {
+      const req = await axios.get<AckFailuresResponse>(
+        `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 
   async msgDelegate(

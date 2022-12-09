@@ -4,6 +4,7 @@ import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+  PageRequest,
   NeutronContract,
   getIBCDenom,
 } from '../helpers/cosmos';
@@ -339,6 +340,7 @@ describe('Neutron / Simple', () => {
           async () => cm.queryAckFailures(contractAddress),
           // Wait until there 2 failure in the list
           (data) => data.failures.length == 4,
+          100,
         );
 
         console.log(failuresAfterCall.failures);
@@ -373,6 +375,25 @@ describe('Neutron / Simple', () => {
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
+      });
+    });
+    describe('Failures limit test', () => {
+      test("failures with small limit doesn't return an error", async () => {
+        const pagination: PageRequest = {
+          'pagination.limit': '1',
+          'pagination.offset': '0',
+        };
+        const failures = await cm.queryAckFailures(contractAddress, pagination);
+        expect(failures.failures.length).toEqual(1);
+      });
+      test('failures with big limit returns an error', async () => {
+        const pagination: PageRequest = {
+          'pagination.limit': '10000',
+          'pagination.offset': '0',
+        };
+        await expect(
+          cm.queryAckFailures(contractAddress, pagination),
+        ).rejects.toThrow(/limit is more than maximum allowed/);
       });
     });
   });
