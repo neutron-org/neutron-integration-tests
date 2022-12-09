@@ -10,8 +10,8 @@ echo -e "$SEED\n" | $NEUTRON_BIN keys add $ACCOUNT_NAME --recover --keyring-back
 
 echo "test keyring initialized"
 
-export RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=$ACCOUNT_NAME
-export RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
+export RELAYER_KEYRING_KEY_NAME=$ACCOUNT_NAME
+export RELAYER_KEYRING_BACKEND=test
 export RELAYER_NEUTRON_CHAIN_HOME_DIR=/root/.neutrond/
 
 ./run-old.sh || true
