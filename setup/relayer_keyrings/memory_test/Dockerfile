@@ -1,4 +1,4 @@
-FROM neutron-org/neutron-query-relayer:base
+FROM neutron-org/neutron-query-relayer
 
 RUN mv run.sh run-old.sh
 

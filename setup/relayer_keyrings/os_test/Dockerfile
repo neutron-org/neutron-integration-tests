@@ -1,4 +1,4 @@
-FROM neutron-org/neutron-query-relayer:base
+FROM neutron-org/neutron-query-relayer
 
 COPY --from=neutron-node /go/bin/neutrond /bin/
 
