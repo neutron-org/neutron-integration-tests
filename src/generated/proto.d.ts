@@ -1788,6 +1788,9 @@ export namespace neutron {
 
                 /** GenesisState params */
                 params?: (neutron.interchainadapter.interchainqueries.IParams|null);
+
+                /** GenesisState registered_queries */
+                registered_queries?: (neutron.interchainadapter.interchainqueries.IRegisteredQuery[]|null);
             }
 
             /** Represents a GenesisState. */
@@ -1801,6 +1804,9 @@ export namespace neutron {
 
                 /** GenesisState params. */
                 public params?: (neutron.interchainadapter.interchainqueries.IParams|null);
+
+                /** GenesisState registered_queries. */
+                public registered_queries: neutron.interchainadapter.interchainqueries.IRegisteredQuery[];
 
                 /**
                  * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.GenesisState.verify|verify} messages.

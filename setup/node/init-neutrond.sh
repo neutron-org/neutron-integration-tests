@@ -6,10 +6,10 @@ CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-stake}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
-DAO_CONTRACT=/opt/neutron/contracts/artifacts/cwd_core.wasm
-PROPOSAL_CONTRACT=/opt/neutron/contracts/artifacts/cwd_proposal_single.wasm
-VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/artifacts/neutron_voting_registry.wasm
-VAULT_CONTRACT=/opt/neutron/contracts/artifacts/neutron_vault.wasm
+DAO_CONTRACT=/opt/neutron/contracts/dao/cwd_core.wasm
+PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
+VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
+VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
