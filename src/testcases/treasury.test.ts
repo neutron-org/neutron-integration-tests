@@ -49,7 +49,7 @@ describe('Neutron / Simple', () => {
               distribute: {},
             }),
           ),
-        ).rejects.toThrow(/no new funds to grab/);
+        ).rejects.toThrow(/no new funds to distribute/);
       });
 
       test('zero distribution rate', async () => {
