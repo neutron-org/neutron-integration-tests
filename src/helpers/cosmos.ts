@@ -61,6 +61,14 @@ type Balance = {
   amount: string;
 };
 
+// PageRequest is the params of pagination for request
+export type PageRequest = {
+  'pagination.key'?: string;
+  'pagination.offset'?: string;
+  'pagination.limit'?: string;
+  'pagination.count_total'?: boolean;
+};
+
 // AckFailuresResponse is the response model for the contractmanager failures.
 export type AckFailuresResponse = {
   failures: Failure[];
@@ -339,12 +347,22 @@ export class CosmosWrapper {
     return data.then((res) => res.data.denom_trace);
   }
 
-  async queryAckFailures(addr: string): Promise<AckFailuresResponse> {
-    const req = await axios.get<AckFailuresResponse>(
-      `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
-    );
-
-    return req.data;
+  async queryAckFailures(
+    addr: string,
+    pagination?: PageRequest,
+  ): Promise<AckFailuresResponse> {
+    try {
+      const req = await axios.get<AckFailuresResponse>(
+        `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 
   async msgDelegate(
@@ -476,3 +494,12 @@ export const getContractsHashes = async (): Promise<Record<string, string>> => {
 
 const getContractBinary = async (fileName: string): Promise<Buffer> =>
   fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
+
+export const getIBCDenom = (portName, channelName, denom: string): string => {
+  const uatomIBCHash = crypto
+    .createHash('sha256')
+    .update(`${portName}/${channelName}/${denom}`)
+    .digest('hex')
+    .toUpperCase();
+  return `ibc/${uatomIBCHash}`;
+};
