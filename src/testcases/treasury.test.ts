@@ -28,12 +28,18 @@ describe('Neutron / Simple', () => {
   describe('Treasury', () => {
     let dsc: string;
     let treasury: string;
+    let reserve: string;
     beforeAll(async () => {
       dsc = await setupDSC(
         cm,
         testState.wallets.neutron.demo1.address.toString(),
       );
+      reserve = await setupReserve(
+        cm,
+        testState.wallets.neutron.demo1.address.toString(),
+      );
     });
+
     describe('some corner cases', () => {
       test('no money', async () => {
         treasury = await setupTreasury(cm, {
@@ -41,6 +47,7 @@ describe('Neutron / Simple', () => {
           distributionRate: 23,
           minPeriod: 1000,
           distributionContract: dsc,
+          reserveContract: reserve,
         });
         await expect(
           cm.executeContract(
@@ -51,13 +58,13 @@ describe('Neutron / Simple', () => {
           ),
         ).rejects.toThrow(/no new funds to distribute/);
       });
-
       test('zero distribution rate', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
           distributionRate: 0,
           minPeriod: 1000,
           distributionContract: dsc,
+          reserveContract: reserve,
         });
         await cm.msgSend(treasury, '100000');
         const res = await cm.executeContract(
@@ -70,38 +77,10 @@ describe('Neutron / Simple', () => {
         const stats = await cm.queryContract(treasury, { stats: {} });
         expect(stats).toEqual({
           total_received: '100000',
-          total_bank_spent: '0',
           total_distributed: '0',
-          bank_balance: '100000',
-          last_balance: '100000',
+          total_reserved: '100000',
         });
       });
-
-      test('zero distribution rate', async () => {
-        treasury = await setupTreasury(cm, {
-          owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 0,
-          minPeriod: 1000,
-          distributionContract: dsc,
-        });
-        await cm.msgSend(treasury, '100000');
-        const res = await cm.executeContract(
-          treasury,
-          JSON.stringify({
-            distribute: {},
-          }),
-        );
-        expect(res.code).toEqual(0);
-        const stats = await cm.queryContract(treasury, { stats: {} });
-        expect(stats).toEqual({
-          total_received: '100000',
-          total_bank_spent: '0',
-          total_distributed: '0',
-          bank_balance: '100000',
-          last_balance: '100000',
-        });
-      });
-
       test('set shares by unauthorized', async () => {
         await expect(
           cm2.executeContract(
@@ -117,17 +96,17 @@ describe('Neutron / Simple', () => {
           ),
         ).rejects.toThrow(/unauthorized/);
       });
-
       test('payout by unauthorized', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
           distributionRate: 23,
           minPeriod: 1000,
           distributionContract: dsc,
+          reserveContract: reserve,
         });
         await expect(
           cm2.executeContract(
-            treasury,
+            reserve,
             JSON.stringify({
               payout: {
                 recipient: testState.wallets.neutron.rly1.address.toString(),
@@ -140,12 +119,17 @@ describe('Neutron / Simple', () => {
     });
 
     describe('happy path', () => {
+      let lastReserveBalance: number;
+      beforeAll(async () => {
+        lastReserveBalance = await cm.queryDenomBalance(reserve, NEUTRON_DENOM);
+      });
       test('set shares', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
           distributionRate: 21,
           minPeriod: 1000,
           distributionContract: dsc,
+          reserveContract: reserve,
         });
         await cm.executeContract(
           dsc,
@@ -171,11 +155,17 @@ describe('Neutron / Simple', () => {
         const stats = await cm.queryContract(treasury, { stats: {} });
         expect(stats).toEqual({
           total_received: '10000000',
-          total_bank_spent: '0',
           total_distributed: '2100000',
-          bank_balance: '7900000',
-          last_balance: '7900000',
+          total_reserved: '7900000',
         });
+      });
+      test('verify reserve', async () => {
+        const reserveBalance = await cm.queryDenomBalance(
+          reserve,
+          NEUTRON_DENOM,
+        );
+        expect(reserveBalance - lastReserveBalance).toEqual(7900000);
+        lastReserveBalance = reserveBalance;
       });
       test('verify pendings', async () => {
         const pending = await cm.queryContract(dsc, { pending: {} });
@@ -185,14 +175,10 @@ describe('Neutron / Simple', () => {
         ]);
       });
       test('claim pending', async () => {
-        const balanceBefore = parseInt(
-          (
-            await cm.queryBalances(
-              testState.wallets.neutron.demo2.address.toString(),
-            )
-          ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount || '0',
+        const balanceBefore = await cm.queryDenomBalance(
+          testState.wallets.neutron.demo2.address,
+          NEUTRON_DENOM,
         );
-
         const res = await cm2.executeContract(
           dsc,
           JSON.stringify({
@@ -213,26 +199,19 @@ describe('Neutron / Simple', () => {
           { key: 'amount', value: `700000${NEUTRON_DENOM}` },
         ]);
 
-        const balanceAfter = parseInt(
-          (
-            await cm.queryBalances(
-              testState.wallets.neutron.demo2.address.toString(),
-            )
-          ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount || '0',
+        const balanceAfter = await cm.queryDenomBalance(
+          testState.wallets.neutron.demo2.address,
+          NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(690000);
       });
       test('payout', async () => {
-        const balanceBefore = parseInt(
-          (
-            await cm.queryBalances(
-              testState.wallets.neutron.rly1.address.toString(),
-            )
-          ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount || '0',
+        const balanceBefore = await cm.queryDenomBalance(
+          testState.wallets.neutron.rly1.address,
+          NEUTRON_DENOM,
         );
-
         const res = await cm.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             payout: {
               recipient: testState.wallets.neutron.rly1.address.toString(),
@@ -250,18 +229,20 @@ describe('Neutron / Simple', () => {
             key: 'recipient',
             value: testState.wallets.neutron.rly1.address.toString(),
           },
-          { key: 'sender', value: treasury },
+          { key: 'sender', value: reserve },
           { key: 'amount', value: `1400000${NEUTRON_DENOM}` },
         ]);
 
-        const balanceAfter = parseInt(
-          (
-            await cm.queryBalances(
-              testState.wallets.neutron.rly1.address.toString(),
-            )
-          ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount || '0',
+        const balanceAfter = await cm.queryDenomBalance(
+          testState.wallets.neutron.rly1.address,
+          NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(1400000);
+        const reserveBalance = await cm.queryDenomBalance(
+          reserve,
+          NEUTRON_DENOM,
+        );
+        expect(lastReserveBalance - reserveBalance).toEqual(1400000);
       });
     });
 
@@ -272,9 +253,9 @@ describe('Neutron / Simple', () => {
           distributionRate: 23,
           minPeriod: 1000,
           distributionContract: dsc,
+          reserveContract: reserve,
         });
       });
-
       test('update treasury config by unauthorized', async () => {
         await expect(
           cm2.executeContract(
@@ -287,7 +268,6 @@ describe('Neutron / Simple', () => {
           ),
         ).rejects.toThrow(/unauthorized/);
       });
-
       test('update treasury config by owner', async () => {
         const res = await cm.executeContract(
           treasury,
@@ -315,6 +295,7 @@ describe('Neutron / Simple', () => {
     });
   });
 });
+
 const setupDSC = async (cm: CosmosWrapper, owner: string) => {
   const codeId = await cm.storeWasm(NeutronContract.DISTRIBUTION);
   return cm.instantiate(
@@ -327,6 +308,18 @@ const setupDSC = async (cm: CosmosWrapper, owner: string) => {
   );
 };
 
+const setupReserve = async (cm: CosmosWrapper, owner: string) => {
+  const codeId = await cm.storeWasm(NeutronContract.RESERVE);
+  return cm.instantiate(
+    codeId,
+    JSON.stringify({
+      owner,
+      denom: NEUTRON_DENOM,
+    }),
+    'reserve',
+  );
+};
+
 const setupTreasury = async (
   cm: CosmosWrapper,
   opts: {
@@ -334,6 +327,7 @@ const setupTreasury = async (
     distributionRate: number;
     minPeriod: number;
     distributionContract: string;
+    reserveContract: string;
   },
 ) => {
   const codeId = await cm.storeWasm(NeutronContract.TREASURY);
@@ -345,6 +339,7 @@ const setupTreasury = async (
       distribution_rate: opts.distributionRate,
       min_period: opts.minPeriod,
       distribution_contract: opts.distributionContract,
+      reserve_contract: opts.reserveContract,
     }),
     'treausry',
   );
