@@ -49,10 +49,24 @@ type BalancesResponse = {
   };
 };
 
+// DenomTraceResponse is the response model for the ibc transfer denom trace query.
+type DenomTraceResponse = {
+  path?: string;
+  base_denom?: string;
+};
+
 // Balance represents a single asset balance of an account.
 type Balance = {
   denom: string;
   amount: string;
+};
+
+// PageRequest is the params of pagination for request
+export type PageRequest = {
+  'pagination.key'?: string;
+  'pagination.offset'?: string;
+  'pagination.limit'?: string;
+  'pagination.count_total'?: boolean;
 };
 
 // AckFailuresResponse is the response model for the contractmanager failures.
@@ -345,12 +359,29 @@ export class CosmosWrapper {
     return parseInt(balance?.amount ?? '0', 10);
   }
 
-  async queryAckFailures(addr: string): Promise<AckFailuresResponse> {
-    const req = await axios.get<AckFailuresResponse>(
-      `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+  async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
+    const data = axios.get<{ denom_trace: DenomTraceResponse }>(
+      `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
     );
+    return data.then((res) => res.data.denom_trace);
+  }
 
-    return req.data;
+  async queryAckFailures(
+    addr: string,
+    pagination?: PageRequest,
+  ): Promise<AckFailuresResponse> {
+    try {
+      const req = await axios.get<AckFailuresResponse>(
+        `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 
   async msgDelegate(
@@ -482,3 +513,12 @@ export const getContractsHashes = async (): Promise<Record<string, string>> => {
 
 const getContractBinary = async (fileName: string): Promise<Buffer> =>
   fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
+
+export const getIBCDenom = (portName, channelName, denom: string): string => {
+  const uatomIBCHash = crypto
+    .createHash('sha256')
+    .update(`${portName}/${channelName}/${denom}`)
+    .digest('hex')
+    .toUpperCase();
+  return `ibc/${uatomIBCHash}`;
+};
