@@ -204,6 +204,10 @@ export class CosmosWrapper {
       [msgInit],
     );
 
+    if (data.tx_response.code !== 0) {
+      throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
+    }
+
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
     ]);

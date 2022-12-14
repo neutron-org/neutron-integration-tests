@@ -44,7 +44,7 @@ describe('Neutron / Simple', () => {
       test('no money', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 23,
+          distributionRate: '0.23',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -61,7 +61,7 @@ describe('Neutron / Simple', () => {
       test('zero distribution rate', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 0,
+          distributionRate: '0.0',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -99,7 +99,7 @@ describe('Neutron / Simple', () => {
       test('payout by unauthorized', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 23,
+          distributionRate: '0.23',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -126,7 +126,7 @@ describe('Neutron / Simple', () => {
       test('set shares', async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 21,
+          distributionRate: '0.21',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -250,7 +250,7 @@ describe('Neutron / Simple', () => {
       beforeEach(async () => {
         treasury = await setupTreasury(cm, {
           owner: testState.wallets.neutron.demo1.address.toString(),
-          distributionRate: 23,
+          distributionRate: '0.23',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -262,7 +262,7 @@ describe('Neutron / Simple', () => {
             treasury,
             JSON.stringify({
               update_config: {
-                distributionRate: 11,
+                distributionRate: '0.11',
               },
             }),
           ),
@@ -273,7 +273,7 @@ describe('Neutron / Simple', () => {
           treasury,
           JSON.stringify({
             update_config: {
-              distribution_rate: 11,
+              distribution_rate: '0.11',
               min_period: 500,
               dao: testState.wallets.neutron.demo1.address.toString(),
               distribution_contract: dsc,
@@ -282,13 +282,13 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
         const config = await cm.queryContract<{
-          distribution_rate: number;
+          distribution_rate: string;
           min_period: number;
           distribution_contract: string;
         }>(treasury, {
           config: {},
         });
-        expect(config.distribution_rate).toEqual(11);
+        expect(config.distribution_rate).toEqual('0.11');
         expect(config.min_period).toEqual(500);
         expect(config.distribution_contract).toEqual(dsc);
       });
@@ -324,7 +324,7 @@ const setupTreasury = async (
   cm: CosmosWrapper,
   opts: {
     owner: string;
-    distributionRate: number;
+    distributionRate: string;
     minPeriod: number;
     distributionContract: string;
     reserveContract: string;
