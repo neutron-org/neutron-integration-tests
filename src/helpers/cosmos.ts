@@ -49,6 +49,12 @@ type BalancesResponse = {
   };
 };
 
+// DenomTraceResponse is the response model for the ibc transfer denom trace query.
+type DenomTraceResponse = {
+  path?: string;
+  base_denom?: string;
+};
+
 // Balance represents a single asset balance of an account.
 type Balance = {
   denom: string;
@@ -332,6 +338,13 @@ export class CosmosWrapper {
       addr as unknown as AccAddress,
     );
     return balances.data as BalancesResponse;
+  }
+
+  async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
+    const data = axios.get<{ denom_trace: DenomTraceResponse }>(
+      `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
+    );
+    return data.then((res) => res.data.denom_trace);
   }
 
   async queryAckFailures(

@@ -1,12 +1,12 @@
 import {
   AckFailuresResponse,
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
+  getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
-  PageRequest,
   NeutronContract,
-  getIBCDenom,
+  PageRequest,
 } from '../helpers/cosmos';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
@@ -102,6 +102,35 @@ describe('Neutron / Simple', () => {
               'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
           )?.amount,
         ).toEqual('1000');
+      });
+      test('uatom IBC transfer from a remote chain to Neutron', async () => {
+        const res = await cm2.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: COSMOS_DENOM, amount: '1000' },
+          testState.wallets.neutron.demo1.address.toString(),
+          { revision_number: 2, revision_height: 100000000 },
+        );
+        expect(res.code).toEqual(0);
+      });
+      test('check uatom token balance transfered  via IBC on Neutron', async () => {
+        await waitBlocks(cm.sdk, 10);
+        const balances = await cm.queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
+        expect(
+          balances.balances.find(
+            (bal): boolean =>
+              bal.denom ==
+              'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+          )?.amount,
+        ).toEqual('1000');
+      });
+      test('check that weird IBC denom is uatom indeed', async () => {
+        const denomTrace = await cm.queryDenomTrace(
+          '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        );
+        expect(denomTrace.base_denom).toEqual(COSMOS_DENOM);
       });
       test('set payer fees', async () => {
         const res = await cm.executeContract(
@@ -338,9 +367,9 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
           async () => cm.queryAckFailures(contractAddress),
-          // Wait until there 2 failure in the list
+          // Wait until there are 4 failures in the list
           (data) => data.failures.length == 4,
-          100,
+          200,
         );
 
         console.log(failuresAfterCall.failures);
