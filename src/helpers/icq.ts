@@ -1,5 +1,8 @@
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
+import axios, { AxiosResponse } from 'axios';
 import { CosmosWrapper } from './cosmos';
 import { getWithAttempts } from './wait';
+import { rest } from '@cosmos-client/core';
 
 /**
  * getRegisteredQuery queries the contract for a registered query details registered by the given
@@ -82,3 +85,87 @@ export const waitForTransfersAmount = (
     (amount) => amount == expectedTransfersAmount,
     numAttempts,
   );
+
+type UnsuccessfulSubmitIcqTx = {
+  // QueryID is the query_id transactions was submitted for
+  query_id: number;
+  // SubmittedTxHash is the hash of the *remote fetched transaction* was submitted
+  submitted_tx_hash: string;
+  // NeutronHash is the hash of the *neutron chain transaction* which is responsible for delivering remote transaction to neutron
+  neutron_hash: string;
+  // ErrorTime is the time when the error was added
+  error_time: string;
+  // Status is the status of unsuccessful tx
+  status: string;
+  // Message is the more descriptive message for the error
+  message: string;
+};
+
+export type ResubmitQuery = {
+  query_id: number;
+  hash: string;
+};
+
+export const getUnsuccessfulTxs = async (
+  icq_web_host: string,
+): Promise<Array<UnsuccessfulSubmitIcqTx>> => {
+  const url = `${icq_web_host}/unsuccessful-txs`;
+  const req = await axios.get<Array<UnsuccessfulSubmitIcqTx>>(url);
+  return req.data;
+};
+
+export const postResubmitTxs = async (
+  icq_web_host: string,
+  txs: Array<ResubmitQuery>,
+): Promise<AxiosResponse> => {
+  const url = `${icq_web_host}/resubmit-txs`;
+  const data = { txs: txs };
+  return await axios.post(url, data);
+};
+
+/**
+ * registerTransfersQuery sends a register_transfers_query execute msg to the contractAddress with
+ * the given parameters and checks the tx result to be successful.
+ */
+export const registerTransfersQuery = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  recipient: string,
+) => {
+  const res = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_transfers_query: {
+        connection_id: connectionId,
+        update_period: updatePeriod,
+        recipient: recipient,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+  const tx = await rest.tx.getTx(cm.sdk as CosmosSDK, res.txhash as string);
+  expect(tx?.data.tx_response?.code).toEqual(0);
+};
+
+/**
+ * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
+ */
+export const queryRecipientTxs = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  recipient: string,
+) =>
+  cm.queryContract<{
+    transfers: [
+      recipient: string,
+      sender: string,
+      denom: string,
+      amount: string,
+    ];
+  }>(contractAddress, {
+    get_recipient_txs: {
+      recipient: recipient,
+    },
+  });

@@ -9,6 +9,7 @@
     "test:simple": "jest --runInBand -b src/testcases/simple",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
     "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query",
+    "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/interchain_tx_query_resubmit",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
   },

@@ -1,19 +1,20 @@
-import { proto, rest } from '@cosmos-client/core';
 import {
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
+import { proto } from '@cosmos-client/core';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
 import {
   getRegisteredQuery,
+  queryRecipientTxs,
   queryTransfersNumber,
+  registerTransfersQuery,
   waitForTransfersAmount,
 } from '../helpers/icq';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -691,50 +692,3 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 });
-
-/**
- * registerTransfersQuery sends a register_transfers_query execute msg to the contractAddress with
- * the given parameters and checks the tx result to be successful.
- */
-const registerTransfersQuery = async (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  connectionId: string,
-  updatePeriod: number,
-  recipient: string,
-) => {
-  const res = await cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      register_transfers_query: {
-        connection_id: connectionId,
-        update_period: updatePeriod,
-        recipient: recipient,
-      },
-    }),
-  );
-  expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.sdk as CosmosSDK, res.txhash as string);
-  expect(tx?.data.tx_response?.code).toEqual(0);
-};
-
-/**
- * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
- */
-const queryRecipientTxs = (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  recipient: string,
-) =>
-  cm.queryContract<{
-    transfers: [
-      recipient: string,
-      sender: string,
-      denom: string,
-      amount: string,
-    ];
-  }>(contractAddress, {
-    get_recipient_txs: {
-      recipient: recipient,
-    },
-  });
