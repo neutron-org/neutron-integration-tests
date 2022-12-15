@@ -1,7 +1,7 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
+import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -91,6 +91,9 @@ export const NeutronContract = {
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
+  TREASURY: 'neutron_treasury.wasm',
+  DISTRIBUTION: 'neutron_distribution.wasm',
+  RESERVE: 'neutron_reserve.wasm',
 };
 
 export class CosmosWrapper {
@@ -216,6 +219,10 @@ export class CosmosWrapper {
       [msgInit],
     );
 
+    if (data.tx_response.code !== 0) {
+      throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
+    }
+
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
     ]);
@@ -339,6 +346,18 @@ export class CosmosWrapper {
       addr as unknown as AccAddress,
     );
     return balances.data as BalancesResponse;
+  }
+
+  async queryDenomBalance(
+    addr: string | AccAddress | ValAddress,
+    denom: string,
+  ): Promise<number> {
+    const { data } = await rest.bank.allBalances(
+      this.sdk,
+      addr.toString() as unknown as AccAddress,
+    );
+    const balance = data.balances.find((b) => b.denom === denom);
+    return parseInt(balance?.amount ?? '0', 10);
   }
 
   async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
