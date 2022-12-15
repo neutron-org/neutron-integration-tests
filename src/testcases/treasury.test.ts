@@ -6,7 +6,7 @@ import {
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
-describe('Neutron / Simple', () => {
+describe('Neutron / Treasury', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
   let cm2: CosmosWrapper;
