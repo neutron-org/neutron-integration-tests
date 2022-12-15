@@ -1,4 +1,3 @@
-import { rest } from '@cosmos-client/core';
 import {
   CosmosWrapper,
   COSMOS_DENOM,
@@ -8,9 +7,10 @@ import {
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
+  registerBalanceQuery,
+  validateBalanceQuery,
   waitForICQResultWithRemoteHeight,
 } from '../helpers/icq';
 
@@ -57,25 +57,6 @@ const watchForKvCallbackUpdates = async (
   }
 };
 
-const getQueryBalanceResult = (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  queryId: number,
-) =>
-  cm.queryContract<{
-    balances: {
-      coins: {
-        denom: string;
-        amount: string;
-      }[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
-    balance: {
-      query_id: queryId,
-    },
-  });
-
 const getQueryDelegatorDelegationsResult = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -96,27 +77,6 @@ const getQueryDelegatorDelegationsResult = (
       query_id: queryId,
     },
   });
-
-const registerBalanceQuery = async (
-  cm: CosmosWrapper,
-  contractAddress: string,
-  connectionId: string,
-  updatePeriod: number,
-  denom: string,
-  addr: AccAddress,
-) => {
-  await cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      register_balance_query: {
-        connection_id: connectionId,
-        denom: denom,
-        addr: addr.toString(),
-        update_period: updatePeriod,
-      },
-    }),
-  );
-};
 
 const removeQuery = async (
   cm: CosmosWrapper,
@@ -151,27 +111,6 @@ const registerDelegatorDelegationsQuery = async (
         update_period: updatePeriod,
       },
     }),
-  );
-};
-
-const validateBalanceQuery = async (
-  neutronCm: CosmosWrapper,
-  targetCm: CosmosWrapper,
-  contractAddress: string,
-  queryId: number,
-  address: AccAddress,
-) => {
-  const interchainQueryResult = await getQueryBalanceResult(
-    neutronCm,
-    contractAddress,
-    queryId,
-  );
-  const directQueryResult = await rest.bank.allBalances(
-    targetCm.sdk as CosmosSDK,
-    address,
-  );
-  expect(interchainQueryResult.balances.coins).toEqual(
-    directQueryResult.data.balances,
   );
 };
 
@@ -407,7 +346,7 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 5;
       await expect(
         getRegisteredQuery(cm[1], contractAddress, queryId),
-      ).rejects.toThrow();
+      ).rejects.toThrowError(/query wasm contract failed/);
     });
   });
 

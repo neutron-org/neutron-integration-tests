@@ -18,6 +18,7 @@ We use the Gaia network as a host network, so you need to clone it next to the n
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
+cd gaia
 git checkout v7.0.3
 ```
 
@@ -45,6 +46,7 @@ yarn test:simple # basic tests
 yarn test:interchaintx # interchain txs test
 yarn test:interchain_tx_query # interchain tx query test
 yarn test:interchain_kv_query # interchain kv query test
+yarn test:relayer_keyring # relayer keyring test
 ```
 
 NOTE: To speed up tests you can run the cosmopark by youself with `make start-cosmopark` in the setup dir. To run test with the already running cosmopark use `NO_DOCKER` env variable.

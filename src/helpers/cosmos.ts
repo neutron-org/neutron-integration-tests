@@ -169,6 +169,11 @@ export class CosmosWrapper {
         return data.data;
       }
     }
+
+    const rpcError = error?.response?.data?.message;
+    if (rpcError !== undefined) {
+      throw rpcError;
+    }
     error = error ?? new Error('failed to submit tx');
     throw error;
   }
@@ -270,16 +275,26 @@ export class CosmosWrapper {
     contract: string,
     query: Record<string, unknown>,
   ): Promise<T> {
-    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
-      JSON.stringify(query),
-    ).toString('base64')}?encoding=base64`;
-    const req = await axios.get<{
-      result: { smart: string };
-      height: number;
-    }>(url);
-    return JSON.parse(
-      Buffer.from(req.data.result.smart, 'base64').toString(),
-    ) as T;
+    try {
+      const url = `${
+        this.sdk.url
+      }/wasm/contract/${contract}/smart/${Buffer.from(
+        JSON.stringify(query),
+      ).toString('base64')}?encoding=base64`;
+      const req = await axios.get<{
+        result: { smart: string };
+        height: number;
+      }>(url);
+      return JSON.parse(
+        Buffer.from(req.data.result.smart, 'base64').toString(),
+      ) as T;
+    } catch (e) {
+      const rpcError = e?.response?.data?.error;
+      if (rpcError !== undefined) {
+        throw new Error(rpcError);
+      }
+      throw e;
+    }
   }
 
   /**

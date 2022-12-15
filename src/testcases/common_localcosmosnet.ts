@@ -1,15 +1,9 @@
-import { exec } from 'child_process';
 import { cosmosclient } from '@cosmos-client/core';
 import { Wallet } from '../types';
 import { mnemonicToWallet } from '../helpers/cosmos';
 import { setup } from '../helpers/env';
 
 const config = require('../config.json');
-
-export const disconnectValidator = async (name: string) => {
-  const { stdout } = await exec(`docker stop ${name}`);
-  return stdout;
-};
 
 const walletSet = async (
   sdk: cosmosclient.CosmosSDK,

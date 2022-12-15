@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { execSync } from 'child_process';
+import { execSync, ExecSyncOptions } from 'child_process';
 import { wait } from './wait';
 import { getContractsHashes } from './cosmos';
 
@@ -7,13 +7,7 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
   : 10;
 
-let alreadySetUp = false;
-
 export const setup = async (host: string) => {
-  if (alreadySetUp) {
-    console.log('already set up');
-    return;
-  }
   if (process.env.NO_DOCKER) {
     console.log('NO_DOCKER ENV provided');
     return;
@@ -23,13 +17,15 @@ export const setup = async (host: string) => {
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
-  execSync(`cd setup && make start-cosmopark`);
+  const execOptions: ExecSyncOptions = {
+    env: process.env,
+  };
+  execSync(`cd setup && make start-cosmopark-no-rebuild`, execOptions);
   showVersions();
   await showContractsHashes();
 
   await waitForHTTP(host);
   await waitForChannel(host);
-  alreadySetUp = true;
 };
 
 export const waitForHTTP = async (
