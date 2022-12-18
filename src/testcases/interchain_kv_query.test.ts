@@ -1,12 +1,12 @@
 import { rest } from '@cosmos-client/core';
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRemoteHeight, waitBlocks } from '../helpers/wait';
+import { getRemoteHeight } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
@@ -193,11 +193,13 @@ describe('Neutron / Interchain KV Query', () => {
     cm = {
       1: new CosmosWrapper(
         testState.sdk1,
+        testState.blockWaiter1,
         testState.wallets.neutron.demo1,
         NEUTRON_DENOM,
       ),
       2: new CosmosWrapper(
         testState.sdk2,
+        testState.blockWaiter2,
         testState.wallets.cosmos.demo2,
         COSMOS_DENOM,
       ),
@@ -514,7 +516,7 @@ describe('Neutron / Interchain KV Query', () => {
         for (const j of res) {
           expect(j).not.toEqual(0);
         }
-        await waitBlocks(cm[1].sdk, 1);
+        await cm[1].blockWaiter.next();
       }
       const end = await Promise.all(
         [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),

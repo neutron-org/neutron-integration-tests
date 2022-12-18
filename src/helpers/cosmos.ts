@@ -7,17 +7,17 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
 import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { ibc } from '@cosmos-client/ibc/cjs/proto';
-import crypto from 'crypto';
 import ICoin = cosmos.base.v1beta1.ICoin;
+import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import IHeight = ibc.core.client.v1.IHeight;
+import crypto from 'crypto';
+import { BlockWaiter } from './wait';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -95,12 +95,19 @@ export const NeutronContract = {
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
+  blockWaiter: BlockWaiter;
   wallet: Wallet;
   denom: string;
 
-  constructor(sdk: cosmosclient.CosmosSDK, wallet: Wallet, denom: string) {
+  constructor(
+    sdk: cosmosclient.CosmosSDK,
+    blockWaiter: BlockWaiter,
+    wallet: Wallet,
+    denom: string,
+  ) {
     this.denom = denom;
     this.sdk = sdk;
+    this.blockWaiter = blockWaiter;
     this.wallet = wallet;
   }
 
@@ -157,7 +164,7 @@ export class CosmosWrapper {
 
     let error = null;
     while (numAttempts > 0) {
-      await waitBlocks(this.sdk, 1);
+      await this.blockWaiter.next();
       numAttempts--;
       const data = await rest.tx
         .getTx(this.sdk as CosmosSDK, txhash)
@@ -261,7 +268,7 @@ export class CosmosWrapper {
       }
 
       numAttempts--;
-      await waitBlocks(this.sdk, 1);
+      await this.blockWaiter.next();
     }
 
     throw new Error('failed to query contract');
