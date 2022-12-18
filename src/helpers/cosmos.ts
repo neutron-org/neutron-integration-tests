@@ -11,8 +11,6 @@ import path from 'path';
 import { waitBlocks } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
-  InlineResponse20052,
-  InlineResponse20053,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
 import { cosmos, google } from '@cosmos-client/core/cjs/proto';
@@ -66,6 +64,28 @@ type DenomTraceResponse = {
 type Balance = {
   denom: string;
   amount: string;
+};
+
+// SingleChoiceProposal represents a single governance proposal item (partial object).
+type SingleChoiceProposal = {
+  readonly title: string;
+  readonly description: string;
+  /// The address that created this proposal.
+  readonly proposer: string;
+  /// The block height at which this proposal was created. Voting
+  /// power queries should query for voting power at this block
+  /// height.
+  readonly start_height: number;
+  /// The threshold at which this proposal will pass.
+  /// proposal's creation.
+  readonly total_power: string;
+  readonly status:
+    | 'open'
+    | 'rejected'
+    | 'passed'
+    | 'executed'
+    | 'closed'
+    | 'execution_failed';
 };
 
 // PageRequest is the params of pagination for request
@@ -421,14 +441,15 @@ export class CosmosWrapper {
     );
   }
 
-  async queryProposals(): Promise<InlineResponse20052> {
-    const proposals = await rest.gov.proposals(this.sdk);
-    return proposals.data;
-  }
-
-  async queryProposal(proposalId: string): Promise<InlineResponse20053> {
-    const proposal = await rest.gov.proposal(this.sdk, proposalId);
-    return proposal.data;
+  async queryProposal(proposalId: number): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(
+      PROPOSE_CONTRACT_ADDRESS,
+      {
+        proposal: {
+          proposal_id: proposalId,
+        },
+      },
+    );
   }
 
   async queryInterchainqueriesParams(): Promise<any> {

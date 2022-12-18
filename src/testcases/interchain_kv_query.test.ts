@@ -147,6 +147,7 @@ const getEventAttribute = (
 
   return Buffer.from(encodedAttr, 'base64').toString('ascii');
 };
+
 const acceptInterchainqueriesParamsChangeProposal = async (
   cm: CosmosWrapper,
   wallet: Wallet,
@@ -179,14 +180,12 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   await waitBlocks(cm.sdk, 1);
   await cm.executeProposal(proposalId, wallet.address.toString());
 
-  await waitBlocks(cm.sdk, 5);
-
-  /*await getWithAttempts(
+  await getWithAttempts(
     cm.sdk,
-    () => cm.queryProposal(proposalId.toString()),
-    async (response) => response.proposal?.status === 'PROPOSAL_STATUS_PASSED',
+    async () => await cm.queryProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
     20,
-  );*/
+  );
 };
 
 const removeQuery = async (
