@@ -28,6 +28,7 @@ export const getRegisteredQuery = (
       last_submitted_result_local_height: number;
       last_submitted_result_remote_height: number;
       deposit: { denom: string; amount: string }[];
+      submit_timeout: number;
     };
   }>(contractAddress, {
     get_registered_query: {
@@ -49,7 +50,7 @@ export const waitForICQResultWithRemoteHeight = (
   getWithAttempts(
     cm.sdk,
     () => getRegisteredQuery(cm, contractAddress, queryId),
-    (query) =>
+    async (query) =>
       query.registered_query.last_submitted_result_remote_height >=
       targetHeight,
     numAttempts,
@@ -82,7 +83,7 @@ export const waitForTransfersAmount = (
     cm.sdk,
     async () =>
       (await queryTransfersNumber(cm, contractAddress)).transfers_number,
-    (amount) => amount == expectedTransfersAmount,
+    async (amount) => amount == expectedTransfersAmount,
     numAttempts,
   );
 

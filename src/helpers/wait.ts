@@ -34,7 +34,7 @@ export const waitBlocks = async (sdk: any, n: number) => {
 export const getWithAttempts = async <T>(
   sdk: any,
   getFunc: () => Promise<T>,
-  readyFunc: (t: T) => boolean,
+  readyFunc: (t: T) => Promise<boolean>,
   numAttempts = 20,
 ): Promise<T> => {
   let error = null;
@@ -42,7 +42,7 @@ export const getWithAttempts = async <T>(
     numAttempts--;
     try {
       const data = await getFunc();
-      if (readyFunc(data)) {
+      if (await readyFunc(data)) {
         return data;
       }
     } catch (e) {

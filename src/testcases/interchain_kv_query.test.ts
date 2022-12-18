@@ -1,4 +1,4 @@
-import { rest } from '@cosmos-client/core';
+import { proto, rest } from '@cosmos-client/core';
 import {
   CosmosWrapper,
   COSMOS_DENOM,
@@ -6,13 +6,14 @@ import {
   NeutronContract,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRemoteHeight, waitBlocks } from '../helpers/wait';
+import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '../helpers/icq';
+import { Wallet } from '../types';
 
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
@@ -105,7 +106,7 @@ const registerBalanceQuery = async (
   denom: string,
   addr: AccAddress,
 ) => {
-  await cm.executeContract(
+  const txResult = await cm.executeContract(
     contractAddress,
     JSON.stringify({
       register_balance_query: {
@@ -116,13 +117,83 @@ const registerBalanceQuery = async (
       },
     }),
   );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getEventAttribute = (
+  events: any[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events?.find(
+    (event) => event.type === eventType,
+  )?.attributes;
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
+};
+
+const acceptInterchainqueriesParamsChangeProposal = async (
+  cm: CosmosWrapper,
+  wallet: Wallet,
+  title: string,
+  description: string,
+  key: string,
+  value: string,
+) => {
+  const proposalTx = await cm.submitParameterChangeProposal(
+    title,
+    description,
+    'interchainqueries',
+    key,
+    value,
+    wallet.address.toString(),
+  );
+
+  const attribute = getEventAttribute(
+    (proposalTx as any).events,
+    'wasm',
+    'proposal_id',
+  );
+
+  const proposalId = parseInt(attribute);
+  expect(proposalId).toBeGreaterThanOrEqual(0);
+
+  await waitBlocks(cm.sdk, 1);
+  await cm.voteYes(proposalId, wallet.address.toString());
+
+  await waitBlocks(cm.sdk, 1);
+  await cm.executeProposal(proposalId, wallet.address.toString());
+
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
+    20,
+  );
 };
 
 const removeQuery = async (
   cm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
-) => {
+  sender: string = cm.wallet.address.toString(),
+) =>
   await cm.executeContract(
     contractAddress,
     JSON.stringify({
@@ -130,8 +201,15 @@ const removeQuery = async (
         query_id: queryId,
       },
     }),
+    [],
+    sender,
   );
-};
+
+const removeQueryViaTx = async (
+  cm: CosmosWrapper,
+  queryId: number,
+  sender: string = cm.wallet.address.toString(),
+) => await cm.msgRemoveInterchainQuery(queryId, sender);
 
 const registerDelegatorDelegationsQuery = async (
   cm: CosmosWrapper,
@@ -178,7 +256,7 @@ const validateBalanceQuery = async (
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
-    2: 2,
+    2: 3,
     3: 4,
     4: 3,
   };
@@ -202,6 +280,11 @@ describe('Neutron / Interchain KV Query', () => {
         COSMOS_DENOM,
       ),
     };
+
+    await cm[1].bondFunds(
+      '10000000000',
+      testState.wallets.neutron.demo1.address.toString(),
+    );
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -217,7 +300,7 @@ describe('Neutron / Interchain KV Query', () => {
         'neutron_interchain_queries',
       );
       expect(contractAddress).toEqual(
-        'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
+        'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj',
       );
     });
   });
@@ -225,6 +308,8 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Register interchain queries', () => {
     describe('Deposit escrow for query', () => {
       test('should throw exception because of not enough deposit', async () => {
+        expect.assertions(1);
+
         try {
           await cm[1].executeContract(
             contractAddress,
@@ -537,7 +622,7 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Remove interchain query', () => {
-    test('remove icq #1', async () => {
+    test('remove icq #1 using query owner address', async () => {
       let balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances.length).toEqual(0);
 
@@ -545,6 +630,196 @@ describe('Neutron / Interchain KV Query', () => {
 
       balances = await cm[1].queryBalances(contractAddress);
       expect(balances.balances[0].amount).toEqual('1000000');
+    });
+
+    test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
+      const queryId = 2;
+
+      const result = await removeQueryViaTx(cm[1], queryId);
+
+      expect((result as any).raw_log).toMatch(
+        /authorization failed: unauthorized/i,
+      );
+    });
+
+    describe('Remove interchain query', () => {
+      beforeEach(async () => {
+        // Top up contract address before running query
+        await cm[1].msgSend(contractAddress, '1000000');
+      });
+
+      test('should check query creation with governance parameters', async () => {
+        const params = await cm[1].queryInterchainqueriesParams();
+
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          2,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
+
+        await waitBlocks(cm[1].sdk, 1);
+
+        const queryResult = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          queryId,
+        );
+
+        expect(queryResult.registered_query.deposit).toEqual(
+          params.params.query_deposit,
+        );
+        expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+          params.params.query_submit_timeout,
+        );
+      });
+
+      test('should change new query params based on governance proposal', async () => {
+        // Get old query params
+        const registeredQueryBeforeParamChange = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          2,
+        );
+
+        const querySubmitTimeoutParam = 1;
+
+        await acceptInterchainqueriesParamsChangeProposal(
+          cm[1],
+          testState.wallets.neutron.demo1,
+          'Change query_submit_timeout parameter of the interchainqueries module',
+          'Change query_submit_timeout parameter of the interchainqueries module',
+          'QuerySubmitTimeout',
+          `"${querySubmitTimeoutParam.toString()}"`,
+        );
+
+        const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
+          {
+            amount: '10000',
+            denom: 'stake',
+          },
+        ];
+
+        await acceptInterchainqueriesParamsChangeProposal(
+          cm[1],
+          testState.wallets.neutron.demo1,
+          'Change query_deposit parameter of the interchainqueries module',
+          'Change query_deposit parameter of the interchainqueries module',
+          'QueryDeposit',
+          JSON.stringify(queryDepositParam),
+        );
+
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          10,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
+
+        await waitBlocks(cm[1].sdk, 1);
+
+        const queryResult = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          queryId,
+        );
+
+        expect(queryResult.registered_query.deposit).toEqual(queryDepositParam);
+        expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
+          '1',
+        );
+
+        const interchainQueriesParams =
+          await cm[1].queryInterchainqueriesParams();
+
+        expect(interchainQueriesParams.params).toEqual({
+          query_deposit: queryDepositParam,
+          query_submit_timeout: querySubmitTimeoutParam.toString(),
+        });
+
+        // Get old query params after param change proposal
+        const registeredQueryAfterParamChange = await getRegisteredQuery(
+          cm[1],
+          contractAddress,
+          2,
+        );
+
+        expect(
+          registeredQueryBeforeParamChange.registered_query.deposit,
+        ).toEqual(registeredQueryAfterParamChange.registered_query.deposit);
+        expect(
+          registeredQueryBeforeParamChange.registered_query.deposit,
+        ).toEqual(registeredQueryAfterParamChange.registered_query.deposit);
+      });
+
+      test('should remove icq and check balances updates', async () => {
+        const balancesBeforeRegistration = await cm[1].queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
+
+        const queryId = await registerBalanceQuery(
+          cm[1],
+          contractAddress,
+          connectionId,
+          15,
+          cm[2].denom,
+          testState.wallets.cosmos.demo2.address,
+        );
+
+        await getWithAttempts(
+          cm[1].sdk,
+          () => getRegisteredQuery(cm[1], contractAddress, queryId),
+          async (response) =>
+            response.registered_query.last_submitted_result_local_height > 0 &&
+            response.registered_query.last_submitted_result_local_height + 5 <
+              (await getRemoteHeight(cm[1].sdk)),
+          20,
+        );
+
+        const balancesAfterRegistration = await cm[1].queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
+
+        await removeQueryViaTx(cm[1], queryId);
+
+        await getWithAttempts(
+          cm[1].sdk,
+          async () =>
+            await cm[1].queryBalances(
+              testState.wallets.neutron.demo1.address.toString(),
+            ),
+          async (response) =>
+            response.balances[0].denom ===
+              balancesAfterRegistration.balances[0].denom &&
+            parseInt(response.balances[0].amount) >
+              parseInt(balancesAfterRegistration.balances[0].amount),
+
+          100,
+        );
+
+        const balancesAfterRemoval = await cm[1].queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
+
+        // Add fees (100) that was deducted during removeQueryViaTx call
+        const balancesAfterRemovalWithFee = {
+          ...balancesAfterRemoval,
+          balances: [
+            {
+              denom: balancesAfterRemoval.balances[0].denom,
+              amount: (
+                parseInt(balancesAfterRemoval.balances[0].amount) + 1000
+              ).toString(),
+            },
+          ],
+        };
+
+        expect(balancesAfterRemovalWithFee).toEqual(balancesBeforeRegistration);
+      });
     });
   });
 });
