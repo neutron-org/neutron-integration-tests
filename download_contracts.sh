@@ -4,7 +4,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-REPO_BASE="https://github.com/neutron-org/neutron-contracts"
+REPO_BASE="https://github.com/neutron-org/neutron-dev-contracts"
 
 contract_link() {
   local branch
