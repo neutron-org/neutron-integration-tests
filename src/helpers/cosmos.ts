@@ -3,6 +3,7 @@ import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -23,6 +24,14 @@ export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
+export const VAULT_CONTRACT_ADDRESS =
+  'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
+export const PROPOSE_CONTRACT_ADDRESS =
+  'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
+export const CORE_CONTRACT_ADDRESS =
+  'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
+export const PRE_PROPOSE_CONTRACT_ADDRESS =
+  'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
@@ -61,6 +70,38 @@ type Balance = {
   amount: string;
 };
 
+// SingleChoiceProposal represents a single governance proposal item (partial object).
+type SingleChoiceProposal = {
+  readonly title: string;
+  readonly description: string;
+  /// The address that created this proposal.
+  readonly proposer: string;
+  /// The block height at which this proposal was created. Voting
+  /// power queries should query for voting power at this block
+  /// height.
+  readonly start_height: number;
+  /// The threshold at which this proposal will pass.
+  /// proposal's creation.
+  readonly total_power: string;
+  readonly status:
+    | 'open'
+    | 'rejected'
+    | 'passed'
+    | 'executed'
+    | 'closed'
+    | 'execution_failed';
+};
+
+type TotalPowerAtHeightResponse = {
+  readonly height: string;
+  readonly power: number;
+}
+
+type VotingPowerAtHeightResponse = {
+  readonly height: string;
+  readonly power: number;
+}
+
 // PageRequest is the params of pagination for request
 export type PageRequest = {
   'pagination.key'?: string;
@@ -93,6 +134,15 @@ export const NeutronContract = {
   REFLECT: 'reflect.wasm',
 };
 
+cosmosclient.codec.register(
+  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+);
+cosmosclient.codec.register(
+  '/cosmos.params.v1beta1.ParameterChangeProposal',
+  proto.cosmos.params.v1beta1.ParameterChangeProposal,
+);
+
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   wallet: Wallet;
@@ -111,6 +161,7 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -138,23 +189,19 @@ export class CosmosWrapper {
       txBody,
       authInfo,
     );
-
     const signDocBytes = txBuilder.signDocBytes(
       this.wallet.account.account_number,
     );
-
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
     const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
-      mode: rest.tx.BroadcastTxMode.Async,
+      mode,
     });
-
     const code = res.data?.tx_response.code;
     if (code !== 0) {
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
-
     let error = null;
     while (numAttempts > 0) {
       await waitBlocks(this.sdk, 1);
@@ -226,13 +273,15 @@ export class CosmosWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+    sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
-      sender: this.wallet.address.toString(),
+      sender,
       contract,
       msg: Buffer.from(msg),
       funds,
     });
+
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('2000000'),
@@ -303,6 +352,215 @@ export class CosmosWrapper {
       [msgSend],
     );
     return res?.tx_response;
+  }
+
+  /**
+   * msgRemoveInterchainQuery sends transaction to remove interchain query, waits two blocks and returns the tx hash.
+   */
+  async msgRemoveInterchainQuery(
+    queryId: number,
+    sender: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgRemove =
+      new neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest(
+        {
+          query_id: queryId,
+          sender,
+        },
+      );
+
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: this.denom, amount: '1000' }],
+      },
+      [msgRemove],
+    );
+    return res?.tx_response;
+  }
+
+  /**
+   * submitParameterChangeProposal creates proposal.
+   */
+  async submitSendProposal(
+    title: string,
+    description: string,
+    amount: string,
+    to: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PRE_PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              msgs: [
+                {
+                  bank: {
+                    send: {
+                      to_address: to,
+                      amount: [
+                        {
+                          denom: this.denom,
+                          amount: amount,
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
+  }
+
+  /**
+   * submitParameterChangeProposal creates proposal.
+   */
+  async submitParameterChangeProposal(
+    title: string,
+    description: string,
+    subspace: string,
+    key: string,
+    value: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PRE_PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              msgs: [
+                {
+                  custom: {
+                    submit_proposalsubmit_admin_proposal: {
+                      admin_proposal: {
+                        param_change_proposal: {
+                          title,
+                          description,
+                          param_changes: [
+                            {
+                              subspace,
+                              key,
+                              value,
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
+  }
+
+  /**
+   * voteYes  vote 'yes' for given proposal.
+   */
+  async voteYes(
+    proposalId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
+      [],
+      sender,
+    );
+  }
+
+  /**
+   * voteNo  vote 'no' for given proposal.
+   */
+  async voteNo(
+    proposalId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
+      [],
+      sender,
+    );
+  }
+
+  /**
+   * executeProposal executes given proposal.
+   */
+  async executeProposal(
+    proposalId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  async queryProposal(proposalId: number): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(
+      PROPOSE_CONTRACT_ADDRESS,
+      {
+        proposal: {
+          proposal_id: proposalId,
+        },
+      },
+    );
+  }
+
+  async queryTotalVotingPower(): Promise<any> {
+    return await this.queryContract<TotalPowerAtHeightResponse>(
+      CORE_CONTRACT_ADDRESS,
+      {
+        total_power_at_height: {},
+      },
+    );
+  }
+
+  async queryVotingPower(addr: string): Promise<any> {
+    return await this.queryContract<VotingPowerAtHeightResponse>(
+      CORE_CONTRACT_ADDRESS,
+      {
+        voting_power_at_height: {
+          address: addr,
+        },
+      },
+    );
+  }
+
+  async queryInterchainqueriesParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron/interchainqueries/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryDelegations(delegatorAddr: cosmosclient.AccAddress): Promise<any> {
+    const balances = await rest.staking.delegatorDelegations(
+      this.sdk,
+      delegatorAddr,
+    );
+    return balances.data;
   }
 
   /**
@@ -384,6 +642,20 @@ export class CosmosWrapper {
       [msgDelegate],
     );
     return res?.tx_response;
+  }
+
+  async bondFunds(
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      VAULT_CONTRACT_ADDRESS,
+      JSON.stringify({
+        bond: {},
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
   }
 
   async listIBCChannels(): Promise<ChannelsList> {

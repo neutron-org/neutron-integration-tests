@@ -19,6 +19,6 @@ export const getIca = (
           connection_id: connectionId,
         },
       }),
-    (response) => response != null,
+    async (response) => response != null,
     numAttempts,
   );

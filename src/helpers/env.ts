@@ -75,12 +75,14 @@ export const waitForChannel = async (
           (channel: any) => channel.counterparty.channel_id !== '',
         )
       ) {
+        await wait(20);
         return;
       }
       // eslint-disable-next-line no-empty
     } catch (e) {}
     await wait(10);
   }
+
   throw new Error('No channel opened');
 };
 
