@@ -53,7 +53,7 @@ describe('Neutron / Simple', () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
       contractAddress = res;
       expect(res.toString()).toEqual(
-        'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj',
+        'neutron1mf6ptkssddfmxvhdx0ech0k03ktp6kf9yk59renau2gvht3nq2gqdgdun7',
       );
     });
   });
@@ -329,6 +329,8 @@ describe('Neutron / Simple', () => {
         const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
+        console.log('execute contract with failing sudo');
+
         // Mock sudo handler to fail
         await cm.executeContract(
           contractAddress,
@@ -352,6 +354,7 @@ describe('Neutron / Simple', () => {
         await waitBlocks(cm.sdk, 3);
         const currentHeight = await getRemoteHeight(cm.sdk);
 
+        console.log('execute contract with failing sudo WITH TIMEOUT!!!');
         await cm.executeContract(
           contractAddress,
           JSON.stringify({
@@ -360,7 +363,7 @@ describe('Neutron / Simple', () => {
               to: testState.wallets.cosmos.demo2.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
-              timeout_height: currentHeight + 3,
+              timeout_height: currentHeight + 2,
             },
           }),
         );
