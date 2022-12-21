@@ -45,7 +45,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         'neutron_interchain_queries',
       );
       expect(contractAddress).toEqual(
-        'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
+        'neutron1mf6ptkssddfmxvhdx0ech0k03ktp6kf9yk59renau2gvht3nq2gqdgdun7',
       );
     });
   });
