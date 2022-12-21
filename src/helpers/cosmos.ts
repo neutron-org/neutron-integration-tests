@@ -95,12 +95,12 @@ type SingleChoiceProposal = {
 type TotalPowerAtHeightResponse = {
   readonly height: string;
   readonly power: number;
-}
+};
 
 type VotingPowerAtHeightResponse = {
   readonly height: string;
   readonly power: number;
-}
+};
 
 // PageRequest is the params of pagination for request
 export type PageRequest = {
