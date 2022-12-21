@@ -413,7 +413,7 @@ export class CosmosWrapper {
           ],
         },
       }),
-      [],
+      [{ denom: this.denom, amount: '1000' }],
       sender,
     );
   }
