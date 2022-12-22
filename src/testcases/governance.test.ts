@@ -90,7 +90,7 @@ describe('Neutron / Governance', () => {
         'icahost',
         'HostEnabled',
         'false',
-        '1000stake',
+        '1000',
       );
     });
 
@@ -101,7 +101,7 @@ describe('Neutron / Governance', () => {
         'icahost',
         'HostEnabled',
         'false',
-        '1000stake',
+        '1000',
       );
     });
 
@@ -119,13 +119,13 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #1 (yes, yes, yes)', () => {
     const proposalId = 1;
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(proposalId, '1000stake');
+      await cm.voteYes(proposalId, cm.wallet.address.toString());
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(proposalId, '1000stake');
+      await cm2.voteYes(proposalId, cm2.wallet.address.toString());
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(proposalId, '1000stake');
+      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
     });
   });
 
@@ -145,13 +145,13 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #2 (no, yes, no)', () => {
     const proposalId = 2;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(proposalId, '1000stake');
+      await cm.voteNo(proposalId, cm.wallet.address.toString());
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(proposalId, '1000stake');
+      await cm2.voteYes(proposalId, cm2.wallet.address.toString());
     });
     test('vote NO from wallet 3', async () => {
-      await cm3.voteYes(proposalId, '1000stake');
+      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
     });
   });
 
