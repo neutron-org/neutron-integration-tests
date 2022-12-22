@@ -396,7 +396,7 @@ export class CosmosWrapper {
   }
 
   /**
-   * submitParameterChangeProposal creates proposal.
+   * submitSendProposal creates proposal to send funds form DAO core contract for given address.
    */
   async submitSendProposal(
     title: string,
@@ -676,6 +676,7 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
+    console.log(VAULT_CONTRACT_ADDRESS + '14881488');
     return await this.executeContract(
       VAULT_CONTRACT_ADDRESS,
       JSON.stringify({
