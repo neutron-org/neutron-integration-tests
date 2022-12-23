@@ -135,9 +135,10 @@ const getEventAttribute = (
   eventType: string,
   attribute: string,
 ): string => {
-  const attributes = events?.find(
-    (event) => event.type === eventType,
-  )?.attributes;
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
 
   const encodedAttr = attributes?.find(
     (attr) => attr.key === Buffer.from(attribute).toString('base64'),
