@@ -329,8 +329,6 @@ describe('Neutron / Simple', () => {
         const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
-        console.log('execute contract with failing sudo');
-
         // Mock sudo handler to fail
         await cm.executeContract(
           contractAddress,
@@ -354,7 +352,6 @@ describe('Neutron / Simple', () => {
         await waitBlocks(cm.sdk, 3);
         const currentHeight = await getRemoteHeight(cm.sdk);
 
-        console.log('execute contract with failing sudo WITH TIMEOUT!!!');
         await cm.executeContract(
           contractAddress,
           JSON.stringify({

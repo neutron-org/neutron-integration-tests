@@ -143,6 +143,7 @@ describe('Neutron / Treasury', () => {
           }),
         );
       });
+
       test('fund', async () => {
         await cm.msgSend(treasury, '10000000');
         const res = await cm.executeContract(
@@ -159,6 +160,7 @@ describe('Neutron / Treasury', () => {
           total_reserved: '7900000',
         });
       });
+
       test('verify reserve', async () => {
         const reserveBalance = await cm.queryDenomBalance(
           reserve,
