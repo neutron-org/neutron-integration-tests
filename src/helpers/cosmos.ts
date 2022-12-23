@@ -676,7 +676,6 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    console.log(sender + ' 14881488');
     return await this.executeContract(
       VAULT_CONTRACT_ADDRESS,
       JSON.stringify({
