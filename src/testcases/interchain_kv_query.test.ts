@@ -155,6 +155,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   description: string,
   key: string,
   value: string,
+  amount = '1000',
 ) => {
   const proposalTx = await cm.submitParameterChangeProposal(
     title,
@@ -162,6 +163,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
     'interchainqueries',
     key,
     value,
+    amount,
     wallet.address.toString(),
   );
 

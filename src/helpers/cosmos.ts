@@ -460,7 +460,7 @@ export class CosmosWrapper {
               msgs: [
                 {
                   custom: {
-                    submit_proposalsubmit_admin_proposal: {
+                    submit_admin_proposal: {
                       admin_proposal: {
                         param_change_proposal: {
                           title,
@@ -676,7 +676,7 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    console.log(VAULT_CONTRACT_ADDRESS + '14881488');
+    console.log(sender + ' 14881488');
     return await this.executeContract(
       VAULT_CONTRACT_ADDRESS,
       JSON.stringify({

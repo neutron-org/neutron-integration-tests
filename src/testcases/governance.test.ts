@@ -22,12 +22,12 @@ describe('Neutron / Governance', () => {
     );
     cm2 = new CosmosWrapper(
       testState.sdk1,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.neutron.demo2,
       NEUTRON_DENOM,
     );
     cm3 = new CosmosWrapper(
       testState.sdk1,
-      testState.wallets.cosmos.rly1,
+      testState.wallets.neutron.rly1,
       NEUTRON_DENOM,
     );
   });
@@ -43,10 +43,10 @@ describe('Neutron / Governance', () => {
       );
     });
     test('bond from wallet 2', async () => {
-      await cm3.bondFunds('1000', cm2.wallet.address.toString());
+      await cm2.bondFunds('1000');
       await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryVotingPower(cm2.wallet.address.toString()),
+        cm2.sdk,
+        async () => await cm2.queryVotingPower(cm2.wallet.address.toString()),
         async (response) => response.power == '1000',
         20,
       );
@@ -54,8 +54,8 @@ describe('Neutron / Governance', () => {
     test('bond from wallet 3 ', async () => {
       await cm3.bondFunds('1000', cm3.wallet.address.toString());
       await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryVotingPower(cm3.wallet.address.toString()),
+        cm3.sdk,
+        async () => await cm3.queryVotingPower(cm3.wallet.address.toString()),
         async (response) => response.power == '1000',
         20,
       );
@@ -76,7 +76,7 @@ describe('Neutron / Governance', () => {
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryBalances(CORE_CONTRACT_ADDRESS),
-        async (response) => response.balances[1].amount == '1000',
+        async (response) => response.balances[0].amount == '1000',
         20,
       );
     });
@@ -86,7 +86,7 @@ describe('Neutron / Governance', () => {
     test('create proposal #1, will be passed', async () => {
       await cm.submitParameterChangeProposal(
         'Proposal #1',
-        'Param change proposal. This one wll pass',
+        'Param change proposal. This one will pass',
         'icahost',
         'HostEnabled',
         'false',
@@ -97,7 +97,7 @@ describe('Neutron / Governance', () => {
     test('create proposal #2, will be rejected', async () => {
       await cm.submitParameterChangeProposal(
         'Proposal #2',
-        'Param change proposal. This one wll not pass',
+        'Param change proposal. This one will not pass',
         'icahost',
         'HostEnabled',
         'false',
@@ -108,18 +108,17 @@ describe('Neutron / Governance', () => {
     test('create proposal #3, will be passed', async () => {
       await cm.submitSendProposal(
         'Proposal #3',
-        'This one wll pass',
+        'This one wшll pass',
         '1000',
         CORE_CONTRACT_ADDRESS,
-        'false',
       );
     });
   });
 
-  describe('vote for proposal #1 (yes, yes, yes)', () => {
+  describe('vote for proposal #1 (no, yes, yes)', () => {
     const proposalId = 1;
-    test('vote YES from wallet 1', async () => {
-      await cm.voteYes(proposalId, cm.wallet.address.toString());
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(proposalId, cm.wallet.address.toString());
     });
     test('vote YES from wallet 2', async () => {
       await cm2.voteYes(proposalId, cm2.wallet.address.toString());
@@ -129,10 +128,9 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #1', () => {
-    test('run exucute_execute', async () => {
+  describe('after execution proposal #1', () => {
+    test('run check if proposal passed', async () => {
       const proposalId = 1;
-      await cm.executeProposal(proposalId);
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
@@ -151,12 +149,12 @@ describe('Neutron / Governance', () => {
       await cm2.voteYes(proposalId, cm2.wallet.address.toString());
     });
     test('vote NO from wallet 3', async () => {
-      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
+      await cm3.voteNo(proposalId, cm3.wallet.address.toString());
     });
   });
 
   describe('execute proposal #2', () => {
-    test('vote YES from wallet 1', async () => {
+    test('check if proposal is rejected', async () => {
       const proposalId = 2;
       let rawLog: any;
       try {
@@ -176,7 +174,7 @@ describe('Neutron / Governance', () => {
 
   describe('vote for proposal #3 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(3, cm3.wallet.address.toString());
+      await cm.voteYes(3, cm.wallet.address.toString());
     });
     test('vote NO from wallet 2', async () => {
       await cm2.voteNo(3, cm2.wallet.address.toString());
@@ -189,7 +187,6 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #3', () => {
     test('run exucute_execute', async () => {
       const proposalId = 3;
-      await cm.executeProposal(proposalId);
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
