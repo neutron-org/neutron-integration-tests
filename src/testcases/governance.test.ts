@@ -184,8 +184,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #3', () => {
-    test('run exucute_execute', async () => {
+  describe('after execution proposal #3', () => {
+    test('check if proposal is passed', async () => {
       const proposalId = 3;
       await getWithAttempts(
         cm.sdk,
