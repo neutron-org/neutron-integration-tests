@@ -1,8 +1,7 @@
 node_modules/
 yarn-error.log
 keystore.db
-contracts/artifacts/checksums_intermediate.txt
-contracts/artifacts/checksums.txt
+contracts/artifacts/
 .jest
 
 # IDEs
@@ -13,4 +12,4 @@ contracts/artifacts/checksums.txt
 .vscode
 
 write-file-atomic*
-*.wasm
+
