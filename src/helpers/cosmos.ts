@@ -126,6 +126,13 @@ export type AckFailuresResponse = {
   };
 };
 
+// TotalBurnedNeutronsAmount is the response model for the feeburner's  total-burned-neutrons.
+export type TotalBurnedNeutronsAmount = {
+  total_burned_neutrons_amount: {
+    coins: ICoin[];
+  };
+};
+
 // Failure represents a single contractmanager failure
 type Failure = {
   address: string;
@@ -473,6 +480,28 @@ export class CosmosWrapper {
     });
   }
 
+  /* simulateFeeBurning simulates fee burning via send tx.
+   */
+  async simulateFeeBurning(
+    amount: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
+      from_address: this.wallet.address.toString(),
+      to_address: this.wallet.address.toString(),
+      amount: [{ denom: this.denom, amount: '1' }],
+    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [
+          { denom: this.denom, amount: `${Math.ceil((1000 * amount) / 750)}` },
+        ],
+      },
+      [msgSend],
+    );
+    return res?.tx_response;
+  }
+
   /**
    * msgRemoveInterchainQuery sends transaction to remove interchain query, waits two blocks and returns the tx hash.
    */
@@ -781,6 +810,20 @@ export class CosmosWrapper {
       const req = await axios.get<AckFailuresResponse>(
         `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
         { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmount> {
+    try {
+      const req = await axios.get<TotalBurnedNeutronsAmount>(
+        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
       );
       return req.data;
     } catch (e) {
