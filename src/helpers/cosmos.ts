@@ -86,6 +86,14 @@ type Failure = {
   ack_type: string;
 };
 
+// BalancesResponse is the response model for the bank balances query.
+export type PauseInfoResponse = {
+  paused: {
+    until_height: number;
+  };
+  unpaused: {};
+};
+
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
@@ -310,6 +318,68 @@ export class CosmosWrapper {
       [msgSend],
     );
     return res?.tx_response;
+  }
+
+  /**
+   * Tests a pausable contract execution control.
+   * @param testingContract is the contract the method tests;
+   * @param execAction is an executable action to be called during a pause and after unpausing
+   * as the main part of the test;
+   * @param actionCheck is called after unpausing to make sure the executable action worked.
+   */
+  async testExecControl(
+    testingContract: string,
+    execAction: () => Promise<number | undefined>,
+    actionCheck: () => Promise<void>,
+  ) {
+    // check contract's pause info before pausing
+    let pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // pause contract
+    let res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: 50,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // execute msgs on paused contract
+    await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+    // unpause contract
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        unpause: {},
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after unpausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // execute msgs on unpaused contract
+    const code = await execAction();
+    expect(code).toEqual(0);
+    await actionCheck();
+  }
+
+  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
+    return await this.queryContract<PauseInfoResponse>(addr, {
+      pause_info: {},
+    });
   }
 
   /**
