@@ -108,7 +108,7 @@ describe('Neutron / Governance', () => {
     test('create proposal #3, will be passed', async () => {
       await cm.submitSendProposal(
         'Proposal #3',
-        'This one wшll pass',
+        'This one will pass',
         '1000',
         CORE_CONTRACT_ADDRESS,
       );
@@ -162,7 +162,7 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes('not in status'));
+      expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
