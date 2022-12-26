@@ -53,7 +53,7 @@ describe('Neutron / Simple', () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
       contractAddress = res;
       expect(res.toString()).toEqual(
-        'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq',
+        'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj',
       );
     });
   });
@@ -337,6 +337,19 @@ describe('Neutron / Simple', () => {
           }),
         );
 
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.cosmos.demo2.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          }),
+        );
+
+        await waitBlocks(cm.sdk, 3);
         const currentHeight = await getRemoteHeight(cm.sdk);
 
         await cm.executeContract(
@@ -347,19 +360,7 @@ describe('Neutron / Simple', () => {
               to: testState.wallets.cosmos.demo2.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
-            },
-          }),
-        );
-
-        await cm.executeContract(
-          contractAddress,
-          JSON.stringify({
-            send: {
-              channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-              timeout_height: currentHeight + 3,
+              timeout_height: currentHeight + 2,
             },
           }),
         );
@@ -367,12 +368,9 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
           async () => cm.queryAckFailures(contractAddress),
-          // Wait until there are 4 failures in the list
-          (data) => data.failures.length == 4,
-          200,
+          // Wait until there 4 failure in the list
+          async (data) => data.failures.length == 4,
         );
-
-        console.log(failuresAfterCall.failures);
 
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
