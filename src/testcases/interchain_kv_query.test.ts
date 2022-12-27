@@ -135,9 +135,10 @@ const getEventAttribute = (
   eventType: string,
   attribute: string,
 ): string => {
-  const attributes = events?.find(
-    (event) => event.type === eventType,
-  )?.attributes;
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
 
   const encodedAttr = attributes?.find(
     (attr) => attr.key === Buffer.from(attribute).toString('base64'),
@@ -155,6 +156,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   description: string,
   key: string,
   value: string,
+  amount = '1000',
 ) => {
   const proposalTx = await cm.submitParameterChangeProposal(
     title,
@@ -162,6 +164,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
     'interchainqueries',
     key,
     value,
+    amount,
     wallet.address.toString(),
   );
 
@@ -300,7 +303,7 @@ describe('Neutron / Interchain KV Query', () => {
         'neutron_interchain_queries',
       );
       expect(contractAddress).toEqual(
-        'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj',
+        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
       );
     });
   });
