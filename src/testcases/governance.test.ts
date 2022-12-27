@@ -83,7 +83,7 @@ describe('Neutron / Governance', () => {
   });
 
   describe('create several proposals', () => {
-    test('create proposal #1, will be passed', async () => {
+    test('create proposal #1, will pass', async () => {
       await cm.submitParameterChangeProposal(
         'Proposal #1',
         'Param change proposal. This one will pass',
@@ -105,12 +105,23 @@ describe('Neutron / Governance', () => {
       );
     });
 
-    test('create proposal #3, will be passed', async () => {
+    test('create proposal #3, will pass', async () => {
       await cm.submitSendProposal(
         'Proposal #3',
         'This one wшll pass',
         '1000',
         CORE_CONTRACT_ADDRESS,
+      );
+    });
+
+    test('create proposal #4, will pass', async () => {
+      await cm.submitSoftwareUpgradeProposal(
+        'Proposal #4',
+        'Software upgrade proposal. Should pass',
+        'Plan #1',
+        500,
+        'Plan info',
+        '1000',
       );
     });
   });
@@ -187,6 +198,31 @@ describe('Neutron / Governance', () => {
   describe('after execution proposal #3', () => {
     test('check if proposal is passed', async () => {
       const proposalId = 3;
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'passed',
+        20,
+      );
+    });
+  });
+
+  describe('vote for proposal #4 (no, yes, yes)', () => {
+    const proposalId = 4;
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(proposalId, cm.wallet.address.toString());
+    });
+    test('vote YES from wallet 2', async () => {
+      await cm2.voteYes(proposalId, cm2.wallet.address.toString());
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
+    });
+  });
+
+  describe('after execution proposal #4', () => {
+    test('run check if proposal passed', async () => {
+      const proposalId = 4;
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),

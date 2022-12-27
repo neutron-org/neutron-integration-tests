@@ -488,6 +488,54 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitSoftwareUpgradeProposal creates proposal.
+   */
+  async submitSoftwareUpgradeProposal(
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PRE_PROPOSE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              msgs: [
+                {
+                  custom: {
+                    submit_admin_proposal: {
+                      admin_proposal: {
+                        software_upgrade_proposal: {
+                          title,
+                          description,
+                          plan: {
+                            name,
+                            height,
+                            info,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
