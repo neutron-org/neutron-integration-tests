@@ -6,6 +6,27 @@ import {
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getWithAttempts } from '../helpers/wait';
 
+const checkPassedProposal = async (cm: CosmosWrapper, proposalId: number) =>
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryProposal(proposalId),
+    async (response) => response.proposal.status === 'passed',
+    20,
+  );
+
+const executeProposalWithAttempts = async (
+  cm: CosmosWrapper,
+  proposalId: number,
+) => {
+  await cm.executeProposal(proposalId);
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
+    20,
+  );
+};
+
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
@@ -129,21 +150,12 @@ describe('Neutron / Governance', () => {
   });
 
   describe('execute proposal #1', () => {
-    test('run check if proposal passed', async () => {
-      const proposalId = 1;
-      await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryProposal(proposalId),
-        async (response) => response.proposal.status === 'passed',
-        20,
-      );
-      await cm.executeProposal(proposalId);
-      await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryProposal(proposalId),
-        async (response) => response.proposal.status === 'executed',
-        20,
-      );
+    const proposalId = 1;
+    test('check if proposal is passed', async () => {
+      await checkPassedProposal(cm, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await executeProposalWithAttempts(cm, proposalId);
     });
   });
 
@@ -192,21 +204,12 @@ describe('Neutron / Governance', () => {
   });
 
   describe('execute proposal #3', () => {
+    const proposalId = 3;
     test('check if proposal is passed', async () => {
-      const proposalId = 3;
-      await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryProposal(proposalId),
-        async (response) => response.proposal.status === 'passed',
-        20,
-      );
-      await cm.executeProposal(proposalId);
-      await getWithAttempts(
-        cm.sdk,
-        async () => await cm.queryProposal(proposalId),
-        async (response) => response.proposal.status === 'executed',
-        20,
-      );
+      await checkPassedProposal(cm, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await executeProposalWithAttempts(cm, proposalId);
     });
   });
 });
