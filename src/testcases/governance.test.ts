@@ -128,13 +128,20 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('after execution proposal #1', () => {
+  describe('execute proposal #1', () => {
     test('run check if proposal passed', async () => {
       const proposalId = 1;
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
         async (response) => response.proposal.status === 'passed',
+        20,
+      );
+      await cm.executeProposal(proposalId);
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'executed',
         20,
       );
     });
@@ -158,7 +165,7 @@ describe('Neutron / Governance', () => {
       const proposalId = 2;
       let rawLog: any;
       try {
-        rawLog = (await cm.executeProposal(1)).raw_log;
+        rawLog = (await cm.executeProposal(proposalId)).raw_log;
       } catch (e) {
         rawLog = e.message;
       }
@@ -184,13 +191,20 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('after execution proposal #3', () => {
+  describe('execute proposal #3', () => {
     test('check if proposal is passed', async () => {
       const proposalId = 3;
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
         async (response) => response.proposal.status === 'passed',
+        20,
+      );
+      await cm.executeProposal(proposalId);
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'executed',
         20,
       );
     });
