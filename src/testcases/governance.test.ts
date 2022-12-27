@@ -138,7 +138,7 @@ describe('Neutron / Governance', () => {
     test('create proposal #4, will pass', async () => {
       await cm.submitSoftwareUpgradeProposal(
         'Proposal #4',
-        'Software upgrade proposal. Should pass',
+        'Software upgrade proposal. Will pass',
         'Plan #1',
         500,
         'Plan info',
@@ -237,7 +237,7 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('after execution proposal #4', () => {
+  describe('execute proposal #4', () => {
     const proposalId = 4;
     test('check if proposal is passed', async () => {
       await checkPassedProposal(cm, proposalId);
