@@ -108,7 +108,7 @@ describe('Neutron / Governance', () => {
     test('create proposal #3, will pass', async () => {
       await cm.submitSendProposal(
         'Proposal #3',
-        'This one wшll pass',
+        'This one will pass',
         '1000',
         CORE_CONTRACT_ADDRESS,
       );
@@ -139,13 +139,20 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('after execution proposal #1', () => {
+  describe('execute proposal #1', () => {
     test('run check if proposal passed', async () => {
       const proposalId = 1;
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
         async (response) => response.proposal.status === 'passed',
+        20,
+      );
+      await cm.executeProposal(proposalId);
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'executed',
         20,
       );
     });
@@ -169,11 +176,11 @@ describe('Neutron / Governance', () => {
       const proposalId = 2;
       let rawLog: any;
       try {
-        rawLog = (await cm.executeProposal(1)).raw_log;
+        rawLog = (await cm.executeProposal(proposalId)).raw_log;
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes('not in status'));
+      expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
@@ -195,13 +202,20 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('after execution proposal #3', () => {
+  describe('execute proposal #3', () => {
     test('check if proposal is passed', async () => {
       const proposalId = 3;
       await getWithAttempts(
         cm.sdk,
         async () => await cm.queryProposal(proposalId),
         async (response) => response.proposal.status === 'passed',
+        20,
+      );
+      await cm.executeProposal(proposalId);
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'executed',
         20,
       );
     });

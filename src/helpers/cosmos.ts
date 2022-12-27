@@ -396,7 +396,7 @@ export class CosmosWrapper {
   }
 
   /**
-   * submitSendProposal creates proposal to send funds form DAO core contract for given address.
+   * submitSendProposal creates proposal to send funds from DAO core contract for given address.
    */
   async submitSendProposal(
     title: string,
@@ -405,40 +405,30 @@ export class CosmosWrapper {
     to: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      PRE_PROPOSE_CONTRACT_ADDRESS,
-      JSON.stringify({
-        propose: {
-          msg: {
-            propose: {
-              title: title,
-              description: description,
-              msgs: [
-                {
-                  bank: {
-                    send: {
-                      to_address: to,
-                      amount: [
-                        {
-                          denom: this.denom,
-                          amount: amount,
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
+    const message = JSON.stringify({
+      bank: {
+        send: {
+          to_address: to,
+          amount: [
+            {
+              denom: this.denom,
+              amount: amount,
             },
-          },
+          ],
         },
-      }),
-      [{ denom: this.denom, amount: amount }],
+      },
+    });
+    return await this.submitProposal(
+      title,
+      description,
+      message,
+      amount,
       sender,
     );
   }
 
   /**
-   * submitParameterChangeProposal creates proposal.
+   * submitParameterChangeProposal creates parameter change proposal.
    */
   async submitParameterChangeProposal(
     title: string,
@@ -449,6 +439,45 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            param_change_proposal: {
+              title,
+              description,
+              param_changes: [
+                {
+                  subspace,
+                  key,
+                  value,
+                },
+              ],
+            },
+          },
+        },
+      },
+    });
+    return await this.submitProposal(
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitProposal creates proposal with given message.
+   */
+  async submitProposal(
+    title: string,
+    description: string,
+    msg: string,
+    amount: string,
+    sender: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.parse(msg);
     return await this.executeContract(
       PRE_PROPOSE_CONTRACT_ADDRESS,
       JSON.stringify({
@@ -457,27 +486,7 @@ export class CosmosWrapper {
             propose: {
               title: title,
               description: description,
-              msgs: [
-                {
-                  custom: {
-                    submit_admin_proposal: {
-                      admin_proposal: {
-                        param_change_proposal: {
-                          title,
-                          description,
-                          param_changes: [
-                            {
-                              subspace,
-                              key,
-                              value,
-                            },
-                          ],
-                        },
-                      },
-                    },
-                  },
-                },
-              ],
+              msgs: [message],
             },
           },
         },
