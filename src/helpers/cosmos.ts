@@ -143,6 +143,12 @@ export const NeutronContract = {
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   RESERVE: 'neutron_reserve.wasm',
+  CW4_GROUP: 'cw4_group.wasm',
+  CW4_VOTING: 'cw4_voting.wasm',
+  SUBDAO_CORE: 'cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
 };
 
 cosmosclient.codec.register(
