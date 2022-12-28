@@ -8,14 +8,15 @@ import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
 
 describe('Neutron / Subdao', () => {
-  let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
-  let main_dao_wallet: Wallet;
-  let security_dao_wallet: Wallet;
-  let main_dao_addr: AccAddress | ValAddress;
-  let security_dao_addr: AccAddress | ValAddress;
+  let cm;
+  let main_dao_wallet;
+  let security_dao_wallet;
+  let subdao_member_wallet;
+  let main_dao_addr;
+  let security_dao_addr;
+  let subdao_member_addr;
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    let testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
@@ -24,8 +25,10 @@ describe('Neutron / Subdao', () => {
     );
     main_dao_wallet = testState.wallets.neutron.demo1;
     security_dao_wallet = testState.wallets.neutron.icq;
+    subdao_member_wallet = testState.wallets.neutron.demo2;
     main_dao_addr = main_dao_wallet.address;
     security_dao_addr = security_dao_wallet.address;
+    subdao_member_addr = subdao_member_wallet.address;
   });
 
   describe('execution control', () => {
@@ -36,21 +39,23 @@ describe('Neutron / Subdao', () => {
         NEUTRON_DENOM,
         10,
         timelock.code_id,
-        timelock.instantiate_msg,
+        Buffer.from(timelock.instantiate_msg).toString('base64'),
       );
       const proposal = await prepareProposal(
         cm,
         prePropose.code_id,
-        prePropose.instantiate_msg,
+        Buffer.from(prePropose.instantiate_msg).toString('base64'),
       );
-      const voting = await prepareCW4Voting(cm, []);
+      const voting = await prepareCW4Voting(cm, [
+        { addr: subdao_member_addr.toString(), weight: 1 },
+      ]);
       const subdao = await instantiateSubdaoCode(
         cm,
         security_dao_addr.toString(),
         voting.code_id,
-        voting.instantiate_msg,
+        Buffer.from(voting.instantiate_msg).toString('base64'),
         proposal.code_id,
-        proposal.instantiate_msg,
+        Buffer.from(proposal.instantiate_msg).toString('base64'),
       );
       console.log('subdao addr:', subdao);
     });
@@ -58,7 +63,7 @@ describe('Neutron / Subdao', () => {
 });
 
 const instantiateSubdaoCode = async (
-  cm: CosmosWrapper,
+  cm,
   security_dao_addr: string,
   voting_code_id: string,
   voting_inst_msg: string,
@@ -86,11 +91,12 @@ const instantiateSubdaoCode = async (
       ],
       security_dao: security_dao_addr,
     }),
+    'subdao core',
   );
 };
 
 const prepareTimelock = async (
-  cm: CosmosWrapper,
+  cm,
   duration: number,
   owner: string,
 ): Promise<ContractInstKit> => {
@@ -101,13 +107,13 @@ const prepareTimelock = async (
   });
   const kit: ContractInstKit = {
     code_id: codeId,
-    instantiate_msg: Buffer.from(instMsg).toString('base64'),
+    instantiate_msg: instMsg,
   };
   return kit;
 };
 
 const preparePrePropose = async (
-  cm: CosmosWrapper,
+  cm,
   deposit_denom: string,
   deposit_amount: number,
   timelock_code_id: string,
@@ -135,13 +141,13 @@ const preparePrePropose = async (
   });
   const kit: ContractInstKit = {
     code_id: codeId,
-    instantiate_msg: Buffer.from(instMsg).toString('base64'),
+    instantiate_msg: instMsg,
   };
   return kit;
 };
 
 const prepareProposal = async (
-  cm: CosmosWrapper,
+  cm,
   pre_propose_code_id: string,
   pre_propose_inst_msg: string,
 ): Promise<ContractInstKit> => {
@@ -169,13 +175,13 @@ const prepareProposal = async (
   });
   const kit: ContractInstKit = {
     code_id: codeId,
-    instantiate_msg: Buffer.from(instMsg).toString('base64'),
+    instantiate_msg: instMsg,
   };
   return kit;
 };
 
 const prepareCW4Voting = async (
-  cm: CosmosWrapper,
+  cm,
   members: CW4Member[],
 ): Promise<ContractInstKit> => {
   const cw4GroupCodeId = await cm.storeWasm(NeutronContract.CW4_GROUP);
@@ -186,7 +192,7 @@ const prepareCW4Voting = async (
   });
   const kit: ContractInstKit = {
     code_id: cw4VotingCodeId,
-    instantiate_msg: Buffer.from(instMsg).toString('base64'),
+    instantiate_msg: instMsg,
   };
   return kit;
 };
