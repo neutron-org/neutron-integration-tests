@@ -7,10 +7,11 @@
     "test": "jest --runInBand -b src/testcases",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/simple",
-    "test:treasury": "jest --runInBand -b src/testcases/treasury",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
     "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query",
     "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/interchain_tx_query_resubmit",
+    "test:treasury": "jest --runInBand -b src/testcases/treasury",
+    "test:governance": "jest --runInBand -b src/testcases/governance",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
