@@ -14,6 +14,29 @@ const checkPassedProposal = async (cm: CosmosWrapper, proposalId: number) =>
     20,
   );
 
+// TODO: do we need it?
+// const checkPassedMultiChoiceProposal = async (
+//   cm: CosmosWrapper,
+//   proposalId: number,
+// ) =>
+//   await getWithAttempts(
+//     cm.sdk,
+//     async () => await cm.queryMultiChoiceProposal(proposalId),
+//     async (response) => response.proposal.status === 'passed',
+//     20,
+//   );
+
+const checkExecutedMultiChoiceProposal = async (
+  cm: CosmosWrapper,
+  proposalId: number,
+) =>
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryMultiChoiceProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
+    20,
+  );
+
 const executeProposalWithAttempts = async (
   cm: CosmosWrapper,
   proposalId: number,
@@ -26,6 +49,20 @@ const executeProposalWithAttempts = async (
     20,
   );
 };
+
+// TODO: do we need it?
+// const executeMultiChoiceProposalWithAttempts = async (
+//   cm: CosmosWrapper,
+//   proposalId: number,
+// ) => {
+//   await cm.executeProposal(proposalId);
+//   await getWithAttempts(
+//     cm.sdk,
+//     async () => await cm.queryMultiChoiceProposal(proposalId),
+//     async (response) => response.proposal.status === 'executed',
+//     20,
+//   );
+// };
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -134,6 +171,54 @@ describe('Neutron / Governance', () => {
         CORE_CONTRACT_ADDRESS,
       );
     });
+
+    test('create multi-choice proposal #1, will be picked choice 1', async () => {
+      await cm.submitMultiChoiceParameterChangeProposal(
+        [
+          {
+            title: 'title',
+            description: 'title',
+            subspace: 'icahost',
+            key: 'HostEnabled',
+            value: 'false',
+          },
+          {
+            title: 'title2',
+            description: 'title2',
+            subspace: 'icahost',
+            key: 'HostEnabled',
+            value: 'true',
+          },
+        ],
+        'Proposal multichoice #1',
+        'Multi param change proposal. This one will pass and choice 1 picked',
+        '1000',
+      );
+    });
+
+    test('create multi-choice proposal #2, will be rejected', async () => {
+      await cm.submitMultiChoiceParameterChangeProposal(
+        [
+          {
+            title: 'title',
+            description: 'title',
+            subspace: 'icahost',
+            key: 'HostEnabled',
+            value: 'true',
+          },
+          {
+            title: 'title2',
+            description: 'title2',
+            subspace: 'icahost',
+            key: 'HostEnabled',
+            value: 'false',
+          },
+        ],
+        'Proposal multichoice #2',
+        'Multi param change proposal. This one be rejected',
+        '1000',
+      );
+    });
   });
 
   describe('vote for proposal #1 (no, yes, yes)', () => {
@@ -210,6 +295,59 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await executeProposalWithAttempts(cm, proposalId);
+    });
+  });
+
+  describe('vote for multichoice proposal #1 (1, 0, 1)', () => {
+    const proposalId = 1;
+    test('vote 1 from wallet 1', async () => {
+      await cm.voteForOption(proposalId, 1);
+    });
+    test('vote 0 from wallet 2', async () => {
+      await cm2.voteForOption(proposalId, 0);
+    });
+    test('vote 1 from wallet 3', async () => {
+      await cm3.voteForOption(proposalId, 1);
+    });
+  });
+
+  describe('execute multichoice proposal #1', () => {
+    const proposalId = 1;
+    // TODO: why proposal is autoexecuted?
+    test('check if proposal is executed', async () => {
+      await checkExecutedMultiChoiceProposal(cm, proposalId);
+    });
+  });
+
+  describe('vote for multichoice proposal #2 (2, 2, 0)', () => {
+    const proposalId = 2;
+    test('vote 2 from wallet 1', async () => {
+      await cm.voteForOption(proposalId, 2);
+    });
+    test('vote 2 from wallet 2', async () => {
+      await cm2.voteForOption(proposalId, 0);
+    });
+    test('vote 0 from wallet 3', async () => {
+      await cm3.voteForOption(proposalId, 2);
+    });
+  });
+
+  describe('execute multichoice proposal #2', () => {
+    test('check if proposal is rejected', async () => {
+      const proposalId = 2;
+      let rawLog: any;
+      try {
+        rawLog = (await cm.executeMultiChoiceProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes("proposal is not in 'passed' state"));
+      await getWithAttempts(
+        cm.sdk,
+        async () => await cm.queryMultiChoiceProposal(proposalId),
+        async (response) => response.proposal.status === 'rejected',
+        20,
+      );
     });
   });
 });

@@ -11,8 +11,8 @@ PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
 VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
-PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_proposal_multiple.wasm
-PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_pre_propose_multiple.wasm
+PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_multiple.wasm
+PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_multiple.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
