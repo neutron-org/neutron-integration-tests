@@ -49,7 +49,6 @@ const executeProposalWithAttempts = async (
   );
 };
 
-// TODO: do we need it?
 const executeMultiChoiceProposalWithAttempts = async (
   cm: CosmosWrapper,
   proposalId: number,
