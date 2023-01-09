@@ -649,7 +649,7 @@ export class CosmosWrapper {
   }
 
   async queryMultiChoiceProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<any>(PROPOSE_CONTRACT_ADDRESS, {
+    return await this.queryContract<any>(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, {
       proposal: {
         proposal_id: proposalId,
       },

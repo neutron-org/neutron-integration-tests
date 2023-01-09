@@ -14,17 +14,16 @@ const checkPassedProposal = async (cm: CosmosWrapper, proposalId: number) =>
     20,
   );
 
-// TODO: do we need it?
-// const checkPassedMultiChoiceProposal = async (
-//   cm: CosmosWrapper,
-//   proposalId: number,
-// ) =>
-//   await getWithAttempts(
-//     cm.sdk,
-//     async () => await cm.queryMultiChoiceProposal(proposalId),
-//     async (response) => response.proposal.status === 'passed',
-//     20,
-//   );
+const checkPassedMultiChoiceProposal = async (
+  cm: CosmosWrapper,
+  proposalId: number,
+) =>
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryMultiChoiceProposal(proposalId),
+    async (response) => response.proposal.status === 'passed',
+    20,
+  );
 
 const checkExecutedMultiChoiceProposal = async (
   cm: CosmosWrapper,
@@ -51,18 +50,18 @@ const executeProposalWithAttempts = async (
 };
 
 // TODO: do we need it?
-// const executeMultiChoiceProposalWithAttempts = async (
-//   cm: CosmosWrapper,
-//   proposalId: number,
-// ) => {
-//   await cm.executeProposal(proposalId);
-//   await getWithAttempts(
-//     cm.sdk,
-//     async () => await cm.queryMultiChoiceProposal(proposalId),
-//     async (response) => response.proposal.status === 'executed',
-//     20,
-//   );
-// };
+const executeMultiChoiceProposalWithAttempts = async (
+  cm: CosmosWrapper,
+  proposalId: number,
+) => {
+  await cm.executeMultiChoiceProposal(proposalId);
+  await getWithAttempts(
+    cm.sdk,
+    async () => await cm.queryMultiChoiceProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
+    20,
+  );
+};
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -313,7 +312,12 @@ describe('Neutron / Governance', () => {
 
   describe('execute multichoice proposal #1', () => {
     const proposalId = 1;
-    // TODO: why proposal is autoexecuted?
+    test('check if proposal is passed', async () => {
+      await checkPassedMultiChoiceProposal(cm, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await executeMultiChoiceProposalWithAttempts(cm, proposalId);
+    });
     test('check if proposal is executed', async () => {
       await checkExecutedMultiChoiceProposal(cm, proposalId);
     });
