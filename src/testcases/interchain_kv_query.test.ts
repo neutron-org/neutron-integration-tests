@@ -303,7 +303,7 @@ describe('Neutron / Interchain KV Query', () => {
         'neutron_interchain_queries',
       );
       expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
+        'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7',
       );
     });
   });
