@@ -49,15 +49,10 @@ describe('Neutron / Interchain TXs', () => {
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        const res = await cm1.instantiate(
+        contractAddress = await cm1.instantiate(
           codeId,
           JSON.stringify({}),
           'interchaintx',
-        );
-
-        contractAddress = res;
-        expect(res.toString()).toEqual(
-          'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
         );
       });
     });

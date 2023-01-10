@@ -32,6 +32,8 @@ export const CORE_CONTRACT_ADDRESS =
   'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
 export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
+export const TREASURY_CONTRACT_ADDRESS =
+  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
@@ -49,9 +51,20 @@ type ChannelsList = {
   }[];
 };
 
+export type TotalSupplyByDenomResponse = {
+  amount: ICoin;
+};
+
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's  total-burned-neutrons.
+export type TotalBurnedNeutronsAmountResponse = {
+  total_burned_neutrons_amount: {
+    coins: ICoin[];
+  };
+};
+
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
-  balances: Balance[];
+  balances: ICoin[];
   pagination: {
     next_key: string;
     total: string;
@@ -62,12 +75,6 @@ type BalancesResponse = {
 type DenomTraceResponse = {
   path?: string;
   base_denom?: string;
-};
-
-// Balance represents a single asset balance of an account.
-type Balance = {
-  denom: string;
-  amount: string;
 };
 
 // SingleChoiceProposal represents a single governance proposal item (partial object).
@@ -354,19 +361,17 @@ export class CosmosWrapper {
   async msgSend(
     to: string,
     amount: string,
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.denom, amount: '1000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(
-      {
-        gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.denom, amount: '1000' }],
-      },
-      [msgSend],
-    );
+    const res = await this.execTx(fee, [msgSend]);
     return res?.tx_response;
   }
 
@@ -700,6 +705,36 @@ export class CosmosWrapper {
       `${this.sdk.url}/ibc/core/channel/v1/channels`,
     );
     return req.data;
+  }
+
+  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {
+    try {
+      const req = await axios.get<TotalBurnedNeutronsAmountResponse>(
+        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryTotalSupplyByDenom(
+    denom: string,
+  ): Promise<TotalSupplyByDenomResponse> {
+    try {
+      const req = await axios.get<TotalSupplyByDenomResponse>(
+        `${this.sdk.url}/cosmos/bank/v1beta1/supply/${denom}`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 }
 
