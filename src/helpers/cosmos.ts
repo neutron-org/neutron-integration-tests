@@ -58,7 +58,7 @@ export type TotalSupplyByDenomResponse = {
 // TotalBurnedNeutronsAmountResponse is the response model for the feeburner's  total-burned-neutrons.
 export type TotalBurnedNeutronsAmountResponse = {
   total_burned_neutrons_amount: {
-    coins: ICoin[];
+    coin: ICoin;
   };
 };
 

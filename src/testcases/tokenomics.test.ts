@@ -52,12 +52,8 @@ describe('Neutron / Tokenomics', () => {
     test('Total burned neutrons amount has increased', async () => {
       const burnedAfter = await cmNeutron.queryTotalBurnedNeutronsAmount();
       const diff =
-        +burnedAfter.total_burned_neutrons_amount.coins.find(
-          (x) => x.denom == NEUTRON_DENOM,
-        ).amount -
-        +burnedBefore.total_burned_neutrons_amount.coins.find(
-          (x) => x.denom == NEUTRON_DENOM,
-        ).amount;
+        +burnedAfter.total_burned_neutrons_amount.coin.amount -
+        +burnedBefore.total_burned_neutrons_amount.coin.amount;
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
