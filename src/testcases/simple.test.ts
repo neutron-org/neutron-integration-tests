@@ -51,7 +51,7 @@ describe('Neutron / Simple', () => {
     });
     test('instantiate', async () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
-      contractAddress = res;
+      contractAddress = res[0]._contract_address;
       expect(res.toString()).toEqual(
         'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
       );

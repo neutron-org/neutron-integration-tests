@@ -455,7 +455,7 @@ const setupDSC = async (
       denom: NEUTRON_DENOM,
     }),
     'dsc',
-  );
+  )[0]._contract_address;
 };
 
 const setupReserve = async (
@@ -472,7 +472,7 @@ const setupReserve = async (
       denom: NEUTRON_DENOM,
     }),
     'reserve',
-  );
+  )[0]._contract_address;
 };
 
 const setupTreasury = async (
@@ -499,5 +499,5 @@ const setupTreasury = async (
       security_dao_address: opts.securityDaoAddress,
     }),
     'treausry',
-  );
+  )[0]._contract_address;
 };

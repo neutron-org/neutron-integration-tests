@@ -143,6 +143,10 @@ export const NeutronContract = {
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   RESERVE: 'neutron_reserve.wasm',
+  SUBDAO_CORE: 'cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
 };
 
 cosmosclient.codec.register(
@@ -260,14 +264,14 @@ export class CosmosWrapper {
       'code_id',
     ]);
 
-    return attributes.code_id;
+    return attributes[0].code_id;
   }
 
   async instantiate(
     codeId: string,
     msg: string | null = null,
     label: string | null = null,
-  ): Promise<string> {
+  ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
       sender: this.wallet.address.toString(),
@@ -289,8 +293,9 @@ export class CosmosWrapper {
 
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
+      'code_id',
     ]);
-    return attributes._contract_address;
+    return attributes;
   }
 
   async executeContract(
@@ -779,7 +784,7 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Record<typeof attributes[number], string> | Record<string, never> => {
+): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
@@ -790,17 +795,22 @@ export const getEventAttributesFromTx = (
         },
       ]
     )[0].events || [];
-  const out = {};
+  const resp = [];
   for (const e of events) {
     if (event === e.type) {
+      let out = {};
       for (const a of e.attributes) {
         if (attributes.includes(a.key)) {
           out[a.key] = a.value;
         }
+        if (Object.keys(out).length == attributes.length) {
+          resp.push(out);
+          out = {};
+        }
       }
     }
   }
-  return out;
+  return resp;
 };
 
 export const mnemonicToWallet = async (
@@ -883,3 +893,17 @@ export const getIBCDenom = (portName, channelName, denom: string): string => {
     .toUpperCase();
   return `ibc/${uatomIBCHash}`;
 };
+
+export const createBankMassage = (address: string, amount: string) => ({
+  bank: {
+    send: {
+      to_address: address,
+      amount: [
+        {
+          denom: NEUTRON_DENOM,
+          amount: amount,
+        },
+      ],
+    },
+  },
+});
