@@ -12,7 +12,6 @@ describe('Neutron / Treasury', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
   let cm2: CosmosWrapper;
-  let cm3: CosmosWrapper;
   let main_dao_wallet: Wallet;
   let security_dao_wallet: Wallet;
   let holder_1_wallet: Wallet;
@@ -32,11 +31,6 @@ describe('Neutron / Treasury', () => {
     cm2 = new CosmosWrapper(
       testState.sdk1,
       testState.wallets.neutron.demo2,
-      NEUTRON_DENOM,
-    );
-    cm3 = new CosmosWrapper(
-      testState.sdk1,
-      testState.wallets.neutron.icq,
       NEUTRON_DENOM,
     );
     main_dao_wallet = testState.wallets.neutron.demo1;
@@ -357,7 +351,7 @@ describe('Neutron / Treasury', () => {
       await cm.testExecControl(
         treasury,
         async () => {
-          let res = await cm.executeContract(
+          const res = await cm.executeContract(
             treasury,
             JSON.stringify({
               update_config: {
@@ -389,7 +383,7 @@ describe('Neutron / Treasury', () => {
       await cm.testExecControl(
         dsc,
         async () => {
-          let res = await cm.executeContract(
+          const res = await cm.executeContract(
             dsc,
             JSON.stringify({
               set_shares: {
@@ -418,7 +412,7 @@ describe('Neutron / Treasury', () => {
       await cm.testExecControl(
         reserve,
         async () => {
-          let res = await cm.executeContract(
+          const res = await cm.executeContract(
             reserve,
             JSON.stringify({
               transfer_ownership: security_dao_addr.toString(),

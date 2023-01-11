@@ -132,7 +132,7 @@ export type PauseInfoResponse = {
   paused: {
     until_height: number;
   };
-  unpaused: {};
+  unpaused: Record<string, never>;
 };
 
 export const NeutronContract = {

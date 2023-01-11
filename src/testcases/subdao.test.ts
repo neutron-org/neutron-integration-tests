@@ -515,7 +515,7 @@ describe('Neutron / Subdao', () => {
   // })
 
   describe('execution control', () => {
-    const funding: number = 1000;
+    const funding = 1000;
     let proposal_id: number;
     test('create a proposal to fund security DAO', async () => {
       const resp = await cm.executeContract(
@@ -555,8 +555,9 @@ describe('Neutron / Subdao', () => {
       let pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
       expect(pauseInfo).toEqual({ unpaused: {} });
       expect(pauseInfo.paused).toEqual(undefined);
+
       // pause subDAO on behalf of the security DAO
-      let res = await cm2.executeContract(
+      const res = await cm2.executeContract(
         subDAO.core.address,
         JSON.stringify({
           pause: {
@@ -564,19 +565,21 @@ describe('Neutron / Subdao', () => {
           },
         }),
       );
+      expect(res.code).toEqual(0);
+
       // check contract's pause info after pausing
       pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
       expect(pauseInfo.unpaused).toEqual(undefined);
       expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
     });
     test('execute proposal when subDAO is paused', async () => {
-      let beforeExecBalance = await cm.queryBalances(
+      const beforeExecBalance = await cm.queryBalances(
         cm2.wallet.address.toString(),
       );
       await expect(
         cm.executeProposalWithAttempts(subDAO.propose.address, proposal_id),
       ).rejects.toThrow(/Contract execution is paused/);
-      let afterExecBalance = await cm.queryBalances(
+      const afterExecBalance = await cm.queryBalances(
         cm2.wallet.address.toString(),
       );
       expect(afterExecBalance.balances[0].amount).toEqual(
@@ -585,19 +588,21 @@ describe('Neutron / Subdao', () => {
     });
     test('unpause subDAO', async () => {
       // unpause subDAO on behalf of the main DAO
-      let res = await cm.executeContract(
+      const res = await cm.executeContract(
         subDAO.core.address,
         JSON.stringify({
           unpause: {},
         }),
       );
+      expect(res.code).toEqual(0);
+
       // check contract's pause info after unpausing
-      let pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
+      const pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
       expect(pauseInfo).toEqual({ unpaused: {} });
       expect(pauseInfo.paused).toEqual(undefined);
     });
     test('execute proposal when subDAO is unpaused', async () => {
-      let beforeExecBalance = await cm.queryBalances(
+      const beforeExecBalance = await cm.queryBalances(
         cm2.wallet.address.toString(),
       );
       await cm.executeProposalWithAttempts(subDAO.propose.address, proposal_id);
@@ -624,7 +629,7 @@ describe('Neutron / Subdao', () => {
       expect(timelocked_prop.status).toEqual('executed');
       expect(timelocked_prop.msgs).toHaveLength(1);
 
-      let afterExecBalance = await cm.queryBalances(
+      const afterExecBalance = await cm.queryBalances(
         cm2.wallet.address.toString(),
       );
       expect(+afterExecBalance.balances[0].amount).toEqual(
