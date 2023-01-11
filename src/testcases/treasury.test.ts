@@ -300,25 +300,29 @@ describe('Neutron / Treasury', () => {
 
 const setupDSC = async (cm: CosmosWrapper, owner: string) => {
   const codeId = await cm.storeWasm(NeutronContract.DISTRIBUTION);
-  return cm.instantiate(
-    codeId,
-    JSON.stringify({
-      owner,
-      denom: NEUTRON_DENOM,
-    }),
-    'dsc',
+  return (
+    await cm.instantiate(
+      codeId,
+      JSON.stringify({
+        owner,
+        denom: NEUTRON_DENOM,
+      }),
+      'dsc',
+    )
   )[0]._contract_address;
 };
 
 const setupReserve = async (cm: CosmosWrapper, owner: string) => {
   const codeId = await cm.storeWasm(NeutronContract.RESERVE);
-  return cm.instantiate(
-    codeId,
-    JSON.stringify({
-      owner,
-      denom: NEUTRON_DENOM,
-    }),
-    'reserve',
+  return (
+    await cm.instantiate(
+      codeId,
+      JSON.stringify({
+        owner,
+        denom: NEUTRON_DENOM,
+      }),
+      'reserve',
+    )
   )[0]._contract_address;
 };
 
@@ -333,16 +337,18 @@ const setupTreasury = async (
   },
 ) => {
   const codeId = await cm.storeWasm(NeutronContract.TREASURY);
-  return cm.instantiate(
-    codeId,
-    JSON.stringify({
-      owner: opts.owner,
-      denom: NEUTRON_DENOM,
-      distribution_rate: opts.distributionRate,
-      min_period: opts.minPeriod,
-      distribution_contract: opts.distributionContract,
-      reserve_contract: opts.reserveContract,
-    }),
-    'treausry',
+  return (
+    await cm.instantiate(
+      codeId,
+      JSON.stringify({
+        owner: opts.owner,
+        denom: NEUTRON_DENOM,
+        distribution_rate: opts.distributionRate,
+        min_period: opts.minPeriod,
+        distribution_contract: opts.distributionContract,
+        reserve_contract: opts.reserveContract,
+      }),
+      'treausry',
+    )
   )[0]._contract_address;
 };

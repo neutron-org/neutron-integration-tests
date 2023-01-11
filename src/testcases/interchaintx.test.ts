@@ -49,11 +49,9 @@ describe('Neutron / Interchain TXs', () => {
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        const res = await cm1.instantiate(
-          codeId,
-          JSON.stringify({}),
-          'interchaintx',
-        );
+        const res = (
+          await cm1.instantiate(codeId, JSON.stringify({}), 'interchaintx')
+        )[0]._contract_address;
 
         contractAddress = res;
         expect(res.toString()).toEqual(
