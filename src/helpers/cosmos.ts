@@ -8,7 +8,7 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks } from './wait';
+import { waitBlocks, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -474,6 +474,7 @@ export class CosmosWrapper {
    * submitSendProposal creates proposal to send funds from DAO core contract for given address.
    */
   async submitSendProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     amount: string,
@@ -494,6 +495,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -506,6 +508,7 @@ export class CosmosWrapper {
    * submitParameterChangeProposal creates parameter change proposal.
    */
   async submitParameterChangeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     subspace: string,
@@ -534,6 +537,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -546,6 +550,7 @@ export class CosmosWrapper {
    * submitProposal creates proposal with given message.
    */
   async submitProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     msg: string,
@@ -554,7 +559,7 @@ export class CosmosWrapper {
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.parse(msg);
     return await this.executeContract(
-      PRE_PROPOSE_CONTRACT_ADDRESS,
+      pre_propose_contract,
       JSON.stringify({
         propose: {
           msg: {
@@ -575,11 +580,12 @@ export class CosmosWrapper {
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
       [],
       sender,
@@ -590,11 +596,12 @@ export class CosmosWrapper {
    * voteNo  vote 'no' for given proposal.
    */
   async voteNo(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
       [],
       sender,
@@ -605,40 +612,60 @@ export class CosmosWrapper {
    * executeProposal executes given proposal.
    */
   async executeProposal(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,
     );
   }
 
-  async queryProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<SingleChoiceProposal>(
-      PROPOSE_CONTRACT_ADDRESS,
-      {
-        proposal: {
-          proposal_id: proposalId,
-        },
-      },
+  async checkPassedProposal(propose_contract: string, proposalId: number) {
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
     );
   }
 
-  async queryTotalVotingPower(): Promise<any> {
-    return await this.queryContract<TotalPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
-      {
-        total_power_at_height: {},
-      },
+  async executeProposalWithAttempts(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await this.executeProposal(propose_contract, proposalId);
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
     );
   }
 
-  async queryVotingPower(addr: string): Promise<any> {
+  async queryProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
+      },
+    });
+  }
+
+  async queryTotalVotingPower(core_contract: string): Promise<any> {
+    return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
+      total_power_at_height: {},
+    });
+  }
+
+  async queryVotingPower(core_contract: string, addr: string): Promise<any> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
+      core_contract,
       {
         voting_power_at_height: {
           address: addr,
@@ -757,11 +784,12 @@ export class CosmosWrapper {
   }
 
   async bondFunds(
+    vault_contract: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      VAULT_CONTRACT_ADDRESS,
+      vault_contract,
       JSON.stringify({
         bond: {},
       }),
