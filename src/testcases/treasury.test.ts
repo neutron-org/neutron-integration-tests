@@ -307,7 +307,7 @@ const setupDSC = async (cm: CosmosWrapper, owner: string) => {
       denom: NEUTRON_DENOM,
     }),
     'dsc',
-  );
+  )[0]._contract_address;
 };
 
 const setupReserve = async (cm: CosmosWrapper, owner: string) => {
@@ -319,7 +319,7 @@ const setupReserve = async (cm: CosmosWrapper, owner: string) => {
       denom: NEUTRON_DENOM,
     }),
     'reserve',
-  );
+  )[0]._contract_address;
 };
 
 const setupTreasury = async (
@@ -344,5 +344,5 @@ const setupTreasury = async (
       reserve_contract: opts.reserveContract,
     }),
     'treausry',
-  );
+  )[0]._contract_address;
 };
