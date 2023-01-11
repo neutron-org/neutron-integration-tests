@@ -496,7 +496,36 @@ export class CosmosWrapper {
         },
       },
     });
-    console.log('MESSAGE: \n' + message);
+    return await this.submitProposal(
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitCancelSoftwareUpgradeProposal creates proposal.
+   */
+  async submitCancelSoftwareUpgradeProposal(
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            cancel_software_upgrade_proposal: {
+              title,
+              description,
+            },
+          },
+        },
+      },
+    });
     return await this.submitProposal(
       title,
       description,
