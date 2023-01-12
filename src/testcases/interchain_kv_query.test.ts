@@ -297,11 +297,9 @@ describe('Neutron / Interchain KV Query', () => {
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await cm[1].instantiate(
-        codeId,
-        '{}',
-        'neutron_interchain_queries',
-      );
+      contractAddress = (
+        await cm[1].instantiate(codeId, '{}', 'neutron_interchain_queries')
+      )[0]._contract_address;
       expect(contractAddress).toEqual(
         'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
       );
