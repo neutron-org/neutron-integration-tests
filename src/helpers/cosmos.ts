@@ -34,7 +34,7 @@ export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
-type ChannelsList = {
+export type ChannelsList = {
   channels: {
     state: string;
     ordering: string;
