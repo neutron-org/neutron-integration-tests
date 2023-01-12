@@ -327,7 +327,7 @@ describe('Neutron / Interchain KV Query', () => {
           );
         } catch (err) {
           const error = err as Error;
-          expect(error.message).toMatch(/0stake is smaller than 1000000untrn/i);
+          expect(error.message).toMatch(/0untrn is smaller than 1000000untrn/i);
         }
       });
 

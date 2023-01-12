@@ -63,6 +63,6 @@ sed -i -e 's/prometheus-retention-time = 0/prometheus-retention-time = 1000/g' $
 
 GENESIS_FILE="${CHAIN_DIR}/${CHAINID}/config/genesis.json"
 
-sed -i -e "s/\"denom\": \"untrn\",/\"denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
-sed -i -e "s/\"mint_denom\": \"untrn\",/\"mint_denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
-sed -i -e "s/\"bond_denom\": \"untrn\"/\"bond_denom\": \"$STAKEDENOM\"/g" $GENESIS_FILE
+sed -i -e "s/\"denom\": \"stake\",/\"denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
+sed -i -e "s/\"mint_denom\": \"stake\",/\"mint_denom\": \"$STAKEDENOM\",/g" $GENESIS_FILE
+sed -i -e "s/\"bond_denom\": \"stake\"/\"bond_denom\": \"$STAKEDENOM\"/g" $GENESIS_FILE
