@@ -12,11 +12,11 @@ export type TimeLockSingleChoiceProposal = {
 };
 
 export type TimelockConfig = {
-  owner: string,
-  timelock_duration: number,
-  subdao: string,
-}
+  owner: string;
+  timelock_duration: number;
+  subdao: string;
+};
 
 export type TimelockProposalListResponse = {
-  proposals: Array<TimeLockSingleChoiceProposal>
-}
+  proposals: Array<TimeLockSingleChoiceProposal>;
+};
