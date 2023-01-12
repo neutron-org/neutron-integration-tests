@@ -327,7 +327,7 @@ describe('Neutron / Interchain KV Query', () => {
           );
         } catch (err) {
           const error = err as Error;
-          expect(error.message).toMatch(/0stake is smaller than 1000000stake/i);
+          expect(error.message).toMatch(/0stake is smaller than 1000000untrn/i);
         }
       });
 
@@ -701,7 +701,7 @@ describe('Neutron / Interchain KV Query', () => {
         const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
           {
             amount: '10000',
-            denom: 'stake',
+            denom: 'untrn',
           },
         ];
 

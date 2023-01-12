@@ -3,7 +3,7 @@
 BINARY=${BINARY:-neutrond}
 CHAIN_DIR=./data
 CHAINID=${CHAINID:-test-1}
-STAKEDENOM=${STAKEDENOM:-stake}
+STAKEDENOM=${STAKEDENOM:-untrn}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
 DAO_CONTRACT=/opt/neutron/contracts/dao/cwd_core.wasm
