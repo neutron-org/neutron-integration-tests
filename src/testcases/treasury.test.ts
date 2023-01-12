@@ -340,43 +340,11 @@ describe('Neutron / Treasury', () => {
       treasury = await setupTreasury(cm, {
         mainDaoAddress: main_dao_addr.toString(),
         securityDaoAddress: security_dao_addr.toString(),
-        distributionRate: '0.23',
+        distributionRate: '0.21',
         minPeriod: 1000,
         distributionContract: dsc,
         reserveContract: reserve,
       });
-    });
-
-    test('treasury', async () => {
-      await cm.testExecControl(
-        treasury,
-        async () => {
-          const res = await cm.executeContract(
-            treasury,
-            JSON.stringify({
-              update_config: {
-                distribution_rate: '0.11',
-                min_period: 500,
-                dao: main_dao_addr.toString(),
-                distribution_contract: dsc,
-              },
-            }),
-          );
-          return res.code;
-        },
-        async () => {
-          const config = await cm.queryContract<{
-            distribution_rate: string;
-            min_period: number;
-            distribution_contract: string;
-          }>(treasury, {
-            config: {},
-          });
-          expect(config.distribution_rate).toEqual('0.11');
-          expect(config.min_period).toEqual(500);
-          expect(config.distribution_contract).toEqual(dsc);
-        },
-      );
     });
 
     test('distribution', async () => {
@@ -408,27 +376,55 @@ describe('Neutron / Treasury', () => {
       );
     });
 
+    test('treasury', async () => {
+      await cm.msgSend(treasury, '10000000');
+      await cm.testExecControl(
+        treasury,
+        async () => {
+          const res = await cm.executeContract(
+            treasury,
+            JSON.stringify({
+              distribute: {},
+            }),
+          );
+          return res.code;
+        },
+        async () => {
+          const stats = await cm.queryContract(treasury, { stats: {} });
+          expect(stats).toEqual({
+            total_received: '10000000',
+            total_distributed: '2100000',
+            total_reserved: '7900000',
+          });
+        },
+      );
+    });
+
     test('reserve', async () => {
+      const balanceBefore = await cm.queryDenomBalance(
+        holder_2_addr,
+        NEUTRON_DENOM,
+      );
       await cm.testExecControl(
         reserve,
         async () => {
           const res = await cm.executeContract(
             reserve,
             JSON.stringify({
-              transfer_ownership: security_dao_addr.toString(),
+              payout: {
+                recipient: holder_2_addr.toString(),
+                amount: '1400000',
+              },
             }),
           );
           return res.code;
         },
         async () => {
-          const config = await cm.queryContract<{
-            denom: string;
-            main_dao_address: string;
-            security_dao_address: string;
-          }>(reserve, {
-            config: {},
-          });
-          expect(config.main_dao_address).toEqual(security_dao_addr.toString());
+          const balanceAfter = await cm.queryDenomBalance(
+            holder_2_addr,
+            NEUTRON_DENOM,
+          );
+          expect(balanceAfter - balanceBefore).toEqual(1400000);
         },
       );
     });

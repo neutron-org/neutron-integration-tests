@@ -387,7 +387,7 @@ export class CosmosWrapper {
    * Tests a pausable contract execution control.
    * @param testingContract is the contract the method tests;
    * @param execAction is an executable action to be called during a pause and after unpausing
-   * as the main part of the test;
+   * as the main part of the test. Should return the execution response code;
    * @param actionCheck is called after unpausing to make sure the executable action worked.
    */
   async testExecControl(
@@ -437,6 +437,29 @@ export class CosmosWrapper {
     const code = await execAction();
     expect(code).toEqual(0);
     await actionCheck();
+
+    // pause contract again for a short period
+    const short_pause_duration = 5;
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: short_pause_duration,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // wait and check contract's pause info after unpausing
+    await waitBlocks(this.sdk, short_pause_duration);
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
   }
 
   async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
