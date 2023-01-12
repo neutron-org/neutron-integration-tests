@@ -637,12 +637,8 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = 2;
-
       const result = await removeQueryViaTx(cm[1], queryId);
-
-      expect((result as any).raw_log).toMatch(
-        /authorization failed: unauthorized/i,
-      );
+      expect(result.raw_log).toMatch(/authorization failed: unauthorized/i);
     });
 
     describe('Remove interchain query', () => {

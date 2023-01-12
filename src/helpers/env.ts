@@ -72,7 +72,8 @@ export const waitForChannel = async (
       if (
         r.data.channels.length > 0 &&
         r.data.channels.every(
-          (channel: any) => channel.counterparty.channel_id !== '',
+          (channel: { counterparty: { channel_id: string } }) =>
+            channel.counterparty.channel_id !== '',
         )
       ) {
         await wait(20);

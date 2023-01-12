@@ -1,4 +1,5 @@
 import { rest } from '@cosmos-client/core';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 export const wait = async (seconds: number) =>
   new Promise((r) => {
@@ -16,7 +17,7 @@ export const getRemoteHeight = async (sdk: any) => {
   return +block.data.block.header.height;
 };
 
-export const waitBlocks = async (sdk: any, n: number) => {
+export const waitBlocks = async (sdk: CosmosSDK, n: number) => {
   const targetHeight = (await getRemoteHeight(sdk)) + n;
   for (;;) {
     await wait(1);
@@ -32,7 +33,7 @@ export const waitBlocks = async (sdk: any, n: number) => {
  * and only then returns result of getFunc()
  */
 export const getWithAttempts = async <T>(
-  sdk: any,
+  sdk: CosmosSDK,
   getFunc: () => Promise<T>,
   readyFunc: (t: T) => Promise<boolean>,
   numAttempts = 20,

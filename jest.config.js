@@ -17,17 +17,7 @@ const config = {
   },
   setupFilesAfterEnv: ['jest-extended/all'],
   transform: {
-    '^.+\\.tsx?$': [
-      'esbuild-jest',
-      {
-        target: 'node14',
-        format: 'cjs',
-        sourcemap: true,
-        loaders: {
-          '.test.ts': 'tsx',
-        },
-      },
-    ],
+    '^.+\\.[t|j]sx?$': 'babel-jest',
   },
 };
 

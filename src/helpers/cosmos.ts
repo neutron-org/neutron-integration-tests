@@ -83,13 +83,15 @@ type SingleChoiceProposal = {
   /// The threshold at which this proposal will pass.
   /// proposal's creation.
   readonly total_power: string;
-  readonly status:
-    | 'open'
-    | 'rejected'
-    | 'passed'
-    | 'executed'
-    | 'closed'
-    | 'execution_failed';
+  readonly proposal: {
+    status:
+      | 'open'
+      | 'rejected'
+      | 'passed'
+      | 'executed'
+      | 'closed'
+      | 'execution_failed';
+  };
 };
 
 type TotalPowerAtHeightResponse = {
@@ -541,7 +543,7 @@ export class CosmosWrapper {
     );
   }
 
-  async queryProposal(proposalId: number): Promise<any> {
+  async queryProposal(proposalId: number): Promise<SingleChoiceProposal> {
     return await this.queryContract<SingleChoiceProposal>(
       PROPOSE_CONTRACT_ADDRESS,
       {
@@ -552,7 +554,7 @@ export class CosmosWrapper {
     );
   }
 
-  async queryTotalVotingPower(): Promise<any> {
+  async queryTotalVotingPower(): Promise<TotalPowerAtHeightResponse> {
     return await this.queryContract<TotalPowerAtHeightResponse>(
       CORE_CONTRACT_ADDRESS,
       {
@@ -561,7 +563,7 @@ export class CosmosWrapper {
     );
   }
 
-  async queryVotingPower(addr: string): Promise<any> {
+  async queryVotingPower(addr: string): Promise<VotingPowerAtHeightResponse> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
       CORE_CONTRACT_ADDRESS,
       {
