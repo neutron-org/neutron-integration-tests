@@ -10,3 +10,13 @@ export type TimeLockSingleChoiceProposal = {
   msgs: Array<Record<string, any>>; // Vec<CosmosMsg<NeutronMsg>>
   status: string;
 };
+
+export type TimelockConfig = {
+  owner: string;
+  timelock_duration: number;
+  subdao: string;
+};
+
+export type TimelockProposalListResponse = {
+  proposals: Array<TimeLockSingleChoiceProposal>;
+};
