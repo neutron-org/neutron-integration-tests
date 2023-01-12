@@ -7,7 +7,7 @@ import {
   NeutronContract,
 } from '../helpers/cosmos';
 import { TimeLockSingleChoiceProposal } from '../helpers/dao';
-import { wait, getWithAttempts } from '../helpers/wait';
+import { wait, waitBlocks, getWithAttempts } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
@@ -635,6 +635,31 @@ describe('Neutron / Subdao', () => {
       expect(+afterExecBalance.balances[0].amount).toEqual(
         +beforeExecBalance.balances[0].amount + funding,
       );
+    });
+
+    test('auto unpause on pause timeout', async () => {
+      // pause subDAO on behalf of the Neutron DAO
+      const short_pause_duration = 5;
+      const res = await cm.executeContract(
+        subDAO.core.address,
+        JSON.stringify({
+          pause: {
+            duration: short_pause_duration,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+
+      // check contract's pause info after pausing
+      let pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
+      expect(pauseInfo.unpaused).toEqual(undefined);
+      expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+      // wait and check contract's pause info after unpausing
+      await waitBlocks(cm.sdk, short_pause_duration);
+      pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
+      expect(pauseInfo).toEqual({ unpaused: {} });
+      expect(pauseInfo.paused).toEqual(undefined);
     });
   });
 });
