@@ -2,6 +2,7 @@ const ch = require('child_process');
 const { defaults } = require('jest-config');
 
 const config = {
+  reporters: ['default', 'jest-junit'],
   cacheDirectory: '.jest/cache',
   coverageDirectory: '.jest/coverage',
   bail: true,
