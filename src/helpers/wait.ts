@@ -6,12 +6,6 @@ export const wait = async (seconds: number) =>
     setTimeout(() => r(true), 1000 * seconds);
   });
 
-/*
- * Following functions accepts `sdk` as `any` instead of `CosmosSDK`.
- * That's because otherwise the script wouldn't even run due to some
- * weird babel issues.
- */
-
 export const getRemoteHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
