@@ -6,7 +6,7 @@ import {
   createBankMassage,
   NeutronContract,
 } from '../helpers/cosmos';
-import { TimeLockSingleChoiceProposal } from '../helpers/dao';
+import { TimelockConfig, TimelockProposalListResponse, TimeLockSingleChoiceProposal } from '../helpers/dao';
 import { wait } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
@@ -34,7 +34,6 @@ describe('Neutron / Timelock', () => {
       cm,
       testState.wallets.neutron.demo1.address.toString(),
     );
-    console.log(subDAO);
 
     await cm.bondFunds('10000');
   });
@@ -284,8 +283,8 @@ describe('Neutron / Timelock', () => {
         Number(
           balance_demo1.balances.find((b) => b.denom == NEUTRON_DENOM)!.amount,
         ) +
-          1000 -
-          10000,
+        1000 -
+        10000,
       );
       expect(
         Number(
@@ -447,6 +446,236 @@ describe('Neutron / Timelock', () => {
     });
   });
 
+  describe("Update config", () => {
+    test("Update config: Unauthorized", async () => {
+      await expect(cm3.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+            }
+          }
+        )
+      )).rejects.toThrow(/Unauthorized/)
+    })
+
+    test("Update config: Incorrect owner address format", async () => {
+      await expect(cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "owner": "owner",
+            }
+          }
+        )
+      )).rejects.toThrow(/addr_validate errored: decoding bech32 failed: invalid bech32/)
+
+      await expect(cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "owner": "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw",
+            }
+          }
+        )
+      )).rejects.toThrow(/addr_validate errored: invalid Bech32 prefix; expected neutron, got cosmos/)
+    })
+
+    test("Update config: change duration failed", async () => {
+      await expect(cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "timelock_duration": -1,
+            }
+          }
+        )
+      )).rejects.toThrow(/Error parsing into type neutron_timelock::single::ExecuteMsg: Invalid number/)
+    })
+
+    test("Update config: timelock duration success", async () => {
+      await cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "timelock_duration": 50,
+            }
+          }
+        )
+      )
+
+      let expectedConfig: TimelockConfig = {
+        owner: testState.wallets.neutron.demo1.address.toString(),
+        timelock_duration: 50,
+        subdao: subDAO.core.address,
+      }
+
+      const c = await cm.queryContract<TimelockConfig>(subDAO.timelock.address, {
+        config: {},
+      })
+      expect(c).toEqual(expectedConfig)
+    })
+
+    test("Update config: owner success", async () => {
+      await cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "owner": testState.wallets.neutron.demo2.address.toString(),
+            }
+          }
+        )
+      )
+
+      let expectedConfig: TimelockConfig = {
+        owner: testState.wallets.neutron.demo2.address.toString(),
+        timelock_duration: 50,
+        subdao: subDAO.core.address,
+      }
+
+      const c = await cm.queryContract<TimelockConfig>(subDAO.timelock.address, {
+        config: {},
+      })
+      expect(c).toEqual(expectedConfig)
+    })
+
+    test('Update config: old owner lost update rights', async () => {
+      await expect(cm.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+            }
+          }
+        )
+      )).rejects.toThrow(/Unauthorized/)
+    })
+
+    test('Update config: update both params with new owner', async () => {
+      await cm3.executeContract(subDAO.timelock.address,
+        JSON.stringify(
+          {
+            update_config: {
+              "owner": testState.wallets.neutron.demo1.address.toString(),
+              "timelock_duration": 100,
+            }
+          }
+        )
+      )
+
+      let expectedConfig: TimelockConfig = {
+        owner: testState.wallets.neutron.demo1.address.toString(),
+        timelock_duration: 100,
+        subdao: subDAO.core.address,
+      }
+
+      const c = await cm.queryContract<TimelockConfig>(subDAO.timelock.address, {
+        config: {},
+      })
+      expect(c).toEqual(expectedConfig)
+    })
+
+  })
+
+  describe("Query Proposals", () => {
+    let subDAOQueryTestScope: SubDAO;
+    beforeAll(async () => {
+      subDAOQueryTestScope = await setupSubDaoTimelockSet(
+        cm,
+        testState.wallets.neutron.demo1.address.toString(),
+      );
+
+      for (let i = 1; i <= 35; i++) {
+        let resp = await cm.executeContract(
+          subDAOQueryTestScope.prepropose.address,
+          JSON.stringify({
+            propose: {
+              msg: {
+                propose: {
+                  title: `Proposal ${i}`,
+                  description: `proposal ${i} description`,
+                  msgs: [
+                    createBankMassage(
+                      testState.wallets.neutron.demo1.address.toString(),
+                      '1000',
+                    ),
+                    createBankMassage(
+                      testState.wallets.neutron.demo2.address.toString(),
+                      '2000',
+                    ),
+                  ],
+                },
+              },
+            },
+          }),
+        );
+        timelocked_prop_id = Number(
+          getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
+            'proposal_id',
+          ])[0].proposal_id,
+        );
+
+        await cm.executeContract(
+          subDAOQueryTestScope.propose.address,
+          JSON.stringify({
+            vote: { proposal_id: timelocked_prop_id, vote: 'yes' },
+          }),
+        );
+
+        await cm.executeContract(
+          subDAOQueryTestScope.propose.address,
+          JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }),
+        );
+      }
+    })
+
+    test("Query proposals", async () => {
+      let proposals = await cm.queryContract<TimelockProposalListResponse>(subDAOQueryTestScope.timelock.address, {
+        list_proposals: {
+          start_after: 10,
+          limit: 10
+        }
+      })
+
+      expect(proposals.proposals[0].id).toEqual(11)
+      expect(proposals.proposals).toHaveLength(10)
+      expect(proposals.proposals[9].id).toEqual(20)
+    })
+
+    test("Query proposals: no params", async () => {
+      let proposals = await cm.queryContract<TimelockProposalListResponse>(subDAOQueryTestScope.timelock.address, {
+        list_proposals: {
+        }
+      })
+
+      expect(proposals.proposals[0].id).toEqual(1)
+      expect(proposals.proposals).toHaveLength(30)
+      expect(proposals.proposals[29].id).toEqual(30)
+    })
+
+    test("Query proposals: no params", async () => {
+      let proposals = await cm.queryContract<TimelockProposalListResponse>(subDAOQueryTestScope.timelock.address, {
+        list_proposals: {
+          start_after: 30,
+        }
+      })
+
+      expect(proposals.proposals[0].id).toEqual(31)
+      expect(proposals.proposals).toHaveLength(5)
+      expect(proposals.proposals[4].id).toEqual(35)
+    })
+
+    test("Query proposals: limit 100", async () => {
+      let proposals = await cm.queryContract<TimelockProposalListResponse>(subDAOQueryTestScope.timelock.address, {
+        list_proposals: {
+          limit: 100
+        }
+      })
+
+      expect(proposals.proposals[0].id).toEqual(1)
+      expect(proposals.proposals).toHaveLength(35)
+      expect(proposals.proposals[34].id).toEqual(35)
+    })
+  })
+
   // TODO: uncomment when overrule handler updated to take into account timelock_duration
   // handler should fail
   // describe("Overrule timelocked: timelock duration has passed", () => {
@@ -510,7 +739,7 @@ type SubDAO = {
 
 const setupSubDaoTimelockSet = async (
   cm: CosmosWrapper,
-  ownder: string,
+  owner: string,
 ): Promise<SubDAO> => {
   const coreCodeId = parseInt(await cm.storeWasm(NeutronContract.SUBDAO_CORE));
   const proposeCodeId = parseInt(
@@ -550,7 +779,7 @@ const setupSubDaoTimelockSet = async (
                 label: 'subDAO timelock contract',
                 msg: Buffer.from(
                   JSON.stringify({
-                    owner: ownder,
+                    owner: owner,
                     timelock_duration: 20,
                   }),
                 ).toString('base64'),
