@@ -12,7 +12,7 @@ export const wait = async (seconds: number) =>
  * weird babel issues.
  */
 
-export const getRemoteHeight = async (sdk: any) => {
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
 };
