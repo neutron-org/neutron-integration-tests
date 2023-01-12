@@ -318,22 +318,23 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('delegate after the ICA channel was closed', async () => {
-        let rawLog: any;
+        let rawLog: string;
         try {
-          rawLog = (
-            await cm1.executeContract(
-              contractAddress,
-              JSON.stringify({
-                delegate: {
-                  interchain_account_id: icaId1,
-                  validator: testState.wallets.cosmos.val1.address.toString(),
-                  amount: '10',
-                  denom: cm2.denom,
-                  timeout: 1,
-                },
-              }),
-            )
-          ).raw_log;
+          rawLog =
+            (
+              await cm1.executeContract(
+                contractAddress,
+                JSON.stringify({
+                  delegate: {
+                    interchain_account_id: icaId1,
+                    validator: testState.wallets.cosmos.val1.address.toString(),
+                    amount: '10',
+                    denom: cm2.denom,
+                    timeout: 1,
+                  },
+                }),
+              )
+            ).raw_log || '';
         } catch (e) {
           rawLog = e.message;
         }
@@ -444,7 +445,7 @@ describe('Neutron / Interchain TXs', () => {
           cm1.sdk,
           () => cm1.listIBCChannels(),
           async (channels) =>
-            channels.channels.find((c) => c.channel_id == 'channel-3').state ==
+            channels.channels.find((c) => c.channel_id == 'channel-3')?.state ==
             'STATE_OPEN',
         );
       });

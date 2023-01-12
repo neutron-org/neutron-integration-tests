@@ -698,10 +698,10 @@ export class CosmosWrapper {
   }
 
   async listIBCChannels(): Promise<ChannelsList> {
-    const req = await axios.get<ChannelsList>(
+    const res = await axios.get<ChannelsList>(
       `${this.sdk.url}/ibc/core/channel/v1/channels`,
     );
-    return req.data;
+    return res.data;
   }
 }
 
