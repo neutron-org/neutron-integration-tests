@@ -23,8 +23,10 @@ describe('Neutron / Subdao', () => {
   let cm3: CosmosWrapper;
   let main_dao_wallet: Wallet;
   let security_dao_wallet: Wallet;
+  let demo2_wallet: Wallet;
   let main_dao_addr: AccAddress | ValAddress;
   let security_dao_addr: AccAddress | ValAddress;
+  let demo2_addr: AccAddress | ValAddress;
   let subDAO: SubDAO;
   let timelocked_prop_id: number;
 
@@ -33,15 +35,13 @@ describe('Neutron / Subdao', () => {
     await testState.init();
     main_dao_wallet = testState.wallets.neutron.demo1;
     security_dao_wallet = testState.wallets.neutron.icq;
+    demo2_wallet = testState.wallets.neutron.demo2;
     main_dao_addr = main_dao_wallet.address;
     security_dao_addr = security_dao_wallet.address;
+    demo2_addr = demo2_wallet.address;
     cm = new CosmosWrapper(testState.sdk1, main_dao_wallet, NEUTRON_DENOM);
     cm2 = new CosmosWrapper(testState.sdk1, security_dao_wallet, NEUTRON_DENOM);
-    cm3 = new CosmosWrapper(
-      testState.sdk1,
-      testState.wallets.neutron.demo2,
-      NEUTRON_DENOM,
-    );
+    cm3 = new CosmosWrapper(testState.sdk1, demo2_wallet, NEUTRON_DENOM);
     subDAO = await setupSubDaoTimelockSet(
       cm,
       main_dao_addr.toString(),
@@ -89,14 +89,8 @@ describe('Neutron / Subdao', () => {
                 title: 'Proposal 1',
                 description: 'proposal 1 description',
                 msgs: [
-                  createBankMassage(
-                    testState.wallets.neutron.demo1.address.toString(),
-                    '1000',
-                  ),
-                  createBankMassage(
-                    testState.wallets.neutron.demo2.address.toString(),
-                    '2000',
-                  ),
+                  createBankMassage(main_dao_addr.toString(), '1000'),
+                  createBankMassage(demo2_addr.toString(), '2000'),
                 ],
               },
             },
@@ -227,14 +221,8 @@ describe('Neutron / Subdao', () => {
                 title: 'Proposal 1',
                 description: 'proposal 1 description',
                 msgs: [
-                  createBankMassage(
-                    testState.wallets.neutron.demo1.address.toString(),
-                    '1000',
-                  ),
-                  createBankMassage(
-                    testState.wallets.neutron.demo2.address.toString(),
-                    '2000',
-                  ),
+                  createBankMassage(main_dao_addr.toString(), '1000'),
+                  createBankMassage(demo2_addr.toString(), '2000'),
                 ],
               },
             },
@@ -276,12 +264,8 @@ describe('Neutron / Subdao', () => {
 
     test('execute timelocked: success', async () => {
       await cm.msgSend(subDAO.timelock.address, '20000'); // funding for gas
-      const balance_demo1 = await cm.queryBalances(
-        testState.wallets.neutron.demo1.address.toString(),
-      );
-      const balance_demo2 = await cm.queryBalances(
-        testState.wallets.neutron.demo2.address.toString(),
-      );
+      const balance_main_dao = await cm.queryBalances(main_dao_addr.toString());
+      const balance_demo2 = await cm.queryBalances(demo2_addr.toString());
       await wait(20);
       await cm.executeContract(
         subDAO.timelock.address,
@@ -291,21 +275,20 @@ describe('Neutron / Subdao', () => {
           },
         }),
       );
-      const balance_demo1_after = await cm.queryBalances(
-        testState.wallets.neutron.demo1.address.toString(),
+      const balance_main_dao_after = await cm.queryBalances(
+        main_dao_addr.toString(),
       );
-      const balance_demo2_after = await cm.queryBalances(
-        testState.wallets.neutron.demo2.address.toString(),
-      );
+      const balance_demo2_after = await cm.queryBalances(demo2_addr.toString());
       // -10000 gas fees
       expect(
         Number(
-          balance_demo1_after.balances.find((b) => b.denom == NEUTRON_DENOM)!
+          balance_main_dao_after.balances.find((b) => b.denom == NEUTRON_DENOM)!
             .amount,
         ),
       ).toEqual(
         Number(
-          balance_demo1.balances.find((b) => b.denom == NEUTRON_DENOM)!.amount,
+          balance_main_dao.balances.find((b) => b.denom == NEUTRON_DENOM)!
+            .amount,
         ) +
           1000 -
           10000,
@@ -373,14 +356,8 @@ describe('Neutron / Subdao', () => {
                 title: 'Proposal 1',
                 description: 'proposal 1 description',
                 msgs: [
-                  createBankMassage(
-                    testState.wallets.neutron.demo1.address.toString(),
-                    '1000',
-                  ),
-                  createBankMassage(
-                    testState.wallets.neutron.demo2.address.toString(),
-                    '2000',
-                  ),
+                  createBankMassage(main_dao_addr.toString(), '1000'),
+                  createBankMassage(demo2_addr.toString(), '2000'),
                 ],
               },
             },
@@ -685,7 +662,7 @@ describe('Neutron / Subdao', () => {
       );
 
       const expectedConfig: TimelockConfig = {
-        owner: testState.wallets.neutron.demo1.address.toString(),
+        owner: main_dao_addr.toString(),
         timelock_duration: 50,
         subdao: subDAO.core.address,
       };
@@ -704,13 +681,13 @@ describe('Neutron / Subdao', () => {
         subDAO.timelock.address,
         JSON.stringify({
           update_config: {
-            owner: testState.wallets.neutron.demo2.address.toString(),
+            owner: demo2_addr.toString(),
           },
         }),
       );
 
       const expectedConfig: TimelockConfig = {
-        owner: testState.wallets.neutron.demo2.address.toString(),
+        owner: demo2_addr.toString(),
         timelock_duration: 50,
         subdao: subDAO.core.address,
       };
@@ -740,14 +717,14 @@ describe('Neutron / Subdao', () => {
         subDAO.timelock.address,
         JSON.stringify({
           update_config: {
-            owner: testState.wallets.neutron.demo1.address.toString(),
+            owner: main_dao_addr.toString(),
             timelock_duration: 100,
           },
         }),
       );
 
       const expectedConfig: TimelockConfig = {
-        owner: testState.wallets.neutron.demo1.address.toString(),
+        owner: main_dao_addr.toString(),
         timelock_duration: 100,
         subdao: subDAO.core.address,
       };
@@ -781,14 +758,8 @@ describe('Neutron / Subdao', () => {
                   title: `Proposal ${i}`,
                   description: `proposal ${i} description`,
                   msgs: [
-                    createBankMassage(
-                      testState.wallets.neutron.demo1.address.toString(),
-                      '1000',
-                    ),
-                    createBankMassage(
-                      testState.wallets.neutron.demo2.address.toString(),
-                      '2000',
-                    ),
+                    createBankMassage(main_dao_addr.toString(), '1000'),
+                    createBankMassage(demo2_addr.toString(), '2000'),
                   ],
                 },
               },
@@ -886,8 +857,8 @@ describe('Neutron / Subdao', () => {
   //             title: "Proposal 1",
   //             description: "proposal 1 description",
   //             msgs: [
-  //               createBankMassage(testState.wallets.neutron.demo1.address.toString(), "1000"),
-  //               createBankMassage(testState.wallets.neutron.demo2.address.toString(), "2000"),
+  //               createBankMassage(main_dao_addr.toString(), "1000"),
+  //               createBankMassage(demo2_addr.toString(), "2000"),
   //             ],
   //           }
   //         }
