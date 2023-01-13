@@ -66,7 +66,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
       });
@@ -84,7 +84,7 @@ describe('Neutron / Simple', () => {
         const res = await cm.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: 'stake', amount: '1000' },
+          { denom: NEUTRON_DENOM, amount: '1000' },
           testState.wallets.cosmos.demo2.address.toString(),
           { revision_number: 2, revision_height: 100000000 },
         );
@@ -180,7 +180,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
@@ -190,7 +190,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance).toBe(50000 - 3000 - 2333 * 2);

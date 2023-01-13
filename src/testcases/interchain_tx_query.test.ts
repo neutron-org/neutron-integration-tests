@@ -1,6 +1,6 @@
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';

@@ -1,4 +1,4 @@
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitBlocks } from '../helpers/wait';
 import {
@@ -86,8 +86,8 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(query.registered_query.query_type).toEqual('tx');
       expect(query.registered_query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-          watchedAddr1 +
-          '"}]',
+        watchedAddr1 +
+        '"}]',
       );
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);

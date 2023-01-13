@@ -1,7 +1,7 @@
 import { proto, rest } from '@cosmos-client/core';
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
   VAULT_CONTRACT_ADDRESS,
   PRE_PROPOSE_CONTRACT_ADDRESS,
@@ -712,7 +712,7 @@ describe('Neutron / Interchain KV Query', () => {
         const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
           {
             amount: '10000',
-            denom: 'stake',
+            denom: NEUTRON_DENOM,
           },
         ];
 
@@ -790,7 +790,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await getRemoteHeight(cm[1].sdk)),
+            (await getRemoteHeight(cm[1].sdk)),
           20,
         );
 
@@ -808,9 +808,9 @@ describe('Neutron / Interchain KV Query', () => {
             ),
           async (response) =>
             response.balances[0].denom ===
-              balancesAfterRegistration.balances[0].denom &&
+            balancesAfterRegistration.balances[0].denom &&
             parseInt(response.balances[0].amount) >
-              parseInt(balancesAfterRegistration.balances[0].amount),
+            parseInt(balancesAfterRegistration.balances[0].amount),
 
           100,
         );
