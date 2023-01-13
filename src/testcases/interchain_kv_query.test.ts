@@ -3,7 +3,10 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
+  VAULT_CONTRACT_ADDRESS,
+  PRE_PROPOSE_CONTRACT_ADDRESS,
   NeutronContract,
+  PROPOSE_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
@@ -159,6 +162,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   amount = '1000',
 ) => {
   const proposalTx = await cm.submitParameterChangeProposal(
+    PRE_PROPOSE_CONTRACT_ADDRESS,
     title,
     description,
     'interchainqueries',
@@ -178,14 +182,22 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   expect(proposalId).toBeGreaterThanOrEqual(0);
 
   await waitBlocks(cm.sdk, 1);
-  await cm.voteYes(proposalId, wallet.address.toString());
+  await cm.voteYes(
+    PROPOSE_CONTRACT_ADDRESS,
+    proposalId,
+    wallet.address.toString(),
+  );
 
   await waitBlocks(cm.sdk, 1);
-  await cm.executeProposal(proposalId, wallet.address.toString());
+  await cm.executeProposal(
+    PROPOSE_CONTRACT_ADDRESS,
+    proposalId,
+    wallet.address.toString(),
+  );
 
   await getWithAttempts(
     cm.sdk,
-    async () => await cm.queryProposal(proposalId),
+    async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
   );
@@ -285,6 +297,7 @@ describe('Neutron / Interchain KV Query', () => {
     };
 
     await cm[1].bondFunds(
+      VAULT_CONTRACT_ADDRESS,
       '10000000000',
       testState.wallets.neutron.demo1.address.toString(),
     );
@@ -297,11 +310,9 @@ describe('Neutron / Interchain KV Query', () => {
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await cm[1].instantiate(
-        codeId,
-        '{}',
-        'neutron_interchain_queries',
-      );
+      contractAddress = (
+        await cm[1].instantiate(codeId, '{}', 'neutron_interchain_queries')
+      )[0]._contract_address;
     });
   });
 
