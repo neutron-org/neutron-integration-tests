@@ -855,6 +855,20 @@ export class CosmosWrapper {
     return req.data;
   }
 
+  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {
+    try {
+      const req = await axios.get<TotalBurnedNeutronsAmountResponse>(
+        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
   async queryTotalSupplyByDenom(
     denom: string,
   ): Promise<TotalSupplyByDenomResponse> {

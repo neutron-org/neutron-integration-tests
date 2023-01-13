@@ -77,6 +77,7 @@ describe('Neutron / Treasury', () => {
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
+          vestingDenominator: '100000000000',
         });
         await expect(
           cm.executeContract(
@@ -160,15 +161,14 @@ describe('Neutron / Treasury', () => {
         expect(treasuryBalance).toEqual(0);
 
         // Third distribution
-        await cm.executeContract(
-          treasury,
-          JSON.stringify({
-            distribute: {},
-          }),
-        );
-
-        treasuryBalance = await cm.queryDenomBalance(treasury, cm.denom);
-        expect(treasuryBalance).toEqual(0);
+        await expect(
+          cm.executeContract(
+            treasury,
+            JSON.stringify({
+              distribute: {},
+            }),
+          ),
+        ).rejects.toThrow(/No funds to distribute/);
       });
       test('set shares by unauthorized', async () => {
         await expect(
@@ -247,6 +247,7 @@ describe('Neutron / Treasury', () => {
           minPeriod: 1,
           distributionContract: dsc,
           reserveContract: reserve,
+          vestingDenominator: '100000000000',
         });
         await cm.executeContract(
           dsc,
@@ -392,6 +393,7 @@ describe('Neutron / Treasury', () => {
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
+          vestingDenominator: '100000000000',
         });
       });
       test('update treasury config by unauthorized', async () => {
