@@ -370,6 +370,7 @@ describe('Neutron / Simple', () => {
           async () => cm.queryAckFailures(contractAddress),
           // Wait until there 4 failure in the list
           async (data) => data.failures.length == 4,
+          100,
         );
 
         expect(failuresAfterCall.failures).toEqual([
