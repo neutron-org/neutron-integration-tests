@@ -11,6 +11,7 @@ PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
 VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
+TREASURY_CONTRACT=/opt/neutron/contracts/dao/neutron_treasury.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
@@ -18,15 +19,16 @@ $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
 echo "Initializing dao contract in genesis..."
 # Upload the dao contract
 $BINARY add-wasm-message store ${VAULT_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${DAO_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${TREASURY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
 # Instantiate the contract
-INIT='{
-  "denom":"stake",
-  "description": "based neutron vault"
-}'
+VAULT_INIT="$(printf '{
+                        "denom": "%s",
+                        "description": "based neutron vault"
+}' "$STAKEDENOM")"
 DAO_INIT='{
             "description": "basic neutron dao",
             "name": "Neutron",
@@ -44,9 +46,19 @@ DAO_INIT='{
               "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
             }
     }'
+# TODO: properly initialize treasury
+TREASURY_INIT="$(printf '{
+                           "owner": "%s",
+                           "denom": "%s",
+                           "distribution_rate": "0.1",
+                           "min_period": 10,
+                           "distribution_contract": "%s",
+                           "reserve_contract": "%s"
+}' "$ADMIN_ADDRESS" "$STAKEDENOM" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
-$BINARY add-wasm-message  instantiate-contract 1 "$INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO_Neutron_voting_vault"  --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message  instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS}  --label "DAO"  --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract 1 "$VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "DAO_Neutron_voting_vault" --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "DAO" --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract 6 "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx\"]/g' $CHAIN_DIR/$CHAINID/config/genesis.json

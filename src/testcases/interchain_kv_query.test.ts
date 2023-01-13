@@ -1,7 +1,7 @@
 import { proto, rest } from '@cosmos-client/core';
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
@@ -301,9 +301,6 @@ describe('Neutron / Interchain KV Query', () => {
         codeId,
         '{}',
         'neutron_interchain_queries',
-      );
-      expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
       );
     });
   });
@@ -701,7 +698,7 @@ describe('Neutron / Interchain KV Query', () => {
         const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
           {
             amount: '10000',
-            denom: 'stake',
+            denom: NEUTRON_DENOM,
           },
         ];
 
