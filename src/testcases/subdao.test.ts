@@ -24,7 +24,6 @@ import { Wallet } from '../types';
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
-  let cm2: CosmosWrapper;
   let cm3: CosmosWrapper;
   let main_dao_wallet: Wallet;
   let security_dao_wallet: Wallet;
@@ -45,7 +44,6 @@ describe('Neutron / Subdao', () => {
     security_dao_addr = security_dao_wallet.address;
     demo2_addr = demo2_wallet.address;
     cm = new CosmosWrapper(testState.sdk1, main_dao_wallet, NEUTRON_DENOM);
-    cm2 = new CosmosWrapper(testState.sdk1, security_dao_wallet, NEUTRON_DENOM);
     cm3 = new CosmosWrapper(testState.sdk1, demo2_wallet, NEUTRON_DENOM);
     subDAO = await setupSubDaoTimelockSet(
       cm,
@@ -206,7 +204,7 @@ describe('Neutron / Subdao', () => {
         cm.executeContract(
           subDAO.timelock.address,
           JSON.stringify({
-            execute_proposal: {
+            overrule_proposal: {
               proposal_id: timelocked_prop_id,
             },
           }),
@@ -341,7 +339,7 @@ describe('Neutron / Subdao', () => {
         cm.executeContract(
           subDAO.timelock.address,
           JSON.stringify({
-            execute_proposal: {
+            overrule_proposal: {
               proposal_id: timelocked_prop_id,
             },
           }),
@@ -443,7 +441,7 @@ describe('Neutron / Subdao', () => {
         cm.executeContract(
           subDAO.timelock.address,
           JSON.stringify({
-            overrule_proposal: {
+            execute_proposal: {
               proposal_id: timelocked_prop_id,
             },
           }),
