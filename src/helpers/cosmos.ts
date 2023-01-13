@@ -19,6 +19,12 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
+import {
+  paramChangeProposal,
+  ParamChangeProposalInfo,
+  sendProposal,
+  SendProposalInfo,
+} from './proposal';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -32,8 +38,12 @@ export const CORE_CONTRACT_ADDRESS =
   'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
 export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const TREASURY_CONTRACT_ADDRESS =
+export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
+export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
+  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
+export const TREASURY_CONTRACT_ADDRESS =
+  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
@@ -154,6 +164,11 @@ export const NeutronContract = {
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
+};
+
+type MultiChoiceOption = {
+  description: string;
+  msgs: any[];
 };
 
 cosmosclient.codec.register(
@@ -531,19 +546,9 @@ export class CosmosWrapper {
     to: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      bank: {
-        send: {
-          to_address: to,
-          amount: [
-            {
-              denom: this.denom,
-              amount: amount,
-            },
-          ],
-        },
-      },
-    });
+    const message = JSON.stringify(
+      sendProposal({ to, denom: this.denom, amount }),
+    );
     return await this.submitProposal(
       pre_propose_contract,
       title,
@@ -567,25 +572,9 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      custom: {
-        submit_admin_proposal: {
-          admin_proposal: {
-            param_change_proposal: {
-              title,
-              description,
-              param_changes: [
-                {
-                  subspace,
-                  key,
-                  value,
-                },
-              ],
-            },
-          },
-        },
-      },
-    });
+    const message = JSON.stringify(
+      paramChangeProposal({ title, description, subspace, key, value }),
+    );
     return await this.submitProposal(
       pre_propose_contract,
       title,
@@ -593,6 +582,52 @@ export class CosmosWrapper {
       message,
       amount,
       sender,
+    );
+  }
+
+  /**
+   * submitMultiChoiceSendProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceSendProposal(
+    choices: SendProposalInfo[],
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [sendProposal(choice)],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      amount,
+      sender,
+      messages,
+    );
+  }
+
+  /**
+   * submitMultiChoiceParameterChangeProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceParameterChangeProposal(
+    choices: ParamChangeProposalInfo[],
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [paramChangeProposal(choice)],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      amount,
+      sender,
+      messages,
     );
   }
 
@@ -617,6 +652,34 @@ export class CosmosWrapper {
               title: title,
               description: description,
               msgs: [message],
+            },
+          },
+        },
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
+  }
+
+  /**
+   * submitMultiChoiceProposal creates multi-choice proposal with given message.
+   */
+  async submitMultiChoiceProposal(
+    title: string,
+    description: string,
+    amount: string,
+    sender: string,
+    options: MultiChoiceOption[],
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              choices: { options },
             },
           },
         },
@@ -659,6 +722,25 @@ export class CosmosWrapper {
   }
 
   /**
+   * voteYes  vote for option for given multi choice proposal.
+   */
+  async voteForOption(
+    proposeContract: string,
+    proposalId: number,
+    optionId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
+      }),
+      [],
+      sender,
+    );
+  }
+
+  /**
    * executeProposal executes given proposal.
    */
   async executeProposal(
@@ -683,6 +765,32 @@ export class CosmosWrapper {
     );
   }
 
+  async checkPassedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
+    );
+  }
+
+  async checkExecutedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
   async executeProposalWithAttempts(
     propose_contract: string,
     proposalId: number,
@@ -694,6 +802,47 @@ export class CosmosWrapper {
       async (response) => response.proposal.status === 'executed',
       20,
     );
+  }
+
+  async executeMultiChoiceProposalWithAttempts(
+    proposalContract: string,
+    proposalId: number,
+  ) {
+    await this.executeMultiChoiceProposal(proposalContract, proposalId);
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(proposalContract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  /**
+   * executeMultiChoiceProposal executes given multichoice proposal.
+   */
+  async executeMultiChoiceProposal(
+    proposalContract: string,
+    proposalId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<any> {
+    return await this.executeContract(
+      proposalContract,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  async queryMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<any>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
+      },
+    });
   }
 
   async queryProposal(
