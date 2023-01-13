@@ -55,7 +55,7 @@ export type TotalSupplyByDenomResponse = {
   amount: ICoin;
 };
 
-// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's  total-burned-neutrons.
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
 export type TotalBurnedNeutronsAmountResponse = {
   total_burned_neutrons_amount: {
     coin: ICoin;
@@ -471,6 +471,28 @@ export class CosmosWrapper {
     return await this.queryContract<PauseInfoResponse>(addr, {
       pause_info: {},
     });
+  }
+
+  /* simulateFeeBurning simulates fee burning via send tx.
+   */
+  async simulateFeeBurning(
+    amount: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
+      from_address: this.wallet.address.toString(),
+      to_address: this.wallet.address.toString(),
+      amount: [{ denom: this.denom, amount: '1' }],
+    });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [
+          { denom: this.denom, amount: `${Math.ceil((1000 * amount) / 750)}` },
+        ],
+      },
+      [msgSend],
+    );
+    return res?.tx_response;
   }
 
   /**
