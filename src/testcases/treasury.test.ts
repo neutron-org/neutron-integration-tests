@@ -74,30 +74,15 @@ describe('Neutron / Treasury', () => {
           mainDaoAddress: main_dao_addr.toString(),
           securityDaoAddress: security_dao_addr.toString(),
           distributionRate: '0.0',
-          minPeriod: 1000,
+          minPeriod: 1,
           distributionContract: dsc,
           reserveContract: reserve,
           vestingDenominator: '100000000000',
         });
-        await expect(
-          cm.executeContract(
-            treasury,
-            JSON.stringify({
-              distribute: {},
-            }),
-          ),
-        ).rejects.toThrow(/No funds to distribute/);
+
+        treasuryStats = await normalizeTreasuryBurnedCoins(cm, treasury);
       });
       test('zero distribution rate', async () => {
-        treasury = await setupTreasury(cm, {
-          mainDaoAddress: main_dao_addr.toString(),
-          securityDaoAddress: security_dao_addr.toString(),
-          distributionRate: '0.0',
-          minPeriod: 1000,
-          distributionContract: dsc,
-          reserveContract: reserve,
-          vestingDenominator: '100000000000',
-        });
         await cm.msgSend(treasury, '100000');
         const res = await cm.executeContract(
           treasury,
@@ -507,9 +492,9 @@ describe('Neutron / Treasury', () => {
         async () => {
           const stats = await cm.queryContract(treasury, { stats: {} });
           expect(stats).toEqual({
-            total_received: '10000000',
-            total_distributed: '2100000',
-            total_reserved: '7900000',
+            total_distributed: '88284',
+            total_reserved: '332120',
+            total_processed_burned_coins: '4294967295',
           });
         },
       );
@@ -528,7 +513,7 @@ describe('Neutron / Treasury', () => {
             JSON.stringify({
               payout: {
                 recipient: holder_2_addr.toString(),
-                amount: '1400000',
+                amount: '332120',
               },
             }),
           );
@@ -539,7 +524,7 @@ describe('Neutron / Treasury', () => {
             holder_2_addr,
             NEUTRON_DENOM,
           );
-          expect(balanceAfter - balanceBefore).toEqual(1400000);
+          expect(balanceAfter - balanceBefore).toEqual(332120);
         },
       );
     });
