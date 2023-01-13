@@ -38,12 +38,12 @@ export const CORE_CONTRACT_ADDRESS =
   'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
 export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const TREASURY_CONTRACT_ADDRESS =
-  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
 export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
 export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
+export const TREASURY_CONTRACT_ADDRESS =
+  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
