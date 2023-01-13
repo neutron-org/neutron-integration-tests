@@ -55,7 +55,7 @@ export type TotalSupplyByDenomResponse = {
   amount: ICoin;
 };
 
-// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's  total-burned-neutrons.
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
 export type TotalBurnedNeutronsAmountResponse = {
   total_burned_neutrons_amount: {
     coin: ICoin;
@@ -123,13 +123,6 @@ export type AckFailuresResponse = {
   pagination: {
     next_key: string;
     total: string;
-  };
-};
-
-// TotalBurnedNeutronsAmount is the response model for the feeburner's  total-burned-neutrons.
-export type TotalBurnedNeutronsAmount = {
-  total_burned_neutrons_amount: {
-    coins: ICoin[];
   };
 };
 
@@ -810,20 +803,6 @@ export class CosmosWrapper {
       const req = await axios.get<AckFailuresResponse>(
         `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
         { params: pagination },
-      );
-      return req.data;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
-  }
-
-  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmount> {
-    try {
-      const req = await axios.get<TotalBurnedNeutronsAmount>(
-        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
       );
       return req.data;
     } catch (e) {

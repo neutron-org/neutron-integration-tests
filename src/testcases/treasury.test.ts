@@ -112,7 +112,7 @@ describe('Neutron / Treasury', () => {
       });
       test('burned coins increment', async () => {
         await cm.msgSend(treasury, '100000');
-        let burnedCoins = await getBurnedCoinsAmount(cm, cm.denom);
+        let burnedCoins = await getBurnedCoinsAmount(cm);
         await cm.executeContract(
           treasury,
           JSON.stringify({
@@ -123,7 +123,7 @@ describe('Neutron / Treasury', () => {
         let stats = (await cm.queryContract(treasury, { stats: {} })) as any;
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
 
-        burnedCoins = await getBurnedCoinsAmount(cm, cm.denom);
+        burnedCoins = await getBurnedCoinsAmount(cm);
         await cm.executeContract(
           treasury,
           JSON.stringify({
@@ -219,7 +219,7 @@ describe('Neutron / Treasury', () => {
             parseInt(treasuryStats.total_processed_burned_coins),
         ).toEqual(4_294_967_295);
 
-        const burnedCoins = await getBurnedCoinsAmount(cm, cm.denom);
+        const burnedCoins = await getBurnedCoinsAmount(cm);
 
         await cm.executeContract(
           treasury,
@@ -263,7 +263,7 @@ describe('Neutron / Treasury', () => {
 
       test('fund', async () => {
         treasuryStats = await normalizeTreasuryBurnedCoins(cm, treasury);
-        const burnedCoinsBefore = await getBurnedCoinsAmount(cm, cm.denom);
+        const burnedCoinsBefore = await getBurnedCoinsAmount(cm);
         await cm.simulateFeeBurning(20_000_000);
         await cm.msgSend(treasury, '1000000000');
 
@@ -275,7 +275,7 @@ describe('Neutron / Treasury', () => {
         );
         expect(res.code).toEqual(0);
 
-        const burnedCoinsAfter = await getBurnedCoinsAmount(cm, cm.denom);
+        const burnedCoinsAfter = await getBurnedCoinsAmount(cm);
 
         const stats = await cm.queryContract(treasury, { stats: {} });
         expect(stats).toEqual(
@@ -587,7 +587,7 @@ const normalizeTreasuryBurnedCoins = async (
       stats: {},
     });
 
-    const burnedCoins = await getBurnedCoinsAmount(cm, cm.denom);
+    const burnedCoins = await getBurnedCoinsAmount(cm);
     normalize =
       parseInt(treasuryStats.total_processed_burned_coins) + 7500 !==
       parseInt(burnedCoins!);
@@ -601,9 +601,7 @@ const getBurnedCoinsAmount = async (
   denom: string,
 ): Promise<string | undefined | null> => {
   const totalBurnedNeutrons = await cm.queryTotalBurnedNeutronsAmount();
-  return totalBurnedNeutrons.total_burned_neutrons_amount.coins.find(
-    (coin) => coin.denom === denom,
-  )?.amount;
+  return totalBurnedNeutrons.total_burned_neutrons_amount.coin.amount;
 };
 
 const setupReserve = async (
