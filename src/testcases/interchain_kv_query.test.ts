@@ -788,7 +788,6 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
-
         await getWithAttempts(
           cm[1].sdk,
           async () =>
