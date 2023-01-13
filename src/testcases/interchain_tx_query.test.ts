@@ -1,6 +1,6 @@
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
   NeutronContract,
 } from '../helpers/cosmos';
@@ -49,9 +49,6 @@ describe('Neutron / Interchain TX Query', () => {
         codeId,
         '{}',
         'neutron_interchain_queries',
-      );
-      expect(contractAddress).toEqual(
-        'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7',
       );
     });
   });

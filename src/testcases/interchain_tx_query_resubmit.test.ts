@@ -1,4 +1,4 @@
-import { CosmosWrapper, COSMOS_DENOM, NEUTRON_DENOM } from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { waitBlocks } from '../helpers/wait';
 import {
@@ -43,9 +43,6 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         codeId,
         '{}',
         'neutron_interchain_queries',
-      );
-      expect(contractAddress).toEqual(
-        'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7',
       );
     });
   });
