@@ -369,7 +369,12 @@ describe('Neutron / Governance', () => {
       const proposalId = 2;
       let rawLog: any;
       try {
-        rawLog = (await cm.executeMultiChoiceProposal(proposalId)).raw_log;
+        rawLog = (
+          await cm.executeMultiChoiceProposal(
+            PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+            proposalId,
+          )
+        ).raw_log;
       } catch (e) {
         rawLog = e.message;
       }

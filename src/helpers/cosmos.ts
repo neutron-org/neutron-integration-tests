@@ -782,14 +782,14 @@ export class CosmosWrapper {
   }
 
   async executeMultiChoiceProposalWithAttempts(
-    proposal_contract: string,
+    proposalContract: string,
     proposalId: number,
   ) {
-    await this.executeMultiChoiceProposal(proposalId);
+    await this.executeMultiChoiceProposal(proposalContract, proposalId);
     await getWithAttempts(
       this,
       async () =>
-        await this.queryMultiChoiceProposal(proposal_contract, proposalId),
+        await this.queryMultiChoiceProposal(proposalContract, proposalId),
       async (response) => response.proposal.status === 'executed',
       20,
     );
