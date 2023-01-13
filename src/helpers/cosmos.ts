@@ -8,7 +8,7 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks } from './wait';
+import { waitBlocks, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -125,6 +125,14 @@ type Failure = {
   id: number;
   ack_id: number;
   ack_type: string;
+};
+
+// BalancesResponse is the response model for the bank balances query.
+export type PauseInfoResponse = {
+  paused: {
+    until_height: number;
+  };
+  unpaused: Record<string, never>;
 };
 
 export const NeutronContract = {
@@ -376,6 +384,91 @@ export class CosmosWrapper {
   }
 
   /**
+   * Tests a pausable contract execution control.
+   * @param testingContract is the contract the method tests;
+   * @param execAction is an executable action to be called during a pause and after unpausing
+   * as the main part of the test. Should return the execution response code;
+   * @param actionCheck is called after unpausing to make sure the executable action worked.
+   */
+  async testExecControl(
+    testingContract: string,
+    execAction: () => Promise<number | undefined>,
+    actionCheck: () => Promise<void>,
+  ) {
+    // check contract's pause info before pausing
+    let pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // pause contract
+    let res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: 50,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // execute msgs on paused contract
+    await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+    // unpause contract
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        unpause: {},
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after unpausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // execute msgs on unpaused contract
+    const code = await execAction();
+    expect(code).toEqual(0);
+    await actionCheck();
+
+    // pause contract again for a short period
+    const short_pause_duration = 5;
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: short_pause_duration,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // wait and check contract's pause info after unpausing
+    await waitBlocks(this.sdk, short_pause_duration);
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+  }
+
+  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
+    return await this.queryContract<PauseInfoResponse>(addr, {
+      pause_info: {},
+    });
+  }
+
+  /**
    * msgRemoveInterchainQuery sends transaction to remove interchain query, waits two blocks and returns the tx hash.
    */
   async msgRemoveInterchainQuery(
@@ -404,6 +497,7 @@ export class CosmosWrapper {
    * submitSendProposal creates proposal to send funds from DAO core contract for given address.
    */
   async submitSendProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     amount: string,
@@ -424,6 +518,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -436,6 +531,7 @@ export class CosmosWrapper {
    * submitParameterChangeProposal creates parameter change proposal.
    */
   async submitParameterChangeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     subspace: string,
@@ -464,6 +560,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -476,6 +573,7 @@ export class CosmosWrapper {
    * submitProposal creates proposal with given message.
    */
   async submitProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     msg: string,
@@ -484,7 +582,7 @@ export class CosmosWrapper {
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.parse(msg);
     return await this.executeContract(
-      PRE_PROPOSE_CONTRACT_ADDRESS,
+      pre_propose_contract,
       JSON.stringify({
         propose: {
           msg: {
@@ -505,11 +603,12 @@ export class CosmosWrapper {
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
       [],
       sender,
@@ -520,11 +619,12 @@ export class CosmosWrapper {
    * voteNo  vote 'no' for given proposal.
    */
   async voteNo(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
       [],
       sender,
@@ -535,40 +635,60 @@ export class CosmosWrapper {
    * executeProposal executes given proposal.
    */
   async executeProposal(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,
     );
   }
 
-  async queryProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<SingleChoiceProposal>(
-      PROPOSE_CONTRACT_ADDRESS,
-      {
-        proposal: {
-          proposal_id: proposalId,
-        },
-      },
+  async checkPassedProposal(propose_contract: string, proposalId: number) {
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
     );
   }
 
-  async queryTotalVotingPower(): Promise<any> {
-    return await this.queryContract<TotalPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
-      {
-        total_power_at_height: {},
-      },
+  async executeProposalWithAttempts(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await this.executeProposal(propose_contract, proposalId);
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
     );
   }
 
-  async queryVotingPower(addr: string): Promise<any> {
+  async queryProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
+      },
+    });
+  }
+
+  async queryTotalVotingPower(core_contract: string): Promise<any> {
+    return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
+      total_power_at_height: {},
+    });
+  }
+
+  async queryVotingPower(core_contract: string, addr: string): Promise<any> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
+      core_contract,
       {
         voting_power_at_height: {
           address: addr,
@@ -687,11 +807,12 @@ export class CosmosWrapper {
   }
 
   async bondFunds(
+    vault_contract: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      VAULT_CONTRACT_ADDRESS,
+      vault_contract,
       JSON.stringify({
         bond: {},
       }),
