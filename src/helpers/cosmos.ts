@@ -8,7 +8,7 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks } from './wait';
+import { waitBlocks, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -144,6 +144,14 @@ type Failure = {
   ack_type: string;
 };
 
+// BalancesResponse is the response model for the bank balances query.
+export type PauseInfoResponse = {
+  paused: {
+    until_height: number;
+  };
+  unpaused: Record<string, never>;
+};
+
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
@@ -152,6 +160,10 @@ export const NeutronContract = {
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   RESERVE: 'neutron_reserve.wasm',
+  SUBDAO_CORE: 'cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
 };
 
 type MultiChoiceOption = {
@@ -274,14 +286,14 @@ export class CosmosWrapper {
       'code_id',
     ]);
 
-    return attributes.code_id;
+    return attributes[0].code_id;
   }
 
   async instantiate(
     codeId: string,
     msg: string | null = null,
     label: string | null = null,
-  ): Promise<string> {
+  ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
       sender: this.wallet.address.toString(),
@@ -303,8 +315,9 @@ export class CosmosWrapper {
 
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
+      'code_id',
     ]);
-    return attributes._contract_address;
+    return attributes;
   }
 
   async executeContract(
@@ -391,6 +404,91 @@ export class CosmosWrapper {
   }
 
   /**
+   * Tests a pausable contract execution control.
+   * @param testingContract is the contract the method tests;
+   * @param execAction is an executable action to be called during a pause and after unpausing
+   * as the main part of the test. Should return the execution response code;
+   * @param actionCheck is called after unpausing to make sure the executable action worked.
+   */
+  async testExecControl(
+    testingContract: string,
+    execAction: () => Promise<number | undefined>,
+    actionCheck: () => Promise<void>,
+  ) {
+    // check contract's pause info before pausing
+    let pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // pause contract
+    let res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: 50,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // execute msgs on paused contract
+    await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+    // unpause contract
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        unpause: {},
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after unpausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // execute msgs on unpaused contract
+    const code = await execAction();
+    expect(code).toEqual(0);
+    await actionCheck();
+
+    // pause contract again for a short period
+    const short_pause_duration = 5;
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: short_pause_duration,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // wait and check contract's pause info after unpausing
+    await waitBlocks(this.sdk, short_pause_duration);
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+  }
+
+  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
+    return await this.queryContract<PauseInfoResponse>(addr, {
+      pause_info: {},
+    });
+  }
+
+  /**
    * msgRemoveInterchainQuery sends transaction to remove interchain query, waits two blocks and returns the tx hash.
    */
   async msgRemoveInterchainQuery(
@@ -419,6 +517,7 @@ export class CosmosWrapper {
    * submitSendProposal creates proposal to send funds from DAO core contract for given address.
    */
   async submitSendProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     amount: string,
@@ -429,6 +528,7 @@ export class CosmosWrapper {
       sendProposal({ to, denom: this.denom, amount }),
     );
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -441,6 +541,7 @@ export class CosmosWrapper {
    * submitParameterChangeProposal creates parameter change proposal.
    */
   async submitParameterChangeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     subspace: string,
@@ -453,6 +554,7 @@ export class CosmosWrapper {
       paramChangeProposal({ title, description, subspace, key, value }),
     );
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -511,6 +613,7 @@ export class CosmosWrapper {
    * submitProposal creates proposal with given message.
    */
   async submitProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     msg: string,
@@ -519,7 +622,7 @@ export class CosmosWrapper {
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.parse(msg);
     return await this.executeContract(
-      PRE_PROPOSE_CONTRACT_ADDRESS,
+      pre_propose_contract,
       JSON.stringify({
         propose: {
           msg: {
@@ -568,11 +671,12 @@ export class CosmosWrapper {
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
       [],
       sender,
@@ -583,11 +687,12 @@ export class CosmosWrapper {
    * voteNo  vote 'no' for given proposal.
    */
   async voteNo(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
       [],
       sender,
@@ -616,14 +721,77 @@ export class CosmosWrapper {
    * executeProposal executes given proposal.
    */
   async executeProposal(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,
+    );
+  }
+
+  async checkPassedProposal(propose_contract: string, proposalId: number) {
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
+    );
+  }
+
+  async checkPassedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
+    );
+  }
+
+  async checkExecutedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeProposalWithAttempts(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await this.executeProposal(propose_contract, proposalId);
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeMultiChoiceProposalWithAttempts(
+    proposal_contract: string,
+    proposalId: number,
+  ) {
+    await this.executeMultiChoiceProposal(proposalId);
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(proposal_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
     );
   }
 
@@ -642,37 +810,37 @@ export class CosmosWrapper {
     );
   }
 
-  async queryProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<SingleChoiceProposal>(
-      PROPOSE_CONTRACT_ADDRESS,
-      {
-        proposal: {
-          proposal_id: proposalId,
-        },
-      },
-    );
-  }
-
-  async queryMultiChoiceProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<any>(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, {
+  async queryMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<any>(propose_contract, {
       proposal: {
         proposal_id: proposalId,
       },
     });
   }
 
-  async queryTotalVotingPower(): Promise<any> {
-    return await this.queryContract<TotalPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
-      {
-        total_power_at_height: {},
+  async queryProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
       },
-    );
+    });
   }
 
-  async queryVotingPower(addr: string): Promise<any> {
+  async queryTotalVotingPower(core_contract: string): Promise<any> {
+    return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
+      total_power_at_height: {},
+    });
+  }
+
+  async queryVotingPower(core_contract: string, addr: string): Promise<any> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
+      core_contract,
       {
         voting_power_at_height: {
           address: addr,
@@ -791,11 +959,12 @@ export class CosmosWrapper {
   }
 
   async bondFunds(
+    vault_contract: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      VAULT_CONTRACT_ADDRESS,
+      vault_contract,
       JSON.stringify({
         bond: {},
       }),
@@ -848,7 +1017,7 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Record<typeof attributes[number], string> | Record<string, never> => {
+): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
@@ -859,17 +1028,22 @@ export const getEventAttributesFromTx = (
         },
       ]
     )[0].events || [];
-  const out = {};
+  const resp = [];
   for (const e of events) {
     if (event === e.type) {
+      let out = {};
       for (const a of e.attributes) {
         if (attributes.includes(a.key)) {
           out[a.key] = a.value;
         }
+        if (Object.keys(out).length == attributes.length) {
+          resp.push(out);
+          out = {};
+        }
       }
     }
   }
-  return out;
+  return resp;
 };
 
 export const mnemonicToWallet = async (
@@ -952,3 +1126,17 @@ export const getIBCDenom = (portName, channelName, denom: string): string => {
     .toUpperCase();
   return `ibc/${uatomIBCHash}`;
 };
+
+export const createBankMassage = (address: string, amount: string) => ({
+  bank: {
+    send: {
+      to_address: address,
+      amount: [
+        {
+          denom: NEUTRON_DENOM,
+          amount: amount,
+        },
+      ],
+    },
+  },
+});

@@ -12,6 +12,7 @@
     "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/interchain_tx_query_resubmit",
     "test:treasury": "jest --runInBand -b src/testcases/treasury",
     "test:governance": "jest --runInBand -b src/testcases/governance",
+    "test:subdao": "jest --runInBand -b src/testcases/subdao",
     "test:tokenomics": "jest --runInBand -b src/testcases/tokenomics",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
