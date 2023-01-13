@@ -45,11 +45,9 @@ describe('Neutron / Interchain TX Query', () => {
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await cm.instantiate(
-        codeId,
-        '{}',
-        'neutron_interchain_queries',
-      );
+      contractAddress = (
+        await cm.instantiate(codeId, '{}', 'neutron_interchain_queries')
+      )[0]._contract_address;
     });
   });
 

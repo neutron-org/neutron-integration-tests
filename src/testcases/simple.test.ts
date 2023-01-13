@@ -50,7 +50,8 @@ describe('Neutron / Simple', () => {
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      contractAddress = await cm.instantiate(codeId, '{}', 'ibc_transfer');
+      const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
+      contractAddress = res[0]._contract_address;
     });
   });
 

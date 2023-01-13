@@ -42,13 +42,13 @@ echo $DEMO_MNEMONIC_3 | $BINARY keys add demowallet3 --home $CHAIN_DIR/$CHAINID 
 echo $RLY_MNEMONIC_1 | $BINARY keys add rly1 --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
 echo $RLY_MNEMONIC_2 | $BINARY keys add rly2 --home $CHAIN_DIR/$CHAINID --recover --keyring-backend=test
 
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val1 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val2 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet1 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet2 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet3 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly1 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
-$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly2 --keyring-backend test -a) 100000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val1 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val2 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet1 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet2 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet3 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly1 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly2 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 
 
 sed -i -e 's#"tcp://127.0.0.1:26657"#"tcp://0.0.0.0:26657"#g' $CHAIN_DIR/$CHAINID/config/config.toml
