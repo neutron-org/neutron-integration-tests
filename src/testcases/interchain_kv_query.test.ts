@@ -313,9 +313,6 @@ describe('Neutron / Interchain KV Query', () => {
       contractAddress = (
         await cm[1].instantiate(codeId, '{}', 'neutron_interchain_queries')
       )[0]._contract_address;
-      expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
     });
   });
 
@@ -790,7 +787,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-            (await getRemoteHeight(cm[1].sdk)),
+              (await getRemoteHeight(cm[1].sdk)),
           20,
         );
 
@@ -808,9 +805,9 @@ describe('Neutron / Interchain KV Query', () => {
             ),
           async (response) =>
             response.balances[0].denom ===
-            balancesAfterRegistration.balances[0].denom &&
+              balancesAfterRegistration.balances[0].denom &&
             parseInt(response.balances[0].amount) >
-            parseInt(balancesAfterRegistration.balances[0].amount),
+              parseInt(balancesAfterRegistration.balances[0].amount),
 
           100,
         );

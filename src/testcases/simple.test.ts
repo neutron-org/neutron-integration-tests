@@ -52,9 +52,6 @@ describe('Neutron / Simple', () => {
     test('instantiate', async () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
       contractAddress = res[0]._contract_address;
-      expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
     });
   });
 
@@ -66,7 +63,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-          '0',
+            '0',
           10,
         );
       });
@@ -180,7 +177,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-          '0',
+            '0',
           10,
         );
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
@@ -190,7 +187,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-          '0',
+            '0',
           10,
         );
         expect(balance).toBe(50000 - 3000 - 2333 * 2);

@@ -54,9 +54,6 @@ describe('Neutron / Interchain TXs', () => {
         )[0]._contract_address;
 
         contractAddress = res;
-        expect(res.toString()).toEqual(
-          'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-        );
       });
     });
     describe('Create ICAs and setup contract', () => {

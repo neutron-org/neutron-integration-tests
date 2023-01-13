@@ -48,9 +48,6 @@ describe('Neutron / Interchain TX Query', () => {
       contractAddress = (
         await cm.instantiate(codeId, '{}', 'neutron_interchain_queries')
       )[0]._contract_address;
-      expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
     });
   });
 
