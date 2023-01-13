@@ -703,6 +703,7 @@ export class CosmosWrapper {
    * voteYes  vote for option for given multi choice proposal.
    */
   async voteForOption(
+    proposeContract: string,
     proposalId: number,
     optionId: number,
     sender: string = this.wallet.address.toString(),
@@ -799,11 +800,12 @@ export class CosmosWrapper {
    * executeMultiChoiceProposal executes given multichoice proposal.
    */
   async executeMultiChoiceProposal(
+    proposalContract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<any> {
     return await this.executeContract(
-      PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      proposalContract,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,

@@ -319,13 +319,13 @@ describe('Neutron / Governance', () => {
   describe('vote for multichoice proposal #1 (1, 0, 1)', () => {
     const proposalId = 1;
     test('vote 1 from wallet 1', async () => {
-      await cm.voteForOption(proposalId, 1);
+      await cm.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 1);
     });
     test('vote 0 from wallet 2', async () => {
-      await cm2.voteForOption(proposalId, 0);
+      await cm2.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 0);
     });
     test('vote 1 from wallet 3', async () => {
-      await cm3.voteForOption(proposalId, 1);
+      await cm3.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 1);
     });
   });
 
@@ -354,13 +354,13 @@ describe('Neutron / Governance', () => {
   describe('vote for multichoice proposal #2 (2, 2, 0)', () => {
     const proposalId = 2;
     test('vote 2 from wallet 1', async () => {
-      await cm.voteForOption(proposalId, 2);
+      await cm.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 2);
     });
     test('vote 2 from wallet 2', async () => {
-      await cm2.voteForOption(proposalId, 0);
+      await cm2.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 0);
     });
     test('vote 0 from wallet 3', async () => {
-      await cm3.voteForOption(proposalId, 2);
+      await cm3.voteForOption(PROPOSE_MULTIPLE_CONTRACT_ADDRESS, proposalId, 2);
     });
   });
 
