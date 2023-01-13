@@ -73,7 +73,7 @@ describe('Neutron / Treasury', () => {
         treasury = await setupTreasury(cm, {
           mainDaoAddress: main_dao_addr.toString(),
           securityDaoAddress: security_dao_addr.toString(),
-          distributionRate: '0.23',
+          distributionRate: '0.0',
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
@@ -96,6 +96,7 @@ describe('Neutron / Treasury', () => {
           minPeriod: 1000,
           distributionContract: dsc,
           reserveContract: reserve,
+          vestingDenominator: '100000000000',
         });
         await cm.msgSend(treasury, '100000');
         const res = await cm.executeContract(
@@ -457,6 +458,7 @@ describe('Neutron / Treasury', () => {
         minPeriod: 1000,
         distributionContract: dsc,
         reserveContract: reserve,
+        vestingDenominator: '100000000000',
       });
     });
 
@@ -600,7 +602,6 @@ const normalizeTreasuryBurnedCoins = async (
 
 const getBurnedCoinsAmount = async (
   cm: CosmosWrapper,
-  denom: string,
 ): Promise<string | undefined | null> => {
   const totalBurnedNeutrons = await cm.queryTotalBurnedNeutronsAmount();
   return totalBurnedNeutrons.total_burned_neutrons_amount.coin.amount;
@@ -634,6 +635,7 @@ const setupTreasury = async (
     distributionContract: string;
     reserveContract: string;
     securityDaoAddress: string;
+    vestingDenominator: string;
   },
 ) => {
   const codeId = await cm.storeWasm(NeutronContract.TREASURY);
@@ -648,6 +650,7 @@ const setupTreasury = async (
         distribution_contract: opts.distributionContract,
         reserve_contract: opts.reserveContract,
         security_dao_address: opts.securityDaoAddress,
+        vesting_denominator: opts.vestingDenominator,
       }),
       'treausry',
     )
