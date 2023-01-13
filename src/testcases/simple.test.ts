@@ -51,9 +51,6 @@ describe('Neutron / Simple', () => {
     });
     test('instantiate', async () => {
       contractAddress = await cm.instantiate(codeId, '{}', 'ibc_transfer');
-//      expect(res.toString()).toEqual(
- //       'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7',
-  //    );
     });
   });
 
