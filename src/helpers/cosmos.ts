@@ -693,6 +693,7 @@ export class CosmosWrapper {
    * submitSoftwareUpgradeProposal creates proposal.
    */
   async submitSoftwareUpgradeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     name: string,
@@ -719,6 +720,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -731,6 +733,7 @@ export class CosmosWrapper {
    * submitCancelSoftwareUpgradeProposal creates proposal.
    */
   async submitCancelSoftwareUpgradeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     amount: string,
@@ -749,6 +752,7 @@ export class CosmosWrapper {
       },
     });
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -799,7 +803,7 @@ export class CosmosWrapper {
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      proposeContract,
       JSON.stringify({
         vote: { proposal_id: proposalId, vote: { option_id: optionId } },
       }),

@@ -147,6 +147,7 @@ describe('Neutron / Governance', () => {
 
     test('create proposal #4, will pass', async () => {
       await cm.submitSoftwareUpgradeProposal(
+        PRE_PROPOSE_CONTRACT_ADDRESS,
         'Proposal #4',
         'Software upgrade proposal. Will pass',
         'Plan #1',
@@ -158,6 +159,7 @@ describe('Neutron / Governance', () => {
 
     test('create proposal #5, will pass', async () => {
       await cm.submitCancelSoftwareUpgradeProposal(
+        PRE_PROPOSE_CONTRACT_ADDRESS,
         'Proposal #4',
         'Software upgrade proposal. Will pass',
         '1000',
@@ -414,46 +416,76 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #4 (no, yes, yes)', () => {
     const proposalId = 4;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(proposalId, cm.wallet.address.toString());
+      await cm.voteNo(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(proposalId, cm2.wallet.address.toString());
+      await cm2.voteYes(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
+      await cm3.voteYes(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
     });
   });
 
   describe('execute proposal #4', () => {
     const proposalId = 4;
     test('check if proposal is passed', async () => {
-      await checkPassedProposal(cm, proposalId);
+      await cm.checkPassedProposal(PROPOSE_CONTRACT_ADDRESS, proposalId);
     });
     test('execute passed proposal', async () => {
-      await executeProposalWithAttempts(cm, proposalId);
+      await cm.executeProposalWithAttempts(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+      );
     });
   });
 
   describe('vote for proposal #5 (no, yes, yes)', () => {
     const proposalId = 5;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(proposalId, cm.wallet.address.toString());
+      await cm.voteNo(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(proposalId, cm2.wallet.address.toString());
+      await cm2.voteYes(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(proposalId, cm3.wallet.address.toString());
+      await cm3.voteYes(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
     });
   });
 
   describe('execute proposal #5', () => {
     const proposalId = 5;
     test('check if proposal is passed', async () => {
-      await checkPassedProposal(cm, proposalId);
+      await cm.checkPassedProposal(PROPOSE_CONTRACT_ADDRESS, proposalId);
     });
     test('execute passed proposal', async () => {
-      await executeProposalWithAttempts(cm, proposalId);
+      await cm.executeProposalWithAttempts(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
+      );
     });
   });
 });
