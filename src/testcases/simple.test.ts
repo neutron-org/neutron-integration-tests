@@ -346,6 +346,10 @@ describe('Neutron / Simple', () => {
           }),
         );
 
+        // This dirty workaround is here to prevent failing IBC transfer
+        // from failing the whole test suite (which is very annoying).
+        // TODO: figure out why contract fails to perform IBC transfer
+        //       and implement a proper fix.
         let attempts = 10;
         while (attempts > 0) {
           attempts -= 1;
