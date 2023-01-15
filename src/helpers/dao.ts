@@ -20,3 +20,11 @@ export type TimelockConfig = {
 export type TimelockProposalListResponse = {
   proposals: Array<TimeLockSingleChoiceProposal>;
 };
+
+export type SubDaoConfig = {
+  name: string;
+  description: string;
+  dao_uri: string;
+  main_dao: string;
+  security_dao: string;
+};

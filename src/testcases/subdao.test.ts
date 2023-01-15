@@ -6,10 +6,12 @@ import {
   createBankMassage,
   NeutronContract,
 } from '../helpers/cosmos';
+import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   TimelockConfig,
   TimelockProposalListResponse,
   TimeLockSingleChoiceProposal,
+  SubDaoConfig,
 } from '../helpers/dao';
 import {
   wait,
@@ -32,7 +34,6 @@ describe('Neutron / Subdao', () => {
   let security_dao_addr: AccAddress | ValAddress;
   let demo2_addr: AccAddress | ValAddress;
   let subDAO: SubDAO;
-  let timelocked_prop_id: number;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -82,80 +83,34 @@ describe('Neutron / Subdao', () => {
   });
 
   describe('Timelock: failed execution', () => {
+    let proposal_id: number;
     test('proposal timelock', async () => {
-      const resp = await cm.executeContract(
-        subDAO.prepropose.address,
-        JSON.stringify({
-          propose: {
-            msg: {
-              propose: {
-                title: 'Proposal 1',
-                description: 'proposal 1 description',
-                msgs: [
-                  createBankMassage(main_dao_addr.toString(), '1000'),
-                  createBankMassage(demo2_addr.toString(), '2000'),
-                ],
-              },
-            },
-          },
-        }),
-      );
+      proposal_id = await proposeSendFunds(cm, subDAO.prepropose.address, [
+        { recipient: main_dao_addr.toString(), amount: 1000 },
+        { recipient: demo2_addr.toString(), amount: 2000 },
+      ]);
 
-      timelocked_prop_id = Number(
-        getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
-          'proposal_id',
-        ])[0].proposal_id,
-      );
-
-      await cm.executeContract(
+      const timelocked_prop = await supportAndExecuteProposal(
+        cm,
         subDAO.propose.address,
-        JSON.stringify({
-          vote: { proposal_id: timelocked_prop_id, vote: 'yes' },
-        }),
+        subDAO.timelock.address,
+        proposal_id,
       );
 
-      await cm.executeContract(
-        subDAO.propose.address,
-        JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }),
-      );
-
-      const timelocked_prop =
-        await cm.queryContract<TimeLockSingleChoiceProposal>(
-          subDAO.timelock.address,
-          {
-            proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          },
-        );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('timelocked');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
 
     test('execute timelocked: nonexistant ', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: 1_000_000,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, 1_000_000),
       ).rejects.toThrow(/SingleChoiceProposal not found/);
     });
 
     test('execute timelocked: timelock_duration have not pass', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Proposal is timelocked/);
     });
 
@@ -163,104 +118,51 @@ describe('Neutron / Subdao', () => {
       //wait for timelock durations
       await wait(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
-      await cm.executeContract(
-        subDAO.timelock.address,
-        JSON.stringify({
-          execute_proposal: {
-            proposal_id: timelocked_prop_id,
-          },
-        }),
-      );
+      await executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id);
       // TODO: check the reason of the failure
       const timelocked_prop =
         await cm.queryContract<TimeLockSingleChoiceProposal>(
           subDAO.timelock.address,
           {
             proposal: {
-              proposal_id: timelocked_prop_id,
+              proposal_id: proposal_id,
             },
           },
         );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('execution_failed');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
     });
 
     test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            overrule_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        overruleTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
     });
   });
 
   describe('Timelock: Succeed execution', () => {
+    let proposal_id: number;
     beforeAll(async () => {
-      const resp = await cm.executeContract(
-        subDAO.prepropose.address,
-        JSON.stringify({
-          propose: {
-            msg: {
-              propose: {
-                title: 'Proposal 1',
-                description: 'proposal 1 description',
-                msgs: [
-                  createBankMassage(main_dao_addr.toString(), '1000'),
-                  createBankMassage(demo2_addr.toString(), '2000'),
-                ],
-              },
-            },
-          },
-        }),
-      );
+      proposal_id = await proposeSendFunds(cm, subDAO.prepropose.address, [
+        { recipient: main_dao_addr.toString(), amount: 1000 },
+        { recipient: demo2_addr.toString(), amount: 2000 },
+      ]);
 
-      timelocked_prop_id = Number(
-        getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
-          'proposal_id',
-        ])[0].proposal_id,
-      );
-
-      await cm.executeContract(
+      const timelocked_prop = await supportAndExecuteProposal(
+        cm,
         subDAO.propose.address,
-        JSON.stringify({
-          vote: { proposal_id: timelocked_prop_id, vote: 'yes' },
-        }),
+        subDAO.timelock.address,
+        proposal_id,
       );
 
-      await cm.executeContract(
-        subDAO.propose.address,
-        JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }),
-      );
-
-      const timelocked_prop =
-        await cm.queryContract<TimeLockSingleChoiceProposal>(
-          subDAO.timelock.address,
-          {
-            proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          },
-        );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('timelocked');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
@@ -270,14 +172,7 @@ describe('Neutron / Subdao', () => {
       const balance_main_dao = await cm.queryBalances(main_dao_addr.toString());
       const balance_demo2 = await cm.queryBalances(demo2_addr.toString());
       await wait(20);
-      await cm.executeContract(
-        subDAO.timelock.address,
-        JSON.stringify({
-          execute_proposal: {
-            proposal_id: timelocked_prop_id,
-          },
-        }),
-      );
+      await executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id);
       const balance_main_dao_after = await cm.queryBalances(
         main_dao_addr.toString(),
       );
@@ -312,140 +207,77 @@ describe('Neutron / Subdao', () => {
           subDAO.timelock.address,
           {
             proposal: {
-              proposal_id: timelocked_prop_id,
+              proposal_id: proposal_id,
             },
           },
         );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('executed');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
 
     test('execute timelocked(Executed): WrongStatus error', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(executed\)/);
     });
 
     test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            overrule_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        overruleTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(executed\)/);
     });
   });
 
   describe('Overrule timelocked', () => {
+    let proposal_id: number;
     beforeAll(async () => {
-      const resp = await cm.executeContract(
-        subDAO.prepropose.address,
-        JSON.stringify({
-          propose: {
-            msg: {
-              propose: {
-                title: 'Proposal 1',
-                description: 'proposal 1 description',
-                msgs: [
-                  createBankMassage(main_dao_addr.toString(), '1000'),
-                  createBankMassage(demo2_addr.toString(), '2000'),
-                ],
-              },
-            },
-          },
-        }),
-      );
+      proposal_id = await proposeSendFunds(cm, subDAO.prepropose.address, [
+        { recipient: main_dao_addr.toString(), amount: 1000 },
+        { recipient: demo2_addr.toString(), amount: 2000 },
+      ]);
 
-      timelocked_prop_id = Number(
-        getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
-          'proposal_id',
-        ])[0].proposal_id,
-      );
-
-      await cm.executeContract(
+      const timelocked_prop = await supportAndExecuteProposal(
+        cm,
         subDAO.propose.address,
-        JSON.stringify({
-          vote: { proposal_id: timelocked_prop_id, vote: 'yes' },
-        }),
+        subDAO.timelock.address,
+        proposal_id,
       );
 
-      await cm.executeContract(
-        subDAO.propose.address,
-        JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }),
-      );
-
-      const timelocked_prop =
-        await cm.queryContract<TimeLockSingleChoiceProposal>(
-          subDAO.timelock.address,
-          {
-            proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          },
-        );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('timelocked');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
 
     test('overrule timelocked(Timelocked): Unauthorized', async () => {
       await expect(
-        cm3.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            overrule_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        overruleTimelockedProposal(cm3, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Unauthorized/);
     });
 
     test('overrule timelocked(Timelocked): Success', async () => {
-      await cm.executeContract(
+      await overruleTimelockedProposal(
+        cm,
         subDAO.timelock.address,
-        JSON.stringify({
-          overrule_proposal: {
-            proposal_id: timelocked_prop_id,
-          },
-        }),
+        proposal_id,
       );
       const timelocked_prop =
         await cm.queryContract<TimeLockSingleChoiceProposal>(
           subDAO.timelock.address,
           {
             proposal: {
-              proposal_id: timelocked_prop_id,
+              proposal_id: proposal_id,
             },
           },
         );
-      expect(timelocked_prop.id).toEqual(timelocked_prop_id);
+      expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('overruled');
       expect(timelocked_prop.msgs).toHaveLength(2);
     });
 
     test('execute timelocked(Overruled): WrongStatus error', async () => {
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: timelocked_prop_id,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(overruled\)/);
     });
   });
@@ -454,31 +286,9 @@ describe('Neutron / Subdao', () => {
     const funding = 1000;
     let proposal_id: number;
     test('create a proposal to fund security DAO', async () => {
-      const resp = await cm.executeContract(
-        subDAO.prepropose.address,
-        JSON.stringify({
-          propose: {
-            msg: {
-              propose: {
-                title: 'security DAO funding',
-                description: 'send 1000 uNTRN to the security DAO',
-                msgs: [
-                  createBankMassage(
-                    security_dao_addr.toString(),
-                    String(funding),
-                  ),
-                ],
-              },
-            },
-          },
-        }),
-      );
-
-      proposal_id = Number(
-        getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
-          'proposal_id',
-        ])[0].proposal_id,
-      );
+      proposal_id = await proposeSendFunds(cm, subDAO.prepropose.address, [
+        { recipient: security_dao_addr.toString(), amount: funding },
+      ]);
 
       await cm.voteYes(
         subDAO.propose.address,
@@ -514,14 +324,7 @@ describe('Neutron / Subdao', () => {
         cm.executeProposalWithAttempts(subDAO.propose.address, proposal_id),
       ).rejects.toThrow(/Contract execution is paused/);
       await expect(
-        cm.executeContract(
-          subDAO.timelock.address,
-          JSON.stringify({
-            execute_proposal: {
-              proposal_id: proposal_id,
-            },
-          }),
-        ),
+        executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id),
       ).rejects.toThrow(/SingleChoiceProposal not found/);
     });
     test('unpause subDAO', async () => {
@@ -540,21 +343,14 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
     });
     test('execute proposal when subDAO is unpaused', async () => {
-      await cm.msgSend(subDAO.timelock.address, '10000'); // funding for gas
+      await cm.msgSend(subDAO.timelock.address, '10000'); // to let the timelock contract fulfill the proposal
       const beforeExecBalance = await cm.queryBalances(
         security_dao_addr.toString(),
       );
       await cm.executeProposalWithAttempts(subDAO.propose.address, proposal_id);
 
       await wait(20); // wait until timelock duration passes
-      await cm.executeContract(
-        subDAO.timelock.address,
-        JSON.stringify({
-          execute_proposal: {
-            proposal_id: proposal_id,
-          },
-        }),
-      );
+      await executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id);
       const timelocked_prop =
         await cm.queryContract<TimeLockSingleChoiceProposal>(
           subDAO.timelock.address,
@@ -603,7 +399,19 @@ describe('Neutron / Subdao', () => {
     });
   });
 
-  describe('Update config', () => {
+  describe('Timelock: Update config', () => {
+    afterAll(async () => {
+      // return to the starting timelock_duration
+      await cm.executeContract(
+        subDAO.timelock.address,
+        JSON.stringify({
+          update_config: {
+            timelock_duration: 20,
+          },
+        }),
+      );
+    });
+
     test('Update config: Unauthorized', async () => {
       await expect(
         cm3.executeContract(
@@ -654,7 +462,7 @@ describe('Neutron / Subdao', () => {
           }),
         ),
       ).rejects.toThrow(
-        /Error parsing into type neutron_timelock::single::ExecuteMsg: Invalid number/,
+        /Error parsing into type neutron_subdao_timelock_single::msg::ExecuteMsg: Invalid number/,
       );
     });
 
@@ -747,6 +555,7 @@ describe('Neutron / Subdao', () => {
   });
 
   describe('Query Proposals', () => {
+    let proposal_id: number;
     let subDAOQueryTestScope: SubDAO;
     beforeAll(async () => {
       subDAOQueryTestScope = await setupSubDaoTimelockSet(
@@ -773,7 +582,7 @@ describe('Neutron / Subdao', () => {
             },
           }),
         );
-        timelocked_prop_id = Number(
+        proposal_id = Number(
           getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
             'proposal_id',
           ])[0].proposal_id,
@@ -782,13 +591,13 @@ describe('Neutron / Subdao', () => {
         await cm.executeContract(
           subDAOQueryTestScope.propose.address,
           JSON.stringify({
-            vote: { proposal_id: timelocked_prop_id, vote: 'yes' },
+            vote: { proposal_id: proposal_id, vote: 'yes' },
           }),
         );
 
         await cm.executeContract(
           subDAOQueryTestScope.propose.address,
-          JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }),
+          JSON.stringify({ execute: { proposal_id: proposal_id } }),
         );
       }
     });
@@ -853,9 +662,57 @@ describe('Neutron / Subdao', () => {
     });
   });
 
+  describe('Subdao: Proposals and access', () => {
+    let proposal_id: number;
+    test('Update config: Unauthorized', async () => {
+      await expect(
+        cm.executeContract(
+          subDAO.core.address,
+          JSON.stringify({
+            update_config: {},
+          }),
+        ),
+      ).rejects.toThrow(/Unauthorized/);
+    });
+    test('Update config (subDAO name) via proposal', async () => {
+      const config_before = await cm.queryContract<SubDaoConfig>(
+        subDAO.core.address,
+        {
+          config: {},
+        },
+      );
+
+      const new_dao_name = 'another name';
+      expect(config_before.name).not.toEqual(new_dao_name);
+      proposal_id = await proposeUpdateSubDaoConfig(
+        cm,
+        subDAO.prepropose.address,
+        subDAO.core.address,
+        { name: new_dao_name },
+      );
+      await supportAndExecuteProposal(
+        cm,
+        subDAO.propose.address,
+        subDAO.timelock.address,
+        proposal_id,
+      );
+
+      await wait(20);
+      await executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id);
+      const config_after = await cm.queryContract<SubDaoConfig>(
+        subDAO.core.address,
+        {
+          config: {},
+        },
+      );
+      expect(config_after.name).toEqual(new_dao_name);
+    });
+  });
+
   // TODO: uncomment when overrule handler updated to take into account timelock_duration
   // handler should fail
   // describe("Overrule timelocked: timelock duration has passed", () => {
+  //   let proposal_id: number;
   //   beforeAll(async () => {
   //     let resp = await cm.executeContract(subDAO.prepropose.address, JSON.stringify({
   //       propose: {
@@ -872,20 +729,20 @@ describe('Neutron / Subdao', () => {
   //       }
   //     }))
 
-  //     timelocked_prop_id = Number(getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
+  //     proposal_id = Number(getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
   //       'proposal_id'
   //     ])[0].proposal_id);
 
-  //     await cm.executeContract(subDAO.propose.address, JSON.stringify({ vote: { proposal_id: timelocked_prop_id, vote: 'yes' } }))
+  //     await cm.executeContract(subDAO.propose.address, JSON.stringify({ vote: { proposal_id: proposal_id, vote: 'yes' } }))
 
-  //     await cm.executeContract(subDAO.propose.address, JSON.stringify({ execute: { proposal_id: timelocked_prop_id } }))
+  //     await cm.executeContract(subDAO.propose.address, JSON.stringify({ execute: { proposal_id: proposal_id } }))
 
   //     let timelocked_prop = await cm.queryContract<TimeLockSingleChoiceProposal>(subDAO.timelock.address, {
   //       proposal: {
-  //         proposal_id: timelocked_prop_id,
+  //         proposal_id: proposal_id,
   //       }
   //     })
-  //     expect(timelocked_prop.id).toEqual(timelocked_prop_id)
+  //     expect(timelocked_prop.id).toEqual(proposal_id)
   //     expect(timelocked_prop.status).toEqual("timelocked")
   //     expect(timelocked_prop.msgs).toHaveLength(2)
   //   })
@@ -894,7 +751,7 @@ describe('Neutron / Subdao', () => {
   //   await wait(20)
   //   await expect(cm.executeContract(subDAO.timelock.address, JSON.stringify({
   //     overrule_proposal: {
-  //       proposal_id: timelocked_prop_id,
+  //       proposal_id: proposal_id,
   //     }
   //   }))
   //   ).rejects.toThrow(/Wrong proposal status \(overruled\)/)
@@ -978,9 +835,10 @@ const setupSubDaoTimelockSet = async (
   };
   const coreInstantiateMessage = {
     name: 'SubDAO core test 1',
-    description: '',
+    description: 'serves testing purposes',
     vote_module_instantiate_info: votingModuleInstantiateInfo,
     proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
+    dao_uri: 'www.testsubdao.org',
     main_dao: main_dao_addr,
     security_dao: security_dao_addr,
   };
@@ -1012,4 +870,138 @@ const setupSubDaoTimelockSet = async (
     },
   };
   return subDAO;
+};
+
+const proposeSendFunds = async (
+  cm: CosmosWrapper,
+  pre_propose_contract: string,
+  payments: { recipient: string; amount: number }[],
+): Promise<number> => {
+  const resp = await cm.executeContract(
+    pre_propose_contract,
+    JSON.stringify({
+      propose: {
+        msg: {
+          propose: {
+            title: 'Payment proposal',
+            description: 'Send funds to good folks',
+            msgs: payments.map((payment) =>
+              createBankMassage(payment.recipient, payment.amount.toString()),
+            ),
+          },
+        },
+      },
+    }),
+  );
+
+  const proposal_id = Number(
+    getEventAttributesFromTx({ tx_response: resp }, 'wasm', ['proposal_id'])[0]
+      .proposal_id,
+  );
+  return proposal_id;
+};
+
+const proposeUpdateSubDaoConfig = async (
+  cm: CosmosWrapper,
+  pre_propose_contract: string,
+  core_contract: string,
+  new_config: {
+    name?: string;
+    description?: string;
+    dao_uri?: string;
+  },
+): Promise<number> => {
+  const resp = await cm.executeContract(
+    pre_propose_contract,
+    JSON.stringify({
+      propose: {
+        msg: {
+          propose: {
+            title: 'update subDAO config',
+            description: 'sets subDAO config to new value',
+            msgs: [
+              {
+                wasm: {
+                  execute: {
+                    contract_addr: core_contract,
+                    msg: Buffer.from(
+                      JSON.stringify({
+                        update_config: new_config,
+                      }),
+                    ).toString('base64'),
+                    funds: [],
+                  },
+                },
+              },
+            ],
+          },
+        },
+      },
+    }),
+  );
+
+  const proposal_id = Number(
+    getEventAttributesFromTx({ tx_response: resp }, 'wasm', ['proposal_id'])[0]
+      .proposal_id,
+  );
+  return proposal_id;
+};
+
+const supportAndExecuteProposal = async (
+  cm: CosmosWrapper,
+  propose_contract: string,
+  timelock_contract: string,
+  proposal_id: number,
+): Promise<TimeLockSingleChoiceProposal> => {
+  await cm.executeContract(
+    propose_contract,
+    JSON.stringify({
+      vote: { proposal_id: proposal_id, vote: 'yes' },
+    }),
+  );
+
+  await cm.executeContract(
+    propose_contract,
+    JSON.stringify({ execute: { proposal_id: proposal_id } }),
+  );
+
+  const timelocked_prop = await cm.queryContract<TimeLockSingleChoiceProposal>(
+    timelock_contract,
+    {
+      proposal: {
+        proposal_id: proposal_id,
+      },
+    },
+  );
+  return timelocked_prop;
+};
+
+const executeTimelockedProposal = async (
+  cm: CosmosWrapper,
+  timelock_contract: string,
+  proposal_id: number,
+): Promise<InlineResponse20075TxResponse> => {
+  return cm.executeContract(
+    timelock_contract,
+    JSON.stringify({
+      execute_proposal: {
+        proposal_id: proposal_id,
+      },
+    }),
+  );
+};
+
+const overruleTimelockedProposal = async (
+  cm: CosmosWrapper,
+  timelock_contract: string,
+  proposal_id: number,
+): Promise<InlineResponse20075TxResponse> => {
+  return cm.executeContract(
+    timelock_contract,
+    JSON.stringify({
+      overrule_proposal: {
+        proposal_id: proposal_id,
+      },
+    }),
+  );
 };
