@@ -690,6 +690,78 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitSoftwareUpgradeProposal creates proposal.
+   */
+  async submitSoftwareUpgradeProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            software_upgrade_proposal: {
+              title,
+              description,
+              plan: {
+                name,
+                height,
+                info,
+              },
+            },
+          },
+        },
+      },
+    });
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitCancelSoftwareUpgradeProposal creates proposal.
+   */
+  async submitCancelSoftwareUpgradeProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            cancel_software_upgrade_proposal: {
+              title,
+              description,
+            },
+          },
+        },
+      },
+    });
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
@@ -731,7 +803,7 @@ export class CosmosWrapper {
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      proposeContract,
       JSON.stringify({
         vote: { proposal_id: proposalId, vote: { option_id: optionId } },
       }),
