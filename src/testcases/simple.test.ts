@@ -346,21 +346,31 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        await waitBlocks(cm.sdk, 3);
-        const currentHeight = await getRemoteHeight(cm.sdk);
+        let attempts = 10;
+        while (attempts > 0) {
+          attempts -= 1;
 
-        await cm.executeContract(
-          contractAddress,
-          JSON.stringify({
-            send: {
-              channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-              timeout_height: currentHeight + 2,
-            },
-          }),
-        );
+          try {
+            await waitBlocks(cm.sdk, 3);
+            const currentHeight = await getRemoteHeight(cm.sdk);
+
+            await cm.executeContract(
+              contractAddress,
+              JSON.stringify({
+                send: {
+                  channel: 'channel-0',
+                  to: testState.wallets.cosmos.demo2.address.toString(),
+                  denom: NEUTRON_DENOM,
+                  amount: '1000',
+                  timeout_height: currentHeight + 2,
+                },
+              }),
+            );
+            break;
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+        }
+        expect(attempts).toBeGreaterThan(0);
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
