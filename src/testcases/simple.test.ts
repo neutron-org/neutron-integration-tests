@@ -81,7 +81,7 @@ describe('Neutron / Simple', () => {
         const res = await cm.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: 'stake', amount: '1000' },
+          { denom: NEUTRON_DENOM, amount: '1000' },
           testState.wallets.cosmos.demo2.address.toString(),
           { revision_number: 2, revision_height: 100000000 },
         );
