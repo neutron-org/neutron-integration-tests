@@ -536,6 +536,7 @@ describe('Neutron / Interchain TXs', () => {
 
       expect(failuresAfterCall.failures).toEqual([
         expect.objectContaining({
+          channel_id: 'channel-3',
           address: contractAddress,
           id: '0',
           ack_type: 'ack',
