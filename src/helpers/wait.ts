@@ -25,7 +25,7 @@ export class BlockWaiter {
     this.url = url;
   }
 
-  next() {
+  waitBlocks(n: number) {
     return new Promise((r) => {
       const ws = websocket.connect(this.url);
       ws.next({
@@ -36,18 +36,14 @@ export class BlockWaiter {
       });
       ws.subscribe((x) => {
         if (Object.entries((x as any).result).length !== 0) {
-          ws.unsubscribe();
-          r(x);
+          n--;
+          if (n == 0) {
+            ws.unsubscribe();
+            r(x);
+          }
         }
       });
     });
-  }
-
-  async waitBlocks(n: number) {
-    while (n > 0) {
-      await this.next();
-      n--;
-    }
   }
 }
 
@@ -72,7 +68,7 @@ export const getWithAttempts = async <T>(
     } catch (e) {
       error = e;
     }
-    await cm.blockWaiter.next();
+    await cm.blockWaiter.waitBlocks(1);
   }
   throw error != null ? error : new Error('getWithAttempts: no attempts left');
 };

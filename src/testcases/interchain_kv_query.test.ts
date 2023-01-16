@@ -3,10 +3,10 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  VAULT_CONTRACT_ADDRESS,
-  PRE_PROPOSE_CONTRACT_ADDRESS,
   NeutronContract,
+  PRE_PROPOSE_CONTRACT_ADDRESS,
   PROPOSE_CONTRACT_ADDRESS,
+  VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
@@ -181,14 +181,14 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   const proposalId = parseInt(attribute);
   expect(proposalId).toBeGreaterThanOrEqual(0);
 
-  await cm.blockWaiter.next();
+  await cm.blockWaiter.waitBlocks(1);
   await cm.voteYes(
     PROPOSE_CONTRACT_ADDRESS,
     proposalId,
     wallet.address.toString(),
   );
 
-  await cm.blockWaiter.next();
+  await cm.blockWaiter.waitBlocks(1);
   await cm.executeProposal(
     PROPOSE_CONTRACT_ADDRESS,
     proposalId,
@@ -612,7 +612,7 @@ describe('Neutron / Interchain KV Query', () => {
         for (const j of res) {
           expect(j).not.toEqual(0);
         }
-        await cm[1].blockWaiter.next();
+        await cm[1].blockWaiter.waitBlocks(1);
       }
       const end = await Promise.all(
         [2, 3, 4].map((i) => getKvCallbackStatus(cm[1], contractAddress, i)),
@@ -673,7 +673,7 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.demo2.address,
         );
 
-        await cm[1].blockWaiter.next();
+        await cm[1].blockWaiter.waitBlocks(1);
 
         const queryResult = await getRegisteredQuery(
           cm[1],
@@ -733,7 +733,7 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.demo2.address,
         );
 
-        await cm[1].blockWaiter.next();
+        await cm[1].blockWaiter.waitBlocks(1);
 
         const queryResult = await getRegisteredQuery(
           cm[1],

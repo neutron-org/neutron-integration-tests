@@ -257,7 +257,7 @@ export class CosmosWrapper {
     const txhash = res.data?.tx_response.txhash;
     let error = null;
     while (numAttempts > 0) {
-      await this.blockWaiter.next();
+      await this.blockWaiter.waitBlocks(1);
       numAttempts--;
       const data = await rest.tx
         .getTx(this.sdk as CosmosSDK, txhash)
@@ -372,7 +372,7 @@ export class CosmosWrapper {
       }
 
       numAttempts--;
-      await this.blockWaiter.next();
+      await this.blockWaiter.waitBlocks(1);
     }
 
     throw new Error('failed to query contract');
