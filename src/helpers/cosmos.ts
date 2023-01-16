@@ -282,6 +282,10 @@ export class CosmosWrapper {
       [msg],
     );
 
+    if (data.tx_response.code !== 0) {
+      throw new Error(`upload error: ${data.tx_response.raw_log}`);
+    }
+
     const attributes = getEventAttributesFromTx(data, 'store_code', [
       'code_id',
     ]);
