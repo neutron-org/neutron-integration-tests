@@ -60,7 +60,7 @@ describe('Neutron / Subdao', () => {
 
     await cm.bondFunds(VAULT_CONTRACT_ADDRESS, '10000');
     await getWithAttempts(
-      cm.sdk,
+      cm,
       async () =>
         await cm.queryVotingPower(
           subDAO.core.address,
