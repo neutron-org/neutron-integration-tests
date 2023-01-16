@@ -518,12 +518,10 @@ export class CosmosWrapper {
     sender: string,
   ): Promise<InlineResponse20075TxResponse> {
     const msgRemove =
-      new neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest(
-        {
-          query_id: queryId,
-          sender,
-        },
-      );
+      new neutron.interchainqueries.MsgRemoveInterchainQueryRequest({
+        query_id: queryId,
+        sender,
+      });
 
     const res = await this.execTx(
       {
