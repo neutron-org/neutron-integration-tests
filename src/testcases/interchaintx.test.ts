@@ -49,16 +49,11 @@ describe('Neutron / Interchain TXs', () => {
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        const res = await cm1.instantiate(
-          codeId,
-          JSON.stringify({}),
-          'interchaintx',
-        );
+        const res = (
+          await cm1.instantiate(codeId, JSON.stringify({}), 'interchaintx')
+        )[0]._contract_address;
 
         contractAddress = res;
-        expect(res.toString()).toEqual(
-          'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-        );
       });
     });
     describe('Create ICAs and setup contract', () => {

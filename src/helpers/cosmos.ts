@@ -8,7 +8,7 @@ import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import path from 'path';
-import { waitBlocks } from './wait';
+import { waitBlocks, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -19,6 +19,12 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
+import {
+  paramChangeProposal,
+  ParamChangeProposalInfo,
+  sendProposal,
+  SendProposalInfo,
+} from './proposal';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -32,6 +38,12 @@ export const CORE_CONTRACT_ADDRESS =
   'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
 export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
+export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
+  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
+export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
+  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
+export const TREASURY_CONTRACT_ADDRESS =
+  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 type ChannelsList = {
@@ -49,9 +61,20 @@ type ChannelsList = {
   }[];
 };
 
+export type TotalSupplyByDenomResponse = {
+  amount: ICoin;
+};
+
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
+export type TotalBurnedNeutronsAmountResponse = {
+  total_burned_neutrons_amount: {
+    coin: ICoin;
+  };
+};
+
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
-  balances: Balance[];
+  balances: ICoin[];
   pagination: {
     next_key: string;
     total: string;
@@ -62,12 +85,6 @@ type BalancesResponse = {
 type DenomTraceResponse = {
   path?: string;
   base_denom?: string;
-};
-
-// Balance represents a single asset balance of an account.
-type Balance = {
-  denom: string;
-  amount: string;
 };
 
 // SingleChoiceProposal represents a single governance proposal item (partial object).
@@ -127,6 +144,14 @@ type Failure = {
   ack_type: string;
 };
 
+// BalancesResponse is the response model for the bank balances query.
+export type PauseInfoResponse = {
+  paused: {
+    until_height: number;
+  };
+  unpaused: Record<string, never>;
+};
+
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
@@ -135,6 +160,15 @@ export const NeutronContract = {
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   RESERVE: 'neutron_reserve.wasm',
+  SUBDAO_CORE: 'cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
+};
+
+type MultiChoiceOption = {
+  description: string;
+  msgs: any[];
 };
 
 cosmosclient.codec.register(
@@ -252,14 +286,14 @@ export class CosmosWrapper {
       'code_id',
     ]);
 
-    return attributes.code_id;
+    return attributes[0].code_id;
   }
 
   async instantiate(
     codeId: string,
     msg: string | null = null,
     label: string | null = null,
-  ): Promise<string> {
+  ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
       sender: this.wallet.address.toString(),
@@ -281,8 +315,9 @@ export class CosmosWrapper {
 
     const attributes = getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
+      'code_id',
     ]);
-    return attributes._contract_address;
+    return attributes;
   }
 
   async executeContract(
@@ -354,16 +389,121 @@ export class CosmosWrapper {
   async msgSend(
     to: string,
     amount: string,
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.denom, amount: '1000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
+    const res = await this.execTx(fee, [msgSend]);
+    return res?.tx_response;
+  }
+
+  /**
+   * Tests a pausable contract execution control.
+   * @param testingContract is the contract the method tests;
+   * @param execAction is an executable action to be called during a pause and after unpausing
+   * as the main part of the test. Should return the execution response code;
+   * @param actionCheck is called after unpausing to make sure the executable action worked.
+   */
+  async testExecControl(
+    testingContract: string,
+    execAction: () => Promise<number | undefined>,
+    actionCheck: () => Promise<void>,
+  ) {
+    // check contract's pause info before pausing
+    let pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // pause contract
+    let res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: 50,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // execute msgs on paused contract
+    await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+    // unpause contract
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        unpause: {},
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after unpausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+
+    // execute msgs on unpaused contract
+    const code = await execAction();
+    expect(code).toEqual(0);
+    await actionCheck();
+
+    // pause contract again for a short period
+    const short_pause_duration = 5;
+    res = await this.executeContract(
+      testingContract,
+      JSON.stringify({
+        pause: {
+          duration: short_pause_duration,
+        },
+      }),
+    );
+    expect(res.code).toEqual(0);
+
+    // check contract's pause info after pausing
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo.unpaused).toEqual(undefined);
+    expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+    // wait and check contract's pause info after unpausing
+    await waitBlocks(this.sdk, short_pause_duration);
+    pauseInfo = await this.queryPausedInfo(testingContract);
+    expect(pauseInfo).toEqual({ unpaused: {} });
+    expect(pauseInfo.paused).toEqual(undefined);
+  }
+
+  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
+    return await this.queryContract<PauseInfoResponse>(addr, {
+      pause_info: {},
+    });
+  }
+
+  /* simulateFeeBurning simulates fee burning via send tx.
+   */
+  async simulateFeeBurning(
+    amount: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
+      from_address: this.wallet.address.toString(),
+      to_address: this.wallet.address.toString(),
+      amount: [{ denom: this.denom, amount: '1' }],
+    });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.denom, amount: '1000' }],
+        amount: [
+          { denom: this.denom, amount: `${Math.ceil((1000 * amount) / 750)}` },
+        ],
       },
       [msgSend],
     );
@@ -399,26 +539,18 @@ export class CosmosWrapper {
    * submitSendProposal creates proposal to send funds from DAO core contract for given address.
    */
   async submitSendProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     amount: string,
     to: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      bank: {
-        send: {
-          to_address: to,
-          amount: [
-            {
-              denom: this.denom,
-              amount: amount,
-            },
-          ],
-        },
-      },
-    });
+    const message = JSON.stringify(
+      sendProposal({ to, denom: this.denom, amount }),
+    );
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -431,6 +563,7 @@ export class CosmosWrapper {
    * submitParameterChangeProposal creates parameter change proposal.
    */
   async submitParameterChangeProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     subspace: string,
@@ -439,26 +572,11 @@ export class CosmosWrapper {
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      custom: {
-        submit_admin_proposal: {
-          admin_proposal: {
-            param_change_proposal: {
-              title,
-              description,
-              param_changes: [
-                {
-                  subspace,
-                  key,
-                  value,
-                },
-              ],
-            },
-          },
-        },
-      },
-    });
+    const message = JSON.stringify(
+      paramChangeProposal({ title, description, subspace, key, value }),
+    );
     return await this.submitProposal(
+      pre_propose_contract,
       title,
       description,
       message,
@@ -468,9 +586,56 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitMultiChoiceSendProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceSendProposal(
+    choices: SendProposalInfo[],
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [sendProposal(choice)],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      amount,
+      sender,
+      messages,
+    );
+  }
+
+  /**
+   * submitMultiChoiceParameterChangeProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceParameterChangeProposal(
+    choices: ParamChangeProposalInfo[],
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [paramChangeProposal(choice)],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      amount,
+      sender,
+      messages,
+    );
+  }
+
+  /**
    * submitProposal creates proposal with given message.
    */
   async submitProposal(
+    pre_propose_contract: string,
     title: string,
     description: string,
     msg: string,
@@ -479,7 +644,7 @@ export class CosmosWrapper {
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.parse(msg);
     return await this.executeContract(
-      PRE_PROPOSE_CONTRACT_ADDRESS,
+      pre_propose_contract,
       JSON.stringify({
         propose: {
           msg: {
@@ -497,14 +662,115 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitMultiChoiceProposal creates multi-choice proposal with given message.
+   */
+  async submitMultiChoiceProposal(
+    title: string,
+    description: string,
+    amount: string,
+    sender: string,
+    options: MultiChoiceOption[],
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              choices: { options },
+            },
+          },
+        },
+      }),
+      [{ denom: this.denom, amount: amount }],
+      sender,
+    );
+  }
+
+  /**
+   * submitSoftwareUpgradeProposal creates proposal.
+   */
+  async submitSoftwareUpgradeProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            software_upgrade_proposal: {
+              title,
+              description,
+              plan: {
+                name,
+                height,
+                info,
+              },
+            },
+          },
+        },
+      },
+    });
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitCancelSoftwareUpgradeProposal creates proposal.
+   */
+  async submitCancelSoftwareUpgradeProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify({
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            cancel_software_upgrade_proposal: {
+              title,
+              description,
+            },
+          },
+        },
+      },
+    });
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
       [],
       sender,
@@ -515,12 +781,32 @@ export class CosmosWrapper {
    * voteNo  vote 'no' for given proposal.
    */
   async voteNo(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
+      [],
+      sender,
+    );
+  }
+
+  /**
+   * voteYes  vote for option for given multi choice proposal.
+   */
+  async voteForOption(
+    proposeContract: string,
+    proposalId: number,
+    optionId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.executeContract(
+      proposeContract,
+      JSON.stringify({
+        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
+      }),
       [],
       sender,
     );
@@ -530,40 +816,127 @@ export class CosmosWrapper {
    * executeProposal executes given proposal.
    */
   async executeProposal(
+    propose_contract: string,
     proposalId: number,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      PROPOSE_CONTRACT_ADDRESS,
+      propose_contract,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,
     );
   }
 
-  async queryProposal(proposalId: number): Promise<any> {
-    return await this.queryContract<SingleChoiceProposal>(
-      PROPOSE_CONTRACT_ADDRESS,
-      {
-        proposal: {
-          proposal_id: proposalId,
-        },
-      },
+  async checkPassedProposal(propose_contract: string, proposalId: number) {
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
     );
   }
 
-  async queryTotalVotingPower(): Promise<any> {
-    return await this.queryContract<TotalPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
-      {
-        total_power_at_height: {},
-      },
+  async checkPassedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
     );
   }
 
-  async queryVotingPower(addr: string): Promise<any> {
+  async checkExecutedMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeProposalWithAttempts(
+    propose_contract: string,
+    proposalId: number,
+  ) {
+    await this.executeProposal(propose_contract, proposalId);
+    await getWithAttempts(
+      this,
+      async () => await this.queryProposal(propose_contract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeMultiChoiceProposalWithAttempts(
+    proposalContract: string,
+    proposalId: number,
+  ) {
+    await this.executeMultiChoiceProposal(proposalContract, proposalId);
+    await getWithAttempts(
+      this,
+      async () =>
+        await this.queryMultiChoiceProposal(proposalContract, proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  /**
+   * executeMultiChoiceProposal executes given multichoice proposal.
+   */
+  async executeMultiChoiceProposal(
+    proposalContract: string,
+    proposalId: number,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<any> {
+    return await this.executeContract(
+      proposalContract,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  async queryMultiChoiceProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<any>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
+      },
+    });
+  }
+
+  async queryProposal(
+    propose_contract: string,
+    proposalId: number,
+  ): Promise<any> {
+    return await this.queryContract<SingleChoiceProposal>(propose_contract, {
+      proposal: {
+        proposal_id: proposalId,
+      },
+    });
+  }
+
+  async queryTotalVotingPower(core_contract: string): Promise<any> {
+    return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
+      total_power_at_height: {},
+    });
+  }
+
+  async queryVotingPower(core_contract: string, addr: string): Promise<any> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
-      CORE_CONTRACT_ADDRESS,
+      core_contract,
       {
         voting_power_at_height: {
           address: addr,
@@ -682,11 +1055,12 @@ export class CosmosWrapper {
   }
 
   async bondFunds(
+    vault_contract: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.executeContract(
-      VAULT_CONTRACT_ADDRESS,
+      vault_contract,
       JSON.stringify({
         bond: {},
       }),
@@ -701,6 +1075,36 @@ export class CosmosWrapper {
     );
     return req.data;
   }
+
+  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {
+    try {
+      const req = await axios.get<TotalBurnedNeutronsAmountResponse>(
+        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryTotalSupplyByDenom(
+    denom: string,
+  ): Promise<TotalSupplyByDenomResponse> {
+    try {
+      const req = await axios.get<TotalSupplyByDenomResponse>(
+        `${this.sdk.url}/cosmos/bank/v1beta1/supply/${denom}`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
 }
 
 type TxResponseType = Awaited<ReturnType<typeof rest.tx.getTx>>;
@@ -709,7 +1113,7 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Record<typeof attributes[number], string> | Record<string, never> => {
+): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
@@ -720,17 +1124,22 @@ export const getEventAttributesFromTx = (
         },
       ]
     )[0].events || [];
-  const out = {};
+  const resp = [];
   for (const e of events) {
     if (event === e.type) {
+      let out = {};
       for (const a of e.attributes) {
         if (attributes.includes(a.key)) {
           out[a.key] = a.value;
         }
+        if (Object.keys(out).length == attributes.length) {
+          resp.push(out);
+          out = {};
+        }
       }
     }
   }
-  return out;
+  return resp;
 };
 
 export const mnemonicToWallet = async (
@@ -813,3 +1222,17 @@ export const getIBCDenom = (portName, channelName, denom: string): string => {
     .toUpperCase();
   return `ibc/${uatomIBCHash}`;
 };
+
+export const createBankMassage = (address: string, amount: string) => ({
+  bank: {
+    send: {
+      to_address: address,
+      amount: [
+        {
+          denom: NEUTRON_DENOM,
+          amount: amount,
+        },
+      ],
+    },
+  },
+});
