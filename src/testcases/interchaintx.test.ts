@@ -539,12 +539,12 @@ describe('Neutron / Interchain TXs', () => {
           channel_id: 'channel-3',
           address: contractAddress,
           id: '0',
-          ack_type: 'ack',
+          response_type: 'ack',
         }),
         expect.objectContaining({
           address: contractAddress,
           id: '1',
-          ack_type: 'timeout',
+          response_type: 'timeout',
         }),
       ]);
 
