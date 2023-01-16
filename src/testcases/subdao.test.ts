@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   CosmosWrapper,
   NEUTRON_DENOM,
@@ -980,8 +981,8 @@ const executeTimelockedProposal = async (
   cm: CosmosWrapper,
   timelock_contract: string,
   proposal_id: number,
-): Promise<InlineResponse20075TxResponse> => {
-  return cm.executeContract(
+): Promise<InlineResponse20075TxResponse> =>
+  cm.executeContract(
     timelock_contract,
     JSON.stringify({
       execute_proposal: {
@@ -989,14 +990,13 @@ const executeTimelockedProposal = async (
       },
     }),
   );
-};
 
 const overruleTimelockedProposal = async (
   cm: CosmosWrapper,
   timelock_contract: string,
   proposal_id: number,
-): Promise<InlineResponse20075TxResponse> => {
-  return cm.executeContract(
+): Promise<InlineResponse20075TxResponse> =>
+  cm.executeContract(
     timelock_contract,
     JSON.stringify({
       overrule_proposal: {
@@ -1004,4 +1004,3 @@ const overruleTimelockedProposal = async (
       },
     }),
   );
-};
