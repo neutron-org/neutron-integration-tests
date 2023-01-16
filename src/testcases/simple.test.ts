@@ -51,10 +51,7 @@ describe('Neutron / Simple', () => {
     });
     test('instantiate', async () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
-      contractAddress = res;
-      expect(res.toString()).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
+      contractAddress = res[0]._contract_address;
     });
   });
 
@@ -84,7 +81,7 @@ describe('Neutron / Simple', () => {
         const res = await cm.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: 'stake', amount: '1000' },
+          { denom: NEUTRON_DENOM, amount: '1000' },
           testState.wallets.cosmos.demo2.address.toString(),
           { revision_number: 2, revision_height: 100000000 },
         );
