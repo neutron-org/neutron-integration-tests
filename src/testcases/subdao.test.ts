@@ -803,7 +803,7 @@ const setupSubDaoTimelockSet = async (
     max_voting_period: { height: 10 },
     allow_revoting: false,
     pre_propose_info: {
-      ModuleMayPropose: {
+      module_may_propose: {
         info: {
           code_id: preProposeCodeId,
           label: 'subDAO prepropose module',
