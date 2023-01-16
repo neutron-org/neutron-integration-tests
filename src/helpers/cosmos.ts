@@ -172,8 +172,8 @@ type MultiChoiceOption = {
 };
 
 cosmosclient.codec.register(
-  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
-  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+  '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
@@ -181,8 +181,8 @@ cosmosclient.codec.register(
 );
 
 cosmosclient.codec.register(
-  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
-  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+  '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
