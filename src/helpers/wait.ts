@@ -25,21 +25,29 @@ export class BlockWaiter {
     this.url = url;
   }
 
-  waitBlocks(n: number) {
-    return new Promise((r) => {
-      const ws = websocket.connect(this.url);
+  waitBlocks(n: number, timeout = 120000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let ws = null;
+      const x = setTimeout(() => {
+        if (ws != null) {
+          ws.unsubscribe();
+        }
+        reject(new Error('waitBlocks: timeout'));
+      }, timeout);
+      ws = websocket.connect(this.url);
       ws.next({
         id: '1',
         jsonrpc: '2.0',
         method: 'subscribe',
         params: ["tm.event='NewBlock'"],
       });
-      ws.subscribe((x) => {
-        if (Object.entries((x as any).result).length !== 0) {
+      ws.subscribe((res) => {
+        if (Object.entries((res as any).result).length !== 0) {
           n--;
           if (n == 0) {
             ws.unsubscribe();
-            r(x);
+            clearTimeout(x);
+            resolve();
           }
         }
       });
