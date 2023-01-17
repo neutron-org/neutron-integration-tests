@@ -1,9 +1,12 @@
 import { proto, rest } from '@cosmos-client/core';
 import {
-  CosmosWrapper,
   COSMOS_DENOM,
+  CosmosWrapper,
   NEUTRON_DENOM,
+  VAULT_CONTRACT_ADDRESS,
+  PRE_PROPOSE_CONTRACT_ADDRESS,
   NeutronContract,
+  PROPOSE_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
@@ -159,6 +162,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   amount = '1000',
 ) => {
   const proposalTx = await cm.submitParameterChangeProposal(
+    PRE_PROPOSE_CONTRACT_ADDRESS,
     title,
     description,
     'interchainqueries',
@@ -178,14 +182,22 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   expect(proposalId).toBeGreaterThanOrEqual(0);
 
   await waitBlocks(cm.sdk, 1);
-  await cm.voteYes(proposalId, wallet.address.toString());
+  await cm.voteYes(
+    PROPOSE_CONTRACT_ADDRESS,
+    proposalId,
+    wallet.address.toString(),
+  );
 
   await waitBlocks(cm.sdk, 1);
-  await cm.executeProposal(proposalId, wallet.address.toString());
+  await cm.executeProposal(
+    PROPOSE_CONTRACT_ADDRESS,
+    proposalId,
+    wallet.address.toString(),
+  );
 
   await getWithAttempts(
     cm.sdk,
-    async () => await cm.queryProposal(proposalId),
+    async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
   );
@@ -285,6 +297,7 @@ describe('Neutron / Interchain KV Query', () => {
     };
 
     await cm[1].bondFunds(
+      VAULT_CONTRACT_ADDRESS,
       '10000000000',
       testState.wallets.neutron.demo1.address.toString(),
     );
@@ -297,14 +310,9 @@ describe('Neutron / Interchain KV Query', () => {
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await cm[1].instantiate(
-        codeId,
-        '{}',
-        'neutron_interchain_queries',
-      );
-      expect(contractAddress).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
+      contractAddress = (
+        await cm[1].instantiate(codeId, '{}', 'neutron_interchain_queries')
+      )[0]._contract_address;
     });
   });
 
@@ -697,7 +705,7 @@ describe('Neutron / Interchain KV Query', () => {
         const queryDepositParam: proto.cosmos.base.v1beta1.ICoin[] = [
           {
             amount: '10000',
-            denom: 'stake',
+            denom: NEUTRON_DENOM,
           },
         ];
 

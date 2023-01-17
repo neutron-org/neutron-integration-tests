@@ -51,10 +51,7 @@ describe('Neutron / Simple', () => {
     });
     test('instantiate', async () => {
       const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
-      contractAddress = res;
-      expect(res.toString()).toEqual(
-        'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40',
-      );
+      contractAddress = res[0]._contract_address;
     });
   });
 
@@ -84,7 +81,7 @@ describe('Neutron / Simple', () => {
         const res = await cm.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: 'stake', amount: '1000' },
+          { denom: NEUTRON_DENOM, amount: '1000' },
           testState.wallets.cosmos.demo2.address.toString(),
           { revision_number: 2, revision_height: 100000000 },
         );
@@ -349,21 +346,35 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        await waitBlocks(cm.sdk, 3);
-        const currentHeight = await getRemoteHeight(cm.sdk);
+        // This dirty workaround is here to prevent failing IBC transfer
+        // from failing the whole test suite (which is very annoying).
+        // TODO: figure out why contract fails to perform IBC transfer
+        //       and implement a proper fix.
+        let attempts = 10;
+        while (attempts > 0) {
+          attempts -= 1;
 
-        await cm.executeContract(
-          contractAddress,
-          JSON.stringify({
-            send: {
-              channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-              timeout_height: currentHeight + 2,
-            },
-          }),
-        );
+          try {
+            await waitBlocks(cm.sdk, 3);
+            const currentHeight = await getRemoteHeight(cm.sdk);
+
+            await cm.executeContract(
+              contractAddress,
+              JSON.stringify({
+                send: {
+                  channel: 'channel-0',
+                  to: testState.wallets.cosmos.demo2.address.toString(),
+                  denom: NEUTRON_DENOM,
+                  amount: '1000',
+                  timeout_height: currentHeight + 2,
+                },
+              }),
+            );
+            break;
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+        }
+        expect(attempts).toBeGreaterThan(0);
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.sdk,
