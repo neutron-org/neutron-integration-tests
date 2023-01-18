@@ -8,7 +8,7 @@ import {
   NeutronContract,
   PageRequest,
 } from '../helpers/cosmos';
-import { getRemoteHeight, getWithAttempts, waitBlocks } from '../helpers/wait';
+import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
@@ -22,11 +22,13 @@ describe('Neutron / Simple', () => {
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
+      testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
@@ -59,7 +61,7 @@ describe('Neutron / Simple', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
@@ -88,7 +90,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check IBC token balance', async () => {
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
@@ -111,7 +113,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
         );
@@ -160,7 +162,7 @@ describe('Neutron / Simple', () => {
       });
 
       test('check wallet balance', async () => {
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
@@ -183,7 +185,7 @@ describe('Neutron / Simple', () => {
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
@@ -241,7 +243,7 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await waitBlocks(cm.sdk, 10);
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(contractAddress);
         expect(
           balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
@@ -355,7 +357,7 @@ describe('Neutron / Simple', () => {
           attempts -= 1;
 
           try {
-            await waitBlocks(cm.sdk, 3);
+            await cm.blockWaiter.waitBlocks(3);
             const currentHeight = await getRemoteHeight(cm.sdk);
 
             await cm.executeContract(
@@ -377,7 +379,7 @@ describe('Neutron / Simple', () => {
         expect(attempts).toBeGreaterThan(0);
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-          cm.sdk,
+          cm,
           async () => cm.queryAckFailures(contractAddress),
           // Wait until there 4 failure in the list
           async (data) => data.failures.length == 4,

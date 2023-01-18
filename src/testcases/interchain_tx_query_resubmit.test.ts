@@ -1,6 +1,5 @@
 import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { waitBlocks } from '../helpers/wait';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -22,11 +21,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
+      testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
@@ -96,7 +97,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         expect(res.code).toEqual(0);
       }
 
-      await waitBlocks(cm.sdk, 5);
+      await cm.blockWaiter.waitBlocks(5);
 
       const txs = await getUnsuccessfulTxs(testState.icq_web_host);
       expect(txs.length).toEqual(5);
@@ -116,7 +117,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icq_web_host, resubmit_txs);
       expect(resp.status).toEqual(200);
 
-      await waitBlocks(cm.sdk, 20);
+      await cm.blockWaiter.waitBlocks(20);
 
       await waitForTransfersAmount(
         cm,
