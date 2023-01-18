@@ -9,7 +9,7 @@ import {
   VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
+import { getHeight, getWithAttempts } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
@@ -40,7 +40,7 @@ const watchForKvCallbackUpdates = async (
   const statusPrev = await Promise.all(
     queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
   );
-  const targetHeight = await getRemoteHeight(targetCm.sdk);
+  const targetHeight = await getHeight(targetCm.sdk);
   await Promise.all(
     queryIds.map((i) =>
       waitForICQResultWithRemoteHeight(
@@ -522,7 +522,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -545,7 +545,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -569,7 +569,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         cm[1],
@@ -789,7 +789,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await getRemoteHeight(cm[1].sdk)),
+              (await getHeight(cm[1].sdk)),
           20,
         );
 

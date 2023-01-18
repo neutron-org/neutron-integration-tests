@@ -14,7 +14,7 @@ import {
   TimeLockSingleChoiceProposal,
   SubDaoConfig,
 } from '../helpers/dao';
-import { getRemoteHeight, getWithAttempts, wait } from '../helpers/wait';
+import { getHeight, getWithAttempts, wait } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
@@ -309,7 +309,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
 
       // pause subDAO on behalf of the security DAO
-      const pauseHeight = await getRemoteHeight(cm.sdk); // an approximate one
+      const pauseHeight = await getHeight(cm.sdk); // an approximate one
       const res = await cm.executeContract(
         subDAO.core.address,
         JSON.stringify({
@@ -381,7 +381,7 @@ describe('Neutron / Subdao', () => {
     test('auto unpause on pause timeout', async () => {
       // pause subDAO on behalf of the Neutron DAO
       const short_pause_duration = 5;
-      const pauseHeight = await getRemoteHeight(cm.sdk); // an approximate one
+      const pauseHeight = await getHeight(cm.sdk); // an approximate one
       const res = await cm.executeContract(
         subDAO.core.address,
         JSON.stringify({
