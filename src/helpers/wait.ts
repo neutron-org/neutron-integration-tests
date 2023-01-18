@@ -1,4 +1,6 @@
-import { rest } from '@cosmos-client/core';
+import { rest, websocket } from '@cosmos-client/core';
+
+(global as any).WebSocket = require('ws');
 
 export const wait = async (seconds: number) =>
   new Promise((r) => {
@@ -16,23 +18,49 @@ export const getRemoteHeight = async (sdk: any) => {
   return +block.data.block.header.height;
 };
 
-export const waitBlocks = async (sdk: any, n: number) => {
-  const targetHeight = (await getRemoteHeight(sdk)) + n;
-  for (;;) {
-    await wait(1);
-    const currentHeight = await getRemoteHeight(sdk);
-    if (currentHeight >= targetHeight) {
-      break;
-    }
+export class BlockWaiter {
+  url;
+
+  constructor(url: string) {
+    this.url = url;
   }
-};
+
+  waitBlocks(n: number, timeout = 120000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let ws = null;
+      const x = setTimeout(() => {
+        if (ws != null) {
+          ws.unsubscribe();
+        }
+        reject(new Error('waitBlocks: timeout'));
+      }, timeout);
+      ws = websocket.connect(this.url);
+      ws.next({
+        id: '1',
+        jsonrpc: '2.0',
+        method: 'subscribe',
+        params: ["tm.event='NewBlock'"],
+      });
+      ws.subscribe((res) => {
+        if (Object.entries((res as any).result).length !== 0) {
+          n--;
+          if (n == 0) {
+            ws.unsubscribe();
+            clearTimeout(x);
+            resolve();
+          }
+        }
+      });
+    });
+  }
+}
 
 /**
  * getWithAttempts waits until readyFunc(getFunc()) returns true
  * and only then returns result of getFunc()
  */
 export const getWithAttempts = async <T>(
-  sdk: any,
+  cm: any,
   getFunc: () => Promise<T>,
   readyFunc: (t: T) => Promise<boolean>,
   numAttempts = 20,
@@ -48,7 +76,7 @@ export const getWithAttempts = async <T>(
     } catch (e) {
       error = e;
     }
-    await waitBlocks(sdk, 1);
+    await cm.blockWaiter.waitBlocks(1);
   }
   throw error != null ? error : new Error('getWithAttempts: no attempts left');
 };

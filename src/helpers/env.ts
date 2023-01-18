@@ -9,7 +9,7 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
 
 let alreadySetUp = false;
 
-export const setup = async (host: string) => {
+export const setup = async (host1: string, host2: string) => {
   if (alreadySetUp) {
     console.log('already set up');
     return;
@@ -32,8 +32,12 @@ export const setup = async (host: string) => {
   showVersions();
   await showContractsHashes();
 
-  await waitForHTTP(host);
-  await waitForChannel(host);
+  await waitForHTTP(host1);
+  await waitForChannel(host1);
+  await waitForHTTP(host2);
+  await waitForChannel(host2);
+  await wait(20); // FIXME: this hardcoded sleep is here to wait until hermes is fully initialized.
+  //                        proper fix would be to monitor hermes status events.
   alreadySetUp = true;
 };
 
@@ -53,7 +57,7 @@ export const waitForHTTP = async (
       }
       // eslint-disable-next-line no-empty
     } catch (e) {}
-    await wait(10);
+    await wait(1);
   }
   throw new Error('No port opened');
 };
@@ -80,7 +84,7 @@ export const waitForChannel = async (
       }
       // eslint-disable-next-line no-empty
     } catch (e) {}
-    await wait(10);
+    await wait(1);
   }
 
   throw new Error('No channel opened');
