@@ -53,7 +53,7 @@ describe('Neutron / Governance', () => {
             CORE_CONTRACT_ADDRESS,
             cm.wallet.address.toString(),
           ),
-        async (response) => response.power == '1000',
+        async (response) => response.power == 1000,
         20,
       );
     });
@@ -70,7 +70,7 @@ describe('Neutron / Governance', () => {
             CORE_CONTRACT_ADDRESS,
             cm2.wallet.address.toString(),
           ),
-        async (response) => response.power == '1000',
+        async (response) => response.power == 1000,
         20,
       );
     });
@@ -87,7 +87,7 @@ describe('Neutron / Governance', () => {
             CORE_CONTRACT_ADDRESS,
             cm3.wallet.address.toString(),
           ),
-        async (response) => response.power == '1000',
+        async (response) => response.power == 1000,
         20,
       );
     });
@@ -95,7 +95,7 @@ describe('Neutron / Governance', () => {
       await getWithAttempts(
         cm,
         async () => await cm.queryTotalVotingPower(CORE_CONTRACT_ADDRESS),
-        async (response) => response.power == '3000',
+        async (response) => response.power == 3000,
         20,
       );
     });
@@ -404,7 +404,7 @@ describe('Neutron / Governance', () => {
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
-        cm.sdk,
+        cm,
         async () =>
           await cm.queryMultiChoiceProposal(
             PROPOSE_MULTIPLE_CONTRACT_ADDRESS,

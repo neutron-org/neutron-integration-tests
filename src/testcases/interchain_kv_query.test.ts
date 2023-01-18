@@ -134,7 +134,7 @@ const registerBalanceQuery = async (
 };
 
 const getEventAttribute = (
-  events: any[],
+  events: { type: string; attributes: { key: string; value: string }[] }[],
   eventType: string,
   attribute: string,
 ): string => {
@@ -804,8 +804,8 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.balances[0].denom ===
               balancesAfterRegistration.balances[0].denom &&
-            parseInt(response.balances[0].amount) >
-              parseInt(balancesAfterRegistration.balances[0].amount),
+            parseInt(response.balances[0].amount || '0') >
+              parseInt(balancesAfterRegistration.balances[0].amount || '0'),
 
           100,
         );
@@ -821,7 +821,7 @@ describe('Neutron / Interchain KV Query', () => {
             {
               denom: balancesAfterRemoval.balances[0].denom,
               amount: (
-                parseInt(balancesAfterRemoval.balances[0].amount) + 1000
+                parseInt(balancesAfterRemoval.balances[0].amount || '') + 1000
               ).toString(),
             },
           ],
