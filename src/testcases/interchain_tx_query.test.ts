@@ -6,7 +6,6 @@ import {
 } from '../helpers/cosmos';
 import { proto } from '@cosmos-client/core';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { waitBlocks } from '../helpers/wait';
 import Long from 'long';
 import {
   getRegisteredQuery,
@@ -28,11 +27,13 @@ describe('Neutron / Interchain TX Query', () => {
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
+      testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
@@ -134,7 +135,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: cm2.denom },
       ]);
-      await waitBlocks(cm.sdk, query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
+      await cm.blockWaiter.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
@@ -163,7 +164,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: cm2.denom }, // balance hasn't changed thus tx failed
       ]);
-      await waitBlocks(cm.sdk, query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await cm.blockWaiter.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the watched address receivings are not changed
       const deposits = await queryRecipientTxs(
@@ -466,7 +467,7 @@ describe('Neutron / Interchain TX Query', () => {
     const watchedAddr5: string = addr5;
     const query5UpdatePeriod = 12;
 
-    // by this checks we ensure the transactions will be processed in the desired order
+    // by these checks we ensure the transactions will be processed in the desired order
     test('validate update periods', async () => {
       expect(query5UpdatePeriod).toBeGreaterThanOrEqual(9);
       expect(query5UpdatePeriod).toBeGreaterThanOrEqual(query4UpdatePeriod * 3);
@@ -489,7 +490,7 @@ describe('Neutron / Interchain TX Query', () => {
         query5UpdatePeriod,
         watchedAddr5,
       );
-      await waitBlocks(cm.sdk, 2); // wait for queries handling on init
+      await cm.blockWaiter.waitBlocks(2); // wait for queries handling on init
     });
 
     test('make older sending', async () => {
@@ -608,7 +609,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check that transfer has not been recorded', async () => {
-      await waitBlocks(cm.sdk, query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await cm.blockWaiter.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
       const deposits = await queryRecipientTxs(
         cm,
         contractAddress,

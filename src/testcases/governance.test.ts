@@ -21,16 +21,19 @@ describe('Neutron / Governance', () => {
     await testState.init();
     cm = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.demo2,
       NEUTRON_DENOM,
     );
     cm3 = new CosmosWrapper(
       testState.sdk1,
+      testState.blockWaiter1,
       testState.wallets.neutron.rly1,
       NEUTRON_DENOM,
     );
@@ -44,7 +47,7 @@ describe('Neutron / Governance', () => {
         cm.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm.sdk,
+        cm,
         async () =>
           await cm.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -61,7 +64,7 @@ describe('Neutron / Governance', () => {
         cm2.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm2.sdk,
+        cm2,
         async () =>
           await cm2.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -78,7 +81,7 @@ describe('Neutron / Governance', () => {
         cm3.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm3.sdk,
+        cm3,
         async () =>
           await cm3.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -90,7 +93,7 @@ describe('Neutron / Governance', () => {
     });
     test('check voting power', async () => {
       await getWithAttempts(
-        cm.sdk,
+        cm,
         async () => await cm.queryTotalVotingPower(CORE_CONTRACT_ADDRESS),
         async (response) => response.power == '3000',
         20,
@@ -102,7 +105,7 @@ describe('Neutron / Governance', () => {
     test('send funds from wallet 1', async () => {
       await cm.msgSend(CORE_CONTRACT_ADDRESS, '1000');
       await getWithAttempts(
-        cm.sdk,
+        cm,
         async () => await cm.queryBalances(CORE_CONTRACT_ADDRESS),
         async (response) => response.balances[0].amount == '1000',
         20,
@@ -291,7 +294,7 @@ describe('Neutron / Governance', () => {
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
-        cm.sdk,
+        cm,
         async () =>
           await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
         async (response) => response.proposal.status === 'rejected',

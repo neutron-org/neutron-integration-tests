@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   CosmosWrapper,
-  NEUTRON_DENOM,
-  VAULT_CONTRACT_ADDRESS,
-  getEventAttributesFromTx,
   createBankMassage,
+  getEventAttributesFromTx,
+  NEUTRON_DENOM,
   NeutronContract,
+  VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
@@ -14,12 +14,7 @@ import {
   TimeLockSingleChoiceProposal,
   SubDaoConfig,
 } from '../helpers/dao';
-import {
-  wait,
-  waitBlocks,
-  getWithAttempts,
-  getRemoteHeight,
-} from '../helpers/wait';
+import { getRemoteHeight, getWithAttempts, wait } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
@@ -45,8 +40,18 @@ describe('Neutron / Subdao', () => {
     main_dao_addr = main_dao_wallet.address;
     security_dao_addr = security_dao_wallet.address;
     demo2_addr = demo2_wallet.address;
-    cm = new CosmosWrapper(testState.sdk1, main_dao_wallet, NEUTRON_DENOM);
-    cm3 = new CosmosWrapper(testState.sdk1, demo2_wallet, NEUTRON_DENOM);
+    cm = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      main_dao_wallet,
+      NEUTRON_DENOM,
+    );
+    cm3 = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      demo2_wallet,
+      NEUTRON_DENOM,
+    );
     subDAO = await setupSubDaoTimelockSet(
       cm,
       main_dao_addr.toString(),
@@ -55,7 +60,7 @@ describe('Neutron / Subdao', () => {
 
     await cm.bondFunds(VAULT_CONTRACT_ADDRESS, '10000');
     await getWithAttempts(
-      cm.sdk,
+      cm,
       async () =>
         await cm.queryVotingPower(
           subDAO.core.address,
@@ -393,7 +398,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused.until_height).toBeGreaterThan(pauseHeight);
 
       // wait and check contract's pause info after unpausing
-      await waitBlocks(cm.sdk, short_pause_duration);
+      await cm.blockWaiter.waitBlocks(short_pause_duration);
       pauseInfo = await cm.queryPausedInfo(subDAO.core.address);
       expect(pauseInfo).toEqual({ unpaused: {} });
       expect(pauseInfo.paused).toEqual(undefined);
