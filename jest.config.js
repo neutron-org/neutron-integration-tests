@@ -2,6 +2,7 @@ const ch = require('child_process');
 const { defaults } = require('jest-config');
 
 const config = {
+  reporters: ['default', 'jest-junit'],
   cacheDirectory: '.jest/cache',
   coverageDirectory: '.jest/coverage',
   bail: true,
@@ -17,17 +18,7 @@ const config = {
   },
   setupFilesAfterEnv: ['jest-extended/all'],
   transform: {
-    '^.+\\.tsx?$': [
-      'esbuild-jest',
-      {
-        target: 'node14',
-        format: 'cjs',
-        sourcemap: true,
-        loaders: {
-          '.test.ts': 'tsx',
-        },
-      },
-    ],
+    '^.+\\.[t|j]sx?$': 'babel-jest',
   },
 };
 

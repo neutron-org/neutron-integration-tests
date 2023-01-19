@@ -1,25 +1,20 @@
 import { rest, websocket } from '@cosmos-client/core';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
-(global as any).WebSocket = require('ws');
+global.WebSocket = require('ws');
 
 export const wait = async (seconds: number) =>
   new Promise((r) => {
     setTimeout(() => r(true), 1000 * seconds);
   });
 
-/*
- * Following functions accepts `sdk` as `any` instead of `CosmosSDK`.
- * That's because otherwise the script wouldn't even run due to some
- * weird babel issues.
- */
-
-export const getRemoteHeight = async (sdk: any) => {
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
 };
 
 export class BlockWaiter {
-  url;
+  url: string;
 
   constructor(url: string) {
     this.url = url;
@@ -41,8 +36,8 @@ export class BlockWaiter {
         method: 'subscribe',
         params: ["tm.event='NewBlock'"],
       });
-      ws.subscribe((res) => {
-        if (Object.entries((res as any).result).length !== 0) {
+      ws.subscribe((res: websocket.ResponseSchema) => {
+        if (Object.entries(res.result).length !== 0) {
           n--;
           if (n == 0) {
             ws.unsubscribe();
@@ -60,7 +55,7 @@ export class BlockWaiter {
  * and only then returns result of getFunc()
  */
 export const getWithAttempts = async <T>(
-  cm: any,
+  blockWaiter: BlockWaiter,
   getFunc: () => Promise<T>,
   readyFunc: (t: T) => Promise<boolean>,
   numAttempts = 20,
@@ -76,7 +71,7 @@ export const getWithAttempts = async <T>(
     } catch (e) {
       error = e;
     }
-    await cm.blockWaiter.waitBlocks(1);
+    await blockWaiter.waitBlocks(1);
   }
   throw error != null ? error : new Error('getWithAttempts: no attempts left');
 };
