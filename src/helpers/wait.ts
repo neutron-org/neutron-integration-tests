@@ -1,6 +1,5 @@
 import { rest, websocket } from '@cosmos-client/core';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { CosmosWrapper } from './cosmos';
 
 global.WebSocket = require('ws');
 
