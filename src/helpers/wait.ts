@@ -56,7 +56,7 @@ export class BlockWaiter {
  * and only then returns result of getFunc()
  */
 export const getWithAttempts = async <T>(
-  cm: CosmosWrapper,
+  blockWaiter: BlockWaiter,
   getFunc: () => Promise<T>,
   readyFunc: (t: T) => Promise<boolean>,
   numAttempts = 20,
@@ -72,7 +72,7 @@ export const getWithAttempts = async <T>(
     } catch (e) {
       error = e;
     }
-    await cm.blockWaiter.waitBlocks(1);
+    await blockWaiter.waitBlocks(1);
   }
   throw error != null ? error : new Error('getWithAttempts: no attempts left');
 };

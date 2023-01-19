@@ -843,7 +843,7 @@ export class CosmosWrapper {
 
   async checkPassedProposal(propose_contract: string, proposalId: number) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () => await this.queryProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'passed',
       20,
@@ -855,7 +855,7 @@ export class CosmosWrapper {
     proposalId: number,
   ) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'passed',
@@ -868,7 +868,7 @@ export class CosmosWrapper {
     proposalId: number,
   ) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'executed',
@@ -882,7 +882,7 @@ export class CosmosWrapper {
   ) {
     await this.executeProposal(propose_contract, proposalId);
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () => await this.queryProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'executed',
       20,
@@ -895,7 +895,7 @@ export class CosmosWrapper {
   ) {
     await this.executeMultiChoiceProposal(proposalContract, proposalId);
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(proposalContract, proposalId),
       async (response) => response.proposal.status === 'executed',
