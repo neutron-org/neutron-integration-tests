@@ -430,7 +430,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
         await getWithAttempts(
-          cm1,
+          cm1.blockWaiter,
           async () => cm1.listIBCChannels(),
           // Wait until there are 4 channels:
           // - one exists already, it is open for IBC transfers;
@@ -439,7 +439,7 @@ describe('Neutron / Interchain TXs', () => {
           async (channels) => channels.channels.length == 4,
         );
         await getWithAttempts(
-          cm1,
+          cm1.blockWaiter,
           () => cm1.listIBCChannels(),
           async (channels) =>
             channels.channels.find((c) => c.channel_id == 'channel-3')?.state ==
@@ -530,7 +530,7 @@ describe('Neutron / Interchain TXs', () => {
       );
 
       const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-        cm1,
+        cm1.blockWaiter,
         async () => cm1.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         async (data) => data.failures.length == 2,
@@ -582,7 +582,7 @@ const waitForAck = (
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    cm,
+    cm.blockWaiter,
     () =>
       cm.queryContract<AcknowledgementResult>(contractAddress, {
         acknowledgement_result: {

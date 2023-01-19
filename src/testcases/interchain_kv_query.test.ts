@@ -196,7 +196,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   );
 
   await getWithAttempts(
-    cm,
+    cm.blockWaiter,
     async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
@@ -780,7 +780,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await getWithAttempts(
-          cm[1],
+          cm[1].blockWaiter,
           () => getRegisteredQuery(cm[1], contractAddress, queryId),
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
@@ -796,7 +796,7 @@ describe('Neutron / Interchain KV Query', () => {
         await removeQueryViaTx(cm[1], queryId);
 
         await getWithAttempts(
-          cm[1],
+          cm[1].blockWaiter,
           async () =>
             await cm[1].queryBalances(
               testState.wallets.neutron.demo1.address.toString(),

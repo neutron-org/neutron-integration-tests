@@ -54,8 +54,8 @@ describe('Neutron / Tokenomics', () => {
     test('Total burned neutrons amount has increased', async () => {
       const burnedAfter = await cmNeutron.queryTotalBurnedNeutronsAmount();
       const diff =
-        +burnedAfter.total_burned_neutrons_amount.coin.amount -
-        +burnedBefore.total_burned_neutrons_amount.coin.amount;
+        +(burnedAfter.total_burned_neutrons_amount.coin.amount || 0) -
+        +(burnedBefore.total_burned_neutrons_amount.coin.amount || 0);
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
@@ -86,7 +86,8 @@ describe('Neutron / Tokenomics', () => {
         NEUTRON_DENOM,
       );
       const diff =
-        +totalSupplyBefore.amount.amount - +totalSupplyAfter.amount.amount;
+        +(totalSupplyBefore.amount.amount || 0) -
+        +(totalSupplyAfter.amount.amount || 0);
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
@@ -146,10 +147,10 @@ describe('Neutron / Tokenomics', () => {
           amount: '100000',
         },
         testState.wallets.neutron.demo1.address.toString(),
-        { revision_number: 2, revision_height: 100000000 },
+        { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
       await getWithAttempts(
-        cmNeutron,
+        cmNeutron.blockWaiter,
         async () =>
           cmNeutron.queryBalances(
             testState.wallets.neutron.demo1.address.toString(),

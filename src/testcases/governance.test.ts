@@ -47,7 +47,7 @@ describe('Neutron / Governance', () => {
         cm.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm,
+        cm.blockWaiter,
         async () =>
           await cm.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -64,7 +64,7 @@ describe('Neutron / Governance', () => {
         cm2.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm2,
+        cm2.blockWaiter,
         async () =>
           await cm2.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -81,7 +81,7 @@ describe('Neutron / Governance', () => {
         cm3.wallet.address.toString(),
       );
       await getWithAttempts(
-        cm3,
+        cm3.blockWaiter,
         async () =>
           await cm3.queryVotingPower(
             CORE_CONTRACT_ADDRESS,
@@ -93,7 +93,7 @@ describe('Neutron / Governance', () => {
     });
     test('check voting power', async () => {
       await getWithAttempts(
-        cm,
+        cm.blockWaiter,
         async () => await cm.queryTotalVotingPower(CORE_CONTRACT_ADDRESS),
         async (response) => response.power == 3000,
         20,
@@ -105,7 +105,7 @@ describe('Neutron / Governance', () => {
     test('send funds from wallet 1', async () => {
       await cm.msgSend(CORE_CONTRACT_ADDRESS, '1000');
       await getWithAttempts(
-        cm,
+        cm.blockWaiter,
         async () => await cm.queryBalances(CORE_CONTRACT_ADDRESS),
         async (response) => response.balances[0].amount == '1000',
         20,
@@ -294,7 +294,7 @@ describe('Neutron / Governance', () => {
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
-        cm,
+        cm.blockWaiter,
         async () =>
           await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
         async (response) => response.proposal.status === 'rejected',
@@ -404,7 +404,7 @@ describe('Neutron / Governance', () => {
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
       await getWithAttempts(
-        cm,
+        cm.blockWaiter,
         async () =>
           await cm.queryMultiChoiceProposal(
             PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
