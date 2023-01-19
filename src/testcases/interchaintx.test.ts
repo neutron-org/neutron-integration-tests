@@ -85,7 +85,7 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
-          cm1,
+          cm1.blockWaiter,
           () => cm1.listIBCChannels(),
           // Wait until there are 3 channels:
           // - one exists already, it is open for IBC transfers;
@@ -179,7 +179,7 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('check validator state', async () => {
         const res1 = await getWithAttempts(
-          cm2,
+          cm2.blockWaiter,
           () =>
             rest.staking.delegatorDelegations(
               cm2.sdk as CosmosSDK,
