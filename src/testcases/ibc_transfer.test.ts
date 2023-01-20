@@ -12,10 +12,11 @@ import {
 import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
-describe('Neutron / Simple', () => {
+describe('Neutron / IBC-transfer', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
   let cm2: CosmosWrapper;
+  let cm3: CosmosWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
@@ -27,12 +28,21 @@ describe('Neutron / Simple', () => {
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
+    cm3 = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.neutron.demo2,
+      NEUTRON_DENOM,
+    );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
+    const codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
+    const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
+    contractAddress = res[0]._contract_address;
   });
 
   describe('Wallets', () => {
@@ -43,18 +53,6 @@ describe('Neutron / Simple', () => {
       expect(testState.wallets.cosmos.demo2.address.toString()).toEqual(
         'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
       );
-    });
-  });
-
-  describe('Contracts', () => {
-    let codeId: string;
-    test('store contract', async () => {
-      codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
-      expect(parseInt(codeId)).toBeGreaterThan(0);
-    });
-    test('instantiate', async () => {
-      const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
-      contractAddress = res[0]._contract_address;
     });
   });
 
@@ -152,7 +150,6 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
       });
-
       test('execute contract', async () => {
         const res = await cm.executeContract(
           contractAddress,
@@ -167,7 +164,6 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
       });
-
       test('check wallet balance', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
@@ -202,6 +198,54 @@ describe('Neutron / Simple', () => {
         expect(balance).toBe(50000 - 3000 - 2333 * 2);
       });
     });
+
+    describe('Fee payer', () => {
+      beforeAll(async () => {
+        await cm.msgSend(contractAddress.toString(), '50000');
+        await cm.executeContract(contractAddress, {
+          set_fees: {
+            denom: cm.denom,
+            ack_fee: '2333',
+            recv_fee: '0',
+            timeout_fee: '2666',
+            payer: cm3.wallet.address.toString(),
+          },
+        });
+      });
+      test('should return error bc there is no fee grant yet', async () => {
+        await expect(
+          cm.executeContract(contractAddress, {
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.cosmos.demo2.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          }),
+        ).rejects.toThrow(/fee-grant not found/);
+      });
+      test('should spend fee payer tokens', async () => {
+        await cm3.feeGrant(contractAddress);
+        const balanceBefore = await cm.queryDenomBalance(
+          cm3.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        await cm.executeContract(contractAddress, {
+          send: {
+            channel: 'channel-0',
+            to: testState.wallets.cosmos.demo2.address.toString(),
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        });
+        const balanceAfter = await cm.queryDenomBalance(
+          cm3.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        expect(balanceBefore - balanceAfter).toEqual(2333 * 2 + 2666 * 2);
+      });
+    });
+
     describe('Missing fee', () => {
       beforeAll(async () => {
         await cm.executeContract(
@@ -319,8 +363,7 @@ describe('Neutron / Simple', () => {
         ).rejects.toThrow(/insufficient funds/);
       });
     });
-
-    describe('Not enough amount of tokens on contract to pay fee', () => {
+    describe('Enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
         await cm.executeContract(
           contractAddress,

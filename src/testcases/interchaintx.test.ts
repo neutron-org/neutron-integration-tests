@@ -14,11 +14,13 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getWithAttempts } from '../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../helpers/ica';
+import { balance } from '@cosmos-client/core/cjs/rest/bank/module';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm1: CosmosWrapper;
   let cm2: CosmosWrapper;
+  let cm3: CosmosWrapper;
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
@@ -40,6 +42,12 @@ describe('Neutron / Interchain TXs', () => {
       testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
+    );
+    cm3 = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.neutron.icq,
+      NEUTRON_DENOM,
     );
   });
 
@@ -206,11 +214,93 @@ describe('Neutron / Interchain TXs', () => {
         expect(res2.data.delegation_responses).toEqual([]);
       });
       test('check contract balance', async () => {
-        const res = await cm1.queryBalances(contractAddress);
-        const balance = res.balances.find((b) => b.denom === cm1.denom)?.amount;
-        expect(balance).toEqual('98000');
+        const balance = await cm1.queryDenomBalance(contractAddress, cm1.denom);
+        expect(balance).toEqual(98000);
       });
     });
+
+    describe('Send Interchain TX and fee payer', () => {
+      let contractBalance: number;
+      let payerBalance: number;
+      beforeAll(async () => {
+        await cm1.executeContract(contractAddress, {
+          set_fees: {
+            denom: cm1.denom,
+            ack_fee: '2000',
+            recv_fee: '0',
+            timeout_fee: '2000',
+            payer: cm3.wallet.address.toString(),
+          },
+        });
+        await cm3.feeGrant(contractAddress);
+        contractBalance = await cm1.queryDenomBalance(
+          contractAddress,
+          cm1.denom,
+        );
+        payerBalance = await cm3.queryDenomBalance(
+          cm3.wallet.address.toString(),
+          cm1.denom,
+        );
+      });
+      test('delegate from first ICA', async () => {
+        const res = await cm1.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '2000',
+            denom: cm2.denom,
+          },
+        });
+        expect(res.code).toEqual(0);
+        const sequenceId = getSequenceId(res.raw_log);
+        await waitForAck(cm1, contractAddress, icaId1, sequenceId);
+        const qres = await getAck(cm1, contractAddress, icaId1, sequenceId);
+        expect(qres).toMatchObject<AcknowledgementResult>({
+          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+        });
+      });
+      test('check validator state', async () => {
+        const res1 = await getWithAttempts(
+          cm2.blockWaiter,
+          () =>
+            rest.staking.delegatorDelegations(
+              cm2.sdk as CosmosSDK,
+              icaAddress1 as unknown as AccAddress,
+            ),
+          async (delegations) =>
+            delegations.data.delegation_responses?.length == 1,
+        );
+        expect(res1.data.delegation_responses).toEqual([
+          {
+            balance: { amount: '4000', denom: cm2.denom },
+            delegation: {
+              delegator_address: icaAddress1,
+              shares: '4000.000000000000000000',
+              validator_address:
+                'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+            },
+          },
+        ]);
+        const res2 = await rest.staking.delegatorDelegations(
+          cm2.sdk as CosmosSDK,
+          icaAddress2 as unknown as AccAddress,
+        );
+        expect(res2.data.delegation_responses).toEqual([]);
+      });
+      test('check contract and payer balance', async () => {
+        expect(await cm1.queryDenomBalance(contractAddress, cm1.denom)).toEqual(
+          contractBalance,
+        );
+        expect(
+          payerBalance -
+            (await cm3.queryDenomBalance(
+              cm3.wallet.address.toString(),
+              cm1.denom,
+            )),
+        ).toEqual(2000);
+      });
+    });
+
     describe('Error cases', () => {
       test('delegate for unknown validator from second ICA', async () => {
         const res = await cm1.executeContract(
@@ -370,6 +460,40 @@ describe('Neutron / Interchain TXs', () => {
           ).rejects.toThrow(/invalid coins/);
         });
       });
+      describe('fee payer without grant', () => {
+        beforeAll(async () => {
+          await cm1.executeContract(
+            contractAddress,
+            JSON.stringify({
+              set_fees: {
+                denom: cm1.denom,
+                ack_fee: '2000',
+                recv_fee: '0',
+                timeout_fee: '2000',
+                payer: testState.wallets.neutron.demo2.address.toString(),
+              },
+            }),
+          );
+        });
+        test('delegate without fee grant', async () => {
+          await expect(
+            cm1.executeContract(
+              contractAddress,
+              JSON.stringify({
+                delegate: {
+                  interchain_account_id: icaId1,
+                  validator: (
+                    testState.wallets.cosmos.val1
+                      .address as cosmosclient.ValAddress
+                  ).toString(),
+                  amount: '2000',
+                  denom: cm2.denom,
+                },
+              }),
+            ),
+          ).rejects.toThrow(/fee-grant not found/);
+        });
+      });
       describe('insufficient funds for fee', () => {
         beforeAll(async () => {
           await cm1.executeContract(
@@ -417,6 +541,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
     });
+
     describe('Recreation', () => {
       test('recreate ICA1', async () => {
         const res = await cm1.executeContract(
@@ -474,10 +599,10 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.data.delegation_responses).toEqual([
           {
-            balance: { amount: '1020', denom: cm2.denom },
+            balance: { amount: '3020', denom: cm2.denom },
             delegation: {
               delegator_address: icaAddress1,
-              shares: '1020.000000000000000000',
+              shares: '3020.000000000000000000',
               validator_address:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -485,7 +610,6 @@ describe('Neutron / Interchain TXs', () => {
         ]);
       });
     });
-
     test('delegate with sudo failure', async () => {
       await cleanAckResults(cm1, contractAddress);
 
