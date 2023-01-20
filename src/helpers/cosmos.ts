@@ -333,16 +333,33 @@ export class CosmosWrapper {
     return attributes;
   }
 
+  async feeGrant(to: string): Promise<void> {
+    const msg = new proto.cosmos.feegrant.v1beta1.MsgGrantAllowance({
+      granter: this.wallet.address.toString(),
+      grantee: to,
+      allowance: cosmosclient.codec.instanceToProtoAny(
+        new proto.cosmos.feegrant.v1beta1.BasicAllowance({}),
+      ),
+    });
+    await this.execTx(
+      {
+        amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
+        gas_limit: Long.fromString('600000000'),
+      },
+      [msg],
+    );
+  }
+
   async executeContract(
     contract: string,
-    msg: string,
+    msg: string | Record<string, unknown>,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
       sender,
       contract,
-      msg: Buffer.from(msg),
+      msg: Buffer.from(typeof msg == 'string' ? msg : JSON.stringify(msg)),
       funds,
     });
 
