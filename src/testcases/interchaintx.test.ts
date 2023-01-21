@@ -14,7 +14,6 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getWithAttempts } from '../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../helpers/ica';
-import { balance } from '@cosmos-client/core/cjs/rest/bank/module';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
