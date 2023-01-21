@@ -41,6 +41,7 @@ describe('Neutron / IBC-transfer', () => {
       COSMOS_DENOM,
     );
     const codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
+    // BEWARE: this contract sends 2 txs
     const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
     contractAddress = res[0]._contract_address;
   });
@@ -198,7 +199,6 @@ describe('Neutron / IBC-transfer', () => {
         expect(balance).toBe(50000 - 3000 - 2333 * 2);
       });
     });
-
     describe('Fee payer', () => {
       beforeAll(async () => {
         await cm.msgSend(contractAddress.toString(), '50000');
@@ -238,14 +238,16 @@ describe('Neutron / IBC-transfer', () => {
             amount: '1000',
           },
         });
+        await cm.blockWaiter.waitBlocks(10); // must be enought to process the tx
         const balanceAfter = await cm.queryDenomBalance(
           cm3.wallet.address.toString(),
           NEUTRON_DENOM,
         );
-        expect(balanceBefore - balanceAfter).toEqual(2333 * 2 + 2666 * 2);
+        // there are 2 txs in the contract so we must multiply the fee by 2
+        // as ack is done and ackFee must be spent, and timeoutFee is refunded
+        expect(balanceBefore - balanceAfter).toEqual(2333 * 2);
       });
     });
-
     describe('Missing fee', () => {
       beforeAll(async () => {
         await cm.executeContract(
