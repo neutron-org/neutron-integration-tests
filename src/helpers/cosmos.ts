@@ -44,7 +44,7 @@ export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
 export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
-const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
+const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
 
 type ChannelsList = {
   channels: {
@@ -153,17 +153,17 @@ export type PauseInfoResponse = {
 };
 
 export const NeutronContract = {
-  IBC_TRANSFER: 'ibc_transfer.wasm',
-  INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
-  INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
-  REFLECT: 'reflect.wasm',
-  TREASURY: 'neutron_treasury.wasm',
-  DISTRIBUTION: 'neutron_distribution.wasm',
-  RESERVE: 'neutron_reserve.wasm',
-  SUBDAO_CORE: 'cwd_subdao_core.wasm',
-  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
-  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
+  IBC_TRANSFER: 'artifacts/ibc_transfer.wasm',
+  INTERCHAIN_QUERIES: 'artifacts/neutron_interchain_queries.wasm',
+  INTERCHAIN_TXS: 'artifacts/neutron_interchain_txs.wasm',
+  REFLECT: 'artifacts/reflect.wasm',
+  TREASURY: 'dao/neutron_treasury.wasm',
+  DISTRIBUTION: 'dao/neutron_distribution.wasm',
+  RESERVE: 'dao/neutron_reserve.wasm',
+  SUBDAO_CORE: 'dao/cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'dao/cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'dao/cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'dao/cwd_subdao_timelock_single.wasm',
 };
 
 type MultiChoiceOption = {

@@ -5,9 +5,17 @@ const axios = require('axios');
 const stream = require('stream');
 const util = require('util');
 
-const REPO_URL = 'https://github.com/neutron-org/neutron-dao.git';
+const REPO_URLS = {
+  dao: 'https://github.com/neutron-org/neutron-dao.git',
+  dev: 'https://github.com/neutron-org/neutron-dev-contracts.git',
+};
 const JENKINS_ADDR_BASE = 'http://46.151.31.50:8080';
 const STORAGE_ADDR_BASE = 'http://46.151.31.50:8081';
+const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
+const DEST_DIR = 'contracts/dao';
+
+const TO_WAIT_FOR_BUILD = 60 * 20;
+const CHECKING_IF_BUILD_FINISHED_INTERVAL = 10;
 
 const finished = util.promisify(stream.finished);
 
@@ -26,75 +34,101 @@ async function downloadFile(fileUrl, outputLocationPath) {
 const wait = async (seconds) =>
   new Promise((r) => {
     setTimeout(() => r(true), 1000 * seconds);
-});
+  });
 
-async function main() {
-  let branch_name = process.argv[3];
-  let jenkins_token = process.argv[2];
-  console.log(branch_name);
-
-  if (!branch_name) {
-    branch_name = 'neutron_audit_informal_17_01_2023';
-  }
-
-  console.log(`Using branch ${branch_name}`);
-
-  let latest_commit = execSync(
-    `git ls-remote ${REPO_URL} "${branch_name}" | awk '{ print $1}'`,
-  )
+const getLatestCommit = (repo_url, branch_name) =>
+  execSync(`git ls-remote ${repo_url} "${branch_name}" | awk '{ print $1}'`)
     .toString()
     .trim();
-  console.log(`Latest commit is ${latest_commit}`);
 
-  console.log('Downloading checksum.txt');
+const triggerBuildingJob = async (token, commit) => {
+  const url = `${JENKINS_ADDR_BASE}/buildByToken/buildWithParameters?token=${token}&COMMIT=${commit}&job=neutron&NO_REBUILD=false`;
 
-  const url = `${STORAGE_ADDR_BASE}/neutron-dao/${latest_commit}/checksums.txt`;
+  try {
+    const trigger_build = await axios.get(url);
+    if (trigger_build.status !== 201) {
+      throw new Error(
+        `CI service returned bad error code: ${trigger_build.status}`,
+      );
+    }
+  } catch (error) {
+    throw new Error(`Failed to call CI service: ${error}`);
+  }
+};
+
+const getChecksumsTxt = async (storage_addr, commit, ci_token) => {
+  const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/checksums.txt`;
 
   let checksums;
   try {
     checksums = await axios.get(url);
+    console.log('Using a pre-built contracts');
   } catch (error) {
-    console.log('No checksum, lets call J');
+    console.log('No checksum file found, triggering the building job');
 
-    // do jenkins request and wait
-    const url = `${JENKINS_ADDR_BASE}/buildByToken/buildWithParameters?token=${jenkins_token}&COMMIT=${latest_commit}&job=neutron`;
-    console.log(url);
+    await triggerBuildingJob(ci_token, commit);
 
-    const trigger_build = await axios.get(url);
-    if (trigger_build.status != 201) {
-      console.log('Something with jenkins');
-      return;
-    }
     let counter = 0;
-    const toWaitOverall = 60 * 20;
-    const toWaitInterval = 10;
-    while (counter < toWaitOverall / toWaitInterval) {
+    while (counter < TO_WAIT_FOR_BUILD / CHECKING_IF_BUILD_FINISHED_INTERVAL) {
       await wait(10);
-      const url = `${STORAGE_ADDR_BASE}/neutron-dao/${latest_commit}/checksums.txt`;
+      const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/checksums.txt`;
 
       try {
         checksums = await axios.get(url);
         break;
       } catch (error) {
-        console.log('waiting for build to finish');
+        const alreadyPassed = CHECKING_IF_BUILD_FINISHED_INTERVAL * counter;
+        console.log(
+          `Waiting for build to finish (${alreadyPassed} seconds passed)`,
+        );
         counter++;
       }
     }
   }
+  return checksums.data;
+};
 
-  console.log(checksums.data);
+const getContractsList = (checksums_txt) => {
+  const regex = /\S+\.wasm/g;
+  return checksums_txt.match(regex);
+};
 
-  const regex = /[^\s]+\.wasm/g;
-  const found = checksums.data.match(regex);
-
-  console.log(found);
-
-  found.forEach((element) => {
-    const url = `${STORAGE_ADDR_BASE}/neutron-dao/${latest_commit}/${element}`;
-    const file_path = `contracts/artifacts/${element}`;
+const downloadContracts = async (contracts_list, commit, dest_dir) => {
+  contracts_list.forEach((element) => {
+    const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/${element}`;
+    const file_path = `${dest_dir}/${element}`;
 
     downloadFile(url, file_path);
   });
+};
+
+async function main(contracts_set_name, jenkins_token, branch_name) {
+  if (!branch_name) {
+    branch_name = DEFAULT_BRANCH;
+  }
+
+  console.log(`Using branch ${branch_name}`);
+
+  let latest_commit = getLatestCommit(
+    REPO_URLS[contracts_set_name],
+    branch_name,
+  );
+  console.log(`Latest commit is ${latest_commit}`);
+
+  console.log('Downloading checksum.txt');
+  let checksums_txt = await getChecksumsTxt(
+    STORAGE_ADDR_BASE,
+    latest_commit,
+    jenkins_token,
+  );
+
+  const contracts_list = getContractsList(checksums_txt);
+
+  console.log(`Contracts to be downloaded: ${contracts_list}`);
+
+  await downloadContracts(contracts_list, latest_commit, DEST_DIR);
+
+  console.log(`Contracts are downloaded`);
 }
 
-main();
+main(process.argv[2], process.argv[3], process.argv[4]);
