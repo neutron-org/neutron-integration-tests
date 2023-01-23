@@ -13,6 +13,14 @@ const JENKINS_ADDR_BASE = 'http://46.151.31.50:8080';
 const STORAGE_ADDR_BASE = 'http://46.151.31.50:8081';
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
 const DEST_DIR = 'contracts/artifacts';
+const JOB_NAMES = {
+  dao: 'neutron',
+  dev: 'neutron-dev-contracts',
+};
+const DIR_NAMES = {
+  dao: 'neutron-dao',
+  dev: 'neutron-dev-contracts',
+};
 
 const TO_WAIT_FOR_BUILD = 60 * 20;
 const CHECKING_IF_BUILD_FINISHED_INTERVAL = 10;
@@ -41,8 +49,9 @@ const getLatestCommit = (repo_url, branch_name) =>
     .toString()
     .trim();
 
-const triggerBuildingJob = async (token, commit) => {
-  const url = `${JENKINS_ADDR_BASE}/buildByToken/buildWithParameters?token=${token}&COMMIT=${commit}&job=neutron&NO_REBUILD=false`;
+const triggerBuildingJob = async (contracts_set_name, token, commit) => {
+  const job_name = JOB_NAMES[contracts_set_name];
+  const url = `${JENKINS_ADDR_BASE}/buildByToken/buildWithParameters?token=${token}&COMMIT=${commit}&job=${job_name}&NO_REBUILD=false`;
 
   try {
     const trigger_build = await axios.get(url);
@@ -56,8 +65,14 @@ const triggerBuildingJob = async (token, commit) => {
   }
 };
 
-const getChecksumsTxt = async (storage_addr, commit, ci_token) => {
-  const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/checksums.txt`;
+const getChecksumsTxt = async (
+  contracts_set_name,
+  storage_addr,
+  commit,
+  ci_token,
+) => {
+  const dir_name = DIR_NAMES[contracts_set_name];
+  const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit}/checksums.txt`;
 
   let checksums;
   try {
@@ -66,12 +81,12 @@ const getChecksumsTxt = async (storage_addr, commit, ci_token) => {
   } catch (error) {
     console.log('No checksum file found, triggering the building job');
 
-    await triggerBuildingJob(ci_token, commit);
+    await triggerBuildingJob(contracts_set_name, ci_token, commit);
 
     let counter = 0;
     while (counter < TO_WAIT_FOR_BUILD / CHECKING_IF_BUILD_FINISHED_INTERVAL) {
       await wait(10);
-      const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/checksums.txt`;
+      const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit}/checksums.txt`;
 
       try {
         checksums = await axios.get(url);
@@ -93,9 +108,15 @@ const getContractsList = (checksums_txt) => {
   return checksums_txt.match(regex);
 };
 
-const downloadContracts = async (contracts_list, commit, dest_dir) => {
+const downloadContracts = async (
+  contracts_set_name,
+  contracts_list,
+  commit,
+  dest_dir,
+) => {
+  const dir_name = DIR_NAMES[contracts_set_name];
   contracts_list.forEach((element) => {
-    const url = `${STORAGE_ADDR_BASE}/neutron-dao/${commit}/${element}`;
+    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit}/${element}`;
     const file_path = `${dest_dir}/${element}`;
 
     downloadFile(url, file_path);
@@ -117,6 +138,7 @@ async function main(contracts_set_name, jenkins_token, branch_name) {
 
   console.log('Downloading checksum.txt');
   let checksums_txt = await getChecksumsTxt(
+    contracts_set_name,
     STORAGE_ADDR_BASE,
     latest_commit,
     jenkins_token,
@@ -126,7 +148,12 @@ async function main(contracts_set_name, jenkins_token, branch_name) {
 
   console.log(`Contracts to be downloaded: ${contracts_list}`);
 
-  await downloadContracts(contracts_list, latest_commit, DEST_DIR);
+  await downloadContracts(
+    contracts_set_name,
+    contracts_list,
+    latest_commit,
+    DEST_DIR,
+  );
 
   console.log(`Contracts are downloaded`);
 }
