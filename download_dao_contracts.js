@@ -12,7 +12,7 @@ const REPO_URLS = {
 const JENKINS_ADDR_BASE = 'http://46.151.31.50:8080';
 const STORAGE_ADDR_BASE = 'http://46.151.31.50:8081';
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
-const DEST_DIR = 'contracts/dao';
+const DEST_DIR = 'contracts/artifacts';
 
 const TO_WAIT_FOR_BUILD = 60 * 20;
 const CHECKING_IF_BUILD_FINISHED_INTERVAL = 10;

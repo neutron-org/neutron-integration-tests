@@ -10,6 +10,10 @@ services:
       - 1317:1317
       - 26657:26657
       - 26656:26656
+    environment:
+      - CONTRACTS_BINARIES_DIR=/opt/neutron/contracts/artifacts
+      - RUN_BACKGROUND=0
+      - STAKEDENOM=stake
 
   gaia-node:
     image: gaia-node:latest
@@ -25,6 +29,7 @@ services:
       - CHAINID=test-2
       - STAKEDENOM=uatom
       - ALLOW_ICA_EXEC=yes
+      - RUN_BACKGROUND=0
 
   hermes:
     image: hermes:1.0.0
