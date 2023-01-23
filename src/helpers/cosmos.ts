@@ -157,13 +157,13 @@ export const NeutronContract = {
   INTERCHAIN_QUERIES: 'artifacts/neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'artifacts/neutron_interchain_txs.wasm',
   REFLECT: 'artifacts/reflect.wasm',
-  TREASURY: 'dao/neutron_treasury.wasm',
-  DISTRIBUTION: 'dao/neutron_distribution.wasm',
-  RESERVE: 'dao/neutron_reserve.wasm',
-  SUBDAO_CORE: 'dao/cwd_subdao_core.wasm',
-  SUBDAO_PREPROPOSE: 'dao/cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PROPOSAL: 'dao/cwd_subdao_proposal_single.wasm',
-  SUBDAO_TIMELOCK: 'dao/cwd_subdao_timelock_single.wasm',
+  TREASURY: 'artifacts/neutron_treasury.wasm',
+  DISTRIBUTION: 'artifacts/neutron_distribution.wasm',
+  RESERVE: 'artifacts/neutron_reserve.wasm',
+  SUBDAO_CORE: 'artifacts/cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'artifacts/cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'artifacts/cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'artifacts/cwd_subdao_timelock_single.wasm',
 };
 
 type MultiChoiceOption = {
