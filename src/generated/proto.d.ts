@@ -2,1964 +2,4900 @@ import * as $protobuf from "protobufjs";
 /** Namespace neutron. */
 export namespace neutron {
 
-    /** Namespace interchainadapter. */
-    namespace interchainadapter {
-
-        /** Namespace contractmanager. */
-        namespace contractmanager {
-
-            /** Properties of a Failure. */
-            interface IFailure {
-
-                /** Failure address */
-                address?: (string|null);
-
-                /** Failure id */
-                id?: (Long|null);
-
-                /** Failure ack_id */
-                ack_id?: (Long|null);
-
-                /** Failure ack_type */
-                ack_type?: (string|null);
-            }
-
-            /** Represents a Failure. */
-            class Failure implements IFailure {
-
-                /**
-                 * Constructs a new Failure.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IFailure);
-
-                /** Failure address. */
-                public address: string;
-
-                /** Failure id. */
-                public id: Long;
-
-                /** Failure ack_id. */
-                public ack_id: Long;
-
-                /** Failure ack_type. */
-                public ack_type: string;
-
-                /**
-                 * Encodes the specified Failure message. Does not implicitly {@link neutron.interchainadapter.contractmanager.Failure.verify|verify} messages.
-                 * @param message Failure message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Failure message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.Failure.verify|verify} messages.
-                 * @param message Failure message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Failure message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Failure
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.Failure;
-
-                /**
-                 * Decodes a Failure message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Failure
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.Failure;
-
-                /**
-                 * Verifies a Failure message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Failure message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Failure
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.Failure;
-
-                /**
-                 * Creates a plain object from a Failure message. Also converts values to other types if specified.
-                 * @param message Failure
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.Failure, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Failure to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a GenesisState. */
-            interface IGenesisState {
-
-                /** GenesisState params */
-                params?: (neutron.interchainadapter.contractmanager.IParams|null);
-
-                /** GenesisState failures_list */
-                failures_list?: (neutron.interchainadapter.contractmanager.IFailure[]|null);
-            }
-
-            /** Represents a GenesisState. */
-            class GenesisState implements IGenesisState {
-
-                /**
-                 * Constructs a new GenesisState.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IGenesisState);
-
-                /** GenesisState params. */
-                public params?: (neutron.interchainadapter.contractmanager.IParams|null);
-
-                /** GenesisState failures_list. */
-                public failures_list: neutron.interchainadapter.contractmanager.IFailure[];
-
-                /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.contractmanager.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.GenesisState;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.GenesisState;
-
-                /**
-                 * Verifies a GenesisState message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns GenesisState
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.GenesisState;
-
-                /**
-                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
-                 * @param message GenesisState
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this GenesisState to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Params. */
-            interface IParams {
-            }
-
-            /** Represents a Params. */
-            class Params implements IParams {
-
-                /**
-                 * Constructs a new Params.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IParams);
-
-                /**
-                 * Encodes the specified Params message. Does not implicitly {@link neutron.interchainadapter.contractmanager.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.Params;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.Params;
-
-                /**
-                 * Verifies a Params message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Params
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.Params;
-
-                /**
-                 * Creates a plain object from a Params message. Also converts values to other types if specified.
-                 * @param message Params
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Params to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Represents a Query */
-            class Query extends $protobuf.rpc.Service {
-
-                /**
-                 * Constructs a new Query service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                 */
-                public params(request: neutron.interchainadapter.contractmanager.IQueryParamsRequest, callback: neutron.interchainadapter.contractmanager.Query.ParamsCallback): void;
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @returns Promise
-                 */
-                public params(request: neutron.interchainadapter.contractmanager.IQueryParamsRequest): Promise<neutron.interchainadapter.contractmanager.QueryParamsResponse>;
-
-                /**
-                 * Calls AddressFailures.
-                 * @param request QueryFailuresRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryFailuresResponse
-                 */
-                public addressFailures(request: neutron.interchainadapter.contractmanager.IQueryFailuresRequest, callback: neutron.interchainadapter.contractmanager.Query.AddressFailuresCallback): void;
-
-                /**
-                 * Calls AddressFailures.
-                 * @param request QueryFailuresRequest message or plain object
-                 * @returns Promise
-                 */
-                public addressFailures(request: neutron.interchainadapter.contractmanager.IQueryFailuresRequest): Promise<neutron.interchainadapter.contractmanager.QueryFailuresResponse>;
-
-                /**
-                 * Calls Failures.
-                 * @param request QueryFailuresRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryFailuresResponse
-                 */
-                public failures(request: neutron.interchainadapter.contractmanager.IQueryFailuresRequest, callback: neutron.interchainadapter.contractmanager.Query.FailuresCallback): void;
-
-                /**
-                 * Calls Failures.
-                 * @param request QueryFailuresRequest message or plain object
-                 * @returns Promise
-                 */
-                public failures(request: neutron.interchainadapter.contractmanager.IQueryFailuresRequest): Promise<neutron.interchainadapter.contractmanager.QueryFailuresResponse>;
-            }
-
-            namespace Query {
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.contractmanager.Query#params}.
-                 * @param error Error, if any
-                 * @param [response] QueryParamsResponse
-                 */
-                type ParamsCallback = (error: (Error|null), response?: neutron.interchainadapter.contractmanager.QueryParamsResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.contractmanager.Query#addressFailures}.
-                 * @param error Error, if any
-                 * @param [response] QueryFailuresResponse
-                 */
-                type AddressFailuresCallback = (error: (Error|null), response?: neutron.interchainadapter.contractmanager.QueryFailuresResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.contractmanager.Query#failures}.
-                 * @param error Error, if any
-                 * @param [response] QueryFailuresResponse
-                 */
-                type FailuresCallback = (error: (Error|null), response?: neutron.interchainadapter.contractmanager.QueryFailuresResponse) => void;
-            }
-
-            /** Properties of a QueryParamsRequest. */
-            interface IQueryParamsRequest {
-            }
-
-            /** Represents a QueryParamsRequest. */
-            class QueryParamsRequest implements IQueryParamsRequest {
-
-                /**
-                 * Constructs a new QueryParamsRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IQueryParamsRequest);
-
-                /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.QueryParamsRequest;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.QueryParamsRequest;
-
-                /**
-                 * Verifies a QueryParamsRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.QueryParamsRequest;
-
-                /**
-                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
-                 * @param message QueryParamsRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryParamsResponse. */
-            interface IQueryParamsResponse {
-
-                /** QueryParamsResponse params */
-                params?: (neutron.interchainadapter.contractmanager.IParams|null);
-            }
-
-            /** Represents a QueryParamsResponse. */
-            class QueryParamsResponse implements IQueryParamsResponse {
-
-                /**
-                 * Constructs a new QueryParamsResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IQueryParamsResponse);
-
-                /** QueryParamsResponse params. */
-                public params?: (neutron.interchainadapter.contractmanager.IParams|null);
-
-                /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.QueryParamsResponse;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.QueryParamsResponse;
-
-                /**
-                 * Verifies a QueryParamsResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.QueryParamsResponse;
-
-                /**
-                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
-                 * @param message QueryParamsResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryFailuresRequest. */
-            interface IQueryFailuresRequest {
-
-                /** QueryFailuresRequest address */
-                address?: (string|null);
-
-                /** QueryFailuresRequest pagination */
-                pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-            }
-
-            /** Represents a QueryFailuresRequest. */
-            class QueryFailuresRequest implements IQueryFailuresRequest {
-
-                /**
-                 * Constructs a new QueryFailuresRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IQueryFailuresRequest);
-
-                /** QueryFailuresRequest address. */
-                public address: string;
-
-                /** QueryFailuresRequest pagination. */
-                public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-
-                /**
-                 * Encodes the specified QueryFailuresRequest message. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryFailuresRequest.verify|verify} messages.
-                 * @param message QueryFailuresRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IQueryFailuresRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryFailuresRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryFailuresRequest.verify|verify} messages.
-                 * @param message QueryFailuresRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IQueryFailuresRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryFailuresRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryFailuresRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.QueryFailuresRequest;
-
-                /**
-                 * Decodes a QueryFailuresRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryFailuresRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.QueryFailuresRequest;
-
-                /**
-                 * Verifies a QueryFailuresRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryFailuresRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryFailuresRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.QueryFailuresRequest;
-
-                /**
-                 * Creates a plain object from a QueryFailuresRequest message. Also converts values to other types if specified.
-                 * @param message QueryFailuresRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.QueryFailuresRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryFailuresRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryFailuresResponse. */
-            interface IQueryFailuresResponse {
-
-                /** QueryFailuresResponse failures */
-                failures?: (neutron.interchainadapter.contractmanager.IFailure[]|null);
-
-                /** QueryFailuresResponse pagination */
-                pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-            }
-
-            /** Represents a QueryFailuresResponse. */
-            class QueryFailuresResponse implements IQueryFailuresResponse {
-
-                /**
-                 * Constructs a new QueryFailuresResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.contractmanager.IQueryFailuresResponse);
-
-                /** QueryFailuresResponse failures. */
-                public failures: neutron.interchainadapter.contractmanager.IFailure[];
-
-                /** QueryFailuresResponse pagination. */
-                public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-
-                /**
-                 * Encodes the specified QueryFailuresResponse message. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryFailuresResponse.verify|verify} messages.
-                 * @param message QueryFailuresResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.contractmanager.IQueryFailuresResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryFailuresResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.contractmanager.QueryFailuresResponse.verify|verify} messages.
-                 * @param message QueryFailuresResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.contractmanager.IQueryFailuresResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryFailuresResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryFailuresResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.contractmanager.QueryFailuresResponse;
-
-                /**
-                 * Decodes a QueryFailuresResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryFailuresResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.contractmanager.QueryFailuresResponse;
-
-                /**
-                 * Verifies a QueryFailuresResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryFailuresResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryFailuresResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.contractmanager.QueryFailuresResponse;
-
-                /**
-                 * Creates a plain object from a QueryFailuresResponse message. Also converts values to other types if specified.
-                 * @param message QueryFailuresResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.contractmanager.QueryFailuresResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryFailuresResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
+    /** Namespace contractmanager. */
+    namespace contractmanager {
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.contractmanager.IQueryParamsRequest, callback: neutron.contractmanager.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.contractmanager.IQueryParamsRequest): Promise<neutron.contractmanager.QueryParamsResponse>;
+
+            /**
+             * Calls AddressFailures.
+             * @param request QueryFailuresRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryFailuresResponse
+             */
+            public addressFailures(request: neutron.contractmanager.IQueryFailuresRequest, callback: neutron.contractmanager.Query.AddressFailuresCallback): void;
+
+            /**
+             * Calls AddressFailures.
+             * @param request QueryFailuresRequest message or plain object
+             * @returns Promise
+             */
+            public addressFailures(request: neutron.contractmanager.IQueryFailuresRequest): Promise<neutron.contractmanager.QueryFailuresResponse>;
+
+            /**
+             * Calls Failures.
+             * @param request QueryFailuresRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryFailuresResponse
+             */
+            public failures(request: neutron.contractmanager.IQueryFailuresRequest, callback: neutron.contractmanager.Query.FailuresCallback): void;
+
+            /**
+             * Calls Failures.
+             * @param request QueryFailuresRequest message or plain object
+             * @returns Promise
+             */
+            public failures(request: neutron.contractmanager.IQueryFailuresRequest): Promise<neutron.contractmanager.QueryFailuresResponse>;
         }
 
-        /** Namespace feerefunder. */
-        namespace feerefunder {
-
-            /** Properties of a Fee. */
-            interface IFee {
-
-                /** Fee recv_fee */
-                recv_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-
-                /** Fee ack_fee */
-                ack_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-
-                /** Fee timeout_fee */
-                timeout_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-            }
-
-            /** Represents a Fee. */
-            class Fee implements IFee {
-
-                /**
-                 * Constructs a new Fee.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IFee);
-
-                /** Fee recv_fee. */
-                public recv_fee: cosmos.base.v1beta1.ICoin[];
-
-                /** Fee ack_fee. */
-                public ack_fee: cosmos.base.v1beta1.ICoin[];
-
-                /** Fee timeout_fee. */
-                public timeout_fee: cosmos.base.v1beta1.ICoin[];
-
-                /**
-                 * Encodes the specified Fee message. Does not implicitly {@link neutron.interchainadapter.feerefunder.Fee.verify|verify} messages.
-                 * @param message Fee message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Fee message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.Fee.verify|verify} messages.
-                 * @param message Fee message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Fee message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Fee
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.Fee;
-
-                /**
-                 * Decodes a Fee message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Fee
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.Fee;
-
-                /**
-                 * Verifies a Fee message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Fee message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Fee
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.Fee;
-
-                /**
-                 * Creates a plain object from a Fee message. Also converts values to other types if specified.
-                 * @param message Fee
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.Fee, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Fee to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a PacketID. */
-            interface IPacketID {
-
-                /** PacketID channel_id */
-                channel_id?: (string|null);
-
-                /** PacketID port_id */
-                port_id?: (string|null);
-
-                /** PacketID sequence */
-                sequence?: (Long|null);
-            }
-
-            /** Represents a PacketID. */
-            class PacketID implements IPacketID {
-
-                /**
-                 * Constructs a new PacketID.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IPacketID);
-
-                /** PacketID channel_id. */
-                public channel_id: string;
-
-                /** PacketID port_id. */
-                public port_id: string;
-
-                /** PacketID sequence. */
-                public sequence: Long;
-
-                /**
-                 * Encodes the specified PacketID message. Does not implicitly {@link neutron.interchainadapter.feerefunder.PacketID.verify|verify} messages.
-                 * @param message PacketID message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified PacketID message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.PacketID.verify|verify} messages.
-                 * @param message PacketID message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a PacketID message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns PacketID
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.PacketID;
-
-                /**
-                 * Decodes a PacketID message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns PacketID
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.PacketID;
-
-                /**
-                 * Verifies a PacketID message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a PacketID message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns PacketID
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.PacketID;
-
-                /**
-                 * Creates a plain object from a PacketID message. Also converts values to other types if specified.
-                 * @param message PacketID
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.PacketID, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this PacketID to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a GenesisState. */
-            interface IGenesisState {
-
-                /** GenesisState params */
-                params?: (neutron.interchainadapter.feerefunder.IParams|null);
-
-                /** GenesisState fee_infos */
-                fee_infos?: (neutron.interchainadapter.feerefunder.IFeeInfo[]|null);
-            }
-
-            /** Represents a GenesisState. */
-            class GenesisState implements IGenesisState {
-
-                /**
-                 * Constructs a new GenesisState.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IGenesisState);
-
-                /** GenesisState params. */
-                public params?: (neutron.interchainadapter.feerefunder.IParams|null);
-
-                /** GenesisState fee_infos. */
-                public fee_infos: neutron.interchainadapter.feerefunder.IFeeInfo[];
-
-                /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.feerefunder.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.GenesisState;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.GenesisState;
-
-                /**
-                 * Verifies a GenesisState message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns GenesisState
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.GenesisState;
-
-                /**
-                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
-                 * @param message GenesisState
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this GenesisState to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a FeeInfo. */
-            interface IFeeInfo {
-
-                /** FeeInfo payer */
-                payer?: (string|null);
-
-                /** FeeInfo packet_id */
-                packet_id?: (neutron.interchainadapter.feerefunder.IPacketID|null);
-
-                /** FeeInfo fee */
-                fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-            }
-
-            /** Represents a FeeInfo. */
-            class FeeInfo implements IFeeInfo {
-
-                /**
-                 * Constructs a new FeeInfo.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IFeeInfo);
-
-                /** FeeInfo payer. */
-                public payer: string;
-
-                /** FeeInfo packet_id. */
-                public packet_id?: (neutron.interchainadapter.feerefunder.IPacketID|null);
-
-                /** FeeInfo fee. */
-                public fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-
-                /**
-                 * Encodes the specified FeeInfo message. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfo.verify|verify} messages.
-                 * @param message FeeInfo message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IFeeInfo, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified FeeInfo message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfo.verify|verify} messages.
-                 * @param message FeeInfo message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IFeeInfo, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a FeeInfo message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns FeeInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.FeeInfo;
-
-                /**
-                 * Decodes a FeeInfo message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns FeeInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.FeeInfo;
-
-                /**
-                 * Verifies a FeeInfo message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a FeeInfo message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns FeeInfo
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.FeeInfo;
-
-                /**
-                 * Creates a plain object from a FeeInfo message. Also converts values to other types if specified.
-                 * @param message FeeInfo
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.FeeInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this FeeInfo to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Params. */
-            interface IParams {
-
-                /** Params min_fee */
-                min_fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-            }
-
-            /** Represents a Params. */
-            class Params implements IParams {
-
-                /**
-                 * Constructs a new Params.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IParams);
-
-                /** Params min_fee. */
-                public min_fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-
-                /**
-                 * Encodes the specified Params message. Does not implicitly {@link neutron.interchainadapter.feerefunder.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.Params;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.Params;
-
-                /**
-                 * Verifies a Params message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Params
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.Params;
-
-                /**
-                 * Creates a plain object from a Params message. Also converts values to other types if specified.
-                 * @param message Params
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Params to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Represents a Query */
-            class Query extends $protobuf.rpc.Service {
-
-                /**
-                 * Constructs a new Query service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                 */
-                public params(request: neutron.interchainadapter.feerefunder.IQueryParamsRequest, callback: neutron.interchainadapter.feerefunder.Query.ParamsCallback): void;
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @returns Promise
-                 */
-                public params(request: neutron.interchainadapter.feerefunder.IQueryParamsRequest): Promise<neutron.interchainadapter.feerefunder.QueryParamsResponse>;
-
-                /**
-                 * Calls FeeInfo.
-                 * @param request FeeInfoRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and FeeInfoResponse
-                 */
-                public feeInfo(request: neutron.interchainadapter.feerefunder.IFeeInfoRequest, callback: neutron.interchainadapter.feerefunder.Query.FeeInfoCallback): void;
-
-                /**
-                 * Calls FeeInfo.
-                 * @param request FeeInfoRequest message or plain object
-                 * @returns Promise
-                 */
-                public feeInfo(request: neutron.interchainadapter.feerefunder.IFeeInfoRequest): Promise<neutron.interchainadapter.feerefunder.FeeInfoResponse>;
-            }
-
-            namespace Query {
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.feerefunder.Query#params}.
-                 * @param error Error, if any
-                 * @param [response] QueryParamsResponse
-                 */
-                type ParamsCallback = (error: (Error|null), response?: neutron.interchainadapter.feerefunder.QueryParamsResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.feerefunder.Query#feeInfo}.
-                 * @param error Error, if any
-                 * @param [response] FeeInfoResponse
-                 */
-                type FeeInfoCallback = (error: (Error|null), response?: neutron.interchainadapter.feerefunder.FeeInfoResponse) => void;
-            }
-
-            /** Properties of a QueryParamsRequest. */
-            interface IQueryParamsRequest {
-            }
-
-            /** Represents a QueryParamsRequest. */
-            class QueryParamsRequest implements IQueryParamsRequest {
-
-                /**
-                 * Constructs a new QueryParamsRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IQueryParamsRequest);
-
-                /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchainadapter.feerefunder.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.QueryParamsRequest;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.QueryParamsRequest;
-
-                /**
-                 * Verifies a QueryParamsRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.QueryParamsRequest;
-
-                /**
-                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
-                 * @param message QueryParamsRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryParamsResponse. */
-            interface IQueryParamsResponse {
-
-                /** QueryParamsResponse params */
-                params?: (neutron.interchainadapter.feerefunder.IParams|null);
-            }
-
-            /** Represents a QueryParamsResponse. */
-            class QueryParamsResponse implements IQueryParamsResponse {
-
-                /**
-                 * Constructs a new QueryParamsResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IQueryParamsResponse);
-
-                /** QueryParamsResponse params. */
-                public params?: (neutron.interchainadapter.feerefunder.IParams|null);
-
-                /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchainadapter.feerefunder.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.QueryParamsResponse;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.QueryParamsResponse;
-
-                /**
-                 * Verifies a QueryParamsResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.QueryParamsResponse;
-
-                /**
-                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
-                 * @param message QueryParamsResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a FeeInfoRequest. */
-            interface IFeeInfoRequest {
-
-                /** FeeInfoRequest channel_id */
-                channel_id?: (string|null);
-
-                /** FeeInfoRequest port_id */
-                port_id?: (string|null);
-
-                /** FeeInfoRequest sequence */
-                sequence?: (Long|null);
-            }
-
-            /** Represents a FeeInfoRequest. */
-            class FeeInfoRequest implements IFeeInfoRequest {
-
-                /**
-                 * Constructs a new FeeInfoRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IFeeInfoRequest);
-
-                /** FeeInfoRequest channel_id. */
-                public channel_id: string;
-
-                /** FeeInfoRequest port_id. */
-                public port_id: string;
-
-                /** FeeInfoRequest sequence. */
-                public sequence: Long;
-
-                /**
-                 * Encodes the specified FeeInfoRequest message. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfoRequest.verify|verify} messages.
-                 * @param message FeeInfoRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IFeeInfoRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified FeeInfoRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfoRequest.verify|verify} messages.
-                 * @param message FeeInfoRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IFeeInfoRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a FeeInfoRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns FeeInfoRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.FeeInfoRequest;
-
-                /**
-                 * Decodes a FeeInfoRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns FeeInfoRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.FeeInfoRequest;
-
-                /**
-                 * Verifies a FeeInfoRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a FeeInfoRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns FeeInfoRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.FeeInfoRequest;
-
-                /**
-                 * Creates a plain object from a FeeInfoRequest message. Also converts values to other types if specified.
-                 * @param message FeeInfoRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.FeeInfoRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this FeeInfoRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a FeeInfoResponse. */
-            interface IFeeInfoResponse {
-
-                /** FeeInfoResponse fee_info */
-                fee_info?: (neutron.interchainadapter.feerefunder.IFeeInfo|null);
-            }
-
-            /** Represents a FeeInfoResponse. */
-            class FeeInfoResponse implements IFeeInfoResponse {
-
-                /**
-                 * Constructs a new FeeInfoResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.feerefunder.IFeeInfoResponse);
-
-                /** FeeInfoResponse fee_info. */
-                public fee_info?: (neutron.interchainadapter.feerefunder.IFeeInfo|null);
-
-                /**
-                 * Encodes the specified FeeInfoResponse message. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfoResponse.verify|verify} messages.
-                 * @param message FeeInfoResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.feerefunder.IFeeInfoResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified FeeInfoResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.feerefunder.FeeInfoResponse.verify|verify} messages.
-                 * @param message FeeInfoResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.feerefunder.IFeeInfoResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a FeeInfoResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns FeeInfoResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.feerefunder.FeeInfoResponse;
-
-                /**
-                 * Decodes a FeeInfoResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns FeeInfoResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.feerefunder.FeeInfoResponse;
-
-                /**
-                 * Verifies a FeeInfoResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a FeeInfoResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns FeeInfoResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.feerefunder.FeeInfoResponse;
-
-                /**
-                 * Creates a plain object from a FeeInfoResponse message. Also converts values to other types if specified.
-                 * @param message FeeInfoResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.feerefunder.FeeInfoResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this FeeInfoResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.contractmanager.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.contractmanager.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.contractmanager.Query#addressFailures}.
+             * @param error Error, if any
+             * @param [response] QueryFailuresResponse
+             */
+            type AddressFailuresCallback = (error: (Error|null), response?: neutron.contractmanager.QueryFailuresResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.contractmanager.Query#failures}.
+             * @param error Error, if any
+             * @param [response] QueryFailuresResponse
+             */
+            type FailuresCallback = (error: (Error|null), response?: neutron.contractmanager.QueryFailuresResponse) => void;
         }
 
-        /** Namespace interchainqueries. */
-        namespace interchainqueries {
-
-            /** Properties of a RegisteredQuery. */
-            interface IRegisteredQuery {
-
-                /** RegisteredQuery id */
-                id?: (Long|null);
-
-                /** RegisteredQuery owner */
-                owner?: (string|null);
-
-                /** RegisteredQuery query_type */
-                query_type?: (string|null);
-
-                /** RegisteredQuery keys */
-                keys?: (neutron.interchainadapter.interchainqueries.IKVKey[]|null);
-
-                /** RegisteredQuery transactions_filter */
-                transactions_filter?: (string|null);
-
-                /** RegisteredQuery connection_id */
-                connection_id?: (string|null);
-
-                /** RegisteredQuery update_period */
-                update_period?: (Long|null);
-
-                /** RegisteredQuery last_submitted_result_local_height */
-                last_submitted_result_local_height?: (Long|null);
-
-                /** RegisteredQuery last_submitted_result_remote_height */
-                last_submitted_result_remote_height?: (Long|null);
-
-                /** RegisteredQuery deposit */
-                deposit?: (cosmos.base.v1beta1.ICoin[]|null);
-
-                /** RegisteredQuery submit_timeout */
-                submit_timeout?: (Long|null);
-            }
-
-            /** Represents a RegisteredQuery. */
-            class RegisteredQuery implements IRegisteredQuery {
-
-                /**
-                 * Constructs a new RegisteredQuery.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IRegisteredQuery);
-
-                /** RegisteredQuery id. */
-                public id: Long;
-
-                /** RegisteredQuery owner. */
-                public owner: string;
-
-                /** RegisteredQuery query_type. */
-                public query_type: string;
-
-                /** RegisteredQuery keys. */
-                public keys: neutron.interchainadapter.interchainqueries.IKVKey[];
-
-                /** RegisteredQuery transactions_filter. */
-                public transactions_filter: string;
-
-                /** RegisteredQuery connection_id. */
-                public connection_id: string;
-
-                /** RegisteredQuery update_period. */
-                public update_period: Long;
-
-                /** RegisteredQuery last_submitted_result_local_height. */
-                public last_submitted_result_local_height: Long;
-
-                /** RegisteredQuery last_submitted_result_remote_height. */
-                public last_submitted_result_remote_height: Long;
-
-                /** RegisteredQuery deposit. */
-                public deposit: cosmos.base.v1beta1.ICoin[];
-
-                /** RegisteredQuery submit_timeout. */
-                public submit_timeout: Long;
-
-                /**
-                 * Encodes the specified RegisteredQuery message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.RegisteredQuery.verify|verify} messages.
-                 * @param message RegisteredQuery message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IRegisteredQuery, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified RegisteredQuery message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.RegisteredQuery.verify|verify} messages.
-                 * @param message RegisteredQuery message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IRegisteredQuery, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a RegisteredQuery message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns RegisteredQuery
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.RegisteredQuery;
-
-                /**
-                 * Decodes a RegisteredQuery message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns RegisteredQuery
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.RegisteredQuery;
-
-                /**
-                 * Verifies a RegisteredQuery message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a RegisteredQuery message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns RegisteredQuery
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.RegisteredQuery;
-
-                /**
-                 * Creates a plain object from a RegisteredQuery message. Also converts values to other types if specified.
-                 * @param message RegisteredQuery
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.RegisteredQuery, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this RegisteredQuery to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a KVKey. */
-            interface IKVKey {
-
-                /** KVKey path */
-                path?: (string|null);
-
-                /** KVKey key */
-                key?: (Uint8Array|null);
-            }
-
-            /** Represents a KVKey. */
-            class KVKey implements IKVKey {
-
-                /**
-                 * Constructs a new KVKey.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IKVKey);
-
-                /** KVKey path. */
-                public path: string;
-
-                /** KVKey key. */
-                public key: Uint8Array;
-
-                /**
-                 * Encodes the specified KVKey message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.KVKey.verify|verify} messages.
-                 * @param message KVKey message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IKVKey, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified KVKey message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.KVKey.verify|verify} messages.
-                 * @param message KVKey message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IKVKey, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a KVKey message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns KVKey
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.KVKey;
-
-                /**
-                 * Decodes a KVKey message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns KVKey
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.KVKey;
-
-                /**
-                 * Verifies a KVKey message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a KVKey message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns KVKey
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.KVKey;
-
-                /**
-                 * Creates a plain object from a KVKey message. Also converts values to other types if specified.
-                 * @param message KVKey
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.KVKey, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this KVKey to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a GenesisState. */
-            interface IGenesisState {
-
-                /** GenesisState params */
-                params?: (neutron.interchainadapter.interchainqueries.IParams|null);
-
-                /** GenesisState registered_queries */
-                registered_queries?: (neutron.interchainadapter.interchainqueries.IRegisteredQuery[]|null);
-            }
-
-            /** Represents a GenesisState. */
-            class GenesisState implements IGenesisState {
-
-                /**
-                 * Constructs a new GenesisState.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IGenesisState);
-
-                /** GenesisState params. */
-                public params?: (neutron.interchainadapter.interchainqueries.IParams|null);
-
-                /** GenesisState registered_queries. */
-                public registered_queries: neutron.interchainadapter.interchainqueries.IRegisteredQuery[];
-
-                /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.GenesisState;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.GenesisState;
-
-                /**
-                 * Verifies a GenesisState message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns GenesisState
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.GenesisState;
-
-                /**
-                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
-                 * @param message GenesisState
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this GenesisState to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Params. */
-            interface IParams {
-
-                /** Params query_submit_timeout */
-                query_submit_timeout?: (Long|null);
-
-                /** Params query_deposit */
-                query_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
-            }
-
-            /** Represents a Params. */
-            class Params implements IParams {
-
-                /**
-                 * Constructs a new Params.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IParams);
-
-                /** Params query_submit_timeout. */
-                public query_submit_timeout: Long;
-
-                /** Params query_deposit. */
-                public query_deposit: cosmos.base.v1beta1.ICoin[];
-
-                /**
-                 * Encodes the specified Params message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.Params;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.Params;
-
-                /**
-                 * Verifies a Params message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Params
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.Params;
-
-                /**
-                 * Creates a plain object from a Params message. Also converts values to other types if specified.
-                 * @param message Params
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Params to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
+
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
+
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IQueryParamsRequest);
+
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.contractmanager.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.contractmanager.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.contractmanager.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.contractmanager.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.contractmanager.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.contractmanager.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryFailuresRequest. */
+        interface IQueryFailuresRequest {
+
+            /** QueryFailuresRequest address */
+            address?: (string|null);
+
+            /** QueryFailuresRequest pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+        }
+
+        /** Represents a QueryFailuresRequest. */
+        class QueryFailuresRequest implements IQueryFailuresRequest {
+
+            /**
+             * Constructs a new QueryFailuresRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IQueryFailuresRequest);
+
+            /** QueryFailuresRequest address. */
+            public address: string;
+
+            /** QueryFailuresRequest pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+
+            /**
+             * Encodes the specified QueryFailuresRequest message. Does not implicitly {@link neutron.contractmanager.QueryFailuresRequest.verify|verify} messages.
+             * @param message QueryFailuresRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IQueryFailuresRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryFailuresRequest message, length delimited. Does not implicitly {@link neutron.contractmanager.QueryFailuresRequest.verify|verify} messages.
+             * @param message QueryFailuresRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IQueryFailuresRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryFailuresRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryFailuresRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.QueryFailuresRequest;
+
+            /**
+             * Decodes a QueryFailuresRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryFailuresRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.QueryFailuresRequest;
+
+            /**
+             * Verifies a QueryFailuresRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryFailuresRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryFailuresRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.QueryFailuresRequest;
+
+            /**
+             * Creates a plain object from a QueryFailuresRequest message. Also converts values to other types if specified.
+             * @param message QueryFailuresRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.QueryFailuresRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryFailuresRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryFailuresResponse. */
+        interface IQueryFailuresResponse {
+
+            /** QueryFailuresResponse failures */
+            failures?: (neutron.contractmanager.IFailure[]|null);
+
+            /** QueryFailuresResponse pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+        }
+
+        /** Represents a QueryFailuresResponse. */
+        class QueryFailuresResponse implements IQueryFailuresResponse {
+
+            /**
+             * Constructs a new QueryFailuresResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IQueryFailuresResponse);
+
+            /** QueryFailuresResponse failures. */
+            public failures: neutron.contractmanager.IFailure[];
+
+            /** QueryFailuresResponse pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+
+            /**
+             * Encodes the specified QueryFailuresResponse message. Does not implicitly {@link neutron.contractmanager.QueryFailuresResponse.verify|verify} messages.
+             * @param message QueryFailuresResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IQueryFailuresResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryFailuresResponse message, length delimited. Does not implicitly {@link neutron.contractmanager.QueryFailuresResponse.verify|verify} messages.
+             * @param message QueryFailuresResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IQueryFailuresResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryFailuresResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryFailuresResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.QueryFailuresResponse;
+
+            /**
+             * Decodes a QueryFailuresResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryFailuresResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.QueryFailuresResponse;
+
+            /**
+             * Verifies a QueryFailuresResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryFailuresResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryFailuresResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.QueryFailuresResponse;
+
+            /**
+             * Creates a plain object from a QueryFailuresResponse message. Also converts values to other types if specified.
+             * @param message QueryFailuresResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.QueryFailuresResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryFailuresResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IParams);
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Failure. */
+        interface IFailure {
+
+            /** Failure channel_id */
+            channel_id?: (string|null);
+
+            /** Failure address */
+            address?: (string|null);
+
+            /** Failure id */
+            id?: (Long|null);
+
+            /** Failure ack_id */
+            ack_id?: (Long|null);
+
+            /** Failure ack_type */
+            ack_type?: (string|null);
+        }
+
+        /** Represents a Failure. */
+        class Failure implements IFailure {
+
+            /**
+             * Constructs a new Failure.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IFailure);
+
+            /** Failure channel_id. */
+            public channel_id: string;
+
+            /** Failure address. */
+            public address: string;
+
+            /** Failure id. */
+            public id: Long;
+
+            /** Failure ack_id. */
+            public ack_id: Long;
+
+            /** Failure ack_type. */
+            public ack_type: string;
+
+            /**
+             * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
+             * @param message Failure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Failure message, length delimited. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
+             * @param message Failure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Failure message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Failure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Failure;
+
+            /**
+             * Decodes a Failure message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Failure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Failure;
+
+            /**
+             * Verifies a Failure message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Failure message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Failure
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Failure;
+
+            /**
+             * Creates a plain object from a Failure message. Also converts values to other types if specified.
+             * @param message Failure
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.Failure, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Failure to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState params */
+            params?: (neutron.contractmanager.IParams|null);
+
+            /** GenesisState failures_list */
+            failures_list?: (neutron.contractmanager.IFailure[]|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IGenesisState);
+
+            /** GenesisState params. */
+            public params?: (neutron.contractmanager.IParams|null);
+
+            /** GenesisState failures_list. */
+            public failures_list: neutron.contractmanager.IFailure[];
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.contractmanager.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.contractmanager.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace feeburner. */
+    namespace feeburner {
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.feeburner.IQueryParamsRequest, callback: neutron.feeburner.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.feeburner.IQueryParamsRequest): Promise<neutron.feeburner.QueryParamsResponse>;
+
+            /**
+             * Calls TotalBurnedNeutronsAmount.
+             * @param request QueryTotalBurnedNeutronsAmountRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryTotalBurnedNeutronsAmountResponse
+             */
+            public totalBurnedNeutronsAmount(request: neutron.feeburner.IQueryTotalBurnedNeutronsAmountRequest, callback: neutron.feeburner.Query.TotalBurnedNeutronsAmountCallback): void;
+
+            /**
+             * Calls TotalBurnedNeutronsAmount.
+             * @param request QueryTotalBurnedNeutronsAmountRequest message or plain object
+             * @returns Promise
+             */
+            public totalBurnedNeutronsAmount(request: neutron.feeburner.IQueryTotalBurnedNeutronsAmountRequest): Promise<neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse>;
+        }
+
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.feeburner.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.feeburner.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.feeburner.Query#totalBurnedNeutronsAmount}.
+             * @param error Error, if any
+             * @param [response] QueryTotalBurnedNeutronsAmountResponse
+             */
+            type TotalBurnedNeutronsAmountCallback = (error: (Error|null), response?: neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse) => void;
+        }
+
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
+
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
+
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IQueryParamsRequest);
+
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.feeburner.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.feeburner.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.feeburner.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.feeburner.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.feeburner.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.feeburner.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryTotalBurnedNeutronsAmountRequest. */
+        interface IQueryTotalBurnedNeutronsAmountRequest {
+        }
+
+        /** Represents a QueryTotalBurnedNeutronsAmountRequest. */
+        class QueryTotalBurnedNeutronsAmountRequest implements IQueryTotalBurnedNeutronsAmountRequest {
+
+            /**
+             * Constructs a new QueryTotalBurnedNeutronsAmountRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IQueryTotalBurnedNeutronsAmountRequest);
+
+            /**
+             * Encodes the specified QueryTotalBurnedNeutronsAmountRequest message. Does not implicitly {@link neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest.verify|verify} messages.
+             * @param message QueryTotalBurnedNeutronsAmountRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IQueryTotalBurnedNeutronsAmountRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryTotalBurnedNeutronsAmountRequest message, length delimited. Does not implicitly {@link neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest.verify|verify} messages.
+             * @param message QueryTotalBurnedNeutronsAmountRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IQueryTotalBurnedNeutronsAmountRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryTotalBurnedNeutronsAmountRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryTotalBurnedNeutronsAmountRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest;
+
+            /**
+             * Decodes a QueryTotalBurnedNeutronsAmountRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryTotalBurnedNeutronsAmountRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest;
+
+            /**
+             * Verifies a QueryTotalBurnedNeutronsAmountRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryTotalBurnedNeutronsAmountRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryTotalBurnedNeutronsAmountRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest;
+
+            /**
+             * Creates a plain object from a QueryTotalBurnedNeutronsAmountRequest message. Also converts values to other types if specified.
+             * @param message QueryTotalBurnedNeutronsAmountRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.QueryTotalBurnedNeutronsAmountRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryTotalBurnedNeutronsAmountRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryTotalBurnedNeutronsAmountResponse. */
+        interface IQueryTotalBurnedNeutronsAmountResponse {
+
+            /** QueryTotalBurnedNeutronsAmountResponse total_burned_neutrons_amount */
+            total_burned_neutrons_amount?: (neutron.feeburner.ITotalBurnedNeutronsAmount|null);
+        }
+
+        /** Represents a QueryTotalBurnedNeutronsAmountResponse. */
+        class QueryTotalBurnedNeutronsAmountResponse implements IQueryTotalBurnedNeutronsAmountResponse {
+
+            /**
+             * Constructs a new QueryTotalBurnedNeutronsAmountResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IQueryTotalBurnedNeutronsAmountResponse);
+
+            /** QueryTotalBurnedNeutronsAmountResponse total_burned_neutrons_amount. */
+            public total_burned_neutrons_amount?: (neutron.feeburner.ITotalBurnedNeutronsAmount|null);
+
+            /**
+             * Encodes the specified QueryTotalBurnedNeutronsAmountResponse message. Does not implicitly {@link neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse.verify|verify} messages.
+             * @param message QueryTotalBurnedNeutronsAmountResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IQueryTotalBurnedNeutronsAmountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryTotalBurnedNeutronsAmountResponse message, length delimited. Does not implicitly {@link neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse.verify|verify} messages.
+             * @param message QueryTotalBurnedNeutronsAmountResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IQueryTotalBurnedNeutronsAmountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryTotalBurnedNeutronsAmountResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryTotalBurnedNeutronsAmountResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse;
+
+            /**
+             * Decodes a QueryTotalBurnedNeutronsAmountResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryTotalBurnedNeutronsAmountResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse;
+
+            /**
+             * Verifies a QueryTotalBurnedNeutronsAmountResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryTotalBurnedNeutronsAmountResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryTotalBurnedNeutronsAmountResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse;
+
+            /**
+             * Creates a plain object from a QueryTotalBurnedNeutronsAmountResponse message. Also converts values to other types if specified.
+             * @param message QueryTotalBurnedNeutronsAmountResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.QueryTotalBurnedNeutronsAmountResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryTotalBurnedNeutronsAmountResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params neutron_denom */
+            neutron_denom?: (string|null);
+
+            /** Params treasury_address */
+            treasury_address?: (string|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IParams);
+
+            /** Params neutron_denom. */
+            public neutron_denom: string;
+
+            /** Params treasury_address. */
+            public treasury_address: string;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a TotalBurnedNeutronsAmount. */
+        interface ITotalBurnedNeutronsAmount {
+
+            /** TotalBurnedNeutronsAmount coin */
+            coin?: (cosmos.base.v1beta1.ICoin|null);
+        }
+
+        /** Represents a TotalBurnedNeutronsAmount. */
+        class TotalBurnedNeutronsAmount implements ITotalBurnedNeutronsAmount {
+
+            /**
+             * Constructs a new TotalBurnedNeutronsAmount.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.ITotalBurnedNeutronsAmount);
+
+            /** TotalBurnedNeutronsAmount coin. */
+            public coin?: (cosmos.base.v1beta1.ICoin|null);
+
+            /**
+             * Encodes the specified TotalBurnedNeutronsAmount message. Does not implicitly {@link neutron.feeburner.TotalBurnedNeutronsAmount.verify|verify} messages.
+             * @param message TotalBurnedNeutronsAmount message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.ITotalBurnedNeutronsAmount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified TotalBurnedNeutronsAmount message, length delimited. Does not implicitly {@link neutron.feeburner.TotalBurnedNeutronsAmount.verify|verify} messages.
+             * @param message TotalBurnedNeutronsAmount message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.ITotalBurnedNeutronsAmount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a TotalBurnedNeutronsAmount message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns TotalBurnedNeutronsAmount
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.TotalBurnedNeutronsAmount;
+
+            /**
+             * Decodes a TotalBurnedNeutronsAmount message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns TotalBurnedNeutronsAmount
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.TotalBurnedNeutronsAmount;
+
+            /**
+             * Verifies a TotalBurnedNeutronsAmount message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a TotalBurnedNeutronsAmount message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns TotalBurnedNeutronsAmount
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.TotalBurnedNeutronsAmount;
+
+            /**
+             * Creates a plain object from a TotalBurnedNeutronsAmount message. Also converts values to other types if specified.
+             * @param message TotalBurnedNeutronsAmount
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.TotalBurnedNeutronsAmount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this TotalBurnedNeutronsAmount to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState params */
+            params?: (neutron.feeburner.IParams|null);
+
+            /** GenesisState total_burned_neutrons_amount */
+            total_burned_neutrons_amount?: (neutron.feeburner.ITotalBurnedNeutronsAmount|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IGenesisState);
+
+            /** GenesisState params. */
+            public params?: (neutron.feeburner.IParams|null);
+
+            /** GenesisState total_burned_neutrons_amount. */
+            public total_burned_neutrons_amount?: (neutron.feeburner.ITotalBurnedNeutronsAmount|null);
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.feeburner.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.feeburner.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace feerefunder. */
+    namespace feerefunder {
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.feerefunder.IQueryParamsRequest, callback: neutron.feerefunder.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.feerefunder.IQueryParamsRequest): Promise<neutron.feerefunder.QueryParamsResponse>;
+
+            /**
+             * Calls FeeInfo.
+             * @param request FeeInfoRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and FeeInfoResponse
+             */
+            public feeInfo(request: neutron.feerefunder.IFeeInfoRequest, callback: neutron.feerefunder.Query.FeeInfoCallback): void;
+
+            /**
+             * Calls FeeInfo.
+             * @param request FeeInfoRequest message or plain object
+             * @returns Promise
+             */
+            public feeInfo(request: neutron.feerefunder.IFeeInfoRequest): Promise<neutron.feerefunder.FeeInfoResponse>;
+        }
+
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.feerefunder.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.feerefunder.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.feerefunder.Query#feeInfo}.
+             * @param error Error, if any
+             * @param [response] FeeInfoResponse
+             */
+            type FeeInfoCallback = (error: (Error|null), response?: neutron.feerefunder.FeeInfoResponse) => void;
+        }
+
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
+
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
+
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IQueryParamsRequest);
+
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.feerefunder.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.feerefunder.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.feerefunder.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.feerefunder.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.feerefunder.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.feerefunder.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a FeeInfoRequest. */
+        interface IFeeInfoRequest {
+
+            /** FeeInfoRequest channel_id */
+            channel_id?: (string|null);
+
+            /** FeeInfoRequest port_id */
+            port_id?: (string|null);
+
+            /** FeeInfoRequest sequence */
+            sequence?: (Long|null);
+        }
+
+        /** Represents a FeeInfoRequest. */
+        class FeeInfoRequest implements IFeeInfoRequest {
+
+            /**
+             * Constructs a new FeeInfoRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IFeeInfoRequest);
+
+            /** FeeInfoRequest channel_id. */
+            public channel_id: string;
+
+            /** FeeInfoRequest port_id. */
+            public port_id: string;
+
+            /** FeeInfoRequest sequence. */
+            public sequence: Long;
+
+            /**
+             * Encodes the specified FeeInfoRequest message. Does not implicitly {@link neutron.feerefunder.FeeInfoRequest.verify|verify} messages.
+             * @param message FeeInfoRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IFeeInfoRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified FeeInfoRequest message, length delimited. Does not implicitly {@link neutron.feerefunder.FeeInfoRequest.verify|verify} messages.
+             * @param message FeeInfoRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IFeeInfoRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a FeeInfoRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns FeeInfoRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.FeeInfoRequest;
+
+            /**
+             * Decodes a FeeInfoRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns FeeInfoRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.FeeInfoRequest;
+
+            /**
+             * Verifies a FeeInfoRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a FeeInfoRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns FeeInfoRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.FeeInfoRequest;
+
+            /**
+             * Creates a plain object from a FeeInfoRequest message. Also converts values to other types if specified.
+             * @param message FeeInfoRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.FeeInfoRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this FeeInfoRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a FeeInfoResponse. */
+        interface IFeeInfoResponse {
+
+            /** FeeInfoResponse fee_info */
+            fee_info?: (neutron.feerefunder.IFeeInfo|null);
+        }
+
+        /** Represents a FeeInfoResponse. */
+        class FeeInfoResponse implements IFeeInfoResponse {
+
+            /**
+             * Constructs a new FeeInfoResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IFeeInfoResponse);
+
+            /** FeeInfoResponse fee_info. */
+            public fee_info?: (neutron.feerefunder.IFeeInfo|null);
+
+            /**
+             * Encodes the specified FeeInfoResponse message. Does not implicitly {@link neutron.feerefunder.FeeInfoResponse.verify|verify} messages.
+             * @param message FeeInfoResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IFeeInfoResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified FeeInfoResponse message, length delimited. Does not implicitly {@link neutron.feerefunder.FeeInfoResponse.verify|verify} messages.
+             * @param message FeeInfoResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IFeeInfoResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a FeeInfoResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns FeeInfoResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.FeeInfoResponse;
+
+            /**
+             * Decodes a FeeInfoResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns FeeInfoResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.FeeInfoResponse;
+
+            /**
+             * Verifies a FeeInfoResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a FeeInfoResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns FeeInfoResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.FeeInfoResponse;
+
+            /**
+             * Creates a plain object from a FeeInfoResponse message. Also converts values to other types if specified.
+             * @param message FeeInfoResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.FeeInfoResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this FeeInfoResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params min_fee */
+            min_fee?: (neutron.feerefunder.IFee|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IParams);
+
+            /** Params min_fee. */
+            public min_fee?: (neutron.feerefunder.IFee|null);
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Fee. */
+        interface IFee {
+
+            /** Fee recv_fee */
+            recv_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Fee ack_fee */
+            ack_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Fee timeout_fee */
+            timeout_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+        }
+
+        /** Represents a Fee. */
+        class Fee implements IFee {
+
+            /**
+             * Constructs a new Fee.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IFee);
+
+            /** Fee recv_fee. */
+            public recv_fee: cosmos.base.v1beta1.ICoin[];
+
+            /** Fee ack_fee. */
+            public ack_fee: cosmos.base.v1beta1.ICoin[];
+
+            /** Fee timeout_fee. */
+            public timeout_fee: cosmos.base.v1beta1.ICoin[];
+
+            /**
+             * Encodes the specified Fee message. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
+             * @param message Fee message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Fee message, length delimited. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
+             * @param message Fee message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Fee message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Fee
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Fee;
+
+            /**
+             * Decodes a Fee message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Fee
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Fee;
+
+            /**
+             * Verifies a Fee message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Fee message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Fee
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Fee;
+
+            /**
+             * Creates a plain object from a Fee message. Also converts values to other types if specified.
+             * @param message Fee
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.Fee, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Fee to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a PacketID. */
+        interface IPacketID {
+
+            /** PacketID channel_id */
+            channel_id?: (string|null);
+
+            /** PacketID port_id */
+            port_id?: (string|null);
+
+            /** PacketID sequence */
+            sequence?: (Long|null);
+        }
+
+        /** Represents a PacketID. */
+        class PacketID implements IPacketID {
+
+            /**
+             * Constructs a new PacketID.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IPacketID);
+
+            /** PacketID channel_id. */
+            public channel_id: string;
+
+            /** PacketID port_id. */
+            public port_id: string;
+
+            /** PacketID sequence. */
+            public sequence: Long;
+
+            /**
+             * Encodes the specified PacketID message. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
+             * @param message PacketID message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified PacketID message, length delimited. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
+             * @param message PacketID message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a PacketID message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns PacketID
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.PacketID;
+
+            /**
+             * Decodes a PacketID message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns PacketID
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.PacketID;
+
+            /**
+             * Verifies a PacketID message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a PacketID message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns PacketID
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.PacketID;
+
+            /**
+             * Creates a plain object from a PacketID message. Also converts values to other types if specified.
+             * @param message PacketID
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.PacketID, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this PacketID to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState params */
+            params?: (neutron.feerefunder.IParams|null);
+
+            /** GenesisState fee_infos */
+            fee_infos?: (neutron.feerefunder.IFeeInfo[]|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IGenesisState);
+
+            /** GenesisState params. */
+            public params?: (neutron.feerefunder.IParams|null);
+
+            /** GenesisState fee_infos. */
+            public fee_infos: neutron.feerefunder.IFeeInfo[];
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.feerefunder.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.feerefunder.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a FeeInfo. */
+        interface IFeeInfo {
+
+            /** FeeInfo payer */
+            payer?: (string|null);
+
+            /** FeeInfo packet_id */
+            packet_id?: (neutron.feerefunder.IPacketID|null);
+
+            /** FeeInfo fee */
+            fee?: (neutron.feerefunder.IFee|null);
+        }
+
+        /** Represents a FeeInfo. */
+        class FeeInfo implements IFeeInfo {
+
+            /**
+             * Constructs a new FeeInfo.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IFeeInfo);
+
+            /** FeeInfo payer. */
+            public payer: string;
+
+            /** FeeInfo packet_id. */
+            public packet_id?: (neutron.feerefunder.IPacketID|null);
+
+            /** FeeInfo fee. */
+            public fee?: (neutron.feerefunder.IFee|null);
+
+            /**
+             * Encodes the specified FeeInfo message. Does not implicitly {@link neutron.feerefunder.FeeInfo.verify|verify} messages.
+             * @param message FeeInfo message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IFeeInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified FeeInfo message, length delimited. Does not implicitly {@link neutron.feerefunder.FeeInfo.verify|verify} messages.
+             * @param message FeeInfo message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IFeeInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a FeeInfo message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns FeeInfo
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.FeeInfo;
+
+            /**
+             * Decodes a FeeInfo message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns FeeInfo
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.FeeInfo;
+
+            /**
+             * Verifies a FeeInfo message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a FeeInfo message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns FeeInfo
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.FeeInfo;
+
+            /**
+             * Creates a plain object from a FeeInfo message. Also converts values to other types if specified.
+             * @param message FeeInfo
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.FeeInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this FeeInfo to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace interchainqueries. */
+    namespace interchainqueries {
+
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls RegisterInterchainQuery.
+             * @param request MsgRegisterInterchainQuery message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgRegisterInterchainQueryResponse
+             */
+            public registerInterchainQuery(request: neutron.interchainqueries.IMsgRegisterInterchainQuery, callback: neutron.interchainqueries.Msg.RegisterInterchainQueryCallback): void;
+
+            /**
+             * Calls RegisterInterchainQuery.
+             * @param request MsgRegisterInterchainQuery message or plain object
+             * @returns Promise
+             */
+            public registerInterchainQuery(request: neutron.interchainqueries.IMsgRegisterInterchainQuery): Promise<neutron.interchainqueries.MsgRegisterInterchainQueryResponse>;
+
+            /**
+             * Calls SubmitQueryResult.
+             * @param request MsgSubmitQueryResult message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgSubmitQueryResultResponse
+             */
+            public submitQueryResult(request: neutron.interchainqueries.IMsgSubmitQueryResult, callback: neutron.interchainqueries.Msg.SubmitQueryResultCallback): void;
+
+            /**
+             * Calls SubmitQueryResult.
+             * @param request MsgSubmitQueryResult message or plain object
+             * @returns Promise
+             */
+            public submitQueryResult(request: neutron.interchainqueries.IMsgSubmitQueryResult): Promise<neutron.interchainqueries.MsgSubmitQueryResultResponse>;
+
+            /**
+             * Calls RemoveInterchainQuery.
+             * @param request MsgRemoveInterchainQueryRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgRemoveInterchainQueryResponse
+             */
+            public removeInterchainQuery(request: neutron.interchainqueries.IMsgRemoveInterchainQueryRequest, callback: neutron.interchainqueries.Msg.RemoveInterchainQueryCallback): void;
+
+            /**
+             * Calls RemoveInterchainQuery.
+             * @param request MsgRemoveInterchainQueryRequest message or plain object
+             * @returns Promise
+             */
+            public removeInterchainQuery(request: neutron.interchainqueries.IMsgRemoveInterchainQueryRequest): Promise<neutron.interchainqueries.MsgRemoveInterchainQueryResponse>;
+
+            /**
+             * Calls UpdateInterchainQuery.
+             * @param request MsgUpdateInterchainQueryRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateInterchainQueryResponse
+             */
+            public updateInterchainQuery(request: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest, callback: neutron.interchainqueries.Msg.UpdateInterchainQueryCallback): void;
+
+            /**
+             * Calls UpdateInterchainQuery.
+             * @param request MsgUpdateInterchainQueryRequest message or plain object
+             * @returns Promise
+             */
+            public updateInterchainQuery(request: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest): Promise<neutron.interchainqueries.MsgUpdateInterchainQueryResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Msg#registerInterchainQuery}.
+             * @param error Error, if any
+             * @param [response] MsgRegisterInterchainQueryResponse
+             */
+            type RegisterInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgRegisterInterchainQueryResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Msg#submitQueryResult}.
+             * @param error Error, if any
+             * @param [response] MsgSubmitQueryResultResponse
+             */
+            type SubmitQueryResultCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgSubmitQueryResultResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Msg#removeInterchainQuery}.
+             * @param error Error, if any
+             * @param [response] MsgRemoveInterchainQueryResponse
+             */
+            type RemoveInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgRemoveInterchainQueryResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Msg#updateInterchainQuery}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateInterchainQueryResponse
+             */
+            type UpdateInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgUpdateInterchainQueryResponse) => void;
+        }
+
+        /** Properties of a MsgRegisterInterchainQuery. */
+        interface IMsgRegisterInterchainQuery {
+
+            /** MsgRegisterInterchainQuery query_type */
+            query_type?: (string|null);
+
+            /** MsgRegisterInterchainQuery keys */
+            keys?: (neutron.interchainqueries.IKVKey[]|null);
+
+            /** MsgRegisterInterchainQuery transactions_filter */
+            transactions_filter?: (string|null);
+
+            /** MsgRegisterInterchainQuery connection_id */
+            connection_id?: (string|null);
+
+            /** MsgRegisterInterchainQuery update_period */
+            update_period?: (Long|null);
+
+            /** MsgRegisterInterchainQuery sender */
+            sender?: (string|null);
+        }
+
+        /** Represents a MsgRegisterInterchainQuery. */
+        class MsgRegisterInterchainQuery implements IMsgRegisterInterchainQuery {
+
+            /**
+             * Constructs a new MsgRegisterInterchainQuery.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgRegisterInterchainQuery);
+
+            /** MsgRegisterInterchainQuery query_type. */
+            public query_type: string;
+
+            /** MsgRegisterInterchainQuery keys. */
+            public keys: neutron.interchainqueries.IKVKey[];
+
+            /** MsgRegisterInterchainQuery transactions_filter. */
+            public transactions_filter: string;
+
+            /** MsgRegisterInterchainQuery connection_id. */
+            public connection_id: string;
+
+            /** MsgRegisterInterchainQuery update_period. */
+            public update_period: Long;
+
+            /** MsgRegisterInterchainQuery sender. */
+            public sender: string;
+
+            /**
+             * Encodes the specified MsgRegisterInterchainQuery message. Does not implicitly {@link neutron.interchainqueries.MsgRegisterInterchainQuery.verify|verify} messages.
+             * @param message MsgRegisterInterchainQuery message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgRegisterInterchainQuery, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgRegisterInterchainQuery message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgRegisterInterchainQuery.verify|verify} messages.
+             * @param message MsgRegisterInterchainQuery message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgRegisterInterchainQuery, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgRegisterInterchainQuery message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgRegisterInterchainQuery
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgRegisterInterchainQuery;
+
+            /**
+             * Decodes a MsgRegisterInterchainQuery message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgRegisterInterchainQuery
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgRegisterInterchainQuery;
+
+            /**
+             * Verifies a MsgRegisterInterchainQuery message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgRegisterInterchainQuery message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgRegisterInterchainQuery
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgRegisterInterchainQuery;
+
+            /**
+             * Creates a plain object from a MsgRegisterInterchainQuery message. Also converts values to other types if specified.
+             * @param message MsgRegisterInterchainQuery
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgRegisterInterchainQuery, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgRegisterInterchainQuery to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgRegisterInterchainQueryResponse. */
+        interface IMsgRegisterInterchainQueryResponse {
+
+            /** MsgRegisterInterchainQueryResponse id */
+            id?: (Long|null);
+        }
+
+        /** Represents a MsgRegisterInterchainQueryResponse. */
+        class MsgRegisterInterchainQueryResponse implements IMsgRegisterInterchainQueryResponse {
+
+            /**
+             * Constructs a new MsgRegisterInterchainQueryResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgRegisterInterchainQueryResponse);
+
+            /** MsgRegisterInterchainQueryResponse id. */
+            public id: Long;
+
+            /**
+             * Encodes the specified MsgRegisterInterchainQueryResponse message. Does not implicitly {@link neutron.interchainqueries.MsgRegisterInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgRegisterInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgRegisterInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgRegisterInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgRegisterInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgRegisterInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgRegisterInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgRegisterInterchainQueryResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgRegisterInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgRegisterInterchainQueryResponse;
+
+            /**
+             * Decodes a MsgRegisterInterchainQueryResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgRegisterInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgRegisterInterchainQueryResponse;
+
+            /**
+             * Verifies a MsgRegisterInterchainQueryResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgRegisterInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgRegisterInterchainQueryResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgRegisterInterchainQueryResponse;
+
+            /**
+             * Creates a plain object from a MsgRegisterInterchainQueryResponse message. Also converts values to other types if specified.
+             * @param message MsgRegisterInterchainQueryResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgRegisterInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgRegisterInterchainQueryResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgSubmitQueryResult. */
+        interface IMsgSubmitQueryResult {
+
+            /** MsgSubmitQueryResult query_id */
+            query_id?: (Long|null);
+
+            /** MsgSubmitQueryResult sender */
+            sender?: (string|null);
+
+            /** MsgSubmitQueryResult client_id */
+            client_id?: (string|null);
+
+            /** MsgSubmitQueryResult result */
+            result?: (neutron.interchainqueries.IQueryResult|null);
+        }
+
+        /** Represents a MsgSubmitQueryResult. */
+        class MsgSubmitQueryResult implements IMsgSubmitQueryResult {
+
+            /**
+             * Constructs a new MsgSubmitQueryResult.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgSubmitQueryResult);
+
+            /** MsgSubmitQueryResult query_id. */
+            public query_id: Long;
+
+            /** MsgSubmitQueryResult sender. */
+            public sender: string;
+
+            /** MsgSubmitQueryResult client_id. */
+            public client_id: string;
+
+            /** MsgSubmitQueryResult result. */
+            public result?: (neutron.interchainqueries.IQueryResult|null);
+
+            /**
+             * Encodes the specified MsgSubmitQueryResult message. Does not implicitly {@link neutron.interchainqueries.MsgSubmitQueryResult.verify|verify} messages.
+             * @param message MsgSubmitQueryResult message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgSubmitQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgSubmitQueryResult message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgSubmitQueryResult.verify|verify} messages.
+             * @param message MsgSubmitQueryResult message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgSubmitQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgSubmitQueryResult message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgSubmitQueryResult
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgSubmitQueryResult;
+
+            /**
+             * Decodes a MsgSubmitQueryResult message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgSubmitQueryResult
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgSubmitQueryResult;
+
+            /**
+             * Verifies a MsgSubmitQueryResult message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgSubmitQueryResult message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgSubmitQueryResult
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgSubmitQueryResult;
+
+            /**
+             * Creates a plain object from a MsgSubmitQueryResult message. Also converts values to other types if specified.
+             * @param message MsgSubmitQueryResult
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgSubmitQueryResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgSubmitQueryResult to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryResult. */
+        interface IQueryResult {
+
+            /** QueryResult kv_results */
+            kv_results?: (neutron.interchainqueries.IStorageValue[]|null);
+
+            /** QueryResult block */
+            block?: (neutron.interchainqueries.IBlock|null);
+
+            /** QueryResult height */
+            height?: (Long|null);
+
+            /** QueryResult revision */
+            revision?: (Long|null);
+
+            /** QueryResult allow_kv_callbacks */
+            allow_kv_callbacks?: (boolean|null);
+        }
+
+        /** Represents a QueryResult. */
+        class QueryResult implements IQueryResult {
+
+            /**
+             * Constructs a new QueryResult.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryResult);
+
+            /** QueryResult kv_results. */
+            public kv_results: neutron.interchainqueries.IStorageValue[];
+
+            /** QueryResult block. */
+            public block?: (neutron.interchainqueries.IBlock|null);
+
+            /** QueryResult height. */
+            public height: Long;
+
+            /** QueryResult revision. */
+            public revision: Long;
+
+            /** QueryResult allow_kv_callbacks. */
+            public allow_kv_callbacks: boolean;
+
+            /**
+             * Encodes the specified QueryResult message. Does not implicitly {@link neutron.interchainqueries.QueryResult.verify|verify} messages.
+             * @param message QueryResult message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryResult message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryResult.verify|verify} messages.
+             * @param message QueryResult message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryResult message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryResult
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryResult;
+
+            /**
+             * Decodes a QueryResult message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryResult
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryResult;
+
+            /**
+             * Verifies a QueryResult message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryResult message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryResult
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryResult;
+
+            /**
+             * Creates a plain object from a QueryResult message. Also converts values to other types if specified.
+             * @param message QueryResult
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryResult to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a StorageValue. */
+        interface IStorageValue {
+
+            /** StorageValue storage_prefix */
+            storage_prefix?: (string|null);
+
+            /** StorageValue key */
+            key?: (Uint8Array|null);
+
+            /** StorageValue value */
+            value?: (Uint8Array|null);
+
+            /** StorageValue Proof */
+            Proof?: (tendermint.crypto.IProofOps|null);
+        }
+
+        /** Represents a StorageValue. */
+        class StorageValue implements IStorageValue {
+
+            /**
+             * Constructs a new StorageValue.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IStorageValue);
+
+            /** StorageValue storage_prefix. */
+            public storage_prefix: string;
+
+            /** StorageValue key. */
+            public key: Uint8Array;
+
+            /** StorageValue value. */
+            public value: Uint8Array;
+
+            /** StorageValue Proof. */
+            public Proof?: (tendermint.crypto.IProofOps|null);
+
+            /**
+             * Encodes the specified StorageValue message. Does not implicitly {@link neutron.interchainqueries.StorageValue.verify|verify} messages.
+             * @param message StorageValue message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IStorageValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified StorageValue message, length delimited. Does not implicitly {@link neutron.interchainqueries.StorageValue.verify|verify} messages.
+             * @param message StorageValue message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IStorageValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a StorageValue message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns StorageValue
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.StorageValue;
+
+            /**
+             * Decodes a StorageValue message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns StorageValue
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.StorageValue;
+
+            /**
+             * Verifies a StorageValue message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a StorageValue message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns StorageValue
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.StorageValue;
+
+            /**
+             * Creates a plain object from a StorageValue message. Also converts values to other types if specified.
+             * @param message StorageValue
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.StorageValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this StorageValue to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Block. */
+        interface IBlock {
+
+            /** Block next_block_header */
+            next_block_header?: (google.protobuf.IAny|null);
+
+            /** Block header */
+            header?: (google.protobuf.IAny|null);
+
+            /** Block tx */
+            tx?: (neutron.interchainqueries.ITxValue|null);
+        }
+
+        /** Represents a Block. */
+        class Block implements IBlock {
+
+            /**
+             * Constructs a new Block.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IBlock);
+
+            /** Block next_block_header. */
+            public next_block_header?: (google.protobuf.IAny|null);
+
+            /** Block header. */
+            public header?: (google.protobuf.IAny|null);
+
+            /** Block tx. */
+            public tx?: (neutron.interchainqueries.ITxValue|null);
+
+            /**
+             * Encodes the specified Block message. Does not implicitly {@link neutron.interchainqueries.Block.verify|verify} messages.
+             * @param message Block message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IBlock, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Block message, length delimited. Does not implicitly {@link neutron.interchainqueries.Block.verify|verify} messages.
+             * @param message Block message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IBlock, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Block message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Block
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.Block;
+
+            /**
+             * Decodes a Block message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Block
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.Block;
+
+            /**
+             * Verifies a Block message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Block message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Block
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.Block;
+
+            /**
+             * Creates a plain object from a Block message. Also converts values to other types if specified.
+             * @param message Block
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.Block, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Block to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a TxValue. */
+        interface ITxValue {
+
+            /** TxValue response */
+            response?: (tendermint.abci.IResponseDeliverTx|null);
+
+            /** TxValue delivery_proof */
+            delivery_proof?: (tendermint.crypto.IProof|null);
+
+            /** TxValue inclusion_proof */
+            inclusion_proof?: (tendermint.crypto.IProof|null);
+
+            /** TxValue data */
+            data?: (Uint8Array|null);
+        }
+
+        /** Represents a TxValue. */
+        class TxValue implements ITxValue {
+
+            /**
+             * Constructs a new TxValue.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.ITxValue);
+
+            /** TxValue response. */
+            public response?: (tendermint.abci.IResponseDeliverTx|null);
+
+            /** TxValue delivery_proof. */
+            public delivery_proof?: (tendermint.crypto.IProof|null);
+
+            /** TxValue inclusion_proof. */
+            public inclusion_proof?: (tendermint.crypto.IProof|null);
+
+            /** TxValue data. */
+            public data: Uint8Array;
+
+            /**
+             * Encodes the specified TxValue message. Does not implicitly {@link neutron.interchainqueries.TxValue.verify|verify} messages.
+             * @param message TxValue message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.ITxValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified TxValue message, length delimited. Does not implicitly {@link neutron.interchainqueries.TxValue.verify|verify} messages.
+             * @param message TxValue message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.ITxValue, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a TxValue message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns TxValue
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.TxValue;
+
+            /**
+             * Decodes a TxValue message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns TxValue
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.TxValue;
+
+            /**
+             * Verifies a TxValue message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a TxValue message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns TxValue
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.TxValue;
+
+            /**
+             * Creates a plain object from a TxValue message. Also converts values to other types if specified.
+             * @param message TxValue
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.TxValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this TxValue to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgSubmitQueryResultResponse. */
+        interface IMsgSubmitQueryResultResponse {
+        }
+
+        /** Represents a MsgSubmitQueryResultResponse. */
+        class MsgSubmitQueryResultResponse implements IMsgSubmitQueryResultResponse {
+
+            /**
+             * Constructs a new MsgSubmitQueryResultResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgSubmitQueryResultResponse);
+
+            /**
+             * Encodes the specified MsgSubmitQueryResultResponse message. Does not implicitly {@link neutron.interchainqueries.MsgSubmitQueryResultResponse.verify|verify} messages.
+             * @param message MsgSubmitQueryResultResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgSubmitQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgSubmitQueryResultResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgSubmitQueryResultResponse.verify|verify} messages.
+             * @param message MsgSubmitQueryResultResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgSubmitQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgSubmitQueryResultResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgSubmitQueryResultResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgSubmitQueryResultResponse;
+
+            /**
+             * Decodes a MsgSubmitQueryResultResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgSubmitQueryResultResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgSubmitQueryResultResponse;
+
+            /**
+             * Verifies a MsgSubmitQueryResultResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgSubmitQueryResultResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgSubmitQueryResultResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgSubmitQueryResultResponse;
+
+            /**
+             * Creates a plain object from a MsgSubmitQueryResultResponse message. Also converts values to other types if specified.
+             * @param message MsgSubmitQueryResultResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgSubmitQueryResultResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgSubmitQueryResultResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgRemoveInterchainQueryRequest. */
+        interface IMsgRemoveInterchainQueryRequest {
+
+            /** MsgRemoveInterchainQueryRequest query_id */
+            query_id?: (Long|null);
+
+            /** MsgRemoveInterchainQueryRequest sender */
+            sender?: (string|null);
+        }
+
+        /** Represents a MsgRemoveInterchainQueryRequest. */
+        class MsgRemoveInterchainQueryRequest implements IMsgRemoveInterchainQueryRequest {
+
+            /**
+             * Constructs a new MsgRemoveInterchainQueryRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgRemoveInterchainQueryRequest);
+
+            /** MsgRemoveInterchainQueryRequest query_id. */
+            public query_id: Long;
+
+            /** MsgRemoveInterchainQueryRequest sender. */
+            public sender: string;
+
+            /**
+             * Encodes the specified MsgRemoveInterchainQueryRequest message. Does not implicitly {@link neutron.interchainqueries.MsgRemoveInterchainQueryRequest.verify|verify} messages.
+             * @param message MsgRemoveInterchainQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgRemoveInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgRemoveInterchainQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgRemoveInterchainQueryRequest.verify|verify} messages.
+             * @param message MsgRemoveInterchainQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgRemoveInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgRemoveInterchainQueryRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgRemoveInterchainQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgRemoveInterchainQueryRequest;
+
+            /**
+             * Decodes a MsgRemoveInterchainQueryRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgRemoveInterchainQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgRemoveInterchainQueryRequest;
+
+            /**
+             * Verifies a MsgRemoveInterchainQueryRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgRemoveInterchainQueryRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgRemoveInterchainQueryRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgRemoveInterchainQueryRequest;
+
+            /**
+             * Creates a plain object from a MsgRemoveInterchainQueryRequest message. Also converts values to other types if specified.
+             * @param message MsgRemoveInterchainQueryRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgRemoveInterchainQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgRemoveInterchainQueryRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgRemoveInterchainQueryResponse. */
+        interface IMsgRemoveInterchainQueryResponse {
+        }
+
+        /** Represents a MsgRemoveInterchainQueryResponse. */
+        class MsgRemoveInterchainQueryResponse implements IMsgRemoveInterchainQueryResponse {
+
+            /**
+             * Constructs a new MsgRemoveInterchainQueryResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgRemoveInterchainQueryResponse);
+
+            /**
+             * Encodes the specified MsgRemoveInterchainQueryResponse message. Does not implicitly {@link neutron.interchainqueries.MsgRemoveInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgRemoveInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgRemoveInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgRemoveInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgRemoveInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgRemoveInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgRemoveInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgRemoveInterchainQueryResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgRemoveInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgRemoveInterchainQueryResponse;
+
+            /**
+             * Decodes a MsgRemoveInterchainQueryResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgRemoveInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgRemoveInterchainQueryResponse;
+
+            /**
+             * Verifies a MsgRemoveInterchainQueryResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgRemoveInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgRemoveInterchainQueryResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgRemoveInterchainQueryResponse;
+
+            /**
+             * Creates a plain object from a MsgRemoveInterchainQueryResponse message. Also converts values to other types if specified.
+             * @param message MsgRemoveInterchainQueryResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgRemoveInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgRemoveInterchainQueryResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateInterchainQueryRequest. */
+        interface IMsgUpdateInterchainQueryRequest {
+
+            /** MsgUpdateInterchainQueryRequest query_id */
+            query_id?: (Long|null);
+
+            /** MsgUpdateInterchainQueryRequest new_keys */
+            new_keys?: (neutron.interchainqueries.IKVKey[]|null);
+
+            /** MsgUpdateInterchainQueryRequest new_update_period */
+            new_update_period?: (Long|null);
+
+            /** MsgUpdateInterchainQueryRequest new_transactions_filter */
+            new_transactions_filter?: (string|null);
+
+            /** MsgUpdateInterchainQueryRequest sender */
+            sender?: (string|null);
+        }
+
+        /** Represents a MsgUpdateInterchainQueryRequest. */
+        class MsgUpdateInterchainQueryRequest implements IMsgUpdateInterchainQueryRequest {
+
+            /**
+             * Constructs a new MsgUpdateInterchainQueryRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest);
+
+            /** MsgUpdateInterchainQueryRequest query_id. */
+            public query_id: Long;
+
+            /** MsgUpdateInterchainQueryRequest new_keys. */
+            public new_keys: neutron.interchainqueries.IKVKey[];
+
+            /** MsgUpdateInterchainQueryRequest new_update_period. */
+            public new_update_period: Long;
+
+            /** MsgUpdateInterchainQueryRequest new_transactions_filter. */
+            public new_transactions_filter: string;
+
+            /** MsgUpdateInterchainQueryRequest sender. */
+            public sender: string;
+
+            /**
+             * Encodes the specified MsgUpdateInterchainQueryRequest message. Does not implicitly {@link neutron.interchainqueries.MsgUpdateInterchainQueryRequest.verify|verify} messages.
+             * @param message MsgUpdateInterchainQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateInterchainQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgUpdateInterchainQueryRequest.verify|verify} messages.
+             * @param message MsgUpdateInterchainQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateInterchainQueryRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateInterchainQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgUpdateInterchainQueryRequest;
+
+            /**
+             * Decodes a MsgUpdateInterchainQueryRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateInterchainQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgUpdateInterchainQueryRequest;
+
+            /**
+             * Verifies a MsgUpdateInterchainQueryRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateInterchainQueryRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateInterchainQueryRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgUpdateInterchainQueryRequest;
+
+            /**
+             * Creates a plain object from a MsgUpdateInterchainQueryRequest message. Also converts values to other types if specified.
+             * @param message MsgUpdateInterchainQueryRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgUpdateInterchainQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateInterchainQueryRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateInterchainQueryResponse. */
+        interface IMsgUpdateInterchainQueryResponse {
+        }
+
+        /** Represents a MsgUpdateInterchainQueryResponse. */
+        class MsgUpdateInterchainQueryResponse implements IMsgUpdateInterchainQueryResponse {
+
+            /**
+             * Constructs a new MsgUpdateInterchainQueryResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgUpdateInterchainQueryResponse);
+
+            /**
+             * Encodes the specified MsgUpdateInterchainQueryResponse message. Does not implicitly {@link neutron.interchainqueries.MsgUpdateInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgUpdateInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgUpdateInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgUpdateInterchainQueryResponse.verify|verify} messages.
+             * @param message MsgUpdateInterchainQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgUpdateInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateInterchainQueryResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgUpdateInterchainQueryResponse;
+
+            /**
+             * Decodes a MsgUpdateInterchainQueryResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateInterchainQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgUpdateInterchainQueryResponse;
+
+            /**
+             * Verifies a MsgUpdateInterchainQueryResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateInterchainQueryResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgUpdateInterchainQueryResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateInterchainQueryResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateInterchainQueryResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgUpdateInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateInterchainQueryResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a RegisteredQuery. */
+        interface IRegisteredQuery {
+
+            /** RegisteredQuery id */
+            id?: (Long|null);
+
+            /** RegisteredQuery owner */
+            owner?: (string|null);
+
+            /** RegisteredQuery query_type */
+            query_type?: (string|null);
+
+            /** RegisteredQuery keys */
+            keys?: (neutron.interchainqueries.IKVKey[]|null);
+
+            /** RegisteredQuery transactions_filter */
+            transactions_filter?: (string|null);
+
+            /** RegisteredQuery connection_id */
+            connection_id?: (string|null);
+
+            /** RegisteredQuery update_period */
+            update_period?: (Long|null);
+
+            /** RegisteredQuery last_submitted_result_local_height */
+            last_submitted_result_local_height?: (Long|null);
+
+            /** RegisteredQuery last_submitted_result_remote_height */
+            last_submitted_result_remote_height?: (Long|null);
+
+            /** RegisteredQuery deposit */
+            deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** RegisteredQuery submit_timeout */
+            submit_timeout?: (Long|null);
+        }
+
+        /** Represents a RegisteredQuery. */
+        class RegisteredQuery implements IRegisteredQuery {
+
+            /**
+             * Constructs a new RegisteredQuery.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IRegisteredQuery);
+
+            /** RegisteredQuery id. */
+            public id: Long;
+
+            /** RegisteredQuery owner. */
+            public owner: string;
+
+            /** RegisteredQuery query_type. */
+            public query_type: string;
+
+            /** RegisteredQuery keys. */
+            public keys: neutron.interchainqueries.IKVKey[];
+
+            /** RegisteredQuery transactions_filter. */
+            public transactions_filter: string;
+
+            /** RegisteredQuery connection_id. */
+            public connection_id: string;
+
+            /** RegisteredQuery update_period. */
+            public update_period: Long;
+
+            /** RegisteredQuery last_submitted_result_local_height. */
+            public last_submitted_result_local_height: Long;
+
+            /** RegisteredQuery last_submitted_result_remote_height. */
+            public last_submitted_result_remote_height: Long;
+
+            /** RegisteredQuery deposit. */
+            public deposit: cosmos.base.v1beta1.ICoin[];
+
+            /** RegisteredQuery submit_timeout. */
+            public submit_timeout: Long;
+
+            /**
+             * Encodes the specified RegisteredQuery message. Does not implicitly {@link neutron.interchainqueries.RegisteredQuery.verify|verify} messages.
+             * @param message RegisteredQuery message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IRegisteredQuery, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified RegisteredQuery message, length delimited. Does not implicitly {@link neutron.interchainqueries.RegisteredQuery.verify|verify} messages.
+             * @param message RegisteredQuery message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IRegisteredQuery, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a RegisteredQuery message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns RegisteredQuery
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.RegisteredQuery;
+
+            /**
+             * Decodes a RegisteredQuery message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns RegisteredQuery
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.RegisteredQuery;
+
+            /**
+             * Verifies a RegisteredQuery message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a RegisteredQuery message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns RegisteredQuery
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.RegisteredQuery;
+
+            /**
+             * Creates a plain object from a RegisteredQuery message. Also converts values to other types if specified.
+             * @param message RegisteredQuery
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.RegisteredQuery, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this RegisteredQuery to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a KVKey. */
+        interface IKVKey {
+
+            /** KVKey path */
+            path?: (string|null);
+
+            /** KVKey key */
+            key?: (Uint8Array|null);
+        }
+
+        /** Represents a KVKey. */
+        class KVKey implements IKVKey {
+
+            /**
+             * Constructs a new KVKey.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IKVKey);
+
+            /** KVKey path. */
+            public path: string;
+
+            /** KVKey key. */
+            public key: Uint8Array;
+
+            /**
+             * Encodes the specified KVKey message. Does not implicitly {@link neutron.interchainqueries.KVKey.verify|verify} messages.
+             * @param message KVKey message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IKVKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified KVKey message, length delimited. Does not implicitly {@link neutron.interchainqueries.KVKey.verify|verify} messages.
+             * @param message KVKey message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IKVKey, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a KVKey message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns KVKey
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.KVKey;
+
+            /**
+             * Decodes a KVKey message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns KVKey
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.KVKey;
+
+            /**
+             * Verifies a KVKey message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a KVKey message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns KVKey
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.KVKey;
+
+            /**
+             * Creates a plain object from a KVKey message. Also converts values to other types if specified.
+             * @param message KVKey
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.KVKey, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this KVKey to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState params */
+            params?: (neutron.interchainqueries.IParams|null);
+
+            /** GenesisState registered_queries */
+            registered_queries?: (neutron.interchainqueries.IRegisteredQuery[]|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IGenesisState);
+
+            /** GenesisState params. */
+            public params?: (neutron.interchainqueries.IParams|null);
+
+            /** GenesisState registered_queries. */
+            public registered_queries: neutron.interchainqueries.IRegisteredQuery[];
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainqueries.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchainqueries.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params query_submit_timeout */
+            query_submit_timeout?: (Long|null);
+
+            /** Params query_deposit */
+            query_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IParams);
+
+            /** Params query_submit_timeout. */
+            public query_submit_timeout: Long;
+
+            /** Params query_deposit. */
+            public query_deposit: cosmos.base.v1beta1.ICoin[];
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.interchainqueries.IQueryParamsRequest, callback: neutron.interchainqueries.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.interchainqueries.IQueryParamsRequest): Promise<neutron.interchainqueries.QueryParamsResponse>;
+
+            /**
+             * Calls RegisteredQueries.
+             * @param request QueryRegisteredQueriesRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueriesResponse
+             */
+            public registeredQueries(request: neutron.interchainqueries.IQueryRegisteredQueriesRequest, callback: neutron.interchainqueries.Query.RegisteredQueriesCallback): void;
+
+            /**
+             * Calls RegisteredQueries.
+             * @param request QueryRegisteredQueriesRequest message or plain object
+             * @returns Promise
+             */
+            public registeredQueries(request: neutron.interchainqueries.IQueryRegisteredQueriesRequest): Promise<neutron.interchainqueries.QueryRegisteredQueriesResponse>;
+
+            /**
+             * Calls RegisteredQuery.
+             * @param request QueryRegisteredQueryRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueryResponse
+             */
+            public registeredQuery(request: neutron.interchainqueries.IQueryRegisteredQueryRequest, callback: neutron.interchainqueries.Query.RegisteredQueryCallback): void;
+
+            /**
+             * Calls RegisteredQuery.
+             * @param request QueryRegisteredQueryRequest message or plain object
+             * @returns Promise
+             */
+            public registeredQuery(request: neutron.interchainqueries.IQueryRegisteredQueryRequest): Promise<neutron.interchainqueries.QueryRegisteredQueryResponse>;
+
+            /**
+             * Calls QueryResult.
+             * @param request QueryRegisteredQueryResultRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueryResultResponse
+             */
+            public queryResult(request: neutron.interchainqueries.IQueryRegisteredQueryResultRequest, callback: neutron.interchainqueries.Query.QueryResultCallback): void;
+
+            /**
+             * Calls QueryResult.
+             * @param request QueryRegisteredQueryResultRequest message or plain object
+             * @returns Promise
+             */
+            public queryResult(request: neutron.interchainqueries.IQueryRegisteredQueryResultRequest): Promise<neutron.interchainqueries.QueryRegisteredQueryResultResponse>;
+
+            /**
+             * Calls LastRemoteHeight.
+             * @param request QueryLastRemoteHeight message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryLastRemoteHeightResponse
+             */
+            public lastRemoteHeight(request: neutron.interchainqueries.IQueryLastRemoteHeight, callback: neutron.interchainqueries.Query.LastRemoteHeightCallback): void;
+
+            /**
+             * Calls LastRemoteHeight.
+             * @param request QueryLastRemoteHeight message or plain object
+             * @returns Promise
+             */
+            public lastRemoteHeight(request: neutron.interchainqueries.IQueryLastRemoteHeight): Promise<neutron.interchainqueries.QueryLastRemoteHeightResponse>;
+        }
+
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.interchainqueries.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Query#registeredQueries}.
+             * @param error Error, if any
+             * @param [response] QueryRegisteredQueriesResponse
+             */
+            type RegisteredQueriesCallback = (error: (Error|null), response?: neutron.interchainqueries.QueryRegisteredQueriesResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Query#registeredQuery}.
+             * @param error Error, if any
+             * @param [response] QueryRegisteredQueryResponse
+             */
+            type RegisteredQueryCallback = (error: (Error|null), response?: neutron.interchainqueries.QueryRegisteredQueryResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Query#queryResult}.
+             * @param error Error, if any
+             * @param [response] QueryRegisteredQueryResultResponse
+             */
+            type QueryResultCallback = (error: (Error|null), response?: neutron.interchainqueries.QueryRegisteredQueryResultResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Query#lastRemoteHeight}.
+             * @param error Error, if any
+             * @param [response] QueryLastRemoteHeightResponse
+             */
+            type LastRemoteHeightCallback = (error: (Error|null), response?: neutron.interchainqueries.QueryLastRemoteHeightResponse) => void;
+        }
+
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
+
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
+
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryParamsRequest);
+
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchainqueries.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.interchainqueries.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.interchainqueries.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchainqueries.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueriesRequest. */
+        interface IQueryRegisteredQueriesRequest {
+
+            /** QueryRegisteredQueriesRequest owners */
+            owners?: (string[]|null);
+
+            /** QueryRegisteredQueriesRequest connection_id */
+            connection_id?: (string|null);
+
+            /** QueryRegisteredQueriesRequest pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+        }
+
+        /** Represents a QueryRegisteredQueriesRequest. */
+        class QueryRegisteredQueriesRequest implements IQueryRegisteredQueriesRequest {
+
+            /**
+             * Constructs a new QueryRegisteredQueriesRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueriesRequest);
+
+            /** QueryRegisteredQueriesRequest owners. */
+            public owners: string[];
+
+            /** QueryRegisteredQueriesRequest connection_id. */
+            public connection_id: string;
+
+            /** QueryRegisteredQueriesRequest pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+
+            /**
+             * Encodes the specified QueryRegisteredQueriesRequest message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueriesRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueriesRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueriesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueriesRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueriesRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueriesRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueriesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueriesRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueriesRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueriesRequest;
+
+            /**
+             * Decodes a QueryRegisteredQueriesRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueriesRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueriesRequest;
+
+            /**
+             * Verifies a QueryRegisteredQueriesRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueriesRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueriesRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueriesRequest;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueriesRequest message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueriesRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueriesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueriesRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueriesResponse. */
+        interface IQueryRegisteredQueriesResponse {
+
+            /** QueryRegisteredQueriesResponse registered_queries */
+            registered_queries?: (neutron.interchainqueries.IRegisteredQuery[]|null);
+
+            /** QueryRegisteredQueriesResponse pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+        }
+
+        /** Represents a QueryRegisteredQueriesResponse. */
+        class QueryRegisteredQueriesResponse implements IQueryRegisteredQueriesResponse {
+
+            /**
+             * Constructs a new QueryRegisteredQueriesResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueriesResponse);
+
+            /** QueryRegisteredQueriesResponse registered_queries. */
+            public registered_queries: neutron.interchainqueries.IRegisteredQuery[];
+
+            /** QueryRegisteredQueriesResponse pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+
+            /**
+             * Encodes the specified QueryRegisteredQueriesResponse message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueriesResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueriesResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueriesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueriesResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueriesResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueriesResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueriesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueriesResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueriesResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueriesResponse;
+
+            /**
+             * Decodes a QueryRegisteredQueriesResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueriesResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueriesResponse;
+
+            /**
+             * Verifies a QueryRegisteredQueriesResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueriesResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueriesResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueriesResponse;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueriesResponse message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueriesResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueriesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueriesResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueryRequest. */
+        interface IQueryRegisteredQueryRequest {
+
+            /** QueryRegisteredQueryRequest query_id */
+            query_id?: (Long|null);
+        }
+
+        /** Represents a QueryRegisteredQueryRequest. */
+        class QueryRegisteredQueryRequest implements IQueryRegisteredQueryRequest {
+
+            /**
+             * Constructs a new QueryRegisteredQueryRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueryRequest);
+
+            /** QueryRegisteredQueryRequest query_id. */
+            public query_id: Long;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryRequest message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueryRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueryRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueryRequest;
+
+            /**
+             * Decodes a QueryRegisteredQueryRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueryRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueryRequest;
+
+            /**
+             * Verifies a QueryRegisteredQueryRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueryRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueryRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueryRequest;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueryRequest message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueryRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueryRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueryResponse. */
+        interface IQueryRegisteredQueryResponse {
+
+            /** QueryRegisteredQueryResponse registered_query */
+            registered_query?: (neutron.interchainqueries.IRegisteredQuery|null);
+        }
+
+        /** Represents a QueryRegisteredQueryResponse. */
+        class QueryRegisteredQueryResponse implements IQueryRegisteredQueryResponse {
+
+            /**
+             * Constructs a new QueryRegisteredQueryResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueryResponse);
+
+            /** QueryRegisteredQueryResponse registered_query. */
+            public registered_query?: (neutron.interchainqueries.IRegisteredQuery|null);
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResponse message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueryResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueryResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueryResponse;
+
+            /**
+             * Decodes a QueryRegisteredQueryResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueryResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueryResponse;
+
+            /**
+             * Verifies a QueryRegisteredQueryResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueryResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueryResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueryResponse;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueryResponse message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueryResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueryResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueryResultRequest. */
+        interface IQueryRegisteredQueryResultRequest {
+
+            /** QueryRegisteredQueryResultRequest query_id */
+            query_id?: (Long|null);
+        }
+
+        /** Represents a QueryRegisteredQueryResultRequest. */
+        class QueryRegisteredQueryResultRequest implements IQueryRegisteredQueryResultRequest {
+
+            /**
+             * Constructs a new QueryRegisteredQueryResultRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueryResultRequest);
+
+            /** QueryRegisteredQueryResultRequest query_id. */
+            public query_id: Long;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResultRequest message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResultRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueryResultRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueryResultRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResultRequest message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResultRequest.verify|verify} messages.
+             * @param message QueryRegisteredQueryResultRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueryResultRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueryResultRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueryResultRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueryResultRequest;
+
+            /**
+             * Decodes a QueryRegisteredQueryResultRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueryResultRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueryResultRequest;
+
+            /**
+             * Verifies a QueryRegisteredQueryResultRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueryResultRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueryResultRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueryResultRequest;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueryResultRequest message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueryResultRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueryResultRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueryResultRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryRegisteredQueryResultResponse. */
+        interface IQueryRegisteredQueryResultResponse {
+
+            /** QueryRegisteredQueryResultResponse result */
+            result?: (neutron.interchainqueries.IQueryResult|null);
+        }
+
+        /** Represents a QueryRegisteredQueryResultResponse. */
+        class QueryRegisteredQueryResultResponse implements IQueryRegisteredQueryResultResponse {
+
+            /**
+             * Constructs a new QueryRegisteredQueryResultResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryRegisteredQueryResultResponse);
+
+            /** QueryRegisteredQueryResultResponse result. */
+            public result?: (neutron.interchainqueries.IQueryResult|null);
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResultResponse message. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResultResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueryResultResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryRegisteredQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryRegisteredQueryResultResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryRegisteredQueryResultResponse.verify|verify} messages.
+             * @param message QueryRegisteredQueryResultResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryRegisteredQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryRegisteredQueryResultResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryRegisteredQueryResultResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryRegisteredQueryResultResponse;
+
+            /**
+             * Decodes a QueryRegisteredQueryResultResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryRegisteredQueryResultResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryRegisteredQueryResultResponse;
+
+            /**
+             * Verifies a QueryRegisteredQueryResultResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryRegisteredQueryResultResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryRegisteredQueryResultResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryRegisteredQueryResultResponse;
+
+            /**
+             * Creates a plain object from a QueryRegisteredQueryResultResponse message. Also converts values to other types if specified.
+             * @param message QueryRegisteredQueryResultResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryRegisteredQueryResultResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryRegisteredQueryResultResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Transaction. */
+        interface ITransaction {
+
+            /** Transaction id */
+            id?: (Long|null);
+
+            /** Transaction height */
+            height?: (Long|null);
+
+            /** Transaction data */
+            data?: (Uint8Array|null);
+        }
+
+        /** Represents a Transaction. */
+        class Transaction implements ITransaction {
+
+            /**
+             * Constructs a new Transaction.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.ITransaction);
+
+            /** Transaction id. */
+            public id: Long;
+
+            /** Transaction height. */
+            public height: Long;
+
+            /** Transaction data. */
+            public data: Uint8Array;
+
+            /**
+             * Encodes the specified Transaction message. Does not implicitly {@link neutron.interchainqueries.Transaction.verify|verify} messages.
+             * @param message Transaction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Transaction message, length delimited. Does not implicitly {@link neutron.interchainqueries.Transaction.verify|verify} messages.
+             * @param message Transaction message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Transaction message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Transaction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.Transaction;
+
+            /**
+             * Decodes a Transaction message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Transaction
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.Transaction;
+
+            /**
+             * Verifies a Transaction message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Transaction
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.Transaction;
+
+            /**
+             * Creates a plain object from a Transaction message. Also converts values to other types if specified.
+             * @param message Transaction
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.Transaction, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Transaction to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryLastRemoteHeight. */
+        interface IQueryLastRemoteHeight {
+
+            /** QueryLastRemoteHeight connection_id */
+            connection_id?: (string|null);
+        }
+
+        /** Represents a QueryLastRemoteHeight. */
+        class QueryLastRemoteHeight implements IQueryLastRemoteHeight {
+
+            /**
+             * Constructs a new QueryLastRemoteHeight.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryLastRemoteHeight);
+
+            /** QueryLastRemoteHeight connection_id. */
+            public connection_id: string;
+
+            /**
+             * Encodes the specified QueryLastRemoteHeight message. Does not implicitly {@link neutron.interchainqueries.QueryLastRemoteHeight.verify|verify} messages.
+             * @param message QueryLastRemoteHeight message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryLastRemoteHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryLastRemoteHeight message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryLastRemoteHeight.verify|verify} messages.
+             * @param message QueryLastRemoteHeight message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryLastRemoteHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryLastRemoteHeight message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryLastRemoteHeight
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryLastRemoteHeight;
+
+            /**
+             * Decodes a QueryLastRemoteHeight message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryLastRemoteHeight
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryLastRemoteHeight;
+
+            /**
+             * Verifies a QueryLastRemoteHeight message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryLastRemoteHeight message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryLastRemoteHeight
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryLastRemoteHeight;
+
+            /**
+             * Creates a plain object from a QueryLastRemoteHeight message. Also converts values to other types if specified.
+             * @param message QueryLastRemoteHeight
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryLastRemoteHeight, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryLastRemoteHeight to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryLastRemoteHeightResponse. */
+        interface IQueryLastRemoteHeightResponse {
+
+            /** QueryLastRemoteHeightResponse height */
+            height?: (Long|null);
+        }
+
+        /** Represents a QueryLastRemoteHeightResponse. */
+        class QueryLastRemoteHeightResponse implements IQueryLastRemoteHeightResponse {
+
+            /**
+             * Constructs a new QueryLastRemoteHeightResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IQueryLastRemoteHeightResponse);
+
+            /** QueryLastRemoteHeightResponse height. */
+            public height: Long;
+
+            /**
+             * Encodes the specified QueryLastRemoteHeightResponse message. Does not implicitly {@link neutron.interchainqueries.QueryLastRemoteHeightResponse.verify|verify} messages.
+             * @param message QueryLastRemoteHeightResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IQueryLastRemoteHeightResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryLastRemoteHeightResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.QueryLastRemoteHeightResponse.verify|verify} messages.
+             * @param message QueryLastRemoteHeightResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IQueryLastRemoteHeightResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryLastRemoteHeightResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryLastRemoteHeightResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.QueryLastRemoteHeightResponse;
+
+            /**
+             * Decodes a QueryLastRemoteHeightResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryLastRemoteHeightResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.QueryLastRemoteHeightResponse;
+
+            /**
+             * Verifies a QueryLastRemoteHeightResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryLastRemoteHeightResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryLastRemoteHeightResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.QueryLastRemoteHeightResponse;
+
+            /**
+             * Creates a plain object from a QueryLastRemoteHeightResponse message. Also converts values to other types if specified.
+             * @param message QueryLastRemoteHeightResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.QueryLastRemoteHeightResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryLastRemoteHeightResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace interchaintxs. */
+    namespace interchaintxs {
+
+        /** Namespace v1. */
+        namespace v1 {
 
             /** Represents a Msg */
             class Msg extends $protobuf.rpc.Service {
@@ -1973,3636 +4909,1344 @@ export namespace neutron {
                 constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
 
                 /**
-                 * Calls RegisterInterchainQuery.
-                 * @param request MsgRegisterInterchainQuery message or plain object
-                 * @param callback Node-style callback called with the error, if any, and MsgRegisterInterchainQueryResponse
+                 * Calls RegisterInterchainAccount.
+                 * @param request MsgRegisterInterchainAccount message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgRegisterInterchainAccountResponse
                  */
-                public registerInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQuery, callback: neutron.interchainadapter.interchainqueries.Msg.RegisterInterchainQueryCallback): void;
+                public registerInterchainAccount(request: neutron.interchaintxs.v1.IMsgRegisterInterchainAccount, callback: neutron.interchaintxs.v1.Msg.RegisterInterchainAccountCallback): void;
 
                 /**
-                 * Calls RegisterInterchainQuery.
-                 * @param request MsgRegisterInterchainQuery message or plain object
+                 * Calls RegisterInterchainAccount.
+                 * @param request MsgRegisterInterchainAccount message or plain object
                  * @returns Promise
                  */
-                public registerInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQuery): Promise<neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse>;
+                public registerInterchainAccount(request: neutron.interchaintxs.v1.IMsgRegisterInterchainAccount): Promise<neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse>;
 
                 /**
-                 * Calls SubmitQueryResult.
-                 * @param request MsgSubmitQueryResult message or plain object
-                 * @param callback Node-style callback called with the error, if any, and MsgSubmitQueryResultResponse
+                 * Calls SubmitTx.
+                 * @param request MsgSubmitTx message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgSubmitTxResponse
                  */
-                public submitQueryResult(request: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResult, callback: neutron.interchainadapter.interchainqueries.Msg.SubmitQueryResultCallback): void;
+                public submitTx(request: neutron.interchaintxs.v1.IMsgSubmitTx, callback: neutron.interchaintxs.v1.Msg.SubmitTxCallback): void;
 
                 /**
-                 * Calls SubmitQueryResult.
-                 * @param request MsgSubmitQueryResult message or plain object
+                 * Calls SubmitTx.
+                 * @param request MsgSubmitTx message or plain object
                  * @returns Promise
                  */
-                public submitQueryResult(request: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResult): Promise<neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse>;
-
-                /**
-                 * Calls RemoveInterchainQuery.
-                 * @param request MsgRemoveInterchainQueryRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and MsgRemoveInterchainQueryResponse
-                 */
-                public removeInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryRequest, callback: neutron.interchainadapter.interchainqueries.Msg.RemoveInterchainQueryCallback): void;
-
-                /**
-                 * Calls RemoveInterchainQuery.
-                 * @param request MsgRemoveInterchainQueryRequest message or plain object
-                 * @returns Promise
-                 */
-                public removeInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryRequest): Promise<neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse>;
-
-                /**
-                 * Calls UpdateInterchainQuery.
-                 * @param request MsgUpdateInterchainQueryRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and MsgUpdateInterchainQueryResponse
-                 */
-                public updateInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryRequest, callback: neutron.interchainadapter.interchainqueries.Msg.UpdateInterchainQueryCallback): void;
-
-                /**
-                 * Calls UpdateInterchainQuery.
-                 * @param request MsgUpdateInterchainQueryRequest message or plain object
-                 * @returns Promise
-                 */
-                public updateInterchainQuery(request: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryRequest): Promise<neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse>;
+                public submitTx(request: neutron.interchaintxs.v1.IMsgSubmitTx): Promise<neutron.interchaintxs.v1.MsgSubmitTxResponse>;
             }
 
             namespace Msg {
 
                 /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Msg#registerInterchainQuery}.
+                 * Callback as used by {@link neutron.interchaintxs.v1.Msg#registerInterchainAccount}.
                  * @param error Error, if any
-                 * @param [response] MsgRegisterInterchainQueryResponse
+                 * @param [response] MsgRegisterInterchainAccountResponse
                  */
-                type RegisterInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse) => void;
+                type RegisterInterchainAccountCallback = (error: (Error|null), response?: neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse) => void;
 
                 /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Msg#submitQueryResult}.
+                 * Callback as used by {@link neutron.interchaintxs.v1.Msg#submitTx}.
                  * @param error Error, if any
-                 * @param [response] MsgSubmitQueryResultResponse
+                 * @param [response] MsgSubmitTxResponse
                  */
-                type SubmitQueryResultCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Msg#removeInterchainQuery}.
-                 * @param error Error, if any
-                 * @param [response] MsgRemoveInterchainQueryResponse
-                 */
-                type RemoveInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Msg#updateInterchainQuery}.
-                 * @param error Error, if any
-                 * @param [response] MsgUpdateInterchainQueryResponse
-                 */
-                type UpdateInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse) => void;
+                type SubmitTxCallback = (error: (Error|null), response?: neutron.interchaintxs.v1.MsgSubmitTxResponse) => void;
             }
 
-            /** Properties of a MsgRegisterInterchainQuery. */
-            interface IMsgRegisterInterchainQuery {
+            /** Properties of a MsgRegisterInterchainAccount. */
+            interface IMsgRegisterInterchainAccount {
 
-                /** MsgRegisterInterchainQuery query_type */
-                query_type?: (string|null);
+                /** MsgRegisterInterchainAccount from_address */
+                from_address?: (string|null);
 
-                /** MsgRegisterInterchainQuery keys */
-                keys?: (neutron.interchainadapter.interchainqueries.IKVKey[]|null);
-
-                /** MsgRegisterInterchainQuery transactions_filter */
-                transactions_filter?: (string|null);
-
-                /** MsgRegisterInterchainQuery connection_id */
+                /** MsgRegisterInterchainAccount connection_id */
                 connection_id?: (string|null);
 
-                /** MsgRegisterInterchainQuery update_period */
-                update_period?: (Long|null);
-
-                /** MsgRegisterInterchainQuery sender */
-                sender?: (string|null);
-            }
-
-            /** Represents a MsgRegisterInterchainQuery. */
-            class MsgRegisterInterchainQuery implements IMsgRegisterInterchainQuery {
-
-                /**
-                 * Constructs a new MsgRegisterInterchainQuery.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQuery);
-
-                /** MsgRegisterInterchainQuery query_type. */
-                public query_type: string;
-
-                /** MsgRegisterInterchainQuery keys. */
-                public keys: neutron.interchainadapter.interchainqueries.IKVKey[];
-
-                /** MsgRegisterInterchainQuery transactions_filter. */
-                public transactions_filter: string;
-
-                /** MsgRegisterInterchainQuery connection_id. */
-                public connection_id: string;
-
-                /** MsgRegisterInterchainQuery update_period. */
-                public update_period: Long;
-
-                /** MsgRegisterInterchainQuery sender. */
-                public sender: string;
-
-                /**
-                 * Encodes the specified MsgRegisterInterchainQuery message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery.verify|verify} messages.
-                 * @param message MsgRegisterInterchainQuery message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQuery, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgRegisterInterchainQuery message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery.verify|verify} messages.
-                 * @param message MsgRegisterInterchainQuery message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQuery, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgRegisterInterchainQuery message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgRegisterInterchainQuery
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery;
-
-                /**
-                 * Decodes a MsgRegisterInterchainQuery message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgRegisterInterchainQuery
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery;
-
-                /**
-                 * Verifies a MsgRegisterInterchainQuery message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgRegisterInterchainQuery message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgRegisterInterchainQuery
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery;
-
-                /**
-                 * Creates a plain object from a MsgRegisterInterchainQuery message. Also converts values to other types if specified.
-                 * @param message MsgRegisterInterchainQuery
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgRegisterInterchainQuery to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgRegisterInterchainQueryResponse. */
-            interface IMsgRegisterInterchainQueryResponse {
-
-                /** MsgRegisterInterchainQueryResponse id */
-                id?: (Long|null);
-            }
-
-            /** Represents a MsgRegisterInterchainQueryResponse. */
-            class MsgRegisterInterchainQueryResponse implements IMsgRegisterInterchainQueryResponse {
-
-                /**
-                 * Constructs a new MsgRegisterInterchainQueryResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQueryResponse);
-
-                /** MsgRegisterInterchainQueryResponse id. */
-                public id: Long;
-
-                /**
-                 * Encodes the specified MsgRegisterInterchainQueryResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgRegisterInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgRegisterInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgRegisterInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgRegisterInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgRegisterInterchainQueryResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgRegisterInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse;
-
-                /**
-                 * Decodes a MsgRegisterInterchainQueryResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgRegisterInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse;
-
-                /**
-                 * Verifies a MsgRegisterInterchainQueryResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgRegisterInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgRegisterInterchainQueryResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse;
-
-                /**
-                 * Creates a plain object from a MsgRegisterInterchainQueryResponse message. Also converts values to other types if specified.
-                 * @param message MsgRegisterInterchainQueryResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgRegisterInterchainQueryResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgSubmitQueryResult. */
-            interface IMsgSubmitQueryResult {
-
-                /** MsgSubmitQueryResult query_id */
-                query_id?: (Long|null);
-
-                /** MsgSubmitQueryResult sender */
-                sender?: (string|null);
-
-                /** MsgSubmitQueryResult client_id */
-                client_id?: (string|null);
-
-                /** MsgSubmitQueryResult result */
-                result?: (neutron.interchainadapter.interchainqueries.IQueryResult|null);
-            }
-
-            /** Represents a MsgSubmitQueryResult. */
-            class MsgSubmitQueryResult implements IMsgSubmitQueryResult {
-
-                /**
-                 * Constructs a new MsgSubmitQueryResult.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResult);
-
-                /** MsgSubmitQueryResult query_id. */
-                public query_id: Long;
-
-                /** MsgSubmitQueryResult sender. */
-                public sender: string;
-
-                /** MsgSubmitQueryResult client_id. */
-                public client_id: string;
-
-                /** MsgSubmitQueryResult result. */
-                public result?: (neutron.interchainadapter.interchainqueries.IQueryResult|null);
-
-                /**
-                 * Encodes the specified MsgSubmitQueryResult message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.verify|verify} messages.
-                 * @param message MsgSubmitQueryResult message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgSubmitQueryResult message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.verify|verify} messages.
-                 * @param message MsgSubmitQueryResult message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgSubmitQueryResult message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgSubmitQueryResult
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult;
-
-                /**
-                 * Decodes a MsgSubmitQueryResult message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgSubmitQueryResult
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult;
-
-                /**
-                 * Verifies a MsgSubmitQueryResult message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgSubmitQueryResult message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgSubmitQueryResult
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult;
-
-                /**
-                 * Creates a plain object from a MsgSubmitQueryResult message. Also converts values to other types if specified.
-                 * @param message MsgSubmitQueryResult
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgSubmitQueryResult to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryResult. */
-            interface IQueryResult {
-
-                /** QueryResult kv_results */
-                kv_results?: (neutron.interchainadapter.interchainqueries.IStorageValue[]|null);
-
-                /** QueryResult block */
-                block?: (neutron.interchainadapter.interchainqueries.IBlock|null);
-
-                /** QueryResult height */
-                height?: (Long|null);
-
-                /** QueryResult revision */
-                revision?: (Long|null);
-
-                /** QueryResult allow_kv_callbacks */
-                allow_kv_callbacks?: (boolean|null);
-            }
-
-            /** Represents a QueryResult. */
-            class QueryResult implements IQueryResult {
-
-                /**
-                 * Constructs a new QueryResult.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryResult);
-
-                /** QueryResult kv_results. */
-                public kv_results: neutron.interchainadapter.interchainqueries.IStorageValue[];
-
-                /** QueryResult block. */
-                public block?: (neutron.interchainadapter.interchainqueries.IBlock|null);
-
-                /** QueryResult height. */
-                public height: Long;
-
-                /** QueryResult revision. */
-                public revision: Long;
-
-                /** QueryResult allow_kv_callbacks. */
-                public allow_kv_callbacks: boolean;
-
-                /**
-                 * Encodes the specified QueryResult message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryResult.verify|verify} messages.
-                 * @param message QueryResult message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryResult message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryResult.verify|verify} messages.
-                 * @param message QueryResult message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryResult, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryResult message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryResult
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryResult;
-
-                /**
-                 * Decodes a QueryResult message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryResult
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryResult;
-
-                /**
-                 * Verifies a QueryResult message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryResult message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryResult
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryResult;
-
-                /**
-                 * Creates a plain object from a QueryResult message. Also converts values to other types if specified.
-                 * @param message QueryResult
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryResult to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a StorageValue. */
-            interface IStorageValue {
-
-                /** StorageValue storage_prefix */
-                storage_prefix?: (string|null);
-
-                /** StorageValue key */
-                key?: (Uint8Array|null);
-
-                /** StorageValue value */
-                value?: (Uint8Array|null);
-
-                /** StorageValue Proof */
-                Proof?: (tendermint.crypto.IProofOps|null);
-            }
-
-            /** Represents a StorageValue. */
-            class StorageValue implements IStorageValue {
-
-                /**
-                 * Constructs a new StorageValue.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IStorageValue);
-
-                /** StorageValue storage_prefix. */
-                public storage_prefix: string;
-
-                /** StorageValue key. */
-                public key: Uint8Array;
-
-                /** StorageValue value. */
-                public value: Uint8Array;
-
-                /** StorageValue Proof. */
-                public Proof?: (tendermint.crypto.IProofOps|null);
-
-                /**
-                 * Encodes the specified StorageValue message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.StorageValue.verify|verify} messages.
-                 * @param message StorageValue message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IStorageValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified StorageValue message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.StorageValue.verify|verify} messages.
-                 * @param message StorageValue message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IStorageValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a StorageValue message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns StorageValue
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.StorageValue;
-
-                /**
-                 * Decodes a StorageValue message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns StorageValue
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.StorageValue;
-
-                /**
-                 * Verifies a StorageValue message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a StorageValue message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns StorageValue
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.StorageValue;
-
-                /**
-                 * Creates a plain object from a StorageValue message. Also converts values to other types if specified.
-                 * @param message StorageValue
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.StorageValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this StorageValue to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Block. */
-            interface IBlock {
-
-                /** Block next_block_header */
-                next_block_header?: (google.protobuf.IAny|null);
-
-                /** Block header */
-                header?: (google.protobuf.IAny|null);
-
-                /** Block tx */
-                tx?: (neutron.interchainadapter.interchainqueries.ITxValue|null);
-            }
-
-            /** Represents a Block. */
-            class Block implements IBlock {
-
-                /**
-                 * Constructs a new Block.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IBlock);
-
-                /** Block next_block_header. */
-                public next_block_header?: (google.protobuf.IAny|null);
-
-                /** Block header. */
-                public header?: (google.protobuf.IAny|null);
-
-                /** Block tx. */
-                public tx?: (neutron.interchainadapter.interchainqueries.ITxValue|null);
-
-                /**
-                 * Encodes the specified Block message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Block.verify|verify} messages.
-                 * @param message Block message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IBlock, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Block message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Block.verify|verify} messages.
-                 * @param message Block message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IBlock, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Block message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Block
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.Block;
-
-                /**
-                 * Decodes a Block message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Block
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.Block;
-
-                /**
-                 * Verifies a Block message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Block message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Block
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.Block;
-
-                /**
-                 * Creates a plain object from a Block message. Also converts values to other types if specified.
-                 * @param message Block
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.Block, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Block to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a TxValue. */
-            interface ITxValue {
-
-                /** TxValue response */
-                response?: (tendermint.abci.IResponseDeliverTx|null);
-
-                /** TxValue delivery_proof */
-                delivery_proof?: (tendermint.crypto.IProof|null);
-
-                /** TxValue inclusion_proof */
-                inclusion_proof?: (tendermint.crypto.IProof|null);
-
-                /** TxValue data */
-                data?: (Uint8Array|null);
-            }
-
-            /** Represents a TxValue. */
-            class TxValue implements ITxValue {
-
-                /**
-                 * Constructs a new TxValue.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.ITxValue);
-
-                /** TxValue response. */
-                public response?: (tendermint.abci.IResponseDeliverTx|null);
-
-                /** TxValue delivery_proof. */
-                public delivery_proof?: (tendermint.crypto.IProof|null);
-
-                /** TxValue inclusion_proof. */
-                public inclusion_proof?: (tendermint.crypto.IProof|null);
-
-                /** TxValue data. */
-                public data: Uint8Array;
-
-                /**
-                 * Encodes the specified TxValue message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.TxValue.verify|verify} messages.
-                 * @param message TxValue message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.ITxValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified TxValue message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.TxValue.verify|verify} messages.
-                 * @param message TxValue message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.ITxValue, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a TxValue message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns TxValue
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.TxValue;
-
-                /**
-                 * Decodes a TxValue message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns TxValue
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.TxValue;
-
-                /**
-                 * Verifies a TxValue message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a TxValue message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns TxValue
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.TxValue;
-
-                /**
-                 * Creates a plain object from a TxValue message. Also converts values to other types if specified.
-                 * @param message TxValue
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.TxValue, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this TxValue to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgSubmitQueryResultResponse. */
-            interface IMsgSubmitQueryResultResponse {
-            }
-
-            /** Represents a MsgSubmitQueryResultResponse. */
-            class MsgSubmitQueryResultResponse implements IMsgSubmitQueryResultResponse {
-
-                /**
-                 * Constructs a new MsgSubmitQueryResultResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResultResponse);
-
-                /**
-                 * Encodes the specified MsgSubmitQueryResultResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse.verify|verify} messages.
-                 * @param message MsgSubmitQueryResultResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgSubmitQueryResultResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse.verify|verify} messages.
-                 * @param message MsgSubmitQueryResultResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgSubmitQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgSubmitQueryResultResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgSubmitQueryResultResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse;
-
-                /**
-                 * Decodes a MsgSubmitQueryResultResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgSubmitQueryResultResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse;
-
-                /**
-                 * Verifies a MsgSubmitQueryResultResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgSubmitQueryResultResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgSubmitQueryResultResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse;
-
-                /**
-                 * Creates a plain object from a MsgSubmitQueryResultResponse message. Also converts values to other types if specified.
-                 * @param message MsgSubmitQueryResultResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgSubmitQueryResultResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgRemoveInterchainQueryRequest. */
-            interface IMsgRemoveInterchainQueryRequest {
-
-                /** MsgRemoveInterchainQueryRequest query_id */
-                query_id?: (Long|null);
-
-                /** MsgRemoveInterchainQueryRequest sender */
-                sender?: (string|null);
-            }
-
-            /** Represents a MsgRemoveInterchainQueryRequest. */
-            class MsgRemoveInterchainQueryRequest implements IMsgRemoveInterchainQueryRequest {
-
-                /**
-                 * Constructs a new MsgRemoveInterchainQueryRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryRequest);
-
-                /** MsgRemoveInterchainQueryRequest query_id. */
-                public query_id: Long;
-
-                /** MsgRemoveInterchainQueryRequest sender. */
-                public sender: string;
-
-                /**
-                 * Encodes the specified MsgRemoveInterchainQueryRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest.verify|verify} messages.
-                 * @param message MsgRemoveInterchainQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgRemoveInterchainQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest.verify|verify} messages.
-                 * @param message MsgRemoveInterchainQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgRemoveInterchainQueryRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgRemoveInterchainQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest;
-
-                /**
-                 * Decodes a MsgRemoveInterchainQueryRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgRemoveInterchainQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest;
-
-                /**
-                 * Verifies a MsgRemoveInterchainQueryRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgRemoveInterchainQueryRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgRemoveInterchainQueryRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest;
-
-                /**
-                 * Creates a plain object from a MsgRemoveInterchainQueryRequest message. Also converts values to other types if specified.
-                 * @param message MsgRemoveInterchainQueryRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgRemoveInterchainQueryRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgRemoveInterchainQueryResponse. */
-            interface IMsgRemoveInterchainQueryResponse {
-            }
-
-            /** Represents a MsgRemoveInterchainQueryResponse. */
-            class MsgRemoveInterchainQueryResponse implements IMsgRemoveInterchainQueryResponse {
-
-                /**
-                 * Constructs a new MsgRemoveInterchainQueryResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryResponse);
-
-                /**
-                 * Encodes the specified MsgRemoveInterchainQueryResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgRemoveInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgRemoveInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgRemoveInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgRemoveInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgRemoveInterchainQueryResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgRemoveInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse;
-
-                /**
-                 * Decodes a MsgRemoveInterchainQueryResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgRemoveInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse;
-
-                /**
-                 * Verifies a MsgRemoveInterchainQueryResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgRemoveInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgRemoveInterchainQueryResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse;
-
-                /**
-                 * Creates a plain object from a MsgRemoveInterchainQueryResponse message. Also converts values to other types if specified.
-                 * @param message MsgRemoveInterchainQueryResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgRemoveInterchainQueryResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgUpdateInterchainQueryRequest. */
-            interface IMsgUpdateInterchainQueryRequest {
-
-                /** MsgUpdateInterchainQueryRequest query_id */
-                query_id?: (Long|null);
-
-                /** MsgUpdateInterchainQueryRequest new_keys */
-                new_keys?: (neutron.interchainadapter.interchainqueries.IKVKey[]|null);
-
-                /** MsgUpdateInterchainQueryRequest new_update_period */
-                new_update_period?: (Long|null);
-
-                /** MsgUpdateInterchainQueryRequest new_transactions_filter */
-                new_transactions_filter?: (string|null);
-
-                /** MsgUpdateInterchainQueryRequest sender */
-                sender?: (string|null);
-            }
-
-            /** Represents a MsgUpdateInterchainQueryRequest. */
-            class MsgUpdateInterchainQueryRequest implements IMsgUpdateInterchainQueryRequest {
-
-                /**
-                 * Constructs a new MsgUpdateInterchainQueryRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryRequest);
-
-                /** MsgUpdateInterchainQueryRequest query_id. */
-                public query_id: Long;
-
-                /** MsgUpdateInterchainQueryRequest new_keys. */
-                public new_keys: neutron.interchainadapter.interchainqueries.IKVKey[];
-
-                /** MsgUpdateInterchainQueryRequest new_update_period. */
-                public new_update_period: Long;
-
-                /** MsgUpdateInterchainQueryRequest new_transactions_filter. */
-                public new_transactions_filter: string;
-
-                /** MsgUpdateInterchainQueryRequest sender. */
-                public sender: string;
-
-                /**
-                 * Encodes the specified MsgUpdateInterchainQueryRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest.verify|verify} messages.
-                 * @param message MsgUpdateInterchainQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgUpdateInterchainQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest.verify|verify} messages.
-                 * @param message MsgUpdateInterchainQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgUpdateInterchainQueryRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgUpdateInterchainQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest;
-
-                /**
-                 * Decodes a MsgUpdateInterchainQueryRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgUpdateInterchainQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest;
-
-                /**
-                 * Verifies a MsgUpdateInterchainQueryRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgUpdateInterchainQueryRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgUpdateInterchainQueryRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest;
-
-                /**
-                 * Creates a plain object from a MsgUpdateInterchainQueryRequest message. Also converts values to other types if specified.
-                 * @param message MsgUpdateInterchainQueryRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgUpdateInterchainQueryRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgUpdateInterchainQueryResponse. */
-            interface IMsgUpdateInterchainQueryResponse {
-            }
-
-            /** Represents a MsgUpdateInterchainQueryResponse. */
-            class MsgUpdateInterchainQueryResponse implements IMsgUpdateInterchainQueryResponse {
-
-                /**
-                 * Constructs a new MsgUpdateInterchainQueryResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryResponse);
-
-                /**
-                 * Encodes the specified MsgUpdateInterchainQueryResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgUpdateInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgUpdateInterchainQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse.verify|verify} messages.
-                 * @param message MsgUpdateInterchainQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IMsgUpdateInterchainQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgUpdateInterchainQueryResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgUpdateInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse;
-
-                /**
-                 * Decodes a MsgUpdateInterchainQueryResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgUpdateInterchainQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse;
-
-                /**
-                 * Verifies a MsgUpdateInterchainQueryResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgUpdateInterchainQueryResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgUpdateInterchainQueryResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse;
-
-                /**
-                 * Creates a plain object from a MsgUpdateInterchainQueryResponse message. Also converts values to other types if specified.
-                 * @param message MsgUpdateInterchainQueryResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.MsgUpdateInterchainQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgUpdateInterchainQueryResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Represents a Query */
-            class Query extends $protobuf.rpc.Service {
-
-                /**
-                 * Constructs a new Query service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                 */
-                public params(request: neutron.interchainadapter.interchainqueries.IQueryParamsRequest, callback: neutron.interchainadapter.interchainqueries.Query.ParamsCallback): void;
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @returns Promise
-                 */
-                public params(request: neutron.interchainadapter.interchainqueries.IQueryParamsRequest): Promise<neutron.interchainadapter.interchainqueries.QueryParamsResponse>;
-
-                /**
-                 * Calls RegisteredQueries.
-                 * @param request QueryRegisteredQueriesRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueriesResponse
-                 */
-                public registeredQueries(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesRequest, callback: neutron.interchainadapter.interchainqueries.Query.RegisteredQueriesCallback): void;
-
-                /**
-                 * Calls RegisteredQueries.
-                 * @param request QueryRegisteredQueriesRequest message or plain object
-                 * @returns Promise
-                 */
-                public registeredQueries(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesRequest): Promise<neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse>;
-
-                /**
-                 * Calls RegisteredQuery.
-                 * @param request QueryRegisteredQueryRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueryResponse
-                 */
-                public registeredQuery(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryRequest, callback: neutron.interchainadapter.interchainqueries.Query.RegisteredQueryCallback): void;
-
-                /**
-                 * Calls RegisteredQuery.
-                 * @param request QueryRegisteredQueryRequest message or plain object
-                 * @returns Promise
-                 */
-                public registeredQuery(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryRequest): Promise<neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse>;
-
-                /**
-                 * Calls QueryResult.
-                 * @param request QueryRegisteredQueryResultRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryRegisteredQueryResultResponse
-                 */
-                public queryResult(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultRequest, callback: neutron.interchainadapter.interchainqueries.Query.QueryResultCallback): void;
-
-                /**
-                 * Calls QueryResult.
-                 * @param request QueryRegisteredQueryResultRequest message or plain object
-                 * @returns Promise
-                 */
-                public queryResult(request: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultRequest): Promise<neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse>;
-
-                /**
-                 * Calls LastRemoteHeight.
-                 * @param request QueryLastRemoteHeight message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryLastRemoteHeightResponse
-                 */
-                public lastRemoteHeight(request: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeight, callback: neutron.interchainadapter.interchainqueries.Query.LastRemoteHeightCallback): void;
-
-                /**
-                 * Calls LastRemoteHeight.
-                 * @param request QueryLastRemoteHeight message or plain object
-                 * @returns Promise
-                 */
-                public lastRemoteHeight(request: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeight): Promise<neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse>;
-            }
-
-            namespace Query {
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Query#params}.
-                 * @param error Error, if any
-                 * @param [response] QueryParamsResponse
-                 */
-                type ParamsCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.QueryParamsResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Query#registeredQueries}.
-                 * @param error Error, if any
-                 * @param [response] QueryRegisteredQueriesResponse
-                 */
-                type RegisteredQueriesCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Query#registeredQuery}.
-                 * @param error Error, if any
-                 * @param [response] QueryRegisteredQueryResponse
-                 */
-                type RegisteredQueryCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Query#queryResult}.
-                 * @param error Error, if any
-                 * @param [response] QueryRegisteredQueryResultResponse
-                 */
-                type QueryResultCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchainqueries.Query#lastRemoteHeight}.
-                 * @param error Error, if any
-                 * @param [response] QueryLastRemoteHeightResponse
-                 */
-                type LastRemoteHeightCallback = (error: (Error|null), response?: neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse) => void;
-            }
-
-            /** Properties of a QueryParamsRequest. */
-            interface IQueryParamsRequest {
-            }
-
-            /** Represents a QueryParamsRequest. */
-            class QueryParamsRequest implements IQueryParamsRequest {
-
-                /**
-                 * Constructs a new QueryParamsRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryParamsRequest);
-
-                /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryParamsRequest;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryParamsRequest;
-
-                /**
-                 * Verifies a QueryParamsRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryParamsRequest;
-
-                /**
-                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
-                 * @param message QueryParamsRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryParamsResponse. */
-            interface IQueryParamsResponse {
-
-                /** QueryParamsResponse params */
-                params?: (neutron.interchainadapter.interchainqueries.IParams|null);
-            }
-
-            /** Represents a QueryParamsResponse. */
-            class QueryParamsResponse implements IQueryParamsResponse {
-
-                /**
-                 * Constructs a new QueryParamsResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryParamsResponse);
-
-                /** QueryParamsResponse params. */
-                public params?: (neutron.interchainadapter.interchainqueries.IParams|null);
-
-                /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryParamsResponse;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryParamsResponse;
-
-                /**
-                 * Verifies a QueryParamsResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryParamsResponse;
-
-                /**
-                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
-                 * @param message QueryParamsResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueriesRequest. */
-            interface IQueryRegisteredQueriesRequest {
-
-                /** QueryRegisteredQueriesRequest owners */
-                owners?: (string[]|null);
-
-                /** QueryRegisteredQueriesRequest connection_id */
-                connection_id?: (string|null);
-
-                /** QueryRegisteredQueriesRequest pagination */
-                pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-            }
-
-            /** Represents a QueryRegisteredQueriesRequest. */
-            class QueryRegisteredQueriesRequest implements IQueryRegisteredQueriesRequest {
-
-                /**
-                 * Constructs a new QueryRegisteredQueriesRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesRequest);
-
-                /** QueryRegisteredQueriesRequest owners. */
-                public owners: string[];
-
-                /** QueryRegisteredQueriesRequest connection_id. */
-                public connection_id: string;
-
-                /** QueryRegisteredQueriesRequest pagination. */
-                public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-
-                /**
-                 * Encodes the specified QueryRegisteredQueriesRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueriesRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueriesRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueriesRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueriesRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueriesRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest;
-
-                /**
-                 * Decodes a QueryRegisteredQueriesRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueriesRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest;
-
-                /**
-                 * Verifies a QueryRegisteredQueriesRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueriesRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueriesRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueriesRequest message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueriesRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueriesRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueriesResponse. */
-            interface IQueryRegisteredQueriesResponse {
-
-                /** QueryRegisteredQueriesResponse registered_queries */
-                registered_queries?: (neutron.interchainadapter.interchainqueries.IRegisteredQuery[]|null);
-
-                /** QueryRegisteredQueriesResponse pagination */
-                pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-            }
-
-            /** Represents a QueryRegisteredQueriesResponse. */
-            class QueryRegisteredQueriesResponse implements IQueryRegisteredQueriesResponse {
-
-                /**
-                 * Constructs a new QueryRegisteredQueriesResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesResponse);
-
-                /** QueryRegisteredQueriesResponse registered_queries. */
-                public registered_queries: neutron.interchainadapter.interchainqueries.IRegisteredQuery[];
-
-                /** QueryRegisteredQueriesResponse pagination. */
-                public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-
-                /**
-                 * Encodes the specified QueryRegisteredQueriesResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueriesResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueriesResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueriesResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueriesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueriesResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueriesResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse;
-
-                /**
-                 * Decodes a QueryRegisteredQueriesResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueriesResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse;
-
-                /**
-                 * Verifies a QueryRegisteredQueriesResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueriesResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueriesResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueriesResponse message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueriesResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueriesResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueryRequest. */
-            interface IQueryRegisteredQueryRequest {
-
-                /** QueryRegisteredQueryRequest query_id */
-                query_id?: (Long|null);
-            }
-
-            /** Represents a QueryRegisteredQueryRequest. */
-            class QueryRegisteredQueryRequest implements IQueryRegisteredQueryRequest {
-
-                /**
-                 * Constructs a new QueryRegisteredQueryRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryRequest);
-
-                /** QueryRegisteredQueryRequest query_id. */
-                public query_id: Long;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueryRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueryRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest;
-
-                /**
-                 * Decodes a QueryRegisteredQueryRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueryRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest;
-
-                /**
-                 * Verifies a QueryRegisteredQueryRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueryRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueryRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueryRequest message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueryRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueryRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueryResponse. */
-            interface IQueryRegisteredQueryResponse {
-
-                /** QueryRegisteredQueryResponse registered_query */
-                registered_query?: (neutron.interchainadapter.interchainqueries.IRegisteredQuery|null);
-            }
-
-            /** Represents a QueryRegisteredQueryResponse. */
-            class QueryRegisteredQueryResponse implements IQueryRegisteredQueryResponse {
-
-                /**
-                 * Constructs a new QueryRegisteredQueryResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResponse);
-
-                /** QueryRegisteredQueryResponse registered_query. */
-                public registered_query?: (neutron.interchainadapter.interchainqueries.IRegisteredQuery|null);
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueryResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse;
-
-                /**
-                 * Verifies a QueryRegisteredQueryResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueryResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueryResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueryResponse message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueryResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueryResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueryResultRequest. */
-            interface IQueryRegisteredQueryResultRequest {
-
-                /** QueryRegisteredQueryResultRequest query_id */
-                query_id?: (Long|null);
-            }
-
-            /** Represents a QueryRegisteredQueryResultRequest. */
-            class QueryRegisteredQueryResultRequest implements IQueryRegisteredQueryResultRequest {
-
-                /**
-                 * Constructs a new QueryRegisteredQueryResultRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultRequest);
-
-                /** QueryRegisteredQueryResultRequest query_id. */
-                public query_id: Long;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResultRequest message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResultRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResultRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResultRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResultRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueryResultRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResultRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueryResultRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest;
-
-                /**
-                 * Verifies a QueryRegisteredQueryResultRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueryResultRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueryResultRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueryResultRequest message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueryResultRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueryResultRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryRegisteredQueryResultResponse. */
-            interface IQueryRegisteredQueryResultResponse {
-
-                /** QueryRegisteredQueryResultResponse result */
-                result?: (neutron.interchainadapter.interchainqueries.IQueryResult|null);
-            }
-
-            /** Represents a QueryRegisteredQueryResultResponse. */
-            class QueryRegisteredQueryResultResponse implements IQueryRegisteredQueryResultResponse {
-
-                /**
-                 * Constructs a new QueryRegisteredQueryResultResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultResponse);
-
-                /** QueryRegisteredQueryResultResponse result. */
-                public result?: (neutron.interchainadapter.interchainqueries.IQueryResult|null);
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResultResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResultResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryRegisteredQueryResultResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.verify|verify} messages.
-                 * @param message QueryRegisteredQueryResultResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryRegisteredQueryResultResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResultResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryRegisteredQueryResultResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse;
-
-                /**
-                 * Decodes a QueryRegisteredQueryResultResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryRegisteredQueryResultResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse;
-
-                /**
-                 * Verifies a QueryRegisteredQueryResultResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryRegisteredQueryResultResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryRegisteredQueryResultResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse;
-
-                /**
-                 * Creates a plain object from a QueryRegisteredQueryResultResponse message. Also converts values to other types if specified.
-                 * @param message QueryRegisteredQueryResultResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryRegisteredQueryResultResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Transaction. */
-            interface ITransaction {
-
-                /** Transaction id */
-                id?: (Long|null);
-
-                /** Transaction height */
-                height?: (Long|null);
-
-                /** Transaction data */
-                data?: (Uint8Array|null);
-            }
-
-            /** Represents a Transaction. */
-            class Transaction implements ITransaction {
-
-                /**
-                 * Constructs a new Transaction.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.ITransaction);
-
-                /** Transaction id. */
-                public id: Long;
-
-                /** Transaction height. */
-                public height: Long;
-
-                /** Transaction data. */
-                public data: Uint8Array;
-
-                /**
-                 * Encodes the specified Transaction message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Transaction.verify|verify} messages.
-                 * @param message Transaction message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Transaction message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.Transaction.verify|verify} messages.
-                 * @param message Transaction message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.ITransaction, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Transaction message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Transaction
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.Transaction;
-
-                /**
-                 * Decodes a Transaction message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Transaction
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.Transaction;
-
-                /**
-                 * Verifies a Transaction message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Transaction message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Transaction
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.Transaction;
-
-                /**
-                 * Creates a plain object from a Transaction message. Also converts values to other types if specified.
-                 * @param message Transaction
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.Transaction, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Transaction to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryLastRemoteHeight. */
-            interface IQueryLastRemoteHeight {
-
-                /** QueryLastRemoteHeight connection_id */
-                connection_id?: (string|null);
-            }
-
-            /** Represents a QueryLastRemoteHeight. */
-            class QueryLastRemoteHeight implements IQueryLastRemoteHeight {
-
-                /**
-                 * Constructs a new QueryLastRemoteHeight.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeight);
-
-                /** QueryLastRemoteHeight connection_id. */
-                public connection_id: string;
-
-                /**
-                 * Encodes the specified QueryLastRemoteHeight message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight.verify|verify} messages.
-                 * @param message QueryLastRemoteHeight message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryLastRemoteHeight message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight.verify|verify} messages.
-                 * @param message QueryLastRemoteHeight message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryLastRemoteHeight message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryLastRemoteHeight
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight;
-
-                /**
-                 * Decodes a QueryLastRemoteHeight message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryLastRemoteHeight
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight;
-
-                /**
-                 * Verifies a QueryLastRemoteHeight message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryLastRemoteHeight message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryLastRemoteHeight
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight;
-
-                /**
-                 * Creates a plain object from a QueryLastRemoteHeight message. Also converts values to other types if specified.
-                 * @param message QueryLastRemoteHeight
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryLastRemoteHeight, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryLastRemoteHeight to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryLastRemoteHeightResponse. */
-            interface IQueryLastRemoteHeightResponse {
-
-                /** QueryLastRemoteHeightResponse height */
-                height?: (Long|null);
-            }
-
-            /** Represents a QueryLastRemoteHeightResponse. */
-            class QueryLastRemoteHeightResponse implements IQueryLastRemoteHeightResponse {
-
-                /**
-                 * Constructs a new QueryLastRemoteHeightResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeightResponse);
-
-                /** QueryLastRemoteHeightResponse height. */
-                public height: Long;
-
-                /**
-                 * Encodes the specified QueryLastRemoteHeightResponse message. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse.verify|verify} messages.
-                 * @param message QueryLastRemoteHeightResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeightResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryLastRemoteHeightResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse.verify|verify} messages.
-                 * @param message QueryLastRemoteHeightResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchainqueries.IQueryLastRemoteHeightResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryLastRemoteHeightResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryLastRemoteHeightResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse;
-
-                /**
-                 * Decodes a QueryLastRemoteHeightResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryLastRemoteHeightResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse;
-
-                /**
-                 * Verifies a QueryLastRemoteHeightResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryLastRemoteHeightResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryLastRemoteHeightResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse;
-
-                /**
-                 * Creates a plain object from a QueryLastRemoteHeightResponse message. Also converts values to other types if specified.
-                 * @param message QueryLastRemoteHeightResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchainqueries.QueryLastRemoteHeightResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryLastRemoteHeightResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-        }
-
-        /** Namespace interchaintxs. */
-        namespace interchaintxs {
-
-            /** Properties of a GenesisState. */
-            interface IGenesisState {
-
-                /** GenesisState params */
-                params?: (neutron.interchainadapter.interchaintxs.IParams|null);
-            }
-
-            /** Represents a GenesisState. */
-            class GenesisState implements IGenesisState {
-
-                /**
-                 * Constructs a new GenesisState.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IGenesisState);
-
-                /** GenesisState params. */
-                public params?: (neutron.interchainadapter.interchaintxs.IParams|null);
-
-                /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.GenesisState.verify|verify} messages.
-                 * @param message GenesisState message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.GenesisState;
-
-                /**
-                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns GenesisState
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.GenesisState;
-
-                /**
-                 * Verifies a GenesisState message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns GenesisState
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.GenesisState;
-
-                /**
-                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
-                 * @param message GenesisState
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this GenesisState to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Params. */
-            interface IParams {
-
-                /** Params msg_submit_tx_max_messages */
-                msg_submit_tx_max_messages?: (Long|null);
-            }
-
-            /** Represents a Params. */
-            class Params implements IParams {
-
-                /**
-                 * Constructs a new Params.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IParams);
-
-                /** Params msg_submit_tx_max_messages. */
-                public msg_submit_tx_max_messages: Long;
-
-                /**
-                 * Encodes the specified Params message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.Params;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.Params;
-
-                /**
-                 * Verifies a Params message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Params
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.Params;
-
-                /**
-                 * Creates a plain object from a Params message. Also converts values to other types if specified.
-                 * @param message Params
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Params to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Namespace v1. */
-            namespace v1 {
-
-                /** Represents a Msg */
-                class Msg extends $protobuf.rpc.Service {
-
-                    /**
-                     * Constructs a new Msg service.
-                     * @param rpcImpl RPC implementation
-                     * @param [requestDelimited=false] Whether requests are length-delimited
-                     * @param [responseDelimited=false] Whether responses are length-delimited
-                     */
-                    constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                    /**
-                     * Calls RegisterInterchainAccount.
-                     * @param request MsgRegisterInterchainAccount message or plain object
-                     * @param callback Node-style callback called with the error, if any, and MsgRegisterInterchainAccountResponse
-                     */
-                    public registerInterchainAccount(request: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccount, callback: neutron.interchainadapter.interchaintxs.v1.Msg.RegisterInterchainAccountCallback): void;
-
-                    /**
-                     * Calls RegisterInterchainAccount.
-                     * @param request MsgRegisterInterchainAccount message or plain object
-                     * @returns Promise
-                     */
-                    public registerInterchainAccount(request: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccount): Promise<neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse>;
-
-                    /**
-                     * Calls SubmitTx.
-                     * @param request MsgSubmitTx message or plain object
-                     * @param callback Node-style callback called with the error, if any, and MsgSubmitTxResponse
-                     */
-                    public submitTx(request: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTx, callback: neutron.interchainadapter.interchaintxs.v1.Msg.SubmitTxCallback): void;
-
-                    /**
-                     * Calls SubmitTx.
-                     * @param request MsgSubmitTx message or plain object
-                     * @returns Promise
-                     */
-                    public submitTx(request: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTx): Promise<neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse>;
-                }
-
-                namespace Msg {
-
-                    /**
-                     * Callback as used by {@link neutron.interchainadapter.interchaintxs.v1.Msg#registerInterchainAccount}.
-                     * @param error Error, if any
-                     * @param [response] MsgRegisterInterchainAccountResponse
-                     */
-                    type RegisterInterchainAccountCallback = (error: (Error|null), response?: neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse) => void;
-
-                    /**
-                     * Callback as used by {@link neutron.interchainadapter.interchaintxs.v1.Msg#submitTx}.
-                     * @param error Error, if any
-                     * @param [response] MsgSubmitTxResponse
-                     */
-                    type SubmitTxCallback = (error: (Error|null), response?: neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse) => void;
-                }
-
-                /** Properties of a MsgRegisterInterchainAccount. */
-                interface IMsgRegisterInterchainAccount {
-
-                    /** MsgRegisterInterchainAccount from_address */
-                    from_address?: (string|null);
-
-                    /** MsgRegisterInterchainAccount connection_id */
-                    connection_id?: (string|null);
-
-                    /** MsgRegisterInterchainAccount interchain_account_id */
-                    interchain_account_id?: (string|null);
-                }
-
-                /** Represents a MsgRegisterInterchainAccount. */
-                class MsgRegisterInterchainAccount implements IMsgRegisterInterchainAccount {
-
-                    /**
-                     * Constructs a new MsgRegisterInterchainAccount.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccount);
-
-                    /** MsgRegisterInterchainAccount from_address. */
-                    public from_address: string;
-
-                    /** MsgRegisterInterchainAccount connection_id. */
-                    public connection_id: string;
-
-                    /** MsgRegisterInterchainAccount interchain_account_id. */
-                    public interchain_account_id: string;
-
-                    /**
-                     * Encodes the specified MsgRegisterInterchainAccount message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.verify|verify} messages.
-                     * @param message MsgRegisterInterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified MsgRegisterInterchainAccount message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.verify|verify} messages.
-                     * @param message MsgRegisterInterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns MsgRegisterInterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount;
-
-                    /**
-                     * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns MsgRegisterInterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount;
-
-                    /**
-                     * Verifies a MsgRegisterInterchainAccount message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a MsgRegisterInterchainAccount message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns MsgRegisterInterchainAccount
-                     */
-                    public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount;
-
-                    /**
-                     * Creates a plain object from a MsgRegisterInterchainAccount message. Also converts values to other types if specified.
-                     * @param message MsgRegisterInterchainAccount
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this MsgRegisterInterchainAccount to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a MsgRegisterInterchainAccountResponse. */
-                interface IMsgRegisterInterchainAccountResponse {
-                }
-
-                /** Represents a MsgRegisterInterchainAccountResponse. */
-                class MsgRegisterInterchainAccountResponse implements IMsgRegisterInterchainAccountResponse {
-
-                    /**
-                     * Constructs a new MsgRegisterInterchainAccountResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccountResponse);
-
-                    /**
-                     * Encodes the specified MsgRegisterInterchainAccountResponse message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
-                     * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified MsgRegisterInterchainAccountResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
-                     * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns MsgRegisterInterchainAccountResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
-
-                    /**
-                     * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns MsgRegisterInterchainAccountResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
-
-                    /**
-                     * Verifies a MsgRegisterInterchainAccountResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a MsgRegisterInterchainAccountResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns MsgRegisterInterchainAccountResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
-
-                    /**
-                     * Creates a plain object from a MsgRegisterInterchainAccountResponse message. Also converts values to other types if specified.
-                     * @param message MsgRegisterInterchainAccountResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this MsgRegisterInterchainAccountResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a MsgSubmitTx. */
-                interface IMsgSubmitTx {
-
-                    /** MsgSubmitTx from_address */
-                    from_address?: (string|null);
-
-                    /** MsgSubmitTx interchain_account_id */
-                    interchain_account_id?: (string|null);
-
-                    /** MsgSubmitTx connection_id */
-                    connection_id?: (string|null);
-
-                    /** MsgSubmitTx msgs */
-                    msgs?: (google.protobuf.IAny[]|null);
-
-                    /** MsgSubmitTx memo */
-                    memo?: (string|null);
-
-                    /** MsgSubmitTx timeout */
-                    timeout?: (Long|null);
-
-                    /** MsgSubmitTx fee */
-                    fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-                }
-
-                /** Represents a MsgSubmitTx. */
-                class MsgSubmitTx implements IMsgSubmitTx {
-
-                    /**
-                     * Constructs a new MsgSubmitTx.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTx);
-
-                    /** MsgSubmitTx from_address. */
-                    public from_address: string;
-
-                    /** MsgSubmitTx interchain_account_id. */
-                    public interchain_account_id: string;
-
-                    /** MsgSubmitTx connection_id. */
-                    public connection_id: string;
-
-                    /** MsgSubmitTx msgs. */
-                    public msgs: google.protobuf.IAny[];
-
-                    /** MsgSubmitTx memo. */
-                    public memo: string;
-
-                    /** MsgSubmitTx timeout. */
-                    public timeout: Long;
-
-                    /** MsgSubmitTx fee. */
-                    public fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-
-                    /**
-                     * Encodes the specified MsgSubmitTx message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.verify|verify} messages.
-                     * @param message MsgSubmitTx message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTx, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified MsgSubmitTx message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.verify|verify} messages.
-                     * @param message MsgSubmitTx message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTx, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a MsgSubmitTx message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns MsgSubmitTx
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx;
-
-                    /**
-                     * Decodes a MsgSubmitTx message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns MsgSubmitTx
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx;
-
-                    /**
-                     * Verifies a MsgSubmitTx message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a MsgSubmitTx message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns MsgSubmitTx
-                     */
-                    public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx;
-
-                    /**
-                     * Creates a plain object from a MsgSubmitTx message. Also converts values to other types if specified.
-                     * @param message MsgSubmitTx
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this MsgSubmitTx to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a MsgSubmitTxResponse. */
-                interface IMsgSubmitTxResponse {
-
-                    /** MsgSubmitTxResponse sequence_id */
-                    sequence_id?: (Long|null);
-
-                    /** MsgSubmitTxResponse channel */
-                    channel?: (string|null);
-                }
-
-                /** Represents a MsgSubmitTxResponse. */
-                class MsgSubmitTxResponse implements IMsgSubmitTxResponse {
-
-                    /**
-                     * Constructs a new MsgSubmitTxResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTxResponse);
-
-                    /** MsgSubmitTxResponse sequence_id. */
-                    public sequence_id: Long;
-
-                    /** MsgSubmitTxResponse channel. */
-                    public channel: string;
-
-                    /**
-                     * Encodes the specified MsgSubmitTxResponse message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse.verify|verify} messages.
-                     * @param message MsgSubmitTxResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified MsgSubmitTxResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse.verify|verify} messages.
-                     * @param message MsgSubmitTxResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.v1.IMsgSubmitTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a MsgSubmitTxResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns MsgSubmitTxResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse;
-
-                    /**
-                     * Decodes a MsgSubmitTxResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns MsgSubmitTxResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse;
-
-                    /**
-                     * Verifies a MsgSubmitTxResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a MsgSubmitTxResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns MsgSubmitTxResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse;
-
-                    /**
-                     * Creates a plain object from a MsgSubmitTxResponse message. Also converts values to other types if specified.
-                     * @param message MsgSubmitTxResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this MsgSubmitTxResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-            }
-
-            /** Represents a Query */
-            class Query extends $protobuf.rpc.Service {
-
-                /**
-                 * Constructs a new Query service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                 */
-                public params(request: neutron.interchainadapter.interchaintxs.IQueryParamsRequest, callback: neutron.interchainadapter.interchaintxs.Query.ParamsCallback): void;
-
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @returns Promise
-                 */
-                public params(request: neutron.interchainadapter.interchaintxs.IQueryParamsRequest): Promise<neutron.interchainadapter.interchaintxs.QueryParamsResponse>;
-
-                /**
-                 * Calls InterchainAccountAddress.
-                 * @param request QueryInterchainAccountAddressRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryInterchainAccountAddressResponse
-                 */
-                public interchainAccountAddress(request: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressRequest, callback: neutron.interchainadapter.interchaintxs.Query.InterchainAccountAddressCallback): void;
-
-                /**
-                 * Calls InterchainAccountAddress.
-                 * @param request QueryInterchainAccountAddressRequest message or plain object
-                 * @returns Promise
-                 */
-                public interchainAccountAddress(request: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressRequest): Promise<neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse>;
-            }
-
-            namespace Query {
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchaintxs.Query#params}.
-                 * @param error Error, if any
-                 * @param [response] QueryParamsResponse
-                 */
-                type ParamsCallback = (error: (Error|null), response?: neutron.interchainadapter.interchaintxs.QueryParamsResponse) => void;
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.interchaintxs.Query#interchainAccountAddress}.
-                 * @param error Error, if any
-                 * @param [response] QueryInterchainAccountAddressResponse
-                 */
-                type InterchainAccountAddressCallback = (error: (Error|null), response?: neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse) => void;
-            }
-
-            /** Properties of a QueryParamsRequest. */
-            interface IQueryParamsRequest {
-            }
-
-            /** Represents a QueryParamsRequest. */
-            class QueryParamsRequest implements IQueryParamsRequest {
-
-                /**
-                 * Constructs a new QueryParamsRequest.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IQueryParamsRequest);
-
-                /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryParamsRequest.verify|verify} messages.
-                 * @param message QueryParamsRequest message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.QueryParamsRequest;
-
-                /**
-                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsRequest
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.QueryParamsRequest;
-
-                /**
-                 * Verifies a QueryParamsRequest message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsRequest
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.QueryParamsRequest;
-
-                /**
-                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
-                 * @param message QueryParamsRequest
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsRequest to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryParamsResponse. */
-            interface IQueryParamsResponse {
-
-                /** QueryParamsResponse params */
-                params?: (neutron.interchainadapter.interchaintxs.IParams|null);
-            }
-
-            /** Represents a QueryParamsResponse. */
-            class QueryParamsResponse implements IQueryParamsResponse {
-
-                /**
-                 * Constructs a new QueryParamsResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IQueryParamsResponse);
-
-                /** QueryParamsResponse params. */
-                public params?: (neutron.interchainadapter.interchaintxs.IParams|null);
-
-                /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryParamsResponse.verify|verify} messages.
-                 * @param message QueryParamsResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.QueryParamsResponse;
-
-                /**
-                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryParamsResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.QueryParamsResponse;
-
-                /**
-                 * Verifies a QueryParamsResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryParamsResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.QueryParamsResponse;
-
-                /**
-                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
-                 * @param message QueryParamsResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryParamsResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a QueryInterchainAccountAddressRequest. */
-            interface IQueryInterchainAccountAddressRequest {
-
-                /** QueryInterchainAccountAddressRequest owner_address */
-                owner_address?: (string|null);
-
-                /** QueryInterchainAccountAddressRequest interchain_account_id */
+                /** MsgRegisterInterchainAccount interchain_account_id */
                 interchain_account_id?: (string|null);
-
-                /** QueryInterchainAccountAddressRequest connection_id */
-                connection_id?: (string|null);
             }
 
-            /** Represents a QueryInterchainAccountAddressRequest. */
-            class QueryInterchainAccountAddressRequest implements IQueryInterchainAccountAddressRequest {
+            /** Represents a MsgRegisterInterchainAccount. */
+            class MsgRegisterInterchainAccount implements IMsgRegisterInterchainAccount {
 
                 /**
-                 * Constructs a new QueryInterchainAccountAddressRequest.
+                 * Constructs a new MsgRegisterInterchainAccount.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressRequest);
+                constructor(properties?: neutron.interchaintxs.v1.IMsgRegisterInterchainAccount);
 
-                /** QueryInterchainAccountAddressRequest owner_address. */
-                public owner_address: string;
+                /** MsgRegisterInterchainAccount from_address. */
+                public from_address: string;
 
-                /** QueryInterchainAccountAddressRequest interchain_account_id. */
+                /** MsgRegisterInterchainAccount connection_id. */
+                public connection_id: string;
+
+                /** MsgRegisterInterchainAccount interchain_account_id. */
                 public interchain_account_id: string;
 
-                /** QueryInterchainAccountAddressRequest connection_id. */
+                /**
+                 * Encodes the specified MsgRegisterInterchainAccount message. Does not implicitly {@link neutron.interchaintxs.v1.MsgRegisterInterchainAccount.verify|verify} messages.
+                 * @param message MsgRegisterInterchainAccount message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: neutron.interchaintxs.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgRegisterInterchainAccount message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgRegisterInterchainAccount.verify|verify} messages.
+                 * @param message MsgRegisterInterchainAccount message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgRegisterInterchainAccount
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgRegisterInterchainAccount;
+
+                /**
+                 * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgRegisterInterchainAccount
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgRegisterInterchainAccount;
+
+                /**
+                 * Verifies a MsgRegisterInterchainAccount message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgRegisterInterchainAccount message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgRegisterInterchainAccount
+                 */
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgRegisterInterchainAccount;
+
+                /**
+                 * Creates a plain object from a MsgRegisterInterchainAccount message. Also converts values to other types if specified.
+                 * @param message MsgRegisterInterchainAccount
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: neutron.interchaintxs.v1.MsgRegisterInterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgRegisterInterchainAccount to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgRegisterInterchainAccountResponse. */
+            interface IMsgRegisterInterchainAccountResponse {
+            }
+
+            /** Represents a MsgRegisterInterchainAccountResponse. */
+            class MsgRegisterInterchainAccountResponse implements IMsgRegisterInterchainAccountResponse {
+
+                /**
+                 * Constructs a new MsgRegisterInterchainAccountResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: neutron.interchaintxs.v1.IMsgRegisterInterchainAccountResponse);
+
+                /**
+                 * Encodes the specified MsgRegisterInterchainAccountResponse message. Does not implicitly {@link neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
+                 * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: neutron.interchaintxs.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgRegisterInterchainAccountResponse message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
+                 * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgRegisterInterchainAccountResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
+
+                /**
+                 * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgRegisterInterchainAccountResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
+
+                /**
+                 * Verifies a MsgRegisterInterchainAccountResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgRegisterInterchainAccountResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgRegisterInterchainAccountResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse;
+
+                /**
+                 * Creates a plain object from a MsgRegisterInterchainAccountResponse message. Also converts values to other types if specified.
+                 * @param message MsgRegisterInterchainAccountResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: neutron.interchaintxs.v1.MsgRegisterInterchainAccountResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgRegisterInterchainAccountResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgSubmitTx. */
+            interface IMsgSubmitTx {
+
+                /** MsgSubmitTx from_address */
+                from_address?: (string|null);
+
+                /** MsgSubmitTx interchain_account_id */
+                interchain_account_id?: (string|null);
+
+                /** MsgSubmitTx connection_id */
+                connection_id?: (string|null);
+
+                /** MsgSubmitTx msgs */
+                msgs?: (google.protobuf.IAny[]|null);
+
+                /** MsgSubmitTx memo */
+                memo?: (string|null);
+
+                /** MsgSubmitTx timeout */
+                timeout?: (Long|null);
+
+                /** MsgSubmitTx fee */
+                fee?: (neutron.feerefunder.IFee|null);
+            }
+
+            /** Represents a MsgSubmitTx. */
+            class MsgSubmitTx implements IMsgSubmitTx {
+
+                /**
+                 * Constructs a new MsgSubmitTx.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: neutron.interchaintxs.v1.IMsgSubmitTx);
+
+                /** MsgSubmitTx from_address. */
+                public from_address: string;
+
+                /** MsgSubmitTx interchain_account_id. */
+                public interchain_account_id: string;
+
+                /** MsgSubmitTx connection_id. */
                 public connection_id: string;
 
+                /** MsgSubmitTx msgs. */
+                public msgs: google.protobuf.IAny[];
+
+                /** MsgSubmitTx memo. */
+                public memo: string;
+
+                /** MsgSubmitTx timeout. */
+                public timeout: Long;
+
+                /** MsgSubmitTx fee. */
+                public fee?: (neutron.feerefunder.IFee|null);
+
                 /**
-                 * Encodes the specified QueryInterchainAccountAddressRequest message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest.verify|verify} messages.
-                 * @param message QueryInterchainAccountAddressRequest message or plain object to encode
+                 * Encodes the specified MsgSubmitTx message. Does not implicitly {@link neutron.interchaintxs.v1.MsgSubmitTx.verify|verify} messages.
+                 * @param message MsgSubmitTx message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: neutron.interchaintxs.v1.IMsgSubmitTx, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified QueryInterchainAccountAddressRequest message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest.verify|verify} messages.
-                 * @param message QueryInterchainAccountAddressRequest message or plain object to encode
+                 * Encodes the specified MsgSubmitTx message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgSubmitTx.verify|verify} messages.
+                 * @param message MsgSubmitTx message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgSubmitTx, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Decodes a QueryInterchainAccountAddressRequest message from the specified reader or buffer.
+                 * Decodes a MsgSubmitTx message from the specified reader or buffer.
                  * @param reader Reader or buffer to decode from
                  * @param [length] Message length if known beforehand
-                 * @returns QueryInterchainAccountAddressRequest
+                 * @returns MsgSubmitTx
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgSubmitTx;
 
                 /**
-                 * Decodes a QueryInterchainAccountAddressRequest message from the specified reader or buffer, length delimited.
+                 * Decodes a MsgSubmitTx message from the specified reader or buffer, length delimited.
                  * @param reader Reader or buffer to decode from
-                 * @returns QueryInterchainAccountAddressRequest
+                 * @returns MsgSubmitTx
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgSubmitTx;
 
                 /**
-                 * Verifies a QueryInterchainAccountAddressRequest message.
+                 * Verifies a MsgSubmitTx message.
                  * @param message Plain object to verify
                  * @returns `null` if valid, otherwise the reason why it is not
                  */
                 public static verify(message: { [k: string]: any }): (string|null);
 
                 /**
-                 * Creates a QueryInterchainAccountAddressRequest message from a plain object. Also converts values to their respective internal types.
+                 * Creates a MsgSubmitTx message from a plain object. Also converts values to their respective internal types.
                  * @param object Plain object
-                 * @returns QueryInterchainAccountAddressRequest
+                 * @returns MsgSubmitTx
                  */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest;
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgSubmitTx;
 
                 /**
-                 * Creates a plain object from a QueryInterchainAccountAddressRequest message. Also converts values to other types if specified.
-                 * @param message QueryInterchainAccountAddressRequest
+                 * Creates a plain object from a MsgSubmitTx message. Also converts values to other types if specified.
+                 * @param message MsgSubmitTx
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: neutron.interchaintxs.v1.MsgSubmitTx, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
-                 * Converts this QueryInterchainAccountAddressRequest to JSON.
+                 * Converts this MsgSubmitTx to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
             }
 
-            /** Properties of a QueryInterchainAccountAddressResponse. */
-            interface IQueryInterchainAccountAddressResponse {
+            /** Properties of a MsgSubmitTxResponse. */
+            interface IMsgSubmitTxResponse {
 
-                /** QueryInterchainAccountAddressResponse interchain_account_address */
-                interchain_account_address?: (string|null);
-            }
-
-            /** Represents a QueryInterchainAccountAddressResponse. */
-            class QueryInterchainAccountAddressResponse implements IQueryInterchainAccountAddressResponse {
-
-                /**
-                 * Constructs a new QueryInterchainAccountAddressResponse.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressResponse);
-
-                /** QueryInterchainAccountAddressResponse interchain_account_address. */
-                public interchain_account_address: string;
-
-                /**
-                 * Encodes the specified QueryInterchainAccountAddressResponse message. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse.verify|verify} messages.
-                 * @param message QueryInterchainAccountAddressResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified QueryInterchainAccountAddressResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse.verify|verify} messages.
-                 * @param message QueryInterchainAccountAddressResponse message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.interchaintxs.IQueryInterchainAccountAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a QueryInterchainAccountAddressResponse message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns QueryInterchainAccountAddressResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse;
-
-                /**
-                 * Decodes a QueryInterchainAccountAddressResponse message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns QueryInterchainAccountAddressResponse
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse;
-
-                /**
-                 * Verifies a QueryInterchainAccountAddressResponse message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a QueryInterchainAccountAddressResponse message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns QueryInterchainAccountAddressResponse
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse;
-
-                /**
-                 * Creates a plain object from a QueryInterchainAccountAddressResponse message. Also converts values to other types if specified.
-                 * @param message QueryInterchainAccountAddressResponse
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.interchaintxs.QueryInterchainAccountAddressResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this QueryInterchainAccountAddressResponse to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-        }
-
-        /** Namespace transfer. */
-        namespace transfer {
-
-            /** Represents a Msg */
-            class Msg extends $protobuf.rpc.Service {
-
-                /**
-                 * Constructs a new Msg service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                /**
-                 * Calls Transfer.
-                 * @param request MsgTransfer message or plain object
-                 * @param callback Node-style callback called with the error, if any, and MsgTransferResponse
-                 */
-                public transfer(request: neutron.interchainadapter.transfer.IMsgTransfer, callback: neutron.interchainadapter.transfer.Msg.TransferCallback): void;
-
-                /**
-                 * Calls Transfer.
-                 * @param request MsgTransfer message or plain object
-                 * @returns Promise
-                 */
-                public transfer(request: neutron.interchainadapter.transfer.IMsgTransfer): Promise<neutron.interchainadapter.transfer.MsgTransferResponse>;
-            }
-
-            namespace Msg {
-
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.transfer.Msg#transfer}.
-                 * @param error Error, if any
-                 * @param [response] MsgTransferResponse
-                 */
-                type TransferCallback = (error: (Error|null), response?: neutron.interchainadapter.transfer.MsgTransferResponse) => void;
-            }
-
-            /** Properties of a MsgTransfer. */
-            interface IMsgTransfer {
-
-                /** MsgTransfer source_port */
-                source_port?: (string|null);
-
-                /** MsgTransfer source_channel */
-                source_channel?: (string|null);
-
-                /** MsgTransfer token */
-                token?: (cosmos.base.v1beta1.ICoin|null);
-
-                /** MsgTransfer sender */
-                sender?: (string|null);
-
-                /** MsgTransfer receiver */
-                receiver?: (string|null);
-
-                /** MsgTransfer timeout_height */
-                timeout_height?: (ibc.core.client.v1.IHeight|null);
-
-                /** MsgTransfer timeout_timestamp */
-                timeout_timestamp?: (Long|null);
-
-                /** MsgTransfer fee */
-                fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-            }
-
-            /** Represents a MsgTransfer. */
-            class MsgTransfer implements IMsgTransfer {
-
-                /**
-                 * Constructs a new MsgTransfer.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: neutron.interchainadapter.transfer.IMsgTransfer);
-
-                /** MsgTransfer source_port. */
-                public source_port: string;
-
-                /** MsgTransfer source_channel. */
-                public source_channel: string;
-
-                /** MsgTransfer token. */
-                public token?: (cosmos.base.v1beta1.ICoin|null);
-
-                /** MsgTransfer sender. */
-                public sender: string;
-
-                /** MsgTransfer receiver. */
-                public receiver: string;
-
-                /** MsgTransfer timeout_height. */
-                public timeout_height?: (ibc.core.client.v1.IHeight|null);
-
-                /** MsgTransfer timeout_timestamp. */
-                public timeout_timestamp: Long;
-
-                /** MsgTransfer fee. */
-                public fee?: (neutron.interchainadapter.feerefunder.IFee|null);
-
-                /**
-                 * Encodes the specified MsgTransfer message. Does not implicitly {@link neutron.interchainadapter.transfer.MsgTransfer.verify|verify} messages.
-                 * @param message MsgTransfer message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: neutron.interchainadapter.transfer.IMsgTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified MsgTransfer message, length delimited. Does not implicitly {@link neutron.interchainadapter.transfer.MsgTransfer.verify|verify} messages.
-                 * @param message MsgTransfer message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: neutron.interchainadapter.transfer.IMsgTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a MsgTransfer message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns MsgTransfer
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.transfer.MsgTransfer;
-
-                /**
-                 * Decodes a MsgTransfer message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns MsgTransfer
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.transfer.MsgTransfer;
-
-                /**
-                 * Verifies a MsgTransfer message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a MsgTransfer message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns MsgTransfer
-                 */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.transfer.MsgTransfer;
-
-                /**
-                 * Creates a plain object from a MsgTransfer message. Also converts values to other types if specified.
-                 * @param message MsgTransfer
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: neutron.interchainadapter.transfer.MsgTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this MsgTransfer to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a MsgTransferResponse. */
-            interface IMsgTransferResponse {
-
-                /** MsgTransferResponse sequence_id */
+                /** MsgSubmitTxResponse sequence_id */
                 sequence_id?: (Long|null);
 
-                /** MsgTransferResponse channel */
+                /** MsgSubmitTxResponse channel */
                 channel?: (string|null);
             }
 
-            /** Represents a MsgTransferResponse. */
-            class MsgTransferResponse implements IMsgTransferResponse {
+            /** Represents a MsgSubmitTxResponse. */
+            class MsgSubmitTxResponse implements IMsgSubmitTxResponse {
 
                 /**
-                 * Constructs a new MsgTransferResponse.
+                 * Constructs a new MsgSubmitTxResponse.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: neutron.interchainadapter.transfer.IMsgTransferResponse);
+                constructor(properties?: neutron.interchaintxs.v1.IMsgSubmitTxResponse);
 
-                /** MsgTransferResponse sequence_id. */
+                /** MsgSubmitTxResponse sequence_id. */
                 public sequence_id: Long;
 
-                /** MsgTransferResponse channel. */
+                /** MsgSubmitTxResponse channel. */
                 public channel: string;
 
                 /**
-                 * Encodes the specified MsgTransferResponse message. Does not implicitly {@link neutron.interchainadapter.transfer.MsgTransferResponse.verify|verify} messages.
-                 * @param message MsgTransferResponse message or plain object to encode
+                 * Encodes the specified MsgSubmitTxResponse message. Does not implicitly {@link neutron.interchaintxs.v1.MsgSubmitTxResponse.verify|verify} messages.
+                 * @param message MsgSubmitTxResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: neutron.interchainadapter.transfer.IMsgTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: neutron.interchaintxs.v1.IMsgSubmitTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified MsgTransferResponse message, length delimited. Does not implicitly {@link neutron.interchainadapter.transfer.MsgTransferResponse.verify|verify} messages.
-                 * @param message MsgTransferResponse message or plain object to encode
+                 * Encodes the specified MsgSubmitTxResponse message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgSubmitTxResponse.verify|verify} messages.
+                 * @param message MsgSubmitTxResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: neutron.interchainadapter.transfer.IMsgTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgSubmitTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Decodes a MsgTransferResponse message from the specified reader or buffer.
+                 * Decodes a MsgSubmitTxResponse message from the specified reader or buffer.
                  * @param reader Reader or buffer to decode from
                  * @param [length] Message length if known beforehand
-                 * @returns MsgTransferResponse
+                 * @returns MsgSubmitTxResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainadapter.transfer.MsgTransferResponse;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgSubmitTxResponse;
 
                 /**
-                 * Decodes a MsgTransferResponse message from the specified reader or buffer, length delimited.
+                 * Decodes a MsgSubmitTxResponse message from the specified reader or buffer, length delimited.
                  * @param reader Reader or buffer to decode from
-                 * @returns MsgTransferResponse
+                 * @returns MsgSubmitTxResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainadapter.transfer.MsgTransferResponse;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgSubmitTxResponse;
 
                 /**
-                 * Verifies a MsgTransferResponse message.
+                 * Verifies a MsgSubmitTxResponse message.
                  * @param message Plain object to verify
                  * @returns `null` if valid, otherwise the reason why it is not
                  */
                 public static verify(message: { [k: string]: any }): (string|null);
 
                 /**
-                 * Creates a MsgTransferResponse message from a plain object. Also converts values to their respective internal types.
+                 * Creates a MsgSubmitTxResponse message from a plain object. Also converts values to their respective internal types.
                  * @param object Plain object
-                 * @returns MsgTransferResponse
+                 * @returns MsgSubmitTxResponse
                  */
-                public static fromObject(object: { [k: string]: any }): neutron.interchainadapter.transfer.MsgTransferResponse;
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgSubmitTxResponse;
 
                 /**
-                 * Creates a plain object from a MsgTransferResponse message. Also converts values to other types if specified.
-                 * @param message MsgTransferResponse
+                 * Creates a plain object from a MsgSubmitTxResponse message. Also converts values to other types if specified.
+                 * @param message MsgSubmitTxResponse
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: neutron.interchainadapter.transfer.MsgTransferResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: neutron.interchaintxs.v1.MsgSubmitTxResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
-                 * Converts this MsgTransferResponse to JSON.
+                 * Converts this MsgSubmitTxResponse to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
             }
+        }
 
-            /** Represents a Query */
-            class Query extends $protobuf.rpc.Service {
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
 
-                /**
-                 * Constructs a new Query service.
-                 * @param rpcImpl RPC implementation
-                 * @param [requestDelimited=false] Whether requests are length-delimited
-                 * @param [responseDelimited=false] Whether responses are length-delimited
-                 */
-                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
 
-                /**
-                 * Calls DenomTrace.
-                 * @param request QueryDenomTraceRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryDenomTraceResponse
-                 */
-                public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest, callback: neutron.interchainadapter.transfer.Query.DenomTraceCallback): void;
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.interchaintxs.IQueryParamsRequest, callback: neutron.interchaintxs.Query.ParamsCallback): void;
 
-                /**
-                 * Calls DenomTrace.
-                 * @param request QueryDenomTraceRequest message or plain object
-                 * @returns Promise
-                 */
-                public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest): Promise<ibc.applications.transfer.v1.QueryDenomTraceResponse>;
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.interchaintxs.IQueryParamsRequest): Promise<neutron.interchaintxs.QueryParamsResponse>;
 
-                /**
-                 * Calls DenomTraces.
-                 * @param request QueryDenomTracesRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryDenomTracesResponse
-                 */
-                public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest, callback: neutron.interchainadapter.transfer.Query.DenomTracesCallback): void;
+            /**
+             * Calls InterchainAccountAddress.
+             * @param request QueryInterchainAccountAddressRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryInterchainAccountAddressResponse
+             */
+            public interchainAccountAddress(request: neutron.interchaintxs.IQueryInterchainAccountAddressRequest, callback: neutron.interchaintxs.Query.InterchainAccountAddressCallback): void;
 
-                /**
-                 * Calls DenomTraces.
-                 * @param request QueryDenomTracesRequest message or plain object
-                 * @returns Promise
-                 */
-                public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest): Promise<ibc.applications.transfer.v1.QueryDenomTracesResponse>;
+            /**
+             * Calls InterchainAccountAddress.
+             * @param request QueryInterchainAccountAddressRequest message or plain object
+             * @returns Promise
+             */
+            public interchainAccountAddress(request: neutron.interchaintxs.IQueryInterchainAccountAddressRequest): Promise<neutron.interchaintxs.QueryInterchainAccountAddressResponse>;
+        }
 
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                 */
-                public params(request: ibc.applications.transfer.v1.IQueryParamsRequest, callback: neutron.interchainadapter.transfer.Query.ParamsCallback): void;
+        namespace Query {
 
-                /**
-                 * Calls Params.
-                 * @param request QueryParamsRequest message or plain object
-                 * @returns Promise
-                 */
-                public params(request: ibc.applications.transfer.v1.IQueryParamsRequest): Promise<ibc.applications.transfer.v1.QueryParamsResponse>;
+            /**
+             * Callback as used by {@link neutron.interchaintxs.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.interchaintxs.QueryParamsResponse) => void;
 
-                /**
-                 * Calls DenomHash.
-                 * @param request QueryDenomHashRequest message or plain object
-                 * @param callback Node-style callback called with the error, if any, and QueryDenomHashResponse
-                 */
-                public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest, callback: neutron.interchainadapter.transfer.Query.DenomHashCallback): void;
+            /**
+             * Callback as used by {@link neutron.interchaintxs.Query#interchainAccountAddress}.
+             * @param error Error, if any
+             * @param [response] QueryInterchainAccountAddressResponse
+             */
+            type InterchainAccountAddressCallback = (error: (Error|null), response?: neutron.interchaintxs.QueryInterchainAccountAddressResponse) => void;
+        }
 
-                /**
-                 * Calls DenomHash.
-                 * @param request QueryDenomHashRequest message or plain object
-                 * @returns Promise
-                 */
-                public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest): Promise<ibc.applications.transfer.v1.QueryDenomHashResponse>;
-            }
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
 
-            namespace Query {
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
 
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.transfer.Query#denomTrace}.
-                 * @param error Error, if any
-                 * @param [response] QueryDenomTraceResponse
-                 */
-                type DenomTraceCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTraceResponse) => void;
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IQueryParamsRequest);
 
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.transfer.Query#denomTraces}.
-                 * @param error Error, if any
-                 * @param [response] QueryDenomTracesResponse
-                 */
-                type DenomTracesCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTracesResponse) => void;
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.interchaintxs.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
 
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.transfer.Query#params}.
-                 * @param error Error, if any
-                 * @param [response] QueryParamsResponse
-                 */
-                type ParamsCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryParamsResponse) => void;
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.interchaintxs.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
 
-                /**
-                 * Callback as used by {@link neutron.interchainadapter.transfer.Query#denomHash}.
-                 * @param error Error, if any
-                 * @param [response] QueryDenomHashResponse
-                 */
-                type DenomHashCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomHashResponse) => void;
-            }
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.interchaintxs.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.interchaintxs.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.interchaintxs.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.interchaintxs.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryInterchainAccountAddressRequest. */
+        interface IQueryInterchainAccountAddressRequest {
+
+            /** QueryInterchainAccountAddressRequest owner_address */
+            owner_address?: (string|null);
+
+            /** QueryInterchainAccountAddressRequest interchain_account_id */
+            interchain_account_id?: (string|null);
+
+            /** QueryInterchainAccountAddressRequest connection_id */
+            connection_id?: (string|null);
+        }
+
+        /** Represents a QueryInterchainAccountAddressRequest. */
+        class QueryInterchainAccountAddressRequest implements IQueryInterchainAccountAddressRequest {
+
+            /**
+             * Constructs a new QueryInterchainAccountAddressRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IQueryInterchainAccountAddressRequest);
+
+            /** QueryInterchainAccountAddressRequest owner_address. */
+            public owner_address: string;
+
+            /** QueryInterchainAccountAddressRequest interchain_account_id. */
+            public interchain_account_id: string;
+
+            /** QueryInterchainAccountAddressRequest connection_id. */
+            public connection_id: string;
+
+            /**
+             * Encodes the specified QueryInterchainAccountAddressRequest message. Does not implicitly {@link neutron.interchaintxs.QueryInterchainAccountAddressRequest.verify|verify} messages.
+             * @param message QueryInterchainAccountAddressRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IQueryInterchainAccountAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryInterchainAccountAddressRequest message, length delimited. Does not implicitly {@link neutron.interchaintxs.QueryInterchainAccountAddressRequest.verify|verify} messages.
+             * @param message QueryInterchainAccountAddressRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IQueryInterchainAccountAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryInterchainAccountAddressRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryInterchainAccountAddressRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.QueryInterchainAccountAddressRequest;
+
+            /**
+             * Decodes a QueryInterchainAccountAddressRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryInterchainAccountAddressRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.QueryInterchainAccountAddressRequest;
+
+            /**
+             * Verifies a QueryInterchainAccountAddressRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryInterchainAccountAddressRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryInterchainAccountAddressRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.QueryInterchainAccountAddressRequest;
+
+            /**
+             * Creates a plain object from a QueryInterchainAccountAddressRequest message. Also converts values to other types if specified.
+             * @param message QueryInterchainAccountAddressRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.QueryInterchainAccountAddressRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryInterchainAccountAddressRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryInterchainAccountAddressResponse. */
+        interface IQueryInterchainAccountAddressResponse {
+
+            /** QueryInterchainAccountAddressResponse interchain_account_address */
+            interchain_account_address?: (string|null);
+        }
+
+        /** Represents a QueryInterchainAccountAddressResponse. */
+        class QueryInterchainAccountAddressResponse implements IQueryInterchainAccountAddressResponse {
+
+            /**
+             * Constructs a new QueryInterchainAccountAddressResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IQueryInterchainAccountAddressResponse);
+
+            /** QueryInterchainAccountAddressResponse interchain_account_address. */
+            public interchain_account_address: string;
+
+            /**
+             * Encodes the specified QueryInterchainAccountAddressResponse message. Does not implicitly {@link neutron.interchaintxs.QueryInterchainAccountAddressResponse.verify|verify} messages.
+             * @param message QueryInterchainAccountAddressResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IQueryInterchainAccountAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryInterchainAccountAddressResponse message, length delimited. Does not implicitly {@link neutron.interchaintxs.QueryInterchainAccountAddressResponse.verify|verify} messages.
+             * @param message QueryInterchainAccountAddressResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IQueryInterchainAccountAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryInterchainAccountAddressResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryInterchainAccountAddressResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.QueryInterchainAccountAddressResponse;
+
+            /**
+             * Decodes a QueryInterchainAccountAddressResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryInterchainAccountAddressResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.QueryInterchainAccountAddressResponse;
+
+            /**
+             * Verifies a QueryInterchainAccountAddressResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryInterchainAccountAddressResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryInterchainAccountAddressResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.QueryInterchainAccountAddressResponse;
+
+            /**
+             * Creates a plain object from a QueryInterchainAccountAddressResponse message. Also converts values to other types if specified.
+             * @param message QueryInterchainAccountAddressResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.QueryInterchainAccountAddressResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryInterchainAccountAddressResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params msg_submit_tx_max_messages */
+            msg_submit_tx_max_messages?: (Long|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IParams);
+
+            /** Params msg_submit_tx_max_messages. */
+            public msg_submit_tx_max_messages: Long;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState params */
+            params?: (neutron.interchaintxs.IParams|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IGenesisState);
+
+            /** GenesisState params. */
+            public params?: (neutron.interchaintxs.IParams|null);
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.interchaintxs.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.interchaintxs.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
+    /** Namespace transfer. */
+    namespace transfer {
+
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Transfer.
+             * @param request MsgTransfer message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgTransferResponse
+             */
+            public transfer(request: neutron.transfer.IMsgTransfer, callback: neutron.transfer.Msg.TransferCallback): void;
+
+            /**
+             * Calls Transfer.
+             * @param request MsgTransfer message or plain object
+             * @returns Promise
+             */
+            public transfer(request: neutron.transfer.IMsgTransfer): Promise<neutron.transfer.MsgTransferResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.transfer.Msg#transfer}.
+             * @param error Error, if any
+             * @param [response] MsgTransferResponse
+             */
+            type TransferCallback = (error: (Error|null), response?: neutron.transfer.MsgTransferResponse) => void;
+        }
+
+        /** Properties of a MsgTransfer. */
+        interface IMsgTransfer {
+
+            /** MsgTransfer source_port */
+            source_port?: (string|null);
+
+            /** MsgTransfer source_channel */
+            source_channel?: (string|null);
+
+            /** MsgTransfer token */
+            token?: (cosmos.base.v1beta1.ICoin|null);
+
+            /** MsgTransfer sender */
+            sender?: (string|null);
+
+            /** MsgTransfer receiver */
+            receiver?: (string|null);
+
+            /** MsgTransfer timeout_height */
+            timeout_height?: (ibc.core.client.v1.IHeight|null);
+
+            /** MsgTransfer timeout_timestamp */
+            timeout_timestamp?: (Long|null);
+
+            /** MsgTransfer fee */
+            fee?: (neutron.feerefunder.IFee|null);
+        }
+
+        /** Represents a MsgTransfer. */
+        class MsgTransfer implements IMsgTransfer {
+
+            /**
+             * Constructs a new MsgTransfer.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.transfer.IMsgTransfer);
+
+            /** MsgTransfer source_port. */
+            public source_port: string;
+
+            /** MsgTransfer source_channel. */
+            public source_channel: string;
+
+            /** MsgTransfer token. */
+            public token?: (cosmos.base.v1beta1.ICoin|null);
+
+            /** MsgTransfer sender. */
+            public sender: string;
+
+            /** MsgTransfer receiver. */
+            public receiver: string;
+
+            /** MsgTransfer timeout_height. */
+            public timeout_height?: (ibc.core.client.v1.IHeight|null);
+
+            /** MsgTransfer timeout_timestamp. */
+            public timeout_timestamp: Long;
+
+            /** MsgTransfer fee. */
+            public fee?: (neutron.feerefunder.IFee|null);
+
+            /**
+             * Encodes the specified MsgTransfer message. Does not implicitly {@link neutron.transfer.MsgTransfer.verify|verify} messages.
+             * @param message MsgTransfer message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.transfer.IMsgTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgTransfer message, length delimited. Does not implicitly {@link neutron.transfer.MsgTransfer.verify|verify} messages.
+             * @param message MsgTransfer message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.transfer.IMsgTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgTransfer message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgTransfer
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.transfer.MsgTransfer;
+
+            /**
+             * Decodes a MsgTransfer message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgTransfer
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.transfer.MsgTransfer;
+
+            /**
+             * Verifies a MsgTransfer message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgTransfer message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgTransfer
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.transfer.MsgTransfer;
+
+            /**
+             * Creates a plain object from a MsgTransfer message. Also converts values to other types if specified.
+             * @param message MsgTransfer
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.transfer.MsgTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgTransfer to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgTransferResponse. */
+        interface IMsgTransferResponse {
+
+            /** MsgTransferResponse sequence_id */
+            sequence_id?: (Long|null);
+
+            /** MsgTransferResponse channel */
+            channel?: (string|null);
+        }
+
+        /** Represents a MsgTransferResponse. */
+        class MsgTransferResponse implements IMsgTransferResponse {
+
+            /**
+             * Constructs a new MsgTransferResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.transfer.IMsgTransferResponse);
+
+            /** MsgTransferResponse sequence_id. */
+            public sequence_id: Long;
+
+            /** MsgTransferResponse channel. */
+            public channel: string;
+
+            /**
+             * Encodes the specified MsgTransferResponse message. Does not implicitly {@link neutron.transfer.MsgTransferResponse.verify|verify} messages.
+             * @param message MsgTransferResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.transfer.IMsgTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgTransferResponse message, length delimited. Does not implicitly {@link neutron.transfer.MsgTransferResponse.verify|verify} messages.
+             * @param message MsgTransferResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.transfer.IMsgTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgTransferResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgTransferResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.transfer.MsgTransferResponse;
+
+            /**
+             * Decodes a MsgTransferResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgTransferResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.transfer.MsgTransferResponse;
+
+            /**
+             * Verifies a MsgTransferResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgTransferResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgTransferResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.transfer.MsgTransferResponse;
+
+            /**
+             * Creates a plain object from a MsgTransferResponse message. Also converts values to other types if specified.
+             * @param message MsgTransferResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.transfer.MsgTransferResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgTransferResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls DenomTrace.
+             * @param request QueryDenomTraceRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryDenomTraceResponse
+             */
+            public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest, callback: neutron.transfer.Query.DenomTraceCallback): void;
+
+            /**
+             * Calls DenomTrace.
+             * @param request QueryDenomTraceRequest message or plain object
+             * @returns Promise
+             */
+            public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest): Promise<ibc.applications.transfer.v1.QueryDenomTraceResponse>;
+
+            /**
+             * Calls DenomTraces.
+             * @param request QueryDenomTracesRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryDenomTracesResponse
+             */
+            public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest, callback: neutron.transfer.Query.DenomTracesCallback): void;
+
+            /**
+             * Calls DenomTraces.
+             * @param request QueryDenomTracesRequest message or plain object
+             * @returns Promise
+             */
+            public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest): Promise<ibc.applications.transfer.v1.QueryDenomTracesResponse>;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: ibc.applications.transfer.v1.IQueryParamsRequest, callback: neutron.transfer.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: ibc.applications.transfer.v1.IQueryParamsRequest): Promise<ibc.applications.transfer.v1.QueryParamsResponse>;
+
+            /**
+             * Calls DenomHash.
+             * @param request QueryDenomHashRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryDenomHashResponse
+             */
+            public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest, callback: neutron.transfer.Query.DenomHashCallback): void;
+
+            /**
+             * Calls DenomHash.
+             * @param request QueryDenomHashRequest message or plain object
+             * @returns Promise
+             */
+            public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest): Promise<ibc.applications.transfer.v1.QueryDenomHashResponse>;
+        }
+
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.transfer.Query#denomTrace}.
+             * @param error Error, if any
+             * @param [response] QueryDenomTraceResponse
+             */
+            type DenomTraceCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTraceResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.transfer.Query#denomTraces}.
+             * @param error Error, if any
+             * @param [response] QueryDenomTracesResponse
+             */
+            type DenomTracesCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTracesResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.transfer.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.transfer.Query#denomHash}.
+             * @param error Error, if any
+             * @param [response] QueryDenomHashResponse
+             */
+            type DenomHashCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomHashResponse) => void;
         }
     }
 }
