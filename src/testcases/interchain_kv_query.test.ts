@@ -134,7 +134,7 @@ const registerBalanceQuery = async (
 };
 
 const getEventAttribute = (
-  events: any[],
+  events: { type: string; attributes: { key: string; value: string }[] }[],
   eventType: string,
   attribute: string,
 ): string => {
@@ -196,7 +196,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   );
 
   await getWithAttempts(
-    cm,
+    cm.blockWaiter,
     async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
@@ -647,12 +647,8 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = 2;
-
       const result = await removeQueryViaTx(cm[1], queryId);
-
-      expect((result as any).raw_log).toMatch(
-        /authorization failed: unauthorized/i,
-      );
+      expect(result.raw_log).toMatch(/authorization failed: unauthorized/i);
     });
 
     describe('Remove interchain query', () => {
@@ -784,7 +780,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await getWithAttempts(
-          cm[1],
+          cm[1].blockWaiter,
           () => getRegisteredQuery(cm[1], contractAddress, queryId),
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
@@ -799,7 +795,7 @@ describe('Neutron / Interchain KV Query', () => {
 
         await removeQueryViaTx(cm[1], queryId);
         await getWithAttempts(
-          cm[1],
+          cm[1].blockWaiter,
           async () =>
             await cm[1].queryBalances(
               testState.wallets.neutron.demo1.address.toString(),
@@ -807,8 +803,8 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.balances[0].denom ===
               balancesAfterRegistration.balances[0].denom &&
-            parseInt(response.balances[0].amount) >
-              parseInt(balancesAfterRegistration.balances[0].amount),
+            parseInt(response.balances[0].amount || '0') >
+              parseInt(balancesAfterRegistration.balances[0].amount || '0'),
 
           100,
         );
@@ -824,7 +820,7 @@ describe('Neutron / Interchain KV Query', () => {
             {
               denom: balancesAfterRemoval.balances[0].denom,
               amount: (
-                parseInt(balancesAfterRemoval.balances[0].amount) + 1000
+                parseInt(balancesAfterRemoval.balances[0].amount || '') + 1000
               ).toString(),
             },
           ],

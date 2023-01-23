@@ -48,7 +48,7 @@ export const waitForICQResultWithRemoteHeight = (
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    cm,
+    cm.blockWaiter,
     () => getRegisteredQuery(cm, contractAddress, queryId),
     async (query) =>
       query.registered_query.last_submitted_result_remote_height >=
@@ -80,7 +80,7 @@ export const waitForTransfersAmount = (
   numAttempts = 50,
 ) =>
   getWithAttempts(
-    cm,
+    cm.blockWaiter,
     async () =>
       (await queryTransfersNumber(cm, contractAddress)).transfers_number,
     async (amount) => amount == expectedTransfersAmount,
