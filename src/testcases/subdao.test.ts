@@ -697,6 +697,45 @@ describe('Neutron / Subdao', () => {
       );
       expect(config_after.name).toEqual(new_dao_name);
     });
+    test('Update config with empty subDAO name', async () => {
+      const config_before = await cm.queryContract<SubDaoConfig>(
+        subDAO.core.address,
+        {
+          config: {},
+        },
+      );
+
+      proposal_id = await proposeUpdateSubDaoConfig(
+        cm,
+        subDAO.prepropose.address,
+        subDAO.core.address,
+        { name: '' },
+      );
+      await supportAndExecuteProposal(
+        cm,
+        subDAO.propose.address,
+        subDAO.timelock.address,
+        proposal_id,
+      );
+
+      await wait(20);
+      await executeTimelockedProposal(cm, subDAO.timelock.address, proposal_id);
+      const timelocked_prop = await getTimelockedProposal(
+        cm,
+        subDAO.timelock.address,
+        proposal_id,
+      );
+      expect(timelocked_prop.id).toEqual(proposal_id);
+      expect(timelocked_prop.status).toEqual('execution_failed');
+      expect(timelocked_prop.msgs).toHaveLength(1);
+      const config_after = await cm.queryContract<SubDaoConfig>(
+        subDAO.core.address,
+        {
+          config: {},
+        },
+      );
+      expect(config_after).toEqual(config_before);
+    });
   });
 
   // TODO: uncomment when overrule handler updated to take into account timelock_duration
