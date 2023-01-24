@@ -387,12 +387,12 @@ export class CosmosWrapper {
     const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
       JSON.stringify(query),
     ).toString('base64')}?encoding=base64`;
-    const req = await axios.get<{
+    const resp = await axios.get<{
       result: { smart: string };
       height: number;
     }>(url);
     return JSON.parse(
-      Buffer.from(req.data.result.smart, 'base64').toString(),
+      Buffer.from(resp.data.result.smart, 'base64').toString(),
     ) as T;
   }
 
