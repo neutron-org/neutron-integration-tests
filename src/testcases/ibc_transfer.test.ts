@@ -14,35 +14,35 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / IBC-transfer', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
-  let cm2: CosmosWrapper;
-  let cm3: CosmosWrapper;
+  let ntrnDemo1: CosmosWrapper;
+  let cosmosDemo1: CosmosWrapper;
+  let ntrnDemo2: CosmosWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(
+    ntrnDemo1 = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
-    cm3 = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      testState.wallets.neutron.demo2,
-      NEUTRON_DENOM,
-    );
-    cm2 = new CosmosWrapper(
+    cosmosDemo1 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
-    const codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
+    ntrnDemo2 = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.neutron.demo2,
+      NEUTRON_DENOM,
+    );
+    const codeId = await ntrnDemo1.storeWasm(NeutronContract.IBC_TRANSFER);
     // BEWARE: this contract sends 2 txs
-    const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
+    const res = await ntrnDemo1.instantiate(codeId, '{}', 'ibc_transfer');
     contractAddress = res[0]._contract_address;
   });
 
@@ -61,8 +61,10 @@ describe('Neutron / IBC-transfer', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await ntrnDemo1.queryBalances(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+        );
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -70,17 +72,20 @@ describe('Neutron / IBC-transfer', () => {
         );
       });
       test('transfer to contract', async () => {
-        const res = await cm.msgSend(contractAddress.toString(), '50000');
+        const res = await ntrnDemo1.msgSend(
+          contractAddress.toString(),
+          '50000',
+        );
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const balances = await cm.queryBalances(contractAddress);
+        const balances = await ntrnDemo1.queryBalances(contractAddress);
         expect(balances.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);
       });
       test('IBC transfer from a usual account', async () => {
-        const res = await cm.msgIBCTransfer(
+        const res = await ntrnDemo1.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: '1000' },
@@ -93,8 +98,8 @@ describe('Neutron / IBC-transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('check IBC token balance', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm2.queryBalances(
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await cosmosDemo1.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
         expect(
@@ -106,7 +111,7 @@ describe('Neutron / IBC-transfer', () => {
         ).toEqual('1000');
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
-        const res = await cm2.msgIBCTransfer(
+        const res = await cosmosDemo1.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
@@ -119,8 +124,8 @@ describe('Neutron / IBC-transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await ntrnDemo1.queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
         );
         expect(
@@ -132,17 +137,17 @@ describe('Neutron / IBC-transfer', () => {
         ).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const denomTrace = await cm.queryDenomTrace(
+        const denomTrace = await ntrnDemo1.queryDenomTrace(
           '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
         expect(denomTrace.base_denom).toEqual(COSMOS_DENOM);
       });
       test('set payer fees', async () => {
-        const res = await cm.executeContract(
+        const res = await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: ntrnDemo1.denom,
               ack_fee: '2333',
               recv_fee: '0',
               timeout_fee: '2666',
@@ -152,7 +157,7 @@ describe('Neutron / IBC-transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('execute contract', async () => {
-        const res = await cm.executeContract(
+        const res = await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             send: {
@@ -166,8 +171,8 @@ describe('Neutron / IBC-transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('check wallet balance', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm2.queryBalances(
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await cosmosDemo1.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
@@ -180,7 +185,9 @@ describe('Neutron / IBC-transfer', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
-        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
+        const balances = await ntrnDemo1.queryBalances(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+        );
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -189,8 +196,8 @@ describe('Neutron / IBC-transfer', () => {
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(contractAddress);
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await ntrnDemo1.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -201,20 +208,20 @@ describe('Neutron / IBC-transfer', () => {
     });
     describe('Fee payer', () => {
       beforeAll(async () => {
-        await cm.msgSend(contractAddress.toString(), '50000');
-        await cm.executeContract(contractAddress, {
+        await ntrnDemo1.msgSend(contractAddress.toString(), '50000');
+        await ntrnDemo1.executeContract(contractAddress, {
           set_fees: {
-            denom: cm.denom,
+            denom: ntrnDemo1.denom,
             ack_fee: '2333',
             recv_fee: '0',
             timeout_fee: '2666',
-            payer: cm3.wallet.address.toString(),
+            payer: ntrnDemo2.wallet.address.toString(),
           },
         });
       });
       test('should return error bc there is no fee grant yet', async () => {
         await expect(
-          cm.executeContract(contractAddress, {
+          ntrnDemo1.executeContract(contractAddress, {
             send: {
               channel: 'channel-0',
               to: testState.wallets.cosmos.demo2.address.toString(),
@@ -225,12 +232,12 @@ describe('Neutron / IBC-transfer', () => {
         ).rejects.toThrow(/fee-grant not found/);
       });
       test('should spend fee payer tokens', async () => {
-        await cm3.feeGrant(contractAddress);
-        const balanceBefore = await cm.queryDenomBalance(
-          cm3.wallet.address.toString(),
+        await ntrnDemo2.feeGrant(contractAddress);
+        const balanceBefore = await ntrnDemo1.queryDenomBalance(
+          ntrnDemo2.wallet.address.toString(),
           NEUTRON_DENOM,
         );
-        await cm.executeContract(contractAddress, {
+        await ntrnDemo1.executeContract(contractAddress, {
           send: {
             channel: 'channel-0',
             to: testState.wallets.cosmos.demo2.address.toString(),
@@ -238,9 +245,9 @@ describe('Neutron / IBC-transfer', () => {
             amount: '1000',
           },
         });
-        await cm.blockWaiter.waitBlocks(10); // must be enought to process the tx
-        const balanceAfter = await cm.queryDenomBalance(
-          cm3.wallet.address.toString(),
+        await ntrnDemo1.blockWaiter.waitBlocks(10); // must be enought to process the tx
+        const balanceAfter = await ntrnDemo1.queryDenomBalance(
+          ntrnDemo2.wallet.address.toString(),
           NEUTRON_DENOM,
         );
         // there are 2 txs in the contract so we must multiply the fee by 2
@@ -250,11 +257,11 @@ describe('Neutron / IBC-transfer', () => {
     });
     describe('Missing fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: ntrnDemo1.denom,
               ack_fee: '0',
               recv_fee: '0',
               timeout_fee: '0',
@@ -264,7 +271,7 @@ describe('Neutron / IBC-transfer', () => {
       });
       test('execute contract should fail', async () => {
         await expect(
-          cm.executeContract(
+          ntrnDemo1.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
@@ -287,10 +294,10 @@ describe('Neutron / IBC-transfer', () => {
       );
       test('transfer some atoms to contract', async () => {
         const uatomAmount = '1000';
-        const res = await cm2.msgIBCTransfer(
+        const res = await cosmosDemo1.msgIBCTransfer(
           portName,
           channelName,
-          { denom: cm2.denom, amount: uatomAmount },
+          { denom: cosmosDemo1.denom, amount: uatomAmount },
           contractAddress,
           {
             revision_number: new Long(2),
@@ -299,15 +306,15 @@ describe('Neutron / IBC-transfer', () => {
         );
         expect(res.code).toEqual(0);
 
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(contractAddress);
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await ntrnDemo1.queryBalances(contractAddress);
         expect(
           balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
             ?.amount,
         ).toEqual(uatomAmount);
       });
       test('try to set fee in IBC transferred atoms', async () => {
-        const res = await cm.executeContract(
+        const res = await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
@@ -321,7 +328,7 @@ describe('Neutron / IBC-transfer', () => {
         expect(res.code).toEqual(0);
 
         await expect(
-          cm.executeContract(
+          ntrnDemo1.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
@@ -337,11 +344,11 @@ describe('Neutron / IBC-transfer', () => {
     });
     describe('Not enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: ntrnDemo1.denom,
               ack_fee: '1000000',
               recv_fee: '0',
               timeout_fee: '100000',
@@ -351,7 +358,7 @@ describe('Neutron / IBC-transfer', () => {
       });
       test('execute contract should fail', async () => {
         await expect(
-          cm.executeContract(
+          ntrnDemo1.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
@@ -367,11 +374,11 @@ describe('Neutron / IBC-transfer', () => {
     });
     describe('Enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: ntrnDemo1.denom,
               ack_fee: '1000',
               recv_fee: '0',
               timeout_fee: '1000',
@@ -380,18 +387,20 @@ describe('Neutron / IBC-transfer', () => {
         );
       });
       test('execute contract with failing sudo', async () => {
-        const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
+        const failuresBeforeCall = await ntrnDemo1.queryAckFailures(
+          contractAddress,
+        );
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
         // Mock sudo handler to fail
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {},
           }),
         );
 
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             send: {
@@ -412,10 +421,10 @@ describe('Neutron / IBC-transfer', () => {
           attempts -= 1;
 
           try {
-            await cm.blockWaiter.waitBlocks(3);
-            const currentHeight = await getRemoteHeight(cm.sdk);
+            await ntrnDemo1.blockWaiter.waitBlocks(3);
+            const currentHeight = await getRemoteHeight(ntrnDemo1.sdk);
 
-            await cm.executeContract(
+            await ntrnDemo1.executeContract(
               contractAddress,
               JSON.stringify({
                 send: {
@@ -434,8 +443,8 @@ describe('Neutron / IBC-transfer', () => {
         expect(attempts).toBeGreaterThan(0);
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-          cm.blockWaiter,
-          async () => cm.queryAckFailures(contractAddress),
+          ntrnDemo1.blockWaiter,
+          async () => ntrnDemo1.queryAckFailures(contractAddress),
           // Wait until there 4 failure in the list
           async (data) => data.failures.length == 4,
         );
@@ -464,7 +473,7 @@ describe('Neutron / IBC-transfer', () => {
         ]);
 
         // Restore sudo handler to state
-        await cm.executeContract(
+        await ntrnDemo1.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_unset_sudo_failure_mock: {},
@@ -478,7 +487,10 @@ describe('Neutron / IBC-transfer', () => {
           'pagination.limit': '1',
           'pagination.offset': '0',
         };
-        const failures = await cm.queryAckFailures(contractAddress, pagination);
+        const failures = await ntrnDemo1.queryAckFailures(
+          contractAddress,
+          pagination,
+        );
         expect(failures.failures.length).toEqual(1);
       });
       test('failures with big limit returns an error', async () => {
@@ -487,7 +499,7 @@ describe('Neutron / IBC-transfer', () => {
           'pagination.offset': '0',
         };
         await expect(
-          cm.queryAckFailures(contractAddress, pagination),
+          ntrnDemo1.queryAckFailures(contractAddress, pagination),
         ).rejects.toThrow(/limit is more than maximum allowed/);
       });
     });
