@@ -12,10 +12,10 @@ DEMO_MNEMONIC_3="obscure canal because tomorrow tribe sibling describe satoshi k
 RLY_MNEMONIC_1="alley afraid soup fall idea toss can goose become valve initial strong forward bright dish figure check leopard decide warfare hub unusual join cart"
 RLY_MNEMONIC_2="record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset"
 
-STAKEDENOM=${STAKEDENOM:-stake}
+STAKEDENOM=${STAKEDENOM:-untrn}
 ALLOW_ICA_EXEC=${ALLOW_ICA_EXEC:-no}
 
-# Stop if it is already running 
+# Stop if it is already running
 if pgrep -x "$BINARY" >/dev/null; then
     echo "Terminating $BINARY..."
     killall $BINARY
