@@ -101,7 +101,7 @@ describe('Neutron / IBC-transfer', () => {
           balances.balances.find(
             (bal): boolean =>
               bal.denom ==
-              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
           )?.amount,
         ).toEqual('1000');
       });
@@ -175,7 +175,7 @@ describe('Neutron / IBC-transfer', () => {
           balances.balances.find(
             (bal): boolean =>
               bal.denom ==
-              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
           )?.amount,
         ).toEqual('4000');
       });
