@@ -15,7 +15,7 @@ import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 describe('Neutron / IBC-transfer', () => {
   let testState: TestStateLocalCosmosTestNet;
   let ntrnDemo1: CosmosWrapper;
-  let cosmosDemo1: CosmosWrapper;
+  let cosmosDemo2: CosmosWrapper;
   let ntrnDemo2: CosmosWrapper;
   let contractAddress: string;
 
@@ -28,7 +28,7 @@ describe('Neutron / IBC-transfer', () => {
       testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
-    cosmosDemo1 = new CosmosWrapper(
+    cosmosDemo2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       testState.wallets.cosmos.demo2,
@@ -99,7 +99,7 @@ describe('Neutron / IBC-transfer', () => {
       });
       test('check IBC token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const balances = await cosmosDemo1.queryBalances(
+        const balances = await cosmosDemo2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
         expect(
@@ -111,7 +111,7 @@ describe('Neutron / IBC-transfer', () => {
         ).toEqual('1000');
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
-        const res = await cosmosDemo1.msgIBCTransfer(
+        const res = await cosmosDemo2.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
@@ -172,7 +172,7 @@ describe('Neutron / IBC-transfer', () => {
       });
       test('check wallet balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const balances = await cosmosDemo1.queryBalances(
+        const balances = await cosmosDemo2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
@@ -294,10 +294,10 @@ describe('Neutron / IBC-transfer', () => {
       );
       test('transfer some atoms to contract', async () => {
         const uatomAmount = '1000';
-        const res = await cosmosDemo1.msgIBCTransfer(
+        const res = await cosmosDemo2.msgIBCTransfer(
           portName,
           channelName,
-          { denom: cosmosDemo1.denom, amount: uatomAmount },
+          { denom: cosmosDemo2.denom, amount: uatomAmount },
           contractAddress,
           {
             revision_number: new Long(2),
