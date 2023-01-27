@@ -26,7 +26,7 @@ import {
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 
-export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
+export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';

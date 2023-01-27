@@ -337,7 +337,7 @@ describe('Neutron / Interchain KV Query', () => {
           );
         } catch (err) {
           const error = err as Error;
-          expect(error.message).toMatch(/0stake is smaller than 1000000stake/i);
+          expect(error.message).toMatch(/0untrn is smaller than 1000000untrn/i);
         }
       });
 
@@ -794,7 +794,6 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
-
         await getWithAttempts(
           cm[1].blockWaiter,
           async () =>
