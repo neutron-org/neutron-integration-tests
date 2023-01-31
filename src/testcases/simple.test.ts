@@ -33,6 +33,7 @@ describe('Neutron / Simple', () => {
       testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
+    console.log(cm2.wallet.address.toString())
   });
 
   describe('Wallets', () => {

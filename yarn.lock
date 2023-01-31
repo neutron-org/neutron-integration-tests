@@ -4731,6 +4731,11 @@ prompts@^2.0.1:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
+proto@^1.0.19:
+  version "1.0.19"
+  resolved "https://registry.yarnpkg.com/proto/-/proto-1.0.19.tgz#4dba250b34398ae242de24153e7bf9dab2fe4385"
+  integrity sha512-NNRn4T3FAcMbiRZAr6HlAP3PyqSv79bcYdfiZbY1nognRTVeGAd5Ncg4yHZdM2ey9ovP/sOg/0lfalvaj3ZpHA==
+
 protobufjs@^6.11.2:
   version "6.11.3"
   resolved "https://registry.yarnpkg.com/protobufjs/-/protobufjs-6.11.3.tgz#637a527205a35caa4f3e2a9a4a13ddffe0e7af74"
