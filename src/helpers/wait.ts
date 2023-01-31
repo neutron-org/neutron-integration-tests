@@ -61,10 +61,11 @@ export const getWithAttempts = async <T>(
   numAttempts = 20,
 ): Promise<T> => {
   let error = null;
+  let data: T;
   while (numAttempts > 0) {
     numAttempts--;
     try {
-      const data = await getFunc();
+      data = await getFunc();
       if (await readyFunc(data)) {
         return data;
       }
@@ -73,5 +74,10 @@ export const getWithAttempts = async <T>(
     }
     await blockWaiter.waitBlocks(1);
   }
-  throw error != null ? error : new Error('getWithAttempts: no attempts left');
+  throw error != null
+    ? error
+    : new Error(
+        'getWithAttempts: no attempts left. Latest get response: ' +
+          (data === Object(data) ? JSON.stringify(data) : data).toString(),
+      );
 };
