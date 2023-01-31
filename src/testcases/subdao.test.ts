@@ -843,7 +843,6 @@ const setupSubDaoTimelockSet = async (
                 label: 'subDAO timelock contract',
                 msg: Buffer.from(
                   JSON.stringify({
-                    owner: main_dao_addr,
                     timelock_duration: 20,
                   }),
                 ).toString('base64'),
