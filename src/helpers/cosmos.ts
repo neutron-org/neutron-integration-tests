@@ -44,7 +44,7 @@ export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
 export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
-const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
+const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
 
 export type ChannelsList = {
   channels: {

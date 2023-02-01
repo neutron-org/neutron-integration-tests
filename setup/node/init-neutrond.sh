@@ -6,14 +6,14 @@ CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
-DAO_CONTRACT=/opt/neutron/contracts/dao/cwd_core.wasm
-PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
-PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
-VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
-VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
-PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_multiple.wasm
-PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_multiple.wasm
-TREASURY_CONTRACT=/opt/neutron/contracts/dao/neutron_treasury.wasm
+DAO_CONTRACT=/opt/neutron/contracts/cwd_core.wasm
+PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/cwd_pre_propose_single.wasm
+PROPOSAL_CONTRACT=/opt/neutron/contracts/cwd_proposal_single.wasm
+VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/neutron_voting_registry.wasm
+VAULT_CONTRACT=/opt/neutron/contracts/neutron_vault.wasm
+PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_proposal_multiple.wasm
+PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_pre_propose_multiple.wasm
+TREASURY_CONTRACT=/opt/neutron/contracts/neutron_treasury.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
