@@ -117,14 +117,13 @@ describe('Neutron / Token Generation Event', () => {
         expect(contractConfig).toEqual({
           ...config,
           event_config: null,
-          tokens_released: false,
         });
       });
       test('setup config', async () => {
         const res = await cmDemo1.executeContract(
           tokenSaleContractAddress,
           JSON.stringify({
-            post_initialize: { config: eventConfig },
+            setup_event: { config: eventConfig },
           }),
         );
         expect(res.code).toEqual(0);
@@ -137,11 +136,10 @@ describe('Neutron / Token Generation Event', () => {
         expect(resConfig).toEqual({
           ...config,
           event_config: eventConfig,
-          tokens_released: false,
         });
       });
     });
-    describe('Phase1', () => {
+    describe('Phase 1', () => {
       it('should fail when deposit before start', async () => {
         await expect(
           cmDemo2.executeContract(
@@ -243,7 +241,7 @@ describe('Neutron / Token Generation Event', () => {
         ).rejects.toThrow(/cannot withdraw funds yet/);
       });
     });
-    describe('Phase2', () => {
+    describe('Phase 2', () => {
       it('should return correct info', async () => {
         const tm = eventConfig.stage2_begin * 1000 - Date.now() + 3000;
         await new Promise((resolve) => setTimeout(() => resolve(true), tm));
@@ -313,29 +311,8 @@ describe('Neutron / Token Generation Event', () => {
     });
     describe('Phase 3', () => {
       beforeAll(async () => {
-        const tm = eventConfig.stage2_end * 1000 - Date.now() + 2000;
+        const tm = eventConfig.stage2_end * 1000 - Date.now() + 3000;
         await new Promise((resolve) => setTimeout(() => resolve(true), tm));
-      });
-      it('should return correct info (not clamable)', async () => {
-        const res = await cmDemo2.queryContract(tokenSaleContractAddress, {
-          info: { address: testState.wallets.neutron.demo2.address.toString() },
-        });
-        expect(res).toEqual({
-          clamable: false,
-          deposit: '700000',
-          tokens_to_claim: '1000000',
-          total_deposit: '700000',
-          withdrawable_amount: '0',
-        });
-      });
-      it('releases tokens', async () => {
-        const res = await cmDemo1.executeContract(
-          tokenSaleContractAddress,
-          JSON.stringify({
-            release_tokens: {},
-          }),
-        );
-        expect(res.code).toEqual(0);
       });
       it('should return correct info (clamable)', async () => {
         const res = await cmDemo2.queryContract(tokenSaleContractAddress, {
