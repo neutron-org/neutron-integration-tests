@@ -30,7 +30,7 @@ module.exports = () => {
       if (oneStop) return;
       oneStop = true;
       console.log('Stopping cosmopark');
-      ch.execSync(`cd setup && make stop-cosmopark`);
+      // ch.execSync(`cd setup && make stop-cosmopark`);
     });
   return config;
 };

@@ -1,5 +1,4 @@
 const fs = require('fs');
-
 const { execSync } = require('child_process');
 const axios = require('axios');
 const stream = require('stream');
@@ -23,9 +22,6 @@ const DIR_NAMES = {
   dev: 'neutron-dev-contracts',
 };
 
-const TO_WAIT_FOR_BUILD = 60 * 20;
-const CHECKING_IF_BUILD_FINISHED_INTERVAL = 10;
-
 const finished = util.promisify(stream.finished);
 
 async function downloadFile(fileUrl, outputLocationPath) {
@@ -46,26 +42,37 @@ const wait = async (seconds) =>
     setTimeout(() => r(true), 1000 * seconds);
   });
 
+const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
+  let error = null;
+  let data = null;
+  while (numAttempts > 0) {
+    numAttempts--;
+    try {
+      data = await getFunc();
+      if (await readyFunc(data)) {
+        return data;
+      }
+    } catch (e) {
+      error = e;
+    }
+    await wait(10);
+  }
+  throw error != null
+    ? error
+    : new Error(
+        'getWithAttempts: no attempts left. Latest get response: ' +
+          (data === Object(data) ? JSON.stringify(data) : data).toString(),
+      );
+};
+
 const getLatestCommit = (repo_url, branch_name) =>
   execSync(`git ls-remote ${repo_url} "${branch_name}" | awk '{ print $1}'`)
     .toString()
     .trim();
 
 const triggerBuildingJob = async (contracts_set_name, token, commit) => {
+  console.log('Triggering the job unimplemented lol');
   return;
-  const job_name = JOB_NAMES[contracts_set_name];
-  const url = `${JENKINS_ADDR_BASE}/buildByToken/buildWithParameters?token=${token}&COMMIT=${commit}&job=${job_name}&NO_REBUILD=false`;
-
-  try {
-    const trigger_build = await axios.get(url);
-    if (trigger_build.status !== 201) {
-      throw new Error(
-        `CI service returned bad error code: ${trigger_build.status}`,
-      );
-    }
-  } catch (error) {
-    throw new Error(`Failed to call CI service: ${error}`);
-  }
 };
 
 const getChecksumsTxt = async (
@@ -76,36 +83,19 @@ const getChecksumsTxt = async (
 ) => {
   const dir_name = DIR_NAMES[contracts_set_name];
   const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/checksums.txt`;
+  console.error(`Getting checksums by url: ${url}`);
 
-  let checksums;
   try {
-    console.error(`Getting checksums by url: ${url}`);
-
-    checksums = await axios.get(url);
-    console.log('Using a pre-built contracts');
+    return await axios.get(url);
   } catch (error) {
     console.log('No checksum file found, triggering the building job');
-
     await triggerBuildingJob(contracts_set_name, ci_token, branch_name);
-
-    let counter = 0;
-    while (counter < TO_WAIT_FOR_BUILD / CHECKING_IF_BUILD_FINISHED_INTERVAL) {
-      await wait(10);
-      const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/checksums.txt`;
-
-      try {
-        checksums = await axios.get(url);
-        break;
-      } catch (error) {
-        const alreadyPassed = CHECKING_IF_BUILD_FINISHED_INTERVAL * counter;
-        console.log(
-          `Waiting for build to finish (${alreadyPassed} seconds passed)`,
-        );
-        counter++;
-      }
-    }
   }
-  return checksums.data;
+  return await getWithAttempts(
+    () => axios.get(url),
+    (response) => response.code == 200,
+    12,
+  );
 };
 
 const getContractsList = (checksums_txt) => {
