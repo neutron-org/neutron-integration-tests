@@ -31,11 +31,28 @@ For the first run it's required to run `make build-all` in the `setup/` director
 yarn
 ```
 
-### 4. Download contracts
+### 4. Download or build contracts
+
+#### Downloading
+
+The pre-build contracts for specific commits are stored in the publicly available Google Cloud Bucket.
+One can download them via following commands:
 
 ```shell
-./download_contracts.sh
+node ./download_artifacts.js neutron-dao neutron-dev-contracts
 ```
+
+If you want to specify any specific branch/commit, use the following command to get more info on how to do that:
+
+```shell
+node ./download_artifacts.js --help
+```
+
+#### Building
+
+If the contracts version you need is unavailable, or you need a custom one, you can easily use the contracts built by yourself.
+To do so, build the contracts from [neutron-dev-contracts](https://github.com/neutron-org/neutron-dev-contracts) and [neutron-dao](https://github.com/neutron-org/neutron-dao) by following respective instructions.
+After artifacts build, put all built `.wasm` files to `contracts/` directory.
 
 ### 5. Run the tests (make sure docker daemon is running)
 
