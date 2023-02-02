@@ -14,6 +14,7 @@
     "test:governance": "jest --runInBand -b src/testcases/governance",
     "test:subdao": "jest --runInBand -b src/testcases/subdao",
     "test:tokenomics": "jest --runInBand -b src/testcases/tokenomics",
+    "test:tge": "jest --runInBand -b src/testcases/tge",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"

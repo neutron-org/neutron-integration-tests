@@ -166,6 +166,8 @@ export const NeutronContract = {
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
+  TOKEN_SALE: 'token_sale.wasm',
+  CW20_TOKEN: 'cw20_base.wasm',
 };
 
 type MultiChoiceOption = {
@@ -304,15 +306,18 @@ export class CosmosWrapper {
 
   async instantiate(
     codeId: string,
-    msg: string | null = null,
-    label: string | null = null,
+    msg: string | Record<string, unknown> | null = null,
+    label: string,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
       sender: this.wallet.address.toString(),
       admin: this.wallet.address.toString(),
       label,
-      msg: Buffer.from(msg),
+      msg:
+        typeof msg === 'string'
+          ? Buffer.from(msg)
+          : Buffer.from(JSON.stringify(msg)),
     });
     const data = await this.execTx(
       {
@@ -321,7 +326,6 @@ export class CosmosWrapper {
       },
       [msgInit],
     );
-
     if (data.tx_response.code !== 0) {
       throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
     }
