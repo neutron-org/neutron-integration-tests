@@ -510,11 +510,11 @@ export namespace neutron {
             /** Failure id */
             id?: (Long|null);
 
-            /** Failure ack_id */
-            ack_id?: (Long|null);
+            /** Failure sequence_id */
+            sequence_id?: (Long|null);
 
-            /** Failure ack_type */
-            ack_type?: (string|null);
+            /** Failure response_type */
+            response_type?: (string|null);
         }
 
         /** Represents a Failure. */
@@ -535,11 +535,11 @@ export namespace neutron {
             /** Failure id. */
             public id: Long;
 
-            /** Failure ack_id. */
-            public ack_id: Long;
+            /** Failure sequence_id. */
+            public sequence_id: Long;
 
-            /** Failure ack_type. */
-            public ack_type: string;
+            /** Failure response_type. */
+            public response_type: string;
 
             /**
              * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.

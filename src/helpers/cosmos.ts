@@ -142,8 +142,8 @@ export type AckFailuresResponse = {
 type Failure = {
   address: string;
   id: number;
-  ack_id: number;
-  ack_type: string;
+  sequence_id: number;
+  response_type: string;
 };
 
 // BalancesResponse is the response model for the bank balances query.

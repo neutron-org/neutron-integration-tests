@@ -399,22 +399,22 @@ describe('Neutron / Simple', () => {
           expect.objectContaining({
             address: contractAddress,
             id: '0',
-            ack_type: 'ack',
+            response_type: 'ack',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '1',
-            ack_type: 'ack',
+            response_type: 'ack',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '2',
-            ack_type: 'timeout',
+            response_type: 'timeout',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '3',
-            ack_type: 'timeout',
+            response_type: 'timeout',
           }),
         ]);
 

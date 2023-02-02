@@ -1066,8 +1066,8 @@
                  * @property {string|null} [channel_id] Failure channel_id
                  * @property {string|null} [address] Failure address
                  * @property {Long|null} [id] Failure id
-                 * @property {Long|null} [ack_id] Failure ack_id
-                 * @property {string|null} [ack_type] Failure ack_type
+                 * @property {Long|null} [sequence_id] Failure sequence_id
+                 * @property {string|null} [response_type] Failure response_type
                  */
     
                 /**
@@ -1110,20 +1110,20 @@
                 Failure.prototype.id = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
-                 * Failure ack_id.
-                 * @member {Long} ack_id
+                 * Failure sequence_id.
+                 * @member {Long} sequence_id
                  * @memberof neutron.contractmanager.Failure
                  * @instance
                  */
-                Failure.prototype.ack_id = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+                Failure.prototype.sequence_id = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
-                 * Failure ack_type.
-                 * @member {string} ack_type
+                 * Failure response_type.
+                 * @member {string} response_type
                  * @memberof neutron.contractmanager.Failure
                  * @instance
                  */
-                Failure.prototype.ack_type = "";
+                Failure.prototype.response_type = "";
     
                 /**
                  * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
@@ -1143,10 +1143,10 @@
                         writer.uint32(/* id 2, wireType 2 =*/18).string(message.address);
                     if (message.id != null && Object.hasOwnProperty.call(message, "id"))
                         writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.id);
-                    if (message.ack_id != null && Object.hasOwnProperty.call(message, "ack_id"))
-                        writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.ack_id);
-                    if (message.ack_type != null && Object.hasOwnProperty.call(message, "ack_type"))
-                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.ack_type);
+                    if (message.sequence_id != null && Object.hasOwnProperty.call(message, "sequence_id"))
+                        writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.sequence_id);
+                    if (message.response_type != null && Object.hasOwnProperty.call(message, "response_type"))
+                        writer.uint32(/* id 5, wireType 2 =*/42).string(message.response_type);
                     return writer;
                 };
     
@@ -1191,10 +1191,10 @@
                             message.id = reader.uint64();
                             break;
                         case 4:
-                            message.ack_id = reader.uint64();
+                            message.sequence_id = reader.uint64();
                             break;
                         case 5:
-                            message.ack_type = reader.string();
+                            message.response_type = reader.string();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -1240,12 +1240,12 @@
                     if (message.id != null && message.hasOwnProperty("id"))
                         if (!$util.isInteger(message.id) && !(message.id && $util.isInteger(message.id.low) && $util.isInteger(message.id.high)))
                             return "id: integer|Long expected";
-                    if (message.ack_id != null && message.hasOwnProperty("ack_id"))
-                        if (!$util.isInteger(message.ack_id) && !(message.ack_id && $util.isInteger(message.ack_id.low) && $util.isInteger(message.ack_id.high)))
-                            return "ack_id: integer|Long expected";
-                    if (message.ack_type != null && message.hasOwnProperty("ack_type"))
-                        if (!$util.isString(message.ack_type))
-                            return "ack_type: string expected";
+                    if (message.sequence_id != null && message.hasOwnProperty("sequence_id"))
+                        if (!$util.isInteger(message.sequence_id) && !(message.sequence_id && $util.isInteger(message.sequence_id.low) && $util.isInteger(message.sequence_id.high)))
+                            return "sequence_id: integer|Long expected";
+                    if (message.response_type != null && message.hasOwnProperty("response_type"))
+                        if (!$util.isString(message.response_type))
+                            return "response_type: string expected";
                     return null;
                 };
     
@@ -1274,17 +1274,17 @@
                             message.id = object.id;
                         else if (typeof object.id === "object")
                             message.id = new $util.LongBits(object.id.low >>> 0, object.id.high >>> 0).toNumber(true);
-                    if (object.ack_id != null)
+                    if (object.sequence_id != null)
                         if ($util.Long)
-                            (message.ack_id = $util.Long.fromValue(object.ack_id)).unsigned = true;
-                        else if (typeof object.ack_id === "string")
-                            message.ack_id = parseInt(object.ack_id, 10);
-                        else if (typeof object.ack_id === "number")
-                            message.ack_id = object.ack_id;
-                        else if (typeof object.ack_id === "object")
-                            message.ack_id = new $util.LongBits(object.ack_id.low >>> 0, object.ack_id.high >>> 0).toNumber(true);
-                    if (object.ack_type != null)
-                        message.ack_type = String(object.ack_type);
+                            (message.sequence_id = $util.Long.fromValue(object.sequence_id)).unsigned = true;
+                        else if (typeof object.sequence_id === "string")
+                            message.sequence_id = parseInt(object.sequence_id, 10);
+                        else if (typeof object.sequence_id === "number")
+                            message.sequence_id = object.sequence_id;
+                        else if (typeof object.sequence_id === "object")
+                            message.sequence_id = new $util.LongBits(object.sequence_id.low >>> 0, object.sequence_id.high >>> 0).toNumber(true);
+                    if (object.response_type != null)
+                        message.response_type = String(object.response_type);
                     return message;
                 };
     
@@ -1311,10 +1311,10 @@
                             object.id = options.longs === String ? "0" : 0;
                         if ($util.Long) {
                             var long = new $util.Long(0, 0, true);
-                            object.ack_id = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                            object.sequence_id = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
-                            object.ack_id = options.longs === String ? "0" : 0;
-                        object.ack_type = "";
+                            object.sequence_id = options.longs === String ? "0" : 0;
+                        object.response_type = "";
                     }
                     if (message.channel_id != null && message.hasOwnProperty("channel_id"))
                         object.channel_id = message.channel_id;
@@ -1325,13 +1325,13 @@
                             object.id = options.longs === String ? String(message.id) : message.id;
                         else
                             object.id = options.longs === String ? $util.Long.prototype.toString.call(message.id) : options.longs === Number ? new $util.LongBits(message.id.low >>> 0, message.id.high >>> 0).toNumber(true) : message.id;
-                    if (message.ack_id != null && message.hasOwnProperty("ack_id"))
-                        if (typeof message.ack_id === "number")
-                            object.ack_id = options.longs === String ? String(message.ack_id) : message.ack_id;
+                    if (message.sequence_id != null && message.hasOwnProperty("sequence_id"))
+                        if (typeof message.sequence_id === "number")
+                            object.sequence_id = options.longs === String ? String(message.sequence_id) : message.sequence_id;
                         else
-                            object.ack_id = options.longs === String ? $util.Long.prototype.toString.call(message.ack_id) : options.longs === Number ? new $util.LongBits(message.ack_id.low >>> 0, message.ack_id.high >>> 0).toNumber(true) : message.ack_id;
-                    if (message.ack_type != null && message.hasOwnProperty("ack_type"))
-                        object.ack_type = message.ack_type;
+                            object.sequence_id = options.longs === String ? $util.Long.prototype.toString.call(message.sequence_id) : options.longs === Number ? new $util.LongBits(message.sequence_id.low >>> 0, message.sequence_id.high >>> 0).toNumber(true) : message.sequence_id;
+                    if (message.response_type != null && message.hasOwnProperty("response_type"))
+                        object.response_type = message.response_type;
                     return object;
                 };
     

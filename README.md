@@ -14,7 +14,8 @@ git clone git@github.com:neutron-org/neutron.git
 git clone git@github.com:neutron-org/neutron-query-relayer.git
 ```
 
-We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v7.0.3 for the tests.
+We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v7.0.3 for the
+tests.
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
@@ -23,7 +24,8 @@ git checkout v7.0.3
 
 ### 2. Prepare docker environment
 
-For the first run it's required to run `make build-all` in the `setup/` directory to build all the docker images before you run the tests with `yarn test`
+For the first run it's required to run `make build-all` in the `setup/` directory to build all the docker images before
+you run the tests with `yarn test`
 
 ### 3. Install dependencies with command
 
@@ -47,7 +49,8 @@ yarn test:interchain_tx_query # interchain tx query test
 yarn test:interchain_kv_query # interchain kv query test
 ```
 
-NOTE: To speed up tests you can run the cosmopark by youself with `make start-cosmopark` in the setup dir. To run test with the already running cosmopark use `NO_DOCKER` env variable.
+NOTE: To speed up tests you can run the cosmopark by youself with `make start-cosmopark` in the setup dir. To run test
+with the already running cosmopark use `NO_DOCKER` env variable.
 
 ```shell
 NO_DOCKER=1 yarn test # all tests
@@ -88,3 +91,8 @@ NO_REBUILD - skip containers rebuilding
 ```
 src/config.json
 ```
+
+## Generating .proto files
+
+This project uses code generated from Neutron protobuf files. To generate the code, run `sh gen-proto.sh` from project
+root; please note that Neutron repo must be available at `../neutron` for the script to work.
