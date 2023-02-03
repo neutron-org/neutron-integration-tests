@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { execSync } = require('child_process');
 const axios = require('axios');
 const stream = require('stream');
 const util = require('util');
@@ -10,7 +9,8 @@ const finished = util.promisify(stream.finished);
 
 // -------------------- CONSTANTS --------------------
 
-const NEUTRON_GITHUB = 'https://github.com/neutron-org';
+const GITHUB_API_BASEURL = 'https://api.github.com';
+const NEUTRON_ORG = 'neutron-org';
 const STORAGE_ADDR_BASE =
   'https://storage.googleapis.com/neutron-contracts/neutron-org';
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
@@ -70,11 +70,11 @@ const triggerBuildingJob = async (repo_name, token, commit) => {
   console.log('Triggering the job unimplemented lol');
 };
 
-const getLatestCommit = (repo_url, branch_name) => {
-  const cmd = `git ls-remote ${repo_url} "${branch_name}" | awk '{ print $1}'`;
-  verboseLog(`Using following command to get latest commit:\n${cmd}`);
-
-  return execSync(cmd).toString().trim();
+const getLatestCommit = async (repo_name, branch_name) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/branches/${branch_name}`;
+  verboseLog(`Getting latest commit by url:\n${url}`);
+  const resp = (await axios.get(url)).data;
+  return resp['commit']['sha'];
 };
 
 // -------------------- STORAGE --------------------
@@ -101,7 +101,7 @@ const getChecksumsTxt = async (
   );
 };
 
-const getContractsList = (checksums_txt) => {
+const parseChecksumsTxt = (checksums_txt) => {
   const regex = /\S+\.wasm/g;
   return checksums_txt.match(regex);
 };
@@ -113,12 +113,14 @@ const downloadContracts = async (
   dest_dir,
 ) => {
   const dir_name = repo_name;
-  contracts_list.forEach((element) => {
+  let promises = [];
+  for (const element of contracts_list) {
     const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/${element}`;
     const file_path = `${dest_dir}/${element}`;
 
-    downloadFile(url, file_path);
-  });
+    promises.push(downloadFile(url, file_path));
+  }
+  await Promise.all(promises);
 };
 
 // -------------------- MAIN --------------------
@@ -127,10 +129,7 @@ async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
   console.log(`Downloading artifacts for ${repo_name} repo`);
   console.log(`Using branch ${branch_name}`);
 
-  let latest_commit = getLatestCommit(
-    `${NEUTRON_GITHUB}/${repo_name}.git`,
-    branch_name,
-  );
+  let latest_commit = await getLatestCommit(repo_name, branch_name);
   console.log(`Latest commit is ${latest_commit}`);
 
   verboseLog('Downloading checksum.txt');
@@ -141,7 +140,7 @@ async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
     ci_token,
   );
 
-  const contracts_list = getContractsList(checksums_txt);
+  const contracts_list = parseChecksumsTxt(checksums_txt);
 
   const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
