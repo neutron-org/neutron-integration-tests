@@ -19,8 +19,11 @@ const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
 
 // -------------------- UTILS --------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+let verboseLog = (str) => {};
+
 async function downloadFile(fileUrl, outputLocationPath) {
-  console.error(`Downloading file by url: ${fileUrl}`);
+  verboseLog(`Downloading file by url: ${fileUrl}`);
   const writer = fs.createWriteStream(outputLocationPath);
   return axios({
     method: 'get',
@@ -62,14 +65,17 @@ const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
 
 // -------------------- GIT/GITHUB --------------------
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const triggerBuildingJob = async (repo_name, token, commit) => {
   console.log('Triggering the job unimplemented lol');
 };
 
-const getLatestCommit = (repo_url, branch_name) =>
-  execSync(`git ls-remote ${repo_url} "${branch_name}" | awk '{ print $1}'`)
-    .toString()
-    .trim();
+const getLatestCommit = (repo_url, branch_name) => {
+  const cmd = `git ls-remote ${repo_url} "${branch_name}" | awk '{ print $1}'`;
+  verboseLog(`Using following command to get latest commit:\n${cmd}`);
+
+  return execSync(cmd).toString().trim();
+};
 
 // -------------------- STORAGE --------------------
 
@@ -79,9 +85,8 @@ const getChecksumsTxt = async (
   branch_name,
   ci_token,
 ) => {
-  const dir_name = repo_name;
-  const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/checksums.txt`;
-  console.error(`Getting checksums by url: ${url}`);
+  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${branch_name}/checksums.txt`;
+  verboseLog(`Getting checksums by url: ${url}`);
 
   try {
     return (await axios.get(url)).data;
@@ -119,6 +124,7 @@ const downloadContracts = async (
 // -------------------- MAIN --------------------
 
 async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
+  console.log(`Downloading artifacts for ${repo_name} repo`);
   console.log(`Using branch ${branch_name}`);
 
   let latest_commit = getLatestCommit(
@@ -127,7 +133,7 @@ async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
   );
   console.log(`Latest commit is ${latest_commit}`);
 
-  console.log('Downloading checksum.txt');
+  verboseLog('Downloading checksum.txt');
   let checksums_txt = await getChecksumsTxt(
     repo_name,
     STORAGE_ADDR_BASE,
@@ -137,20 +143,28 @@ async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
 
   const contracts_list = getContractsList(checksums_txt);
 
-  console.log(`Contracts to be downloaded: ${contracts_list}`);
+  const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
+  console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
   await downloadContracts(repo_name, contracts_list, branch_name, dest_dir);
 
-  console.log(`Contracts are downloaded`);
+  console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
 }
 
 async function main() {
   program
-    .option('-b, --branch [name]', 'Specify branch to download')
-    .option('-d, --dir [name]', 'Directory to put contracts in');
+    .option('-b, --branch [name]', 'branch to download')
+    .option(
+      '-d, --dir [name]',
+      'destination directory to put contracts artifacts into',
+    )
+    .option('-v, --verbose', 'verbose output');
 
   program.addArgument(
-    new commander.Argument('[repo...]', 'Contracts repos to download'),
+    new commander.Argument(
+      '[repo...]',
+      'contracts repos to download artifacts for',
+    ),
   );
 
   program.addHelpText(
@@ -168,6 +182,10 @@ Environment vars:
   const branch_name = options.branch || DEFAULT_BRANCH;
   const dest_dir = options.dir || DEFAULT_DIR;
   const repos_to_download = program.args;
+
+  if (options.verbose) {
+    verboseLog = console.log;
+  }
 
   for (const value of repos_to_download) {
     await downloadArtifacts(value, branch_name, dest_dir, ci_token);
