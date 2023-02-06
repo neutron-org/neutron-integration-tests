@@ -83,9 +83,10 @@ const getChecksumsTxt = async (
   repo_name,
   storage_addr,
   branch_name,
+  commit_hash,
   ci_token,
 ) => {
-  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${branch_name}/checksums.txt`;
+  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${branch_name}/${commit_hash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
   try {
@@ -110,12 +111,13 @@ const downloadContracts = async (
   repo_name,
   contracts_list,
   branch_name,
+  commit_hash,
   dest_dir,
 ) => {
   const dir_name = repo_name;
   let promises = [];
   for (const element of contracts_list) {
-    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/${element}`;
+    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/${commit_hash}/${element}`;
     const file_path = `${dest_dir}/${element}`;
 
     promises.push(downloadFile(url, file_path));
@@ -125,18 +127,34 @@ const downloadContracts = async (
 
 // -------------------- MAIN --------------------
 
-async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
+async function downloadArtifacts(
+  repo_name,
+  specified_branch,
+  dest_dir,
+  ci_token,
+) {
   console.log(`Downloading artifacts for ${repo_name} repo`);
-  console.log(`Using branch ${branch_name}`);
 
-  let latest_commit = await getLatestCommit(repo_name, branch_name);
-  console.log(`Latest commit is ${latest_commit}`);
+  let commit;
+  let branch_name;
+  if (specified_branch.includes(':')) {
+    branch_name = specified_branch.split(':')[0];
+    commit = specified_branch.split(':')[1];
+    console.log(`Using branch ${branch_name}`);
+    console.log(`Using specified commit: ${commit}`);
+  } else {
+    branch_name = specified_branch;
+    commit = await getLatestCommit(repo_name, branch_name);
+    console.log(`Using branch ${branch_name}`);
+    console.log(`Using the latest commit: ${commit}`);
+  }
 
   verboseLog('Downloading checksum.txt');
   let checksums_txt = await getChecksumsTxt(
     repo_name,
     STORAGE_ADDR_BASE,
     branch_name,
+    commit,
     ci_token,
   );
 
@@ -145,14 +163,23 @@ async function downloadArtifacts(repo_name, branch_name, dest_dir, ci_token) {
   const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
-  await downloadContracts(repo_name, contracts_list, branch_name, dest_dir);
+  await downloadContracts(
+    repo_name,
+    contracts_list,
+    branch_name,
+    commit,
+    dest_dir,
+  );
 
   console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
 }
 
 async function main() {
   program
-    .option('-b, --branch [name]', 'branch to download')
+    .option(
+      '-b, --branch [name]',
+      'branch to download. You can also specify the commit, e.g. main:5848eeab5992bb4080dff24009a7ef758d9ce899',
+    )
     .option(
       '-d, --dir [name]',
       'destination directory to put contracts artifacts into',
