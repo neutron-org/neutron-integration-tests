@@ -15,12 +15,11 @@ const STORAGE_ADDR_BASE =
   'https://storage.googleapis.com/neutron-contracts/neutron-org';
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
 const DEFAULT_DIR = 'contracts';
-const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
 
 // -------------------- UTILS --------------------
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
-let verboseLog = (str) => {};
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+let verboseLog = () => {};
 
 async function downloadFile(fileUrl, outputLocationPath) {
   verboseLog(`Downloading file by url: ${fileUrl}`);
@@ -35,40 +34,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
   });
 }
 
-const wait = async (seconds) =>
-  new Promise((r) => {
-    setTimeout(() => r(true), 1000 * seconds);
-  });
-
-const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
-  let error = null;
-  let data = null;
-  while (numAttempts > 0) {
-    numAttempts--;
-    try {
-      data = await getFunc();
-      if (await readyFunc(data)) {
-        return data;
-      }
-    } catch (e) {
-      error = e;
-    }
-    await wait(10);
-  }
-  throw error != null
-    ? error
-    : new Error(
-        'getWithAttempts: no attempts left. Latest get response: ' +
-          (data === Object(data) ? JSON.stringify(data) : data).toString(),
-      );
-};
-
 // -------------------- GIT/GITHUB --------------------
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const triggerBuildingJob = async (repo_name, token, commit) => {
-  console.log('Triggering the job unimplemented lol');
-};
 
 const getLatestCommit = async (repo_name, branch_name) => {
   const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/branches/${branch_name}`;
@@ -84,22 +50,17 @@ const getChecksumsTxt = async (
   storage_addr,
   branch_name,
   commit_hash,
-  ci_token,
 ) => {
-  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${branch_name}/${commit_hash}/checksums.txt`;
+  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${commit_hash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
   try {
     return (await axios.get(url)).data;
   } catch (error) {
-    console.log('No checksum file found, triggering the building job');
-    await triggerBuildingJob(repo_name, ci_token, branch_name);
+    console.log('No checksum file found, exiting');
+    console.log(`Please go to https://github.com/neutron-org/${repo_name}/actions/workflows/build.yml \
+and run the workflow for ${branch_name} branch manually`);
   }
-  return await getWithAttempts(
-    async () => (await axios.get(url)).data,
-    (response) => response.code == 200,
-    12,
-  );
 };
 
 const parseChecksumsTxt = (checksums_txt) => {
@@ -110,14 +71,13 @@ const parseChecksumsTxt = (checksums_txt) => {
 const downloadContracts = async (
   repo_name,
   contracts_list,
-  branch_name,
   commit_hash,
   dest_dir,
 ) => {
   const dir_name = repo_name;
   let promises = [];
   for (const element of contracts_list) {
-    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${branch_name}/${commit_hash}/${element}`;
+    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit_hash}/${element}`;
     const file_path = `${dest_dir}/${element}`;
 
     promises.push(downloadFile(url, file_path));
@@ -127,12 +87,7 @@ const downloadContracts = async (
 
 // -------------------- MAIN --------------------
 
-async function downloadArtifacts(
-  repo_name,
-  specified_branch,
-  dest_dir,
-  ci_token,
-) {
+async function downloadArtifacts(repo_name, specified_branch, dest_dir) {
   console.log(`Downloading artifacts for ${repo_name} repo`);
 
   let commit;
@@ -150,26 +105,24 @@ async function downloadArtifacts(
   }
 
   verboseLog('Downloading checksum.txt');
-  let checksums_txt = await getChecksumsTxt(
+  const checksums_txt = await getChecksumsTxt(
     repo_name,
     STORAGE_ADDR_BASE,
     branch_name,
     commit,
-    ci_token,
   );
+
+  if (!checksums_txt) {
+    console.log('Respective checksum.txt is not found in storage');
+    return;
+  }
 
   const contracts_list = parseChecksumsTxt(checksums_txt);
 
   const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
-  await downloadContracts(
-    repo_name,
-    contracts_list,
-    branch_name,
-    commit,
-    dest_dir,
-  );
+  await downloadContracts(repo_name, contracts_list, commit, dest_dir);
 
   console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
 }
@@ -193,16 +146,7 @@ async function main() {
     ),
   );
 
-  program.addHelpText(
-    'after',
-    `
-Environment vars:
-  ${CI_TOKEN_ENV_NAME}\t\tCI token to trigger building if needed`,
-  );
-
   program.parse();
-
-  const ci_token = process.env[CI_TOKEN_ENV_NAME];
 
   const options = program.opts();
   const branch_name = options.branch || DEFAULT_BRANCH;
@@ -214,8 +158,8 @@ Environment vars:
   }
 
   for (const value of repos_to_download) {
-    await downloadArtifacts(value, branch_name, dest_dir, ci_token);
+    await downloadArtifacts(value, branch_name, dest_dir);
   }
 }
 
-main();
+main().then();
