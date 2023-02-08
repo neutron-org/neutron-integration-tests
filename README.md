@@ -39,13 +39,13 @@ The pre-build contracts for specific commits are stored in the publicly availabl
 One can download them via following commands:
 
 ```shell
-node ./download_artifacts.js neutron-dao neutron-dev-contracts
+node download_artifacts.js neutron-dao neutron-dev-contracts
 ```
 
 If you want to specify any specific branch/commit, use the following command to get more info on how to do that:
 
 ```shell
-node ./download_artifacts.js --help
+node download_artifacts.js --help
 ```
 
 #### Building
