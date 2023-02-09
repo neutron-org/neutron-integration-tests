@@ -155,17 +155,17 @@ export type PauseInfoResponse = {
 };
 
 export const NeutronContract = {
-  IBC_TRANSFER: 'artifacts/ibc_transfer.wasm',
-  INTERCHAIN_QUERIES: 'artifacts/neutron_interchain_queries.wasm',
-  INTERCHAIN_TXS: 'artifacts/neutron_interchain_txs.wasm',
-  REFLECT: 'artifacts/reflect.wasm',
-  TREASURY: 'artifacts/neutron_treasury.wasm',
-  DISTRIBUTION: 'artifacts/neutron_distribution.wasm',
-  RESERVE: 'artifacts/neutron_reserve.wasm',
-  SUBDAO_CORE: 'artifacts/cwd_subdao_core.wasm',
-  SUBDAO_PREPROPOSE: 'artifacts/cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PROPOSAL: 'artifacts/cwd_subdao_proposal_single.wasm',
-  SUBDAO_TIMELOCK: 'artifacts/cwd_subdao_timelock_single.wasm',
+  IBC_TRANSFER: 'ibc_transfer.wasm',
+  INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
+  INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
+  REFLECT: 'reflect.wasm',
+  TREASURY: 'neutron_treasury.wasm',
+  DISTRIBUTION: 'neutron_distribution.wasm',
+  RESERVE: 'neutron_reserve.wasm',
+  SUBDAO_CORE: 'cwd_subdao_core.wasm',
+  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
+  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
 };
 
 type MultiChoiceOption = {

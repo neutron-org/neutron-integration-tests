@@ -11,9 +11,8 @@ services:
       - 26657:26657
       - 26656:26656
     environment:
-      - CONTRACTS_BINARIES_DIR=/opt/neutron/contracts/artifacts
+      - CONTRACTS_BINARIES_DIR=/opt/neutron/contracts
       - RUN_BACKGROUND=0
-      - STAKEDENOM=stake
 
   gaia-node:
     image: gaia-node:latest
