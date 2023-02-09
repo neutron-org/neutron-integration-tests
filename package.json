@@ -29,6 +29,7 @@
     "@types/long": "^4.0.2",
     "axios": "^0.27.2",
     "babel-jest": "^29.3.1",
+    "commander": "^10.0.0",
     "date-fns": "^2.16.1",
     "express": "^4.17.1",
     "jest": "^27.5.1",
