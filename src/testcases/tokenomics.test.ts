@@ -21,13 +21,13 @@ describe('Neutron / Tokenomics', () => {
     cmNeutron = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaOne.demo1,
       NEUTRON_DENOM,
     );
     cmGaia = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaTwo.demo2,
       COSMOS_DENOM,
     );
   });
@@ -153,7 +153,7 @@ describe('Neutron / Tokenomics', () => {
         cmNeutron.blockWaiter,
         async () =>
           cmNeutron.queryBalances(
-            testState.wallets.neutron.demo1.address.toString(),
+            testState.wallets.qaOne.demo1.address.toString(),
           ),
         async (balances) =>
           balances.balances.find(
