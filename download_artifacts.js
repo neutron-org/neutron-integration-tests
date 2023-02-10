@@ -131,7 +131,7 @@ async function main() {
 
   program.addArgument(
     new commander.Argument(
-      '[repo...]',
+      '<repo...>',
       'contracts repos to download artifacts for',
     ),
   );
