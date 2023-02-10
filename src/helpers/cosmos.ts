@@ -217,6 +217,7 @@ export class CosmosWrapper {
     msgs: T[],
     numAttempts = 10,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+    sequence: number = this.wallet.account.sequence,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -234,7 +235,7 @@ export class CosmosWrapper {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: this.wallet.account.sequence,
+          sequence: sequence,
         },
       ],
       fee,
@@ -273,6 +274,7 @@ export class CosmosWrapper {
       }
     }
     error = error ?? new Error('failed to submit tx');
+    console.log(error);
     throw error;
   }
 
@@ -406,13 +408,22 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     },
+    sequence: number = this.wallet.account.sequence,
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(fee, [msgSend]);
+    console.log('sequence in msgSend from test');
+    console.log(sequence);
+    const res = await this.execTx(
+      fee,
+      [msgSend],
+      10,
+      rest.tx.BroadcastTxMode.Block,
+      sequence,
+    );
     return res?.tx_response;
   }
 
@@ -1203,7 +1214,16 @@ export const mnemonicToWallet = async (
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
 };
-
+export const createAddress = async (mnemonicQA?: string) => {
+  const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
+    key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonicQA),
+  });
+  console.log('this is mnemonic from neutron');
+  console.log(mnemonicQA);
+  const pubKey = privKey.pubKey();
+  const address = cosmosclient.AccAddress.fromPublicKey(pubKey).toString();
+  return address;
+};
 export const getSequenceId = (rawLog: string | undefined): number => {
   if (!rawLog) {
     throw 'getSequenceId: empty rawLog';
