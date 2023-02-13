@@ -45,12 +45,7 @@ const getLatestCommit = async (repo_name, branch_name) => {
 
 // -------------------- STORAGE --------------------
 
-const getChecksumsTxt = async (
-  repo_name,
-  storage_addr,
-  branch_name,
-  commit_hash,
-) => {
+const getChecksumsTxt = async (repo_name, branch_name, commit_hash) => {
   const url = `${STORAGE_ADDR_BASE}/${repo_name}/${commit_hash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
@@ -105,12 +100,7 @@ async function downloadArtifacts(repo_name, specified_branch, dest_dir) {
   }
 
   verboseLog('Downloading checksum.txt');
-  const checksums_txt = await getChecksumsTxt(
-    repo_name,
-    STORAGE_ADDR_BASE,
-    branch_name,
-    commit,
-  );
+  const checksums_txt = await getChecksumsTxt(repo_name, branch_name, commit);
 
   if (!checksums_txt) {
     console.log('Respective checksum.txt is not found in storage');
@@ -141,7 +131,7 @@ async function main() {
 
   program.addArgument(
     new commander.Argument(
-      '[repo...]',
+      '<repo...>',
       'contracts repos to download artifacts for',
     ),
   );
