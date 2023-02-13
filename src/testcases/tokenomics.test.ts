@@ -146,7 +146,7 @@ describe('Neutron / Tokenomics', () => {
           denom: COSMOS_DENOM,
           amount: '100000',
         },
-        testState.wallets.neutron.demo1.address.toString(),
+        testState.wallets.qaOne.demo1.address.toString(),
         { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
       await getWithAttempts(

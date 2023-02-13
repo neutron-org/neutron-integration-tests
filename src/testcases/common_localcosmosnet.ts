@@ -132,7 +132,7 @@ export class TestStateLocalCosmosTestNet {
     );
   };
 
-  createQaWallet = async (mnemonicQA?: string, neutronPrefix?: string) => {
+  createQaWallet = async (mnemonicQA: string, neutronPrefix: string) => {
     const tmpWallet = await mnemonicToWallet(
       cosmosclient.AccAddress,
       this.sdk1,
@@ -158,7 +158,7 @@ export class TestStateLocalCosmosTestNet {
     });
     const address = await createAddress(mnemonicQA);
     try {
-      await cm.msgSend(address, '4300000000');
+      await cm.msgSend(address, '5500000000');
     } catch (e) {
       const sequenceTry = tmpWallet.account.sequence;
       await cm.msgSend(
@@ -177,7 +177,7 @@ export class TestStateLocalCosmosTestNet {
     }
     console.log(balances);
   };
-  createQaWalletTwo = async (mnemonicQATwo?: string, cosmosPrefix?: string) => {
+  createQaWalletTwo = async (mnemonicQATwo: string, cosmosPrefix: string) => {
     const tmpWalletTwo = await mnemonicToWallet(
       cosmosclient.AccAddress,
       this.sdk2,
@@ -200,7 +200,7 @@ export class TestStateLocalCosmosTestNet {
     });
     const address = await createAddress(mnemonicQATwo);
     try {
-      await cm2.msgSend(address, '4300000000');
+      await cm2.msgSend(address, '5500000000');
     } catch (e) {
       const sequenceTry = tmpWalletTwo.account.sequence++;
       await cm2.msgSend(
