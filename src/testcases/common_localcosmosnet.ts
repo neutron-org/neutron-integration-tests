@@ -65,22 +65,10 @@ const walletSetQa = async (
   prefix: string,
   mnemonicQA: string,
 ): Promise<Record<string, Wallet>> => ({
-  demo1: await mnemonicToWallet(
+  genQaWal1: await mnemonicToWallet(
     cosmosclient.AccAddress,
     sdk,
     mnemonicQA,
-    prefix,
-  ),
-});
-const walletSetQaTwo = async (
-  sdk: cosmosclient.CosmosSDK,
-  prefix: string,
-  mnemonicQATwo: string,
-): Promise<Record<string, Wallet>> => ({
-  demo2: await mnemonicToWallet(
-    cosmosclient.AccAddress,
-    sdk,
-    mnemonicQATwo,
     prefix,
   ),
 });
@@ -114,53 +102,46 @@ export class TestStateLocalCosmosTestNet {
     await setup(host1, host2);
     const mnemonicQA = generateMnemonic();
     const mnemonicQATwo = generateMnemonic();
-    await this.createQaWallet(mnemonicQA, neutronPrefix);
-    await this.createQaWalletTwo(mnemonicQATwo, cosmosPrefix);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
     this.wallets.cosmos = await walletSet(this.sdk2, cosmosPrefix);
+
+    await this.createQaWallet(mnemonicQA, neutronPrefix);
+    await this.createQaWalletTwo(mnemonicQATwo, cosmosPrefix);
+
     this.wallets.qaOne = await walletSetQa(
       this.sdk1,
       neutronPrefix,
       mnemonicQA,
     );
-    this.wallets.qaTwo = await walletSetQaTwo(
+    this.wallets.qaTwo = await walletSetQa(
       this.sdk2,
       cosmosPrefix,
       mnemonicQATwo,
     );
   };
 
-  createQaWallet = async (mnemonicQA: string, neutronPrefix: string) => {
-    const tmpWallet = await mnemonicToWallet(
-      cosmosclient.AccAddress,
-      this.sdk1,
-      config.DEMO_MNEMONIC_1,
-      neutronPrefix,
-    );
-    console.log('This is first wallet');
-
+  createQaWallet = async (mnemonic: string, prefix: string) => {
     const cm = new CosmosWrapper(
       this.sdk1,
       this.blockWaiter1,
-      tmpWallet,
+      this.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
 
     cosmosclient.config.setBech32Prefix({
-      accAddr: neutronPrefix,
-      accPub: `${neutronPrefix}pub`,
-      valAddr: `${neutronPrefix}valoper`,
-      valPub: `${neutronPrefix}valoperpub`,
-      consAddr: `${neutronPrefix}valcons`,
-      consPub: `${neutronPrefix}valconspub`,
+      accAddr: prefix,
+      accPub: `${prefix}pub`,
+      valAddr: `${prefix}valoper`,
+      valPub: `${prefix}valoperpub`,
+      consAddr: `${prefix}valcons`,
+      consPub: `${prefix}valconspub`,
     });
-    const address = await createAddress(mnemonicQA);
+    const address = await createAddress(mnemonic);
     try {
       await cm.msgSend(address, '5500000000');
     } catch (e) {
-      const sequenceTry = tmpWallet.account.sequence;
       await cm.msgSend(
         address,
         '3000000000',
@@ -168,7 +149,7 @@ export class TestStateLocalCosmosTestNet {
           gas_limit: Long.fromString('200000'),
           amount: [{ denom: cm.denom, amount: '15000' }],
         },
-        Number(sequenceTry) + 1,
+        Number(this.wallets.neutron.demo1.account.sequence) + 1,
       );
     }
     const balances = await cm.queryBalances(address);
@@ -202,7 +183,6 @@ export class TestStateLocalCosmosTestNet {
     try {
       await cm2.msgSend(address, '5500000000');
     } catch (e) {
-      const sequenceTry = tmpWalletTwo.account.sequence++;
       await cm2.msgSend(
         address,
         '3000000000',
@@ -210,7 +190,7 @@ export class TestStateLocalCosmosTestNet {
           gas_limit: Long.fromString('200000'),
           amount: [{ denom: cm2.denom, amount: '15000' }],
         },
-        Number(sequenceTry) + 1,
+        Number(tmpWalletTwo.account.sequence) + 1,
       );
     }
     const balances = await cm2.queryBalances(address);
