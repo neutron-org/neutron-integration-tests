@@ -107,8 +107,24 @@ export class TestStateLocalCosmosTestNet {
     this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
     this.wallets.cosmos = await walletSet(this.sdk2, cosmosPrefix);
 
-    await this.createQaWallet(mnemonicQA, neutronPrefix);
-    await this.createQaWalletTwo(mnemonicQATwo, cosmosPrefix);
+    await this.createQaWallet(
+      mnemonicQA,
+      neutronPrefix,
+      this.sdk1,
+      this.blockWaiter1,
+      this.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+      this.wallets.neutron.demo1.account.sequence,
+    );
+    await this.createQaWallet(
+      mnemonicQATwo,
+      cosmosPrefix,
+      this.sdk2,
+      this.blockWaiter2,
+      this.wallets.cosmos.demo2,
+      COSMOS_DENOM,
+      this.wallets.cosmos.demo2.account.sequence,
+    );
 
     this.wallets.qaOne = await walletSetQa(
       this.sdk1,
@@ -122,13 +138,16 @@ export class TestStateLocalCosmosTestNet {
     );
   };
 
-  createQaWallet = async (mnemonic: string, prefix: string) => {
-    const cm = new CosmosWrapper(
-      this.sdk1,
-      this.blockWaiter1,
-      this.wallets.neutron.demo1,
-      NEUTRON_DENOM,
-    );
+  createQaWallet = async (
+    mnemonic: string,
+    prefix: string,
+    sdk: cosmosclient.CosmosSDK,
+    blockWaiter: BlockWaiter,
+    wallet: Wallet,
+    denom: string,
+    sequence: Long,
+  ) => {
+    const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
 
     cosmosclient.config.setBech32Prefix({
       accAddr: prefix,
@@ -149,51 +168,10 @@ export class TestStateLocalCosmosTestNet {
           gas_limit: Long.fromString('200000'),
           amount: [{ denom: cm.denom, amount: '15000' }],
         },
-        Number(this.wallets.neutron.demo1.account.sequence) + 1,
+        Number(sequence) + 1,
       );
     }
     const balances = await cm.queryBalances(address);
-    if (balances == null) {
-      throw new Error('Could not  put tokens on the generated wallet.');
-    }
-    console.log(balances);
-  };
-  createQaWalletTwo = async (mnemonicQATwo: string, cosmosPrefix: string) => {
-    const tmpWalletTwo = await mnemonicToWallet(
-      cosmosclient.AccAddress,
-      this.sdk2,
-      config.DEMO_MNEMONIC_2,
-      cosmosPrefix,
-    );
-    const cm2 = new CosmosWrapper(
-      this.sdk2,
-      this.blockWaiter2,
-      tmpWalletTwo,
-      COSMOS_DENOM,
-    );
-    cosmosclient.config.setBech32Prefix({
-      accAddr: cosmosPrefix,
-      accPub: `${cosmosPrefix}pub`,
-      valAddr: `${cosmosPrefix}valoper`,
-      valPub: `${cosmosPrefix}valoperpub`,
-      consAddr: `${cosmosPrefix}valcons`,
-      consPub: `${cosmosPrefix}valconspub`,
-    });
-    const address = await createAddress(mnemonicQATwo);
-    try {
-      await cm2.msgSend(address, '5500000000');
-    } catch (e) {
-      await cm2.msgSend(
-        address,
-        '3000000000',
-        {
-          gas_limit: Long.fromString('200000'),
-          amount: [{ denom: cm2.denom, amount: '15000' }],
-        },
-        Number(tmpWalletTwo.account.sequence) + 1,
-      );
-    }
-    const balances = await cm2.queryBalances(address);
     if (balances == null) {
       throw new Error('Could not  put tokens on the generated wallet.');
     }
