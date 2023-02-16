@@ -11,7 +11,6 @@ import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
-import { codecMaps } from '@cosmos-client/core/cjs/config/module';
 
 const config = require('../config.json');
 
@@ -115,7 +114,6 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
-      this.wallets.neutron.demo1.account.sequence,
     );
     await this.createQaWallet(
       mnemonicQATwo,
@@ -124,7 +122,6 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter2,
       this.wallets.cosmos.demo2,
       COSMOS_DENOM,
-      this.wallets.cosmos.demo2.account.sequence,
     );
 
     this.wallets.qaOne = await walletSetQa(

@@ -192,9 +192,6 @@ cosmosclient.codec.register(
 );
 
 export class CosmosWrapper {
-  sendTokensWithRetry(cm: CosmosWrapper, address: string, arg2: string, sequence: number) {
-    throw new Error('Method not implemented.');
-  }
   sdk: cosmosclient.CosmosSDK;
   blockWaiter: BlockWaiter;
   wallet: Wallet;
