@@ -15,6 +15,7 @@ const STORAGE_ADDR_BASE =
   'https://storage.googleapis.com/neutron-contracts/neutron-org';
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
 const DEFAULT_DIR = 'contracts';
+const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
 
 // -------------------- UTILS --------------------
 
@@ -34,6 +35,36 @@ async function downloadFile(fileUrl, outputLocationPath) {
   });
 }
 
+const wait = async (seconds) =>
+  new Promise((r) => {
+    setTimeout(() => r(true), 1000 * seconds);
+  });
+
+const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
+  let error = null;
+  let data = null;
+  const delay = 10;
+  while (numAttempts > 0) {
+    numAttempts--;
+    try {
+      data = await getFunc();
+      if (await readyFunc(data)) {
+        return data;
+      }
+    } catch (e) {
+      error = e;
+    }
+    console.log(`${numAttempts * delay} seconds left`);
+    await wait(delay);
+  }
+  throw error != null
+    ? error
+    : new Error(
+        'getWithAttempts: no attempts left. Latest get response: ' +
+          (data === Object(data) ? JSON.stringify(data) : data).toString(),
+      );
+};
+
 // -------------------- GIT/GITHUB --------------------
 
 const getLatestCommit = async (repo_name, branch_name) => {
@@ -43,18 +74,65 @@ const getLatestCommit = async (repo_name, branch_name) => {
   return resp['commit']['sha'];
 };
 
+const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
+  if (!ci_token) {
+    console.log('No CI token provided');
+    throw new Error("CI token isn't provided, can't trigger the build");
+  }
+
+  const workflow_id = await getBuildWorkflowId(repo_name);
+  verboseLog(`Using workflow id ${workflow_id}`);
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows/${workflow_id}/dispatches`;
+  const resp = await axios.post(
+    url,
+    {
+      ref: 'main',
+      inputs: {
+        branch: commit_hash,
+      },
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${ci_token}`,
+      },
+    },
+  );
+  if (resp.status !== 204) {
+    throw new Error('Wrong return code');
+  }
+};
+
+const getBuildWorkflowId = async (repo_name) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows`;
+  const resp = (await axios.get(url)).data;
+  return resp['workflows'].find((x) => x['path'].includes('build.yml'))['id'];
+};
+
 // -------------------- STORAGE --------------------
 
-const getChecksumsTxt = async (repo_name, branch_name, commit_hash) => {
+const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
   const url = `${STORAGE_ADDR_BASE}/${repo_name}/${commit_hash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
   try {
     return (await axios.get(url)).data;
   } catch (error) {
-    console.log('No checksum file found, exiting');
-    console.log(`Please go to https://github.com/neutron-org/${repo_name}/actions/workflows/build.yml \
-and run the workflow for ${branch_name} branch manually`);
+    console.log('No checksum file found, launching the building workflow');
+    try {
+      await triggerContractsBuilding(repo_name, commit_hash, ci_token);
+    } catch (error) {
+      // the error is printed only in verbose mode because it can expose PAT token otherwise
+      verboseLog(error);
+      throw new Error('Error during build triggering');
+    }
+    const attempts_number = (15 * 60) / 10;
+    return (
+      await getWithAttempts(
+        async () => axios.get(url),
+        async (response) => response.status === 200,
+        attempts_number,
+      )
+    ).data;
   }
 };
 
@@ -82,25 +160,25 @@ const downloadContracts = async (
 
 // -------------------- MAIN --------------------
 
-async function downloadArtifacts(repo_name, specified_branch, dest_dir) {
+async function downloadArtifacts(
+  repo_name,
+  branch_name,
+  commit_hash,
+  dest_dir,
+  ci_token,
+) {
   console.log(`Downloading artifacts for ${repo_name} repo`);
 
-  let commit;
-  let branch_name;
-  if (specified_branch.includes(':')) {
-    branch_name = specified_branch.split(':')[0];
-    commit = specified_branch.split(':')[1];
-    console.log(`Using branch ${branch_name}`);
-    console.log(`Using specified commit: ${commit}`);
+  if (commit_hash) {
+    console.log(`Using specified commit: ${commit_hash}`);
   } else {
-    branch_name = specified_branch;
-    commit = await getLatestCommit(repo_name, branch_name);
+    commit_hash = await getLatestCommit(repo_name, branch_name);
     console.log(`Using branch ${branch_name}`);
-    console.log(`Using the latest commit: ${commit}`);
+    console.log(`The latest commit is: ${commit_hash}`);
   }
 
   verboseLog('Downloading checksum.txt');
-  const checksums_txt = await getChecksumsTxt(repo_name, branch_name, commit);
+  const checksums_txt = await getChecksumsTxt(repo_name, commit_hash, ci_token);
 
   if (!checksums_txt) {
     console.log('Respective checksum.txt is not found in storage');
@@ -112,17 +190,15 @@ async function downloadArtifacts(repo_name, specified_branch, dest_dir) {
   const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
-  await downloadContracts(repo_name, contracts_list, commit, dest_dir);
+  await downloadContracts(repo_name, contracts_list, commit_hash, dest_dir);
 
   console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
 }
 
 async function main() {
   program
-    .option(
-      '-b, --branch [name]',
-      'branch to download. You can also specify the commit, e.g. main:5848eeab5992bb4080dff24009a7ef758d9ce899',
-    )
+    .option('-b, --branch [name]', 'branch to download')
+    .option('-c, --commit [hash]', 'commit to download')
     .option(
       '-d, --dir [name]',
       'destination directory to put contracts artifacts into',
@@ -136,19 +212,46 @@ async function main() {
     ),
   );
 
+  program.addHelpText(
+    'after',
+    `
+Environment vars:
+  ${CI_TOKEN_ENV_NAME}\t\tCI token to trigger building if needed`,
+  );
+
   program.parse();
 
+  const ci_token = process.env[CI_TOKEN_ENV_NAME];
+
   const options = program.opts();
-  const branch_name = options.branch || DEFAULT_BRANCH;
   const dest_dir = options.dir || DEFAULT_DIR;
   const repos_to_download = program.args;
+
+  let branch_name = options.branch;
+  const commit_hash = options.commit;
+  if (branch_name && commit_hash) {
+    console.log(
+      'Both branch and commit hash are specified, exiting. \
+Please specify only a single thing.',
+    );
+    return;
+  }
+  if (!branch_name && !commit_hash) {
+    branch_name = DEFAULT_BRANCH;
+  }
 
   if (options.verbose) {
     verboseLog = console.log;
   }
 
   for (const value of repos_to_download) {
-    await downloadArtifacts(value, branch_name, dest_dir);
+    await downloadArtifacts(
+      value,
+      branch_name,
+      commit_hash,
+      dest_dir,
+      ci_token,
+    );
   }
 }
 
