@@ -196,6 +196,11 @@ const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
   } catch (error) {
     console.log('No checksum file found, launching the building workflow');
     await triggerContractsBuilding(repo_name, commit_hash, ci_token);
+    const actions_link = `https://github.com/${NEUTRON_ORG}/${repo_name}/actions`;
+    console.log(
+      `Workflow launched, you follow the link to ensure: ${actions_link}`,
+    );
+
     const attempts_number = (15 * 60) / 10;
     return (
       await getWithAttempts(
