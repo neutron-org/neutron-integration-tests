@@ -249,6 +249,10 @@ Environment vars:
 
   const options = program.opts();
   const dest_dir = options.dir || DEFAULT_DIR;
+  if (!fs.existsSync(dest_dir)) {
+    console.log(`Directory ${dest_dir} not found, exiting.`);
+    return;
+  }
   const repos_to_download = program.args;
 
   let branch_name = options.branch;
