@@ -17,6 +17,8 @@ const STORAGE_ADDR_BASE =
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
 const DEFAULT_DIR = 'contracts';
 const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
+const DEFAULT_TIMEOUT = 15 * 60;
+const DELAY_BETWEEN_TRIES = 10;
 
 // -------------------- GLOBAL_VARS --------------------
 
@@ -48,7 +50,7 @@ const wait = async (seconds) =>
 const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
   let error = null;
   let data = null;
-  const delay = 10;
+  const delay = DELAY_BETWEEN_TRIES;
   while (numAttempts > 0) {
     numAttempts--;
     try {
@@ -90,6 +92,14 @@ const checkForAlreadyDownloaded = async (contracts_list, dest_dir) => {
     }
   }
 };
+
+function cliParseInt(value) {
+  const parsedValue = parseInt(value, 10);
+  if (isNaN(parsedValue)) {
+    throw new commander.InvalidArgumentError('Not a number.');
+  }
+  return parsedValue;
+}
 
 // -------------------- GIT/GITHUB --------------------
 
@@ -187,7 +197,7 @@ const isRepoExists = async (repo_name) => {
 
 // -------------------- STORAGE --------------------
 
-const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
+const getChecksumsTxt = async (repo_name, commit_hash, ci_token, timeout) => {
   const url = `${STORAGE_ADDR_BASE}/${repo_name}/${commit_hash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
@@ -201,14 +211,21 @@ const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
       `Workflow launched, you follow the link to ensure: ${actions_link}`,
     );
 
-    const attempts_number = (15 * 60) / 10;
-    return (
-      await getWithAttempts(
-        async () => axios.get(url),
-        async (response) => response.status === 200,
-        attempts_number,
-      )
-    ).data;
+    const attempts_number = timeout / DELAY_BETWEEN_TRIES;
+    try {
+      return (
+        await getWithAttempts(
+          async () => axios.get(url),
+          async (response) => response.status === 200,
+          attempts_number,
+        )
+      ).data;
+    } catch (e) {
+      throw new Error(
+        `Cannot get artifacts even after workflow run, might be a workflow issue or timeout is too low. \
+Internal error: ${e.toString()}`,
+      );
+    }
   }
 };
 
@@ -242,6 +259,7 @@ const downloadArtifacts = async (
   commit_hash,
   dest_dir,
   ci_token,
+  timeout,
 ) => {
   if (!(await isRepoExists(repo_name))) {
     console.log(`Repo ${repo_name} doesn't exist, exiting.`);
@@ -274,7 +292,12 @@ const downloadArtifacts = async (
   verboseLog('Downloading checksum.txt');
   let checksums_txt = null;
   try {
-    checksums_txt = await getChecksumsTxt(repo_name, commit_hash, ci_token);
+    checksums_txt = await getChecksumsTxt(
+      repo_name,
+      commit_hash,
+      ci_token,
+      timeout,
+    );
   } catch (e) {
     console.log(`Error during getting artifacts: ${e.toString()}`);
     return;
@@ -309,6 +332,11 @@ const initCli = () => {
     .option('-b, --branch [name]', 'branch to download')
     .option('-c, --commit [hash]', 'commit to download')
     .option('-f, --force', 'rewrite files without asking')
+    .option(
+      '-t, --timeout [seconds]',
+      'time to wait for workflow to finish',
+      cliParseInt,
+    )
     .option(
       '-d, --dir [name]',
       'destination directory to put contracts artifacts into',
@@ -362,6 +390,8 @@ Please specify only a single thing.',
     branch_name = DEFAULT_BRANCH;
   }
 
+  const timeout = options.timeout || DEFAULT_TIMEOUT;
+
   if (options.verbose) {
     verboseLog = console.log;
   }
@@ -371,7 +401,14 @@ Please specify only a single thing.',
   }
 
   for (const repo of repos_to_download) {
-    await downloadArtifacts(repo, branch_name, commit_hash, dest_dir, ci_token);
+    await downloadArtifacts(
+      repo,
+      branch_name,
+      commit_hash,
+      dest_dir,
+      ci_token,
+      timeout,
+    );
   }
 };
 
