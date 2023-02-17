@@ -11,6 +11,8 @@ import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
+import { toString } from 'lodash';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
 
 const config = require('../config.json');
 
@@ -114,6 +116,7 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
+      this.wallets.neutron.demo1.address,
     );
     await this.createQaWallet(
       mnemonicQATwo,
@@ -122,6 +125,7 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter2,
       this.wallets.cosmos.demo2,
       COSMOS_DENOM,
+      this.wallets.cosmos.demo2.address,
     );
 
     this.wallets.qaOne = await walletSetQa(
@@ -147,6 +151,7 @@ export class TestStateLocalCosmosTestNet {
     };
     let sequence = startingSequence;
     let retryCount = 0;
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       try {
         await cm.msgSend(to, amount, fee, sequence);
@@ -158,11 +163,10 @@ export class TestStateLocalCosmosTestNet {
             const sequenceErrMsg = 'incorrect account sequence';
             if (errorMsg.includes(sequenceErrMsg)) {
               await cm.blockWaiter.waitBlocks(1);
-              sequence = Number(await cm.getSeq());
             }
           }
           retryCount++;
-          sequence = Number((await cm.getSeq()) + 1);
+          sequence++;
         } else {
           throw new Error('Failed to send tokens after 4 retries');
         }
@@ -177,6 +181,7 @@ export class TestStateLocalCosmosTestNet {
     blockWaiter: BlockWaiter,
     wallet: Wallet,
     denom: string,
+    walletAddress: AccAddress,
   ) => {
     const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
 
@@ -190,9 +195,15 @@ export class TestStateLocalCosmosTestNet {
     });
 
     const address = await createAddress(mnemonic);
-    const sequence = Number(await cm.getSeq());
-    await this.sendTokensWithRetry(cm, address, '5500000000', sequence);
-    const balances = await cm.queryBalances(address);
+    const sequence = await cm.getSeq(sdk, walletAddress);
+    console.log(sequence);
+    await this.sendTokensWithRetry(
+      cm,
+      toString(address),
+      '5500000000',
+      sequence,
+    );
+    const balances = await cm.queryBalances(toString(address));
     if (balances == null) {
       throw new Error('Could not put tokens on the generated wallet.');
     }

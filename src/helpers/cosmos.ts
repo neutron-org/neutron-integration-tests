@@ -708,8 +708,27 @@ export class CosmosWrapper {
       sender,
     );
   }
-  async getSeq() {
-    return Number(this.wallet.account.sequence);
+  async getSeq(
+    sdk: cosmosclient.CosmosSDK,
+    address: cosmosclient.AccAddress,
+  ): Promise<number> {
+    const account = await rest.auth
+      .account(sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
+
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
+
+    return account.sequence;
   }
   /**
    * submitSoftwareUpgradeProposal creates proposal.
@@ -1219,7 +1238,7 @@ export const createAddress = async (mnemonicQA?: string) => {
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonicQA),
   });
   const pubKey = privKey.pubKey();
-  const address = cosmosclient.AccAddress.fromPublicKey(pubKey).toString();
+  const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
   return address;
 };
 export const getSequenceId = (rawLog: string | undefined): number => {
