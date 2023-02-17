@@ -105,7 +105,13 @@ const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
 const getBuildWorkflowId = async (repo_name) => {
   const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows`;
   const resp = (await axios.get(url)).data;
-  return resp['workflows'].find((x) => x['path'].includes('build.yml'))['id'];
+  const build_yml_workflow = resp['workflows'].find((x) =>
+    x['path'].includes('build.yml'),
+  );
+  if (!build_yml_workflow) {
+    throw new Error(`Repo ${repo_name} has no build.yml workflow.`);
+  }
+  return build_yml_workflow['id'];
 };
 
 const normalizeCommitHash = async (repo_name, commit_hash) => {
@@ -146,13 +152,7 @@ const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
     return (await axios.get(url)).data;
   } catch (error) {
     console.log('No checksum file found, launching the building workflow');
-    try {
-      await triggerContractsBuilding(repo_name, commit_hash, ci_token);
-    } catch (error) {
-      // the error is printed only in verbose mode because it can expose PAT token otherwise
-      verboseLog(error);
-      throw new Error('Error during build triggering');
-    }
+    await triggerContractsBuilding(repo_name, commit_hash, ci_token);
     const attempts_number = (15 * 60) / 10;
     return (
       await getWithAttempts(
@@ -217,7 +217,12 @@ async function downloadArtifacts(
   }
 
   verboseLog('Downloading checksum.txt');
-  const checksums_txt = await getChecksumsTxt(repo_name, commit_hash, ci_token);
+  let checksums_txt = null;
+  try {
+    checksums_txt = await getChecksumsTxt(repo_name, commit_hash, ci_token);
+  } catch (e) {
+    console.log(`Error during getting artifacts: ${e.toString()}`);
+  }
 
   if (!checksums_txt) {
     console.log('Respective checksum.txt is not found in storage');
