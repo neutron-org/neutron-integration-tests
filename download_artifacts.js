@@ -108,27 +108,38 @@ const getLatestCommit = async (repo_name, branch_name) => {
 
 const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
   if (!ci_token) {
-    console.log('No CI token provided');
+    console.log(`No ${CI_TOKEN_ENV_NAME} provided`);
     throw new Error("CI token isn't provided, can't trigger the build");
   }
 
   const workflow_id = await getBuildWorkflowId(repo_name);
   verboseLog(`Using workflow id ${workflow_id}`);
   const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows/${workflow_id}/dispatches`;
-  const resp = await axios.post(
-    url,
-    {
-      ref: 'main',
-      inputs: {
-        branch: commit_hash,
+  let resp = null;
+  try {
+    resp = await axios.post(
+      url,
+      {
+        ref: 'main',
+        inputs: {
+          branch: commit_hash,
+        },
       },
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${ci_token}`,
+      {
+        headers: {
+          Authorization: `Bearer ${ci_token}`,
+        },
       },
-    },
-  );
+    );
+  } catch (e) {
+    if (e.response.status === 401) {
+      throw new Error(
+        `GitHub unauthorized error, probably wrong ${CI_TOKEN_ENV_NAME}.\n\
+Make sure ${CI_TOKEN_ENV_NAME} is correct and isn't expired.`,
+      );
+    }
+    throw e;
+  }
   if (resp.status !== 204) {
     throw new Error('Wrong return code');
   }
@@ -261,10 +272,11 @@ async function downloadArtifacts(
     checksums_txt = await getChecksumsTxt(repo_name, commit_hash, ci_token);
   } catch (e) {
     console.log(`Error during getting artifacts: ${e.toString()}`);
+    return;
   }
 
   if (!checksums_txt) {
-    console.log('Respective checksum.txt is not found in storage');
+    console.log('Checksum file received but empty, exiting.');
     return;
   }
 
