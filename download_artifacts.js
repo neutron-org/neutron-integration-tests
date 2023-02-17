@@ -108,6 +108,24 @@ const getBuildWorkflowId = async (repo_name) => {
   return resp['workflows'].find((x) => x['path'].includes('build.yml'))['id'];
 };
 
+const normalizeCommitHash = async (repo_name, commit_hash) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/commits/${commit_hash}`;
+  let resp = null;
+  try {
+    resp = await axios.get(url);
+  } catch (e) {
+    throw new Error(
+      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo. Internal error:\n${e.toString()}`,
+    );
+  }
+  if (resp.status !== 200) {
+    throw new Error(
+      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo`,
+    );
+  }
+  return resp.data['sha'];
+};
+
 // -------------------- STORAGE --------------------
 
 const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
@@ -170,6 +188,12 @@ async function downloadArtifacts(
   console.log(`Downloading artifacts for ${repo_name} repo`);
 
   if (commit_hash) {
+    try {
+      commit_hash = await normalizeCommitHash(repo_name, commit_hash);
+    } catch (e) {
+      console.log(`Error during commit hash validation:\n${e.toString()}`);
+      return;
+    }
     console.log(`Using specified commit: ${commit_hash}`);
   } else {
     commit_hash = await getLatestCommit(repo_name, branch_name);
