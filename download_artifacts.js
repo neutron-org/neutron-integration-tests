@@ -273,6 +273,10 @@ Environment vars:
     console.log(`Directory ${dest_dir} not found, exiting.`);
     return;
   }
+  if (!fs.lstatSync(dest_dir).isDirectory()) {
+    console.log(`${dest_dir} is not directory, exiting.`);
+    return;
+  }
   const repos_to_download = program.args;
 
   let branch_name = options.branch;
