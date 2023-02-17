@@ -365,14 +365,8 @@ Please specify only a single thing.',
     REWRITE_FILES = true;
   }
 
-  for (const value of repos_to_download) {
-    await downloadArtifacts(
-      value,
-      branch_name,
-      commit_hash,
-      dest_dir,
-      ci_token,
-    );
+  for (const repo of repos_to_download) {
+    await downloadArtifacts(repo, branch_name, commit_hash, dest_dir, ci_token);
   }
 };
 
