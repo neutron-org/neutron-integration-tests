@@ -126,6 +126,16 @@ const normalizeCommitHash = async (repo_name, commit_hash) => {
   return resp.data['sha'];
 };
 
+const isRepoExists = async (repo_name) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}`;
+  try {
+    await axios.get(url);
+  } catch (e) {
+    return false;
+  }
+  return true;
+};
+
 // -------------------- STORAGE --------------------
 
 const getChecksumsTxt = async (repo_name, commit_hash, ci_token) => {
@@ -185,6 +195,11 @@ async function downloadArtifacts(
   dest_dir,
   ci_token,
 ) {
+  if (!(await isRepoExists(repo_name))) {
+    console.log(`Repo ${repo_name} doesn't exist, exiting.`);
+    return;
+  }
+
   console.log(`Downloading artifacts for ${repo_name} repo`);
 
   if (commit_hash) {
