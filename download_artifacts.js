@@ -27,7 +27,7 @@ let REWRITE_FILES = false;
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 let verboseLog = () => {};
 
-async function downloadFile(fileUrl, outputLocationPath) {
+const downloadFile = async (fileUrl, outputLocationPath) => {
   verboseLog(`Downloading file by url: ${fileUrl}`);
   const writer = fs.createWriteStream(outputLocationPath);
   return axios({
@@ -38,7 +38,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
     response.data.pipe(writer);
     return finished(writer);
   });
-}
+};
 
 const wait = async (seconds) =>
   new Promise((r) => {
@@ -231,13 +231,13 @@ const downloadContracts = async (
 
 // -------------------- MAIN --------------------
 
-async function downloadArtifacts(
+const downloadArtifacts = async (
   repo_name,
   branch_name,
   commit_hash,
   dest_dir,
   ci_token,
-) {
+) => {
   if (!(await isRepoExists(repo_name))) {
     console.log(`Repo ${repo_name} doesn't exist, exiting.`);
     return;
@@ -297,9 +297,9 @@ async function downloadArtifacts(
   await downloadContracts(repo_name, contracts_list, commit_hash, dest_dir);
 
   console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
-}
+};
 
-async function main() {
+const initCli = () => {
   program
     .option('-b, --branch [name]', 'branch to download')
     .option('-c, --commit [hash]', 'commit to download')
@@ -323,6 +323,10 @@ async function main() {
 Environment vars:
   ${CI_TOKEN_ENV_NAME}\t\tCI token to trigger building if needed`,
   );
+};
+
+const main = async () => {
+  initCli();
 
   program.parse();
 
@@ -370,6 +374,6 @@ Please specify only a single thing.',
       ci_token,
     );
   }
-}
+};
 
 main().then();
