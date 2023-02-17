@@ -151,24 +151,16 @@ export class TestStateLocalCosmosTestNet {
     };
     let sequence = startingSequence;
     let retryCount = 0;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+
+    while (retryCount < 4) {
       try {
         await cm.msgSend(to, amount, fee, sequence);
-        break;
+        return;
       } catch (e) {
-        if (retryCount < 4) {
-          if (e.response && e.response.data && e.response.data.error) {
-            const errorMsg = e.response.data.error;
-            const sequenceErrMsg = 'incorrect account sequence';
-            if (errorMsg.includes(sequenceErrMsg)) {
-              await cm.blockWaiter.waitBlocks(1);
-            }
-          }
-          retryCount++;
-          sequence++;
-        } else {
-          throw new Error('Failed to send tokens after 4 retries');
+        retryCount++;
+        sequence++;
+        if (retryCount === 4) {
+          throw new Error(`Failed to send tokens after ${retryCount} retries.`);
         }
       }
     }
@@ -196,7 +188,7 @@ export class TestStateLocalCosmosTestNet {
 
     const address = await createAddress(mnemonic);
     const sequence = await cm.getSeq(sdk, walletAddress);
-    console.log(sequence);
+    await blockWaiter.waitBlocks(1);
     await this.sendTokensWithRetry(
       cm,
       toString(address),

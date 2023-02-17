@@ -274,7 +274,6 @@ export class CosmosWrapper {
       }
     }
     error = error ?? new Error('failed to submit tx');
-    console.log(error);
     throw error;
   }
 
@@ -1233,7 +1232,7 @@ export const mnemonicToWallet = async (
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
 };
-export const createAddress = async (mnemonicQA?: string) => {
+export const createAddress = async (mnemonicQA: string) => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonicQA),
   });
