@@ -19,6 +19,7 @@ const DEFAULT_DIR = 'contracts';
 const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
 const DEFAULT_TIMEOUT = 15 * 60;
 const DELAY_BETWEEN_TRIES = 10;
+const WORKFLOW_YAML_NAME = 'build.yml';
 
 // -------------------- GLOBAL_VARS --------------------
 
@@ -159,10 +160,10 @@ const getBuildWorkflowId = async (repo_name) => {
   const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows`;
   const resp = (await axios.get(url)).data;
   const build_yml_workflow = resp['workflows'].find((x) =>
-    x['path'].includes('build.yml'),
+    x['path'].includes(WORKFLOW_YAML_NAME),
   );
   if (!build_yml_workflow) {
-    throw new Error(`Repo ${repo_name} has no build.yml workflow.`);
+    throw new Error(`Repo ${repo_name} has no ${WORKFLOW_YAML_NAME} workflow.`);
   }
   return build_yml_workflow['id'];
 };
