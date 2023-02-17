@@ -96,8 +96,14 @@ const checkForAlreadyDownloaded = async (contracts_list, dest_dir) => {
 const getLatestCommit = async (repo_name, branch_name) => {
   const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/branches/${branch_name}`;
   verboseLog(`Getting latest commit by url:\n${url}`);
-  const resp = (await axios.get(url)).data;
-  return resp['commit']['sha'];
+  try {
+    const resp = (await axios.get(url)).data;
+    return resp['commit']['sha'];
+  } catch (e) {
+    throw new Error(
+      `Branch ${branch_name} not exist in ${repo_name} repo. Internal error: ${e.toString()}`,
+    );
+  }
 };
 
 const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
@@ -237,7 +243,14 @@ async function downloadArtifacts(
     }
     console.log(`Using specified commit: ${commit_hash}`);
   } else {
-    commit_hash = await getLatestCommit(repo_name, branch_name);
+    try {
+      commit_hash = await getLatestCommit(repo_name, branch_name);
+    } catch (e) {
+      console.log(
+        `Error during getting commit for branch ${branch_name}:\n${e.toString()}`,
+      );
+      return;
+    }
     console.log(`Using branch ${branch_name}`);
     console.log(`The latest commit is: ${commit_hash}`);
   }
