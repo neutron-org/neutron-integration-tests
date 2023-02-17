@@ -157,8 +157,9 @@ export class TestStateLocalCosmosTestNet {
         await cm.msgSend(to, amount, fee, sequence);
         return;
       } catch (e) {
+        await cm.blockWaiter.waitBlocks(1);
         retryCount++;
-        sequence++;
+        sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
         if (retryCount === 4) {
           throw new Error(`Failed to send tokens after ${retryCount} retries.`);
         }
@@ -188,7 +189,7 @@ export class TestStateLocalCosmosTestNet {
 
     const address = await createAddress(mnemonic);
     const sequence = await cm.getSeq(sdk, walletAddress);
-    await blockWaiter.waitBlocks(1);
+    await cm.blockWaiter.waitBlocks(1);
     await this.sendTokensWithRetry(
       cm,
       toString(address),
