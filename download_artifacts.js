@@ -4,6 +4,7 @@ const stream = require('stream');
 const util = require('util');
 const { program } = require('commander');
 const commander = require('commander');
+const yesno = require('yesno');
 
 const finished = util.promisify(stream.finished);
 
@@ -16,6 +17,10 @@ const STORAGE_ADDR_BASE =
 const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
 const DEFAULT_DIR = 'contracts';
 const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
+
+// -------------------- GLOBAL_VARS --------------------
+
+let REWRITE_FILES = false;
 
 // -------------------- UTILS --------------------
 
@@ -63,6 +68,27 @@ const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
         'getWithAttempts: no attempts left. Latest get response: ' +
           (data === Object(data) ? JSON.stringify(data) : data).toString(),
       );
+};
+
+const askForRewrite = async (file_name) => {
+  const ok = await yesno({
+    question: `File ${file_name} already exists, do you want to rewrite? (if yes, all files are to be rewritten)`,
+  });
+  if (ok) {
+    REWRITE_FILES = true;
+  } else {
+    throw new Error('Aborted by user');
+  }
+};
+
+const checkForAlreadyDownloaded = async (contracts_list, dest_dir) => {
+  for (const element of contracts_list) {
+    const file_path = `${dest_dir}/${element}`;
+    if (!fs.existsSync(file_path)) {
+      await askForRewrite(file_path);
+      return;
+    }
+  }
 };
 
 // -------------------- GIT/GITHUB --------------------
@@ -234,6 +260,15 @@ async function downloadArtifacts(
   const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
+  if (!REWRITE_FILES) {
+    try {
+      await checkForAlreadyDownloaded(contracts_list);
+    } catch (e) {
+      console.log(e.toString());
+      return;
+    }
+  }
+
   await downloadContracts(repo_name, contracts_list, commit_hash, dest_dir);
 
   console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
@@ -243,6 +278,7 @@ async function main() {
   program
     .option('-b, --branch [name]', 'branch to download')
     .option('-c, --commit [hash]', 'commit to download')
+    .option('-f, --force', 'rewrite files without asking')
     .option(
       '-d, --dir [name]',
       'destination directory to put contracts artifacts into',
@@ -294,6 +330,10 @@ Please specify only a single thing.',
 
   if (options.verbose) {
     verboseLog = console.log;
+  }
+
+  if (options.force) {
+    REWRITE_FILES = true;
   }
 
   for (const value of repos_to_download) {
