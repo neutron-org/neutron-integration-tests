@@ -8,17 +8,17 @@
 ### 1. Clone neutron, gaia and neutron-query-relayer
 
 Clone neutron and relayer to the parent directory:
-
+h
 ```shell
 git clone git@github.com:neutron-org/neutron.git
 git clone git@github.com:neutron-org/neutron-query-relayer.git
 ```
 
-We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v7.0.3 for the tests.
+We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v8.0.1 for the tests.
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
-git checkout v7.0.3
+git checkout v8.0.1
 ```
 
 ### 2. Prepare docker environment

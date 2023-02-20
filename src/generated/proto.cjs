@@ -13709,6 +13709,7 @@
                  * @property {string|null} [receiver] MsgTransfer receiver
                  * @property {ibc.core.client.v1.IHeight|null} [timeout_height] MsgTransfer timeout_height
                  * @property {Long|null} [timeout_timestamp] MsgTransfer timeout_timestamp
+                 * @property {string|null} [memo] MsgTransfer memo
                  * @property {neutron.feerefunder.IFee|null} [fee] MsgTransfer fee
                  */
     
@@ -13784,6 +13785,14 @@
                 MsgTransfer.prototype.timeout_timestamp = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
+                 * MsgTransfer memo.
+                 * @member {string} memo
+                 * @memberof neutron.transfer.MsgTransfer
+                 * @instance
+                 */
+                MsgTransfer.prototype.memo = "";
+    
+                /**
                  * MsgTransfer fee.
                  * @member {neutron.feerefunder.IFee|null|undefined} fee
                  * @memberof neutron.transfer.MsgTransfer
@@ -13817,8 +13826,10 @@
                         $root.ibc.core.client.v1.Height.encode(message.timeout_height, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                     if (message.timeout_timestamp != null && Object.hasOwnProperty.call(message, "timeout_timestamp"))
                         writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.timeout_timestamp);
+                    if (message.memo != null && Object.hasOwnProperty.call(message, "memo"))
+                        writer.uint32(/* id 8, wireType 2 =*/66).string(message.memo);
                     if (message.fee != null && Object.hasOwnProperty.call(message, "fee"))
-                        $root.neutron.feerefunder.Fee.encode(message.fee, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                        $root.neutron.feerefunder.Fee.encode(message.fee, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                     return writer;
                 };
     
@@ -13875,6 +13886,9 @@
                             message.timeout_timestamp = reader.uint64();
                             break;
                         case 8:
+                            message.memo = reader.string();
+                            break;
+                        case 9:
                             message.fee = $root.neutron.feerefunder.Fee.decode(reader, reader.uint32());
                             break;
                         default:
@@ -13937,6 +13951,9 @@
                     if (message.timeout_timestamp != null && message.hasOwnProperty("timeout_timestamp"))
                         if (!$util.isInteger(message.timeout_timestamp) && !(message.timeout_timestamp && $util.isInteger(message.timeout_timestamp.low) && $util.isInteger(message.timeout_timestamp.high)))
                             return "timeout_timestamp: integer|Long expected";
+                    if (message.memo != null && message.hasOwnProperty("memo"))
+                        if (!$util.isString(message.memo))
+                            return "memo: string expected";
                     if (message.fee != null && message.hasOwnProperty("fee")) {
                         var error = $root.neutron.feerefunder.Fee.verify(message.fee);
                         if (error)
@@ -13984,6 +14001,8 @@
                             message.timeout_timestamp = object.timeout_timestamp;
                         else if (typeof object.timeout_timestamp === "object")
                             message.timeout_timestamp = new $util.LongBits(object.timeout_timestamp.low >>> 0, object.timeout_timestamp.high >>> 0).toNumber(true);
+                    if (object.memo != null)
+                        message.memo = String(object.memo);
                     if (object.fee != null) {
                         if (typeof object.fee !== "object")
                             throw TypeError(".neutron.transfer.MsgTransfer.fee: object expected");
@@ -14017,6 +14036,7 @@
                             object.timeout_timestamp = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.timeout_timestamp = options.longs === String ? "0" : 0;
+                        object.memo = "";
                         object.fee = null;
                     }
                     if (message.source_port != null && message.hasOwnProperty("source_port"))
@@ -14036,6 +14056,8 @@
                             object.timeout_timestamp = options.longs === String ? String(message.timeout_timestamp) : message.timeout_timestamp;
                         else
                             object.timeout_timestamp = options.longs === String ? $util.Long.prototype.toString.call(message.timeout_timestamp) : options.longs === Number ? new $util.LongBits(message.timeout_timestamp.low >>> 0, message.timeout_timestamp.high >>> 0).toNumber(true) : message.timeout_timestamp;
+                    if (message.memo != null && message.hasOwnProperty("memo"))
+                        object.memo = message.memo;
                     if (message.fee != null && message.hasOwnProperty("fee"))
                         object.fee = $root.neutron.feerefunder.Fee.toObject(message.fee, options);
                     return object;
@@ -17923,19 +17945,19 @@
     
                 /**
                  * PublicKey ed25519.
-                 * @member {Uint8Array|null|undefined} ed25519
+                 * @member {Uint8Array} ed25519
                  * @memberof tendermint.crypto.PublicKey
                  * @instance
                  */
-                PublicKey.prototype.ed25519 = null;
+                PublicKey.prototype.ed25519 = $util.newBuffer([]);
     
                 /**
                  * PublicKey secp256k1.
-                 * @member {Uint8Array|null|undefined} secp256k1
+                 * @member {Uint8Array} secp256k1
                  * @memberof tendermint.crypto.PublicKey
                  * @instance
                  */
-                PublicKey.prototype.secp256k1 = null;
+                PublicKey.prototype.secp256k1 = $util.newBuffer([]);
     
                 // OneOf field names bound to virtual getters and setters
                 var $oneOfFields;
@@ -46545,43 +46567,43 @@
     
                 /**
                  * HttpRule get.
-                 * @member {string|null|undefined} get
+                 * @member {string} get
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.get = null;
+                HttpRule.prototype.get = "";
     
                 /**
                  * HttpRule put.
-                 * @member {string|null|undefined} put
+                 * @member {string} put
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.put = null;
+                HttpRule.prototype.put = "";
     
                 /**
                  * HttpRule post.
-                 * @member {string|null|undefined} post
+                 * @member {string} post
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.post = null;
+                HttpRule.prototype.post = "";
     
                 /**
                  * HttpRule delete.
-                 * @member {string|null|undefined} delete
+                 * @member {string} delete
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype["delete"] = null;
+                HttpRule.prototype["delete"] = "";
     
                 /**
                  * HttpRule patch.
-                 * @member {string|null|undefined} patch
+                 * @member {string} patch
                  * @memberof google.api.HttpRule
                  * @instance
                  */
-                HttpRule.prototype.patch = null;
+                HttpRule.prototype.patch = "";
     
                 /**
                  * HttpRule custom.

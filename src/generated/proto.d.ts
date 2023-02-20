@@ -5960,6 +5960,9 @@ export namespace neutron {
             /** MsgTransfer timeout_timestamp */
             timeout_timestamp?: (Long|null);
 
+            /** MsgTransfer memo */
+            memo?: (string|null);
+
             /** MsgTransfer fee */
             fee?: (neutron.feerefunder.IFee|null);
         }
@@ -5993,6 +5996,9 @@ export namespace neutron {
 
             /** MsgTransfer timeout_timestamp. */
             public timeout_timestamp: Long;
+
+            /** MsgTransfer memo. */
+            public memo: string;
 
             /** MsgTransfer fee. */
             public fee?: (neutron.feerefunder.IFee|null);
@@ -7688,10 +7694,10 @@ export namespace tendermint {
             constructor(properties?: tendermint.crypto.IPublicKey);
 
             /** PublicKey ed25519. */
-            public ed25519?: (Uint8Array|null);
+            public ed25519: Uint8Array;
 
             /** PublicKey secp256k1. */
-            public secp256k1?: (Uint8Array|null);
+            public secp256k1: Uint8Array;
 
             /** PublicKey sum. */
             public sum?: ("ed25519"|"secp256k1");
@@ -18099,19 +18105,19 @@ export namespace google {
             public selector: string;
 
             /** HttpRule get. */
-            public get?: (string|null);
+            public get: string;
 
             /** HttpRule put. */
-            public put?: (string|null);
+            public put: string;
 
             /** HttpRule post. */
-            public post?: (string|null);
+            public post: string;
 
             /** HttpRule delete. */
-            public delete?: (string|null);
+            public delete: string;
 
             /** HttpRule patch. */
-            public patch?: (string|null);
+            public patch: string;
 
             /** HttpRule custom. */
             public custom?: (google.api.ICustomHttpPattern|null);

@@ -1,9 +1,9 @@
 import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import { neutron } from '../generated/proto';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -190,6 +190,10 @@ cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
 );
+cosmosclient.codec.register(
+  '/ibc.applications.transfer.v1.MsgTransfer',
+  ibc_proto.applications.transfer.v1.MsgTransfer,
+);
 
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
@@ -216,7 +220,7 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
-    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Block,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -986,14 +990,16 @@ export class CosmosWrapper {
     token: ICoin,
     receiver: string,
     timeout_height: IHeight,
+    memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibcproto.ibc.applications.transfer.v1.MsgTransfer({
+    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
       timeout_height: timeout_height,
+      memo: memo,
     });
     const res = await this.execTx(
       {
