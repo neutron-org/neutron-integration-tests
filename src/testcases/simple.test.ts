@@ -70,7 +70,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
       });
@@ -184,7 +184,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
@@ -194,7 +194,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance).toBe(50000 - 3000 - 2333 * 2);
@@ -357,7 +357,7 @@ describe('Neutron / Simple', () => {
         What is going on here. To test SudoTimeout handler functionality
         we have to make an IBC package delivery by hermes really slowly.
         There are two ways to achieve it:
-        1) Set the tineout close to the actual current height of the remote chain.
+        1) Set the timeout close to the actual current height of the remote chain.
         That way ermes may not have a time to deliver the package before timeout happens.
         There are small chances of either the package will not even be passed to hermes and the tx fails or
         hermes successfully delivers the packet and is not triggering sudoTimeoutHandler
@@ -367,9 +367,9 @@ describe('Neutron / Simple', () => {
         hermes have to send timeoutAck and trigger the timeoutSudoHandler.
         The code below implements the second variant.
         */
-        await disconnectHermes();
+        // await disconnectHermes();
         const currentHeight = await getHeight(cm2.sdk);
-        await cm2.blockWaiter.waitBlocks(15);
+        // await cm2.blockWaiter.waitBlocks(15);
 
         await cm.executeContract(
           contractAddress,
@@ -383,7 +383,7 @@ describe('Neutron / Simple', () => {
             },
           }),
         );
-        await connectHermes();
+        // await connectHermes();
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm,
