@@ -66,7 +66,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
       });
@@ -180,7 +180,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
@@ -190,7 +190,7 @@ describe('Neutron / Simple', () => {
         const balances = await cm.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          '0',
           10,
         );
         expect(balance).toBe(50000 - 3000 - 2333 * 2);
@@ -352,20 +352,17 @@ describe('Neutron / Simple', () => {
         /* 
         What is going on here. To test SudoTimeout handler functionality
         we have to make an IBC package delivery by hermes really slowly.
-        There are two ways to achieve it:
-        1) Set the timeout close to the actual current height of the remote chain.
-        That way ermes may not have a time to deliver the package before timeout happens.
-        There are small chances of either the package will not even be passed to hermes and the tx fails or
-        hermes successfully delivers the packet and is not triggering sudoTimeoutHandler
-        2) We disconnect hermes from the docker network. Wait some time. Gaiad blocks are being built,
-        but neutron knows nothing about it since hermes is not reachable. We execute tx on the neutron side and
-        connect hermes back to the network. The timeout height has passed,
-        hermes have to send timeoutAck and trigger the timeoutSudoHandler.
-        The code below implements the second variant.
+        But, actually there is no any activity on the IBC channel at this stage, as a result 
+        hermes does not send any UpdateClient messages from gaia to neuron.
+        Gaia keeps building blocks and hermes knows nothing about it.
+        We get the height =N of the gaia chain, wait 15 blocks.
+        Send ibc package from neutron from gaia with timeout N+5
+        current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
+        hermes checks height on remote chain and Timeout error occurs.
         */
         // await disconnectHermes();
         const currentHeight = await getHeight(cm2.sdk);
-        // await cm2.blockWaiter.waitBlocks(15);
+        await cm2.blockWaiter.waitBlocks(15);
 
         await cm.executeContract(
           contractAddress,
