@@ -60,8 +60,8 @@ describe('Neutron / Lockdrop', () => {
     );
   });
 
-  let original_name = 'Lockdrop Vault';
-  let original_description = 'A lockdrop vault for test purposes.';
+  const original_name = 'Lockdrop Vault';
+  const original_description = 'A lockdrop vault for test purposes.';
   describe('Lockdrop vault', () => {
     let lockdrop_contract_addr: AccAddress | ValAddress;
     let lockdrop_vault_addr: string;
@@ -91,9 +91,9 @@ describe('Neutron / Lockdrop', () => {
       });
     });
 
-    let new_description = 'A new description for the lockdrop vault.';
+    const new_description = 'A new description for the lockdrop vault.';
     test('Update config by manager: success', async () => {
-      let res = await updateLockdropVaultConfig(
+      const res = await updateLockdropVaultConfig(
         cm_manager,
         lockdrop_vault_addr,
         owner_addr.toString(),
@@ -209,7 +209,7 @@ describe('Neutron / Lockdrop', () => {
     });
 
     test('Bonding status', async () => {
-      let status = await getVaultBondingStatus(
+      const status = await getVaultBondingStatus(
         cm_holder,
         lockdrop_vault_addr,
         holder_addr.toString(),
