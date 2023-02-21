@@ -14,7 +14,7 @@
     "test:governance": "jest --runInBand -b src/testcases/governance",
     "test:subdao": "jest --runInBand -b src/testcases/subdao",
     "test:tokenomics": "jest --runInBand -b src/testcases/tokenomics",
-    "test:parallel": "jest  -b src/testcases/tokenomics.test.ts --colors -b src/testcases/simple",
+    "test:parallel": "jest  -b src/testcases/tokenomics.test.ts --colors -b src/testcases/simple -b src/testcases/treasury",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"

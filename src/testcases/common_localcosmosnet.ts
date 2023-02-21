@@ -104,6 +104,9 @@ export class TestStateLocalCosmosTestNet {
     await setup(host1, host2);
     const mnemonicQA = generateMnemonic();
     const mnemonicQATwo = generateMnemonic();
+    const mnemonicQAThree = generateMnemonic();
+    const mnemonicQAFour = generateMnemonic();
+    const mnemonicQAFive = generateMnemonic();
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
@@ -127,16 +130,58 @@ export class TestStateLocalCosmosTestNet {
       COSMOS_DENOM,
       this.wallets.cosmos.demo2.address,
     );
+    await this.createQaWallet(
+      mnemonicQAThree,
+      neutronPrefix,
+      this.sdk1,
+      this.blockWaiter1,
+      this.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+      this.wallets.neutron.demo1.address,
+    );
+    await this.createQaWallet(
+      mnemonicQAFour,
+      neutronPrefix,
+      this.sdk1,
+      this.blockWaiter1,
+      this.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+      this.wallets.neutron.demo1.address,
+    );
+    await this.createQaWallet(
+      mnemonicQAFive,
+      neutronPrefix,
+      this.sdk1,
+      this.blockWaiter1,
+      this.wallets.neutron.demo1,
+      NEUTRON_DENOM,
+      this.wallets.neutron.demo1.address,
+    );
 
-    this.wallets.qaOne = await walletSetQa(
+    this.wallets.qaNeutron = await walletSetQa(
       this.sdk1,
       neutronPrefix,
       mnemonicQA,
     );
-    this.wallets.qaTwo = await walletSetQa(
+    this.wallets.qaCosmos = await walletSetQa(
       this.sdk2,
       cosmosPrefix,
       mnemonicQATwo,
+    );
+    this.wallets.qaNeutronThree = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAThree,
+    );
+    this.wallets.qaNeutronFour = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAFour,
+    );
+    this.wallets.qaNeutronFive = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAFive,
     );
   };
   sendTokensWithRetry = async (
@@ -189,11 +234,10 @@ export class TestStateLocalCosmosTestNet {
 
     const address = await createAddress(mnemonic);
     const sequence = await cm.getSeq(sdk, walletAddress);
-    await cm.blockWaiter.waitBlocks(1);
     await this.sendTokensWithRetry(
       cm,
       toString(address),
-      '5500000000',
+      '10500000000',
       sequence,
     );
     const balances = await cm.queryBalances(toString(address));
