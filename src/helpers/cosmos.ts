@@ -46,7 +46,7 @@ export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
-type ChannelsList = {
+export type ChannelsList = {
   channels: {
     state: string;
     ordering: string;
@@ -100,13 +100,15 @@ type SingleChoiceProposal = {
   /// The threshold at which this proposal will pass.
   /// proposal's creation.
   readonly total_power: string;
-  readonly status:
-    | 'open'
-    | 'rejected'
-    | 'passed'
-    | 'executed'
-    | 'closed'
-    | 'execution_failed';
+  readonly proposal: {
+    status:
+      | 'open'
+      | 'rejected'
+      | 'passed'
+      | 'executed'
+      | 'closed'
+      | 'execution_failed';
+  };
 };
 
 type TotalPowerAtHeightResponse = {
@@ -841,7 +843,7 @@ export class CosmosWrapper {
 
   async checkPassedProposal(propose_contract: string, proposalId: number) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () => await this.queryProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'passed',
       20,
@@ -853,7 +855,7 @@ export class CosmosWrapper {
     proposalId: number,
   ) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'passed',
@@ -866,7 +868,7 @@ export class CosmosWrapper {
     proposalId: number,
   ) {
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'executed',
@@ -880,7 +882,7 @@ export class CosmosWrapper {
   ) {
     await this.executeProposal(propose_contract, proposalId);
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () => await this.queryProposal(propose_contract, proposalId),
       async (response) => response.proposal.status === 'executed',
       20,
@@ -893,7 +895,7 @@ export class CosmosWrapper {
   ) {
     await this.executeMultiChoiceProposal(proposalContract, proposalId);
     await getWithAttempts(
-      this,
+      this.blockWaiter,
       async () =>
         await this.queryMultiChoiceProposal(proposalContract, proposalId),
       async (response) => response.proposal.status === 'executed',
@@ -931,7 +933,7 @@ export class CosmosWrapper {
   async queryProposal(
     propose_contract: string,
     proposalId: number,
-  ): Promise<any> {
+  ): Promise<SingleChoiceProposal> {
     return await this.queryContract<SingleChoiceProposal>(propose_contract, {
       proposal: {
         proposal_id: proposalId,
@@ -939,13 +941,18 @@ export class CosmosWrapper {
     });
   }
 
-  async queryTotalVotingPower(core_contract: string): Promise<any> {
+  async queryTotalVotingPower(
+    core_contract: string,
+  ): Promise<TotalPowerAtHeightResponse> {
     return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
       total_power_at_height: {},
     });
   }
 
-  async queryVotingPower(core_contract: string, addr: string): Promise<any> {
+  async queryVotingPower(
+    core_contract: string,
+    addr: string,
+  ): Promise<VotingPowerAtHeightResponse> {
     return await this.queryContract<VotingPowerAtHeightResponse>(
       core_contract,
       {
@@ -1081,10 +1088,10 @@ export class CosmosWrapper {
   }
 
   async listIBCChannels(): Promise<ChannelsList> {
-    const req = await axios.get<ChannelsList>(
+    const res = await axios.get<ChannelsList>(
       `${this.sdk.url}/ibc/core/channel/v1/channels`,
     );
-    return req.data;
+    return res.data;
   }
 
   async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {

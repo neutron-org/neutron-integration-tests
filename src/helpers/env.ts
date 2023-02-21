@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { execSync } from 'child_process';
 import { wait } from './wait';
-import { getContractsHashes } from './cosmos';
+import { ChannelsList, getContractsHashes } from './cosmos';
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
@@ -70,13 +70,16 @@ export const waitForChannel = async (
 
   while (Date.now() < start + timeout) {
     try {
-      const r = await axios.get(`${host}/ibc/core/channel/v1/channels`, {
-        timeout: 1000,
-      });
+      const r = await axios.get<ChannelsList>(
+        `${host}/ibc/core/channel/v1/channels`,
+        {
+          timeout: 1000,
+        },
+      );
       if (
         r.data.channels.length > 0 &&
         r.data.channels.every(
-          (channel: any) => channel.counterparty.channel_id !== '',
+          (channel) => channel.counterparty.channel_id !== '',
         )
       ) {
         await wait(20);

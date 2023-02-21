@@ -60,13 +60,13 @@ describe('Neutron / Subdao', () => {
 
     await cm.bondFunds(VAULT_CONTRACT_ADDRESS, '10000');
     await getWithAttempts(
-      cm,
+      cm.blockWaiter,
       async () =>
         await cm.queryVotingPower(
           subDAO.core.address,
           main_dao_addr.toString(),
         ),
-      async (response) => response.power == '10000',
+      async (response) => response.power == 10000,
       20,
     );
     await cm.msgSend(subDAO.core.address, '10000'); // funding for gas
@@ -373,8 +373,8 @@ describe('Neutron / Subdao', () => {
       const afterExecBalance = await cm.queryBalances(
         security_dao_addr.toString(),
       );
-      expect(+afterExecBalance.balances[0].amount).toEqual(
-        +beforeExecBalance.balances[0].amount + funding,
+      expect(+(afterExecBalance.balances[0].amount || 0)).toEqual(
+        +(beforeExecBalance.balances[0].amount || 0) + funding,
       );
     });
 

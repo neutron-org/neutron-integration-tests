@@ -1,3 +1,4 @@
+import Long from 'long';
 import {
   AckFailuresResponse,
   COSMOS_DENOM,
@@ -86,7 +87,10 @@ describe('Neutron / Simple', () => {
           'channel-0',
           { denom: NEUTRON_DENOM, amount: '1000' },
           testState.wallets.cosmos.demo2.address.toString(),
-          { revision_number: 2, revision_height: 100000000 },
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -109,7 +113,10 @@ describe('Neutron / Simple', () => {
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
           testState.wallets.neutron.demo1.address.toString(),
-          { revision_number: 2, revision_height: 100000000 },
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -240,7 +247,10 @@ describe('Neutron / Simple', () => {
           channelName,
           { denom: cm2.denom, amount: uatomAmount },
           contractAddress,
-          { revision_number: 2, revision_height: 100000000 },
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
         );
         expect(res.code).toEqual(0);
 
@@ -379,7 +389,7 @@ describe('Neutron / Simple', () => {
         // await connectHermes();
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-          cm,
+          cm.blockWaiter,
           async () => cm.queryAckFailures(contractAddress),
           // Wait until there 4 failure in the list
           async (data) => data.failures.length == 4,
