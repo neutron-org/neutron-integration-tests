@@ -186,7 +186,7 @@ describe('Neutron / Lockdrop', () => {
       });
     });
 
-    test('Bondin and Unbonding', async () => {
+    test('Bonding and Unbonding', async () => {
       await expect(
         cm_holder.executeContract(
           lockdrop_vault_addr,
