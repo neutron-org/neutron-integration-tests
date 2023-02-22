@@ -10,6 +10,7 @@ services:
       - 1317:1317
       - 26657:26657
       - 26656:26656
+      - 8090:9090
     environment:
       - CONTRACTS_BINARIES_DIR=/opt/neutron/contracts
       - RUN_BACKGROUND=0
@@ -23,6 +24,7 @@ services:
       - 1316:1317
       - 16657:26657
       - 16656:26656
+      - 9090:9090
     environment:
       - BINARY=gaiad
       - CHAINID=test-2
