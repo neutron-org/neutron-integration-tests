@@ -28,3 +28,17 @@ export type SubDaoConfig = {
   main_dao: string;
   security_dao: string;
 };
+
+export type LockdropVaultConfig = {
+  name: string;
+  description: string;
+  lockdrop_contract: string;
+  owner: string;
+  manager: string;
+};
+
+export type VaultBondingStatus = {
+  bonding_enabled: string;
+  unbondable_abount: string;
+  height: number;
+};
