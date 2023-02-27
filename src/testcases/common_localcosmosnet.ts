@@ -157,38 +157,38 @@ export class TestStateLocalCosmosTestNet {
       NEUTRON_DENOM,
       this.wallets.neutron.demo1.address,
     );
-
-    this.wallets.qaNeutron = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQA,
-    );
-    this.wallets.qaCosmos = await walletSetQa(
-      this.sdk2,
-      cosmosPrefix,
-      mnemonicQATwo,
-    );
-    this.wallets.qaNeutronThree = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAThree,
-    );
-    this.wallets.qaNeutronFour = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAFour,
-    );
-    this.wallets.qaNeutronFive = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAFive,
-    );
+    // this.wallets.qaNeutron = await walletSetQa(
+    //   this.sdk1,
+    //   neutronPrefix,
+    //   mnemonicQA,
+    // );
+    // this.wallets.qaCosmos = await walletSetQa(
+    //   this.sdk2,
+    //   cosmosPrefix,
+    //   mnemonicQATwo,
+    // );
+    // this.wallets.qaNeutronThree = await walletSetQa(
+    //   this.sdk1,
+    //   neutronPrefix,
+    //   mnemonicQAThree,
+    // );
+    // this.wallets.qaNeutronFour = await walletSetQa(
+    //   this.sdk1,
+    //   neutronPrefix,
+    //   mnemonicQAFour,
+    // );
+    // this.wallets.qaNeutronFive = await walletSetQa(
+    //   this.sdk1,
+    //   neutronPrefix,
+    //   mnemonicQAFive,
+    // );
   };
   sendTokensWithRetry = async (
     cm: CosmosWrapper,
     to: string,
     amount: string,
     startingSequence: number,
+    address: AccAddress,
   ) => {
     const fee = {
       gas_limit: Long.fromString('200000'),
@@ -205,11 +205,13 @@ export class TestStateLocalCosmosTestNet {
         await cm.blockWaiter.waitBlocks(1);
         retryCount++;
         sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
-        if (retryCount === 4) {
-          throw new Error(`Failed to send tokens after ${retryCount} retries.`);
-        }
       }
     }
+    const balances = await cm.queryBalances(toString(address));
+    if (balances == null) {
+      throw new Error('Could not put tokens on the generated wallet.');
+    }
+    throw new Error(`Failed to send tokens after ${retryCount} retries.`);
   };
 
   createQaWallet = async (
@@ -239,10 +241,7 @@ export class TestStateLocalCosmosTestNet {
       toString(address),
       '10500000000',
       sequence,
+      address,
     );
-    const balances = await cm.queryBalances(toString(address));
-    if (balances == null) {
-      throw new Error('Could not put tokens on the generated wallet.');
-    }
   };
 }

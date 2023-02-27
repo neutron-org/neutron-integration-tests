@@ -235,7 +235,7 @@ export class CosmosWrapper {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: sequence,
+          sequence,
         },
       ],
       fee,
