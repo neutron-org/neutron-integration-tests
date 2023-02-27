@@ -157,31 +157,31 @@ export class TestStateLocalCosmosTestNet {
       NEUTRON_DENOM,
       this.wallets.neutron.demo1.address,
     );
-    // this.wallets.qaNeutron = await walletSetQa(
-    //   this.sdk1,
-    //   neutronPrefix,
-    //   mnemonicQA,
-    // );
-    // this.wallets.qaCosmos = await walletSetQa(
-    //   this.sdk2,
-    //   cosmosPrefix,
-    //   mnemonicQATwo,
-    // );
-    // this.wallets.qaNeutronThree = await walletSetQa(
-    //   this.sdk1,
-    //   neutronPrefix,
-    //   mnemonicQAThree,
-    // );
-    // this.wallets.qaNeutronFour = await walletSetQa(
-    //   this.sdk1,
-    //   neutronPrefix,
-    //   mnemonicQAFour,
-    // );
-    // this.wallets.qaNeutronFive = await walletSetQa(
-    //   this.sdk1,
-    //   neutronPrefix,
-    //   mnemonicQAFive,
-    // );
+    this.wallets.qaNeutron = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQA,
+    );
+    this.wallets.qaCosmos = await walletSetQa(
+      this.sdk2,
+      cosmosPrefix,
+      mnemonicQATwo,
+    );
+    this.wallets.qaNeutronThree = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAThree,
+    );
+    this.wallets.qaNeutronFour = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAFour,
+    );
+    this.wallets.qaNeutronFive = await walletSetQa(
+      this.sdk1,
+      neutronPrefix,
+      mnemonicQAFive,
+    );
   };
   sendTokensWithRetry = async (
     cm: CosmosWrapper,
