@@ -11,7 +11,7 @@ import {
 } from '../helpers/cosmos';
 import { AcknowledgementResult } from '../helpers/contract_types';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+import { getWithAttempts, wait } from '../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../helpers/ica';
 

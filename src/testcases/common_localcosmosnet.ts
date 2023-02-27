@@ -62,18 +62,6 @@ const walletSet = async (
     prefix,
   ),
 });
-const walletSetQa = async (
-  sdk: cosmosclient.CosmosSDK,
-  prefix: string,
-  mnemonicQA: string,
-): Promise<Record<string, Wallet>> => ({
-  genQaWal1: await mnemonicToWallet(
-    cosmosclient.AccAddress,
-    sdk,
-    mnemonicQA,
-    prefix,
-  ),
-});
 
 export class TestStateLocalCosmosTestNet {
   sdk1: cosmosclient.CosmosSDK;
@@ -112,92 +100,61 @@ export class TestStateLocalCosmosTestNet {
     this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
     this.wallets.cosmos = await walletSet(this.sdk2, cosmosPrefix);
 
-    await this.createQaWallet(
+    this.wallets.qaNeutron = await this.createQaWallet(
       mnemonicQA,
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
-      this.wallets.neutron.demo1.address,
     );
-    await this.createQaWallet(
+    this.wallets.qaCosmos = await this.createQaWallet(
       mnemonicQATwo,
       cosmosPrefix,
       this.sdk2,
       this.blockWaiter2,
       this.wallets.cosmos.demo2,
       COSMOS_DENOM,
-      this.wallets.cosmos.demo2.address,
     );
-    await this.createQaWallet(
+    this.wallets.qaNeutronThree = await this.createQaWallet(
       mnemonicQAThree,
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
-      this.wallets.neutron.demo1.address,
     );
-    await this.createQaWallet(
+    this.wallets.qaNeutronFour = await this.createQaWallet(
       mnemonicQAFour,
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
-      this.wallets.neutron.demo1.address,
     );
-    await this.createQaWallet(
+    this.wallets.qaNeutronFive = await this.createQaWallet(
       mnemonicQAFive,
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
       this.wallets.neutron.demo1,
       NEUTRON_DENOM,
-      this.wallets.neutron.demo1.address,
-    );
-    this.wallets.qaNeutron = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQA,
-    );
-    this.wallets.qaCosmos = await walletSetQa(
-      this.sdk2,
-      cosmosPrefix,
-      mnemonicQATwo,
-    );
-    this.wallets.qaNeutronThree = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAThree,
-    );
-    this.wallets.qaNeutronFour = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAFour,
-    );
-    this.wallets.qaNeutronFive = await walletSetQa(
-      this.sdk1,
-      neutronPrefix,
-      mnemonicQAFive,
     );
   };
   sendTokensWithRetry = async (
     cm: CosmosWrapper,
     to: string,
     amount: string,
-    startingSequence: number,
     address: AccAddress,
   ) => {
     const fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: cm.denom, amount: '1000' }],
     };
-    let sequence = startingSequence;
+    let sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
     let retryCount = 0;
 
-    while (retryCount < 4) {
+    while (retryCount < 10) {
       try {
         await cm.msgSend(to, amount, fee, sequence);
         return;
@@ -221,7 +178,6 @@ export class TestStateLocalCosmosTestNet {
     blockWaiter: BlockWaiter,
     wallet: Wallet,
     denom: string,
-    walletAddress: AccAddress,
   ) => {
     const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
 
@@ -235,13 +191,20 @@ export class TestStateLocalCosmosTestNet {
     });
 
     const address = await createAddress(mnemonic);
-    const sequence = await cm.getSeq(sdk, walletAddress);
     await this.sendTokensWithRetry(
       cm,
       toString(address),
       '10500000000',
-      sequence,
       address,
     );
+    const wal = {
+      genQaWal1: await mnemonicToWallet(
+        cosmosclient.AccAddress,
+        sdk,
+        mnemonic,
+        prefix,
+      ),
+    };
+    return wal;
   };
 }
