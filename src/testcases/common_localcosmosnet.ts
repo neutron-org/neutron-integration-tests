@@ -12,20 +12,6 @@ export const disconnectValidator = async (name: string) => {
   return stdout;
 };
 
-export const disconnectHermes = async () => {
-  const { stdout } = await exec(
-    `docker network setup_default disconnect setup-hermes-1`,
-  );
-  return stdout;
-};
-
-export const connectHermes = async () => {
-  const { stdout } = await exec(
-    `docker network setup_default connect setup-hermes-1`,
-  );
-  return stdout;
-};
-
 const walletSet = async (
   sdk: cosmosclient.CosmosSDK,
   prefix: string,

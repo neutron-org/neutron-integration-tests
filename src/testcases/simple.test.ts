@@ -370,7 +370,6 @@ describe('Neutron / Simple', () => {
         current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
         hermes checks height on remote chain and Timeout error occurs.
         */
-        // await disconnectHermes();
         const currentHeight = await getHeight(cm2.sdk);
         await cm2.blockWaiter.waitBlocks(15);
 
@@ -386,7 +385,6 @@ describe('Neutron / Simple', () => {
             },
           }),
         );
-        // await connectHermes();
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.blockWaiter,
