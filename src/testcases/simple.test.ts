@@ -11,11 +11,7 @@ import {
 } from '../helpers/cosmos';
 
 import { getHeight, getWithAttempts } from '../helpers/wait';
-import {
-  connectHermes,
-  disconnectHermes,
-  TestStateLocalCosmosTestNet,
-} from './common_localcosmosnet';
+import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -366,18 +362,15 @@ describe('Neutron / Simple', () => {
         /* 
         What is going on here. To test SudoTimeout handler functionality
         we have to make an IBC package delivery by hermes really slowly.
-        There are two ways to achieve it:
-        1) Set the tineout close to the actual current height of the remote chain.
-        That way ermes may not have a time to deliver the package before timeout happens.
-        There are small chances of either the package will not even be passed to hermes and the tx fails or
-        hermes successfully delivers the packet and is not triggering sudoTimeoutHandler
-        2) We disconnect hermes from the docker network. Wait some time. Gaiad blocks are being built,
-        but neutron knows nothing about it since hermes is not reachable. We execute tx on the neutron side and
-        connect hermes back to the network. The timeout height has passed,
-        hermes have to send timeoutAck and trigger the timeoutSudoHandler.
-        The code below implements the second variant.
+        But, actually there is no any activity on the IBC channel at this stage, as a result 
+        hermes does not send any UpdateClient messages from gaia to neuron.
+        Gaia keeps building blocks and hermes knows nothing about it.
+        We get the height =N of the gaia chain, wait 15 blocks.
+        Send ibc package from neutron from gaia with timeout N+5
+        current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
+        hermes checks height on remote chain and Timeout error occurs.
         */
-        await disconnectHermes();
+        // await disconnectHermes();
         const currentHeight = await getHeight(cm2.sdk);
         await cm2.blockWaiter.waitBlocks(15);
 
@@ -393,7 +386,7 @@ describe('Neutron / Simple', () => {
             },
           }),
         );
-        await connectHermes();
+        // await connectHermes();
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.blockWaiter,
