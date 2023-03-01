@@ -7,16 +7,16 @@ import {
   PRE_PROPOSE_CONTRACT_ADDRESS,
   PROPOSE_CONTRACT_ADDRESS,
   VAULT_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getHeight, getWithAttempts } from '../helpers/wait';
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '../helpers/icq';
-import { Wallet } from '../types';
+} from '../../helpers/icq';
+import { Wallet } from '../../types';
 
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
