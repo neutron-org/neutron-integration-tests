@@ -11,7 +11,6 @@ import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
-import { toString } from 'lodash';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 
 const config = require('../config.json');
@@ -130,6 +129,7 @@ export class TestStateLocalCosmosTestNet {
       NEUTRON_DENOM,
     );
   };
+
   sendTokensWithRetry = async (
     cm: CosmosWrapper,
     to: string,
@@ -141,23 +141,24 @@ export class TestStateLocalCosmosTestNet {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: cm.denom, amount: '1000' }],
     };
-    let sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
+    let attemptCount = 0;
+    //const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
 
-    while (retryCount > 0) {
+    while (retryCount > attemptCount) {
       try {
+        const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
         await cm.msgSend(to, amount, fee, sequence);
         return;
       } catch (e) {
         if (e.message.includes('sequence')) {
           await cm.blockWaiter.waitBlocks(1);
-          retryCount--;
-          sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
+          attemptCount++;
         } else {
           throw e;
         }
       }
     }
-    const balances = await cm.queryBalances(toString(address));
+    const balances = await cm.queryBalances(address.toString());
     if (balances == null) {
       throw new Error('Could not put tokens on the generated wallet.');
     }
@@ -184,7 +185,7 @@ export class TestStateLocalCosmosTestNet {
     });
     const mnemonic = generateMnemonic();
     const address = await createAddress(mnemonic);
-    await this.sendTokensWithRetry(cm, toString(address), tokens, address);
+    await this.sendTokensWithRetry(cm, address.toString(), tokens, address);
     const wal = {
       genQaWal1: await mnemonicToWallet(
         cosmosclient.AccAddress,
