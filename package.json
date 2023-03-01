@@ -4,11 +4,11 @@
   "description": "Neutron chain integration tests",
   "main": "index.js",
   "scripts": {
-    "test": "yarn jest -b src/testcases/simple && yarn jest -b src/testcases/interchaintx && yarn jest -b src/testcases/interchain_kv_query && yarn jest -b src/testcases/interchain_tx_query && yarn jest -b src/testcases/interchain_tx_query_resubmit && yarn jest -b src/testcases/treasury && yarn jest -b src/testcases/governance && yarn jest -b src/testcases/subdao && yarn jest -b src/testcases/tokenomics && yarn jest -b src/testcases/lockdrop",
+    "test": "yarn jest -b src/testcases/simple && yarn jest -b src/testcases/interchaintx && yarn jest -b src/testcases/interchain_kv_query && yarn jest -b src/testcases/interchain_tx_query_plain && yarn jest -b src/testcases/interchain_tx_query_resubmit && yarn jest -b src/testcases/treasury && yarn jest -b src/testcases/governance && yarn jest -b src/testcases/subdao && yarn jest -b src/testcases/tokenomics && yarn jest -b src/testcases/lockdrop",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/simple",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
-    "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query",
+    "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query_plain",
     "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/interchain_tx_query_resubmit",
     "test:treasury": "jest --runInBand -b src/testcases/treasury",
     "test:governance": "jest --runInBand -b src/testcases/governance",
