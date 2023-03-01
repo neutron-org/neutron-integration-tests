@@ -26,10 +26,10 @@ describe('Neutron / Lockdrop', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    dao_wallet = testState.wallets.neutron.demo1;
-    owner_wallet = testState.wallets.neutron.demo2;
-    manager_wallet = testState.wallets.neutron.icq;
-    holder_wallet = testState.wallets.neutron.rly1;
+    dao_wallet = testState.wallets.qaNeutron.genQaWal1;
+    owner_wallet = testState.wallets.qaNeutronThree.genQaWal1;
+    manager_wallet = testState.wallets.qaNeutronFour.genQaWal1;
+    holder_wallet = testState.wallets.qaNeutronFive.genQaWal1;
     owner_addr = owner_wallet.address;
     manager_addr = manager_wallet.address;
     holder_addr = holder_wallet.address;
