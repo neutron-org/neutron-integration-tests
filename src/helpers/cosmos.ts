@@ -32,6 +32,8 @@ export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
 export const VAULT_CONTRACT_ADDRESS =
   'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
+export const LOCKDROP_VAULT_CONTRACT_ADDRESS =
+  'neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a';
 export const PROPOSE_CONTRACT_ADDRESS =
   'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
 export const CORE_CONTRACT_ADDRESS =

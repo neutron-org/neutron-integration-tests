@@ -6,6 +6,7 @@ import {
   NEUTRON_DENOM,
   NeutronContract,
   VAULT_CONTRACT_ADDRESS,
+  LOCKDROP_VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
@@ -822,7 +823,10 @@ const setupSubDaoTimelockSet = async (
       JSON.stringify({
         manager: null,
         owner: null,
-        voting_vault: VAULT_CONTRACT_ADDRESS,
+        voting_vaults: [
+          VAULT_CONTRACT_ADDRESS,
+          LOCKDROP_VAULT_CONTRACT_ADDRESS,
+        ],
       }),
     ).toString('base64'),
   };
