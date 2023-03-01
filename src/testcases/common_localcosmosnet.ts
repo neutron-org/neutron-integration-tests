@@ -142,7 +142,6 @@ export class TestStateLocalCosmosTestNet {
       amount: [{ denom: cm.denom, amount: '1000' }],
     };
     let attemptCount = 0;
-    //const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
 
     while (retryCount > attemptCount) {
       try {
