@@ -6,9 +6,9 @@ import {
   PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getWithAttempts } from '../../helpers/wait';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;

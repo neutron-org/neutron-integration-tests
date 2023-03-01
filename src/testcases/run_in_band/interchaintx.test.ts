@@ -8,12 +8,12 @@ import {
   getSequenceId,
   NEUTRON_DENOM,
   NeutronContract,
-} from '../helpers/cosmos';
-import { AcknowledgementResult } from '../helpers/contract_types';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+} from '../../helpers/cosmos';
+import { AcknowledgementResult } from '../../helpers/contract_types';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getWithAttempts } from '../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { getIca } from '../helpers/ica';
+import { getIca } from '../../helpers/ica';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;

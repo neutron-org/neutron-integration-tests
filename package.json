@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --runInBand -b src/testcases",
+    "test:parallel": "jest  -b src/testcases/parallel",
+    "test:run_in_band": "jest --runInBand -b src/testcases/run_in_band",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/simple",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
