@@ -5,9 +5,9 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
   NeutronContract,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { Wallet } from '../types';
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { Wallet } from '../../types';
 
 interface TreasuryStats {
   readonly total_distributed: string;

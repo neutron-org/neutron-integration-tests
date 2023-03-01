@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest --runInBand -b src/testcases",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
-    "test:simple": "jest --runInBand -b src/testcases/simple",
+    "test:simple": "jest --runInBand -b src/testcases/parallel/simple",
     "test:parallel": "jest  -b src/testcases/parallel",
     "test:run_in_band": "jest --runInBand -b src/testcases/run_in_band",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
