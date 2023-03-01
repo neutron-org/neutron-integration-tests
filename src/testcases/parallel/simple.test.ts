@@ -8,10 +8,10 @@ import {
   NEUTRON_DENOM,
   NeutronContract,
   PageRequest,
-} from '../helpers/cosmos';
+} from '../../helpers/cosmos';
 
-import { getHeight, getWithAttempts } from '../helpers/wait';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;

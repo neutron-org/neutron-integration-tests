@@ -1,4 +1,4 @@
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   COSMOS_DENOM,
   CosmosWrapper,
@@ -6,9 +6,9 @@ import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
   TREASURY_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
+} from '../../helpers/cosmos';
 import Long from 'long';
-import { getWithAttempts } from '../helpers/wait';
+import { getWithAttempts } from '../../helpers/wait';
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
