@@ -11,9 +11,11 @@ PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
 PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
 VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
 VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
+LOCKDROP_VAULT_CONTRACT=/opt/neutron/contracts/dao/lockdrop_vault.wasm
 PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_multiple.wasm
 PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_multiple.wasm
 TREASURY_CONTRACT=/opt/neutron/contracts/dao/neutron_treasury.wasm
+DISTRIBUTION_CONTRACT=/opt/neutron/contracts/dao/neutron_distribution.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
@@ -28,11 +30,21 @@ $BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  --run-as 
 $BINARY add-wasm-message store ${PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message store ${PRE_PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message store ${TREASURY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${DISTRIBUTION_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message store ${LOCKDROP_VAULT_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
+
 # Instantiate the contract
 VAULT_INIT="$(printf '{
+                        "name": "voting vault",
                         "denom": "%s",
                         "description": "based neutron vault"
 }' "$STAKEDENOM")"
+# since the lockdrop_contract is still a mock, the address is a random valid one just to pass instantiation
+LOCKDROP_VAULT_INIT='{
+                        "name": "lockdrop vault",
+                        "description": "a lockdrop vault for testing purposes",
+                        "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
+}'
 DAO_INIT='{
             "description": "basic neutron dao",
             "name": "Neutron",
@@ -52,7 +64,7 @@ DAO_INIT='{
             "voting_registry_module_instantiate_info": {
               "code_id": 4,
               "label": "DAO_Neutron_voting_registry",
-              "msg": "ewogICAgICAibWFuYWdlciI6IG51bGwsCiAgICAgICJvd25lciI6IG51bGwsCiAgICAgICJ2b3RpbmdfdmF1bHQiOiAibmV1dHJvbjE0aGoydGF2cThmcGVzZHd4eGN1NDRydHkzaGg5MHZodWpydmNtc3RsNHpyM3R4bWZ2dzlzNWMyZXBxIgogICAgfQ=="
+              "msg": "ewogICJtYW5hZ2VyIjogbnVsbCwKICAib3duZXIiOiBudWxsLAogICJ2b3RpbmdfdmF1bHRzIjogWwogICAgIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIsCiAgICAibmV1dHJvbjEzd2UwbXl4d3pscHg4bDVhcms4ZWx3NWdqNWQ1OWRsNmNqa3ptdDgwYzVxNWN2NXJ0NTRxdnprdjJhIgogIF0KfQ=="
             }
     }'
 # TODO: properly initialize treasury
@@ -67,9 +79,17 @@ TREASURY_INIT="$(printf '{
                            "vesting_denominator": "1"
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$STAKEDENOM" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
+DISTRIBUTION_INIT="$(printf '{
+                           "main_dao_address": "%s",
+                           "security_dao_address": "%s",
+                           "denom": "untrn"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
+
 echo "Instantiate contracts"
 $BINARY add-wasm-message instantiate-contract 1 "$VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "DAO_Neutron_voting_vault" --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message instantiate-contract 2 "$DAO_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "DAO" --home $CHAIN_DIR/$CHAINID
 $BINARY add-wasm-message instantiate-contract 8 "$TREASURY_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Treasury" --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract 9 "$DISTRIBUTION_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "Distribution" --home $CHAIN_DIR/$CHAINID
+$BINARY add-wasm-message instantiate-contract 10 "$LOCKDROP_VAULT_INIT" --run-as ${ADMIN_ADDRESS} --admin ${ADMIN_ADDRESS} --label "DAO_Neutron_lockdrop_vault" --home $CHAIN_DIR/$CHAINID
 
 sed -i -e 's/\"admins\":.*/\"admins\": [\"neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx\"]/g' $CHAIN_DIR/$CHAINID/config/genesis.json
