@@ -3,7 +3,7 @@ import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import { neutron } from '../generated/proto';
-import { ibc as ibc_proto } from '../generated/ibc/proto';
+import { ibc as ibc_proto } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -192,8 +192,8 @@ cosmosclient.codec.register(
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
 );
 cosmosclient.codec.register(
-  '/ibc.applications.transfer.v1.MsgTransfer',
-  ibc_proto.applications.transfer.v1.MsgTransfer,
+  '/neutron.transfer.MsgTransfer',
+  neutron.transfer.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -993,7 +993,7 @@ export class CosmosWrapper {
     timeout_height: IHeight,
     memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
+    const msgSend = new neutron.transfer.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,

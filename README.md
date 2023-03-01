@@ -8,7 +8,7 @@
 ### 1. Clone neutron, gaia and neutron-query-relayer
 
 Clone neutron and relayer to the parent directory:
-h
+
 ```shell
 git clone git@github.com:neutron-org/neutron.git
 git clone git@github.com:neutron-org/neutron-query-relayer.git
