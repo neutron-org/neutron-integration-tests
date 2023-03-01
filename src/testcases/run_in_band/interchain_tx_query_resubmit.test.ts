@@ -1,4 +1,8 @@
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import {
+  COSMOS_DENOM,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   getRegisteredQuery,
