@@ -8,7 +8,7 @@ export const wait = async (seconds: number) =>
     setTimeout(() => r(true), 1000 * seconds);
   });
 
-export const getRemoteHeight = async (sdk: CosmosSDK) => {
+export const getHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
 };

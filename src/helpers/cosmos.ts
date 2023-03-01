@@ -166,6 +166,7 @@ export const NeutronContract = {
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
+  LOCKDROP_VAULT: 'lockdrop_vault.wasm',
 };
 
 type MultiChoiceOption = {

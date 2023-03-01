@@ -15,6 +15,7 @@
     "test:subdao": "jest --runInBand -b src/testcases/subdao",
     "test:tokenomics": "jest --runInBand -b src/testcases/tokenomics",
     "test:ibc_hooks": "jest --runInBand -b src/testcases/ibc_hooks",
+    "test:lockdrop": "jest --runInBand -b src/testcases/lockdrop",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
