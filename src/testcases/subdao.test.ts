@@ -4,8 +4,8 @@ import {
   createBankMassage,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
-  NeutronContract,
   VAULT_CONTRACT_ADDRESS,
+  LOCKDROP_VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
@@ -18,6 +18,7 @@ import { getHeight, getWithAttempts, wait } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
+import { NeutronContract } from '../helpers/types';
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -822,7 +823,10 @@ const setupSubDaoTimelockSet = async (
       JSON.stringify({
         manager: null,
         owner: null,
-        voting_vault: VAULT_CONTRACT_ADDRESS,
+        voting_vaults: [
+          VAULT_CONTRACT_ADDRESS,
+          LOCKDROP_VAULT_CONTRACT_ADDRESS,
+        ],
       }),
     ).toString('base64'),
   };
