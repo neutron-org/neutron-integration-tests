@@ -1,13 +1,8 @@
-<<<<<<<< HEAD:src/testcases/run_in_band/interchain_tx_query.test.ts
 import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  NeutronContract,
 } from '../../helpers/cosmos';
-========
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
->>>>>>>> 7b078d219e4e0c8905adf01d18b13ee3adaa6fba:src/testcases/interchain_tx_query_plain.test.ts
 import { proto } from '@cosmos-client/core';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import Long from 'long';
@@ -17,12 +12,8 @@ import {
   queryTransfersNumber,
   registerTransfersQuery,
   waitForTransfersAmount,
-<<<<<<<< HEAD:src/testcases/run_in_band/interchain_tx_query.test.ts
 } from '../../helpers/icq';
-========
-} from '../helpers/icq';
-import { NeutronContract } from '../helpers/types';
->>>>>>>> 7b078d219e4e0c8905adf01d18b13ee3adaa6fba:src/testcases/interchain_tx_query_plain.test.ts
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
