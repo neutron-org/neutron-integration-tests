@@ -170,7 +170,7 @@ export class TestStateLocalCosmosTestNet {
     blockWaiter: BlockWaiter,
     wallet: Wallet,
     denom: string,
-    tokens = '10500000000',
+    tokens = '11500000000',
   ) => {
     const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
 
