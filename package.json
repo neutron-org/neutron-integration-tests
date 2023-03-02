@@ -4,10 +4,10 @@
   "description": "Neutron chain integration tests",
   "main": "index.js",
   "scripts": {
-    "test": "yarn jest -b src/testcases/simple && yarn jest -b src/testcases/interchaintx && yarn jest -b src/testcases/interchain_kv_query && yarn jest -b src/testcases/interchain_tx_query_plain && yarn jest -b src/testcases/interchain_tx_query_resubmit && yarn jest -b src/testcases/treasury && yarn jest -b src/testcases/governance && yarn jest -b src/testcases/subdao && yarn jest -b src/testcases/tokenomics && yarn jest -b src/testcases/lockdrop",
+    "test": "yarn test:parallel && yarn test:run_in_band",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/parallel/simple",
-    "test:parallel": "jest  -b src/testcases/parallel",
+    "test:parallel": "jest -b src/testcases/parallel",
     "test:run_in_band": "jest --runInBand -b src/testcases/run_in_band",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
     "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query_plain",
