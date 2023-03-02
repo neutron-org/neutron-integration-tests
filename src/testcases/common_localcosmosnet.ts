@@ -11,6 +11,7 @@ import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
+import _ from 'lodash';
 
 const config = require('../config.json');
 
@@ -88,43 +89,65 @@ export class TestStateLocalCosmosTestNet {
     );
 
     this.wallets = {};
-    this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
-    this.wallets.cosmos = await walletSet(this.sdk2, cosmosPrefix);
-    this.wallets.qaNeutron = await this.createQaWallet(
+    const neutron = await walletSet(this.sdk1, neutronPrefix);
+    const cosmos = await walletSet(this.sdk2, cosmosPrefix);
+
+    const qaNeutron = await this.createQaWallet(
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
-      this.wallets.neutron.demo1,
+      neutron.demo1,
       NEUTRON_DENOM,
     );
-    this.wallets.qaCosmos = await this.createQaWallet(
+    console.log('1>>>>', cosmos.val1.address.toString());
+
+    const qaCosmos = await this.createQaWallet(
       cosmosPrefix,
       this.sdk2,
       this.blockWaiter2,
-      this.wallets.cosmos.demo2,
+      cosmos.demo2,
       COSMOS_DENOM,
     );
-    this.wallets.qaNeutronThree = await this.createQaWallet(
+    console.log('2>>>>', cosmos.val1.address.toString());
+
+    const qaNeutronThree = await this.createQaWallet(
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
-      this.wallets.neutron.demo1,
+      neutron.demo1,
       NEUTRON_DENOM,
     );
-    this.wallets.qaNeutronFour = await this.createQaWallet(
+
+    console.log('3>>>>', cosmos.val1.address.toString());
+    const qaNeutronFour = await this.createQaWallet(
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
-      this.wallets.neutron.demo1,
+      neutron.demo1,
       NEUTRON_DENOM,
     );
-    this.wallets.qaNeutronFive = await this.createQaWallet(
+    console.log('4>>>>', cosmos.val1.address.toString());
+
+    const qaNeutronFive = await this.createQaWallet(
       neutronPrefix,
       this.sdk1,
       this.blockWaiter1,
-      this.wallets.neutron.demo1,
+      neutron.demo1,
       NEUTRON_DENOM,
     );
+    console.log('5>>>>', cosmos.val1.address.toString());
+
+    this.wallets = {
+      cosmos: _.cloneDeep(cosmos),
+      neutron,
+      qaNeutron,
+      qaCosmos,
+      qaNeutronThree,
+      qaNeutronFour,
+      qaNeutronFive,
+    };
+    console.log('6>>>>', cosmos.val1.address.toString());
+    return this.wallets;
   };
 
   sendTokensWithRetry = async (

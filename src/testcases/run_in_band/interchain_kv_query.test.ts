@@ -282,7 +282,12 @@ describe('Neutron / Interchain KV Query', () => {
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
-    await testState.init();
+    const x = await testState.init();
+    console.log(
+      'wallet ',
+      testState.wallets.cosmos.val1.address.toAccAddress().toString(),
+      x,
+    );
     cm = {
       1: new CosmosWrapper(
         testState.sdk1,
@@ -308,6 +313,10 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Instantiate interchain queries contract', () => {
     let codeId: string;
     test('store contract', async () => {
+      console.log(
+        'wallet ',
+        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
+      );
       codeId = await cm[1].storeWasm(NeutronContract.INTERCHAIN_QUERIES);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
@@ -511,6 +520,10 @@ describe('Neutron / Interchain KV Query', () => {
 
   describe('Perform interchain queries', () => {
     test('perform icq #2: balance', async () => {
+      console.log(
+        'wallet ',
+        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
+      );
       // reduce balance of demo2 wallet
       const queryId = 2;
       const res = await cm[2].msgSend(
@@ -535,12 +548,17 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('perform icq #3: balance', async () => {
       // increase balance of val2 wallet
+      console.log(
+        'wallet ',
+        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
+      );
       const queryId = 3;
       const res = await cm[2].msgSend(
         testState.wallets.cosmos.val1.address.toAccAddress().toString(),
         '9000',
       );
       expect(res.code).toEqual(0);
+      process.exit();
       await waitForICQResultWithRemoteHeight(
         cm[1],
         contractAddress,
