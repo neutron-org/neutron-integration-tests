@@ -317,19 +317,14 @@ export class CosmosWrapper {
       amount: [{ denom: this.denom, amount: '1000' }],
     },
     sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(
-      fee,
-      [msgSend],
-      10,
-      rest.tx.BroadcastTxMode.Block,
-      sequence,
-    );
+    const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
   }
 

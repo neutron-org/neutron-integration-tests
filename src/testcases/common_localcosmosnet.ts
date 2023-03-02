@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { cosmosclient } from '@cosmos-client/core';
+import { cosmosclient, rest } from '@cosmos-client/core';
 import { Wallet } from '../types';
 import { COSMOS_DENOM, mnemonicToWallet } from '../helpers/cosmos';
 import { BlockWaiter } from '../helpers/wait';
@@ -155,7 +155,13 @@ export class TestStateLocalCosmosTestNet {
     while (retryCount > attemptCount) {
       try {
         const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
-        res = await cm.msgSend(to.toString(), amount, fee, sequence);
+        res = await cm.msgSend(
+          to.toString(),
+          amount,
+          fee,
+          sequence,
+          rest.tx.BroadcastTxMode.Block,
+        );
         break;
       } catch (e) {
         if (e.message.includes('sequence')) {
