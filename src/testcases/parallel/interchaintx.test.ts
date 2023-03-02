@@ -2,16 +2,18 @@ import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
-  AckFailuresResponse,
   COSMOS_DENOM,
   CosmosWrapper,
   getSequenceId,
   NEUTRON_DENOM,
-  NeutronContract,
 } from '../../helpers/cosmos';
-import { AcknowledgementResult } from '../../helpers/contract_types';
+import {
+  AckFailuresResponse,
+  AcknowledgementResult,
+  NeutronContract,
+} from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
+import { getWithAttempts } from './../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { getIca } from '../../helpers/ica';
 

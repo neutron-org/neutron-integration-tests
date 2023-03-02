@@ -1,13 +1,10 @@
+import { LockdropVaultConfig, VaultBondingStatus } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  NeutronContract,
-} from '../../helpers/cosmos';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { Wallet } from '../../types';
-import { LockdropVaultConfig, VaultBondingStatus } from '../../helpers/dao';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;

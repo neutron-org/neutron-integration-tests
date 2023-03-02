@@ -6,7 +6,6 @@ import {
   createAddress,
   mnemonicToWallet,
 } from '../helpers/cosmos';
-import { setup } from '../helpers/env';
 import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
@@ -87,8 +86,6 @@ export class TestStateLocalCosmosTestNet {
     this.blockWaiter2 = new BlockWaiter(
       process.env.NODE2_WS_URL || 'ws://localhost:16657',
     );
-
-    await setup(host1, host2);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutronPrefix);
