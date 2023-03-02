@@ -1,14 +1,16 @@
 import Long from 'long';
 import {
-  AckFailuresResponse,
   COSMOS_DENOM,
   CosmosWrapper,
   getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+} from '../helpers/cosmos';
+import {
+  AckFailuresResponse,
   NeutronContract,
   PageRequest,
-} from '../helpers/cosmos';
+} from '../helpers/types';
 
 import { getHeight, getWithAttempts } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';

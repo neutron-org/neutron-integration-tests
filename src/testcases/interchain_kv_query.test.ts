@@ -3,7 +3,6 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  NeutronContract,
   PRE_PROPOSE_CONTRACT_ADDRESS,
   PROPOSE_CONTRACT_ADDRESS,
   VAULT_CONTRACT_ADDRESS,
@@ -17,6 +16,7 @@ import {
   waitForICQResultWithRemoteHeight,
 } from '../helpers/icq';
 import { Wallet } from '../types';
+import { NeutronContract } from '../helpers/types';
 
 const getKvCallbackStatus = (
   cm: CosmosWrapper,

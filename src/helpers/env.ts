@@ -1,13 +1,33 @@
 import axios from 'axios';
 import { execSync } from 'child_process';
+import { ChannelsList, NeutronContract } from './types';
 import { wait } from './wait';
-import { ChannelsList, getContractsHashes } from './cosmos';
+import { promises as fsPromise } from 'fs';
+import path from 'path';
+import crypto from 'crypto';
+
+const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
   : 10;
 
 let alreadySetUp = false;
+
+export const getContractBinary = async (fileName: string): Promise<Buffer> =>
+  fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
+
+export const getContractsHashes = async (): Promise<Record<string, string>> => {
+  const hashes = {};
+  for (const key of Object.keys(NeutronContract)) {
+    const binary = await getContractBinary(NeutronContract[key]);
+    hashes[NeutronContract[key]] = crypto
+      .createHash('sha256')
+      .update(binary)
+      .digest('hex');
+  }
+  return hashes;
+};
 
 export const setup = async (host1: string, host2: string) => {
   if (alreadySetUp) {
@@ -41,7 +61,7 @@ export const setup = async (host1: string, host2: string) => {
   alreadySetUp = true;
 };
 
-export const waitForHTTP = async (
+const waitForHTTP = async (
   host = 'http://127.0.0.1:1317',
   path = `blocks/${BLOCKS_COUNT_BEFORE_START}`,
   timeout = 280000,
