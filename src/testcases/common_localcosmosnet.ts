@@ -2,7 +2,6 @@ import { exec } from 'child_process';
 import { cosmosclient } from '@cosmos-client/core';
 import { Wallet } from '../types';
 import { mnemonicToWallet } from '../helpers/cosmos';
-import { setup } from '../helpers/env';
 import { BlockWaiter } from '../helpers/wait';
 
 const config = require('../config.json');
@@ -79,8 +78,6 @@ export class TestStateLocalCosmosTestNet {
     this.blockWaiter2 = new BlockWaiter(
       process.env.NODE2_WS_URL || 'ws://localhost:16657',
     );
-
-    await setup(host1, host2);
 
     this.wallets = {};
     this.wallets.neutron = await walletSet(this.sdk1, neutron_prefix);

@@ -1,4 +1,3 @@
-import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -7,7 +6,6 @@ import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import path from 'path';
 import { BlockWaiter, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
@@ -25,6 +23,17 @@ import {
 } from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
+import {
+  AckFailuresResponse,
+  ChannelsList,
+  MultiChoiceOption,
+  PageRequest,
+  PauseInfoResponse,
+  SingleChoiceProposal,
+  TotalPowerAtHeightResponse,
+  VotingPowerAtHeightResponse,
+} from './types';
+import { getContractBinary } from './env';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -46,33 +55,6 @@ export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
 export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
-const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
-
-export type ChannelsList = {
-  channels: {
-    state: string;
-    ordering: string;
-    counterparty: {
-      port_id: string;
-      channel_id: string;
-    };
-    connection_hops: string[];
-    version: string;
-    port_id: string;
-    channel_id: string;
-  }[];
-};
-
-export type TotalSupplyByDenomResponse = {
-  amount: ICoin;
-};
-
-// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
-export type TotalBurnedNeutronsAmountResponse = {
-  total_burned_neutrons_amount: {
-    coin: ICoin;
-  };
-};
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -89,91 +71,15 @@ type DenomTraceResponse = {
   base_denom?: string;
 };
 
-// SingleChoiceProposal represents a single governance proposal item (partial object).
-type SingleChoiceProposal = {
-  readonly title: string;
-  readonly description: string;
-  /// The address that created this proposal.
-  readonly proposer: string;
-  /// The block height at which this proposal was created. Voting
-  /// power queries should query for voting power at this block
-  /// height.
-  readonly start_height: number;
-  /// The threshold at which this proposal will pass.
-  /// proposal's creation.
-  readonly total_power: string;
-  readonly proposal: {
-    status:
-      | 'open'
-      | 'rejected'
-      | 'passed'
-      | 'executed'
-      | 'closed'
-      | 'execution_failed';
+export type TotalSupplyByDenomResponse = {
+  amount: ICoin;
+};
+
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
+export type TotalBurnedNeutronsAmountResponse = {
+  total_burned_neutrons_amount: {
+    coin: ICoin;
   };
-};
-
-type TotalPowerAtHeightResponse = {
-  readonly height: string;
-  readonly power: number;
-};
-
-type VotingPowerAtHeightResponse = {
-  readonly height: string;
-  readonly power: number;
-};
-
-// PageRequest is the params of pagination for request
-export type PageRequest = {
-  'pagination.key'?: string;
-  'pagination.offset'?: string;
-  'pagination.limit'?: string;
-  'pagination.count_total'?: boolean;
-};
-
-// AckFailuresResponse is the response model for the contractmanager failures.
-export type AckFailuresResponse = {
-  failures: Failure[];
-  pagination: {
-    next_key: string;
-    total: string;
-  };
-};
-
-// Failure represents a single contractmanager failure
-type Failure = {
-  address: string;
-  id: number;
-  ack_id: number;
-  ack_type: string;
-};
-
-// BalancesResponse is the response model for the bank balances query.
-export type PauseInfoResponse = {
-  paused: {
-    until_height: number;
-  };
-  unpaused: Record<string, never>;
-};
-
-export const NeutronContract = {
-  IBC_TRANSFER: 'ibc_transfer.wasm',
-  INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
-  INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
-  REFLECT: 'reflect.wasm',
-  TREASURY: 'neutron_treasury.wasm',
-  DISTRIBUTION: 'neutron_distribution.wasm',
-  RESERVE: 'neutron_reserve.wasm',
-  SUBDAO_CORE: 'cwd_subdao_core.wasm',
-  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
-  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
-  LOCKDROP_VAULT: 'lockdrop_vault.wasm',
-};
-
-type MultiChoiceOption = {
-  description: string;
-  msgs: any[];
 };
 
 cosmosclient.codec.register(
@@ -1217,21 +1123,6 @@ export const getSequenceId = (rawLog: string | undefined): number => {
     ['attributes'].find((a) => a['key'] === 'packet_sequence').value;
   return +sequence;
 };
-
-export const getContractsHashes = async (): Promise<Record<string, string>> => {
-  const hashes = {};
-  for (const key of Object.keys(NeutronContract)) {
-    const binary = await getContractBinary(NeutronContract[key]);
-    hashes[NeutronContract[key]] = crypto
-      .createHash('sha256')
-      .update(binary)
-      .digest('hex');
-  }
-  return hashes;
-};
-
-const getContractBinary = async (fileName: string): Promise<Buffer> =>
-  fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
 
 export const getIBCDenom = (portName, channelName, denom: string): string => {
   const uatomIBCHash = crypto

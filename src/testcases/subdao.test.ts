@@ -4,7 +4,6 @@ import {
   createBankMassage,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
-  NeutronContract,
   VAULT_CONTRACT_ADDRESS,
   LOCKDROP_VAULT_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
@@ -19,6 +18,7 @@ import { getHeight, getWithAttempts, wait } from '../helpers/wait';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../types';
+import { NeutronContract } from '../helpers/types';
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
