@@ -1105,13 +1105,13 @@ export const mnemonicToWallet = async (
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
   addrPrefix: string,
+  validate = true,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
   });
 
   const pubKey = privKey.pubKey();
-  const address = walletType.fromPublicKey(pubKey);
   let account = null;
   cosmosclient.config.setBech32Prefix({
     accAddr: addrPrefix,
@@ -1121,8 +1121,9 @@ export const mnemonicToWallet = async (
     consAddr: `${addrPrefix}valcons`,
     consPub: `${addrPrefix}valconspub`,
   });
+  const address = walletType.fromPublicKey(pubKey);
   // eslint-disable-next-line no-prototype-builtins
-  if (cosmosclient.ValAddress !== walletType) {
+  if (cosmosclient.ValAddress !== walletType && validate) {
     account = await rest.auth
       .account(sdk, address)
       .then((res) =>
@@ -1140,15 +1141,6 @@ export const mnemonicToWallet = async (
     }
   }
   return new Wallet(address, account, pubKey, privKey, addrPrefix);
-};
-
-export const createAddress = async (mnemonicQA: string) => {
-  const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
-    key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonicQA),
-  });
-  const pubKey = privKey.pubKey();
-  const address = cosmosclient.AccAddress.fromPublicKey(pubKey);
-  return address;
 };
 
 export const getSequenceId = (rawLog: string | undefined): number => {
