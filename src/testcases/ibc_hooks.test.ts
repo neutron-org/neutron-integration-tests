@@ -72,6 +72,20 @@ describe('Neutron / IBC hooks', () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
       });
 
+      test('check IBC token balance', async () => {
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        expect(
+          balances.balances.find(
+            (bal): boolean =>
+              bal.denom ==
+              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
+          )?.amount,
+        ).toEqual('1000');
+      });
+
       test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook', async () => {
         const res = await cosmosDemo2.msgIBCTransfer(
           'transfer',
@@ -89,17 +103,32 @@ describe('Neutron / IBC hooks', () => {
           `{"wasm": {"contract": "${contractAddress}", "msg": {"register_balance_query": {"connection_id": "connection-0", "denom": "untrn", "addr": "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw", "update_period": 10}}}}`,
         );
         expect(res.code).toEqual(0);
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await cosmosDemo2.blockWaiter.waitBlocks(30);
       });
 
       test('check hook was executed successfully', async () => {
-        const queryResult = await getRegisteredQuery(
-          ntrnDemo1,
-          contractAddress,
-          1,
-        );
-        expect(queryResult.registered_query.id).toEqual(1);
-        expect(queryResult.registered_query.owner).toEqual(contractAddress);
+        try {
+          const queryResult = await getRegisteredQuery(
+            ntrnDemo1,
+            contractAddress,
+            1,
+          );
+
+          expect(queryResult.registered_query.id).toEqual(1);
+          expect(queryResult.registered_query.owner).toEqual(contractAddress);
+        } catch (e) {
+          console.log('Exception: ' + JSON.stringify(e.response.data));
+          expect(e.response.data).toEqual(1);
+        }
+      });
+
+      test('check contract token balance', async () => {
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const balances = await ntrnDemo1.queryBalances(contractAddress);
+        console.log('Result balances: ' + JSON.stringify(balances));
+        expect(
+          balances.balances.find((bal): boolean => bal.denom == 'ntrn')?.amount,
+        ).toEqual('1000000');
       });
     });
   });

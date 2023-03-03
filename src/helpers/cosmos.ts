@@ -3,7 +3,7 @@ import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 import { neutron } from '../generated/proto';
-import { ibc as ibc_proto } from '../generated/proto';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -192,8 +192,8 @@ cosmosclient.codec.register(
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
 );
 cosmosclient.codec.register(
-  '/neutron.transfer.MsgTransfer',
-  neutron.transfer.MsgTransfer,
+  '/ibc.applications.transfer.v1.MsgTransfer',
+  ibc_proto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -396,6 +396,7 @@ export class CosmosWrapper {
       result: { smart: string };
       height: number;
     }>(url);
+    console.log('Result: ' + resp);
     return JSON.parse(
       Buffer.from(resp.data.result.smart, 'base64').toString(),
     ) as T;
@@ -993,7 +994,7 @@ export class CosmosWrapper {
     timeout_height: IHeight,
     memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new neutron.transfer.MsgTransfer({
+    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,
@@ -1002,6 +1003,9 @@ export class CosmosWrapper {
       timeout_height: timeout_height,
       memo: memo,
     });
+    msgSend.memo = memo;
+    console.log('memo should be: ' + msgSend.memo);
+    console.log('Msg send: ' + JSON.stringify(msgSend.toJSON()));
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -1009,6 +1013,8 @@ export class CosmosWrapper {
       },
       [msgSend],
     );
+    // console.log('BODY: ' + res.tx.body);
+    // console.log('RESULT: ' + res.tx_response.raw_log);
     return res?.tx_response;
   }
 
