@@ -75,7 +75,8 @@ const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
 
 const askForRewrite = async (file_name) => {
   const ok = await yesno({
-    question: `File ${file_name} already exists, do you want to rewrite? (if yes, all files are to be rewritten)`,
+    question: `File ${file_name} already exists, do you want to overwrite it? \
+(if yes, all further differing files will be overwritten)`,
   });
   if (ok) {
     REWRITE_FILES = true;
