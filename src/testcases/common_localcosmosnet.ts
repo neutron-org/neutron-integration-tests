@@ -162,6 +162,11 @@ export class TestStateLocalCosmosTestNet {
           sequence,
           rest.tx.BroadcastTxMode.Block,
         );
+        await cm.blockWaiter.waitBlocks(1);
+        const balances = await cm.queryBalances(to.toString());
+        if (balances.pagination.total === '0') {
+          throw new Error('Could not put tokens on the generated wallet.');
+        }
         break;
       } catch (e) {
         if (e.message.includes('sequence')) {
@@ -171,11 +176,6 @@ export class TestStateLocalCosmosTestNet {
           throw e;
         }
       }
-    }
-    await cm.blockWaiter.waitBlocks(1);
-    const balances = await cm.queryBalances(to.toString());
-    if (balances.pagination.total === '0') {
-      throw new Error('Could not put tokens on the generated wallet.');
     }
     if (!res) {
       throw new Error(`Failed to send tokens after ${retryCount} retries.`);
