@@ -3,13 +3,13 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  NeutronContract,
   PRE_PROPOSE_CONTRACT_ADDRESS,
   PROPOSE_CONTRACT_ADDRESS,
   VAULT_CONTRACT_ADDRESS,
+  getRemoteHeight,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getRemoteHeight, getWithAttempts } from '../../helpers/wait';
+import { getWithAttempts } from '../../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
@@ -17,6 +17,7 @@ import {
   waitForICQResultWithRemoteHeight,
 } from '../../helpers/icq';
 import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -336,7 +337,7 @@ describe('Neutron / Interchain KV Query', () => {
           );
         } catch (err) {
           const error = err as Error;
-          expect(error.message).toMatch(/0stake is smaller than 1000000stake/i);
+          expect(error.message).toMatch(/0untrn is smaller than 1000000untrn/i);
         }
       });
 

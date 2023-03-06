@@ -1171,3 +1171,8 @@ export const createBankMassage = (address: string, amount: string) => ({
     },
   },
 });
+
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
+  const block = await rest.tendermint.getLatestBlock(sdk);
+  return +block.data.block.header.height;
+};
