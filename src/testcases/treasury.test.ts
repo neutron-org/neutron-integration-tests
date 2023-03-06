@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  NeutronContract,
-} from '../helpers/cosmos';
+import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { Wallet } from '../types';
+import { NeutronContract } from '../helpers/types';
 
 interface TreasuryStats {
   readonly total_distributed: string;

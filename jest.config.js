@@ -1,4 +1,3 @@
-const ch = require('child_process');
 const { defaults } = require('jest-config');
 
 const config = {
@@ -6,6 +5,8 @@ const config = {
   cacheDirectory: '.jest/cache',
   coverageDirectory: '.jest/coverage',
   bail: true,
+  globalSetup: './globalSetup.ts',
+  globalTeardown: './globalTeardown.ts',
   testTimeout: 600000,
   moduleFileExtensions: [...defaults.moduleFileExtensions, 'cjs'],
   coverageThreshold: {
@@ -22,15 +23,4 @@ const config = {
   },
 };
 
-let oneStop = false;
-
-module.exports = () => {
-  !process.env.NO_DOCKER &&
-    process.on('exit', () => {
-      if (oneStop) return;
-      oneStop = true;
-      console.log('Stopping cosmopark');
-      ch.execSync(`cd setup && make stop-cosmopark`);
-    });
-  return config;
-};
+module.exports = () => config;
