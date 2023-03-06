@@ -26,13 +26,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
   });
