@@ -398,7 +398,6 @@ export class CosmosWrapper {
       height: number;
     }>(url);
     const parsed = Buffer.from(resp.data.result.smart, 'base64').toString();
-    console.log('query contract Result: ' + JSON.stringify(parsed));
     return JSON.parse(parsed) as T;
   }
 
@@ -1004,8 +1003,6 @@ export class CosmosWrapper {
       memo: memo,
     });
     msgSend.memo = memo;
-    console.log('memo should be: ' + msgSend.memo);
-    console.log('Msg send: ' + JSON.stringify(msgSend.toJSON()));
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -1013,8 +1010,6 @@ export class CosmosWrapper {
       },
       [msgSend],
     );
-    // console.log('BODY: ' + res.tx.body);
-    // console.log('RESULT: ' + res.tx_response.raw_log);
     return res?.tx_response;
   }
 

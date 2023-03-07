@@ -6,7 +6,6 @@ import {
   NeutronContract,
 } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRegisteredQuery } from '../helpers/icq';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -58,7 +57,9 @@ describe('Neutron / IBC hooks', () => {
   });
 
   describe('IBC Hooks', () => {
-    describe('Correct way', () => {
+    // TODO: receive on neutron without memo - works normally
+    // TODO: receive on neutron without memo with 'wasm' json in it - works normally
+    describe('Receive on neutron with memo wasm hook', () => {
       const transferAmount = '1000000';
       test('IBC transfer from a usual account', async () => {
         const res = await ntrnDemo1.msgIBCTransfer(
@@ -110,12 +111,17 @@ describe('Neutron / IBC hooks', () => {
         await ntrnDemo1.blockWaiter.waitBlocks(15);
         const queryResult = await ntrnDemo1.queryContract<{
           sender: string | null;
+          funds: { denom: string; amount: string }[];
         }>(contractAddress, {
           test_msg: { arg: 'test' },
         });
+        // TODO: check that sender is Bech32(Hash("ibc-wasm-hook-intermediaryg" || channelID || sender))
         expect(queryResult.sender).toEqual(
           'neutron1a6j9ylg9le3hq4873t7p54rkvx0nf7kn9etmvqel8cn8apn8844sd2esqj',
         );
+        expect(queryResult.funds).toEqual([
+          { denom: 'untrn', amount: '1000000' },
+        ]);
       });
 
       test('check contract token balance', async () => {
@@ -127,5 +133,164 @@ describe('Neutron / IBC hooks', () => {
         ).toEqual(transferAmount);
       });
     });
+
+    describe('Receive on neutron with incorrectly formatted message', () => {
+      const transferAmount = '1000000';
+      test('IBC transfer from a usual account', async () => {
+        const res = await ntrnDemo1.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: NEUTRON_DENOM, amount: transferAmount },
+          testState.wallets.cosmos.demo2.address.toString(),
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
+        );
+        expect(res.code).toEqual(0);
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+      });
+
+      test('check IBC token balance', async () => {
+        await cosmosDemo2.blockWaiter.waitBlocks(10);
+        const balances = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        expect(
+          balances.balances.find((bal): boolean => bal.denom == transferDenom)
+            ?.amount,
+        ).toEqual(transferAmount);
+      });
+
+      test('IBC transfer of Neutrons from a remote chain to Neutron with incorrect wasm hook message', async () => {
+        const msg =
+          '{"incorrect_msg_kind": {"return_err": false, "arg": "incorrect_msg"}}';
+        const res = await cosmosDemo2.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          {
+            denom: transferDenom,
+            amount: transferAmount,
+          },
+          contractAddress,
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
+          `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
+        );
+        expect(res.code).toEqual(0);
+        await cosmosDemo2.blockWaiter.waitBlocks(15);
+      });
+
+      // TODO: check as well, also it requires previous call to fail IBC transfer funds
+      // test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook error returned from contract', async () => {
+      //   const msg = '{"test_msg": {"return_err": true, "arg": ""}}';
+      //   const res = await cosmosDemo2.msgIBCTransfer(
+      //     'transfer',
+      //     'channel-0',
+      //     {
+      //       denom: transferDenom,
+      //       amount: transferAmount,
+      //     },
+      //     contractAddress,
+      //     {
+      //       revision_number: new Long(2),
+      //       revision_height: new Long(100000000),
+      //     },
+      //     `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
+      //   );
+      //   expect(res.code).toEqual(0);
+      //   await cosmosDemo2.blockWaiter.waitBlocks(15);
+      // });
+
+      test('check hook was not executed successfully', async () => {
+        await ntrnDemo1.blockWaiter.waitBlocks(15);
+        const queryResult = await ntrnDemo1.queryContract<{
+          sender: string;
+          funds: { denom: string; amount: string }[];
+        }>(contractAddress, {
+          test_msg: { arg: 'incorrect_msg' },
+        });
+        expect(queryResult.sender).toEqual('');
+        expect(queryResult.funds).toEqual([]);
+      });
+
+      // TODO: check why
+      test('check contract token balance - it still received tokens', async () => {
+        await ntrnDemo1.blockWaiter.waitBlocks(10);
+
+        const res = await ntrnDemo1.queryBalances(contractAddress);
+        expect(
+          res.balances.find((b): boolean => b.denom == ntrnDemo1.denom)?.amount,
+        ).toEqual(transferAmount);
+      });
+    });
+
+    // TODO: without IBC_callback works as normal
+
+    describe('Send from neutron with ibc_callback in memo', () => {
+      test('set fees', async () => {
+        const res = await ntrnDemo1.executeContract(
+          contractAddress,
+          JSON.stringify({
+            set_fees: {
+              denom: ntrnDemo1.denom,
+              ack_fee: '2333',
+              recv_fee: '0',
+              timeout_fee: '2333',
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      test('send fees amount to contract', async () => {
+        await ntrnDemo1.msgSend(contractAddress, (2333 * 2).toString());
+      });
+
+      test('execute ibc send using contract', async () => {
+        const msg = {
+          send: {
+            channel: 'channel-0',
+            to: testState.wallets.cosmos.demo2.address.toString(),
+            denom: ntrnDemo1.denom,
+            amount: '1000000',
+            timeout_height: null,
+            memo: `{"ibc_callback": "${contractAddress}"}`,
+          },
+        };
+        const res = await ntrnDemo1.executeContract(
+          contractAddress,
+          JSON.stringify(msg),
+        );
+        expect(res.code).toEqual(0);
+        await ntrnDemo1.blockWaiter.waitBlocks(15);
+      });
+
+      // OPTIONAL
+      test('balance on cosmos and neutron sides updated', async () => {
+        // TODO
+      });
+
+      test('ibc callback on contract called', async () => {
+        await ntrnDemo1.blockWaiter.waitBlocks(15);
+        const queryResult = await ntrnDemo1.queryContract<{
+          ack: {
+            response: boolean;
+            timeout: any;
+          };
+        }>(contractAddress, {
+          test_ack: {},
+        });
+        expect(queryResult.ack).toEqual({ response: true });
+      });
+    });
+
+    // TODO: bad cases: invalid address, no callback defined, error returned from callback
+
+    // TODO: timeout?
+
+    // TODO: send with ibc_callback using MsgTransfer
   });
 });
