@@ -47,12 +47,12 @@ describe('Neutron / IBC hooks', () => {
   describe('Instantiate interchain queries contract', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await ntrnDemo1.storeWasm(NeutronContract.INTERCHAIN_QUERIES);
+      codeId = await ntrnDemo1.storeWasm(NeutronContract.HOOK_IBC_TRANSFER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await ntrnDemo1.instantiate(codeId, '{}', 'neutron_interchain_queries')
+        await ntrnDemo1.instantiate(codeId, '{}', 'hook_ibc_transfer')
       )[0]._contract_address;
     });
   });
@@ -87,13 +87,7 @@ describe('Neutron / IBC hooks', () => {
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook', async () => {
-        const cosmosbalances = await cosmosDemo2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
-        );
-        console.log(
-          'BEFORE Cosmos reuslt balances: ' + JSON.stringify(cosmosbalances),
-        );
-
+        const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
         const res = await cosmosDemo2.msgIBCTransfer(
           'transfer',
           'channel-0',
@@ -106,42 +100,30 @@ describe('Neutron / IBC hooks', () => {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
           },
-          `{"wasm": {"contract": "${contractAddress}", "msg": {"register_balance_query": {"connection_id": "connection-0", "denom": "untrn", "addr": "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw", "update_period": 10}}}}`,
+          `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
         expect(res.code).toEqual(0);
         await cosmosDemo2.blockWaiter.waitBlocks(15);
       });
 
       test('check hook was executed successfully', async () => {
-        const queryResult = await getRegisteredQuery(
-          ntrnDemo1,
-          contractAddress,
-          1,
+        await ntrnDemo1.blockWaiter.waitBlocks(15);
+        const queryResult = await ntrnDemo1.queryContract<{
+          sender: string | null;
+        }>(contractAddress, {
+          test_msg: { arg: 'test' },
+        });
+        expect(queryResult.sender).toEqual(
+          'neutron1a6j9ylg9le3hq4873t7p54rkvx0nf7kn9etmvqel8cn8apn8844sd2esqj',
         );
-
-        expect(queryResult.registered_query.id).toEqual(1);
-        expect(queryResult.registered_query.owner).toEqual(contractAddress);
       });
 
       test('check contract token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const cosmosbalances = await cosmosDemo2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
-        );
-        console.log(
-          'Cosmos reuslt balances: ' + JSON.stringify(cosmosbalances),
-        );
 
-        const balances = await ntrnDemo1.queryBalances(contractAddress);
-        const balancesDemo1 = await ntrnDemo1.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
-        );
-        console.log('Result balances: ' + JSON.stringify(balances));
-
-        console.log('balancesDemo1 balances: ' + JSON.stringify(balancesDemo1));
+        const res = await ntrnDemo1.queryBalances(contractAddress);
         expect(
-          balances.balances.find((bal): boolean => bal.denom == ntrnDemo1.denom)
-            ?.amount,
+          res.balances.find((b): boolean => b.denom == ntrnDemo1.denom)?.amount,
         ).toEqual(transferAmount);
       });
     });

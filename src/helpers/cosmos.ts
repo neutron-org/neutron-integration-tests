@@ -156,6 +156,7 @@ export type PauseInfoResponse = {
 
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
+  HOOK_IBC_TRANSFER: 'hook_ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
@@ -396,10 +397,9 @@ export class CosmosWrapper {
       result: { smart: string };
       height: number;
     }>(url);
-    console.log('Result: ' + resp);
-    return JSON.parse(
-      Buffer.from(resp.data.result.smart, 'base64').toString(),
-    ) as T;
+    const parsed = Buffer.from(resp.data.result.smart, 'base64').toString();
+    console.log('query contract Result: ' + JSON.stringify(parsed));
+    return JSON.parse(parsed) as T;
   }
 
   /**
