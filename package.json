@@ -4,16 +4,17 @@
   "description": "Neutron chain integration tests",
   "main": "index.js",
   "scripts": {
-    "test": "jest --runInBand -b src/testcases",
+    "test": "yarn jest -b src/testcases/simple && yarn jest -b src/testcases/interchaintx && yarn jest -b src/testcases/interchain_kv_query && yarn jest -b src/testcases/interchain_tx_query_plain && yarn jest -b src/testcases/interchain_tx_query_resubmit && yarn jest -b src/testcases/treasury && yarn jest -b src/testcases/governance && yarn jest -b src/testcases/subdao && yarn jest -b src/testcases/tokenomics && yarn jest -b src/testcases/lockdrop",
     "test:interchaintx": "jest --runInBand -b src/testcases/interchaintx",
     "test:simple": "jest --runInBand -b src/testcases/simple",
     "test:interchain_kv_query": "jest --runInBand -b src/testcases/interchain_kv_query",
-    "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query",
+    "test:interchain_tx_query": "jest --runInBand -b src/testcases/interchain_tx_query_plain",
     "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/interchain_tx_query_resubmit",
     "test:treasury": "jest --runInBand -b src/testcases/treasury",
     "test:governance": "jest --runInBand -b src/testcases/governance",
     "test:subdao": "jest --runInBand -b src/testcases/subdao",
     "test:tokenomics": "jest --runInBand -b src/testcases/tokenomics",
+    "test:lockdrop": "jest --runInBand -b src/testcases/lockdrop",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
@@ -29,12 +30,14 @@
     "@types/long": "^4.0.2",
     "axios": "^0.27.2",
     "babel-jest": "^29.3.1",
+    "commander": "^10.0.0",
     "date-fns": "^2.16.1",
     "express": "^4.17.1",
     "jest": "^27.5.1",
     "jest-junit": "^15.0.0",
     "lodash": "^4.17.21",
-    "long": "^5.2.0"
+    "long": "^5.2.0",
+    "yesno": "^0.4.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",
