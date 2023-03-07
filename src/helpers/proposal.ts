@@ -6,6 +6,28 @@ export type ParamChangeProposalInfo = {
   value: string;
 };
 
+export type PinCodesInfo = {
+  title: string;
+  description: string;
+  codes_ids: number[];
+};
+
+export type UpdateClientInfo = {
+  title: string;
+  description: string;
+  subject_client_id: string;
+  substitute_client_id;
+};
+
+export type UpgradeInfo = {
+  title: string;
+  description: string;
+  name: string;
+  height: number;
+  info: string;
+  updated_client_state: string;
+};
+
 export type SendProposalInfo = {
   to: string;
   denom: string;
@@ -98,6 +120,68 @@ export const paramChangeProposal = (info: ParamChangeProposalInfo): any => ({
               value: info.value,
             },
           ],
+        },
+      },
+    },
+  },
+});
+
+export const pinCodesProposal = (info: PinCodesInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        pin_codes_proposal: {
+          title: info.title,
+          description: info.description,
+          codes_ids: info.codes_ids,
+        },
+      },
+    },
+  },
+});
+
+export const unpinCodesProposal = (info: PinCodesInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        unpin_codes_proposal: {
+          title: info.title,
+          description: info.description,
+          codes_ids: info.codes_ids,
+        },
+      },
+    },
+  },
+});
+
+export const updateClientProposal = (info: UpdateClientInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        update_client_proposal: {
+          title: info.title,
+          description: info.description,
+          subject_client_id: info.subject_client_id,
+          substitute_client_id: info.substitute_client_id,
+        },
+      },
+    },
+  },
+});
+
+export const upgradeProposal = (info: UpgradeInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        update_client_proposal: {
+          title: info.title,
+          description: info.description,
+          plan: {
+            name: info.name,
+            height: info.height,
+            info: info.info,
+          },
+          updated_client_state: info.updated_client_state
         },
       },
     },
