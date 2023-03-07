@@ -13,6 +13,8 @@ describe('Neutron / IBC hooks', () => {
   let ntrnDemo1: CosmosWrapper;
   let cosmosDemo2: CosmosWrapper;
   let contractAddress: string;
+  const transferDenom =
+    'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -57,11 +59,12 @@ describe('Neutron / IBC hooks', () => {
 
   describe('IBC Hooks', () => {
     describe('Correct way', () => {
+      const transferAmount = '1000000';
       test('IBC transfer from a usual account', async () => {
         const res = await ntrnDemo1.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: NEUTRON_DENOM, amount: '1000000' },
+          { denom: NEUTRON_DENOM, amount: transferAmount },
           testState.wallets.cosmos.demo2.address.toString(),
           {
             revision_number: new Long(2),
@@ -73,27 +76,30 @@ describe('Neutron / IBC hooks', () => {
       });
 
       test('check IBC token balance', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await cosmosDemo2.blockWaiter.waitBlocks(10);
         const balances = await cosmosDemo2.queryBalances(
           testState.wallets.cosmos.demo2.address.toString(),
         );
         expect(
-          balances.balances.find(
-            (bal): boolean =>
-              bal.denom ==
-              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
-          )?.amount,
-        ).toEqual('1000');
+          balances.balances.find((bal): boolean => bal.denom == transferDenom)
+            ?.amount,
+        ).toEqual(transferAmount);
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook', async () => {
+        const cosmosbalances = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        console.log(
+          'BEFORE Cosmos reuslt balances: ' + JSON.stringify(cosmosbalances),
+        );
+
         const res = await cosmosDemo2.msgIBCTransfer(
           'transfer',
           'channel-0',
           {
-            denom:
-              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
-            amount: '1000000',
+            denom: transferDenom,
+            amount: transferAmount,
           },
           contractAddress,
           {
@@ -103,32 +109,40 @@ describe('Neutron / IBC hooks', () => {
           `{"wasm": {"contract": "${contractAddress}", "msg": {"register_balance_query": {"connection_id": "connection-0", "denom": "untrn", "addr": "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw", "update_period": 10}}}}`,
         );
         expect(res.code).toEqual(0);
-        await cosmosDemo2.blockWaiter.waitBlocks(30);
+        await cosmosDemo2.blockWaiter.waitBlocks(15);
       });
 
       test('check hook was executed successfully', async () => {
-        try {
-          const queryResult = await getRegisteredQuery(
-            ntrnDemo1,
-            contractAddress,
-            1,
-          );
+        const queryResult = await getRegisteredQuery(
+          ntrnDemo1,
+          contractAddress,
+          1,
+        );
 
-          expect(queryResult.registered_query.id).toEqual(1);
-          expect(queryResult.registered_query.owner).toEqual(contractAddress);
-        } catch (e) {
-          console.log('Exception: ' + JSON.stringify(e.response.data));
-          expect(e.response.data).toEqual(1);
-        }
+        expect(queryResult.registered_query.id).toEqual(1);
+        expect(queryResult.registered_query.owner).toEqual(contractAddress);
       });
 
       test('check contract token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
+        const cosmosbalances = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        console.log(
+          'Cosmos reuslt balances: ' + JSON.stringify(cosmosbalances),
+        );
+
         const balances = await ntrnDemo1.queryBalances(contractAddress);
+        const balancesDemo1 = await ntrnDemo1.queryBalances(
+          testState.wallets.neutron.demo1.address.toString(),
+        );
         console.log('Result balances: ' + JSON.stringify(balances));
+
+        console.log('balancesDemo1 balances: ' + JSON.stringify(balancesDemo1));
         expect(
-          balances.balances.find((bal): boolean => bal.denom == 'ntrn')?.amount,
-        ).toEqual('1000000');
+          balances.balances.find((bal): boolean => bal.denom == ntrnDemo1.denom)
+            ?.amount,
+        ).toEqual(transferAmount);
       });
     });
   });
