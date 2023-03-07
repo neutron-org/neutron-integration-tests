@@ -6,32 +6,129 @@ CHAINID=${CHAINID:-test-1}
 STAKEDENOM=${STAKEDENOM:-untrn}
 
 ADMIN_ADDRESS=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
-DAO_CONTRACT=/opt/neutron/contracts/dao/cwd_core.wasm
-PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_single.wasm
-PROPOSAL_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_single.wasm
-VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/dao/neutron_voting_registry.wasm
-VAULT_CONTRACT=/opt/neutron/contracts/dao/neutron_vault.wasm
-LOCKDROP_VAULT_CONTRACT=/opt/neutron/contracts/dao/lockdrop_vault.wasm
-PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_proposal_multiple.wasm
-PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/dao/cwd_pre_propose_multiple.wasm
-TREASURY_CONTRACT=/opt/neutron/contracts/dao/neutron_treasury.wasm
-DISTRIBUTION_CONTRACT=/opt/neutron/contracts/dao/neutron_distribution.wasm
+DAO_CONTRACT=/opt/neutron/contracts/cwd_core.wasm
+PRE_PROPOSAL_CONTRACT=/opt/neutron/contracts/cwd_pre_propose_single.wasm
+PROPOSAL_CONTRACT=/opt/neutron/contracts/cwd_proposal_single.wasm
+VOTING_REGISTRY_CONTRACT=/opt/neutron/contracts/neutron_voting_registry.wasm
+LOCKDROP_VAULT_CONTRACT=/opt/neutron/contracts/lockdrop_vault.wasm
+VAULT_CONTRACT=/opt/neutron/contracts/neutron_vault.wasm
+PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_proposal_multiple.wasm
+PRE_PROPOSAL_MULTIPLE_CONTRACT=/opt/neutron/contracts/cwd_pre_propose_multiple.wasm
+TREASURY_CONTRACT=/opt/neutron/contracts/neutron_treasury.wasm
+DISTRIBUTION_CONTRACT=/opt/neutron/contracts/neutron_distribution.wasm
 
 echo "Add consumer section..."
 $BINARY add-consumer-section --home $CHAIN_DIR/$CHAINID
 
 echo "Initializing dao contract in genesis..."
-# Upload the dao contract
-$BINARY add-wasm-message store ${VAULT_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${DAO_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${VOTING_REGISTRY_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PRE_PROPOSAL_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${PRE_PROPOSAL_MULTIPLE_CONTRACT} --output json  --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${TREASURY_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${DISTRIBUTION_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --home $CHAIN_DIR/$CHAINID
-$BINARY add-wasm-message store ${LOCKDROP_VAULT_CONTRACT} --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
+function store_binary() {
+  CONTRACT_BINARY_PATH=$1
+  $BINARY add-wasm-message store "$CONTRACT_BINARY_PATH" --output json --run-as ${ADMIN_ADDRESS} --keyring-backend=test --home $CHAIN_DIR/$CHAINID
+  echo $(jq -r "[.app_state.wasm.gen_msgs[] | select(.store_code != null)] | length" $CHAIN_DIR/$CHAINID/config/genesis.json)
+}
+
+# Upload the dao contracts
+
+VAULT_CONTRACT_BINARY_ID=$(store_binary ${VAULT_CONTRACT})
+DAO_CONTRACT_BINARY_ID=$(store_binary ${DAO_CONTRACT})
+PROPOSAL_CONTRACT_BINARY_ID=$(store_binary ${PROPOSAL_CONTRACT})
+VOTING_REGISTRY_CONTRACT_BINARY_ID=$(store_binary ${VOTING_REGISTRY_CONTRACT})
+PRE_PROPOSAL_CONTRACT_BINARY_ID=$(store_binary ${PRE_PROPOSAL_CONTRACT})
+PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PROPOSAL_MULTIPLE_CONTRACT})
+PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID=$(store_binary ${PRE_PROPOSAL_MULTIPLE_CONTRACT})
+TREASURY_CONTRACT_BINARY_ID=$(store_binary ${TREASURY_CONTRACT})
+DISTRIBUTION_CONTRACT_BINARY_ID=$(store_binary ${DISTRIBUTION_CONTRACT})
+LOCKDROP_VAULT_CONTRACT_BINARY_ID=$(store_binary ${LOCKDROP_VAULT_CONTRACT})
+
+# Instantiate the contract
+# PRE_PROPOSE_INIT_MSG will be put into the PROPOSAL_SINGLE_INIT_MSG and PROPOSAL_MULTIPLE_INIT_MSG
+PRE_PROPOSE_INIT_MSG='{
+   "deposit_info":{
+      "denom":{
+         "token":{
+            "denom":{
+               "native":"'"${STAKEDENOM}"'"
+            }
+         }
+      },
+     "amount": "1000",
+     "refund_policy":"always"
+   },
+   "open_proposal_submission":false
+}'
+PRE_PROPOSE_INIT_MSG_BASE64=$(echo ${PRE_PROPOSE_INIT_MSG} | base64 | tr -d "\n")
+
+# -------------------- PROPOSE-SINGLE { PRE-PROPOSE } --------------------
+
+PROPOSAL_SINGLE_INIT_MSG='{
+   "allow_revoting":false,
+   "pre_propose_info":{
+      "module_may_propose":{
+         "info":{
+            "code_id": '"${PRE_PROPOSAL_CONTRACT_BINARY_ID}"',
+            "msg": "'"${PRE_PROPOSE_INIT_MSG_BASE64}"'",
+            "label":"neutron"
+         }
+      }
+   },
+   "only_members_execute":false,
+   "max_voting_period":{
+      "time":604800
+   },
+   "close_proposal_on_execution_failure":false,
+   "threshold":{
+      "threshold_quorum":{
+         "quorum":{
+            "percent":"0.20"
+         },
+         "threshold":{
+            "majority":{
+
+            }
+         }
+      }
+   }
+}'
+PROPOSAL_SINGLE_INIT_MSG_BASE64=$(echo ${PROPOSAL_SINGLE_INIT_MSG} | base64 | tr -d "\n")
+
+# -------------------- PROPOSE-MULTIPLE { PRE-PROPOSE } --------------------
+
+PROPOSAL_MULTIPLE_INIT_MSG='{
+   "allow_revoting":false,
+   "pre_propose_info":{
+      "module_may_propose":{
+         "info":{
+            "code_id": '"${PRE_PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID}"',
+            "msg": "'"${PRE_PROPOSE_INIT_MSG_BASE64}"'",
+            "label":"neutron"
+         }
+      }
+   },
+   "only_members_execute":false,
+   "max_voting_period":{
+      "time":604800
+   },
+   "close_proposal_on_execution_failure":false,
+   "voting_strategy":{
+     "single_choice": {
+        "quorum": {
+          "majority": {
+          }
+        }
+     }
+   }
+}'
+PROPOSAL_MULTIPLE_INIT_MSG_BASE64=$(echo ${PROPOSAL_MULTIPLE_INIT_MSG} | base64 | tr -d "\n")
+
+VOTING_REGISTRY_INIT_MSG='{
+  "manager": null,
+  "owner": null,
+  "voting_vaults": [
+    "neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq",
+    "neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a"
+  ]
+}'
+VOTING_REGISTRY_INIT_MSG_BASE64=$(echo ${VOTING_REGISTRY_INIT_MSG} | base64 | tr -d "\n")
 
 # Instantiate the contract
 VAULT_INIT="$(printf '{
@@ -46,43 +143,45 @@ LOCKDROP_VAULT_INIT='{
                         "lockdrop_contract": "neutron17zayzl5d0daqa89csvv8kqayxzke6jd6zh00tq"
 }'
 DAO_INIT='{
-            "description": "basic neutron dao",
-            "name": "Neutron",
-            "initial_items": null,
-            "proposal_modules_instantiate_info": [
-              {
-                "code_id": 3,
-                "label": "DAO_Neutron_cw-proposal-single",
-                "msg": "CnsKICAgImFsbG93X3Jldm90aW5nIjpmYWxzZSwKICAgInByZV9wcm9wb3NlX2luZm8iOnsKICAgICAgIk1vZHVsZU1heVByb3Bvc2UiOnsKICAgICAgICAgImluZm8iOnsKICAgICAgICAgICAgImNvZGVfaWQiOjUsCiAgICAgICAgICAgICJtc2ciOiAiZXdvZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FpWkdWd2IzTnBkRjlwYm1adklqcDdDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0prWlc1dmJTSTZld29nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBaWRHOXJaVzRpT25zS0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSW1SbGJtOXRJanA3Q2lBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNKdVlYUnBkbVVpT2lKMWJuUnliaUlLSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdmUW9nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNCOUNpQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lIMHNDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJbUZ0YjNWdWRDSTZJQ0l4TURBd0lpd0tJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWljbVZtZFc1a1gzQnZiR2xqZVNJNkltRnNkMkY1Y3lJS0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnZlN3S0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSW05d1pXNWZjSEp2Y0c5ellXeGZjM1ZpYldsemMybHZiaUk2Wm1Gc2MyVUtJQ0FnSUNBZ0lDQWdJQ0FnZlFvSyIsCiAgICAgICAgICAgICJsYWJlbCI6Im5ldXRyb24iCiAgICAgICAgIH0KICAgICAgfQogICB9LAogICAib25seV9tZW1iZXJzX2V4ZWN1dGUiOmZhbHNlLAogICAibWF4X3ZvdGluZ19wZXJpb2QiOnsKICAgICAgInRpbWUiOjYwNDgwMAogICB9LAogICAiY2xvc2VfcHJvcG9zYWxfb25fZXhlY3V0aW9uX2ZhaWx1cmUiOmZhbHNlLAogICAidGhyZXNob2xkIjp7CiAgICAgICJ0aHJlc2hvbGRfcXVvcnVtIjp7CiAgICAgICAgICJxdW9ydW0iOnsKICAgICAgICAgICAgInBlcmNlbnQiOiIwLjIwIgogICAgICAgICB9LAogICAgICAgICAidGhyZXNob2xkIjp7CiAgICAgICAgICAgICJtYWpvcml0eSI6ewogICAgICAgICAgICAgICAKICAgICAgICAgICAgfQogICAgICAgICB9CiAgICAgIH0KICAgfQp9"
-              },
-              {
-                "code_id": 6,
-                "label": "DAO_Neutron_cw-proposal-multiple",
-                "msg": "ewogICAiYWxsb3dfcmV2b3RpbmciOmZhbHNlLAogICAicHJlX3Byb3Bvc2VfaW5mbyI6ewogICAgICAiTW9kdWxlTWF5UHJvcG9zZSI6ewogICAgICAgICAiaW5mbyI6ewogICAgICAgICAgICAiY29kZV9pZCI6NywKICAgICAgICAgICAgIm1zZyI6ICJld29nSUNBZ0lDQWdJQ0FnSUNBZ0lDQWlaR1Z3YjNOcGRGOXBibVp2SWpwN0NpQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDSmtaVzV2YlNJNmV3b2dJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FpZEc5clpXNGlPbnNLSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJbVJsYm05dElqcDdDaUFnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0p1WVhScGRtVWlPaUoxYm5SeWJpSUtJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ2ZRb2dJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0I5Q2lBZ0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUgwc0NpQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBZ0ltRnRiM1Z1ZENJNklDSXhNREF3SWl3S0lDQWdJQ0FnSUNBZ0lDQWdJQ0FnSUNBaWNtVm1kVzVrWDNCdmJHbGplU0k2SW1Gc2QyRjVjeUlLSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdmU3dLSUNBZ0lDQWdJQ0FnSUNBZ0lDQWdJbTl3Wlc1ZmNISnZjRzl6WVd4ZmMzVmliV2x6YzJsdmJpSTZabUZzYzJVS0lDQWdJQ0FnSUNBZ0lDQWdmUT09IiwKICAgICAgICAgICAgImxhYmVsIjoibmV1dHJvbiIKICAgICAgICAgfQogICAgICB9CiAgIH0sCiAgICJvbmx5X21lbWJlcnNfZXhlY3V0ZSI6ZmFsc2UsCiAgICJtYXhfdm90aW5nX3BlcmlvZCI6ewogICAgICAidGltZSI6NjA0ODAwCiAgIH0sCiAgICJjbG9zZV9wcm9wb3NhbF9vbl9leGVjdXRpb25fZmFpbHVyZSI6ZmFsc2UsCiAgICJ2b3Rpbmdfc3RyYXRlZ3kiOnsKICAgICAic2luZ2xlX2Nob2ljZSI6IHsKCQkJCSJxdW9ydW0iOiB7CgkJCQkJIm1ham9yaXR5IjogewogICAgICAgICAgfQogICAgICAgIH0KICAgICB9CiAgIH0KfQ=="
-              }
-            ],
-            "voting_registry_module_instantiate_info": {
-              "code_id": 4,
-              "label": "DAO_Neutron_voting_registry",
-              "msg": "ewogICJtYW5hZ2VyIjogbnVsbCwKICAib3duZXIiOiBudWxsLAogICJ2b3RpbmdfdmF1bHRzIjogWwogICAgIm5ldXRyb24xNGhqMnRhdnE4ZnBlc2R3eHhjdTQ0cnR5M2hoOTB2aHVqcnZjbXN0bDR6cjN0eG1mdnc5czVjMmVwcSIsCiAgICAibmV1dHJvbjEzd2UwbXl4d3pscHg4bDVhcms4ZWx3NWdqNWQ1OWRsNmNqa3ptdDgwYzVxNWN2NXJ0NTRxdnprdjJhIgogIF0KfQ=="
-            }
-    }'
+  "description": "basic neutron dao",
+  "name": "Neutron",
+  "initial_items": null,
+  "proposal_modules_instantiate_info": [
+    {
+      "code_id": '"${PROPOSAL_CONTRACT_BINARY_ID}"',
+      "label": "DAO_Neutron_cw-proposal-single",
+      "msg": "'"${PROPOSAL_SINGLE_INIT_MSG_BASE64}"'"
+    },
+    {
+      "code_id": '"${PROPOSAL_MULTIPLE_CONTRACT_BINARY_ID}"',
+      "label": "DAO_Neutron_cw-proposal-multiple",
+      "msg": "'"${PROPOSAL_MULTIPLE_INIT_MSG_BASE64}"'"
+    }
+  ],
+  "voting_registry_module_instantiate_info": {
+    "code_id": '"${VOTING_REGISTRY_CONTRACT_BINARY_ID}"',
+    "label": "DAO_Neutron_voting_registry",
+    "msg": "'"${VOTING_REGISTRY_INIT_MSG_BASE64}"'"
+  }
+}'
+
 # TODO: properly initialize treasury
+DISTRIBUTION_CONTRACT_ADDRESS="neutron1vhndln95yd7rngslzvf6sax6axcshkxqpmpr886ntelh28p9ghuq56mwja"
 TREASURY_INIT="$(printf '{
-                           "main_dao_address": "%s",
-                           "security_dao_address": "%s",
-                           "denom": "%s",
-                           "distribution_rate": "0.1",
-                           "min_period": 10,
-                           "distribution_contract": "%s",
-                           "reserve_contract": "%s",
-                           "vesting_denominator": "1"
-}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$STAKEDENOM" "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
+  "main_dao_address": "%s",
+  "security_dao_address": "%s",
+  "denom": "'"${STAKEDENOM}"'",
+  "distribution_rate": "0",
+  "min_period": 10,
+  "distribution_contract": "%s",
+  "reserve_contract": "%s",
+  "vesting_denominator": "1"
+}' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS" "$DISTRIBUTION_CONTRACT_ADDRESS" "$ADMIN_ADDRESS")"
 
 DISTRIBUTION_INIT="$(printf '{
-                           "main_dao_address": "%s",
-                           "security_dao_address": "%s",
-                           "denom": "untrn"
+  "main_dao_address": "%s",
+  "security_dao_address": "%s",
+  "denom": "'"${STAKEDENOM}"'"
 }' "$ADMIN_ADDRESS" "$ADMIN_ADDRESS")"
 
 echo "Instantiate contracts"
