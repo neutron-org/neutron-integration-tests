@@ -69,6 +69,14 @@ export type LockdropVaultConfig = {
   owner: string;
 };
 
+export type CreditsVaultConfig = {
+  name: string;
+  description: string;
+  credits_contract_address: string;
+  owner: string;
+  manager: string;
+};
+
 export type VaultBondingStatus = {
   bonding_enabled: string;
   unbondable_abount: string;
