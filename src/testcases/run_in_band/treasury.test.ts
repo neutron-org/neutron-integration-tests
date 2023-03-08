@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
-import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { Wallet } from '../types';
-import { NeutronContract } from '../helpers/types';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 
 interface TreasuryStats {
   readonly total_distributed: string;
@@ -30,19 +30,19 @@ describe('Neutron / Treasury', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo2,
+      testState.wallets.qaNeutronThree.genQaWal1,
       NEUTRON_DENOM,
     );
-    main_dao_wallet = testState.wallets.neutron.demo1;
-    security_dao_wallet = testState.wallets.neutron.icq;
-    holder_1_wallet = testState.wallets.neutron.demo2;
-    holder_2_wallet = testState.wallets.neutron.rly1;
+    main_dao_wallet = testState.wallets.qaNeutron.genQaWal1;
+    security_dao_wallet = testState.wallets.qaNeutronFour.genQaWal1;
+    holder_1_wallet = testState.wallets.qaNeutronThree.genQaWal1;
+    holder_2_wallet = testState.wallets.qaNeutronFive.genQaWal1;
     main_dao_addr = main_dao_wallet.address;
     security_dao_addr = security_dao_wallet.address;
     holder_1_addr = holder_1_wallet.address;
@@ -248,6 +248,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('fund', async () => {
+        await cm.blockWaiter.waitBlocks(1);
         treasuryStats = await normalizeTreasuryBurnedCoins(cm, treasury);
         const burnedCoinsBefore = await getBurnedCoinsAmount(cm);
         await cm.simulateFeeBurning(20_000_000);
@@ -260,6 +261,7 @@ describe('Neutron / Treasury', () => {
           }),
         );
         expect(res.code).toEqual(0);
+        await cm.blockWaiter.waitBlocks(1);
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(cm);
 
@@ -280,6 +282,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('verify reserve', async () => {
+        await cm.blockWaiter.waitBlocks(1);
         const reserveBalance = await cm.queryDenomBalance(
           reserve,
           NEUTRON_DENOM,
