@@ -305,6 +305,12 @@ export class CosmosWrapper {
     ) as T;
   }
 
+  async getContractInfo(contract: string): Promise<any> {
+    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
+    const resp = await axios.get(url);
+    return resp.data;
+  }
+
   /**
    * msgSend processes a transfer, waits two blocks and returns the tx hash.
    */
@@ -1029,6 +1035,21 @@ export class CosmosWrapper {
       }
       throw e;
     }
+  }
+
+  async getDaoContracts(dao_address: string): Promise<any> {
+    const url = `${this.sdk.url}/wasm/contract/${dao_address}/raw/${Buffer.from(
+      'voting_module',
+    ).toString('base64')}?encoding=base64`;
+    const resp = await axios.get<{
+      result: string;
+      height: number;
+    }>(url);
+    return {
+      voting_module: JSON.parse(
+        Buffer.from(resp.data.result, 'base64').toString(),
+      ),
+    };
   }
 }
 

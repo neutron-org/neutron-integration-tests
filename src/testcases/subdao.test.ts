@@ -6,6 +6,7 @@ import {
   NEUTRON_DENOM,
   VAULT_CONTRACT_ADDRESS,
   LOCKDROP_VAULT_CONTRACT_ADDRESS,
+  CORE_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
@@ -905,8 +906,16 @@ const setupSubDaoTimelockSet = async (
   const timelockCodeId = parseInt(
     await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK),
   );
+
+  const daoContracts = await cm.getDaoContracts(CORE_CONTRACT_ADDRESS);
+  const votingModuleContractInfo = await cm.getContractInfo(
+    daoContracts['voting_module'],
+  );
+  const votingModuleCodeId =
+    votingModuleContractInfo['contract_info']['code_id'];
+
   const votingModuleInstantiateInfo = {
-    code_id: 4, // contract uploaded during genesis initialization stage,
+    code_id: +votingModuleCodeId,
     label: 'DAO_Neutron_voting_registry',
     msg: Buffer.from(
       JSON.stringify({
@@ -919,6 +928,7 @@ const setupSubDaoTimelockSet = async (
       }),
     ).toString('base64'),
   };
+
   const proposeInstantiateMessage = {
     threshold: { absolute_count: { threshold: '1' } },
     max_voting_period: { height: 10 },
