@@ -313,9 +313,13 @@ describe('Neutron / IBC hooks', () => {
         await ntrnDemo1.blockWaiter.waitBlocks(15);
       });
 
-      // OPTIONAL
-      test('balance on cosmos and neutron sides updated', async () => {
-        // TODO
+      test('balance updated', async () => {
+        const res = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        expect(
+          res.balances.find((b): boolean => b.denom == transferDenom)?.amount,
+        ).toEqual('1300000');
       });
 
       test('ibc callback on contract called', async () => {
@@ -361,9 +365,13 @@ describe('Neutron / IBC hooks', () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
       });
 
-      // OPTIONAL
-      test('balance on cosmos and neutron sides updated', async () => {
-        // TODO
+      test('balance updated', async () => {
+        const res = await cosmosDemo2.queryBalances(
+          testState.wallets.cosmos.demo2.address.toString(),
+        );
+        expect(
+          res.balances.find((b): boolean => b.denom == transferDenom)?.amount,
+        ).toEqual('2300000');
       });
 
       test('ibc callback on contract called', async () => {
