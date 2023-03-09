@@ -40,6 +40,7 @@ One can download them via following commands:
 
 ```shell
 node download_artifacts.js neutron-dao neutron-dev-contracts
+node download_artifacts.js neutron-tge-contracts -b main
 ```
 
 If you want to specify any specific branch/commit, use the following command to get more info on how to do that:
