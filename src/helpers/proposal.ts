@@ -12,6 +12,14 @@ export type PinCodesInfo = {
   codes_ids: number[];
 };
 
+
+export type SudoContactInfo = {
+  title: string;
+  description: string;
+  contract: string;
+  msg: string;
+};
+
 export type UpdateClientInfo = {
   title: string;
   description: string;
@@ -148,6 +156,21 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
           title: info.title,
           description: info.description,
           codes_ids: info.codes_ids,
+        },
+      },
+    },
+  },
+});
+
+export const sudoContractProposal = (info: SudoContactInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        sudo_contract_proposal: {
+          title: info.title,
+          description: info.description,
+          contract: info.contract,
+          msg: info.msg,
         },
       },
     },

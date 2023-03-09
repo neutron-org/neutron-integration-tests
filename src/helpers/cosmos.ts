@@ -20,7 +20,7 @@ import {
   ParamChangeProposalInfo,
   pinCodesProposal,
   sendProposal,
-  SendProposalInfo,
+  SendProposalInfo, sudoContractProposal,
   unpinCodesProposal,
   updateClientProposal,
   upgradeProposal,
@@ -610,6 +610,31 @@ export class CosmosWrapper {
         info,
         updated_client_state,
       }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitSudoContractProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    contract: string,
+    msg: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      sudoContractProposal({ title, description, contract, msg }),
     );
     return await this.submitProposal(
       pre_propose_contract,
