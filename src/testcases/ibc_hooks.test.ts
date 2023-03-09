@@ -1,11 +1,7 @@
 import Long from 'long';
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  NeutronContract,
-} from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { NeutronContract } from '../helpers/types';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
