@@ -12,7 +12,6 @@ export type PinCodesInfo = {
   codes_ids: number[];
 };
 
-
 export type SudoContactInfo = {
   title: string;
   description: string;
@@ -204,7 +203,7 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
             height: info.height,
             info: info.info,
           },
-          updated_client_state: info.updated_client_state
+          updated_client_state: info.updated_client_state,
         },
       },
     },
