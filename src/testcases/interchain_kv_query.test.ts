@@ -1,12 +1,5 @@
 import { proto, rest } from '@cosmos-client/core';
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  PRE_PROPOSE_CONTRACT_ADDRESS,
-  PROPOSE_CONTRACT_ADDRESS,
-  VAULT_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
+import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
 import { getHeight, getWithAttempts } from '../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -161,8 +154,11 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   value: string,
   amount = '1000',
 ) => {
+  const daoCoreAddress = (await cm[1].getChainAdmins())[0];
+  const daoContracts = await cm[1].getDaoContracts(daoCoreAddress);
+
   const proposalTx = await cm.submitParameterChangeProposal(
-    PRE_PROPOSE_CONTRACT_ADDRESS,
+    daoContracts.proposal_modules.single.pre_proposal_module.address,
     title,
     description,
     'interchainqueries',
@@ -183,21 +179,25 @@ const acceptInterchainqueriesParamsChangeProposal = async (
 
   await cm.blockWaiter.waitBlocks(1);
   await cm.voteYes(
-    PROPOSE_CONTRACT_ADDRESS,
+    daoContracts.proposal_modules.single.address,
     proposalId,
     wallet.address.toString(),
   );
 
   await cm.blockWaiter.waitBlocks(1);
   await cm.executeProposal(
-    PROPOSE_CONTRACT_ADDRESS,
+    daoContracts.proposal_modules.single.address,
     proposalId,
     wallet.address.toString(),
   );
 
   await getWithAttempts(
     cm.blockWaiter,
-    async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
+    async () =>
+      await cm.queryProposal(
+        daoContracts.proposal_modules.single.address,
+        proposalId,
+      ),
     async (response) => response.proposal.status === 'executed',
     20,
   );
@@ -298,8 +298,12 @@ describe('Neutron / Interchain KV Query', () => {
       ),
     };
 
+    const daoCoreAddress = (await cm[1].getChainAdmins())[0];
+    const daoContracts = await cm[1].getDaoContracts(daoCoreAddress);
+    const vaultContractAddress =
+      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     await cm[1].bondFunds(
-      VAULT_CONTRACT_ADDRESS,
+      vaultContractAddress,
       '10000000000',
       testState.wallets.neutron.demo1.address.toString(),
     );

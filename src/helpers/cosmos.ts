@@ -39,16 +39,6 @@ export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-export const VAULT_CONTRACT_ADDRESS =
-  'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-export const PROPOSE_CONTRACT_ADDRESS =
-  'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
-export const PRE_PROPOSE_CONTRACT_ADDRESS =
-  'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
-export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
 export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 
@@ -630,8 +620,12 @@ export class CosmosWrapper {
     sender: string,
     options: MultiChoiceOption[],
   ): Promise<InlineResponse20075TxResponse> {
+    const daoCoreAddress = (await this.getChainAdmins())[0];
+    const daoContracts = await this.getDaoContracts(daoCoreAddress);
+    const preProposeMultipleContractAddress =
+      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
     return await this.executeContract(
-      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      preProposeMultipleContractAddress,
       JSON.stringify({
         propose: {
           msg: {
@@ -1088,12 +1082,59 @@ export class CosmosWrapper {
     const lockdrop_vault_address = voting_vaults.filter(
       (x) => x.name == 'lockdrop vault',
     )[0].address;
+
+    const proposal_modules = await this.queryContract<[{ address: string }]>(
+      dao_address,
+      { proposal_modules: {} },
+    );
+
+    let proposalSingleAddress = '';
+    let proposalMultipleAddress = '';
+    let proposalOverruleAddress = '';
+
+    let preProposalSingleAddress = '';
+    let preProposalMultipleAddress = '';
+    let preProposalOverruleAddress = '';
+
+    expect(proposal_modules).toHaveLength(3);
+    for (const proposal_module of proposal_modules) {
+      const proposalContractInfo = await this.getContractInfo(
+        proposal_module.address,
+      );
+      const preProposalContract = await this.queryContract<{
+        Module: { addr: string };
+      }>(proposal_module.address, { proposal_creation_policy: {} });
+      switch (proposalContractInfo['contract_info']['label']) {
+        case 'DAO_Neutron_cw-proposal-overrule':
+          proposalOverruleAddress = proposal_module.address;
+          preProposalOverruleAddress = preProposalContract.Module.addr;
+          break;
+        case 'DAO_Neutron_cw-proposal-multiple':
+          proposalMultipleAddress = proposal_module.address;
+          preProposalMultipleAddress = preProposalContract.Module.addr;
+          break;
+        case 'DAO_Neutron_cw-proposal-single':
+          proposalSingleAddress = proposal_module.address;
+          preProposalSingleAddress = preProposalContract.Module.addr;
+          break;
+      }
+    }
+
     return {
       core: { address: dao_address },
       proposal_modules: {
-        single: { address: '', pre_proposal_module: { address: '' } },
-        multiple: { address: '', pre_proposal_module: { address: '' } },
-        overrule: { address: '', pre_proposal_module: { address: '' } },
+        single: {
+          address: proposalSingleAddress,
+          pre_proposal_module: { address: preProposalSingleAddress },
+        },
+        multiple: {
+          address: proposalMultipleAddress,
+          pre_proposal_module: { address: preProposalMultipleAddress },
+        },
+        overrule: {
+          address: proposalOverruleAddress,
+          pre_proposal_module: { address: preProposalOverruleAddress },
+        },
       },
       voting_module: {
         address: voting_module_address,

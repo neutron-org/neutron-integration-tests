@@ -57,9 +57,15 @@ describe('Neutron / Subdao', () => {
       security_dao_addr.toString(),
     );
 
-    const daoContracts = await cm_main_dao.getDaoContracts(subDAO.core.address);
-    const simpleVault =
-      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
+    const voting_module_address = await cm_main_dao.queryContract<string>(
+      subDAO.core.address,
+      { voting_module: {} },
+    );
+    const voting_vaults = await cm_main_dao.queryContract<
+      [{ address: string; name: string }]
+    >(voting_module_address, { voting_vaults: {} });
+    const simpleVault = voting_vaults.filter((x) => x.name == 'voting vault')[0]
+      .address;
 
     await cm_main_dao.bondFunds(simpleVault, '10000');
     await getWithAttempts(
