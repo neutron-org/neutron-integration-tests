@@ -41,12 +41,8 @@ export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
 export const VAULT_CONTRACT_ADDRESS =
   'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-export const LOCKDROP_VAULT_CONTRACT_ADDRESS =
-  'neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a';
 export const PROPOSE_CONTRACT_ADDRESS =
   'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
-export const CORE_CONTRACT_ADDRESS =
-  'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
 export const PRE_PROPOSE_CONTRACT_ADDRESS =
   'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
 export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
@@ -55,6 +51,43 @@ export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
   'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
 export const TREASURY_CONTRACT_ADDRESS =
   'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
+
+export type DaoContracts = {
+  core: {
+    address: string;
+  };
+  proposal_modules: {
+    single: {
+      address: string;
+      pre_proposal_module: {
+        address: string;
+      };
+    };
+    multiple: {
+      address: string;
+      pre_proposal_module: {
+        address: string;
+      };
+    };
+    overrule: {
+      address: string;
+      pre_proposal_module: {
+        address: string;
+      };
+    };
+  };
+  voting_module: {
+    address: string;
+    voting_vaults: {
+      ntrn_vault: {
+        address: string;
+      };
+      lockdrop_vault: {
+        address: string;
+      };
+    };
+  };
+};
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -1037,19 +1070,47 @@ export class CosmosWrapper {
     }
   }
 
-  async getDaoContracts(dao_address: string): Promise<any> {
-    const url = `${this.sdk.url}/wasm/contract/${dao_address}/raw/${Buffer.from(
-      'voting_module',
-    ).toString('base64')}?encoding=base64`;
-    const resp = await axios.get<{
-      result: string;
-      height: number;
-    }>(url);
+  async getDaoContracts(dao_address: string): Promise<DaoContracts> {
+    const voting_module_address = await this.queryContract<string>(
+      dao_address,
+      { voting_module: {} },
+    );
+    const voting_vaults = await this.queryContract<
+      [{ address: string; name: string }]
+    >(voting_module_address, { voting_vaults: {} });
+    expect(voting_vaults).toMatchObject([
+      { name: 'voting vault' },
+      { name: 'lockdrop vault' },
+    ]);
+    const ntrn_vault_address = voting_vaults.filter(
+      (x) => x.name == 'voting vault',
+    )[0].address;
+    const lockdrop_vault_address = voting_vaults.filter(
+      (x) => x.name == 'lockdrop vault',
+    )[0].address;
     return {
-      voting_module: JSON.parse(
-        Buffer.from(resp.data.result, 'base64').toString(),
-      ),
+      core: { address: dao_address },
+      proposal_modules: {
+        single: { address: '', pre_proposal_module: { address: '' } },
+        multiple: { address: '', pre_proposal_module: { address: '' } },
+        overrule: { address: '', pre_proposal_module: { address: '' } },
+      },
+      voting_module: {
+        address: voting_module_address,
+        voting_vaults: {
+          ntrn_vault: { address: ntrn_vault_address },
+          lockdrop_vault: { address: lockdrop_vault_address },
+        },
+      },
     };
+  }
+
+  async getChainAdmins() {
+    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
+    const resp = await axios.get<{
+      admins: [string];
+    }>(url);
+    return resp.data.admins;
   }
 }
 
