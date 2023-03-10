@@ -1,10 +1,10 @@
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import { LockdropVaultConfig, VaultBondingStatus } from '../../helpers/dao';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { Wallet } from '../types';
-import { LockdropVaultConfig, VaultBondingStatus } from '../helpers/dao';
-import { NeutronContract } from '../helpers/types';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -23,10 +23,10 @@ describe('Neutron / Lockdrop', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    dao_wallet = testState.wallets.neutron.demo1;
-    owner_wallet = testState.wallets.neutron.demo2;
-    manager_wallet = testState.wallets.neutron.icq;
-    holder_wallet = testState.wallets.neutron.rly1;
+    dao_wallet = testState.wallets.qaNeutron.genQaWal1;
+    owner_wallet = testState.wallets.qaNeutronThree.genQaWal1;
+    manager_wallet = testState.wallets.qaNeutronFour.genQaWal1;
+    holder_wallet = testState.wallets.qaNeutronFive.genQaWal1;
     owner_addr = owner_wallet.address;
     manager_addr = manager_wallet.address;
     holder_addr = holder_wallet.address;

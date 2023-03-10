@@ -6,18 +6,18 @@ import {
   PRE_PROPOSE_CONTRACT_ADDRESS,
   PROPOSE_CONTRACT_ADDRESS,
   VAULT_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getHeight, getWithAttempts } from '../helpers/wait';
+  getRemoteHeight,
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getWithAttempts } from '../../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '../helpers/icq';
-import { Wallet } from '../types';
-import { NeutronContract } from '../helpers/types';
-
+} from '../../helpers/icq';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -40,7 +40,7 @@ const watchForKvCallbackUpdates = async (
   const statusPrev = await Promise.all(
     queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
   );
-  const targetHeight = await getHeight(targetCm.sdk);
+  const targetHeight = await getRemoteHeight(targetCm.sdk);
   await Promise.all(
     queryIds.map((i) =>
       waitForICQResultWithRemoteHeight(
@@ -522,7 +522,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getHeight(cm[2].sdk),
+        await getRemoteHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -545,7 +545,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getHeight(cm[2].sdk),
+        await getRemoteHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -569,7 +569,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getHeight(cm[2].sdk),
+        await getRemoteHeight(cm[2].sdk),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         cm[1],
@@ -785,7 +785,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await getHeight(cm[1].sdk)),
+              (await getRemoteHeight(cm[1].sdk)),
           20,
         );
 
@@ -794,6 +794,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
+
         await getWithAttempts(
           cm[1].blockWaiter,
           async () =>

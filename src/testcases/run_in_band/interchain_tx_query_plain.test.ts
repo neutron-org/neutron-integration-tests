@@ -1,6 +1,10 @@
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import {
+  COSMOS_DENOM,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '../../helpers/cosmos';
 import { proto } from '@cosmos-client/core';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import Long from 'long';
 import {
   getRegisteredQuery,
@@ -8,8 +12,8 @@ import {
   queryTransfersNumber,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '../helpers/icq';
-import { NeutronContract } from '../helpers/types';
+} from '../../helpers/icq';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;

@@ -6,19 +6,19 @@ import {
   NEUTRON_DENOM,
   VAULT_CONTRACT_ADDRESS,
   LOCKDROP_VAULT_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
+} from '../../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   TimelockConfig,
   TimelockProposalListResponse,
   TimeLockSingleChoiceProposal,
   SubDaoConfig,
-} from '../helpers/dao';
-import { getHeight, getWithAttempts, wait } from '../helpers/wait';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+} from '../../helpers/dao';
+import { getHeight, getWithAttempts, wait } from '../../helpers/wait';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { Wallet } from '../types';
-import { NeutronContract } from '../helpers/types';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
