@@ -4,8 +4,6 @@ import {
   createBankMassage,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
-  VAULT_CONTRACT_ADDRESS,
-  LOCKDROP_VAULT_CONTRACT_ADDRESS,
   CORE_CONTRACT_ADDRESS,
 } from '../helpers/cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
@@ -60,7 +58,17 @@ describe('Neutron / Subdao', () => {
       security_dao_addr.toString(),
     );
 
-    await cm_main_dao.bondFunds(VAULT_CONTRACT_ADDRESS, '10000');
+    const daoContracts = await cm_main_dao.getDaoContracts(subDAO.core.address);
+    const vaultsQueryResult = await cm_main_dao.queryContract<
+      [{ address: string; name: string }]
+    >(daoContracts['voting_module'], {
+      voting_vaults: {},
+    });
+    const simpleVault = vaultsQueryResult.filter(
+      (x) => x.name == 'voting vault',
+    );
+
+    await cm_main_dao.bondFunds(simpleVault[0].address, '10000');
     await getWithAttempts(
       cm_main_dao.blockWaiter,
       async () =>
@@ -914,17 +922,23 @@ const setupSubDaoTimelockSet = async (
   const votingModuleCodeId =
     votingModuleContractInfo['contract_info']['code_id'];
 
+  const vaultsQueryResult = await cm.queryContract<[{ address: string }]>(
+    daoContracts['voting_module'],
+    {
+      voting_vaults: {},
+    },
+  );
+
+  const vaults = vaultsQueryResult.map((x) => x.address);
+
   const votingModuleInstantiateInfo = {
     code_id: +votingModuleCodeId,
-    label: 'DAO_Neutron_voting_registry',
+    label: 'subDAO_Neutron_voting_registry',
     msg: Buffer.from(
       JSON.stringify({
         manager: null,
         owner: null,
-        voting_vaults: [
-          VAULT_CONTRACT_ADDRESS,
-          LOCKDROP_VAULT_CONTRACT_ADDRESS,
-        ],
+        voting_vaults: vaults,
       }),
     ).toString('base64'),
   };
