@@ -13,6 +13,8 @@ RLY_MNEMONIC_1="alley afraid soup fall idea toss can goose become valve initial 
 RLY_MNEMONIC_2="record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset"
 
 STAKEDENOM=${STAKEDENOM:-untrn}
+USDCDENOM=${USDCDENOM:-uibcaxlusdc}
+ATOMDENOM=${USDCDENOM:-uibcatom}
 ALLOW_ICA_EXEC=${ALLOW_ICA_EXEC:-no}
 
 # Stop if it is already running
@@ -47,6 +49,12 @@ $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show val2 
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet1 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet2 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet3 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet1 --keyring-backend test -a) 100000000000000${ATOMDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet2 --keyring-backend test -a) 100000000000000${ATOMDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet3 --keyring-backend test -a) 100000000000000${ATOMDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet1 --keyring-backend test -a) 100000000000000${USDCDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet2 --keyring-backend test -a) 100000000000000${USDCDENOM}  --home $CHAIN_DIR/$CHAINID
+$BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show demowallet3 --keyring-backend test -a) 100000000000000${USDCDENOM}  --home $CHAIN_DIR/$CHAINID
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly1 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 $BINARY add-genesis-account $($BINARY --home $CHAIN_DIR/$CHAINID keys show rly2 --keyring-backend test -a) 100000000000000${STAKEDENOM}  --home $CHAIN_DIR/$CHAINID
 
