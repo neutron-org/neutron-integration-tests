@@ -15,6 +15,7 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
+import bech32 from 'bech32';
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
@@ -1175,4 +1176,27 @@ export const createBankMassage = (address: string, amount: string) => ({
 export const getRemoteHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
+};
+
+const whash = (typ: string, key: Uint8Array) => {
+  const sha256 = crypto.createHash('sha256');
+  sha256.update(typ);
+  const th = sha256.digest();
+  const nsha256 = crypto.createHash('sha256');
+  nsha256.update(th);
+  nsha256.update(key);
+  return nsha256.digest();
+};
+
+export const buildContractAddressClassic = (
+  codeID: number,
+  instanceID: number,
+  prefix: string,
+) => {
+  const contractID = Buffer.alloc(21);
+  contractID.write('wasm');
+  contractID.writeUintBE(instanceID, 7, 6);
+  contractID.writeUintBE(codeID, 15, 6);
+  const wasmModuleAddress = whash('module', contractID);
+  return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
 };
