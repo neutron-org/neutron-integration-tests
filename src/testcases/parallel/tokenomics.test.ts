@@ -5,7 +5,6 @@ import {
   NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
-  TREASURY_CONTRACT_ADDRESS,
 } from '../../helpers/cosmos';
 import Long from 'long';
 import { getWithAttempts } from '../../helpers/wait';
@@ -14,6 +13,7 @@ describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cmNeutron: CosmosWrapper;
   let cmGaia: CosmosWrapper;
+  let treasuryContractAddress;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -30,6 +30,7 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
+    treasuryContractAddress = await cmNeutron.getTreasuryContract();
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -101,7 +102,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         NEUTRON_DENOM,
       );
     });
@@ -116,7 +117,7 @@ describe('Neutron / Tokenomics', () => {
 
     test("Balance of Treasury in Neutrons hasn't been increased", async () => {
       const balanceAfter = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         NEUTRON_DENOM,
       );
       const diff = balanceAfter - balanceBefore;
@@ -164,7 +165,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         ibcUatomDenom,
       );
     });
@@ -179,7 +180,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Balance of Treasury in uatoms has been increased', async () => {
       const balanceAfter = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         ibcUatomDenom,
       );
       const diff = balanceAfter - balanceBefore;

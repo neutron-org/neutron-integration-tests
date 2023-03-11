@@ -40,8 +40,6 @@ export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-export const TREASURY_CONTRACT_ADDRESS =
-  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 
 export type DaoContracts = {
   core: {
@@ -1169,6 +1167,15 @@ export class CosmosWrapper {
         },
       },
     };
+  }
+
+  async getTreasuryContract(): Promise<string> {
+    const url =
+      '${this.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress';
+    const resp = await axios.get<{
+      param: { value: string };
+    }>(url);
+    return JSON.parse(resp.data.param.value);
   }
 
   async getChainAdmins() {
