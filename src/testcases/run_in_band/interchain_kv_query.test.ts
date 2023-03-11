@@ -1,16 +1,19 @@
 import { proto, rest } from '@cosmos-client/core';
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getHeight, getWithAttempts } from '../helpers/wait';
+import {
+  COSMOS_DENOM,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '../helpers/icq';
-import { Wallet } from '../types';
-import { NeutronContract } from '../helpers/types';
-
+} from '../../helpers/icq';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -154,8 +157,8 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   value: string,
   amount = '1000',
 ) => {
-  const daoCoreAddress = (await cm[1].getChainAdmins())[0];
-  const daoContracts = await cm[1].getDaoContracts(daoCoreAddress);
+  const daoCoreAddress = (await cm.getChainAdmins())[0];
+  const daoContracts = await cm.getDaoContracts(daoCoreAddress);
 
   const proposalTx = await cm.submitParameterChangeProposal(
     daoContracts.proposal_modules.single.pre_proposal_module.address,
@@ -798,6 +801,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         await removeQueryViaTx(cm[1], queryId);
+
         await getWithAttempts(
           cm[1].blockWaiter,
           async () =>

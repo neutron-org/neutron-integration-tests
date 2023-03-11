@@ -1,6 +1,6 @@
-import { CosmosWrapper, NEUTRON_DENOM, DaoContracts } from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+import { CosmosWrapper, NEUTRON_DENOM, DaoContracts } from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getWithAttempts } from '../../helpers/wait';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;

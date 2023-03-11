@@ -15,6 +15,7 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
+import bech32 from 'bech32';
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
@@ -149,6 +150,7 @@ export class CosmosWrapper {
     msgs: T[],
     numAttempts = 10,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+    sequence: number = this.wallet.account.sequence,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -166,7 +168,7 @@ export class CosmosWrapper {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: this.wallet.account.sequence,
+          sequence,
         },
       ],
       fee,
@@ -344,13 +346,15 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(fee, [msgSend]);
+    const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
   }
 
@@ -641,7 +645,28 @@ export class CosmosWrapper {
       sender,
     );
   }
+  async getSeq(
+    sdk: cosmosclient.CosmosSDK,
+    address: cosmosclient.AccAddress,
+  ): Promise<number> {
+    const account = await rest.auth
+      .account(sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
 
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
+
+    return account.sequence;
+  }
   /**
    * submitSoftwareUpgradeProposal creates proposal.
    */
@@ -1199,13 +1224,13 @@ export const mnemonicToWallet = async (
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
   addrPrefix: string,
+  validate = true,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
   });
 
   const pubKey = privKey.pubKey();
-  const address = walletType.fromPublicKey(pubKey);
   let account = null;
   cosmosclient.config.setBech32Prefix({
     accAddr: addrPrefix,
@@ -1215,8 +1240,9 @@ export const mnemonicToWallet = async (
     consAddr: `${addrPrefix}valcons`,
     consPub: `${addrPrefix}valconspub`,
   });
+  const address = walletType.fromPublicKey(pubKey);
   // eslint-disable-next-line no-prototype-builtins
-  if (cosmosclient.ValAddress !== walletType) {
+  if (cosmosclient.ValAddress !== walletType && validate) {
     account = await rest.auth
       .account(sdk, address)
       .then((res) =>
@@ -1269,3 +1295,31 @@ export const createBankMassage = (address: string, amount: string) => ({
     },
   },
 });
+
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
+  const block = await rest.tendermint.getLatestBlock(sdk);
+  return +block.data.block.header.height;
+};
+
+const whash = (typ: string, key: Uint8Array) => {
+  const sha256 = crypto.createHash('sha256');
+  sha256.update(typ);
+  const th = sha256.digest();
+  const nsha256 = crypto.createHash('sha256');
+  nsha256.update(th);
+  nsha256.update(key);
+  return nsha256.digest();
+};
+
+export const buildContractAddressClassic = (
+  codeID: number,
+  instanceID: number,
+  prefix: string,
+) => {
+  const contractID = Buffer.alloc(21);
+  contractID.write('wasm');
+  contractID.writeUintBE(instanceID, 7, 6);
+  contractID.writeUintBE(codeID, 15, 6);
+  const wasmModuleAddress = whash('module', contractID);
+  return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
+};

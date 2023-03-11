@@ -5,15 +5,15 @@ import {
   getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
-} from '../helpers/cosmos';
+} from '../../helpers/cosmos';
 import {
   AckFailuresResponse,
   NeutronContract,
   PageRequest,
-} from '../helpers/types';
+} from '../../helpers/types';
 
-import { getHeight, getWithAttempts } from '../helpers/wait';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -27,13 +27,13 @@ describe('Neutron / Simple', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
   });
@@ -88,7 +88,7 @@ describe('Neutron / Simple', () => {
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: '1000' },
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -99,7 +99,7 @@ describe('Neutron / Simple', () => {
       test('check IBC token balance', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
         );
         expect(
           balances.balances.find(
@@ -114,7 +114,7 @@ describe('Neutron / Simple', () => {
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.qaNeutron.genQaWal1.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -125,7 +125,7 @@ describe('Neutron / Simple', () => {
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.qaNeutron.genQaWal1.address.toString(),
         );
         expect(
           balances.balances.find(
@@ -162,7 +162,7 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -174,7 +174,7 @@ describe('Neutron / Simple', () => {
       test('check wallet balance', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(
@@ -226,7 +226,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -283,7 +283,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -313,7 +313,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -354,7 +354,7 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -380,7 +380,7 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
               timeout_height: currentHeight + 5,
