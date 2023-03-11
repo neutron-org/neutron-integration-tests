@@ -35,48 +35,12 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import { getContractBinary } from './env';
+import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-
-export type DaoContracts = {
-  core: {
-    address: string;
-  };
-  proposal_modules: {
-    single: {
-      address: string;
-      pre_proposal_module: {
-        address: string;
-      };
-    };
-    multiple: {
-      address: string;
-      pre_proposal_module: {
-        address: string;
-      };
-    };
-    overrule: {
-      address: string;
-      pre_proposal_module: {
-        address: string;
-      };
-    };
-  };
-  voting_module: {
-    address: string;
-    voting_vaults: {
-      ntrn_vault: {
-        address: string;
-      };
-      lockdrop_vault: {
-        address: string;
-      };
-    };
-  };
-};
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -623,7 +587,7 @@ export class CosmosWrapper {
     options: MultiChoiceOption[],
   ): Promise<InlineResponse20075TxResponse> {
     const daoCoreAddress = (await this.getChainAdmins())[0];
-    const daoContracts = await this.getDaoContracts(daoCoreAddress);
+    const daoContracts = await getDaoContracts(this, daoCoreAddress);
     const preProposeMultipleContractAddress =
       daoContracts.proposal_modules.multiple.pre_proposal_module.address;
     return await this.executeContract(
@@ -1085,97 +1049,6 @@ export class CosmosWrapper {
       }
       throw e;
     }
-  }
-
-  async getDaoContracts(dao_address: string): Promise<DaoContracts> {
-    const voting_module_address = await this.queryContract<string>(
-      dao_address,
-      { voting_module: {} },
-    );
-    const voting_vaults = await this.queryContract<
-      [{ address: string; name: string }]
-    >(voting_module_address, { voting_vaults: {} });
-    expect(voting_vaults).toMatchObject([
-      { name: 'voting vault' },
-      { name: 'lockdrop vault' },
-    ]);
-    const ntrn_vault_address = voting_vaults.filter(
-      (x) => x.name == 'voting vault',
-    )[0].address;
-    const lockdrop_vault_address = voting_vaults.filter(
-      (x) => x.name == 'lockdrop vault',
-    )[0].address;
-
-    const proposal_modules = await this.queryContract<[{ address: string }]>(
-      dao_address,
-      { proposal_modules: {} },
-    );
-
-    let proposalSingleAddress = '';
-    let proposalMultipleAddress = '';
-    let proposalOverruleAddress = '';
-
-    let preProposalSingleAddress = '';
-    let preProposalMultipleAddress = '';
-    let preProposalOverruleAddress = '';
-
-    expect(proposal_modules).toHaveLength(3);
-    for (const proposal_module of proposal_modules) {
-      const proposalContractInfo = await this.getContractInfo(
-        proposal_module.address,
-      );
-      const preProposalContract = await this.queryContract<{
-        Module: { addr: string };
-      }>(proposal_module.address, { proposal_creation_policy: {} });
-      switch (proposalContractInfo['contract_info']['label']) {
-        case 'DAO_Neutron_cw-proposal-overrule':
-          proposalOverruleAddress = proposal_module.address;
-          preProposalOverruleAddress = preProposalContract.Module.addr;
-          break;
-        case 'DAO_Neutron_cw-proposal-multiple':
-          proposalMultipleAddress = proposal_module.address;
-          preProposalMultipleAddress = preProposalContract.Module.addr;
-          break;
-        case 'DAO_Neutron_cw-proposal-single':
-          proposalSingleAddress = proposal_module.address;
-          preProposalSingleAddress = preProposalContract.Module.addr;
-          break;
-      }
-    }
-
-    return {
-      core: { address: dao_address },
-      proposal_modules: {
-        single: {
-          address: proposalSingleAddress,
-          pre_proposal_module: { address: preProposalSingleAddress },
-        },
-        multiple: {
-          address: proposalMultipleAddress,
-          pre_proposal_module: { address: preProposalMultipleAddress },
-        },
-        overrule: {
-          address: proposalOverruleAddress,
-          pre_proposal_module: { address: preProposalOverruleAddress },
-        },
-      },
-      voting_module: {
-        address: voting_module_address,
-        voting_vaults: {
-          ntrn_vault: { address: ntrn_vault_address },
-          lockdrop_vault: { address: lockdrop_vault_address },
-        },
-      },
-    };
-  }
-
-  async getTreasuryContract(): Promise<string> {
-    const url =
-      '${this.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress';
-    const resp = await axios.get<{
-      param: { value: string };
-    }>(url);
-    return JSON.parse(resp.data.param.value);
   }
 
   async getChainAdmins() {

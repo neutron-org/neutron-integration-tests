@@ -1,6 +1,7 @@
-import { CosmosWrapper, NEUTRON_DENOM, DaoContracts } from '../../helpers/cosmos';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
+import { DaoContracts, getDaoContracts } from '../../helpers/dao';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -35,7 +36,7 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
     const daoCoreAddress = (await cm.getChainAdmins())[0];
-    daoContracts = await cm.getDaoContracts(daoCoreAddress);
+    daoContracts = await getDaoContracts(cm, daoCoreAddress);
     vaultContractAddress =
       daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     preProposeContractAddress =

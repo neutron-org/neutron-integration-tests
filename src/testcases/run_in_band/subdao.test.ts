@@ -11,6 +11,7 @@ import {
   TimelockProposalListResponse,
   TimeLockSingleChoiceProposal,
   SubDaoConfig,
+  getDaoContracts,
 } from '../../helpers/dao';
 import { getHeight, getWithAttempts, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -915,7 +916,7 @@ const setupSubDaoTimelockSet = async (
   );
 
   const mainDaoCore = (await cm.getChainAdmins())[0];
-  const daoContracts = await cm.getDaoContracts(mainDaoCore);
+  const daoContracts = await getDaoContracts(cm, mainDaoCore);
 
   const votingModuleContractInfo = await cm.getContractInfo(
     daoContracts['voting_module'].address,

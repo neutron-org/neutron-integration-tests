@@ -14,6 +14,7 @@ import {
 } from '../../helpers/icq';
 import { Wallet } from '../../types';
 import { NeutronContract } from '../../helpers/types';
+import { getDaoContracts } from '../../helpers/dao';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -158,7 +159,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   amount = '1000',
 ) => {
   const daoCoreAddress = (await cm.getChainAdmins())[0];
-  const daoContracts = await cm.getDaoContracts(daoCoreAddress);
+  const daoContracts = await getDaoContracts(cm, daoCoreAddress);
 
   const proposalTx = await cm.submitParameterChangeProposal(
     daoContracts.proposal_modules.single.pre_proposal_module.address,
@@ -302,7 +303,7 @@ describe('Neutron / Interchain KV Query', () => {
     };
 
     const daoCoreAddress = (await cm[1].getChainAdmins())[0];
-    const daoContracts = await cm[1].getDaoContracts(daoCoreAddress);
+    const daoContracts = await getDaoContracts(cm[1], daoCoreAddress);
     const vaultContractAddress =
       daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     await cm[1].bondFunds(

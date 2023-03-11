@@ -8,6 +8,7 @@ import {
 } from '../../helpers/cosmos';
 import Long from 'long';
 import { getWithAttempts } from '../../helpers/wait';
+import { getTreasuryContract } from '../../helpers/dao';
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -30,7 +31,7 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
-    treasuryContractAddress = await cmNeutron.getTreasuryContract();
+    treasuryContractAddress = await getTreasuryContract(cmNeutron);
   });
 
   describe('75% of Neutron fees are burned', () => {
