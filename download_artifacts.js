@@ -88,7 +88,7 @@ const askForRewrite = async (file_name) => {
 const checkForAlreadyDownloaded = async (contracts_list, dest_dir) => {
   for (const element of contracts_list) {
     const file_path = `${dest_dir}/${element}`;
-    if (!fs.existsSync(file_path)) {
+    if (fs.existsSync(file_path)) {
       await askForRewrite(file_path);
       return;
     }
