@@ -317,7 +317,7 @@ const downloadArtifacts = async (
 
   if (!REWRITE_FILES) {
     try {
-      await checkForAlreadyDownloaded(contracts_list);
+      await checkForAlreadyDownloaded(contracts_list, dest_dir);
     } catch (e) {
       console.log(e.toString());
       return;
