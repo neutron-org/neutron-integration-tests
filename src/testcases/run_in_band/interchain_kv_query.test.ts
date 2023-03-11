@@ -745,10 +745,12 @@ describe('Neutron / Interchain KV Query', () => {
         const interchainQueriesParams =
           await cm[1].queryInterchainqueriesParams();
 
-        expect(interchainQueriesParams.params).toEqual({
-          query_deposit: queryDepositParam,
-          query_submit_timeout: querySubmitTimeoutParam.toString(),
-        });
+        expect(interchainQueriesParams.params.query_deposit).toEqual(
+          queryDepositParam,
+        );
+        expect(interchainQueriesParams.params.query_submit_timeout).toEqual(
+          querySubmitTimeoutParam.toString(),
+        );
 
         // Get old query params after param change proposal
         const registeredQueryAfterParamChange = await getRegisteredQuery(
