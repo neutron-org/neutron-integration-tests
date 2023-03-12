@@ -10,6 +10,8 @@ for dir in $proto_dirs; do
   proto_files=("${proto_files[@]} $(find "${dir}" -maxdepth 1 -name '*.proto')")
 done
 
+proto_files=("${proto_files[@]} ./proto-thirdparty/cosmwasm/wasm/v1/tx.proto")
+
 npx pbjs \
   -o ./src/generated/proto.cjs \
   -t static-module \

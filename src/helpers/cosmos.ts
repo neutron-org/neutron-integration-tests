@@ -2,7 +2,7 @@ import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { neutron } from '../generated/proto';
+import { neutron, cosmwasm } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
@@ -15,7 +15,6 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
-import bech32 from 'bech32';
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
@@ -87,6 +86,12 @@ cosmosclient.codec.register(
   '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
+
+cosmosclient.codec.register(
+  '/cosmwasm.wasm.v1.MsgInstantiateContract2',
+  cosmwasm.wasm.v1.MsgInstantiateContract2,
+);
+
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
@@ -223,6 +228,47 @@ export class CosmosWrapper {
       sender: this.wallet.address.toString(),
       admin: this.wallet.address.toString(),
       label,
+      msg: Buffer.from(msg),
+    });
+    const data = await this.execTx(
+      {
+        amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
+        gas_limit: Long.fromString('600000000'),
+      },
+      [msgInit],
+    );
+
+    if (data.tx_response.code !== 0) {
+      throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
+    }
+
+    const attributes = getEventAttributesFromTx(data, 'instantiate', [
+      '_contract_address',
+      'code_id',
+    ]);
+    return attributes;
+  }
+
+  /**
+   * Instantiate a contract with predictable address
+   * @param codeId code id
+   * @param msg init message
+   * @param label contract label
+   * @param salt salt for contract address
+   * @returns contract address and code id
+   */
+  async instantiate2(
+    codeId: string,
+    msg: string,
+    label: string,
+    salt = Uint8Array.from([6, 1, 2]), // tried to throw D6 cube tree times so must be pretty random
+  ): Promise<Array<Record<string, string>>> {
+    const msgInit = new cosmwasm.wasm.v1.MsgInstantiateContract2({
+      code_id: codeId,
+      sender: this.wallet.address.toString(),
+      admin: this.wallet.address.toString(),
+      label,
+      salt,
       msg: Buffer.from(msg),
     });
     const data = await this.execTx(
@@ -1176,27 +1222,4 @@ export const createBankMassage = (address: string, amount: string) => ({
 export const getRemoteHeight = async (sdk: CosmosSDK) => {
   const block = await rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
-};
-
-const whash = (typ: string, key: Uint8Array) => {
-  const sha256 = crypto.createHash('sha256');
-  sha256.update(typ);
-  const th = sha256.digest();
-  const nsha256 = crypto.createHash('sha256');
-  nsha256.update(th);
-  nsha256.update(key);
-  return nsha256.digest();
-};
-
-export const buildContractAddressClassic = (
-  codeID: number,
-  instanceID: number,
-  prefix: string,
-) => {
-  const contractID = Buffer.alloc(21);
-  contractID.write('wasm');
-  contractID.writeUintBE(instanceID, 7, 6);
-  contractID.writeUintBE(codeID, 15, 6);
-  const wasmModuleAddress = whash('module', contractID);
-  return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
 };
