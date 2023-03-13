@@ -160,9 +160,12 @@ const acceptInterchainqueriesParamsChangeProposal = async (
 ) => {
   const daoCoreAddress = (await cm.getChainAdmins())[0];
   const daoContracts = await getDaoContracts(cm, daoCoreAddress);
+  const preProposalSingle =
+    daoContracts.proposal_modules.single.pre_proposal_module.address;
+  const proposalSingle = daoContracts.proposal_modules.single.address;
 
   const proposalTx = await cm.submitParameterChangeProposal(
-    daoContracts.proposal_modules.single.pre_proposal_module.address,
+    preProposalSingle,
     title,
     description,
     'interchainqueries',
@@ -182,26 +185,18 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   expect(proposalId).toBeGreaterThanOrEqual(0);
 
   await cm.blockWaiter.waitBlocks(1);
-  await cm.voteYes(
-    daoContracts.proposal_modules.single.address,
-    proposalId,
-    wallet.address.toString(),
-  );
+  await cm.voteYes(proposalSingle, proposalId, wallet.address.toString());
 
   await cm.blockWaiter.waitBlocks(1);
   await cm.executeProposal(
-    daoContracts.proposal_modules.single.address,
+    proposalSingle,
     proposalId,
     wallet.address.toString(),
   );
 
   await getWithAttempts(
     cm.blockWaiter,
-    async () =>
-      await cm.queryProposal(
-        daoContracts.proposal_modules.single.address,
-        proposalId,
-      ),
+    async () => await cm.queryProposal(proposalSingle, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
   );
