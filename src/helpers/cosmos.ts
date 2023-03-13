@@ -517,7 +517,7 @@ export class CosmosWrapper {
     pre_propose_contract: string,
     title: string,
     description: string,
-    codes_ids: number[],
+    codes_ids: string[],
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
@@ -541,7 +541,7 @@ export class CosmosWrapper {
     pre_propose_contract: string,
     title: string,
     description: string,
-    codes_ids: number[],
+    codes_ids: string[],
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {

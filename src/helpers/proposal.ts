@@ -9,7 +9,7 @@ export type ParamChangeProposalInfo = {
 export type PinCodesInfo = {
   title: string;
   description: string;
-  codes_ids: number[];
+  codes_ids: string[];
 };
 
 export type SudoContactInfo = {
