@@ -560,8 +560,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #7', () => {
-    const proposalId = 7;
+  describe('execute proposal #6', () => {
+    const proposalId = 6;
     test('check if proposal is passed', async () => {
       await cm.checkPassedProposal(PROPOSE_CONTRACT_ADDRESS, proposalId);
     });
@@ -593,6 +593,19 @@ describe('Neutron / Governance', () => {
         PROPOSE_CONTRACT_ADDRESS,
         7,
         cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #7', () => {
+    const proposalId = 7;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(PROPOSE_CONTRACT_ADDRESS, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        PROPOSE_CONTRACT_ADDRESS,
+        proposalId,
       );
     });
   });
