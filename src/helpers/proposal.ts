@@ -32,7 +32,7 @@ export type UpgradeInfo = {
   name: string;
   height: number;
   info: string;
-  updated_client_state: string;
+  upgraded_client_state: string;
 };
 
 export type SendProposalInfo = {
@@ -203,7 +203,7 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
             height: info.height,
             info: info.info,
           },
-          upgraded_client_state: info.updated_client_state,
+          upgraded_client_state: info.upgraded_client_state,
         },
       },
     },
