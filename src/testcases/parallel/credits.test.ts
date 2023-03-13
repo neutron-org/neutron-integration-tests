@@ -1,12 +1,12 @@
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 // import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { Wallet } from '../types';
-import { CreditsVaultConfig } from '../helpers/dao';
-import { NeutronContract } from '../helpers/types';
+import { Wallet } from '../../types';
+import { CreditsVaultConfig } from '../../helpers/dao';
+import { NeutronContract } from '../../helpers/types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { getHeight } from '../helpers/wait';
+import { getHeight } from '../../helpers/wait';
 
 describe('Neutron / Credits', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -52,7 +52,7 @@ describe('Neutron / Credits', () => {
     let credits_contract_addr: string;
     let credits_vault_addr: string;
 
-    test('Instantiate', async () => {
+    beforeEach(async () => {
       credits_contract_addr = await setupCreditsContract(
         cm_dao,
         dao_addr.toString(),
@@ -79,7 +79,7 @@ describe('Neutron / Credits', () => {
       });
     });
 
-    const new_description = 'A new description for the lockdrop vault.';
+    const new_description = 'A new description for the credits vault.';
     test('Update config by manager: success', async () => {
       const res = await updateVaultConfig(
         cm_manager,
@@ -106,14 +106,14 @@ describe('Neutron / Credits', () => {
           cm_manager,
           credits_vault_addr,
           credits_contract_addr,
-          original_description,
+          new_description,
           manager_addr.toString(),
           manager_addr.toString(),
         ),
       ).rejects.toThrow(/Only owner can change owner/);
 
       expect(await getVaultConfig(cm_dao, credits_vault_addr)).toMatchObject({
-        description: new_description,
+        description: original_description,
         credits_contract_address: credits_contract_addr,
         owner: dao_addr.toString(),
         manager: manager_addr.toString(),
