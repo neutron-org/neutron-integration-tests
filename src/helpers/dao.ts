@@ -83,13 +83,21 @@ export type DaoContracts = {
   };
 };
 
-export const getDaoContracts = async (
+export const getVotingModule = async (
   cm: CosmosWrapper,
   dao_address: string,
-): Promise<DaoContracts> => {
+): Promise<string> => {
   const voting_module_address = await cm.queryContract<string>(dao_address, {
     voting_module: {},
   });
+
+  return voting_module_address;
+};
+
+export const getVotingVaults = async (
+  cm: CosmosWrapper,
+  voting_module_address: string,
+): Promise<DaoContracts['voting_module']['voting_vaults']> => {
   const voting_vaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(voting_module_address, { voting_vaults: {} });
@@ -103,6 +111,19 @@ export const getDaoContracts = async (
   const lockdrop_vault_address = voting_vaults.filter(
     (x) => x.name == 'lockdrop vault',
   )[0].address;
+
+  return {
+    ntrn_vault: { address: ntrn_vault_address },
+    lockdrop_vault: { address: lockdrop_vault_address },
+  };
+};
+
+export const getDaoContracts = async (
+  cm: CosmosWrapper,
+  dao_address: string,
+): Promise<DaoContracts> => {
+  const voting_module_address = await getVotingModule(cm, dao_address);
+  const voting_vaults = await getVotingVaults(cm, voting_module_address);
 
   const proposal_modules = await cm.queryContract<[{ address: string }]>(
     dao_address,
@@ -159,10 +180,7 @@ export const getDaoContracts = async (
     },
     voting_module: {
       address: voting_module_address,
-      voting_vaults: {
-        ntrn_vault: { address: ntrn_vault_address },
-        lockdrop_vault: { address: lockdrop_vault_address },
-      },
+      voting_vaults: voting_vaults,
     },
   };
 };

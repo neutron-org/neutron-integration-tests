@@ -12,6 +12,8 @@ import {
   TimeLockSingleChoiceProposal,
   SubDaoConfig,
   getDaoContracts,
+  getVotingModule,
+  getVotingVaults,
 } from '../../helpers/dao';
 import { getHeight, getWithAttempts, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -58,15 +60,15 @@ describe('Neutron / Subdao', () => {
       security_dao_addr.toString(),
     );
 
-    const voting_module_address = await cm_main_dao.queryContract<string>(
+    const votingModuleAddress = await getVotingModule(
+      cm_main_dao,
       subDAO.core.address,
-      { voting_module: {} },
     );
-    const voting_vaults = await cm_main_dao.queryContract<
-      [{ address: string; name: string }]
-    >(voting_module_address, { voting_vaults: {} });
-    const simpleVault = voting_vaults.filter((x) => x.name == 'voting vault')[0]
-      .address;
+    const votingVaults = await getVotingVaults(
+      cm_main_dao,
+      votingModuleAddress,
+    );
+    const simpleVault = votingVaults.ntrn_vault.address;
 
     await cm_main_dao.bondFunds(simpleVault, '10000');
     await getWithAttempts(
