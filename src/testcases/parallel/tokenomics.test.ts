@@ -14,7 +14,7 @@ describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cmNeutron: CosmosWrapper;
   let cmGaia: CosmosWrapper;
-  let treasuryContractAddress;
+  let treasuryContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
