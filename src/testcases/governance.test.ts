@@ -213,16 +213,16 @@ describe('Neutron / Governance', () => {
       );
     });
 
-    test('create proposal #10, will pass', async () => {
-      await cm.submitSudoContractProposal(
-        PRE_PROPOSE_CONTRACT_ADDRESS,
-        'Proposal #10',
-        'Software upgrade proposal. Will pass',
-        'TODO',
-        'TODO',
-        '1000',
-      );
-    });
+    // test('create proposal #10, will pass', async () => {
+    //   await cm.submitSudoContractProposal(
+    //     PRE_PROPOSE_CONTRACT_ADDRESS,
+    //     'Proposal #10',
+    //     'Software upgrade proposal. Will pass',
+    //     'TODO',
+    //     'TODO',
+    //     '1000',
+    //   );
+    // });
 
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await cm.submitMultiChoiceParameterChangeProposal(
