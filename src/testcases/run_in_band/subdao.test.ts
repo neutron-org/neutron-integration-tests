@@ -919,14 +919,14 @@ const setupSubDaoTimelockSet = async (
   const daoContracts = await getDaoContracts(cm, mainDaoCore);
 
   const votingModuleContractInfo = await cm.getContractInfo(
-    daoContracts['voting_module'].address,
+    daoContracts.voting_module.address,
   );
   const votingModuleCodeId =
     votingModuleContractInfo['contract_info']['code_id'];
 
   const vaults = [
-    daoContracts['voting_module'].voting_vaults.ntrn_vault.address,
-    daoContracts['voting_module'].voting_vaults.lockdrop_vault.address,
+    daoContracts.voting_module.voting_vaults.ntrn_vault.address,
+    daoContracts.voting_module.voting_vaults.lockdrop_vault.address,
   ];
 
   const votingModuleInstantiateInfo = {
