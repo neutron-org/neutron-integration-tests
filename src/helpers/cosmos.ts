@@ -23,7 +23,7 @@ import {
   SendProposalInfo,
   sudoContractProposal,
   unpinCodesProposal,
-  updateClientProposal,
+  clientUpdateProposal,
   upgradeProposal,
 } from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
@@ -571,7 +571,7 @@ export class CosmosWrapper {
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.stringify(
-      updateClientProposal({
+      clientUpdateProposal({
         title,
         description,
         subject_client_id,

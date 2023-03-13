@@ -19,7 +19,7 @@ export type SudoContactInfo = {
   msg: string;
 };
 
-export type UpdateClientInfo = {
+export type ClientUpdateInfo = {
   title: string;
   description: string;
   subject_client_id: string;
@@ -140,7 +140,7 @@ export const pinCodesProposal = (info: PinCodesInfo): any => ({
         pin_codes_proposal: {
           title: info.title,
           description: info.description,
-          codes_ids: info.codes_ids,
+          code_ids: info.codes_ids,
         },
       },
     },
@@ -154,7 +154,7 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
         unpin_codes_proposal: {
           title: info.title,
           description: info.description,
-          codes_ids: info.codes_ids,
+          code_ids: info.codes_ids,
         },
       },
     },
@@ -176,11 +176,11 @@ export const sudoContractProposal = (info: SudoContactInfo): any => ({
   },
 });
 
-export const updateClientProposal = (info: UpdateClientInfo): any => ({
+export const clientUpdateProposal = (info: ClientUpdateInfo): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        update_client_proposal: {
+        client_update_proposal: {
           title: info.title,
           description: info.description,
           subject_client_id: info.subject_client_id,
@@ -195,7 +195,7 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        update_client_proposal: {
+        upgrade_proposal: {
           title: info.title,
           description: info.description,
           plan: {
