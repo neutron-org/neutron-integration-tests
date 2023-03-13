@@ -561,7 +561,7 @@ export class CosmosWrapper {
   /**
    * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
    */
-  async submitUpdateClientProposal(
+  async submitClientUpdateProposal(
     pre_propose_contract: string,
     title: string,
     description: string,
@@ -598,7 +598,7 @@ export class CosmosWrapper {
     name: string,
     height: number,
     info: string,
-    updated_client_state: string,
+    upgraded_client_state: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
@@ -609,7 +609,7 @@ export class CosmosWrapper {
         name,
         height,
         info,
-        updated_client_state,
+        upgraded_client_state,
       }),
     );
     return await this.submitProposal(

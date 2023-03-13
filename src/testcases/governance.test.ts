@@ -183,11 +183,11 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #7, will pass', async () => {
-      await cm.submitUpdateClientProposal(
+      await cm.submitClientUpdateProposal(
         PRE_PROPOSE_CONTRACT_ADDRESS,
         'Proposal #7',
-        'Software upgrade proposal. Will pass',
-        'Plan #1',
+        'UpdateClient proposal. Will pass',
+        'client-1',
         '1',
         '1000',
       );
@@ -197,7 +197,7 @@ describe('Neutron / Governance', () => {
       await cm.submitPinCodesProposal(
         PRE_PROPOSE_CONTRACT_ADDRESS,
         'Proposal #8',
-        'Software upgrade proposal. Will pass',
+        'Pin codes proposal. Will pass',
         ['1', '2'],
         '1000',
       );
@@ -207,7 +207,7 @@ describe('Neutron / Governance', () => {
       await cm.submitUnpinCodesProposal(
         PRE_PROPOSE_CONTRACT_ADDRESS,
         'Proposal #9',
-        'Software upgrade proposal. Will pass',
+        'Unpin codes proposal. Will pass',
         ['1', '2'],
         '1000',
       );

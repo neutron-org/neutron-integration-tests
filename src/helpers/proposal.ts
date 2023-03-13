@@ -203,7 +203,7 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
             height: info.height,
             info: info.info,
           },
-          updated_client_state: info.updated_client_state,
+          upgraded_client_state: info.updated_client_state,
         },
       },
     },
