@@ -22,19 +22,19 @@ describe('Neutron / Governance', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo2,
+      testState.wallets.qaNeutronThree.genQaWal1,
       NEUTRON_DENOM,
     );
     cm3 = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.rly1,
+      testState.wallets.qaNeutronFour.genQaWal1,
       NEUTRON_DENOM,
     );
   });
