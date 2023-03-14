@@ -190,6 +190,44 @@ describe('Neutron / TGE', () => {
       );
       expect(res.code).toEqual(0);
     });
+    it('should not claim airdrop more than needed', async () => {
+      const proofs = airdrop.getMerkleProof({
+        address: cm.wallet.address.toString(),
+        amount: '300000',
+      });
+      const payload = {
+        claim: {
+          address: cm.wallet.address.toString(),
+          amount: '400000',
+          proof: proofs,
+        },
+      };
+      await expect(
+        cm.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify(payload),
+        ),
+      ).rejects.toThrow(/1/);
+    });
+    it('should not claim airdrop with wrong proof', async () => {
+      const proofs = airdrop.getMerkleProof({
+        address: testState.wallets.neutron.demo2.address.toString(),
+        amount: '200000',
+      });
+      const payload = {
+        claim: {
+          address: cm.wallet.address.toString(),
+          amount: '400000',
+          proof: proofs,
+        },
+      };
+      await expect(
+        cm.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify(payload),
+        ),
+      ).rejects.toThrow(/1/);
+    });
     it('should claim airdrop', async () => {
       const proofs = airdrop.getMerkleProof({
         address: cm.wallet.address.toString(),
