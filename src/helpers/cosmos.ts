@@ -35,27 +35,12 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import { getContractBinary } from './env';
+import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-export const VAULT_CONTRACT_ADDRESS =
-  'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-export const LOCKDROP_VAULT_CONTRACT_ADDRESS =
-  'neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a';
-export const PROPOSE_CONTRACT_ADDRESS =
-  'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
-export const CORE_CONTRACT_ADDRESS =
-  'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
-export const PRE_PROPOSE_CONTRACT_ADDRESS =
-  'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
-export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
-export const TREASURY_CONTRACT_ADDRESS =
-  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -305,6 +290,12 @@ export class CosmosWrapper {
     return JSON.parse(
       Buffer.from(resp.data.result.smart, 'base64').toString(),
     ) as T;
+  }
+
+  async getContractInfo(contract: string): Promise<any> {
+    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
+    const resp = await axios.get(url);
+    return resp.data;
   }
 
   /**
@@ -595,8 +586,12 @@ export class CosmosWrapper {
     sender: string,
     options: MultiChoiceOption[],
   ): Promise<InlineResponse20075TxResponse> {
+    const daoCoreAddress = (await this.getChainAdmins())[0];
+    const daoContracts = await getDaoContracts(this, daoCoreAddress);
+    const preProposeMultipleContractAddress =
+      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
     return await this.executeContract(
-      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      preProposeMultipleContractAddress,
       JSON.stringify({
         propose: {
           msg: {
@@ -1054,6 +1049,14 @@ export class CosmosWrapper {
       }
       throw e;
     }
+  }
+
+  async getChainAdmins() {
+    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
+    const resp = await axios.get<{
+      admins: [string];
+    }>(url);
+    return resp.data.admins;
   }
 }
 

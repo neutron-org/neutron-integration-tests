@@ -192,6 +192,7 @@ export class TestStateLocalCosmosTestNet {
   ) {
     const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
     const mnemonic = generateMnemonic();
+    // const address = await createAddress(mnemonic);
     const newWallet = await mnemonicToWallet(
       cosmosclient.AccAddress,
       sdk,
@@ -200,13 +201,13 @@ export class TestStateLocalCosmosTestNet {
       false,
     );
     await this.sendTokensWithRetry(cm, newWallet.address, tokens);
-    const w = await mnemonicToWallet(
+    const wal = await mnemonicToWallet(
       cosmosclient.AccAddress,
       sdk,
       mnemonic,
       prefix,
     );
 
-    return { genQaWal1: w };
+    return { genQaWal1: wal };
   }
 }
