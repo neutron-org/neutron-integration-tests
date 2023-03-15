@@ -48,6 +48,7 @@ const waitTill = (timestamp: string): Promise<void> =>
 describe('Neutron / TGE', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
+  let cmSecond: CosmosWrapper;
   const codeIds: Record<string, string> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
@@ -65,8 +66,13 @@ describe('Neutron / TGE', () => {
       testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-
-    airdrop = new Airdrop([
+    cmSecond = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.qaNeutronThree.genQaWal1,
+      NEUTRON_DENOM,
+    );
+    const accounts = [
       {
         address: testState.wallets.neutron.demo1.address.toString(),
         amount: '100000',
@@ -79,7 +85,13 @@ describe('Neutron / TGE', () => {
         address: cm.wallet.address.toString(),
         amount: '300000',
       },
-    ]);
+      {
+        address: cmSecond.wallet.address.toString(),
+        amount: '100000',
+      },
+    ];
+    console.log(accounts);
+    airdrop = new Airdrop(accounts);
   });
 
   describe('Deploy', () => {
@@ -142,11 +154,16 @@ describe('Neutron / TGE', () => {
   });
 
   describe('Airdrop', () => {
-    let proofs: string[];
+    let proofMain: string[];
+    let proofSecond: string[];
     beforeAll(() => {
-      proofs = airdrop.getMerkleProof({
+      proofMain = airdrop.getMerkleProof({
         address: cm.wallet.address.toString(),
         amount: '300000',
+      });
+      proofSecond = airdrop.getMerkleProof({
+        address: cmSecond.wallet.address.toString(),
+        amount: '100000',
       });
     });
     it('should not claim before airdrop start', async () => {
@@ -154,8 +171,19 @@ describe('Neutron / TGE', () => {
         claim: {
           address: cm.wallet.address.toString(),
           amount: '300000',
-          proof: proofs,
+          proof: proofMain,
         },
+      };
+      await expect(
+        cm.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify(payload),
+        ),
+      ).rejects.toThrow(/Airdrop begins at/);
+    });
+    it('should not pause before airdrop start', async () => {
+      const payload = {
+        pause: {},
       };
       await expect(
         cm.executeContract(
@@ -170,7 +198,7 @@ describe('Neutron / TGE', () => {
         claim: {
           address: cm.wallet.address.toString(),
           amount: '300000',
-          proof: proofs,
+          proof: proofMain,
         },
       };
       await expect(
@@ -207,7 +235,7 @@ describe('Neutron / TGE', () => {
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
-      ).rejects.toThrow(/1/);
+      ).rejects.toThrow(/Verification failed/);
     });
     it('should not claim airdrop with wrong proof', async () => {
       const proofs = airdrop.getMerkleProof({
@@ -226,7 +254,7 @@ describe('Neutron / TGE', () => {
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
-      ).rejects.toThrow(/1/);
+      ).rejects.toThrow(/Verification failed/);
     });
     it('should claim airdrop', async () => {
       const proofs = airdrop.getMerkleProof({
@@ -275,6 +303,60 @@ describe('Neutron / TGE', () => {
         },
       );
       expect(res).toEqual({ balance: '300000' });
+    });
+    it('should be able to pause', async () => {
+      const payload = {
+        pause: {},
+      };
+      const res = await cm.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify(payload),
+      );
+      expect(res.code).toEqual(0);
+    });
+    it('should not claim bc of pause', async () => {
+      const proofs = airdrop.getMerkleProof({
+        address: cm.wallet.address.toString(),
+        amount: '300000',
+      });
+      const payload = {
+        claim: {
+          address: cm.wallet.address.toString(),
+          amount: '300000',
+          proof: proofs,
+        },
+      };
+      await expect(
+        cm.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify(payload),
+        ),
+      ).rejects.toThrow(/Airdrop is paused/);
+    });
+    it('should be able to resume', async () => {
+      const payload = {
+        resume: {},
+      };
+      const res = await cm.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify(payload),
+      );
+      expect(res.code).toEqual(0);
+    });
+    it('should be able to claim after resume', async () => {
+      const payload = {
+        claim: {
+          address: cmSecond.wallet.address.toString(),
+          amount: '100000',
+          proof: proofSecond,
+        },
+      };
+      const res = await cmSecond.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify(payload),
+        [],
+      );
+      expect(res.code).toEqual(0);
     });
   });
 });
