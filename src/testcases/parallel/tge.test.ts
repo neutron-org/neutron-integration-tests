@@ -53,6 +53,7 @@ describe('Neutron / TGE', () => {
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
   const times: Record<string, string> = {};
+  let reserveAddress: string;
 
   beforeAll(async () => {
     times.airdropStart = getTimestamp(30);
@@ -60,6 +61,8 @@ describe('Neutron / TGE', () => {
     times.creditsWhenWithdrawable = getTimestamp(50);
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
+    reserveAddress =
+      testState.wallets.qaNeutronThree.genQaWal1.address.toString();
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
@@ -90,7 +93,6 @@ describe('Neutron / TGE', () => {
         amount: '100000',
       },
     ];
-    console.log(accounts);
     airdrop = new Airdrop(accounts);
   });
 
@@ -121,7 +123,7 @@ describe('Neutron / TGE', () => {
     it('should instantiate airdrop contract', async () => {
       const initParams = {
         credits_address: contractAddresses['TGE_CREDITS'],
-        reserve_address: cm.wallet.address.toString(),
+        reserve_address: reserveAddress,
         merkle_root: airdrop.getMerkleRoot(),
         airdrop_start: times.airdropStart,
         vesting_start: times.airdropVestingStart,
@@ -357,6 +359,61 @@ describe('Neutron / TGE', () => {
         [],
       );
       expect(res.code).toEqual(0);
+    });
+    it('should not be able to withdraw all before end', async () => {
+      await expect(
+        cm.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify({
+            withdraw_all: {},
+          }),
+          [],
+        ),
+      ).rejects.toThrow(
+        /withdraw_all is unavailable, it will become available at/,
+      );
+    });
+    it('should be able to withdraw all', async () => {
+      await waitTill(
+        (
+          BigInt(times.airdropVestingStart) + BigInt(30 * 1000000 * 1000)
+        ).toString(),
+      );
+      const availableBalanceCNTRN = await cm.queryContract<{ balance: string }>(
+        contractAddresses['TGE_CREDITS'],
+        {
+          balance: {
+            address: contractAddresses['TGE_AIRDROP'],
+          },
+        },
+      );
+      const reserveBalanceNTRN = (
+        await cm.queryBalances(reserveAddress)
+      ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount;
+      const res = await cm.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify({
+          withdraw_all: {},
+        }),
+        [],
+      );
+      expect(res.code).toEqual(0);
+
+      const availableBalanceCNTRNAfter = await cm.queryContract<{
+        balance: string;
+      }>(contractAddresses['TGE_CREDITS'], {
+        balance: {
+          address: contractAddresses['TGE_AIRDROP'],
+        },
+      });
+      const reserveBalanceNTRNAfter = (
+        await cm.queryBalances(reserveAddress)
+      ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount;
+      expect(availableBalanceCNTRNAfter.balance).toEqual('0');
+      expect(
+        parseInt(reserveBalanceNTRNAfter || '0') -
+          parseInt(reserveBalanceNTRN || '0'),
+      ).toEqual(parseInt(availableBalanceCNTRN.balance));
     });
   });
 });
