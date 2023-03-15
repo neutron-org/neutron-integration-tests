@@ -45,7 +45,7 @@ const waitTill = (timestamp: string): Promise<void> =>
     }, Number(BigInt(timestamp) / BigInt(1000000)) - Date.now());
   });
 
-describe('Neutron / TGE', () => {
+describe('Neutron / TGE / Airdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
   let cmSecond: CosmosWrapper;
@@ -98,12 +98,7 @@ describe('Neutron / TGE', () => {
 
   describe('Deploy', () => {
     it('should store contracts', async () => {
-      for (const contract of [
-        'TGE_LOCKDROP',
-        'TGE_AUCTION',
-        'TGE_CREDITS',
-        'TGE_AIRDROP',
-      ]) {
+      for (const contract of ['TGE_AUCTION', 'TGE_CREDITS', 'TGE_AIRDROP']) {
         const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
         expect(codeId).toBeGreaterThan(0);
         codeIds[contract] = codeId.toString();
@@ -210,6 +205,17 @@ describe('Neutron / TGE', () => {
         ),
       ).rejects.toThrow(); //TODO: check error message
     });
+    it('should return is claimed false', async () => {
+      const res = await cm.queryContract<{ is_claimed: boolean }>(
+        contractAddresses['TGE_AIRDROP'],
+        {
+          is_claimed: {
+            address: cm.wallet.address.toString(),
+          },
+        },
+      );
+      expect(res).toEqual({ is_claimed: false });
+    });
     it('should mint credits CW20 tokens', async () => {
       const res = await cm.executeContract(
         contractAddresses['TGE_CREDITS'],
@@ -276,6 +282,17 @@ describe('Neutron / TGE', () => {
       );
       expect(res.code).toEqual(0);
     });
+    it('should return is claimed true', async () => {
+      const res = await cm.queryContract<{ is_claimed: boolean }>(
+        contractAddresses['TGE_AIRDROP'],
+        {
+          is_claimed: {
+            address: cm.wallet.address.toString(),
+          },
+        },
+      );
+      expect(res).toEqual({ is_claimed: true });
+    });
     it('should not claim twice', async () => {
       const proofs = airdrop.getMerkleProof({
         address: cm.wallet.address.toString(),
@@ -306,6 +323,15 @@ describe('Neutron / TGE', () => {
       );
       expect(res).toEqual({ balance: '300000' });
     });
+    it('should return is_pause false', async () => {
+      const res = await cm.queryContract<{ is_paused: boolean }>(
+        contractAddresses['TGE_AIRDROP'],
+        {
+          is_paused: {},
+        },
+      );
+      expect(res).toEqual({ is_paused: false });
+    });
     it('should be able to pause', async () => {
       const payload = {
         pause: {},
@@ -315,6 +341,15 @@ describe('Neutron / TGE', () => {
         JSON.stringify(payload),
       );
       expect(res.code).toEqual(0);
+    });
+    it('should return is_pause true', async () => {
+      const res = await cm.queryContract<{ is_paused: boolean }>(
+        contractAddresses['TGE_AIRDROP'],
+        {
+          is_paused: {},
+        },
+      );
+      expect(res).toEqual({ is_paused: true });
     });
     it('should not claim bc of pause', async () => {
       const proofs = airdrop.getMerkleProof({
@@ -359,6 +394,15 @@ describe('Neutron / TGE', () => {
         [],
       );
       expect(res.code).toEqual(0);
+    });
+    it('should return correct total claimed', async () => {
+      const res = await cm.queryContract<{ total_claimed: string }>(
+        contractAddresses['TGE_AIRDROP'],
+        {
+          total_claimed: {},
+        },
+      );
+      expect(res).toEqual({ total_claimed: '400000' });
     });
     it('should not be able to withdraw all before end', async () => {
       await expect(
