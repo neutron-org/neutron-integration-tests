@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const axios = require('axios');
 const stream = require('stream');
 const util = require('util');
@@ -30,16 +31,34 @@ let REWRITE_FILES = false;
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 let verboseLog = () => {};
 
-const downloadFile = async (fileUrl, outputLocationPath) => {
+const downloadFile = async (
+  fileUrl,
+  outputLocationPath,
+  checksum,
+  attempt = 0,
+) => {
   verboseLog(`Downloading file by url: ${fileUrl}`);
   const writer = fs.createWriteStream(outputLocationPath);
   return axios({
     method: 'get',
     url: fileUrl,
     responseType: 'stream',
-  }).then((response) => {
+  }).then(async (response) => {
     response.data.pipe(writer);
-    return finished(writer);
+    await finished(writer);
+
+    const data = fs.readFileSync(outputLocationPath);
+    const hash = crypto.createHash('sha256').update(data).digest('hex');
+    if (hash != checksum) {
+      attempt++;
+      console.log(
+        `checksum mismatch for file ${outputLocationPath}, retrying (attempt ${attempt})...
+        \texpected: ${checksum}
+        \treceived: ${hash}\n`,
+      );
+      await new Promise((r) => setTimeout(r, 1000));
+      return downloadFile(fileUrl, outputLocationPath, checksum, attempt);
+    }
   });
 };
 
@@ -232,8 +251,13 @@ Internal error: ${e.toString()}`,
 };
 
 const parseChecksumsTxt = (checksums_txt) => {
-  const regex = /\S+\.wasm/g;
-  return checksums_txt.match(regex);
+  const regex = /(\S+)  (\S+.wasm)\s/g;
+  return Array.from(checksums_txt.matchAll(regex)).map((v, i, a) => {
+    return {
+      checksum: v[1],
+      file: v[2],
+    };
+  });
 };
 
 const downloadContracts = async (
@@ -244,11 +268,11 @@ const downloadContracts = async (
 ) => {
   const dir_name = repo_name;
   let promises = [];
-  for (const element of contracts_list) {
-    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit_hash}/${element}`;
-    const file_path = `${dest_dir}/${element}`;
+  for (const contract of contracts_list) {
+    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit_hash}/${contract.file}`;
+    const file_path = `${dest_dir}/${contract.file}`;
 
-    promises.push(downloadFile(url, file_path));
+    promises.push(downloadFile(url, file_path, contract.checksum));
   }
   await Promise.all(promises);
 };
@@ -311,13 +335,17 @@ const downloadArtifacts = async (
   }
 
   const contracts_list = parseChecksumsTxt(checksums_txt);
-
-  const contracts_list_pretty = contracts_list.map((c) => `\t${c}`).join('\n');
+  const contracts_list_pretty = contracts_list
+    .map((c) => `\t${c.file}`)
+    .join('\n');
   console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
 
   if (!REWRITE_FILES) {
     try {
-      await checkForAlreadyDownloaded(contracts_list, dest_dir);
+      await checkForAlreadyDownloaded(
+        contracts_list.map((c) => c.file),
+        dest_dir,
+      );
     } catch (e) {
       console.log(e.toString());
       return;
