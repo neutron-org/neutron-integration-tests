@@ -937,7 +937,11 @@ const setupSubDaoTimelockSet = async (
     msg: Buffer.from(
       JSON.stringify({
         manager: null,
-        owner: null,
+        owner: {
+          address: {
+            addr: main_dao_addr,
+          },
+        },
         voting_vaults: vaults,
       }),
     ).toString('base64'),
