@@ -1,19 +1,20 @@
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
-  TREASURY_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
+} from '../../helpers/cosmos';
 import Long from 'long';
-import { getWithAttempts } from '../helpers/wait';
+import { getWithAttempts } from '../../helpers/wait';
+import { getTreasuryContract } from '../../helpers/dao';
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cmNeutron: CosmosWrapper;
   let cmGaia: CosmosWrapper;
+  let treasuryContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -21,15 +22,16 @@ describe('Neutron / Tokenomics', () => {
     cmNeutron = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cmGaia = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
+    treasuryContractAddress = await getTreasuryContract(cmNeutron);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -101,7 +103,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         NEUTRON_DENOM,
       );
     });
@@ -116,7 +118,7 @@ describe('Neutron / Tokenomics', () => {
 
     test("Balance of Treasury in Neutrons hasn't been increased", async () => {
       const balanceAfter = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         NEUTRON_DENOM,
       );
       const diff = balanceAfter - balanceBefore;
@@ -146,14 +148,14 @@ describe('Neutron / Tokenomics', () => {
           denom: COSMOS_DENOM,
           amount: '100000',
         },
-        testState.wallets.neutron.demo1.address.toString(),
+        testState.wallets.qaNeutron.genQaWal1.address.toString(),
         { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
       await getWithAttempts(
         cmNeutron.blockWaiter,
         async () =>
           cmNeutron.queryBalances(
-            testState.wallets.neutron.demo1.address.toString(),
+            testState.wallets.qaNeutron.genQaWal1.address.toString(),
           ),
         async (balances) =>
           balances.balances.find(
@@ -164,7 +166,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         ibcUatomDenom,
       );
     });
@@ -179,7 +181,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Balance of Treasury in uatoms has been increased', async () => {
       const balanceAfter = await cmNeutron.queryDenomBalance(
-        TREASURY_CONTRACT_ADDRESS,
+        treasuryContractAddress,
         ibcUatomDenom,
       );
       const diff = balanceAfter - balanceBefore;

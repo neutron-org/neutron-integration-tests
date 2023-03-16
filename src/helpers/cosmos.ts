@@ -35,27 +35,12 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import { getContractBinary } from './env';
+import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-export const VAULT_CONTRACT_ADDRESS =
-  'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-export const LOCKDROP_VAULT_CONTRACT_ADDRESS =
-  'neutron13we0myxwzlpx8l5ark8elw5gj5d59dl6cjkzmt80c5q5cv5rt54qvzkv2a';
-export const PROPOSE_CONTRACT_ADDRESS =
-  'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
-export const CORE_CONTRACT_ADDRESS =
-  'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
-export const PRE_PROPOSE_CONTRACT_ADDRESS =
-  'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
-export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
-export const TREASURY_CONTRACT_ADDRESS =
-  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -130,7 +115,8 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
-    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Block,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+    sequence: number = this.wallet.account.sequence,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -148,7 +134,7 @@ export class CosmosWrapper {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: this.wallet.account.sequence,
+          sequence,
         },
       ],
       fee,
@@ -309,6 +295,12 @@ export class CosmosWrapper {
     return JSON.parse(parsed) as T;
   }
 
+  async getContractInfo(contract: string): Promise<any> {
+    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
+    const resp = await axios.get(url);
+    return resp.data;
+  }
+
   /**
    * msgSend processes a transfer, waits two blocks and returns the tx hash.
    */
@@ -319,13 +311,15 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(fee, [msgSend]);
+    const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
   }
 
@@ -595,8 +589,12 @@ export class CosmosWrapper {
     sender: string,
     options: MultiChoiceOption[],
   ): Promise<InlineResponse20075TxResponse> {
+    const daoCoreAddress = (await this.getChainAdmins())[0];
+    const daoContracts = await getDaoContracts(this, daoCoreAddress);
+    const preProposeMultipleContractAddress =
+      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
     return await this.executeContract(
-      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      preProposeMultipleContractAddress,
       JSON.stringify({
         propose: {
           msg: {
@@ -612,7 +610,28 @@ export class CosmosWrapper {
       sender,
     );
   }
+  async getSeq(
+    sdk: cosmosclient.CosmosSDK,
+    address: cosmosclient.AccAddress,
+  ): Promise<number> {
+    const account = await rest.auth
+      .account(sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
 
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
+
+    return account.sequence;
+  }
   /**
    * submitSoftwareUpgradeProposal creates proposal.
    */
@@ -1037,6 +1056,14 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async getChainAdmins() {
+    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
+    const resp = await axios.get<{
+      admins: [string];
+    }>(url);
+    return resp.data.admins;
+  }
 }
 
 type TxResponseType = Awaited<ReturnType<typeof rest.tx.getTx>>;
@@ -1083,13 +1110,13 @@ export const mnemonicToWallet = async (
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
   addrPrefix: string,
+  validate = true,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
   });
 
   const pubKey = privKey.pubKey();
-  const address = walletType.fromPublicKey(pubKey);
   let account = null;
   cosmosclient.config.setBech32Prefix({
     accAddr: addrPrefix,
@@ -1099,8 +1126,9 @@ export const mnemonicToWallet = async (
     consAddr: `${addrPrefix}valcons`,
     consPub: `${addrPrefix}valconspub`,
   });
+  const address = walletType.fromPublicKey(pubKey);
   // eslint-disable-next-line no-prototype-builtins
-  if (cosmosclient.ValAddress !== walletType) {
+  if (cosmosclient.ValAddress !== walletType && validate) {
     account = await rest.auth
       .account(sdk, address)
       .then((res) =>
@@ -1153,6 +1181,11 @@ export const createBankMassage = (address: string, amount: string) => ({
     },
   },
 });
+
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
+  const block = await rest.tendermint.getLatestBlock(sdk);
+  return +block.data.block.header.height;
+};
 
 const whash = (typ: string, key: Uint8Array) => {
   const sha256 = crypto.createHash('sha256');
