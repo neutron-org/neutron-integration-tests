@@ -1,5 +1,6 @@
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { NeutronContract } from '../../helpers/types';
+import { wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 const getTimestamp = (secondsFromNow: number): string =>
@@ -8,21 +9,16 @@ const getTimestamp = (secondsFromNow: number): string =>
     BigInt(secondsFromNow * 1000000 * 1000)
   ).toString();
 
-const waitTill = (timestamp: string): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, Number(BigInt(timestamp) / BigInt(1000000)) - Date.now());
-  });
-
 describe('Neutron / TGE / Credits', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
   let cmAirdrop: CosmosWrapper;
   let cmLockdrop: CosmosWrapper;
+  let cmOneMore: CosmosWrapper;
   const contractAddresses: Record<string, string> = {};
   let airdropAddress: string;
   let lockdropAddress: string;
+  let oneMoreAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -47,6 +43,14 @@ describe('Neutron / TGE / Credits', () => {
       testState.sdk1,
       testState.blockWaiter1,
       testState.wallets.qaNeutronFour.genQaWal1,
+      NEUTRON_DENOM,
+    );
+    oneMoreAddress =
+      testState.wallets.qaNeutronFive.genQaWal1.address.toString();
+    cmOneMore = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.qaNeutronFive.genQaWal1,
       NEUTRON_DENOM,
     );
   });
@@ -236,6 +240,109 @@ describe('Neutron / TGE / Credits', () => {
         (parseInt(balanceBefore.balance) - 1000000).toString(),
       );
       expect(balanceNtrnAfter - balanceNtrnBefore).toBe(1000000); //fees you know
+    });
+  });
+  describe('Vest', () => {
+    const startTime = (Date.now() / 1000 + 10) | 0;
+    it('should be able to vest', async () => {
+      const res = await cmAirdrop.executeContract(
+        contractAddresses['TGE_CREDITS'],
+        JSON.stringify({
+          add_vesting: {
+            address: oneMoreAddress,
+            amount: '1000000',
+            start_time: startTime,
+            duration: 10,
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+    });
+    it('should return vesting info', async () => {
+      const res = await cm.queryContract<{
+        allocated_amount: string;
+        schedule: {
+          cliff: number;
+          duration: number;
+          start_time: number;
+        };
+      }>(contractAddresses['TGE_CREDITS'], {
+        allocation: {
+          address: oneMoreAddress,
+        },
+      });
+      expect(res).toEqual({
+        allocated_amount: '1000000',
+        schedule: {
+          cliff: 0,
+          duration: 10,
+          start_time: startTime,
+        },
+        withdrawn_amount: '0',
+      });
+    });
+    it('should not be able to withdraw before vesting', async () => {
+      await expect(
+        cmOneMore.executeContract(
+          contractAddresses['TGE_CREDITS'],
+          JSON.stringify({
+            withdraw: {},
+          }),
+        ),
+      ).rejects.toThrow(/Too early to claim/);
+    });
+    it('should transfer some to another address', async () => {
+      const res = await cmAirdrop.executeContract(
+        contractAddresses['TGE_CREDITS'],
+        JSON.stringify({
+          transfer: {
+            amount: '500000',
+            recipient: oneMoreAddress,
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+    });
+    it('should return withdrawable amount', async () => {
+      await wait(15);
+      const res = await cmOneMore.queryContract<{ amount: string }>(
+        contractAddresses['TGE_CREDITS'],
+        {
+          withdrawable_amount: {
+            address: oneMoreAddress,
+          },
+        },
+      );
+      expect(res).toEqual({ amount: '500000' });
+    });
+
+    it('should be able to withdraw after vesting', async () => {
+      await wait(10);
+      const balanceNtrnBefore = await cm.queryDenomBalance(
+        oneMoreAddress,
+        NEUTRON_DENOM,
+      );
+      const res = await cmOneMore.executeContract(
+        contractAddresses['TGE_CREDITS'],
+        JSON.stringify({
+          withdraw: {},
+        }),
+      );
+      expect(res.code).toBe(0);
+      const balance = await cm.queryContract<{ balance: string }>(
+        contractAddresses['TGE_CREDITS'],
+        {
+          balance: {
+            address: oneMoreAddress,
+          },
+        },
+      );
+      expect(balance.balance).toBe('0');
+      const balanceNtrnAfter = await cm.queryDenomBalance(
+        oneMoreAddress,
+        NEUTRON_DENOM,
+      );
+      expect(balanceNtrnAfter - balanceNtrnBefore).toBe(490000); //fees you know
     });
   });
 });
