@@ -533,6 +533,7 @@ export class CosmosWrapper {
   /**
    * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
    */
+
   async submitUnpinCodesProposal(
     pre_propose_contract: string,
     title: string,

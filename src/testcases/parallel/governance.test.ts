@@ -192,7 +192,7 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #7',
         'Pin codes proposal. Will pass',
-        ['1', '2'],
+        [1, 2],
         '1000',
       );
     });
@@ -202,7 +202,7 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #8',
         'Unpin codes proposal. Will pass',
-        ['1', '2'],
+        [1, 2],
         '1000',
       );
     });
