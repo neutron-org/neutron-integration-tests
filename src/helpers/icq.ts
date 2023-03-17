@@ -29,6 +29,7 @@ export const getRegisteredQuery = (
       last_submitted_result_remote_height: number;
       deposit: { denom: string; amount: string }[];
       submit_timeout: number;
+      registered_at_height: number;
     };
   }>(contractAddress, {
     get_registered_query: {

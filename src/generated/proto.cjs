@@ -7915,6 +7915,7 @@
                  * @property {Long|null} [last_submitted_result_remote_height] RegisteredQuery last_submitted_result_remote_height
                  * @property {Array.<cosmos.base.v1beta1.ICoin>|null} [deposit] RegisteredQuery deposit
                  * @property {Long|null} [submit_timeout] RegisteredQuery submit_timeout
+                 * @property {Long|null} [registered_at_height] RegisteredQuery registered_at_height
                  */
     
                 /**
@@ -8023,6 +8024,14 @@
                 RegisteredQuery.prototype.submit_timeout = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
+                 * RegisteredQuery registered_at_height.
+                 * @member {Long} registered_at_height
+                 * @memberof neutron.interchainqueries.RegisteredQuery
+                 * @instance
+                 */
+                RegisteredQuery.prototype.registered_at_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
                  * Encodes the specified RegisteredQuery message. Does not implicitly {@link neutron.interchainqueries.RegisteredQuery.verify|verify} messages.
                  * @function encode
                  * @memberof neutron.interchainqueries.RegisteredQuery
@@ -8058,6 +8067,8 @@
                             $root.cosmos.base.v1beta1.Coin.encode(message.deposit[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                     if (message.submit_timeout != null && Object.hasOwnProperty.call(message, "submit_timeout"))
                         writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.submit_timeout);
+                    if (message.registered_at_height != null && Object.hasOwnProperty.call(message, "registered_at_height"))
+                        writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.registered_at_height);
                     return writer;
                 };
     
@@ -8128,6 +8139,9 @@
                             break;
                         case 11:
                             message.submit_timeout = reader.uint64();
+                            break;
+                        case 12:
+                            message.registered_at_height = reader.uint64();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -8209,6 +8223,9 @@
                     if (message.submit_timeout != null && message.hasOwnProperty("submit_timeout"))
                         if (!$util.isInteger(message.submit_timeout) && !(message.submit_timeout && $util.isInteger(message.submit_timeout.low) && $util.isInteger(message.submit_timeout.high)))
                             return "submit_timeout: integer|Long expected";
+                    if (message.registered_at_height != null && message.hasOwnProperty("registered_at_height"))
+                        if (!$util.isInteger(message.registered_at_height) && !(message.registered_at_height && $util.isInteger(message.registered_at_height.low) && $util.isInteger(message.registered_at_height.high)))
+                            return "registered_at_height: integer|Long expected";
                     return null;
                 };
     
@@ -8297,6 +8314,15 @@
                             message.submit_timeout = object.submit_timeout;
                         else if (typeof object.submit_timeout === "object")
                             message.submit_timeout = new $util.LongBits(object.submit_timeout.low >>> 0, object.submit_timeout.high >>> 0).toNumber(true);
+                    if (object.registered_at_height != null)
+                        if ($util.Long)
+                            (message.registered_at_height = $util.Long.fromValue(object.registered_at_height)).unsigned = true;
+                        else if (typeof object.registered_at_height === "string")
+                            message.registered_at_height = parseInt(object.registered_at_height, 10);
+                        else if (typeof object.registered_at_height === "number")
+                            message.registered_at_height = object.registered_at_height;
+                        else if (typeof object.registered_at_height === "object")
+                            message.registered_at_height = new $util.LongBits(object.registered_at_height.low >>> 0, object.registered_at_height.high >>> 0).toNumber(true);
                     return message;
                 };
     
@@ -8347,6 +8373,11 @@
                             object.submit_timeout = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.submit_timeout = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.registered_at_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.registered_at_height = options.longs === String ? "0" : 0;
                     }
                     if (message.id != null && message.hasOwnProperty("id"))
                         if (typeof message.id === "number")
@@ -8391,6 +8422,11 @@
                             object.submit_timeout = options.longs === String ? String(message.submit_timeout) : message.submit_timeout;
                         else
                             object.submit_timeout = options.longs === String ? $util.Long.prototype.toString.call(message.submit_timeout) : options.longs === Number ? new $util.LongBits(message.submit_timeout.low >>> 0, message.submit_timeout.high >>> 0).toNumber(true) : message.submit_timeout;
+                    if (message.registered_at_height != null && message.hasOwnProperty("registered_at_height"))
+                        if (typeof message.registered_at_height === "number")
+                            object.registered_at_height = options.longs === String ? String(message.registered_at_height) : message.registered_at_height;
+                        else
+                            object.registered_at_height = options.longs === String ? $util.Long.prototype.toString.call(message.registered_at_height) : options.longs === Number ? new $util.LongBits(message.registered_at_height.low >>> 0, message.registered_at_height.high >>> 0).toNumber(true) : message.registered_at_height;
                     return object;
                 };
     
