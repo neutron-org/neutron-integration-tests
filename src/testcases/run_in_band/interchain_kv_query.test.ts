@@ -651,7 +651,9 @@ describe('Neutron / Interchain KV Query', () => {
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = 2;
       const result = await removeQueryViaTx(cm[1], queryId);
-      expect(result.raw_log).toMatch(/authorization failed: unauthorized/i);
+      expect(result.raw_log).toMatch(
+        /only owner can remove a query within its service period: unauthorized/i,
+      );
     });
 
     describe('Remove interchain query', () => {
@@ -748,10 +750,12 @@ describe('Neutron / Interchain KV Query', () => {
         const interchainQueriesParams =
           await cm[1].queryInterchainqueriesParams();
 
-        expect(interchainQueriesParams.params).toEqual({
-          query_deposit: queryDepositParam,
-          query_submit_timeout: querySubmitTimeoutParam.toString(),
-        });
+        expect(interchainQueriesParams.params.query_deposit).toEqual(
+          queryDepositParam,
+        );
+        expect(interchainQueriesParams.params.query_submit_timeout).toEqual(
+          querySubmitTimeoutParam.toString(),
+        );
 
         // Get old query params after param change proposal
         const registeredQueryAfterParamChange = await getRegisteredQuery(
