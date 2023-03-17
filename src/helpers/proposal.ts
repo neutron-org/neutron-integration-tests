@@ -9,14 +9,20 @@ export type ParamChangeProposalInfo = {
 export type PinCodesInfo = {
   title: string;
   description: string;
-  codes_ids: string[];
+  codes_ids: number[];
 };
 
-export type SudoContactInfo = {
+export type UpdateAdmin = {
   title: string;
   description: string;
   contract: string;
-  msg: string;
+  new_admin: string;
+};
+
+export type ClearAdmin = {
+  title: string;
+  description: string;
+  contract: string;
 };
 
 export type ClientUpdateInfo = {
@@ -161,15 +167,29 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
   },
 });
 
-export const sudoContractProposal = (info: SudoContactInfo): any => ({
+export const updateAdminProposal = (info: UpdateAdmin): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        sudo_contract_proposal: {
+        update_admin_proposal: {
           title: info.title,
           description: info.description,
           contract: info.contract,
-          msg: info.msg,
+          new_admin: info.new_admin,
+        },
+      },
+    },
+  },
+});
+
+export const clearAdminProposal = (info: ClearAdmin): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        update_admin_proposal: {
+          title: info.title,
+          description: info.description,
+          contract: info.contract,
         },
       },
     },

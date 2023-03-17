@@ -22,10 +22,11 @@ import {
   pinCodesProposal,
   sendProposal,
   SendProposalInfo,
-  sudoContractProposal,
   unpinCodesProposal,
   clientUpdateProposal,
   upgradeProposal,
+  updateAdminProposal,
+  clearAdminProposal,
 } from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
@@ -512,7 +513,7 @@ export class CosmosWrapper {
     pre_propose_contract: string,
     title: string,
     description: string,
-    codes_ids: string[],
+    codes_ids: number[],
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
@@ -536,7 +537,7 @@ export class CosmosWrapper {
     pre_propose_contract: string,
     title: string,
     description: string,
-    codes_ids: string[],
+    codes_ids: number[],
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
@@ -618,19 +619,43 @@ export class CosmosWrapper {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
    */
-  async submitSudoContractProposal(
+  async submitUpdateAdminProposal(
     pre_propose_contract: string,
     title: string,
     description: string,
     contract: string,
-    msg: string,
+    new_admin: string,
     amount: string,
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.stringify(
-      sudoContractProposal({ title, description, contract, msg }),
+      updateAdminProposal({ title, description, contract, new_admin }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClearAdminProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    contract: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      clearAdminProposal({ title, description, contract }),
     );
     return await this.submitProposal(
       pre_propose_contract,
