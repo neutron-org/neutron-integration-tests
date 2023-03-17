@@ -13,6 +13,7 @@ describe('Neutron / Governance', () => {
   let preProposeContractAddress: string;
   let proposeSingleContractAddress: string;
   let proposeMultipleContractAddress: string;
+  let mainDao: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -44,6 +45,7 @@ describe('Neutron / Governance', () => {
     proposeSingleContractAddress = daoContracts.proposal_modules.single.address;
     proposeMultipleContractAddress =
       daoContracts.proposal_modules.multiple.address;
+    mainDao = daoCoreAddress;
   });
 
   describe('prepare: bond funds', () => {
@@ -151,7 +153,7 @@ describe('Neutron / Governance', () => {
         'Proposal #3',
         'This one will pass',
         '1000',
-        daoContracts.core.address,
+        mainDao,
       );
     });
 
@@ -212,8 +214,8 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #9',
         'Update admin proposal. Will pass',
-        vaultContractAddress,
-        proposeSingleContractAddress,
+        mainDao,
+        cm.wallet.address.toString(),
         '1000',
       );
     });
@@ -223,7 +225,7 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #10',
         'Clear admin proposal. Will pass',
-        vaultContractAddress,
+        mainDao,
         '1000',
       );
     });
@@ -625,18 +627,6 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #8', () => {
-    const proposalId = 8;
-    test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
-    });
-    test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
-    });
-  });
 
   describe('vote for proposal #8 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {

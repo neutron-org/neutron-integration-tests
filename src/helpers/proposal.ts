@@ -186,7 +186,7 @@ export const clearAdminProposal = (info: ClearAdmin): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        update_admin_proposal: {
+        clear_admin_proposal: {
           title: info.title,
           description: info.description,
           contract: info.contract,
