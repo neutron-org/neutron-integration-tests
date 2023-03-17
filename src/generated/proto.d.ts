@@ -3458,6 +3458,9 @@ export namespace neutron {
 
             /** RegisteredQuery submit_timeout */
             submit_timeout?: (Long|null);
+
+            /** RegisteredQuery registered_at_height */
+            registered_at_height?: (Long|null);
         }
 
         /** Represents a RegisteredQuery. */
@@ -3501,6 +3504,9 @@ export namespace neutron {
 
             /** RegisteredQuery submit_timeout. */
             public submit_timeout: Long;
+
+            /** RegisteredQuery registered_at_height. */
+            public registered_at_height: Long;
 
             /**
              * Encodes the specified RegisteredQuery message. Does not implicitly {@link neutron.interchainqueries.RegisteredQuery.verify|verify} messages.
