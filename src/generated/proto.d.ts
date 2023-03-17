@@ -3758,6 +3758,9 @@ export namespace neutron {
 
             /** Params query_deposit */
             query_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Params tx_query_removal_limit */
+            tx_query_removal_limit?: (Long|null);
         }
 
         /** Represents a Params. */
@@ -3774,6 +3777,9 @@ export namespace neutron {
 
             /** Params query_deposit. */
             public query_deposit: cosmos.base.v1beta1.ICoin[];
+
+            /** Params tx_query_removal_limit. */
+            public tx_query_removal_limit: Long;
 
             /**
              * Encodes the specified Params message. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
