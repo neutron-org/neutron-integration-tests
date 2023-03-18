@@ -577,9 +577,9 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #6', () => {
+  describe('execute proposal #2', () => {
     test('check if proposal is rejected', async () => {
-      const proposalId = 6;
+      const proposalId = 2;
       let rawLog: any;
       try {
         rawLog = (
@@ -588,9 +588,8 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      // We're not actually expect client id to be changed, because it will break anything. So we just check proposal
-      // flow as well as sucessfull passing to proprer module.
       expect(rawLog.includes("proposal is not in 'passed' state"));
+    });
   });
 
   describe('vote for proposal #7 (yes, no, yes)', () => {
