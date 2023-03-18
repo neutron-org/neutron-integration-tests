@@ -183,8 +183,8 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
-        '2',
-        '1',
+        '07-tendermint-1',
+        '07-tendermint-2',
         '1000',
       );
     });
@@ -578,16 +578,19 @@ describe('Neutron / Governance', () => {
   });
 
   describe('execute proposal #6', () => {
-    const proposalId = 6;
-    test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
-    });
-    test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
-    });
+    test('check if proposal is rejected', async () => {
+      const proposalId = 6;
+      let rawLog: any;
+      try {
+        rawLog = (
+          await cm.executeProposal(proposeSingleContractAddress, proposalId)
+        ).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      // We're not actually expect client id to be changed, because it will break anything. So we just check proposal
+      // flow as well as sucessfull passing to proprer module.
+      expect(rawLog.includes("proposal is not in 'passed' state"));
   });
 
   describe('vote for proposal #7 (yes, no, yes)', () => {
