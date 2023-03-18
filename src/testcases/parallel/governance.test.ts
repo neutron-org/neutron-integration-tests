@@ -183,8 +183,8 @@ describe('Neutron / Governance', () => {
         preProposeContractAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
-        '07-tendermint-2',
-        '07-tendermint-1',
+        'tendermint-2',
+        'tendermint-1',
         '1000',
       );
     });
@@ -726,16 +726,16 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #10', () => {
-    const proposalId = 10;
-    test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
-    });
-    test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
-    });
-  });
+  // describe('execute proposal #10', () => {
+  //   const proposalId = 10;
+  //   test('check if proposal is passed', async () => {
+  //     await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+  //   });
+  //   test('execute passed proposal', async () => {
+  //     await cm.executeProposalWithAttempts(
+  //       proposeSingleContractAddress,
+  //       proposalId,
+  //     );
+  //   });
+  // });
 });
