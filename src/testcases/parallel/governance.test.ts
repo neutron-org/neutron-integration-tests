@@ -576,10 +576,9 @@ describe('Neutron / Governance', () => {
       );
     });
   });
-
-  describe('execute proposal #2', () => {
+  describe('execute proposal #6', () => {
     test('check if proposal is rejected', async () => {
-      const proposalId = 2;
+      const proposalId = 6;
       let rawLog: any;
       try {
         rawLog = (
@@ -588,7 +587,7 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes("proposal is not in 'passed' state"));
+      expect(rawLog.includes('cannot update localhost client with proposal'));
     });
   });
 
@@ -628,7 +627,6 @@ describe('Neutron / Governance', () => {
       );
     });
   });
-
 
   describe('vote for proposal #8 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
