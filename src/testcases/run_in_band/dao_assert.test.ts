@@ -1,11 +1,13 @@
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { Wallet } from '../../types';
+import { DaoContracts, getDaoContracts } from '../../helpers/dao';
 
 describe('DAO / Deploy', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm_dao: CosmosWrapper;
   let dao_wallet: Wallet;
+  let cm: CosmosWrapper;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -18,5 +20,8 @@ describe('DAO / Deploy', () => {
       dao_wallet,
       NEUTRON_DENOM,
     );
+    const daoCoreAddress = (await cm.getChainAdmins())[0];
+    console.log(daoCoreAddress);
+    daoContracts = await getDaoContracts(cm, daoCoreAddress);
   });
 });
