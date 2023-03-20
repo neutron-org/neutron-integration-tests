@@ -38,6 +38,8 @@ import { getContractBinary } from './env';
 import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
+export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
+export const IBC_USDC_DENOM = process.env.IBC_USDC_DENOM || 'uibcusdc';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
@@ -319,6 +321,7 @@ export class CosmosWrapper {
   async msgSend(
     to: string,
     amount: string,
+    denom = this.denom,
     fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
@@ -329,7 +332,7 @@ export class CosmosWrapper {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      amount: [{ denom: this.denom, amount }],
+      amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
