@@ -202,8 +202,8 @@ export class CosmosWrapper {
 
   async instantiate(
     codeId: string,
-    msg: string | null = null,
-    label: string | null = null,
+    msg: string,
+    label: string,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
@@ -212,12 +212,15 @@ export class CosmosWrapper {
       label,
       msg: Buffer.from(msg),
     });
+
     const data = await this.execTx(
       {
         amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
       [msgInit],
+      10,
+      rest.tx.BroadcastTxMode.Block,
     );
 
     if (data.tx_response.code !== 0) {

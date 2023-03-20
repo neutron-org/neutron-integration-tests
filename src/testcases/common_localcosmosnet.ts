@@ -99,6 +99,20 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter1,
       neutron.demo1,
       NEUTRON_DENOM,
+      [
+        {
+          denom: NEUTRON_DENOM,
+          amount: '11500000000',
+        },
+        {
+          denom: IBC_ATOM_DENOM,
+          amount: '11500000000',
+        },
+        {
+          denom: IBC_USDC_DENOM,
+          amount: '11500000000',
+        },
+      ],
     );
 
     const qaNeutronThree = await this.createQaWallet(
@@ -123,20 +137,6 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter1,
       neutron.demo1,
       NEUTRON_DENOM,
-      [
-        {
-          denom: NEUTRON_DENOM,
-          amount: '11500000000',
-        },
-        {
-          denom: IBC_ATOM_DENOM,
-          amount: '11500000000',
-        },
-        {
-          denom: IBC_USDC_DENOM,
-          amount: '11500000000',
-        },
-      ],
     );
 
     const qaCosmos = await this.createQaWallet(

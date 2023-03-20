@@ -100,6 +100,12 @@ export const NeutronContract = {
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
+  TGE_AUCTION: 'neutron_auction.wasm',
+  TGE_LOCKDROP: 'neutron_lockdrop.wasm',
+  TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
+  ASTRO_PAIR: 'astroport_pair.wasm',
+  ASTRO_FACTORY: 'astroport_factory.wasm',
+  ASTRO_TOKEN: 'astroport_token.wasm',
 };
 
 export type MultiChoiceOption = {

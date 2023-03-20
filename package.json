@@ -17,6 +17,7 @@
     "test:subdao": "jest -b src/testcases/run_in_band/subdao",
     "test:tge": "jest -b src/testcases/run_in_band/tge",
     "test:tge:airdrop": "jest -b src/testcases/run_in_band/tge.airdrop",
+    "test:tge:auction": "jest -b src/testcases/run_in_band/tge.auction",
     "test:tge:credits": "jest -b src/testcases/run_in_band/tge.credits",
     "test:tokenomics": "jest -b src/testcases/parallel/tokenomics",
     "test:lockdrop": "jest -b src/testcases/parallel/lockdrop",
