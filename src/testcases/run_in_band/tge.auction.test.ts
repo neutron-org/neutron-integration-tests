@@ -243,8 +243,6 @@ describe('Neutron / TGE / Auction', () => {
           withdrawal_window: times.auctionWithdrawalWindow,
           atom_denom: IBC_ATOM_DENOM,
           usdc_denom: IBC_USDC_DENOM,
-          max_lock_period: 1,
-          min_lock_period: 1,
           max_exchange_rate_age: 1000,
           min_ntrn_amount: '100000',
           vesting_migration_pack_size: 10,
@@ -650,7 +648,7 @@ describe('Neutron / TGE / Auction', () => {
                 lock_lp: {
                   amount: '2',
                   asset: 'ATOM',
-                  period: 1,
+                  duration: 1,
                 },
               }),
             ),
@@ -676,7 +674,7 @@ describe('Neutron / TGE / Auction', () => {
               lock_lp: {
                 amount: '100',
                 asset: 'ATOM',
-                period: 1,
+                duration: 1,
               },
             }),
           );
@@ -689,7 +687,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(res.code).toEqual(0);
-          expect(parseFloat(userInfo.atom_lp_locked)).toEqual(100);
+          expect(parseInt(userInfo.atom_lp_locked)).toEqual(100);
         });
         it('should be able to lock USDC LP tokens', async () => {
           const res = await cm.executeContract(
@@ -698,7 +696,7 @@ describe('Neutron / TGE / Auction', () => {
               lock_lp: {
                 amount: '100',
                 asset: 'USDC',
-                period: 1,
+                duration: 1,
               },
             }),
           );
@@ -711,7 +709,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(res.code).toEqual(0);
-          expect(parseFloat(userInfo.usdc_lp_locked)).toEqual(100);
+          expect(parseInt(userInfo.usdc_lp_locked)).toEqual(100);
         });
         it('should not be able to lock ATOM LP tokens more than have', async () => {
           const userInfo = await cm.queryContract<UserInfoResponse>(
@@ -729,7 +727,7 @@ describe('Neutron / TGE / Auction', () => {
                 lock_lp: {
                   amount: userInfo.atom_lp_amount,
                   asset: 'ATOM',
-                  period: 1,
+                  duration: 1,
                 },
               }),
             ),
@@ -751,11 +749,75 @@ describe('Neutron / TGE / Auction', () => {
                 lock_lp: {
                   amount: userInfo.usdc_lp_amount,
                   asset: 'USDC',
-                  period: 1,
+                  duration: 1,
                 },
               }),
             ),
           ).rejects.toThrow(/Not enough USDC LP/);
+        });
+        it('should be able to withdraw ATOM LP tokens', async () => {
+          const userInfoBefore = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          const res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              withdraw_lp: {
+                asset: 'ATOM',
+                amount: '10',
+                duration: 1,
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+          const userInfoAfter = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(parseInt(userInfoAfter.atom_lp_amount)).toEqual(
+            parseInt(userInfoBefore.atom_lp_amount) - 10,
+          );
+        });
+        it('should be able to withdraw USDC LP tokens', async () => {
+          const userInfoBefore = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          const res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              withdraw_lp: {
+                asset: 'USDC',
+                amount: '10',
+                duration: 1,
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+          const userInfoAfter = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(parseInt(userInfoAfter.usdc_lp_amount)).toEqual(
+            parseInt(userInfoBefore.usdc_lp_amount) - 10,
+          );
         });
         it('should not be able to lock tokens when time is up', async () => {
           await waitTill(
@@ -772,7 +834,7 @@ describe('Neutron / TGE / Auction', () => {
                 lock_lp: {
                   amount: '100',
                   asset: 'ATOM',
-                  period: 1,
+                  duration: 1,
                 },
               }),
             ),
