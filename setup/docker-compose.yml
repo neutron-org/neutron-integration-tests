@@ -33,7 +33,7 @@ services:
       - RUN_BACKGROUND=0
 
   hermes:
-    image: hermes:master
+    image: hermes:a577b27
     depends_on:
       - "neutron-node"
       - "gaia-node"
