@@ -67,7 +67,6 @@ const waitTill = (timestamp: number): Promise<void> => {
 describe('Neutron / TGE / Auction', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
-  let cmUser: CosmosWrapper;
   const codeIds: Record<string, string> = {};
   const contractAddresses: Record<string, string> = {};
   let pairs: {
@@ -86,12 +85,6 @@ describe('Neutron / TGE / Auction', () => {
       testState.sdk1,
       testState.blockWaiter1,
       testState.wallets.qaNeutron.genQaWal1,
-      NEUTRON_DENOM,
-    );
-    cmUser = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      testState.wallets.qaNeutronThree.genQaWal1,
       NEUTRON_DENOM,
     );
   });
