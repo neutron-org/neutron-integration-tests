@@ -23,6 +23,8 @@ type UserInfoResponse = {
   withdrawn: boolean;
   atom_lp_amount: string;
   usdc_lp_amount: string;
+  atom_lp_locked: string;
+  usdc_lp_locked: string;
 };
 
 type AuctionStateResponse = {
@@ -51,12 +53,16 @@ type AuctionStateResponse = {
   atom_lp_locked: string;
 };
 
-const waitTill = (timestamp: number): Promise<void> =>
-  new Promise((resolve) => {
+const waitTill = (timestamp: number): Promise<void> => {
+  if (typeof timestamp !== 'number' || isNaN(timestamp)) {
+    throw new Error('timestamp is not a number');
+  }
+  return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
     }, timestamp * 1000 - Date.now());
   });
+};
 
 describe('Neutron / TGE / Auction', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -229,7 +235,8 @@ describe('Neutron / TGE / Auction', () => {
     it('should instantiate auction contract', async () => {
       times.auctionInitTs = (Date.now() / 1000 + 10) | 0;
       times.auctionDepositWindow = 30;
-      times.withdrawalWindow = 30;
+      times.auctionWithdrawalWindow = 30;
+      times.auctionLpLockWindow = 30;
       const res = await cm.instantiate(
         codeIds.TGE_AUCTION,
         JSON.stringify({
@@ -237,10 +244,10 @@ describe('Neutron / TGE / Auction', () => {
           reserve_contract_address: reserveAddress,
           vesting_usdc_contract_address: reserveAddress, //TODO: FIX
           vesting_atom_contract_address: reserveAddress, //TODO: FIX
-          lp_tokens_lock_window: 1000,
+          lp_tokens_lock_window: times.auctionLpLockWindow,
           init_timestamp: times.auctionInitTs,
           deposit_window: times.auctionDepositWindow,
-          withdrawal_window: times.withdrawalWindow,
+          withdrawal_window: times.auctionWithdrawalWindow,
           atom_denom: IBC_ATOM_DENOM,
           usdc_denom: IBC_USDC_DENOM,
           max_lock_period: 1,
@@ -258,7 +265,7 @@ describe('Neutron / TGE / Auction', () => {
       const msg = {
         atom_token: pairs.atom_ntrn.contract,
         usdc_token: pairs.usdc_ntrn.contract,
-        credit_contract: contractAddresses.TGE_CREDITS,
+        credits_contract: contractAddresses.TGE_CREDITS,
         auction_contract: contractAddresses.TGE_AUCTION,
         init_timestamp: times.lockdropInitTs,
         deposit_window: 20,
@@ -266,6 +273,7 @@ describe('Neutron / TGE / Auction', () => {
         min_lock_duration: 1,
         max_lock_duration: 2,
         max_positions_per_user: 2,
+        lock_window: 1000,
         lockup_rewards_info: [{ duration: 1, coefficient: '0' }],
       };
       const res = await cm.instantiate(
@@ -493,140 +501,289 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
     describe('Phase 3', () => {
-      it('should not be able to set pool size before withdrawal_window is closed', async () => {
-        await expect(
-          cm.executeContract(
-            contractAddresses.TGE_AUCTION,
+      describe('set_pool_size', () => {
+        it('should not be able to set pool size before withdrawal_window is closed', async () => {
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                set_pool_size: {},
+              }),
+            ),
+          ).rejects.toThrow(/Deposit\/withdrawal windows are still open/);
+        });
+        it('should not be able to set pool size bc of wrong price feed data', async () => {
+          await waitTill(
+            times.auctionInitTs +
+              times.auctionDepositWindow +
+              times.auctionWithdrawalWindow +
+              5,
+          );
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                set_pool_size: {},
+              }),
+            ),
+          ).rejects.toThrow(/Invalid price feed data/);
+        });
+        it('should not be able to set pool size when price feed data is set but too old', async () => {
+          const time = (Date.now() / 1000 - 1000) | 0;
+          const r1 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
-              set_pool_size: {},
+              set_rate: {
+                symbol: 'ATOM',
+                rate: {
+                  rate: '13891850',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
+              },
             }),
-          ),
-        ).rejects.toThrow(/Deposit\/withdrawal windows are still open/);
-      });
-      it('should not be able to set pool size bc of wrong price feed data', async () => {
-        await waitTill(
-          times.auctionInitTs +
-            times.auctionDepositWindow +
-            times.withdrawalWindow +
-            5,
-        );
-        await expect(
-          cm.executeContract(
-            contractAddresses.TGE_AUCTION,
+          );
+          expect(r1.code).toEqual(0);
+          const r2 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
-              set_pool_size: {},
+              set_rate: {
+                symbol: 'USDT',
+                rate: {
+                  rate: '999950',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
+              },
             }),
-          ),
-        ).rejects.toThrow(/Invalid price feed data/);
-      });
-      it('should not be able to set pool size when price feed data is set but too old', async () => {
-        const time = (Date.now() / 1000 - 1000) | 0;
-        const r1 = await cm.executeContract(
-          contractAddresses.TGE_PRICE_FEED_MOCK,
-          JSON.stringify({
-            set_rate: {
-              symbol: 'ATOM',
-              rate: {
-                rate: '13891850',
-                resolve_time: time.toString(),
-                request_id: '1',
-              },
-            },
-          }),
-        );
-        expect(r1.code).toEqual(0);
-        const r2 = await cm.executeContract(
-          contractAddresses.TGE_PRICE_FEED_MOCK,
-          JSON.stringify({
-            set_rate: {
-              symbol: 'USDT',
-              rate: {
-                rate: '999950',
-                resolve_time: time.toString(),
-                request_id: '1',
-              },
-            },
-          }),
-        );
-        expect(r2.code).toEqual(0);
-        await expect(
-          cm.executeContract(
-            contractAddresses.TGE_AUCTION,
+          );
+          expect(r2.code).toEqual(0);
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                set_pool_size: {},
+              }),
+            ),
+          ).rejects.toThrow(/Price feed data is too old/);
+        });
+        it('should not be able to set pool size (no )', async () => {
+          const time = (Date.now() / 1000) | 0;
+          const r1 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
-              set_pool_size: {},
+              set_rate: {
+                symbol: 'ATOM',
+                rate: {
+                  rate: '10000000',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
+              },
             }),
-          ),
-        ).rejects.toThrow(/Price feed data is too old/);
-      });
-      it('should not be able to set pool size (no )', async () => {
-        const time = (Date.now() / 1000) | 0;
-        const r1 = await cm.executeContract(
-          contractAddresses.TGE_PRICE_FEED_MOCK,
-          JSON.stringify({
-            set_rate: {
-              symbol: 'ATOM',
-              rate: {
-                rate: '10000000',
-                resolve_time: time.toString(),
-                request_id: '1',
+          );
+          expect(r1.code).toEqual(0);
+          const r2 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
+            JSON.stringify({
+              set_rate: {
+                symbol: 'USDT',
+                rate: {
+                  rate: '1000000',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
               },
-            },
-          }),
-        );
-        expect(r1.code).toEqual(0);
-        const r2 = await cm.executeContract(
-          contractAddresses.TGE_PRICE_FEED_MOCK,
-          JSON.stringify({
-            set_rate: {
-              symbol: 'USDT',
-              rate: {
-                rate: '1000000',
-                resolve_time: time.toString(),
-                request_id: '1',
-              },
-            },
-          }),
-        );
-        expect(r2.code).toEqual(0);
+            }),
+          );
+          expect(r2.code).toEqual(0);
 
-        await expect(
-          cm.executeContract(
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                set_pool_size: {},
+              }),
+            ),
+          ).rejects.toThrow(/Min NTRN amount/);
+        });
+        it('should be able to set pool size', async () => {
+          await cm.msgSend(contractAddresses.TGE_AUCTION, '200000');
+          const res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
               set_pool_size: {},
             }),
-          ),
-        ).rejects.toThrow(/Min NTRN amount/);
+          );
+          expect(res.code).toEqual(0);
+          const state = await cm.queryContract<AuctionStateResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              state: {},
+            },
+          );
+          expect(state).toEqual({
+            atom_lp_locked: '0',
+            atom_lp_size: '25968',
+            atom_ntrn_size: '181819',
+            is_rest_lp_vested: false,
+            lp_atom_shares_minted: null,
+            lp_usdc_shares_minted: null,
+            pool_init_timestamp: 0,
+            total_atom_deposited: '4000',
+            total_usdc_deposited: '4000',
+            usdc_lp_locked: '0',
+            usdc_lp_size: '7527',
+            usdc_ntrn_size: '18181',
+          });
+        });
+        it('should not be able to set pool size twice', async () => {
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                set_pool_size: {},
+              }),
+            ),
+          ).rejects.toThrow(/Pool size has already been set/);
+        });
       });
-      it('should be able to set pool size', async () => {
-        await cm.msgSend(contractAddresses.TGE_AUCTION, '200000');
-        const res = await cm.executeContract(
-          contractAddresses.TGE_AUCTION,
-          JSON.stringify({
-            set_pool_size: {},
-          }),
-        );
-        console.log(res);
-        expect(res.code).toEqual(0);
-        const state = await cm.queryContract<AuctionStateResponse>(
-          contractAddresses.TGE_AUCTION,
-          {
-            state: {},
-          },
-        );
-        expect(state).toEqual({
-          atom_lp_locked: '0',
-          atom_lp_size: '25968',
-          atom_ntrn_size: '181819',
-          is_rest_lp_vested: false,
-          lp_atom_shares_minted: null,
-          lp_usdc_shares_minted: null,
-          pool_init_timestamp: 0,
-          total_atom_deposited: '4000',
-          total_usdc_deposited: '4000',
-          usdc_lp_locked: '0',
-          usdc_lp_size: '7527',
-          usdc_ntrn_size: '18181',
+      describe('lock_lp', () => {
+        it('should not be able to lock ATOM LP tokens as lockdrop address is not set', async () => {
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                lock_lp: {
+                  amount: '2',
+                  asset: 'ATOM',
+                  period: 1,
+                },
+              }),
+            ),
+          ).rejects.toThrow(/Lockdrop address is not set yet/);
+        });
+        it('set lockdrop address', async () => {
+          const res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              update_config: {
+                new_config: {
+                  lockdrop_contract_address: contractAddresses.TGE_LOCKDROP,
+                },
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+        });
+        it('should be able to lock ATOM LP tokens', async () => {
+          const res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              lock_lp: {
+                amount: '100',
+                asset: 'ATOM',
+                period: 1,
+              },
+            }),
+          );
+          const userInfo = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(res.code).toEqual(0);
+          expect(parseFloat(userInfo.atom_lp_locked)).toEqual(100);
+        });
+        it('should be able to lock USDC LP tokens', async () => {
+          const res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              lock_lp: {
+                amount: '100',
+                asset: 'USDC',
+                period: 1,
+              },
+            }),
+          );
+          const userInfo = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(res.code).toEqual(0);
+          expect(parseFloat(userInfo.usdc_lp_locked)).toEqual(100);
+        });
+        it('should not be able to lock ATOM LP tokens more than have', async () => {
+          const userInfo = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                lock_lp: {
+                  amount: userInfo.atom_lp_amount,
+                  asset: 'ATOM',
+                  period: 1,
+                },
+              }),
+            ),
+          ).rejects.toThrow(/Not enough ATOM LP/);
+        });
+        it('should not be able to lock USDC LP tokens more than have', async () => {
+          const userInfo = await cm.queryContract<UserInfoResponse>(
+            contractAddresses.TGE_AUCTION,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                lock_lp: {
+                  amount: userInfo.usdc_lp_amount,
+                  asset: 'USDC',
+                  period: 1,
+                },
+              }),
+            ),
+          ).rejects.toThrow(/Not enough USDC LP/);
+        });
+        it('should not be able to lock tokens when time is up', async () => {
+          await waitTill(
+            times.auctionInitTs +
+              times.auctionDepositWindow +
+              times.auctionWithdrawalWindow +
+              times.auctionLpLockWindow +
+              5,
+          );
+          await expect(
+            cm.executeContract(
+              contractAddresses.TGE_AUCTION,
+              JSON.stringify({
+                lock_lp: {
+                  amount: '100',
+                  asset: 'ATOM',
+                  period: 1,
+                },
+              }),
+            ),
+          ).rejects.toThrow(/Lock window is closed/);
         });
       });
     });
