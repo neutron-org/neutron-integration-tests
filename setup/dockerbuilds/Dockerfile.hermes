@@ -4,7 +4,7 @@ WORKDIR /app
 RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
     git clone https://github.com/informalsystems/hermes && \
     cd hermes && \
-    git checkout a577b27194740705dcde1ecf1e384a3299834183 && \
+    git checkout a285c015c604819b213c1582d901e5ef140d3f47 && \
     cargo build --release --bin hermes && \
     mkdir -p $HOME/.hermes/bin && \
     mv ./target/release/hermes $HOME/.hermes/bin/
