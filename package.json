@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:subdao && yarn test:treasury",
+    "test:run_in_band": "yarn test:tge && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:subdao && yarn test:treasury",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
     "test:interchain_kv_query": "jest -b src/testcases/run_in_band/interchain_kv_query",
@@ -15,6 +15,9 @@
     "test:treasury": "jest -b src/testcases/run_in_band/treasury",
     "test:governance": "jest -b src/testcases/parallel/governance",
     "test:subdao": "jest -b src/testcases/run_in_band/subdao",
+    "test:tge": "jest -b src/testcases/run_in_band/tge",
+    "test:tge:airdrop": "jest -b src/testcases/run_in_band/tge.airdrop",
+    "test:tge:credits": "jest -b src/testcases/run_in_band/tge.credits",
     "test:tokenomics": "jest -b src/testcases/parallel/tokenomics",
     "test:lockdrop": "jest -b src/testcases/parallel/lockdrop",
     "gen:proto": "bash ./gen-proto.sh",
@@ -39,6 +42,7 @@
     "jest-junit": "^15.0.0",
     "lodash": "^4.17.21",
     "long": "^5.2.0",
+    "merkletreejs": "^0.3.9",
     "yesno": "^0.4.0"
   },
   "devDependencies": {
