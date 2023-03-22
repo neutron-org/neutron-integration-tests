@@ -14,6 +14,8 @@ describe('DAO / Check', () => {
   let preProposalMultipleAddress: string;
   let proposalOverruleAddress: string;
   let preProposalOverruleAddress: string;
+  let votingModuleAddress: string;
+  let votingVaultsAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -37,29 +39,22 @@ describe('DAO / Check', () => {
     proposalOverruleAddress = daoContracts.proposal_modules.overrule.address;
     preProposalOverruleAddress =
       daoContracts.proposal_modules.overrule.pre_proposal_module.address;
+    votingModuleAddress = daoContracts.voting_module.address;
+    votingVaultsAddress =
+      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
   });
 
   describe('proposal modules', () => {
-    test('test', async () => {
-      console.log(daoContracts);
-    });
     test('proposal dao single', async () => {
       const res = await cm_dao.queryContract(proposalSingleAddress, {
         dao: {},
       });
-      console.log('proposal dao single');
-      console.log(res);
-      console.log(daoContracts.core.address);
-      if (res !== daoContracts.core.address) {
-        throw new Error(
-          'Error in proposal dao single test. Expected ' +
-            daoContracts.core.address +
-            ', but got ' +
-            res,
-        );
-      }
-      expect(res).toEqual(daoContracts.core.address);
+      expect(res).toEqual(
+        daoContracts.core.address,
+        `Error in proposal dao single test. Expected ${daoContracts.core.address}, but got ${res}`,
+      );
     });
+
     test('preproposal dao single', async () => {
       const preRes = await cm_dao.queryContract(preProposalSingleAddress, {
         proposal_module: {},
@@ -69,28 +64,18 @@ describe('DAO / Check', () => {
       });
       expect(preRes).toEqual(proposalSingleAddress);
       expect(res).toEqual(daoContracts.core.address);
-
-      console.log('preproposal dao single');
-      console.log(res);
-      console.log(daoContracts.core.address);
     });
+
     test('proposal dao multiple', async () => {
       const res = await cm_dao.queryContract(proposalMultipleAddress, {
         dao: {},
       });
-      console.log('proposal dao multiple');
-      console.log(res);
-      console.log(daoContracts.core.address);
-      if (res !== daoContracts.core.address) {
-        throw new Error(
-          'Error in proposal dao multiple test. Expected ' +
-            daoContracts.core.address +
-            ', but got ' +
-            res,
-        );
-      }
-      expect(res).toEqual(daoContracts.core.address);
+      expect(res).toEqual(
+        daoContracts.core.address,
+        `Error in proposal dao multiple test. Expected ${daoContracts.core.address}, but got ${res}`,
+      );
     });
+
     test('preproposal dao multiple', async () => {
       const preRes = await cm_dao.queryContract(preProposalMultipleAddress, {
         proposal_module: {},
@@ -100,28 +85,18 @@ describe('DAO / Check', () => {
       });
       expect(preRes).toEqual(proposalMultipleAddress);
       expect(res).toEqual(daoContracts.core.address);
-
-      console.log('preproposal dao multiple');
-      console.log(res);
-      console.log(daoContracts.core.address);
     });
+
     test('proposal dao overrule', async () => {
       const res = await cm_dao.queryContract(proposalOverruleAddress, {
         dao: {},
       });
-      console.log('proposal dao overrule');
-      console.log(res);
-      console.log(daoContracts.core.address);
-      if (res !== daoContracts.core.address) {
-        throw new Error(
-          'Error in proposal dao overrule test. Expected ' +
-            daoContracts.core.address +
-            ', but got ' +
-            res,
-        );
-      }
-      expect(res).toEqual(daoContracts.core.address);
+      expect(res).toEqual(
+        daoContracts.core.address,
+        `Error in proposal dao overrule test. Expected ${daoContracts.core.address}, but got ${res}`,
+      );
     });
+
     test('preproposal dao overrule', async () => {
       const preRes = await cm_dao.queryContract(preProposalOverruleAddress, {
         proposal_module: {},
@@ -131,10 +106,24 @@ describe('DAO / Check', () => {
       });
       expect(preRes).toEqual(proposalOverruleAddress);
       expect(res).toEqual(daoContracts.core.address);
-
-      console.log('preproposal dao overrule');
+    });
+  });
+  
+  describe('voting_module', () => {
+    test('voting module', async () => {
+      const res = await cm_dao.queryContract(votingModuleAddress, {
+        dao: {},
+      });
+      console.log('voting module');
       console.log(res);
-      console.log(daoContracts.core.address);
+      expect(res).toEqual(daoContracts.core.address);
+    });
+    test('voting vaults', async () => {
+      const res = await cm_dao.queryContract(votingVaultsAddress, {
+        dao: {},
+      });
+      console.log('voting vaults');
+      console.log(res);
     });
   });
 });
