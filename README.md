@@ -23,7 +23,18 @@ git checkout v7.0.3
 
 ### 2. Prepare docker environment
 
-For the first run it's required to run `make build-all` in the `setup/` directory to build all the docker images before you run the tests with `yarn test`
+1. Building all the docker images:
+
+```sh
+cd setup
+make build-all
+```
+
+2. Prepare docker network for testing:
+
+```sh
+make prepare-testing-network
+```
 
 ### 3. Install dependencies with command
 
