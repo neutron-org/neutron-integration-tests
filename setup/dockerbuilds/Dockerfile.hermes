@@ -1,4 +1,4 @@
-FROM rust:1.63-bullseye
+FROM rust:1.63-bullseye as builder
 ADD ./hermes/ /app/network/hermes/
 WORKDIR /app
 RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
@@ -8,7 +8,11 @@ RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
     cargo build --release --bin hermes && \
     mkdir -p $HOME/.hermes/bin && \
     mv ./target/release/hermes $HOME/.hermes/bin/
-ENV PATH="/root/.hermes/bin:${PATH}"
+
+FROM debian:bullseye-slim
+COPY --from=builder /root/.hermes/bin/hermes /usr/local/bin/
+COPY ./hermes/ /app/network/hermes/
+WORKDIR /app
 
 CMD /app/network/hermes/restore-keys.sh && \
     /app/network/hermes/create-conn.sh && \
