@@ -15,7 +15,8 @@ describe('DAO / Check', () => {
   let proposalOverruleAddress: string;
   let preProposalOverruleAddress: string;
   let votingModuleAddress: string;
-  let votingVaultsAddress: string;
+  let votingVaultsNtrnAddress: string;
+  let votingVaultsLockdropAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -40,8 +41,10 @@ describe('DAO / Check', () => {
     preProposalOverruleAddress =
       daoContracts.proposal_modules.overrule.pre_proposal_module.address;
     votingModuleAddress = daoContracts.voting_module.address;
-    votingVaultsAddress =
+    votingVaultsNtrnAddress =
       daoContracts.voting_module.voting_vaults.ntrn_vault.address;
+    votingVaultsLockdropAddress =
+      daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
   });
 
   describe('proposal modules', () => {
@@ -108,22 +111,32 @@ describe('DAO / Check', () => {
       expect(res).toEqual(daoContracts.core.address);
     });
   });
-  
-  describe('voting_module', () => {
+
+  describe('voting module', () => {
     test('voting module', async () => {
       const res = await cm_dao.queryContract(votingModuleAddress, {
         dao: {},
       });
-      console.log('voting module');
-      console.log(res);
-      expect(res).toEqual(daoContracts.core.address);
+      expect(res).toEqual(
+        daoContracts.core.address,
+        `Error in voting module test. Expected ${daoContracts.core.address}, but got ${res}`,
+      );
     });
-    test('voting vaults', async () => {
-      const res = await cm_dao.queryContract(votingVaultsAddress, {
-        dao: {},
-      });
-      console.log('voting vaults');
-      console.log(res);
+  });
+  test('voting ntrn vaults', async () => {
+    const res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
+      dao: {},
     });
+    console.log('voting ntrn vaults');
+    console.log(res);
+    console.log(daoContracts.core.address);
+  });
+  test('voting lockdrop vaults', async () => {
+    const res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
+      dao: {},
+    });
+    console.log('voting lockdrop vaults');
+    console.log(res);
+    console.log(daoContracts.core.address);
   });
 });
