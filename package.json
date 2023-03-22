@@ -17,6 +17,7 @@
     "test:subdao": "jest -b src/testcases/run_in_band/subdao",
     "test:tokenomics": "jest -b src/testcases/parallel/tokenomics",
     "test:lockdrop": "jest -b src/testcases/parallel/lockdrop",
+    "test:dao": "jest -b src/testcases/run_in_band/dao_assert",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"
