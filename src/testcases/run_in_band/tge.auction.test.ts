@@ -27,6 +27,28 @@ type UserInfoResponse = {
   usdc_lp_locked: string;
 };
 
+type LockDropInfoResponse = {
+  claimable_generator_ntrn_debt: string;
+  lockup_infos: {
+    astroport_lp_token: string;
+    astroport_lp_transferred: boolean | null;
+    astroport_lp_units: string;
+    claimable_generator_astro_debt: string;
+    claimable_generator_proxy_debt: unknown[];
+    duration: number;
+    generator_ntrn_debt: string;
+    generator_proxy_debt: unknown[];
+    lp_units_locked: string;
+    ntrn_rewards: string;
+    pool_type: string;
+    unlock_timestamp: number;
+    withdrawal_flag: boolean;
+  }[];
+  lockup_positions_index: number;
+  ntrn_transferred: boolean;
+  total_ntrn_rewards: string;
+};
+
 type AuctionStateResponse = {
   /// Total USDC deposited to the contract
   total_usdc_deposited: string;
@@ -274,6 +296,25 @@ describe('Neutron / TGE / Auction', () => {
       );
       expect(res).toBeTruthy();
       contractAddresses.TGE_LOCKDROP = res[0]._contract_address;
+    });
+    it('sets lockdrop address', async () => {
+      const res = await cm.executeContract(
+        contractAddresses.TGE_AUCTION,
+        JSON.stringify({
+          update_config: {
+            new_config: {
+              lockdrop_contract_address: contractAddresses.TGE_LOCKDROP,
+              pool_info: {
+                ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
+                ntrn_atom_pool_address: pairs.atom_ntrn.contract,
+                ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
+                ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
+              },
+            },
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
     });
   });
 
@@ -640,33 +681,6 @@ describe('Neutron / TGE / Auction', () => {
         });
       });
       describe('lock_lp', () => {
-        it('should not be able to lock ATOM LP tokens as lockdrop address is not set', async () => {
-          await expect(
-            cm.executeContract(
-              contractAddresses.TGE_AUCTION,
-              JSON.stringify({
-                lock_lp: {
-                  amount: '2',
-                  asset: 'ATOM',
-                  duration: 1,
-                },
-              }),
-            ),
-          ).rejects.toThrow(/Lockdrop address is not set yet/);
-        });
-        it('set lockdrop address', async () => {
-          const res = await cm.executeContract(
-            contractAddresses.TGE_AUCTION,
-            JSON.stringify({
-              update_config: {
-                new_config: {
-                  lockdrop_contract_address: contractAddresses.TGE_LOCKDROP,
-                },
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
-        });
         it('should be able to lock ATOM LP tokens', async () => {
           const res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
@@ -688,6 +702,19 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(res.code).toEqual(0);
           expect(parseInt(userInfo.atom_lp_locked)).toEqual(100);
+          const info = await cm.queryContract<LockDropInfoResponse>(
+            contractAddresses.TGE_LOCKDROP,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(info.lockup_infos).toHaveLength(1);
+          expect(info.lockup_infos[0]).toMatchObject({
+            lp_units_locked: '100',
+            pool_type: 'ATOM',
+          });
         });
         it('should be able to lock USDC LP tokens', async () => {
           const res = await cm.executeContract(
@@ -710,6 +737,19 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(res.code).toEqual(0);
           expect(parseInt(userInfo.usdc_lp_locked)).toEqual(100);
+          const info = await cm.queryContract<LockDropInfoResponse>(
+            contractAddresses.TGE_LOCKDROP,
+            {
+              user_info: {
+                address: cm.wallet.address.toString(),
+              },
+            },
+          );
+          expect(info.lockup_infos).toHaveLength(2);
+          expect(info.lockup_infos[1]).toMatchObject({
+            lp_units_locked: '100',
+            pool_type: 'USDC',
+          });
         });
         it('should not be able to lock ATOM LP tokens more than have', async () => {
           const userInfo = await cm.queryContract<UserInfoResponse>(
@@ -756,14 +796,6 @@ describe('Neutron / TGE / Auction', () => {
           ).rejects.toThrow(/Not enough USDC LP/);
         });
         it('should be able to withdraw ATOM LP tokens', async () => {
-          const userInfoBefore = await cm.queryContract<UserInfoResponse>(
-            contractAddresses.TGE_AUCTION,
-            {
-              user_info: {
-                address: cm.wallet.address.toString(),
-              },
-            },
-          );
           const res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
@@ -775,27 +807,20 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           expect(res.code).toEqual(0);
-          const userInfoAfter = await cm.queryContract<UserInfoResponse>(
-            contractAddresses.TGE_AUCTION,
+          const info = await cm.queryContract<LockDropInfoResponse>(
+            contractAddresses.TGE_LOCKDROP,
             {
               user_info: {
                 address: cm.wallet.address.toString(),
               },
             },
           );
-          expect(parseInt(userInfoAfter.atom_lp_amount)).toEqual(
-            parseInt(userInfoBefore.atom_lp_amount) - 10,
-          );
+          expect(info.lockup_infos[0]).toMatchObject({
+            lp_units_locked: '90',
+            pool_type: 'ATOM',
+          });
         });
         it('should be able to withdraw USDC LP tokens', async () => {
-          const userInfoBefore = await cm.queryContract<UserInfoResponse>(
-            contractAddresses.TGE_AUCTION,
-            {
-              user_info: {
-                address: cm.wallet.address.toString(),
-              },
-            },
-          );
           const res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
@@ -807,17 +832,18 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           expect(res.code).toEqual(0);
-          const userInfoAfter = await cm.queryContract<UserInfoResponse>(
-            contractAddresses.TGE_AUCTION,
+          const info = await cm.queryContract<LockDropInfoResponse>(
+            contractAddresses.TGE_LOCKDROP,
             {
               user_info: {
                 address: cm.wallet.address.toString(),
               },
             },
           );
-          expect(parseInt(userInfoAfter.usdc_lp_amount)).toEqual(
-            parseInt(userInfoBefore.usdc_lp_amount) - 10,
-          );
+          expect(info.lockup_infos[1]).toMatchObject({
+            lp_units_locked: '90',
+            pool_type: 'USDC',
+          });
         });
         it('should not be able to lock tokens when time is up', async () => {
           await waitTill(
