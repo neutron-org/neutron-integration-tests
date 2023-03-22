@@ -3451,7 +3451,7 @@ export namespace neutron {
             last_submitted_result_local_height?: (Long|null);
 
             /** RegisteredQuery last_submitted_result_remote_height */
-            last_submitted_result_remote_height?: (Long|null);
+            last_submitted_result_remote_height?: (ibc.core.client.v1.IHeight|null);
 
             /** RegisteredQuery deposit */
             deposit?: (cosmos.base.v1beta1.ICoin[]|null);
@@ -3497,7 +3497,7 @@ export namespace neutron {
             public last_submitted_result_local_height: Long;
 
             /** RegisteredQuery last_submitted_result_remote_height. */
-            public last_submitted_result_remote_height: Long;
+            public last_submitted_result_remote_height?: (ibc.core.client.v1.IHeight|null);
 
             /** RegisteredQuery deposit. */
             public deposit: cosmos.base.v1beta1.ICoin[];
@@ -18295,207 +18295,6 @@ export namespace google {
     }
 }
 
-/** Namespace cosmos_proto. */
-export namespace cosmos_proto {
-
-    /** Properties of an InterfaceDescriptor. */
-    interface IInterfaceDescriptor {
-
-        /** InterfaceDescriptor name */
-        name?: (string|null);
-
-        /** InterfaceDescriptor description */
-        description?: (string|null);
-    }
-
-    /** Represents an InterfaceDescriptor. */
-    class InterfaceDescriptor implements IInterfaceDescriptor {
-
-        /**
-         * Constructs a new InterfaceDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
-
-        /** InterfaceDescriptor name. */
-        public name: string;
-
-        /** InterfaceDescriptor description. */
-        public description: string;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Verifies an InterfaceDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns InterfaceDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
-         * @param message InterfaceDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this InterfaceDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a ScalarDescriptor. */
-    interface IScalarDescriptor {
-
-        /** ScalarDescriptor name */
-        name?: (string|null);
-
-        /** ScalarDescriptor description */
-        description?: (string|null);
-
-        /** ScalarDescriptor field_type */
-        field_type?: (cosmos_proto.ScalarType[]|null);
-
-        /** ScalarDescriptor legacy_amino_encoding */
-        legacy_amino_encoding?: (string|null);
-    }
-
-    /** Represents a ScalarDescriptor. */
-    class ScalarDescriptor implements IScalarDescriptor {
-
-        /**
-         * Constructs a new ScalarDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IScalarDescriptor);
-
-        /** ScalarDescriptor name. */
-        public name: string;
-
-        /** ScalarDescriptor description. */
-        public description: string;
-
-        /** ScalarDescriptor field_type. */
-        public field_type: cosmos_proto.ScalarType[];
-
-        /** ScalarDescriptor legacy_amino_encoding. */
-        public legacy_amino_encoding: string;
-
-        /**
-         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Verifies a ScalarDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ScalarDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
-         * @param message ScalarDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ScalarDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** ScalarType enum. */
-    enum ScalarType {
-        SCALAR_TYPE_UNSPECIFIED = 0,
-        SCALAR_TYPE_STRING = 1,
-        SCALAR_TYPE_BYTES = 2
-    }
-}
-
 /** Namespace ibc. */
 export namespace ibc {
 
@@ -20296,5 +20095,206 @@ export namespace ibc {
                 }
             }
         }
+    }
+}
+
+/** Namespace cosmos_proto. */
+export namespace cosmos_proto {
+
+    /** Properties of an InterfaceDescriptor. */
+    interface IInterfaceDescriptor {
+
+        /** InterfaceDescriptor name */
+        name?: (string|null);
+
+        /** InterfaceDescriptor description */
+        description?: (string|null);
+    }
+
+    /** Represents an InterfaceDescriptor. */
+    class InterfaceDescriptor implements IInterfaceDescriptor {
+
+        /**
+         * Constructs a new InterfaceDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
+
+        /** InterfaceDescriptor name. */
+        public name: string;
+
+        /** InterfaceDescriptor description. */
+        public description: string;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Verifies an InterfaceDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns InterfaceDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
+         * @param message InterfaceDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this InterfaceDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** Properties of a ScalarDescriptor. */
+    interface IScalarDescriptor {
+
+        /** ScalarDescriptor name */
+        name?: (string|null);
+
+        /** ScalarDescriptor description */
+        description?: (string|null);
+
+        /** ScalarDescriptor field_type */
+        field_type?: (cosmos_proto.ScalarType[]|null);
+
+        /** ScalarDescriptor legacy_amino_encoding */
+        legacy_amino_encoding?: (string|null);
+    }
+
+    /** Represents a ScalarDescriptor. */
+    class ScalarDescriptor implements IScalarDescriptor {
+
+        /**
+         * Constructs a new ScalarDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IScalarDescriptor);
+
+        /** ScalarDescriptor name. */
+        public name: string;
+
+        /** ScalarDescriptor description. */
+        public description: string;
+
+        /** ScalarDescriptor field_type. */
+        public field_type: cosmos_proto.ScalarType[];
+
+        /** ScalarDescriptor legacy_amino_encoding. */
+        public legacy_amino_encoding: string;
+
+        /**
+         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Verifies a ScalarDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ScalarDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
+         * @param message ScalarDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ScalarDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** ScalarType enum. */
+    enum ScalarType {
+        SCALAR_TYPE_UNSPECIFIED = 0,
+        SCALAR_TYPE_STRING = 1,
+        SCALAR_TYPE_BYTES = 2
     }
 }
