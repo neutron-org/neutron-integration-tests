@@ -24,7 +24,7 @@ start-cosmopark-no-rebuild:
 stop-cosmopark:
 		@$(COMPOSE) down -t0 --remove-orphans -v
 
-start-node:
+start-neutron-node:
 		@$(COMPOSE) up neutron-node
 
 clean:
