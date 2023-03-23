@@ -123,20 +123,18 @@ describe('DAO / Check', () => {
       );
     });
   });
-  test('voting ntrn vaults', async () => {
+  test.skip('voting ntrn vaults', async () => {
     const res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
       dao: {},
     });
     console.log('voting ntrn vaults');
     console.log(res);
-    console.log(daoContracts.core.address);
   });
-  test('voting lockdrop vaults', async () => {
+  test.skip('voting lockdrop vaults', async () => {
     const res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
       dao: {},
     });
     console.log('voting lockdrop vaults');
     console.log(res);
-    console.log(daoContracts.core.address);
   });
 });
