@@ -1,16 +1,19 @@
 import Long from 'long';
 import {
-  AckFailuresResponse,
   COSMOS_DENOM,
   CosmosWrapper,
   getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+} from '../../helpers/cosmos';
+import {
+  AckFailuresResponse,
   NeutronContract,
   PageRequest,
-} from '../helpers/cosmos';
-import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+} from '../../helpers/types';
+
+import { getHeight, getWithAttempts } from '../../helpers/wait';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,13 +27,13 @@ describe('Neutron / Simple', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
   });
@@ -85,7 +88,7 @@ describe('Neutron / Simple', () => {
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: '1000' },
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -96,13 +99,13 @@ describe('Neutron / Simple', () => {
       test('check IBC token balance', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
         );
         expect(
           balances.balances.find(
             (bal): boolean =>
               bal.denom ==
-              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
           )?.amount,
         ).toEqual('1000');
       });
@@ -111,7 +114,7 @@ describe('Neutron / Simple', () => {
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.qaNeutron.genQaWal1.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -122,7 +125,7 @@ describe('Neutron / Simple', () => {
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.qaNeutron.genQaWal1.address.toString(),
         );
         expect(
           balances.balances.find(
@@ -159,7 +162,7 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -171,14 +174,14 @@ describe('Neutron / Simple', () => {
       test('check wallet balance', async () => {
         await cm.blockWaiter.waitBlocks(10);
         const balances = await cm2.queryBalances(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.qaCosmos.genQaWal1.address.toString(),
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(
           balances.balances.find(
             (bal): boolean =>
               bal.denom ==
-              'ibc/C053D637CCA2A2BA030E2C5EE1B28A16F71CCB0E45E8BE52766DC1B241B77878',
+              'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
           )?.amount,
         ).toEqual('4000');
       });
@@ -223,7 +226,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -280,7 +283,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -310,7 +313,7 @@ describe('Neutron / Simple', () => {
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.cosmos.demo2.address.toString(),
+                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -351,42 +354,39 @@ describe('Neutron / Simple', () => {
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.cosmos.demo2.address.toString(),
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
           }),
         );
 
-        // This dirty workaround is here to prevent failing IBC transfer
-        // from failing the whole test suite (which is very annoying).
-        // TODO: figure out why contract fails to perform IBC transfer
-        //       and implement a proper fix.
-        let attempts = 10;
-        while (attempts > 0) {
-          attempts -= 1;
+        /* 
+        What is going on here. To test SudoTimeout handler functionality
+        we have to make an IBC package delivery by hermes really slowly.
+        But, actually there is no any activity on the IBC channel at this stage, as a result 
+        hermes does not send any UpdateClient messages from gaia to neuron.
+        Gaia keeps building blocks and hermes knows nothing about it.
+        We get the height =N of the gaia chain, wait 15 blocks.
+        Send ibc package from neutron from gaia with timeout N+5
+        current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
+        hermes checks height on remote chain and Timeout error occurs.
+        */
+        const currentHeight = await getHeight(cm2.sdk);
+        await cm2.blockWaiter.waitBlocks(15);
 
-          try {
-            await cm.blockWaiter.waitBlocks(3);
-            const currentHeight = await getRemoteHeight(cm.sdk);
-
-            await cm.executeContract(
-              contractAddress,
-              JSON.stringify({
-                send: {
-                  channel: 'channel-0',
-                  to: testState.wallets.cosmos.demo2.address.toString(),
-                  denom: NEUTRON_DENOM,
-                  amount: '1000',
-                  timeout_height: currentHeight + 2,
-                },
-              }),
-            );
-            break;
-            // eslint-disable-next-line no-empty
-          } catch (e) {}
-        }
-        expect(attempts).toBeGreaterThan(0);
+        await cm.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+              timeout_height: currentHeight + 5,
+            },
+          }),
+        );
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           cm.blockWaiter,

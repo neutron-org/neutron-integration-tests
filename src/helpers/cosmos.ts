@@ -1,4 +1,3 @@
-import { promises as fsPromise } from 'fs';
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
@@ -7,7 +6,6 @@ import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import path from 'path';
 import { BlockWaiter, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
@@ -17,6 +15,7 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
+import bech32 from 'bech32';
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
@@ -25,52 +24,23 @@ import {
 } from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
+import {
+  AckFailuresResponse,
+  ChannelsList,
+  MultiChoiceOption,
+  PageRequest,
+  PauseInfoResponse,
+  SingleChoiceProposal,
+  TotalPowerAtHeightResponse,
+  VotingPowerAtHeightResponse,
+} from './types';
+import { getContractBinary } from './env';
+import { getDaoContracts } from './dao';
 
-export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'stake';
+export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
-export const VAULT_CONTRACT_ADDRESS =
-  'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
-export const PROPOSE_CONTRACT_ADDRESS =
-  'neutron1unyuj8qnmygvzuex3dwmg9yzt9alhvyeat0uu0jedg2wj33efl5qmysp02';
-export const CORE_CONTRACT_ADDRESS =
-  'neutron1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqcd0mrx';
-export const PRE_PROPOSE_CONTRACT_ADDRESS =
-  'neutron1eyfccmjm6732k7wp4p6gdjwhxjwsvje44j0hfx8nkgrm8fs7vqfs8hrpdj';
-export const PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron1pvrwmjuusn9wh34j7y520g8gumuy9xtl3gvprlljfdpwju3x7ucsj3fj40';
-export const PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS =
-  'neutron10qt8wg0n7z740ssvf3urmvgtjhxpyp74hxqvqt7z226gykuus7eqjqrsug';
-export const TREASURY_CONTRACT_ADDRESS =
-  'neutron1vguuxez2h5ekltfj9gjd62fs5k4rl2zy5hfrncasykzw08rezpfsd2rhm7';
-const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts/artifacts';
-
-export type ChannelsList = {
-  channels: {
-    state: string;
-    ordering: string;
-    counterparty: {
-      port_id: string;
-      channel_id: string;
-    };
-    connection_hops: string[];
-    version: string;
-    port_id: string;
-    channel_id: string;
-  }[];
-};
-
-export type TotalSupplyByDenomResponse = {
-  amount: ICoin;
-};
-
-// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
-export type TotalBurnedNeutronsAmountResponse = {
-  total_burned_neutrons_amount: {
-    coin: ICoin;
-  };
-};
 
 // BalancesResponse is the response model for the bank balances query.
 type BalancesResponse = {
@@ -87,95 +57,20 @@ type DenomTraceResponse = {
   base_denom?: string;
 };
 
-// SingleChoiceProposal represents a single governance proposal item (partial object).
-type SingleChoiceProposal = {
-  readonly title: string;
-  readonly description: string;
-  /// The address that created this proposal.
-  readonly proposer: string;
-  /// The block height at which this proposal was created. Voting
-  /// power queries should query for voting power at this block
-  /// height.
-  readonly start_height: number;
-  /// The threshold at which this proposal will pass.
-  /// proposal's creation.
-  readonly total_power: string;
-  readonly proposal: {
-    status:
-      | 'open'
-      | 'rejected'
-      | 'passed'
-      | 'executed'
-      | 'closed'
-      | 'execution_failed';
+export type TotalSupplyByDenomResponse = {
+  amount: ICoin;
+};
+
+// TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
+export type TotalBurnedNeutronsAmountResponse = {
+  total_burned_neutrons_amount: {
+    coin: ICoin;
   };
-};
-
-type TotalPowerAtHeightResponse = {
-  readonly height: string;
-  readonly power: number;
-};
-
-type VotingPowerAtHeightResponse = {
-  readonly height: string;
-  readonly power: number;
-};
-
-// PageRequest is the params of pagination for request
-export type PageRequest = {
-  'pagination.key'?: string;
-  'pagination.offset'?: string;
-  'pagination.limit'?: string;
-  'pagination.count_total'?: boolean;
-};
-
-// AckFailuresResponse is the response model for the contractmanager failures.
-export type AckFailuresResponse = {
-  failures: Failure[];
-  pagination: {
-    next_key: string;
-    total: string;
-  };
-};
-
-// Failure represents a single contractmanager failure
-type Failure = {
-  address: string;
-  id: number;
-  ack_id: number;
-  ack_type: string;
-};
-
-// BalancesResponse is the response model for the bank balances query.
-export type PauseInfoResponse = {
-  paused: {
-    until_height: number;
-  };
-  unpaused: Record<string, never>;
-};
-
-export const NeutronContract = {
-  IBC_TRANSFER: 'ibc_transfer.wasm',
-  INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
-  INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
-  REFLECT: 'reflect.wasm',
-  TREASURY: 'neutron_treasury.wasm',
-  DISTRIBUTION: 'neutron_distribution.wasm',
-  RESERVE: 'neutron_reserve.wasm',
-  SUBDAO_CORE: 'cwd_subdao_core.wasm',
-  SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
-  SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
-};
-
-type MultiChoiceOption = {
-  description: string;
-  msgs: any[];
 };
 
 cosmosclient.codec.register(
-  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
-  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+  '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
@@ -183,8 +78,8 @@ cosmosclient.codec.register(
 );
 
 cosmosclient.codec.register(
-  '/neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest',
-  neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest,
+  '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
+  neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
 );
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
@@ -217,6 +112,7 @@ export class CosmosWrapper {
     msgs: T[],
     numAttempts = 10,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+    sequence: number = this.wallet.account.sequence,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -234,7 +130,7 @@ export class CosmosWrapper {
               mode: proto.cosmos.tx.signing.v1beta1.SignMode.SIGN_MODE_DIRECT,
             },
           },
-          sequence: this.wallet.account.sequence,
+          sequence,
         },
       ],
       fee,
@@ -387,13 +283,34 @@ export class CosmosWrapper {
     const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
       JSON.stringify(query),
     ).toString('base64')}?encoding=base64`;
-    const req = await axios.get<{
-      result: { smart: string };
-      height: number;
-    }>(url);
+    const resp = await axios
+      .get<{
+        result: { smart: string };
+        height: number;
+      }>(url)
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(
+            `Status: ${JSON.stringify(error.response.status)} \n` +
+              `Response: ${JSON.stringify(error.response.data)} \n` +
+              `Headers: ${JSON.stringify(error.response.headers)}`,
+          );
+        } else if (error.request) {
+          throw new Error(error.request);
+        } else {
+          throw new Error('Error: ' + error.message);
+        }
+        throw new Error(`Config: ${JSON.stringify(error.config)}`);
+      });
     return JSON.parse(
-      Buffer.from(req.data.result.smart, 'base64').toString(),
+      Buffer.from(resp.data.result.smart, 'base64').toString(),
     ) as T;
+  }
+
+  async getContractInfo(contract: string): Promise<any> {
+    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
+    const resp = await axios.get(url);
+    return resp.data;
   }
 
   /**
@@ -406,13 +323,15 @@ export class CosmosWrapper {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
     },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
       amount: [{ denom: this.denom, amount }],
     });
-    const res = await this.execTx(fee, [msgSend]);
+    const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
   }
 
@@ -531,12 +450,10 @@ export class CosmosWrapper {
     sender: string,
   ): Promise<InlineResponse20075TxResponse> {
     const msgRemove =
-      new neutron.interchainadapter.interchainqueries.MsgRemoveInterchainQueryRequest(
-        {
-          query_id: queryId,
-          sender,
-        },
-      );
+      new neutron.interchainqueries.MsgRemoveInterchainQueryRequest({
+        query_id: queryId,
+        sender,
+      });
 
     const res = await this.execTx(
       {
@@ -684,8 +601,12 @@ export class CosmosWrapper {
     sender: string,
     options: MultiChoiceOption[],
   ): Promise<InlineResponse20075TxResponse> {
+    const daoCoreAddress = (await this.getChainAdmins())[0];
+    const daoContracts = await getDaoContracts(this, daoCoreAddress);
+    const preProposeMultipleContractAddress =
+      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
     return await this.executeContract(
-      PRE_PROPOSE_MULTIPLE_CONTRACT_ADDRESS,
+      preProposeMultipleContractAddress,
       JSON.stringify({
         propose: {
           msg: {
@@ -701,7 +622,28 @@ export class CosmosWrapper {
       sender,
     );
   }
+  async getSeq(
+    sdk: cosmosclient.CosmosSDK,
+    address: cosmosclient.AccAddress,
+  ): Promise<number> {
+    const account = await rest.auth
+      .account(sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
 
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
+
+    return account.sequence;
+  }
   /**
    * submitSoftwareUpgradeProposal creates proposal.
    */
@@ -1123,6 +1065,14 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async getChainAdmins() {
+    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
+    const resp = await axios.get<{
+      admins: [string];
+    }>(url);
+    return resp.data.admins;
+  }
 }
 
 type TxResponseType = Awaited<ReturnType<typeof rest.tx.getTx>>;
@@ -1169,13 +1119,13 @@ export const mnemonicToWallet = async (
   sdk: cosmosclient.CosmosSDK,
   mnemonic: string,
   addrPrefix: string,
+  validate = true,
 ): Promise<Wallet> => {
   const privKey = new proto.cosmos.crypto.secp256k1.PrivKey({
     key: await cosmosclient.generatePrivKeyFromMnemonic(mnemonic),
   });
 
   const pubKey = privKey.pubKey();
-  const address = walletType.fromPublicKey(pubKey);
   let account = null;
   cosmosclient.config.setBech32Prefix({
     accAddr: addrPrefix,
@@ -1185,8 +1135,9 @@ export const mnemonicToWallet = async (
     consAddr: `${addrPrefix}valcons`,
     consPub: `${addrPrefix}valconspub`,
   });
+  const address = walletType.fromPublicKey(pubKey);
   // eslint-disable-next-line no-prototype-builtins
-  if (cosmosclient.ValAddress !== walletType) {
+  if (cosmosclient.ValAddress !== walletType && validate) {
     account = await rest.auth
       .account(sdk, address)
       .then((res) =>
@@ -1217,21 +1168,6 @@ export const getSequenceId = (rawLog: string | undefined): number => {
   return +sequence;
 };
 
-export const getContractsHashes = async (): Promise<Record<string, string>> => {
-  const hashes = {};
-  for (const key of Object.keys(NeutronContract)) {
-    const binary = await getContractBinary(NeutronContract[key]);
-    hashes[NeutronContract[key]] = crypto
-      .createHash('sha256')
-      .update(binary)
-      .digest('hex');
-  }
-  return hashes;
-};
-
-const getContractBinary = async (fileName: string): Promise<Buffer> =>
-  fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
-
 export const getIBCDenom = (portName, channelName, denom: string): string => {
   const uatomIBCHash = crypto
     .createHash('sha256')
@@ -1254,3 +1190,31 @@ export const createBankMassage = (address: string, amount: string) => ({
     },
   },
 });
+
+export const getRemoteHeight = async (sdk: CosmosSDK) => {
+  const block = await rest.tendermint.getLatestBlock(sdk);
+  return +block.data.block.header.height;
+};
+
+const whash = (typ: string, key: Uint8Array) => {
+  const sha256 = crypto.createHash('sha256');
+  sha256.update(typ);
+  const th = sha256.digest();
+  const nsha256 = crypto.createHash('sha256');
+  nsha256.update(th);
+  nsha256.update(key);
+  return nsha256.digest();
+};
+
+export const buildContractAddressClassic = (
+  codeID: number,
+  instanceID: number,
+  prefix: string,
+) => {
+  const contractID = Buffer.alloc(21);
+  contractID.write('wasm');
+  contractID.writeUintBE(instanceID, 7, 6);
+  contractID.writeUintBE(codeID, 15, 6);
+  const wasmModuleAddress = whash('module', contractID);
+  return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
+};

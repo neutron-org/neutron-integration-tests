@@ -1,5 +1,9 @@
-import { COSMOS_DENOM, CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
+import {
+  COSMOS_DENOM,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -7,7 +11,7 @@ import {
   queryRecipientTxs,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '../helpers/icq';
+} from '../../helpers/icq';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -22,13 +26,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     cm = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
   });

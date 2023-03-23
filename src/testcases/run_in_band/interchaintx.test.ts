@@ -2,18 +2,20 @@ import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
-  AckFailuresResponse,
   COSMOS_DENOM,
   CosmosWrapper,
   getSequenceId,
   NEUTRON_DENOM,
+} from '../../helpers/cosmos';
+import {
+  AckFailuresResponse,
+  AcknowledgementResult,
   NeutronContract,
-} from '../helpers/cosmos';
-import { AcknowledgementResult } from '../helpers/contract_types';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getWithAttempts } from '../helpers/wait';
+} from '../../helpers/types';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getWithAttempts } from '../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { getIca } from '../helpers/ica';
+import { getIca } from '../../helpers/ica';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -32,13 +34,13 @@ describe('Neutron / Interchain TXs', () => {
     cm1 = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
     cm2 = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
+      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
   });

@@ -3,21 +3,18 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  NeutronContract,
-  PRE_PROPOSE_CONTRACT_ADDRESS,
-  PROPOSE_CONTRACT_ADDRESS,
-  VAULT_CONTRACT_ADDRESS,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { getRemoteHeight, getWithAttempts } from '../helpers/wait';
+} from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '../helpers/icq';
-import { Wallet } from '../types';
-
+} from '../../helpers/icq';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
+import { getDaoContracts } from '../../helpers/dao';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -40,7 +37,7 @@ const watchForKvCallbackUpdates = async (
   const statusPrev = await Promise.all(
     queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
   );
-  const targetHeight = await getRemoteHeight(targetCm.sdk);
+  const targetHeight = await getHeight(targetCm.sdk);
   await Promise.all(
     queryIds.map((i) =>
       waitForICQResultWithRemoteHeight(
@@ -161,8 +158,14 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   value: string,
   amount = '1000',
 ) => {
+  const daoCoreAddress = (await cm.getChainAdmins())[0];
+  const daoContracts = await getDaoContracts(cm, daoCoreAddress);
+  const preProposalSingle =
+    daoContracts.proposal_modules.single.pre_proposal_module.address;
+  const proposalSingle = daoContracts.proposal_modules.single.address;
+
   const proposalTx = await cm.submitParameterChangeProposal(
-    PRE_PROPOSE_CONTRACT_ADDRESS,
+    preProposalSingle,
     title,
     description,
     'interchainqueries',
@@ -182,22 +185,18 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   expect(proposalId).toBeGreaterThanOrEqual(0);
 
   await cm.blockWaiter.waitBlocks(1);
-  await cm.voteYes(
-    PROPOSE_CONTRACT_ADDRESS,
-    proposalId,
-    wallet.address.toString(),
-  );
+  await cm.voteYes(proposalSingle, proposalId, wallet.address.toString());
 
   await cm.blockWaiter.waitBlocks(1);
   await cm.executeProposal(
-    PROPOSE_CONTRACT_ADDRESS,
+    proposalSingle,
     proposalId,
     wallet.address.toString(),
   );
 
   await getWithAttempts(
     cm.blockWaiter,
-    async () => await cm.queryProposal(PROPOSE_CONTRACT_ADDRESS, proposalId),
+    async () => await cm.queryProposal(proposalSingle, proposalId),
     async (response) => response.proposal.status === 'executed',
     20,
   );
@@ -298,8 +297,12 @@ describe('Neutron / Interchain KV Query', () => {
       ),
     };
 
+    const daoCoreAddress = (await cm[1].getChainAdmins())[0];
+    const daoContracts = await getDaoContracts(cm[1], daoCoreAddress);
+    const vaultContractAddress =
+      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     await cm[1].bondFunds(
-      VAULT_CONTRACT_ADDRESS,
+      vaultContractAddress,
       '10000000000',
       testState.wallets.neutron.demo1.address.toString(),
     );
@@ -337,7 +340,7 @@ describe('Neutron / Interchain KV Query', () => {
           );
         } catch (err) {
           const error = err as Error;
-          expect(error.message).toMatch(/0stake is smaller than 1000000stake/i);
+          expect(error.message).toMatch(/0untrn is smaller than 1000000untrn/i);
         }
       });
 
@@ -522,7 +525,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -545,7 +548,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       await validateBalanceQuery(
         cm[1],
@@ -569,7 +572,7 @@ describe('Neutron / Interchain KV Query', () => {
         cm[1],
         contractAddress,
         queryId,
-        await getRemoteHeight(cm[2].sdk),
+        await getHeight(cm[2].sdk),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         cm[1],
@@ -648,7 +651,9 @@ describe('Neutron / Interchain KV Query', () => {
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = 2;
       const result = await removeQueryViaTx(cm[1], queryId);
-      expect(result.raw_log).toMatch(/authorization failed: unauthorized/i);
+      expect(result.raw_log).toMatch(
+        /only owner can remove a query within its service period: unauthorized/i,
+      );
     });
 
     describe('Remove interchain query', () => {
@@ -745,10 +750,12 @@ describe('Neutron / Interchain KV Query', () => {
         const interchainQueriesParams =
           await cm[1].queryInterchainqueriesParams();
 
-        expect(interchainQueriesParams.params).toEqual({
-          query_deposit: queryDepositParam,
-          query_submit_timeout: querySubmitTimeoutParam.toString(),
-        });
+        expect(interchainQueriesParams.params.query_deposit).toEqual(
+          queryDepositParam,
+        );
+        expect(interchainQueriesParams.params.query_submit_timeout).toEqual(
+          querySubmitTimeoutParam.toString(),
+        );
 
         // Get old query params after param change proposal
         const registeredQueryAfterParamChange = await getRegisteredQuery(
@@ -785,7 +792,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await getRemoteHeight(cm[1].sdk)),
+              (await getHeight(cm[1].sdk)),
           20,
         );
 

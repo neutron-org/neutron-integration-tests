@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  NeutronContract,
-} from '../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from './common_localcosmosnet';
-import { Wallet } from '../types';
+import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { Wallet } from '../../types';
+import { NeutronContract } from '../../helpers/types';
 
 interface TreasuryStats {
   readonly total_distributed: string;
@@ -251,6 +248,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('fund', async () => {
+        await cm.blockWaiter.waitBlocks(1);
         treasuryStats = await normalizeTreasuryBurnedCoins(cm, treasury);
         const burnedCoinsBefore = await getBurnedCoinsAmount(cm);
         await cm.simulateFeeBurning(20_000_000);
@@ -263,6 +261,7 @@ describe('Neutron / Treasury', () => {
           }),
         );
         expect(res.code).toEqual(0);
+        await cm.blockWaiter.waitBlocks(1);
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(cm);
 
@@ -283,6 +282,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('verify reserve', async () => {
+        await cm.blockWaiter.waitBlocks(1);
         const reserveBalance = await cm.queryDenomBalance(
           reserve,
           NEUTRON_DENOM,
