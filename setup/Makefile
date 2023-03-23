@@ -24,9 +24,6 @@ start-cosmopark-no-rebuild:
 stop-cosmopark:
 		@$(COMPOSE) down -t0 --remove-orphans -v
 
-prepare-testing-network:
-		@docker network create neutron-testing
-
 start-node:
 		@$(COMPOSE) up neutron-node
 
