@@ -87,4 +87,5 @@ volumes:
 
 networks:
   neutron-testing:
-    external: true
+    name: neutron-testing
+    external: false
