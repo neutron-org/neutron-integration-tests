@@ -2,7 +2,6 @@ node_modules/
 yarn-error.log
 keystore.db
 contracts/artifacts/
-setup/data
 .jest
 
 # IDEs
