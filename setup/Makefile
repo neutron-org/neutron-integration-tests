@@ -32,4 +32,4 @@ start-node:
 
 clean-node:
 		@echo "Removing previous neutron node data"
-		-@rm -rf ./data
+		-@docker volume rm neutron-testing-data

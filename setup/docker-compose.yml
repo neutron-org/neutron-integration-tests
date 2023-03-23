@@ -4,7 +4,7 @@ services:
     image: neutron-node
     container_name: neutron-node
     volumes:
-      - ./data:/opt/neutron/data
+      - data:/opt/neutron/data
       - ../contracts/:/opt/neutron/contracts
     ports:
       - 1317:1317
@@ -82,6 +82,7 @@ services:
 
 volumes:
   data:
+    name: neutron-testing-data
     external: false
 
 networks:
