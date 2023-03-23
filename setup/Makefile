@@ -30,6 +30,6 @@ prepare-testing-network:
 start-node:
 		@$(COMPOSE) up neutron-node
 
-clean-node:
-		@echo "Removing previous neutron node data"
+clean:
+		@echo "Removing previous testing data"
 		-@docker volume rm neutron-testing-data
