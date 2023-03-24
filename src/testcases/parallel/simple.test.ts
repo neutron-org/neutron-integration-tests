@@ -5,6 +5,7 @@ import {
   getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import {
   AckFailuresResponse,
@@ -17,24 +18,32 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
-  let cm2: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-    cm2 = new CosmosWrapper(
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
+    );
+    gaiaAccount = new WalletWrapper(
+      gaiaChain,
+      testState.wallets.qaCosmos.genQaWal1,
     );
   });
 
@@ -52,11 +61,15 @@ describe('Neutron / Simple', () => {
   describe('Contracts', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm(NeutronContract.IBC_TRANSFER);
+      codeId = await neutronAccount.storeWasm(NeutronContract.IBC_TRANSFER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await cm.instantiate(codeId, '{}', 'ibc_transfer');
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'ibc_transfer',
+      );
       contractAddress = res[0]._contract_address;
     });
   });
@@ -65,8 +78,10 @@ describe('Neutron / Simple', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await neutronChain.queryBalances(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+        );
         relayerBalance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -74,21 +89,24 @@ describe('Neutron / Simple', () => {
         );
       });
       test('transfer to contract', async () => {
-        const res = await cm.msgSend(contractAddress.toString(), '50000');
+        const res = await neutronAccount.msgSend(
+          contractAddress.toString(),
+          '50000',
+        );
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const balances = await cm.queryBalances(contractAddress);
+        const balances = await neutronChain.queryBalances(contractAddress);
         expect(balances.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);
       });
       test('IBC transfer from a usual account', async () => {
-        const res = await cm.msgIBCTransfer(
+        const res = await neutronAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: '1000' },
-          testState.wallets.qaCosmos.genQaWal1.address.toString(),
+          gaiaAccount.wallet.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -97,9 +115,9 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check IBC token balance', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm2.queryBalances(
-          testState.wallets.qaCosmos.genQaWal1.address.toString(),
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await gaiaChain.queryBalances(
+          gaiaAccount.wallet.address.toString(),
         );
         expect(
           balances.balances.find(
@@ -110,11 +128,11 @@ describe('Neutron / Simple', () => {
         ).toEqual('1000');
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
-        const res = await cm2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: '1000' },
-          testState.wallets.qaNeutron.genQaWal1.address.toString(),
+          neutronAccount.wallet.address.toString(),
           {
             revision_number: new Long(2),
             revision_height: new Long(100000000),
@@ -123,9 +141,9 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(
-          testState.wallets.qaNeutron.genQaWal1.address.toString(),
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await neutronChain.queryBalances(
+          neutronAccount.wallet.address.toString(),
         );
         expect(
           balances.balances.find(
@@ -136,17 +154,17 @@ describe('Neutron / Simple', () => {
         ).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const denomTrace = await cm.queryDenomTrace(
+        const denomTrace = await neutronChain.queryDenomTrace(
           '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
         expect(denomTrace.base_denom).toEqual(COSMOS_DENOM);
       });
       test('set payer fees', async () => {
-        const res = await cm.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: neutronChain.denom,
               ack_fee: '2333',
               recv_fee: '0',
               timeout_fee: '2666',
@@ -157,12 +175,12 @@ describe('Neutron / Simple', () => {
       });
 
       test('execute contract', async () => {
-        const res = await cm.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+              to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -172,9 +190,9 @@ describe('Neutron / Simple', () => {
       });
 
       test('check wallet balance', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm2.queryBalances(
-          testState.wallets.qaCosmos.genQaWal1.address.toString(),
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await gaiaChain.queryBalances(
+          gaiaAccount.wallet.address.toString(),
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(
@@ -186,7 +204,9 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
-        const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
+        const balances = await neutronChain.queryBalances(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+        );
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -195,8 +215,8 @@ describe('Neutron / Simple', () => {
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(contractAddress);
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await neutronChain.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
             '0',
@@ -207,11 +227,11 @@ describe('Neutron / Simple', () => {
     });
     describe('Missing fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: neutronChain.denom,
               ack_fee: '0',
               recv_fee: '0',
               timeout_fee: '0',
@@ -221,12 +241,12 @@ describe('Neutron / Simple', () => {
       });
       test('execute contract should fail', async () => {
         await expect(
-          cm.executeContract(
+          neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+                to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -244,10 +264,10 @@ describe('Neutron / Simple', () => {
       );
       test('transfer some atoms to contract', async () => {
         const uatomAmount = '1000';
-        const res = await cm2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           portName,
           channelName,
-          { denom: cm2.denom, amount: uatomAmount },
+          { denom: gaiaChain.denom, amount: uatomAmount },
           contractAddress,
           {
             revision_number: new Long(2),
@@ -256,15 +276,15 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await cm.blockWaiter.waitBlocks(10);
-        const balances = await cm.queryBalances(contractAddress);
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const balances = await neutronChain.queryBalances(contractAddress);
         expect(
           balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
             ?.amount,
         ).toEqual(uatomAmount);
       });
       test('try to set fee in IBC transferred atoms', async () => {
-        const res = await cm.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
@@ -278,12 +298,12 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
 
         await expect(
-          cm.executeContract(
+          neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+                to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -294,11 +314,11 @@ describe('Neutron / Simple', () => {
     });
     describe('Not enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: neutronChain.denom,
               ack_fee: '1000000',
               recv_fee: '0',
               timeout_fee: '100000',
@@ -308,12 +328,12 @@ describe('Neutron / Simple', () => {
       });
       test('execute contract should fail', async () => {
         await expect(
-          cm.executeContract(
+          neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               send: {
                 channel: 'channel-0',
-                to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+                to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
@@ -325,11 +345,11 @@ describe('Neutron / Simple', () => {
 
     describe('Not enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm.denom,
+              denom: neutronChain.denom,
               ack_fee: '1000',
               recv_fee: '0',
               timeout_fee: '1000',
@@ -338,23 +358,25 @@ describe('Neutron / Simple', () => {
         );
       });
       test('execute contract with failing sudo', async () => {
-        const failuresBeforeCall = await cm.queryAckFailures(contractAddress);
+        const failuresBeforeCall = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
         // Mock sudo handler to fail
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {},
           }),
         );
 
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+              to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -372,15 +394,15 @@ describe('Neutron / Simple', () => {
         current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
         hermes checks height on remote chain and Timeout error occurs.
         */
-        const currentHeight = await getHeight(cm2.sdk);
-        await cm2.blockWaiter.waitBlocks(15);
+        const currentHeight = await getHeight(gaiaChain.sdk);
+        await gaiaChain.blockWaiter.waitBlocks(15);
 
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             send: {
               channel: 'channel-0',
-              to: testState.wallets.qaCosmos.genQaWal1.address.toString(),
+              to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
               timeout_height: currentHeight + 5,
@@ -389,8 +411,8 @@ describe('Neutron / Simple', () => {
         );
 
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-          cm.blockWaiter,
-          async () => cm.queryAckFailures(contractAddress),
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
           // Wait until there 4 failure in the list
           async (data) => data.failures.length == 4,
         );
@@ -419,7 +441,7 @@ describe('Neutron / Simple', () => {
         ]);
 
         // Restore sudo handler to state
-        await cm.executeContract(
+        await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_unset_sudo_failure_mock: {},
@@ -433,7 +455,10 @@ describe('Neutron / Simple', () => {
           'pagination.limit': '1',
           'pagination.offset': '0',
         };
-        const failures = await cm.queryAckFailures(contractAddress, pagination);
+        const failures = await neutronChain.queryAckFailures(
+          contractAddress,
+          pagination,
+        );
         expect(failures.failures.length).toEqual(1);
       });
       test('failures with big limit returns an error', async () => {
@@ -442,7 +467,7 @@ describe('Neutron / Simple', () => {
           'pagination.offset': '0',
         };
         await expect(
-          cm.queryAckFailures(contractAddress, pagination),
+          neutronChain.queryAckFailures(contractAddress, pagination),
         ).rejects.toThrow(/limit is more than maximum allowed/);
       });
     });
