@@ -46,6 +46,11 @@ type LockDropInfoResponse = {
   total_ntrn_rewards: string;
 };
 
+type PoolInfoResponse = {
+  assets: { amount: string; info: { native_token: { denom: string } } }[];
+  total_share: string;
+};
+
 type AuctionStateResponse = {
   /// Total USDC deposited to the contract
   total_usdc_deposited: string;
@@ -347,7 +352,7 @@ describe('Neutron / TGE / Auction', () => {
         ).rejects.toThrow(/Deposit window closed/);
       });
       it('should allow deposit ATOM', async () => {
-        await waitTill(times.auctionInitTs + 2);
+        await waitTill(times.auctionInitTs + 10);
         const atomBalanceBefore = await cm.queryDenomBalance(
           cm.wallet.address.toString(),
           IBC_ATOM_DENOM,
@@ -570,7 +575,7 @@ describe('Neutron / TGE / Auction', () => {
             ),
           ).rejects.toThrow(/Invalid price feed data/);
         });
-        it('should not be able to set pool size when price feed data is set but too old', async () => {
+        it('should not be able to set pool size (no NTRN)', async () => {
           const time = (Date.now() / 1000 - 1000) | 0;
           const r1 = await cm.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,
@@ -607,10 +612,11 @@ describe('Neutron / TGE / Auction', () => {
                 set_pool_size: {},
               }),
             ),
-          ).rejects.toThrow(/Price feed data is too old/);
+          ).rejects.toThrow(/Not enough NTRN in the contract/);
         });
-        it('should not be able to set pool size (no )', async () => {
-          const time = (Date.now() / 1000) | 0;
+        it('should not be able to set pool size when price feed data is set but too old', async () => {
+          await cm.msgSend(contractAddresses.TGE_AUCTION, '200000');
+          const time = (Date.now() / 1000 - 10000) | 0;
           const r1 = await cm.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
@@ -647,10 +653,39 @@ describe('Neutron / TGE / Auction', () => {
                 set_pool_size: {},
               }),
             ),
-          ).rejects.toThrow(/Min NTRN amount/);
+          ).rejects.toThrow(/Price feed data is too old/);
         });
         it('should be able to set pool size', async () => {
-          await cm.msgSend(contractAddresses.TGE_AUCTION, '200000');
+          const time = (Date.now() / 1000) | 0;
+          const r1 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
+            JSON.stringify({
+              set_rate: {
+                symbol: 'ATOM',
+                rate: {
+                  rate: '10000000',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
+              },
+            }),
+          );
+          expect(r1.code).toEqual(0);
+          const r2 = await cm.executeContract(
+            contractAddresses.TGE_PRICE_FEED_MOCK,
+            JSON.stringify({
+              set_rate: {
+                symbol: 'USDT',
+                rate: {
+                  rate: '1000000',
+                  resolve_time: time.toString(),
+                  request_id: '1',
+                },
+              },
+            }),
+          );
+          expect(r2.code).toEqual(0);
+
           const res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
@@ -887,15 +922,46 @@ describe('Neutron / TGE / Auction', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const reserveLPBalanceAtomNtrn = cm.queryContract<boolean>(
-          pairs.atom_ntrn.liqiudity,
+        const atomPoolInfo = await cm.queryContract<boolean>(
+          pairs.atom_ntrn.contract,
           {
+            pool: {},
+          },
+        );
+        const usdcPoolInfo = await cm.queryContract<boolean>(
+          pairs.usdc_ntrn.contract,
+          {
+            pool: {},
+          },
+        );
+        const reserveLPBalanceAtomNtrn =
+          await cm.queryContract<PoolInfoResponse>(pairs.atom_ntrn.liqiudity, {
             balance: {
               address: reserveAddress,
             },
-          },
-        );
-        expect(reserveLPBalanceAtomNtrn).toEqual(true);
+          });
+        const reserveLPBalanceUsdcNtrn =
+          await cm.queryContract<PoolInfoResponse>(pairs.usdc_ntrn.liqiudity, {
+            balance: {
+              address: reserveAddress,
+            },
+          });
+        expect(reserveLPBalanceAtomNtrn).toEqual({ balance: '7532' });
+        expect(reserveLPBalanceUsdcNtrn).toEqual({ balance: '52839' });
+        expect(atomPoolInfo).toEqual({
+          assets: [
+            { amount: '4000', info: { native_token: { denom: 'uibcatom' } } },
+            { amount: '64517', info: { native_token: { denom: 'untrn' } } },
+          ],
+          total_share: '16064',
+        });
+        expect(usdcPoolInfo).toEqual({
+          assets: [
+            { amount: '84000', info: { native_token: { denom: 'uibcusdc' } } },
+            { amount: '135483', info: { native_token: { denom: 'untrn' } } },
+          ],
+          total_share: '106679',
+        });
       });
       it('should not be able to init pool twice', async () => {
         await expect(
