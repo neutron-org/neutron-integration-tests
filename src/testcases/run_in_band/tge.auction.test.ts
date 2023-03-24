@@ -131,6 +131,7 @@ describe('Neutron / TGE / Auction', () => {
         'ASTRO_PAIR',
         'ASTRO_FACTORY',
         'ASTRO_TOKEN',
+        'VESTING_LP',
       ]) {
         const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
         expect(codeId).toBeGreaterThan(0);

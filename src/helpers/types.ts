@@ -106,6 +106,7 @@ export const NeutronContract = {
   ASTRO_PAIR: 'astroport_pair.wasm',
   ASTRO_FACTORY: 'astroport_factory.wasm',
   ASTRO_TOKEN: 'astroport_token.wasm',
+  VESTING_LP: 'vesting_lp.wasm',
 };
 
 export type MultiChoiceOption = {
