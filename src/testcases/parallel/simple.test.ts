@@ -14,7 +14,6 @@ import {
 
 import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { assign } from 'lodash';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
