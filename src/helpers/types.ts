@@ -100,6 +100,8 @@ export const NeutronContract = {
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
+  CW4_VOTING: 'cw4_voting.wasm',
+  CW4_GROUP: 'cw4_group.wasm',
 };
 
 export type MultiChoiceOption = {

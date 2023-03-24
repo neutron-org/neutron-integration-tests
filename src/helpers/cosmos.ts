@@ -272,6 +272,12 @@ export class CosmosWrapper {
     }>(url);
     return resp.data.admins;
   }
+
+  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
+    return await this.queryContract<PauseInfoResponse>(addr, {
+      pause_info: {},
+    });
+  }
 }
 
 export class WalletWrapper {
@@ -469,7 +475,7 @@ export class WalletWrapper {
     actionCheck: () => Promise<void>,
   ) {
     // check contract's pause info before pausing
-    let pauseInfo = await this.queryPausedInfo(testingContract);
+    let pauseInfo = await this.cw.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
 
@@ -485,7 +491,7 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after pausing
-    pauseInfo = await this.queryPausedInfo(testingContract);
+    pauseInfo = await this.cw.queryPausedInfo(testingContract);
     expect(pauseInfo.unpaused).toEqual(undefined);
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
@@ -502,7 +508,7 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after unpausing
-    pauseInfo = await this.queryPausedInfo(testingContract);
+    pauseInfo = await this.cw.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
 
@@ -524,21 +530,15 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after pausing
-    pauseInfo = await this.queryPausedInfo(testingContract);
+    pauseInfo = await this.cw.queryPausedInfo(testingContract);
     expect(pauseInfo.unpaused).toEqual(undefined);
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
     await this.cw.blockWaiter.waitBlocks(short_pause_duration);
-    pauseInfo = await this.queryPausedInfo(testingContract);
+    pauseInfo = await this.cw.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
-  }
-
-  async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
-    return await this.cw.queryContract<PauseInfoResponse>(addr, {
-      pause_info: {},
-    });
   }
 
   /* simulateFeeBurning simulates fee burning via send tx.

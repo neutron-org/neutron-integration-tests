@@ -60,6 +60,25 @@ export type VaultBondingStatus = {
   height: number;
 };
 
+export type VotingVaultsModule = {
+  address: string;
+  voting_vaults: {
+    ntrn_vault: {
+      address: string;
+    };
+    lockdrop_vault: {
+      address: string;
+    };
+  };
+};
+
+export type VotingCw4Module = {
+  address: string;
+  cw4group: {
+    address: string;
+  };
+};
+
 export type DaoContracts = {
   core: {
     address: string;
@@ -69,32 +88,25 @@ export type DaoContracts = {
       address: string;
       pre_proposal_module: {
         address: string;
+        timelock_module?: {
+          address: string;
+        };
       };
     };
-    multiple: {
+    multiple?: {
       address: string;
       pre_proposal_module: {
         address: string;
       };
     };
-    overrule: {
+    overrule?: {
       address: string;
       pre_proposal_module: {
         address: string;
       };
     };
   };
-  voting_module: {
-    address: string;
-    voting_vaults: {
-      ntrn_vault: {
-        address: string;
-      };
-      lockdrop_vault: {
-        address: string;
-      };
-    };
-  };
+  voting_module: VotingVaultsModule | VotingCw4Module;
 };
 
 export const getVotingModule = async (
@@ -108,7 +120,7 @@ export const getVotingModule = async (
 export const getVotingVaults = async (
   cm: CosmosWrapper,
   voting_module_address: string,
-): Promise<DaoContracts['voting_module']['voting_vaults']> => {
+): Promise<VotingVaultsModule['voting_vaults']> => {
   const voting_vaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(voting_module_address, { voting_vaults: {} });
@@ -313,6 +325,20 @@ export class Dao {
       20,
     );
   }
+
+  async getTimelockedProposal(
+    proposal_id: number,
+  ): Promise<TimeLockSingleChoiceProposal> {
+    return this.cm.queryContract<TimeLockSingleChoiceProposal>(
+      this.contracts.proposal_modules.single.pre_proposal_module.timelock_module
+        .address,
+      {
+        proposal: {
+          proposal_id: proposal_id,
+        },
+      },
+    );
+  }
 }
 
 export class DaoMember {
@@ -471,7 +497,9 @@ export class DaoMember {
   async submitSendProposal(
     title: string,
     description: string,
-    amount: string,
+    amount: [
+      { recipient: string; amount: number },
+    ],
     to: string,
     sender: string = this.cm.wallet.address.toString(),
   ): Promise<number> {
@@ -660,6 +688,79 @@ export class DaoMember {
       message,
       amount,
       sender,
+    );
+  }
+
+  async supportAndExecuteProposal(
+    proposal_id: number,
+  ): Promise<TimeLockSingleChoiceProposal> {
+    await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({
+        vote: { proposal_id: proposal_id, vote: 'yes' },
+      }),
+    );
+
+    await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ execute: { proposal_id: proposal_id } }),
+    );
+    return await this.dao.getTimelockedProposal(proposal_id);
+  }
+
+  async executeTimelockedProposal(
+    proposal_id: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module
+        .timelock_module.address,
+      JSON.stringify({
+        execute_proposal: {
+          proposal_id: proposal_id,
+        },
+      }),
+    );
+  }
+
+  async overruleTimelockedProposal(
+    proposal_id: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module
+        .timelock_module.address,
+      JSON.stringify({
+        overrule_proposal: {
+          proposal_id: proposal_id,
+        },
+      }),
+    );
+  }
+
+  async submitUpdateSubDaoConfigProposalpropose(new_config: {
+    name?: string;
+    description?: string;
+    dao_uri?: string;
+  }): Promise<number> {
+    const message = JSON.stringify({
+      wasm: {
+        execute: {
+          contract_addr: this.dao.contracts.core.address,
+          msg: Buffer.from(
+            JSON.stringify({
+              update_config: new_config,
+            }),
+          ).toString('base64'),
+          funds: [],
+        },
+      },
+    });
+
+    return await this.submitSingleChoiceProposal(
+      'update subDAO config',
+      'sets subDAO config to new value',
+      message,
+      '0',
+      this.dao.contracts.core.address,
     );
   }
 }
