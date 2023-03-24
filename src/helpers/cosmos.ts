@@ -16,26 +16,15 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import bech32 from 'bech32';
-import {
-  paramChangeProposal,
-  ParamChangeProposalInfo,
-  sendProposal,
-  SendProposalInfo,
-} from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
   AckFailuresResponse,
   ChannelsList,
-  MultiChoiceOption,
   PageRequest,
   PauseInfoResponse,
-  SingleChoiceProposal,
-  TotalPowerAtHeightResponse,
-  VotingPowerAtHeightResponse,
 } from './types';
 import { getContractBinary } from './env';
-import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
@@ -450,163 +439,6 @@ export class CosmosWrapper {
     return res?.tx_response;
   }
 
-  /**
-   * submitSendProposal creates proposal to send funds from DAO core contract for given address.
-   */
-  async submitSendProposal(
-    pre_propose_contract: string,
-    title: string,
-    description: string,
-    amount: string,
-    to: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify(
-      sendProposal({ to, denom: this.denom, amount }),
-    );
-    return await this.submitProposal(
-      pre_propose_contract,
-      title,
-      description,
-      message,
-      amount,
-      sender,
-    );
-  }
-
-  /**
-   * submitParameterChangeProposal creates parameter change proposal.
-   */
-  async submitParameterChangeProposal(
-    pre_propose_contract: string,
-    title: string,
-    description: string,
-    subspace: string,
-    key: string,
-    value: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify(
-      paramChangeProposal({ title, description, subspace, key, value }),
-    );
-    return await this.submitProposal(
-      pre_propose_contract,
-      title,
-      description,
-      message,
-      amount,
-      sender,
-    );
-  }
-
-  /**
-   * submitMultiChoiceSendProposal creates parameter change proposal with multiple choices.
-   */
-  async submitMultiChoiceSendProposal(
-    choices: SendProposalInfo[],
-    title: string,
-    description: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
-      description: 'choice' + idx,
-      msgs: [sendProposal(choice)],
-    }));
-    return await this.submitMultiChoiceProposal(
-      title,
-      description,
-      amount,
-      sender,
-      messages,
-    );
-  }
-
-  /**
-   * submitMultiChoiceParameterChangeProposal creates parameter change proposal with multiple choices.
-   */
-  async submitMultiChoiceParameterChangeProposal(
-    choices: ParamChangeProposalInfo[],
-    title: string,
-    description: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
-      description: 'choice' + idx,
-      msgs: [paramChangeProposal(choice)],
-    }));
-    return await this.submitMultiChoiceProposal(
-      title,
-      description,
-      amount,
-      sender,
-      messages,
-    );
-  }
-
-  /**
-   * submitProposal creates proposal with given message.
-   */
-  async submitProposal(
-    pre_propose_contract: string,
-    title: string,
-    description: string,
-    msg: string,
-    amount: string,
-    sender: string,
-  ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.parse(msg);
-    return await this.executeContract(
-      pre_propose_contract,
-      JSON.stringify({
-        propose: {
-          msg: {
-            propose: {
-              title: title,
-              description: description,
-              msgs: [message],
-            },
-          },
-        },
-      }),
-      [{ denom: this.denom, amount: amount }],
-      sender,
-    );
-  }
-
-  /**
-   * submitMultiChoiceProposal creates multi-choice proposal with given message.
-   */
-  async submitMultiChoiceProposal(
-    title: string,
-    description: string,
-    amount: string,
-    sender: string,
-    options: MultiChoiceOption[],
-  ): Promise<InlineResponse20075TxResponse> {
-    const daoCoreAddress = (await this.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(this, daoCoreAddress);
-    const preProposeMultipleContractAddress =
-      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
-    return await this.executeContract(
-      preProposeMultipleContractAddress,
-      JSON.stringify({
-        propose: {
-          msg: {
-            propose: {
-              title: title,
-              description: description,
-              choices: { options },
-            },
-          },
-        },
-      }),
-      [{ denom: this.denom, amount: amount }],
-      sender,
-    );
-  }
   async getSeq(
     sdk: cosmosclient.CosmosSDK,
     address: cosmosclient.AccAddress,
@@ -628,266 +460,6 @@ export class CosmosWrapper {
     }
 
     return account.sequence;
-  }
-  /**
-   * submitSoftwareUpgradeProposal creates proposal.
-   */
-  async submitSoftwareUpgradeProposal(
-    pre_propose_contract: string,
-    title: string,
-    description: string,
-    name: string,
-    height: number,
-    info: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      custom: {
-        submit_admin_proposal: {
-          admin_proposal: {
-            software_upgrade_proposal: {
-              title,
-              description,
-              plan: {
-                name,
-                height,
-                info,
-              },
-            },
-          },
-        },
-      },
-    });
-    return await this.submitProposal(
-      pre_propose_contract,
-      title,
-      description,
-      message,
-      amount,
-      sender,
-    );
-  }
-
-  /**
-   * submitCancelSoftwareUpgradeProposal creates proposal.
-   */
-  async submitCancelSoftwareUpgradeProposal(
-    pre_propose_contract: string,
-    title: string,
-    description: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify({
-      custom: {
-        submit_admin_proposal: {
-          admin_proposal: {
-            cancel_software_upgrade_proposal: {
-              title,
-              description,
-            },
-          },
-        },
-      },
-    });
-    return await this.submitProposal(
-      pre_propose_contract,
-      title,
-      description,
-      message,
-      amount,
-      sender,
-    );
-  }
-
-  /**
-   * voteYes  vote 'yes' for given proposal.
-   */
-  async voteYes(
-    propose_contract: string,
-    proposalId: number,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      propose_contract,
-      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
-      [],
-      sender,
-    );
-  }
-
-  /**
-   * voteNo  vote 'no' for given proposal.
-   */
-  async voteNo(
-    propose_contract: string,
-    proposalId: number,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      propose_contract,
-      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
-      [],
-      sender,
-    );
-  }
-
-  /**
-   * voteYes  vote for option for given multi choice proposal.
-   */
-  async voteForOption(
-    proposeContract: string,
-    proposalId: number,
-    optionId: number,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      proposeContract,
-      JSON.stringify({
-        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
-      }),
-      [],
-      sender,
-    );
-  }
-
-  /**
-   * executeProposal executes given proposal.
-   */
-  async executeProposal(
-    propose_contract: string,
-    proposalId: number,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      propose_contract,
-      JSON.stringify({ execute: { proposal_id: proposalId } }),
-      [],
-      sender,
-    );
-  }
-
-  async checkPassedProposal(propose_contract: string, proposalId: number) {
-    await getWithAttempts(
-      this.blockWaiter,
-      async () => await this.queryProposal(propose_contract, proposalId),
-      async (response) => response.proposal.status === 'passed',
-      20,
-    );
-  }
-
-  async checkPassedMultiChoiceProposal(
-    propose_contract: string,
-    proposalId: number,
-  ) {
-    await getWithAttempts(
-      this.blockWaiter,
-      async () =>
-        await this.queryMultiChoiceProposal(propose_contract, proposalId),
-      async (response) => response.proposal.status === 'passed',
-      20,
-    );
-  }
-
-  async checkExecutedMultiChoiceProposal(
-    propose_contract: string,
-    proposalId: number,
-  ) {
-    await getWithAttempts(
-      this.blockWaiter,
-      async () =>
-        await this.queryMultiChoiceProposal(propose_contract, proposalId),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
-  async executeProposalWithAttempts(
-    propose_contract: string,
-    proposalId: number,
-  ) {
-    await this.executeProposal(propose_contract, proposalId);
-    await getWithAttempts(
-      this.blockWaiter,
-      async () => await this.queryProposal(propose_contract, proposalId),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
-  async executeMultiChoiceProposalWithAttempts(
-    proposalContract: string,
-    proposalId: number,
-  ) {
-    await this.executeMultiChoiceProposal(proposalContract, proposalId);
-    await getWithAttempts(
-      this.blockWaiter,
-      async () =>
-        await this.queryMultiChoiceProposal(proposalContract, proposalId),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
-  /**
-   * executeMultiChoiceProposal executes given multichoice proposal.
-   */
-  async executeMultiChoiceProposal(
-    proposalContract: string,
-    proposalId: number,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<any> {
-    return await this.executeContract(
-      proposalContract,
-      JSON.stringify({ execute: { proposal_id: proposalId } }),
-      [],
-      sender,
-    );
-  }
-
-  async queryMultiChoiceProposal(
-    propose_contract: string,
-    proposalId: number,
-  ): Promise<any> {
-    return await this.queryContract<any>(propose_contract, {
-      proposal: {
-        proposal_id: proposalId,
-      },
-    });
-  }
-
-  async queryProposal(
-    propose_contract: string,
-    proposalId: number,
-  ): Promise<SingleChoiceProposal> {
-    return await this.queryContract<SingleChoiceProposal>(propose_contract, {
-      proposal: {
-        proposal_id: proposalId,
-      },
-    });
-  }
-
-  async queryTotalVotingPower(
-    core_contract: string,
-  ): Promise<TotalPowerAtHeightResponse> {
-    return await this.queryContract<TotalPowerAtHeightResponse>(core_contract, {
-      total_power_at_height: {},
-    });
-  }
-
-  async queryVotingPower(
-    core_contract: string,
-    addr: string,
-  ): Promise<VotingPowerAtHeightResponse> {
-    return await this.queryContract<VotingPowerAtHeightResponse>(
-      core_contract,
-      {
-        voting_power_at_height: {
-          address: addr,
-        },
-      },
-    );
   }
 
   async queryInterchainqueriesParams(): Promise<any> {
@@ -1202,4 +774,23 @@ export const buildContractAddressClassic = (
   contractID.writeUintBE(codeID, 15, 6);
   const wasmModuleAddress = whash('module', contractID);
   return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
+};
+
+export const getEventAttribute = (
+  events: { type: string; attributes: { key: string; value: string }[] }[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
 };

@@ -2,6 +2,7 @@ import { proto, rest } from '@cosmos-client/core';
 import {
   COSMOS_DENOM,
   CosmosWrapper,
+  getEventAttribute,
   NEUTRON_DENOM,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -14,7 +15,8 @@ import {
 } from '../../helpers/icq';
 import { Wallet } from '../../types';
 import { NeutronContract } from '../../helpers/types';
-import { getDaoContracts } from '../../helpers/dao';
+import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import { paramChangeProposal } from '../../helpers/proposal';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -130,25 +132,6 @@ const registerBalanceQuery = async (
   return queryId;
 };
 
-const getEventAttribute = (
-  events: { type: string; attributes: { key: string; value: string }[] }[],
-  eventType: string,
-  attribute: string,
-): string => {
-  const attributes = events
-    .filter((event) => event.type === eventType)
-    .map((event) => event.attributes)
-    .flat();
-
-  const encodedAttr = attributes?.find(
-    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
-  )?.value as string;
-
-  expect(encodedAttr).toBeDefined();
-
-  return Buffer.from(encodedAttr, 'base64').toString('ascii');
-};
-
 const acceptInterchainqueriesParamsChangeProposal = async (
   cm: CosmosWrapper,
   wallet: Wallet,
@@ -160,45 +143,23 @@ const acceptInterchainqueriesParamsChangeProposal = async (
 ) => {
   const daoCoreAddress = (await cm.getChainAdmins())[0];
   const daoContracts = await getDaoContracts(cm, daoCoreAddress);
-  const preProposalSingle =
-    daoContracts.proposal_modules.single.pre_proposal_module.address;
-  const proposalSingle = daoContracts.proposal_modules.single.address;
-
-  const proposalTx = await cm.submitParameterChangeProposal(
-    preProposalSingle,
+  const dao = new Dao(cm, daoContracts);
+  const message = JSON.stringify(
+    paramChangeProposal({
+      title,
+      description,
+      subspace: 'interchainqueries',
+      key,
+      value,
+    }),
+  );
+  await dao.makeSingleChoiceProposalPass(
+    [new DaoMember(cm, dao)],
     title,
     description,
-    'interchainqueries',
-    key,
-    value,
+    message,
     amount,
     wallet.address.toString(),
-  );
-
-  const attribute = getEventAttribute(
-    (proposalTx as any).events,
-    'wasm',
-    'proposal_id',
-  );
-
-  const proposalId = parseInt(attribute);
-  expect(proposalId).toBeGreaterThanOrEqual(0);
-
-  await cm.blockWaiter.waitBlocks(1);
-  await cm.voteYes(proposalSingle, proposalId, wallet.address.toString());
-
-  await cm.blockWaiter.waitBlocks(1);
-  await cm.executeProposal(
-    proposalSingle,
-    proposalId,
-    wallet.address.toString(),
-  );
-
-  await getWithAttempts(
-    cm.blockWaiter,
-    async () => await cm.queryProposal(proposalSingle, proposalId),
-    async (response) => response.proposal.status === 'executed',
-    20,
   );
 };
 
