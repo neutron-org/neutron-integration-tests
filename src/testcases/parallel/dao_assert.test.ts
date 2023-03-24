@@ -146,12 +146,52 @@ describe('DAO / Check', () => {
   });
 
   describe('Checking the validity of binary files', () => {
-    test('dao hash assert', async () => {
+    test('dao proposal single hash assert', async () => {
       const res = await cm_dao.getContractInfo(proposalSingleAddress);
       const hash = await fetchDataHash(res.contract_info.code_id);
       const hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_proposal_single.wasm'],
+        `Error: The hashes don't match`,
+      );
+    });
+
+    test('dao proposal multiple hash assert', async () => {
+      const res = await cm_dao.getContractInfo(proposalMultipleAddress);
+      const hash = await fetchDataHash(res.contract_info.code_id);
+      const hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_proposal_multiple.wasm'],
+        `Error: The hashes don't match`,
+      );
+    });
+
+    test('dao preproposal single hash assert', async () => {
+      const res = await cm_dao.getContractInfo(preProposalSingleAddress);
+      const hash = await fetchDataHash(res.contract_info.code_id);
+      const hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_pre_propose_single.wasm'],
+        `Error: The hashes don't match`,
+      );
+    });
+
+    test('dao preproposal multiple hash assert', async () => {
+      const res = await cm_dao.getContractInfo(preProposalMultipleAddress);
+      const hash = await fetchDataHash(res.contract_info.code_id);
+      const hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_pre_propose_multiple.wasm'],
+        `Error: The hashes don't match`,
+      );
+    });
+
+    test('dao core  hash assert', async () => {
+      const res = await cm_dao.getContractInfo(daoContracts.core.address);
+      const hash = await fetchDataHash(res.contract_info.code_id);
+      const hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_core.wasm'],
         `Error: The hashes don't match`,
       );
     });
