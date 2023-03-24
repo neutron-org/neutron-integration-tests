@@ -377,7 +377,7 @@ export class WalletWrapper {
     return attributes[0].code_id;
   }
 
-  async instantiate(
+  async instantiateContract(
     codeId: string,
     msg: string | null = null,
     label: string | null = null,
