@@ -2,6 +2,7 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { Wallet } from '../../types';
 import { getDaoContracts, DaoContracts } from '../../helpers/dao';
+import { getContractsHashes } from '../../helpers/env';
 
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -47,7 +48,7 @@ describe('DAO / Check', () => {
       daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
   });
 
-  describe('proposal modules', () => {
+  describe('Checking proposal modules', () => {
     test('proposal dao single', async () => {
       const res = await cm_dao.queryContract(proposalSingleAddress, {
         dao: {},
@@ -112,7 +113,7 @@ describe('DAO / Check', () => {
     });
   });
 
-  describe('voting module', () => {
+  describe('Checking voting module', () => {
     test('voting module', async () => {
       const res = await cm_dao.queryContract(votingModuleAddress, {
         dao: {},
@@ -122,19 +123,35 @@ describe('DAO / Check', () => {
         `Error in voting module test. Expected ${daoContracts.core.address}, but got ${res}`,
       );
     });
-  });
-  test.skip('voting ntrn vaults', async () => {
-    const res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
-      dao: {},
+
+    test.skip('voting ntrn vaults', async () => {
+      const res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
+        dao: {},
+      });
     });
-    console.log('voting ntrn vaults');
-    console.log(res);
-  });
-  test.skip('voting lockdrop vaults', async () => {
-    const res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
-      dao: {},
+
+    test.skip('voting lockdrop vaults', async () => {
+      const res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
+        dao: {},
+      });
     });
-    console.log('voting lockdrop vaults');
-    console.log(res);
+
+    test.skip('Dao is the admin of himself', async () => {
+      const res = await cm_dao.getContractInfo(daoContracts.core.address);
+      expect(res.contract_info.admin).toEqual(
+        daoContracts.core.address,
+        `Error in dao admin of himself. Expected ${daoContracts.core.address}, but got ${res}`,
+      );
+    });
+  });
+
+  describe('Checking the validity of binary files', () => {
+    test('dao core', async () => {
+      const res = await cm_dao.getContractInfo(votingVaultsNtrnAddress);
+      const res2 = res.contract_info.code_id;
+      const res3 = await getContractsHashes();
+      console.log(res2);
+      console.log(res3);
+    });
   });
 });
