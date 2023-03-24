@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -84,6 +84,10 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
+);
+cosmosclient.codec.register(
+  '/ibc.applications.transfer.v1.MsgTransfer',
+  ibc_proto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -930,15 +934,18 @@ export class CosmosWrapper {
     token: ICoin,
     receiver: string,
     timeout_height: IHeight,
+    memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibcproto.ibc.applications.transfer.v1.MsgTransfer({
+    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
       timeout_height: timeout_height,
+      memo: memo,
     });
+    msgSend.memo = memo;
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),

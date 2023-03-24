@@ -14,6 +14,7 @@ import {
 
 import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { assign } from 'lodash';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -233,6 +234,73 @@ describe('Neutron / Simple', () => {
             }),
           ),
         ).rejects.toThrow(/invalid coins/);
+      });
+    });
+    describe('Multihops', () => {
+      // 1. Check balance of Account 1 on Chain 1
+      // 2. Check balance of Account 3 on Chain 2
+      // 3. Check balance of Account 2 on Chain 1
+      // 4. Account 1 on Chain 1 sends x tokens to Account 2 on Chain 1 via Account 3 on Chain 2
+      // 5. Check Balance of Account 3 on Chain 2, confirm it stays the same
+      // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
+      // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
+      test('IBC transfer from a usual account', async () => {
+        const sender = testState.wallets.qaNeutron.genQaWal1.address.toString();
+        const middlehop =
+          testState.wallets.qaCosmos.genQaWal1.address.toString();
+        const receiver =
+          testState.wallets.qaNeutronThree.genQaWal1.address.toString();
+
+        let senderBalances = await cm.queryBalances(sender);
+        const senderNTRNBalanceBefore = senderBalances.balances.find(
+          (bal): boolean => bal.denom == NEUTRON_DENOM,
+        )?.amount;
+
+        let receiverBalances = await cm.queryBalances(receiver);
+        const receiverNTRNBalanceBefore = receiverBalances.balances.find(
+          (bal): boolean => bal.denom == NEUTRON_DENOM,
+        )?.amount;
+
+        const transferAmount = '333333';
+
+        const res = await cm.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: NEUTRON_DENOM, amount: transferAmount },
+          middlehop,
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
+          `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
+        );
+        expect(res.code).toEqual(0);
+
+        await cm.blockWaiter.waitBlocks(20);
+
+        const middlehopBalances = await cm2.queryBalances(middlehop);
+        const middlehopNTRNBalanceAfter = middlehopBalances.balances.find(
+          (bal): boolean =>
+            bal.denom ==
+            'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
+        )?.amount;
+        expect(middlehopNTRNBalanceAfter).toEqual('4000');
+
+        senderBalances = await cm.queryBalances(sender);
+        const senderNTRNBalanceAfter = senderBalances.balances.find(
+          (bal): boolean => bal.denom == NEUTRON_DENOM,
+        )?.amount;
+        expect(Number(senderNTRNBalanceAfter)).toEqual(
+          Number(senderNTRNBalanceBefore) - Number(transferAmount) - 1000, // original balance - transfer amount - fee
+        );
+
+        receiverBalances = await cm.queryBalances(receiver);
+        const receiverNTRNBalanceAfter = receiverBalances.balances.find(
+          (bal): boolean => bal.denom == NEUTRON_DENOM,
+        )?.amount;
+        expect(Number(receiverNTRNBalanceAfter)).toEqual(
+          Number(receiverNTRNBalanceBefore) + Number(transferAmount),
+        );
       });
     });
     describe('Fee in wrong denom', () => {
