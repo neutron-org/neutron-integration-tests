@@ -283,6 +283,36 @@ export class Dao {
       },
     );
   }
+
+  async makeSingleChoiceProposalPass(
+    loyalVoters: [DaoMember],
+    title: string,
+    description: string,
+    msg: string,
+    amount: string,
+    sender: string,
+  ) {
+    const proposal_id = await loyalVoters[0].submitSingleChoiceProposal(
+      title,
+      description,
+      msg,
+      amount,
+      sender,
+    );
+    await loyalVoters[0].cm.cw.blockWaiter.waitBlocks(1);
+
+    for (const voter of loyalVoters) {
+      await voter.voteYes(proposal_id);
+    }
+    await loyalVoters[0].executeProposal(proposal_id);
+
+    await getWithAttempts(
+      loyalVoters[0].cm.cw.blockWaiter,
+      async () => await this.queryProposal(proposal_id),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
 }
 
 export class DaoMember {
@@ -397,36 +427,6 @@ export class DaoMember {
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
       sender,
-    );
-  }
-
-  async makeSingleChoiceProposalPass(
-    loyalVoters: [DaoMember],
-    title: string,
-    description: string,
-    msg: string,
-    amount: string,
-    sender: string,
-  ) {
-    const proposal_id = await this.submitSingleChoiceProposal(
-      title,
-      description,
-      msg,
-      amount,
-      sender,
-    );
-    await loyalVoters[0].cm.cw.blockWaiter.waitBlocks(1);
-
-    for (const voter of loyalVoters) {
-      await voter.voteYes(proposal_id);
-    }
-    await this.executeProposal(proposal_id);
-
-    await getWithAttempts(
-      loyalVoters[0].cm.cw.blockWaiter,
-      async () => await this.dao.queryProposal(proposal_id),
-      async (response) => response.proposal.status === 'executed',
-      20,
     );
   }
 
