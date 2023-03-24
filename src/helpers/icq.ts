@@ -26,7 +26,10 @@ export const getRegisteredQuery = (
       connection_id: string;
       update_period: number;
       last_submitted_result_local_height: number;
-      last_submitted_result_remote_height: number;
+      last_submitted_result_remote_height: {
+        revision_number: number;
+        revision_height: number;
+      };
       deposit: { denom: string; amount: string }[];
       submit_timeout: number;
       registered_at_height: number;
@@ -52,8 +55,8 @@ export const waitForICQResultWithRemoteHeight = (
     cm.blockWaiter,
     () => getRegisteredQuery(cm, contractAddress, queryId),
     async (query) =>
-      query.registered_query.last_submitted_result_remote_height >=
-      targetHeight,
+      query.registered_query.last_submitted_result_remote_height
+        .revision_height >= targetHeight,
     numAttempts,
   );
 
