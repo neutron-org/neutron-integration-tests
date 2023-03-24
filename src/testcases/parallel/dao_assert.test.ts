@@ -2,7 +2,7 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { Wallet } from '../../types';
 import { getDaoContracts, DaoContracts } from '../../helpers/dao';
-import { getContractsHashes } from '../../helpers/env';
+import { getContractsHashes, fetchDataHash } from '../../helpers/env';
 
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -146,12 +146,14 @@ describe('DAO / Check', () => {
   });
 
   describe('Checking the validity of binary files', () => {
-    test('dao core', async () => {
-      const res = await cm_dao.getContractInfo(votingVaultsNtrnAddress);
-      const res2 = res.contract_info.code_id;
-      const res3 = await getContractsHashes();
-      console.log(res2);
-      console.log(res3);
+    test('dao hash assert', async () => {
+      const res = await cm_dao.getContractInfo(proposalSingleAddress);
+      const hash = await fetchDataHash(res.contract_info.code_id);
+      const hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_proposal_single.wasm'],
+        `Error: The hashes don't match`,
+      );
     });
   });
 });
