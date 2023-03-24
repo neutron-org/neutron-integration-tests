@@ -1,6 +1,6 @@
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import axios, { AxiosResponse } from 'axios';
-import { CosmosWrapper } from './cosmos';
+import {CosmosWrapper, WalletWrapper} from './cosmos';
 import { getWithAttempts } from './wait';
 import { rest } from '@cosmos-client/core';
 
@@ -133,7 +133,7 @@ export const postResubmitTxs = async (
  * the given parameters and checks the tx result to be successful.
  */
 export const registerTransfersQuery = async (
-  cm: CosmosWrapper,
+  cm: WalletWrapper,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -150,7 +150,7 @@ export const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.sdk as CosmosSDK, res.txhash as string);
+  const tx = await rest.tx.getTx(cm.cw.sdk as CosmosSDK, res.txhash as string);
   expect(tx?.data.tx_response?.code).toEqual(0);
 };
 

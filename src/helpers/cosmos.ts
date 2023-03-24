@@ -6,7 +6,7 @@ import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import { BlockWaiter, getWithAttempts } from './wait';
+import { BlockWaiter } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -15,7 +15,6 @@ import { cosmos, google } from '@cosmos-client/core/cjs/proto';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
-import bech32 from 'bech32';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
@@ -78,18 +77,209 @@ cosmosclient.codec.register(
 export class CosmosWrapper {
   sdk: cosmosclient.CosmosSDK;
   blockWaiter: BlockWaiter;
-  wallet: Wallet;
   denom: string;
 
   constructor(
     sdk: cosmosclient.CosmosSDK,
     blockWaiter: BlockWaiter,
-    wallet: Wallet,
     denom: string,
   ) {
     this.denom = denom;
     this.sdk = sdk;
     this.blockWaiter = blockWaiter;
+  }
+
+  async queryContractWithWait<T>(
+    contract: string,
+    query: Record<string, unknown>,
+    numAttempts = 20,
+  ): Promise<T> {
+    while (numAttempts > 0) {
+      const res: T = await this.queryContract<T>(contract, query).catch(
+        () => null,
+      );
+
+      if (res !== null) {
+        return res;
+      }
+
+      numAttempts--;
+      await this.blockWaiter.waitBlocks(1);
+    }
+
+    throw new Error('failed to query contract');
+  }
+
+  async queryContract<T>(
+    contract: string,
+    query: Record<string, unknown>,
+  ): Promise<T> {
+    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
+      JSON.stringify(query),
+    ).toString('base64')}?encoding=base64`;
+    const resp = await axios
+      .get<{
+        result: { smart: string };
+        height: number;
+      }>(url)
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(
+            `Status: ${JSON.stringify(error.response.status)} \n` +
+              `Response: ${JSON.stringify(error.response.data)} \n` +
+              `Headers: ${JSON.stringify(error.response.headers)}`,
+          );
+        } else if (error.request) {
+          throw new Error(error.request);
+        } else {
+          throw new Error('Error: ' + error.message);
+        }
+        throw new Error(`Config: ${JSON.stringify(error.config)}`);
+      });
+    return JSON.parse(
+      Buffer.from(resp.data.result.smart, 'base64').toString(),
+    ) as T;
+  }
+
+  async getContractInfo(contract: string): Promise<any> {
+    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
+    const resp = await axios.get(url);
+    return resp.data;
+  }
+
+  async getSeq(address: cosmosclient.AccAddress): Promise<number> {
+    const account = await rest.auth
+      .account(this.sdk, address)
+      .then((res) =>
+        cosmosclient.codec.protoJSONToInstance(
+          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
+        ),
+      )
+      .catch((e) => {
+        console.log(e);
+        throw e;
+      });
+
+    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
+      throw new Error("can't get account");
+    }
+
+    return account.sequence;
+  }
+
+  async queryInterchainqueriesParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron/interchainqueries/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryDelegations(delegatorAddr: cosmosclient.AccAddress): Promise<any> {
+    const balances = await rest.staking.delegatorDelegations(
+      this.sdk,
+      delegatorAddr,
+    );
+    return balances.data;
+  }
+
+  async queryBalances(addr: string): Promise<BalancesResponse> {
+    const balances = await rest.bank.allBalances(
+      this.sdk,
+      addr as unknown as AccAddress,
+    );
+    return balances.data as BalancesResponse;
+  }
+
+  async queryDenomBalance(
+    addr: string | AccAddress | ValAddress,
+    denom: string,
+  ): Promise<number> {
+    const { data } = await rest.bank.allBalances(
+      this.sdk,
+      addr.toString() as unknown as AccAddress,
+    );
+    const balance = data.balances.find((b) => b.denom === denom);
+    return parseInt(balance?.amount ?? '0', 10);
+  }
+
+  async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
+    const data = axios.get<{ denom_trace: DenomTraceResponse }>(
+      `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
+    );
+    return data.then((res) => res.data.denom_trace);
+  }
+
+  async queryAckFailures(
+    addr: string,
+    pagination?: PageRequest,
+  ): Promise<AckFailuresResponse> {
+    try {
+      const req = await axios.get<AckFailuresResponse>(
+        `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async listIBCChannels(): Promise<ChannelsList> {
+    const res = await axios.get<ChannelsList>(
+      `${this.sdk.url}/ibc/core/channel/v1/channels`,
+    );
+    return res.data;
+  }
+
+  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {
+    try {
+      const req = await axios.get<TotalBurnedNeutronsAmountResponse>(
+        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryTotalSupplyByDenom(
+    denom: string,
+  ): Promise<TotalSupplyByDenomResponse> {
+    try {
+      const req = await axios.get<TotalSupplyByDenomResponse>(
+        `${this.sdk.url}/cosmos/bank/v1beta1/supply/${denom}`,
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async getChainAdmins() {
+    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
+    const resp = await axios.get<{
+      admins: [string];
+    }>(url);
+    return resp.data.admins;
+  }
+}
+
+export class WalletWrapper {
+  cw: CosmosWrapper;
+  wallet: Wallet;
+
+  constructor(cw: CosmosWrapper, wallet: Wallet) {
+    this.cw = cw;
     this.wallet = wallet;
   }
 
@@ -125,7 +315,7 @@ export class CosmosWrapper {
       fee,
     });
     const txBuilder = new cosmosclient.TxBuilder(
-      this.sdk as CosmosSDK,
+      this.cw.sdk as CosmosSDK,
       txBody,
       authInfo,
     );
@@ -133,7 +323,7 @@ export class CosmosWrapper {
       this.wallet.account.account_number,
     );
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
-    const res = await rest.tx.broadcastTx(this.sdk as CosmosSDK, {
+    const res = await rest.tx.broadcastTx(this.cw.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
       mode,
     });
@@ -144,10 +334,10 @@ export class CosmosWrapper {
     const txhash = res.data?.tx_response.txhash;
     let error = null;
     while (numAttempts > 0) {
-      await this.blockWaiter.waitBlocks(1);
+      await this.cw.blockWaiter.waitBlocks(1);
       numAttempts--;
       const data = await rest.tx
-        .getTx(this.sdk as CosmosSDK, txhash)
+        .getTx(this.cw.sdk as CosmosSDK, txhash)
         .catch((reason) => {
           error = reason;
           return null;
@@ -234,7 +424,7 @@ export class CosmosWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('2000000'),
-        amount: [{ denom: this.denom, amount: '10000' }],
+        amount: [{ denom: this.cw.denom, amount: '10000' }],
       },
       [msgExecute],
     );
@@ -242,64 +432,6 @@ export class CosmosWrapper {
       throw new Error(res.tx_response.raw_log);
     }
     return res?.tx_response;
-  }
-
-  async queryContractWithWait<T>(
-    contract: string,
-    query: Record<string, unknown>,
-    numAttempts = 20,
-  ): Promise<T> {
-    while (numAttempts > 0) {
-      const res: T = await this.queryContract<T>(contract, query).catch(
-        () => null,
-      );
-
-      if (res !== null) {
-        return res;
-      }
-
-      numAttempts--;
-      await this.blockWaiter.waitBlocks(1);
-    }
-
-    throw new Error('failed to query contract');
-  }
-
-  async queryContract<T>(
-    contract: string,
-    query: Record<string, unknown>,
-  ): Promise<T> {
-    const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
-      JSON.stringify(query),
-    ).toString('base64')}?encoding=base64`;
-    const resp = await axios
-      .get<{
-        result: { smart: string };
-        height: number;
-      }>(url)
-      .catch((error) => {
-        if (error.response) {
-          throw new Error(
-            `Status: ${JSON.stringify(error.response.status)} \n` +
-              `Response: ${JSON.stringify(error.response.data)} \n` +
-              `Headers: ${JSON.stringify(error.response.headers)}`,
-          );
-        } else if (error.request) {
-          throw new Error(error.request);
-        } else {
-          throw new Error('Error: ' + error.message);
-        }
-        throw new Error(`Config: ${JSON.stringify(error.config)}`);
-      });
-    return JSON.parse(
-      Buffer.from(resp.data.result.smart, 'base64').toString(),
-    ) as T;
-  }
-
-  async getContractInfo(contract: string): Promise<any> {
-    const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
-    const resp = await axios.get(url);
-    return resp.data;
   }
 
   /**
@@ -310,7 +442,7 @@ export class CosmosWrapper {
     amount: string,
     fee = {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.denom, amount: '1000' }],
+      amount: [{ denom: this.cw.denom, amount: '1000' }],
     },
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
@@ -318,7 +450,7 @@ export class CosmosWrapper {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      amount: [{ denom: this.denom, amount }],
+      amount: [{ denom: this.cw.denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
@@ -397,14 +529,14 @@ export class CosmosWrapper {
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
-    await this.blockWaiter.waitBlocks(short_pause_duration);
+    await this.cw.blockWaiter.waitBlocks(short_pause_duration);
     pauseInfo = await this.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
   }
 
   async queryPausedInfo(addr: string): Promise<PauseInfoResponse> {
-    return await this.queryContract<PauseInfoResponse>(addr, {
+    return await this.cw.queryContract<PauseInfoResponse>(addr, {
       pause_info: {},
     });
   }
@@ -417,13 +549,16 @@ export class CosmosWrapper {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: this.wallet.address.toString(),
-      amount: [{ denom: this.denom, amount: '1' }],
+      amount: [{ denom: this.cw.denom, amount: '1' }],
     });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
         amount: [
-          { denom: this.denom, amount: `${Math.ceil((1000 * amount) / 750)}` },
+          {
+            denom: this.cw.denom,
+            amount: `${Math.ceil((1000 * amount) / 750)}`,
+          },
         ],
       },
       [msgSend],
@@ -447,50 +582,11 @@ export class CosmosWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.denom, amount: '1000' }],
+        amount: [{ denom: this.cw.denom, amount: '1000' }],
       },
       [msgRemove],
     );
     return res?.tx_response;
-  }
-
-  async getSeq(
-    sdk: cosmosclient.CosmosSDK,
-    address: cosmosclient.AccAddress,
-  ): Promise<number> {
-    const account = await rest.auth
-      .account(sdk, address)
-      .then((res) =>
-        cosmosclient.codec.protoJSONToInstance(
-          cosmosclient.codec.castProtoJSONOfProtoAny(res.data.account),
-        ),
-      )
-      .catch((e) => {
-        console.log(e);
-        throw e;
-      });
-
-    if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
-      throw new Error("can't get account");
-    }
-
-    return account.sequence;
-  }
-
-  async queryInterchainqueriesParams(): Promise<any> {
-    const req = await axios.get(
-      `${this.sdk.url}/neutron/interchainqueries/params`,
-    );
-
-    return req.data;
-  }
-
-  async queryDelegations(delegatorAddr: cosmosclient.AccAddress): Promise<any> {
-    const balances = await rest.staking.delegatorDelegations(
-      this.sdk,
-      delegatorAddr,
-    );
-    return balances.data;
   }
 
   /**
@@ -514,56 +610,11 @@ export class CosmosWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.denom, amount: '1000' }],
+        amount: [{ denom: this.cw.denom, amount: '1000' }],
       },
       [msgSend],
     );
     return res?.tx_response;
-  }
-
-  async queryBalances(addr: string): Promise<BalancesResponse> {
-    const balances = await rest.bank.allBalances(
-      this.sdk,
-      addr as unknown as AccAddress,
-    );
-    return balances.data as BalancesResponse;
-  }
-
-  async queryDenomBalance(
-    addr: string | AccAddress | ValAddress,
-    denom: string,
-  ): Promise<number> {
-    const { data } = await rest.bank.allBalances(
-      this.sdk,
-      addr.toString() as unknown as AccAddress,
-    );
-    const balance = data.balances.find((b) => b.denom === denom);
-    return parseInt(balance?.amount ?? '0', 10);
-  }
-
-  async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
-    const data = axios.get<{ denom_trace: DenomTraceResponse }>(
-      `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
-    );
-    return data.then((res) => res.data.denom_trace);
-  }
-
-  async queryAckFailures(
-    addr: string,
-    pagination?: PageRequest,
-  ): Promise<AckFailuresResponse> {
-    try {
-      const req = await axios.get<AckFailuresResponse>(
-        `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
-        { params: pagination },
-      );
-      return req.data;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
   }
 
   async msgDelegate(
@@ -574,76 +625,16 @@ export class CosmosWrapper {
     const msgDelegate = new proto.cosmos.staking.v1beta1.MsgDelegate({
       delegator_address: delegatorAddress,
       validator_address: validatorAddress,
-      amount: { denom: this.denom, amount: amount },
+      amount: { denom: this.cw.denom, amount: amount },
     });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.denom, amount: '1000' }],
+        amount: [{ denom: this.cw.denom, amount: '1000' }],
       },
       [msgDelegate],
     );
     return res?.tx_response;
-  }
-
-  async bondFunds(
-    vault_contract: string,
-    amount: string,
-    sender: string = this.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.executeContract(
-      vault_contract,
-      JSON.stringify({
-        bond: {},
-      }),
-      [{ denom: this.denom, amount: amount }],
-      sender,
-    );
-  }
-
-  async listIBCChannels(): Promise<ChannelsList> {
-    const res = await axios.get<ChannelsList>(
-      `${this.sdk.url}/ibc/core/channel/v1/channels`,
-    );
-    return res.data;
-  }
-
-  async queryTotalBurnedNeutronsAmount(): Promise<TotalBurnedNeutronsAmountResponse> {
-    try {
-      const req = await axios.get<TotalBurnedNeutronsAmountResponse>(
-        `${this.sdk.url}/neutron/feeburner/total_burned_neutrons_amount`,
-      );
-      return req.data;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
-  }
-
-  async queryTotalSupplyByDenom(
-    denom: string,
-  ): Promise<TotalSupplyByDenomResponse> {
-    try {
-      const req = await axios.get<TotalSupplyByDenomResponse>(
-        `${this.sdk.url}/cosmos/bank/v1beta1/supply/${denom}`,
-      );
-      return req.data;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
-  }
-
-  async getChainAdmins() {
-    const url = `${this.sdk.url}/cosmos/adminmodule/adminmodule/admins`;
-    const resp = await axios.get<{
-      admins: [string];
-    }>(url);
-    return resp.data.admins;
   }
 }
 
@@ -749,7 +740,7 @@ export const getIBCDenom = (portName, channelName, denom: string): string => {
   return `ibc/${uatomIBCHash}`;
 };
 
-export const createBankMassage = (address: string, amount: string) => ({
+export const createBankMessage = (address: string, amount: string) => ({
   bank: {
     send: {
       to_address: address,
@@ -762,34 +753,6 @@ export const createBankMassage = (address: string, amount: string) => ({
     },
   },
 });
-
-export const getRemoteHeight = async (sdk: CosmosSDK) => {
-  const block = await rest.tendermint.getLatestBlock(sdk);
-  return +block.data.block.header.height;
-};
-
-const whash = (typ: string, key: Uint8Array) => {
-  const sha256 = crypto.createHash('sha256');
-  sha256.update(typ);
-  const th = sha256.digest();
-  const nsha256 = crypto.createHash('sha256');
-  nsha256.update(th);
-  nsha256.update(key);
-  return nsha256.digest();
-};
-
-export const buildContractAddressClassic = (
-  codeID: number,
-  instanceID: number,
-  prefix: string,
-) => {
-  const contractID = Buffer.alloc(21);
-  contractID.write('wasm');
-  contractID.writeUintBE(instanceID, 7, 6);
-  contractID.writeUintBE(codeID, 15, 6);
-  const wasmModuleAddress = whash('module', contractID);
-  return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
-};
 
 export const getEventAttribute = (
   events: { type: string; attributes: { key: string; value: string }[] }[],

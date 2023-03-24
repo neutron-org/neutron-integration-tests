@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   CosmosWrapper,
-  createBankMassage,
+  createBankMessage,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
 } from '../../helpers/cosmos';
@@ -640,8 +640,8 @@ describe.skip('Neutron / Subdao', () => {
                   title: `Proposal ${i}`,
                   description: `proposal ${i} description`,
                   msgs: [
-                    createBankMassage(demo1_addr.toString(), '1000'),
-                    createBankMassage(demo2_addr.toString(), '2000'),
+                    createBankMessage(demo1_addr.toString(), '1000'),
+                    createBankMessage(demo2_addr.toString(), '2000'),
                   ],
                 },
               },
@@ -1021,7 +1021,7 @@ const proposeSendFunds = async (
             title: 'Payment proposal',
             description: 'Send funds to good folks',
             msgs: payments.map((payment) =>
-              createBankMassage(payment.recipient, payment.amount.toString()),
+              createBankMessage(payment.recipient, payment.amount.toString()),
             ),
           },
         },

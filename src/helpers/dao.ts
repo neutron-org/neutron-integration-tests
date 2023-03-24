@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CosmosWrapper, getEventAttribute } from './cosmos';
+import { CosmosWrapper, getEventAttribute, WalletWrapper } from './cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { getWithAttempts } from './wait';
 import {
@@ -100,13 +100,10 @@ export type DaoContracts = {
 export const getVotingModule = async (
   cm: CosmosWrapper,
   dao_address: string,
-): Promise<string> => {
-  const voting_module_address = await cm.queryContract<string>(dao_address, {
+): Promise<string> =>
+  await cm.queryContract<string>(dao_address, {
     voting_module: {},
   });
-
-  return voting_module_address;
-};
 
 export const getVotingVaults = async (
   cm: CosmosWrapper,
@@ -218,90 +215,6 @@ export class Dao {
     this.contracts = contracts;
   }
 
-  /**
-   * submitProposal creates proposal with given message.
-   */
-  async submitSingleChoiceProposal(
-    title: string,
-    description: string,
-    msg: string,
-    amount: string,
-    sender: string,
-  ): Promise<number> {
-    const message = JSON.parse(msg);
-    const proposalTx = await this.cm.executeContract(
-      this.contracts.proposal_modules.single.pre_proposal_module.address,
-      JSON.stringify({
-        propose: {
-          msg: {
-            propose: {
-              title: title,
-              description: description,
-              msgs: [message],
-            },
-          },
-        },
-      }),
-      [{ denom: this.cm.denom, amount: amount }],
-      sender,
-    );
-
-    const attribute = getEventAttribute(
-      (proposalTx as any).events,
-      'wasm',
-      'proposal_id',
-    );
-
-    const proposalId = parseInt(attribute);
-    expect(proposalId).toBeGreaterThanOrEqual(0);
-    return proposalId;
-  }
-
-  /**
-   * executeProposal executes given proposal.
-   */
-  async executeProposal(
-    proposalId: number,
-    sender: string = this.cm.wallet.address.toString(),
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.cm.executeContract(
-      this.contracts.proposal_modules.single.address,
-      JSON.stringify({ execute: { proposal_id: proposalId } }),
-      [],
-      sender,
-    );
-  }
-
-  async makeSingleChoiceProposalPass(
-    loyalVoters: [DaoMember],
-    title: string,
-    description: string,
-    msg: string,
-    amount: string,
-    sender: string,
-  ) {
-    const proposal_id = await this.submitSingleChoiceProposal(
-      title,
-      description,
-      msg,
-      amount,
-      sender,
-    );
-    await loyalVoters[0].cm.blockWaiter.waitBlocks(1);
-
-    for (const voter of loyalVoters) {
-      await voter.voteYes(proposal_id);
-    }
-    await this.executeProposal(proposal_id);
-
-    await getWithAttempts(
-      loyalVoters[0].cm.blockWaiter,
-      async () => await this.queryProposal(proposal_id),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
   async checkPassedProposal(proposalId: number) {
     await getWithAttempts(
       this.cm.blockWaiter,
@@ -326,41 +239,6 @@ export class Dao {
       async () => await this.queryMultiChoiceProposal(proposalId),
       async (response) => response.proposal.status === 'executed',
       20,
-    );
-  }
-
-  async executeProposalWithAttempts(proposalId: number) {
-    await this.executeProposal(proposalId);
-    await getWithAttempts(
-      this.cm.blockWaiter,
-      async () => await this.queryProposal(proposalId),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
-  async executeMultiChoiceProposalWithAttempts(proposalId: number) {
-    await this.executeMultiChoiceProposal(proposalId);
-    await getWithAttempts(
-      this.cm.blockWaiter,
-      async () => await this.queryMultiChoiceProposal(proposalId),
-      async (response) => response.proposal.status === 'executed',
-      20,
-    );
-  }
-
-  /**
-   * executeMultiChoiceProposal executes given multichoice proposal.
-   */
-  async executeMultiChoiceProposal(
-    proposalId: number,
-    sender: string = this.cm.wallet.address.toString(),
-  ): Promise<any> {
-    return await this.cm.executeContract(
-      this.contracts.proposal_modules.multiple.address,
-      JSON.stringify({ execute: { proposal_id: proposalId } }),
-      [],
-      sender,
     );
   }
 
@@ -405,6 +283,187 @@ export class Dao {
       },
     );
   }
+}
+
+export class DaoMember {
+  cm: WalletWrapper;
+  dao: Dao;
+
+  constructor(cm: WalletWrapper, dao: Dao) {
+    this.cm = cm;
+    this.dao = dao;
+  }
+
+  /**
+   * voteYes  vote 'yes' for given proposal.
+   */
+  async voteYes(proposalId: number): Promise<InlineResponse20075TxResponse> {
+    return await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
+      [],
+      this.cm.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * voteNo  vote 'no' for given proposal.
+   */
+  async voteNo(proposalId: number): Promise<InlineResponse20075TxResponse> {
+    return await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
+      [],
+      this.cm.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * voteYes  vote for option for given multi choice proposal.
+   */
+  async voteForOption(
+    proposalId: number,
+    optionId: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.multiple.address,
+      JSON.stringify({
+        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
+      }),
+      [],
+      this.cm.wallet.address.toString(),
+    );
+  }
+
+  async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+    return await this.cm.executeContract(
+      this.dao.contracts.voting_module.voting_vaults.ntrn_vault.address,
+      JSON.stringify({
+        bond: {},
+      }),
+      [{ denom: this.cm.cw.denom, amount: amount }],
+      this.cm.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * submitProposal creates proposal with given message.
+   */
+  async submitSingleChoiceProposal(
+    title: string,
+    description: string,
+    msg: string,
+    amount: string,
+    sender: string,
+  ): Promise<number> {
+    const message = JSON.parse(msg);
+    const proposalTx = await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module.address,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              msgs: [message],
+            },
+          },
+        },
+      }),
+      [{ denom: this.cm.cw.denom, amount: amount }],
+      sender,
+    );
+
+    const attribute = getEventAttribute(
+      (proposalTx as any).events,
+      'wasm',
+      'proposal_id',
+    );
+
+    const proposalId = parseInt(attribute);
+    expect(proposalId).toBeGreaterThanOrEqual(0);
+    return proposalId;
+  }
+
+  /**
+   * executeProposal executes given proposal.
+   */
+  async executeProposal(
+    proposalId: number,
+    sender: string = this.cm.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  async makeSingleChoiceProposalPass(
+    loyalVoters: [DaoMember],
+    title: string,
+    description: string,
+    msg: string,
+    amount: string,
+    sender: string,
+  ) {
+    const proposal_id = await this.submitSingleChoiceProposal(
+      title,
+      description,
+      msg,
+      amount,
+      sender,
+    );
+    await loyalVoters[0].cm.cw.blockWaiter.waitBlocks(1);
+
+    for (const voter of loyalVoters) {
+      await voter.voteYes(proposal_id);
+    }
+    await this.executeProposal(proposal_id);
+
+    await getWithAttempts(
+      loyalVoters[0].cm.cw.blockWaiter,
+      async () => await this.dao.queryProposal(proposal_id),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeProposalWithAttempts(proposalId: number) {
+    await this.executeProposal(proposalId);
+    await getWithAttempts(
+      this.cm.cw.blockWaiter,
+      async () => await this.dao.queryProposal(proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeMultiChoiceProposalWithAttempts(proposalId: number) {
+    await this.executeMultiChoiceProposal(proposalId);
+    await getWithAttempts(
+      this.cm.cw.blockWaiter,
+      async () => await this.dao.queryMultiChoiceProposal(proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  /**
+   * executeMultiChoiceProposal executes given multichoice proposal.
+   */
+  async executeMultiChoiceProposal(
+    proposalId: number,
+    sender: string = this.cm.wallet.address.toString(),
+  ): Promise<any> {
+    return await this.cm.executeContract(
+      this.dao.contracts.proposal_modules.multiple.address,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
 
   /**
    * submitSendProposal creates proposal to send funds from DAO core contract for given address.
@@ -417,7 +476,7 @@ export class Dao {
     sender: string = this.cm.wallet.address.toString(),
   ): Promise<number> {
     const message = JSON.stringify(
-      sendProposal({ to, denom: this.cm.denom, amount }),
+      sendProposal({ to, denom: this.cm.cw.denom, amount }),
     );
     return await this.submitSingleChoiceProposal(
       title,
@@ -509,7 +568,7 @@ export class Dao {
     options: MultiChoiceOption[],
   ): Promise<number> {
     const proposalTx = await this.cm.executeContract(
-      this.contracts.proposal_modules.multiple.pre_proposal_module.address,
+      this.dao.contracts.proposal_modules.multiple.pre_proposal_module.address,
       JSON.stringify({
         propose: {
           msg: {
@@ -521,7 +580,7 @@ export class Dao {
           },
         },
       }),
-      [{ denom: this.cm.denom, amount: amount }],
+      [{ denom: this.cm.cw.denom, amount: amount }],
       sender,
     );
 
@@ -601,57 +660,6 @@ export class Dao {
       message,
       amount,
       sender,
-    );
-  }
-}
-
-export class DaoMember {
-  cm: CosmosWrapper;
-  dao: Dao;
-
-  constructor(cm: CosmosWrapper, dao: Dao) {
-    this.cm = cm;
-    this.dao = dao;
-  }
-
-  /**
-   * voteYes  vote 'yes' for given proposal.
-   */
-  async voteYes(proposalId: number): Promise<InlineResponse20075TxResponse> {
-    return await this.cm.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
-      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
-      [],
-      this.cm.wallet.address.toString(),
-    );
-  }
-
-  /**
-   * voteNo  vote 'no' for given proposal.
-   */
-  async voteNo(proposalId: number): Promise<InlineResponse20075TxResponse> {
-    return await this.cm.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
-      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
-      [],
-      this.cm.wallet.address.toString(),
-    );
-  }
-
-  /**
-   * voteYes  vote for option for given multi choice proposal.
-   */
-  async voteForOption(
-    proposalId: number,
-    optionId: number,
-  ): Promise<InlineResponse20075TxResponse> {
-    return await this.cm.executeContract(
-      this.dao.contracts.proposal_modules.multiple.address,
-      JSON.stringify({
-        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
-      }),
-      [],
-      this.cm.wallet.address.toString(),
     );
   }
 }
