@@ -5,6 +5,7 @@ import {
   NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import Long from 'long';
 import { getWithAttempts } from '../../helpers/wait';
@@ -12,26 +13,35 @@ import { getTreasuryContract } from '../../helpers/dao';
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cmNeutron: CosmosWrapper;
-  let cmGaia: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cmNeutron = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-    cmGaia = new CosmosWrapper(
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
     );
-    treasuryContractAddress = await getTreasuryContract(cmNeutron);
+    gaiaAccount = new WalletWrapper(
+      gaiaChain,
+      testState.wallets.qaCosmos.genQaWal1,
+    );
+
+    treasuryContractAddress = await getTreasuryContract(neutronChain);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -42,11 +52,11 @@ describe('Neutron / Tokenomics', () => {
     let burnedBefore: TotalBurnedNeutronsAmountResponse;
 
     test('Read total burned neutrons amount', async () => {
-      burnedBefore = await cmNeutron.queryTotalBurnedNeutronsAmount();
+      burnedBefore = await neutronChain.queryTotalBurnedNeutronsAmount();
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await cmNeutron.msgSend(
+      await neutronAccount.msgSend(
         testState.wallets.neutron.rly1.address.toString(),
         '1000',
         bigFee,
@@ -54,7 +64,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total burned neutrons amount has increased', async () => {
-      const burnedAfter = await cmNeutron.queryTotalBurnedNeutronsAmount();
+      const burnedAfter = await neutronChain.queryTotalBurnedNeutronsAmount();
       const diff =
         +(burnedAfter.total_burned_neutrons_amount.coin.amount || 0) -
         +(burnedBefore.total_burned_neutrons_amount.coin.amount || 0);
@@ -70,13 +80,13 @@ describe('Neutron / Tokenomics', () => {
     let totalSupplyBefore: TotalSupplyByDenomResponse;
 
     test('Read total supply', async () => {
-      totalSupplyBefore = await cmNeutron.queryTotalSupplyByDenom(
+      totalSupplyBefore = await neutronChain.queryTotalSupplyByDenom(
         NEUTRON_DENOM,
       );
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await cmNeutron.msgSend(
+      await neutronAccount.msgSend(
         testState.wallets.neutron.rly1.address.toString(),
         '1000',
         bigFee,
@@ -84,7 +94,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total supply of neutrons has decreased', async () => {
-      const totalSupplyAfter = await cmNeutron.queryTotalSupplyByDenom(
+      const totalSupplyAfter = await neutronChain.queryTotalSupplyByDenom(
         NEUTRON_DENOM,
       );
       const diff =
@@ -102,14 +112,14 @@ describe('Neutron / Tokenomics', () => {
     };
 
     test('Read Treasury balance', async () => {
-      balanceBefore = await cmNeutron.queryDenomBalance(
+      balanceBefore = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         NEUTRON_DENOM,
       );
     });
 
     test('Perform any tx and pay with neutron fee', async () => {
-      await cmNeutron.msgSend(
+      await neutronAccount.msgSend(
         testState.wallets.neutron.rly1.address.toString(),
         '1000',
         fee,
@@ -117,7 +127,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test("Balance of Treasury in Neutrons hasn't been increased", async () => {
-      const balanceAfter = await cmNeutron.queryDenomBalance(
+      const balanceAfter = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         NEUTRON_DENOM,
       );
@@ -141,7 +151,7 @@ describe('Neutron / Tokenomics', () => {
     };
 
     test('obtain uatom tokens', async () => {
-      await cmGaia.msgIBCTransfer(
+      await gaiaAccount.msgIBCTransfer(
         'transfer',
         'channel-0',
         {
@@ -152,9 +162,9 @@ describe('Neutron / Tokenomics', () => {
         { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
       await getWithAttempts(
-        cmNeutron.blockWaiter,
+        neutronChain.blockWaiter,
         async () =>
-          cmNeutron.queryBalances(
+          neutronChain.queryBalances(
             testState.wallets.qaNeutron.genQaWal1.address.toString(),
           ),
         async (balances) =>
@@ -165,14 +175,14 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Read Treasury balance', async () => {
-      balanceBefore = await cmNeutron.queryDenomBalance(
+      balanceBefore = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         ibcUatomDenom,
       );
     });
 
     test('Perform any tx and pay with uatom fee', async () => {
-      await cmNeutron.msgSend(
+      await neutronAccount.msgSend(
         testState.wallets.neutron.rly1.address.toString(),
         '1000',
         fee,
@@ -180,7 +190,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Balance of Treasury in uatoms has been increased', async () => {
-      const balanceAfter = await cmNeutron.queryDenomBalance(
+      const balanceAfter = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         ibcUatomDenom,
       );
