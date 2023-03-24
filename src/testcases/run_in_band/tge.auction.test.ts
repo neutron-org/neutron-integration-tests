@@ -7,9 +7,6 @@ import {
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
-const USDC_TOKEN = 'uibcaxlusdc';
-const ATOM_TOKEN = 'uibcatom';
-
 type PairInfo = {
   asset_infos: Record<'native_token' | 'token', { denom: string }>[];
   contract_addr: string;
@@ -112,6 +109,18 @@ describe('Neutron / TGE / Auction', () => {
   });
 
   describe('Deploy', () => {
+    it('should be able to send fake ibc tokens', async () => {
+      await cm.msgSend(
+        testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
+        '1000',
+        IBC_ATOM_DENOM,
+      );
+      await cm.msgSend(
+        testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
+        '1000',
+        IBC_USDC_DENOM,
+      );
+    });
     it('should store contracts', async () => {
       for (const contract of [
         'TGE_CREDITS',
@@ -183,7 +192,7 @@ describe('Neutron / TGE / Auction', () => {
           asset_infos: [
             {
               native_token: {
-                denom: ATOM_TOKEN,
+                denom: IBC_ATOM_DENOM,
               },
             },
             {
@@ -210,7 +219,7 @@ describe('Neutron / TGE / Auction', () => {
           asset_infos: [
             {
               native_token: {
-                denom: USDC_TOKEN,
+                denom: IBC_USDC_DENOM,
               },
             },
             {
@@ -267,7 +276,7 @@ describe('Neutron / TGE / Auction', () => {
           usdc_denom: IBC_USDC_DENOM,
           max_exchange_rate_age: 1000,
           min_ntrn_amount: '100000',
-          vesting_migration_pack_size: 10,
+          vesting_migration_pack_size: 1,
         }),
         'auction',
       );
@@ -382,7 +391,7 @@ describe('Neutron / TGE / Auction', () => {
           }),
           [
             {
-              amount: '10000',
+              amount: '90000',
               denom: IBC_USDC_DENOM,
             },
           ],
@@ -400,8 +409,8 @@ describe('Neutron / TGE / Auction', () => {
           cm.wallet.address.toString(),
           IBC_USDC_DENOM,
         );
-        expect(info.usdc_deposited).toEqual('10000');
-        expect(usdcBalanceAfter).toEqual(usdcBalanceBefore - 10000);
+        expect(info.usdc_deposited).toEqual('90000');
+        expect(usdcBalanceAfter).toEqual(usdcBalanceBefore - 90000);
       });
       it('should be able to witdraw', async () => {
         const atomBalanceBefore = await cm.queryDenomBalance(
@@ -439,7 +448,7 @@ describe('Neutron / TGE / Auction', () => {
           IBC_USDC_DENOM,
         );
         expect(info.atom_deposited).toEqual('5000');
-        expect(info.usdc_deposited).toEqual('5000');
+        expect(info.usdc_deposited).toEqual('85000');
         expect(atomBalanceAfter).toEqual(atomBalanceBefore + 5000);
         expect(usdcBalanceAfter).toEqual(usdcBalanceBefore + 5000);
       });
@@ -513,7 +522,7 @@ describe('Neutron / TGE / Auction', () => {
           IBC_USDC_DENOM,
         );
         expect(info.atom_deposited).toEqual('4000');
-        expect(info.usdc_deposited).toEqual('4000');
+        expect(info.usdc_deposited).toEqual('84000');
         expect(info.withdrawn).toEqual(true);
         expect(atomBalanceAfter).toEqual(atomBalanceBefore + 1000);
         expect(usdcBalanceAfter).toEqual(usdcBalanceBefore + 1000);
@@ -656,17 +665,17 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(state).toEqual({
             atom_lp_locked: '0',
-            atom_lp_size: '25968',
-            atom_ntrn_size: '181819',
+            atom_lp_size: '15064',
+            atom_ntrn_size: '64517',
             is_rest_lp_vested: false,
             lp_atom_shares_minted: null,
             lp_usdc_shares_minted: null,
             pool_init_timestamp: 0,
             total_atom_deposited: '4000',
-            total_usdc_deposited: '4000',
+            total_usdc_deposited: '84000',
             usdc_lp_locked: '0',
-            usdc_lp_size: '7527',
-            usdc_ntrn_size: '18181',
+            usdc_lp_size: '105679',
+            usdc_ntrn_size: '135483',
           });
         });
         it('should not be able to set pool size twice', async () => {
@@ -866,6 +875,36 @@ describe('Neutron / TGE / Auction', () => {
             ),
           ).rejects.toThrow(/Lock window is closed/);
         });
+      });
+    });
+    describe('Init pool', () => {
+      it('should init pool', async () => {
+        const res = await cm.executeContract(
+          contractAddresses.TGE_AUCTION,
+          JSON.stringify({
+            init_pool: {},
+          }),
+        );
+        expect(res.code).toEqual(0);
+        const reserveLPBalanceAtomNtrn = cm.queryContract<boolean>(
+          pairs.atom_ntrn.liqiudity,
+          {
+            balance: {
+              address: reserveAddress,
+            },
+          },
+        );
+        expect(reserveLPBalanceAtomNtrn).toEqual(true);
+      });
+      it('should not be able to init pool twice', async () => {
+        await expect(
+          cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              init_pool: {},
+            }),
+          ),
+        ).rejects.toThrow(/Liquidity already added/);
       });
     });
   });
