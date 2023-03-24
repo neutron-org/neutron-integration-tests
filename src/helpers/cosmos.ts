@@ -305,7 +305,6 @@ export class CosmosWrapper {
         } else {
           throw new Error('Error: ' + error.message);
         }
-        throw new Error(`Config: ${JSON.stringify(error.config)}`);
       });
     return JSON.parse(
       Buffer.from(resp.data.result.smart, 'base64').toString(),
