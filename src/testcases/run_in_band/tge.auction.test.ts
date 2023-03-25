@@ -262,18 +262,43 @@ describe('Neutron / TGE / Auction', () => {
         },
       };
     });
+    it('shoild instantiate vesting contracts', async () => {
+      const res = await cm.instantiate(
+        codeIds['VESTING_LP'],
+        JSON.stringify({
+          owner:
+            'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+          vesting_token: { token: { contract_addr: pairs.atom_ntrn.contract } },
+        }),
+        'vesting_atom_lp',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses['VESTING_ATOM'] = res[0]._contract_address;
+      const res2 = await cm.instantiate(
+        codeIds['VESTING_LP'],
+        JSON.stringify({
+          owner:
+            'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+          vesting_token: { token: { contract_addr: pairs.usdc_ntrn.contract } },
+        }),
+        'vesting_usdc_lp',
+      );
+      expect(res2).toBeTruthy();
+      contractAddresses['VESTING_USDC'] = res2[0]._contract_address;
+    });
     it('should instantiate auction contract', async () => {
       times.auctionInitTs = (Date.now() / 1000 + 10) | 0;
       times.auctionDepositWindow = 30;
       times.auctionWithdrawalWindow = 30;
       times.auctionLpLockWindow = 30;
+      times.auctionVestingLpDuration = 20;
       const res = await cm.instantiate(
         codeIds.TGE_AUCTION,
         JSON.stringify({
           price_feed_contract: contractAddresses.TGE_PRICE_FEED_MOCK,
           reserve_contract_address: reserveAddress,
-          vesting_usdc_contract_address: reserveAddress, //TODO: FIX
-          vesting_atom_contract_address: reserveAddress, //TODO: FIX
+          vesting_usdc_contract_address: contractAddresses.VESTING_USDC,
+          vesting_atom_contract_address: contractAddresses.VESTING_ATOM,
           lp_tokens_lock_window: times.auctionLpLockWindow,
           init_timestamp: times.auctionInitTs,
           deposit_window: times.auctionDepositWindow,
@@ -283,6 +308,7 @@ describe('Neutron / TGE / Auction', () => {
           max_exchange_rate_age: 1000,
           min_ntrn_amount: '100000',
           vesting_migration_pack_size: 1,
+          vesting_lp_duration: times.auctionVestingLpDuration,
         }),
         'auction',
       );
@@ -576,7 +602,7 @@ describe('Neutron / TGE / Auction', () => {
           ).rejects.toThrow(/Invalid price feed data/);
         });
         it('should not be able to set pool size (no NTRN)', async () => {
-          const time = (Date.now() / 1000 - 1000) | 0;
+          const time = (Date.now() / 1000) | 0;
           const r1 = await cm.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
@@ -731,7 +757,7 @@ describe('Neutron / TGE / Auction', () => {
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
               lock_lp: {
-                amount: '100',
+                amount: '77',
                 asset: 'ATOM',
                 duration: 1,
               },
@@ -746,7 +772,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(res.code).toEqual(0);
-          expect(parseInt(userInfo.atom_lp_locked)).toEqual(100);
+          expect(parseInt(userInfo.atom_lp_locked)).toEqual(77);
           const info = await cm.queryContract<LockDropInfoResponse>(
             contractAddresses.TGE_LOCKDROP,
             {
@@ -757,7 +783,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(info.lockup_infos).toHaveLength(1);
           expect(info.lockup_infos[0]).toMatchObject({
-            lp_units_locked: '100',
+            lp_units_locked: '77',
             pool_type: 'ATOM',
           });
         });
@@ -861,7 +887,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(info.lockup_infos[0]).toMatchObject({
-            lp_units_locked: '90',
+            lp_units_locked: '67',
             pool_type: 'ATOM',
           });
         });
@@ -972,6 +998,27 @@ describe('Neutron / TGE / Auction', () => {
             }),
           ),
         ).rejects.toThrow(/Liquidity already added/);
+      });
+    });
+    describe('Vest LP', () => {
+      it('should vest LP', async () => {
+        const res = await cm.executeContract(
+          contractAddresses.TGE_AUCTION,
+          JSON.stringify({
+            migrate_to_vesting: {},
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
+      it('should not vest LP as we had only one user', async () => {
+        await expect(
+          cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              migrate_to_vesting: {},
+            }),
+          ),
+        ).rejects.toThrow(/No users to migrate/);
       });
     });
   });
