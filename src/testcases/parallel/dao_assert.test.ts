@@ -49,29 +49,30 @@ describe('DAO / Check', () => {
   });
 
   describe('Checking proposal modules', () => {
+    let res, preRes;
     test('proposal dao single', async () => {
-      const res = await cm_dao.queryContract(proposalSingleAddress, {
+      res = await cm_dao.queryContract(proposalSingleAddress, {
         dao: {},
       });
-      expect(res).toEqual(
-        daoContracts.core.address,
-        `Error in proposal dao single test. Expected ${daoContracts.core.address}, but got ${res}`,
-      );
+      const errorMsg = `Error in proposal dao single test. Expected ${daoContracts.core.address}, but got ${res}`;
+      expect(res).toEqual(daoContracts.core.address, errorMsg);
     });
 
     test('preproposal dao single', async () => {
-      const preRes = await cm_dao.queryContract(preProposalSingleAddress, {
+      preRes = await cm_dao.queryContract(preProposalSingleAddress, {
         proposal_module: {},
       });
       const res = await cm_dao.queryContract(preProposalSingleAddress, {
         dao: {},
       });
-      expect(preRes).toEqual(proposalSingleAddress);
-      expect(res).toEqual(daoContracts.core.address);
+      const errorMsgPreRes = `Error in preproposal dao single test. Expected ${proposalSingleAddress}, but got ${preRes}`;
+      const errorMsgRes = `Error in preproposal dao single test. Expected ${daoContracts.core.address}, but got ${res}`;
+      expect(preRes).toEqual(proposalSingleAddress, errorMsgPreRes);
+      expect(res).toEqual(daoContracts.core.address, errorMsgRes);
     });
 
     test('proposal dao multiple', async () => {
-      const res = await cm_dao.queryContract(proposalMultipleAddress, {
+      res = await cm_dao.queryContract(proposalMultipleAddress, {
         dao: {},
       });
       expect(res).toEqual(
@@ -81,10 +82,10 @@ describe('DAO / Check', () => {
     });
 
     test('preproposal dao multiple', async () => {
-      const preRes = await cm_dao.queryContract(preProposalMultipleAddress, {
+      preRes = await cm_dao.queryContract(preProposalMultipleAddress, {
         proposal_module: {},
       });
-      const res = await cm_dao.queryContract(preProposalMultipleAddress, {
+      res = await cm_dao.queryContract(preProposalMultipleAddress, {
         dao: {},
       });
       expect(preRes).toEqual(proposalMultipleAddress);
@@ -92,7 +93,7 @@ describe('DAO / Check', () => {
     });
 
     test('proposal dao overrule', async () => {
-      const res = await cm_dao.queryContract(proposalOverruleAddress, {
+      res = await cm_dao.queryContract(proposalOverruleAddress, {
         dao: {},
       });
       expect(res).toEqual(
@@ -102,10 +103,10 @@ describe('DAO / Check', () => {
     });
 
     test('preproposal dao overrule', async () => {
-      const preRes = await cm_dao.queryContract(preProposalOverruleAddress, {
+      preRes = await cm_dao.queryContract(preProposalOverruleAddress, {
         proposal_module: {},
       });
-      const res = await cm_dao.queryContract(preProposalOverruleAddress, {
+      res = await cm_dao.queryContract(preProposalOverruleAddress, {
         dao: {},
       });
       expect(preRes).toEqual(proposalOverruleAddress);
@@ -114,8 +115,9 @@ describe('DAO / Check', () => {
   });
 
   describe('Checking voting module', () => {
+    let res;
     test('voting module', async () => {
-      const res = await cm_dao.queryContract(votingModuleAddress, {
+      res = await cm_dao.queryContract(votingModuleAddress, {
         dao: {},
       });
       expect(res).toEqual(
@@ -125,19 +127,19 @@ describe('DAO / Check', () => {
     });
 
     test.skip('voting ntrn vaults', async () => {
-      const res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
+      res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
         dao: {},
       });
     });
 
     test.skip('voting lockdrop vaults', async () => {
-      const res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
+      res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
         dao: {},
       });
     });
 
     test.skip('Dao is the admin of himself', async () => {
-      const res = await cm_dao.getContractInfo(daoContracts.core.address);
+      res = await cm_dao.getContractInfo(daoContracts.core.address);
       expect(res.contract_info.admin).toEqual(
         daoContracts.core.address,
         `Error in dao admin of himself. Expected ${daoContracts.core.address}, but got ${res}`,
@@ -146,10 +148,11 @@ describe('DAO / Check', () => {
   });
 
   describe('Checking the validity of binary files', () => {
+    let res, hash, hashFromContract;
     test('dao proposal single hash assert', async () => {
-      const res = await cm_dao.getContractInfo(proposalSingleAddress);
-      const hash = await fetchDataHash(res.contract_info.code_id);
-      const hashFromContract = await getContractsHashes();
+      res = await cm_dao.getContractInfo(proposalSingleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_proposal_single.wasm'],
         `Error: The hashes don't match`,
@@ -157,9 +160,9 @@ describe('DAO / Check', () => {
     });
 
     test('dao proposal multiple hash assert', async () => {
-      const res = await cm_dao.getContractInfo(proposalMultipleAddress);
-      const hash = await fetchDataHash(res.contract_info.code_id);
-      const hashFromContract = await getContractsHashes();
+      res = await cm_dao.getContractInfo(proposalMultipleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_proposal_multiple.wasm'],
         `Error: The hashes don't match`,
@@ -167,9 +170,9 @@ describe('DAO / Check', () => {
     });
 
     test('dao preproposal single hash assert', async () => {
-      const res = await cm_dao.getContractInfo(preProposalSingleAddress);
-      const hash = await fetchDataHash(res.contract_info.code_id);
-      const hashFromContract = await getContractsHashes();
+      res = await cm_dao.getContractInfo(preProposalSingleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_pre_propose_single.wasm'],
         `Error: The hashes don't match`,
@@ -177,9 +180,9 @@ describe('DAO / Check', () => {
     });
 
     test('dao preproposal multiple hash assert', async () => {
-      const res = await cm_dao.getContractInfo(preProposalMultipleAddress);
-      const hash = await fetchDataHash(res.contract_info.code_id);
-      const hashFromContract = await getContractsHashes();
+      res = await cm_dao.getContractInfo(preProposalMultipleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_pre_propose_multiple.wasm'],
         `Error: The hashes don't match`,
@@ -187,9 +190,9 @@ describe('DAO / Check', () => {
     });
 
     test('dao core  hash assert', async () => {
-      const res = await cm_dao.getContractInfo(daoContracts.core.address);
-      const hash = await fetchDataHash(res.contract_info.code_id);
-      const hashFromContract = await getContractsHashes();
+      res = await cm_dao.getContractInfo(daoContracts.core.address);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(
         hashFromContract['cwd_core.wasm'],
         `Error: The hashes don't match`,
