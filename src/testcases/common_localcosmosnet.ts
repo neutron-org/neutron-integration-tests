@@ -152,13 +152,13 @@ export class TestStateLocalCosmosTestNet {
   ): Promise<void> => {
     const fee = {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cm.cw.denom, amount: '1000' }],
+      amount: [{ denom: cm.chain.denom, amount: '1000' }],
     };
     let attemptCount = 0;
     let res;
     while (retryCount > attemptCount) {
       try {
-        const sequence = await cm.cw.getSeq(cm.wallet.address);
+        const sequence = await cm.chain.getSeq(cm.wallet.address);
         res = await cm.msgSend(
           to.toString(),
           amount,
@@ -166,15 +166,15 @@ export class TestStateLocalCosmosTestNet {
           sequence,
           rest.tx.BroadcastTxMode.Block,
         );
-        await cm.cw.blockWaiter.waitBlocks(1);
-        const balances = await cm.cw.queryBalances(to.toString());
+        await cm.chain.blockWaiter.waitBlocks(1);
+        const balances = await cm.chain.queryBalances(to.toString());
         if (balances.pagination.total === '0') {
           throw new Error('Could not put tokens on the generated wallet.');
         }
         break;
       } catch (e) {
         if (e.message.includes('sequence')) {
-          await cm.cw.blockWaiter.waitBlocks(1);
+          await cm.chain.blockWaiter.waitBlocks(1);
           attemptCount++;
         } else {
           throw e;

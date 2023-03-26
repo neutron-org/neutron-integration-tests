@@ -52,7 +52,7 @@ describe('Neutron / Governance', () => {
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
-          await dao.queryVotingPower(daoMember1.cm.wallet.address.toString()),
+          await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
         async (response) => response.power == 1000,
         20,
       );
@@ -62,7 +62,7 @@ describe('Neutron / Governance', () => {
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
-          await dao.queryVotingPower(daoMember1.cm.wallet.address.toString()),
+          await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
         async (response) => response.power == 1000,
         20,
       );
@@ -72,7 +72,7 @@ describe('Neutron / Governance', () => {
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
-          await dao.queryVotingPower(daoMember1.cm.wallet.address.toString()),
+          await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
         async (response) => response.power == 1000,
         20,
       );
@@ -89,7 +89,7 @@ describe('Neutron / Governance', () => {
 
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
-      await daoMember1.cm.msgSend(dao.contracts.core.address, '1000');
+      await daoMember1.user.msgSend(dao.contracts.core.address, '1000');
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>

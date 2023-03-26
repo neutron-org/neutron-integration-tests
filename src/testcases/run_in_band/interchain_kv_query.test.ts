@@ -139,9 +139,9 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   key: string,
   value: string,
 ) => {
-  const daoCoreAddress = (await cm.cw.getChainAdmins())[0];
-  const daoContracts = await getDaoContracts(cm.cw, daoCoreAddress);
-  const dao = new Dao(cm.cw, daoContracts);
+  const daoCoreAddress = (await cm.chain.getChainAdmins())[0];
+  const daoContracts = await getDaoContracts(cm.chain, daoCoreAddress);
+  const dao = new Dao(cm.chain, daoContracts);
   const daoMember = new DaoMember(cm, dao);
   const message = paramChangeProposal({
     title,

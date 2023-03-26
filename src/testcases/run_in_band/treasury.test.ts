@@ -607,11 +607,14 @@ const normalizeTreasuryBurnedCoins = async (
         distribute: {},
       }),
     );
-    treasuryStats = await cm.cw.queryContract<TreasuryStats>(treasuryAddress, {
-      stats: {},
-    });
+    treasuryStats = await cm.chain.queryContract<TreasuryStats>(
+      treasuryAddress,
+      {
+        stats: {},
+      },
+    );
 
-    const burnedCoins = await getBurnedCoinsAmount(cm.cw);
+    const burnedCoins = await getBurnedCoinsAmount(cm.chain);
     normalize =
       parseInt(treasuryStats.total_processed_burned_coins) + 7500 !==
       parseInt(burnedCoins!);

@@ -281,11 +281,11 @@ export class CosmosWrapper {
 }
 
 export class WalletWrapper {
-  cw: CosmosWrapper;
+  chain: CosmosWrapper;
   wallet: Wallet;
 
   constructor(cw: CosmosWrapper, wallet: Wallet) {
-    this.cw = cw;
+    this.chain = cw;
     this.wallet = wallet;
   }
 
@@ -321,7 +321,7 @@ export class WalletWrapper {
       fee,
     });
     const txBuilder = new cosmosclient.TxBuilder(
-      this.cw.sdk as CosmosSDK,
+      this.chain.sdk as CosmosSDK,
       txBody,
       authInfo,
     );
@@ -329,7 +329,7 @@ export class WalletWrapper {
       this.wallet.account.account_number,
     );
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
-    const res = await rest.tx.broadcastTx(this.cw.sdk as CosmosSDK, {
+    const res = await rest.tx.broadcastTx(this.chain.sdk as CosmosSDK, {
       tx_bytes: txBuilder.txBytes(),
       mode,
     });
@@ -340,10 +340,10 @@ export class WalletWrapper {
     const txhash = res.data?.tx_response.txhash;
     let error = null;
     while (numAttempts > 0) {
-      await this.cw.blockWaiter.waitBlocks(1);
+      await this.chain.blockWaiter.waitBlocks(1);
       numAttempts--;
       const data = await rest.tx
-        .getTx(this.cw.sdk as CosmosSDK, txhash)
+        .getTx(this.chain.sdk as CosmosSDK, txhash)
         .catch((reason) => {
           error = reason;
           return null;
@@ -430,7 +430,7 @@ export class WalletWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('2000000'),
-        amount: [{ denom: this.cw.denom, amount: '10000' }],
+        amount: [{ denom: this.chain.denom, amount: '10000' }],
       },
       [msgExecute],
     );
@@ -448,7 +448,7 @@ export class WalletWrapper {
     amount: string,
     fee = {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.cw.denom, amount: '1000' }],
+      amount: [{ denom: this.chain.denom, amount: '1000' }],
     },
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
@@ -456,7 +456,7 @@ export class WalletWrapper {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      amount: [{ denom: this.cw.denom, amount }],
+      amount: [{ denom: this.chain.denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
@@ -475,7 +475,7 @@ export class WalletWrapper {
     actionCheck: () => Promise<void>,
   ) {
     // check contract's pause info before pausing
-    let pauseInfo = await this.cw.queryPausedInfo(testingContract);
+    let pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
 
@@ -491,7 +491,7 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after pausing
-    pauseInfo = await this.cw.queryPausedInfo(testingContract);
+    pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo.unpaused).toEqual(undefined);
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
@@ -508,7 +508,7 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after unpausing
-    pauseInfo = await this.cw.queryPausedInfo(testingContract);
+    pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
 
@@ -530,13 +530,13 @@ export class WalletWrapper {
     expect(res.code).toEqual(0);
 
     // check contract's pause info after pausing
-    pauseInfo = await this.cw.queryPausedInfo(testingContract);
+    pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo.unpaused).toEqual(undefined);
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
-    await this.cw.blockWaiter.waitBlocks(short_pause_duration);
-    pauseInfo = await this.cw.queryPausedInfo(testingContract);
+    await this.chain.blockWaiter.waitBlocks(short_pause_duration);
+    pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
   }
@@ -549,14 +549,14 @@ export class WalletWrapper {
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: this.wallet.address.toString(),
-      amount: [{ denom: this.cw.denom, amount: '1' }],
+      amount: [{ denom: this.chain.denom, amount: '1' }],
     });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
         amount: [
           {
-            denom: this.cw.denom,
+            denom: this.chain.denom,
             amount: `${Math.ceil((1000 * amount) / 750)}`,
           },
         ],
@@ -582,7 +582,7 @@ export class WalletWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.cw.denom, amount: '1000' }],
+        amount: [{ denom: this.chain.denom, amount: '1000' }],
       },
       [msgRemove],
     );
@@ -610,7 +610,7 @@ export class WalletWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.cw.denom, amount: '1000' }],
+        amount: [{ denom: this.chain.denom, amount: '1000' }],
       },
       [msgSend],
     );
@@ -625,12 +625,12 @@ export class WalletWrapper {
     const msgDelegate = new proto.cosmos.staking.v1beta1.MsgDelegate({
       delegator_address: delegatorAddress,
       validator_address: validatorAddress,
-      amount: { denom: this.cw.denom, amount: amount },
+      amount: { denom: this.chain.denom, amount: amount },
     });
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: this.cw.denom, amount: '1000' }],
+        amount: [{ denom: this.chain.denom, amount: '1000' }],
       },
       [msgDelegate],
     );

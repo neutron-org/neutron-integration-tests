@@ -1,6 +1,6 @@
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import axios, { AxiosResponse } from 'axios';
-import {CosmosWrapper, WalletWrapper} from './cosmos';
+import { CosmosWrapper, WalletWrapper } from './cosmos';
 import { getWithAttempts } from './wait';
 import { rest } from '@cosmos-client/core';
 
@@ -150,7 +150,10 @@ export const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.cw.sdk as CosmosSDK, res.txhash as string);
+  const tx = await rest.tx.getTx(
+    cm.chain.sdk as CosmosSDK,
+    res.txhash as string,
+  );
   expect(tx?.data.tx_response?.code).toEqual(0);
 };
 
