@@ -675,7 +675,7 @@ const setupTreasury = async (
         security_dao_address: opts.securityDaoAddress,
         vesting_denominator: opts.vestingDenominator,
       }),
-      'treausry',
+      'treasury',
     )
   )[0]._contract_address;
 };
