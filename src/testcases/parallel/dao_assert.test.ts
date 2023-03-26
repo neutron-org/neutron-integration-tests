@@ -48,16 +48,16 @@ describe('DAO / Check', () => {
       daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
   });
 
-  describe('Checking proposal modules', () => {
+  describe('Checking the association of proposal & preproposal modules with the Dao', () => {
     let res, preRes;
-    test('proposal dao single', async () => {
+    test('Proposal dao single', async () => {
       res = await cm_dao.queryContract(proposalSingleAddress, {
         dao: {},
       });
       expect(res).toEqual(daoContracts.core.address);
     });
 
-    test('preproposal dao single', async () => {
+    test('Preproposal dao single', async () => {
       preRes = await cm_dao.queryContract(preProposalSingleAddress, {
         proposal_module: {},
       });
@@ -68,14 +68,14 @@ describe('DAO / Check', () => {
       expect(res).toEqual(daoContracts.core.address);
     });
 
-    test('proposal dao multiple', async () => {
+    test('Proposal dao multiple', async () => {
       res = await cm_dao.queryContract(proposalMultipleAddress, {
         dao: {},
       });
       expect(res).toEqual(daoContracts.core.address);
     });
 
-    test('preproposal dao multiple', async () => {
+    test('Preproposal dao multiple', async () => {
       preRes = await cm_dao.queryContract(preProposalMultipleAddress, {
         proposal_module: {},
       });
@@ -86,14 +86,14 @@ describe('DAO / Check', () => {
       expect(res).toEqual(daoContracts.core.address);
     });
 
-    test('proposal dao overrule', async () => {
+    test('Proposal dao overrule', async () => {
       res = await cm_dao.queryContract(proposalOverruleAddress, {
         dao: {},
       });
       expect(res).toEqual(daoContracts.core.address);
     });
 
-    test('preproposal dao overrule', async () => {
+    test('Preproposal dao overrule', async () => {
       preRes = await cm_dao.queryContract(preProposalOverruleAddress, {
         proposal_module: {},
       });
@@ -105,7 +105,7 @@ describe('DAO / Check', () => {
     });
   });
 
-  describe('Checking voting module', () => {
+  describe('Checking the association of voting modules with the Dao', () => {
     let res;
     test('voting module', async () => {
       res = await cm_dao.queryContract(votingModuleAddress, {
@@ -134,7 +134,7 @@ describe('DAO / Check', () => {
 
   describe('Checking the validity of binary files', () => {
     let res, hash, hashFromContract;
-    test('dao proposal single hash assert', async () => {
+    test('Dao proposal single hash assert', async () => {
       res = await cm_dao.getContractInfo(proposalSingleAddress);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
@@ -143,7 +143,7 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('dao proposal multiple hash assert', async () => {
+    test('Dao proposal multiple hash assert', async () => {
       res = await cm_dao.getContractInfo(proposalMultipleAddress);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
@@ -152,7 +152,7 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('dao preproposal single hash assert', async () => {
+    test('Dao preproposal single hash assert', async () => {
       res = await cm_dao.getContractInfo(preProposalSingleAddress);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
@@ -161,7 +161,7 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('dao preproposal multiple hash assert', async () => {
+    test('Dao preproposal multiple hash assert', async () => {
       res = await cm_dao.getContractInfo(preProposalMultipleAddress);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
@@ -170,7 +170,7 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('dao core  hash assert', async () => {
+    test('Dao core  hash assert', async () => {
       res = await cm_dao.getContractInfo(daoContracts.core.address);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
