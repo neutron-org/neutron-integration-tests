@@ -144,20 +144,18 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   const daoContracts = await getDaoContracts(cm.cw, daoCoreAddress);
   const dao = new Dao(cm.cw, daoContracts);
   const daoMember = new DaoMember(cm, dao);
-  const message = JSON.stringify(
-    paramChangeProposal({
-      title,
-      description,
-      subspace: 'interchainqueries',
-      key,
-      value,
-    }),
-  );
+  const message = paramChangeProposal({
+    title,
+    description,
+    subspace: 'interchainqueries',
+    key,
+    value,
+  });
   await dao.makeSingleChoiceProposalPass(
     [daoMember],
     title,
     description,
-    message,
+    [message],
     amount,
     cm.wallet.address.toString(),
   );

@@ -103,17 +103,3 @@ export const paramChangeProposal = (info: ParamChangeProposalInfo): any => ({
     },
   },
 });
-
-export const sendProposal = (info: SendProposalInfo): any => ({
-  bank: {
-    send: {
-      to_address: info.to,
-      amount: [
-        {
-          denom: info.denom,
-          amount: info.amount,
-        },
-      ],
-    },
-  },
-});

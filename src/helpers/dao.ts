@@ -1,5 +1,10 @@
 import axios from 'axios';
-import { CosmosWrapper, getEventAttribute, WalletWrapper } from './cosmos';
+import {
+  CosmosWrapper,
+  createBankMessage,
+  getEventAttribute,
+  WalletWrapper,
+} from './cosmos';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { getWithAttempts } from './wait';
 import {
@@ -11,7 +16,6 @@ import {
 import {
   paramChangeProposal,
   ParamChangeProposalInfo,
-  sendProposal,
   SendProposalInfo,
 } from './proposal';
 
@@ -300,14 +304,14 @@ export class Dao {
     loyalVoters: [DaoMember],
     title: string,
     description: string,
-    msg: string,
+    msgs: [any],
     amount: string,
     sender: string,
   ) {
     const proposal_id = await loyalVoters[0].submitSingleChoiceProposal(
       title,
       description,
-      msg,
+      msgs,
       amount,
       sender,
     );
@@ -393,7 +397,8 @@ export class DaoMember {
 
   async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
     return await this.cm.executeContract(
-      this.dao.contracts.voting_module.voting_vaults.ntrn_vault.address,
+      (this.dao.contracts.voting_module as VotingVaultsModule).voting_vaults
+        .ntrn_vault.address,
       JSON.stringify({
         bond: {},
       }),
@@ -408,11 +413,10 @@ export class DaoMember {
   async submitSingleChoiceProposal(
     title: string,
     description: string,
-    msg: string,
+    msgs: any[],
     amount: string,
     sender: string,
   ): Promise<number> {
-    const message = JSON.parse(msg);
     const proposalTx = await this.cm.executeContract(
       this.dao.contracts.proposal_modules.single.pre_proposal_module.address,
       JSON.stringify({
@@ -421,12 +425,12 @@ export class DaoMember {
             propose: {
               title: title,
               description: description,
-              msgs: [message],
+              msgs,
             },
           },
         },
       }),
-      [{ denom: this.cm.cw.denom, amount: amount }],
+      [],
       sender,
     );
 
@@ -497,20 +501,18 @@ export class DaoMember {
   async submitSendProposal(
     title: string,
     description: string,
-    amount: [
-      { recipient: string; amount: number },
-    ],
+    dest: { recipient: string; amount: number; denom: string }[],
     to: string,
     sender: string = this.cm.wallet.address.toString(),
   ): Promise<number> {
-    const message = JSON.stringify(
-      sendProposal({ to, denom: this.cm.cw.denom, amount }),
+    const messages = dest.map((d) =>
+      createBankMessage(d.recipient, d.amount, d.denom),
     );
     return await this.submitSingleChoiceProposal(
       title,
       description,
-      message,
-      amount,
+      messages,
+      '1',
       sender,
     );
   }
@@ -527,13 +529,17 @@ export class DaoMember {
     amount: string,
     sender: string = this.cm.wallet.address.toString(),
   ): Promise<number> {
-    const message = JSON.stringify(
-      paramChangeProposal({ title, description, subspace, key, value }),
-    );
+    const message = paramChangeProposal({
+      title,
+      description,
+      subspace,
+      key,
+      value,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
-      message,
+      [message],
       amount,
       sender,
     );
@@ -551,7 +557,9 @@ export class DaoMember {
   ): Promise<number> {
     const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
       description: 'choice' + idx,
-      msgs: [sendProposal(choice)],
+      msgs: [
+        createBankMessage(choice.to, parseInt(choice.amount), choice.denom),
+      ],
     }));
     return await this.submitMultiChoiceProposal(
       title,
@@ -655,7 +663,7 @@ export class DaoMember {
     return await this.submitSingleChoiceProposal(
       title,
       description,
-      message,
+      [message],
       amount,
       sender,
     );
@@ -685,7 +693,7 @@ export class DaoMember {
     return await this.submitSingleChoiceProposal(
       title,
       description,
-      message,
+      [message],
       amount,
       sender,
     );
@@ -741,7 +749,7 @@ export class DaoMember {
     description?: string;
     dao_uri?: string;
   }): Promise<number> {
-    const message = JSON.stringify({
+    const message = {
       wasm: {
         execute: {
           contract_addr: this.dao.contracts.core.address,
@@ -753,14 +761,14 @@ export class DaoMember {
           funds: [],
         },
       },
-    });
+    };
 
     return await this.submitSingleChoiceProposal(
       'update subDAO config',
       'sets subDAO config to new value',
-      message,
+      [message],
       '0',
-      this.dao.contracts.core.address,
+      this.cm.wallet.address.toString(),
     );
   }
 }
