@@ -549,8 +549,7 @@ export class DaoMember {
     choices: SendProposalInfo[],
     title: string,
     description: string,
-    amount: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit: string,
   ): Promise<number> {
     const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
       description: 'choice' + idx,
@@ -561,8 +560,7 @@ export class DaoMember {
     return await this.submitMultiChoiceProposal(
       title,
       description,
-      amount,
-      sender,
+      deposit,
       messages,
     );
   }
@@ -574,8 +572,7 @@ export class DaoMember {
     choices: ParamChangeProposalInfo[],
     title: string,
     description: string,
-    amount: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit: string,
   ): Promise<number> {
     const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
       description: 'choice' + idx,
@@ -584,8 +581,7 @@ export class DaoMember {
     return await this.submitMultiChoiceProposal(
       title,
       description,
-      amount,
-      sender,
+      deposit,
       messages,
     );
   }
@@ -596,8 +592,7 @@ export class DaoMember {
   async submitMultiChoiceProposal(
     title: string,
     description: string,
-    amount: string,
-    sender: string,
+    deposit: string,
     options: MultiChoiceOption[],
   ): Promise<number> {
     const proposalTx = await this.cm.executeContract(
@@ -613,8 +608,8 @@ export class DaoMember {
           },
         },
       }),
-      [{ denom: this.cm.cw.denom, amount: amount }],
-      sender,
+      [{ denom: this.cm.cw.denom, amount: deposit }],
+      this.cm.wallet.address.toString(),
     );
 
     const attribute = getEventAttribute(
