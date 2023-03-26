@@ -127,8 +127,14 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitSendProposal(
         'Proposal #3',
         'This one will pass',
+        [
+          {
+            recipient: dao.contracts.core.address.toString(),
+            amount: 1000,
+            denom: neutronChain.denom,
+          },
+        ],
         '1000',
-        dao.contracts.core.address,
       );
     });
 

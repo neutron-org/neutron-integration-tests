@@ -138,7 +138,6 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   description: string,
   key: string,
   value: string,
-  amount = '1000',
 ) => {
   const daoCoreAddress = (await cm.cw.getChainAdmins())[0];
   const daoContracts = await getDaoContracts(cm.cw, daoCoreAddress);
@@ -156,8 +155,7 @@ const acceptInterchainqueriesParamsChangeProposal = async (
     title,
     description,
     [message],
-    amount,
-    cm.wallet.address.toString(),
+    '1000',
   );
 };
 

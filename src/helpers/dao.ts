@@ -304,16 +304,14 @@ export class Dao {
     loyalVoters: [DaoMember],
     title: string,
     description: string,
-    msgs: [any],
-    amount: string,
-    sender: string,
+    msgs: any[],
+    deposit: string,
   ) {
     const proposal_id = await loyalVoters[0].submitSingleChoiceProposal(
       title,
       description,
       msgs,
-      amount,
-      sender,
+      deposit,
     );
     await loyalVoters[0].cm.cw.blockWaiter.waitBlocks(1);
 
@@ -414,9 +412,12 @@ export class DaoMember {
     title: string,
     description: string,
     msgs: any[],
-    amount: string,
-    sender: string,
+    deposit = '',
   ): Promise<number> {
+    let depositFunds = [];
+    if (deposit !== '') {
+      depositFunds = [{ denom: this.cm.cw.denom, amount: deposit }];
+    }
     const proposalTx = await this.cm.executeContract(
       this.dao.contracts.proposal_modules.single.pre_proposal_module.address,
       JSON.stringify({
@@ -430,8 +431,8 @@ export class DaoMember {
           },
         },
       }),
-      [],
-      sender,
+      depositFunds,
+      this.cm.wallet.address.toString(),
     );
 
     const attribute = getEventAttribute(
@@ -502,8 +503,7 @@ export class DaoMember {
     title: string,
     description: string,
     dest: { recipient: string; amount: number; denom: string }[],
-    to: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit = '',
   ): Promise<number> {
     const messages = dest.map((d) =>
       createBankMessage(d.recipient, d.amount, d.denom),
@@ -512,8 +512,7 @@ export class DaoMember {
       title,
       description,
       messages,
-      '1',
-      sender,
+      deposit,
     );
   }
 
@@ -526,8 +525,7 @@ export class DaoMember {
     subspace: string,
     key: string,
     value: string,
-    amount: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit: string,
   ): Promise<number> {
     const message = paramChangeProposal({
       title,
@@ -540,8 +538,7 @@ export class DaoMember {
       title,
       description,
       [message],
-      amount,
-      sender,
+      deposit,
     );
   }
 
@@ -640,10 +637,9 @@ export class DaoMember {
     name: string,
     height: number,
     info: string,
-    amount: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit: string,
   ): Promise<number> {
-    const message = JSON.stringify({
+    const message = {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
@@ -659,13 +655,12 @@ export class DaoMember {
           },
         },
       },
-    });
+    };
     return await this.submitSingleChoiceProposal(
       title,
       description,
       [message],
-      amount,
-      sender,
+      deposit,
     );
   }
 
@@ -675,10 +670,9 @@ export class DaoMember {
   async submitCancelSoftwareUpgradeProposal(
     title: string,
     description: string,
-    amount: string,
-    sender: string = this.cm.wallet.address.toString(),
+    deposit: string,
   ): Promise<number> {
-    const message = JSON.stringify({
+    const message = {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
@@ -689,13 +683,12 @@ export class DaoMember {
           },
         },
       },
-    });
+    };
     return await this.submitSingleChoiceProposal(
       title,
       description,
       [message],
-      amount,
-      sender,
+      deposit,
     );
   }
 
@@ -744,7 +737,7 @@ export class DaoMember {
     );
   }
 
-  async submitUpdateSubDaoConfigProposalpropose(new_config: {
+  async submitUpdateSubDaoConfigProposal(new_config: {
     name?: string;
     description?: string;
     dao_uri?: string;
@@ -767,8 +760,6 @@ export class DaoMember {
       'update subDAO config',
       'sets subDAO config to new value',
       [message],
-      '0',
-      this.cm.wallet.address.toString(),
     );
   }
 }

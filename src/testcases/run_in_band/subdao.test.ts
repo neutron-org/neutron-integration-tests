@@ -90,23 +90,18 @@ describe('Neutron / Subdao', () => {
   describe('Timelock: failed execution', () => {
     let proposal_id: number;
     test('proposal timelock', async () => {
-      proposal_id = await subdaoMember1.submitSendProposal(
-        'send',
-        'send',
-        [
-          {
-            recipient: demo1_addr.toString(),
-            amount: 1000,
-            denom: neutronChain.denom,
-          },
-          {
-            recipient: demo2_addr.toString(),
-            amount: 2000,
-            denom: neutronChain.denom,
-          },
-        ],
-        subDao.contracts.proposal_modules.single.pre_proposal_module.address,
-      );
+      proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
+        {
+          recipient: demo1_addr.toString(),
+          amount: 1000,
+          denom: neutronChain.denom,
+        },
+        {
+          recipient: demo2_addr.toString(),
+          amount: 2000,
+          denom: neutronChain.denom,
+        },
+      ]);
 
       const timelocked_prop = await subdaoMember1.supportAndExecuteProposal(
         proposal_id,
@@ -157,23 +152,18 @@ describe('Neutron / Subdao', () => {
   describe('Timelock: Succeed execution', () => {
     let proposal_id: number;
     beforeAll(async () => {
-      proposal_id = await subdaoMember1.submitSendProposal(
-        'send',
-        'send',
-        [
-          {
-            recipient: demo1_addr.toString(),
-            amount: 1000,
-            denom: neutronChain.denom,
-          },
-          {
-            recipient: demo2_addr.toString(),
-            amount: 2000,
-            denom: neutronChain.denom,
-          },
-        ],
-        subDao.contracts.proposal_modules.single.pre_proposal_module.address,
-      );
+      proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
+        {
+          recipient: demo1_addr.toString(),
+          amount: 1000,
+          denom: neutronChain.denom,
+        },
+        {
+          recipient: demo2_addr.toString(),
+          amount: 2000,
+          denom: neutronChain.denom,
+        },
+      ]);
 
       const timelocked_prop = await subdaoMember1.supportAndExecuteProposal(
         proposal_id,
@@ -251,23 +241,18 @@ describe('Neutron / Subdao', () => {
   describe('Overrule timelocked', () => {
     let proposal_id: number;
     beforeAll(async () => {
-      proposal_id = await subdaoMember1.submitSendProposal(
-        'send',
-        'send',
-        [
-          {
-            recipient: demo1_addr.toString(),
-            amount: 1000,
-            denom: neutronChain.denom,
-          },
-          {
-            recipient: demo2_addr.toString(),
-            amount: 2000,
-            denom: neutronChain.denom,
-          },
-        ],
-        subDao.contracts.proposal_modules.single.pre_proposal_module.address,
-      );
+      proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
+        {
+          recipient: demo1_addr.toString(),
+          amount: 1000,
+          denom: neutronChain.denom,
+        },
+        {
+          recipient: demo2_addr.toString(),
+          amount: 2000,
+          denom: neutronChain.denom,
+        },
+      ]);
 
       const timelocked_prop = await subdaoMember1.supportAndExecuteProposal(
         proposal_id,
@@ -303,18 +288,13 @@ describe('Neutron / Subdao', () => {
     const funding = 1000;
     let proposal_id: number;
     test('create a proposal to fund security DAO', async () => {
-      proposal_id = await subdaoMember1.submitSendProposal(
-        'send',
-        'send',
-        [
-          {
-            recipient: security_dao_addr.toString(),
-            amount: funding,
-            denom: neutronChain.denom,
-          },
-        ],
-        subDao.contracts.proposal_modules.single.pre_proposal_module.address,
-      );
+      proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
+        {
+          recipient: security_dao_addr.toString(),
+          amount: funding,
+          denom: neutronChain.denom,
+        },
+      ]);
 
       await subdaoMember1.voteYes(proposal_id);
       await subDao.checkPassedProposal(proposal_id);
@@ -740,9 +720,9 @@ describe('Neutron / Subdao', () => {
 
       const new_dao_name = 'another name';
       expect(config_before.name).not.toEqual(new_dao_name);
-      proposal_id = await subdaoMember1.submitUpdateSubDaoConfigProposalpropose(
-        { name: new_dao_name },
-      );
+      proposal_id = await subdaoMember1.submitUpdateSubDaoConfigProposal({
+        name: new_dao_name,
+      });
       await subdaoMember1.supportAndExecuteProposal(proposal_id);
 
       await wait(20);
@@ -763,9 +743,9 @@ describe('Neutron / Subdao', () => {
         },
       );
 
-      proposal_id = await subdaoMember1.submitUpdateSubDaoConfigProposalpropose(
-        { name: '' },
-      );
+      proposal_id = await subdaoMember1.submitUpdateSubDaoConfigProposal({
+        name: '',
+      });
       await subdaoMember1.supportAndExecuteProposal(proposal_id);
 
       await wait(20);
