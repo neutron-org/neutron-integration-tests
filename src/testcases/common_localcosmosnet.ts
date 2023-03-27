@@ -178,8 +178,7 @@ export class TestStateLocalCosmosTestNet {
         const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
         res = await cm.msgSend(
           to.toString(),
-          amount,
-          denom,
+          { amount, denom },
           fee,
           sequence,
           rest.tx.BroadcastTxMode.Block,

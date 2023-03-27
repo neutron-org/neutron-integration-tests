@@ -150,13 +150,11 @@ describe('Neutron / TGE / Auction', () => {
     it('should be able to send fake ibc tokens', async () => {
       await cm.msgSend(
         testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
-        '1000',
-        IBC_ATOM_DENOM,
+        { amount: '1000', denom: IBC_ATOM_DENOM },
       );
       await cm.msgSend(
         testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
-        '1000',
-        IBC_USDC_DENOM,
+        { amount: '1000', denom: IBC_USDC_DENOM },
       );
     });
     it('should store contracts', async () => {
@@ -688,10 +686,9 @@ describe('Neutron / TGE / Auction', () => {
           ).rejects.toThrow(/Not enough NTRN in the contract/);
         });
         it('should not be able to set pool size when price feed data is set but too old', async () => {
-          await cm.msgSend(
-            contractAddresses.TGE_AUCTION,
-            NTRN_AMOUNT.toString(),
-          );
+          await cm.msgSend(contractAddresses.TGE_AUCTION, {
+            amount: NTRN_AMOUNT.toString(),
+          });
           const time = (Date.now() / 1000 - 10000) | 0;
           const r1 = await cm.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,

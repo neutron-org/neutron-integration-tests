@@ -328,8 +328,12 @@ export class CosmosWrapper {
    */
   async msgSend(
     to: string,
-    amount: string,
-    denom = this.denom,
+    coin:
+      | {
+          amount: string;
+          denom?: string;
+        }
+      | string,
     fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
@@ -337,6 +341,8 @@ export class CosmosWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
+    const { amount, denom = this.denom } =
+      typeof coin === 'string' ? { amount: coin } : coin;
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
