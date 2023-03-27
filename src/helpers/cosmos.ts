@@ -17,6 +17,7 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import bech32 from 'bech32';
 import {
+  addSchedule,
   paramChangeProposal,
   ParamChangeProposalInfo,
   sendProposal,
@@ -706,6 +707,36 @@ export class CosmosWrapper {
         },
       },
     });
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract[],
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      addSchedule(
+        name,
+        period,
+        msgs.map((m) => JSON.stringify(m.toJSON())),
+      ),
+    );
     return await this.submitProposal(
       pre_propose_contract,
       title,

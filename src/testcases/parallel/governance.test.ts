@@ -1,7 +1,9 @@
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
+import { NeutronContract } from '../../helpers/types';
 import { DaoContracts, getDaoContracts } from '../../helpers/dao';
+import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -13,6 +15,8 @@ describe('Neutron / Governance', () => {
   let preProposeContractAddress: string;
   let proposeSingleContractAddress: string;
   let proposeMultipleContractAddress: string;
+
+  let hooksIbcTransferContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -44,6 +48,18 @@ describe('Neutron / Governance', () => {
     proposeSingleContractAddress = daoContracts.proposal_modules.single.address;
     proposeMultipleContractAddress =
       daoContracts.proposal_modules.multiple.address;
+  });
+
+  describe('Contracts', () => {
+    let codeId: string;
+    test('store contract', async () => {
+      codeId = await cm.storeWasm(NeutronContract.HOOK_IBC_TRANSFER);
+      expect(parseInt(codeId)).toBeGreaterThan(0);
+    });
+    test('instantiate', async () => {
+      const res = await cm.instantiate(codeId, '{}', 'hook_ibc_transfer');
+      hooksIbcTransferContractAddress = res[0]._contract_address;
+    });
   });
 
   describe('prepare: bond funds', () => {
@@ -173,6 +189,26 @@ describe('Neutron / Governance', () => {
         'Proposal #4',
         'Software upgrade proposal. Will pass',
         '1000',
+      );
+    });
+
+    test('create proposal #6, will pass', async () => {
+      const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
+      await cm.submitAddSchedule(
+        preProposeContractAddress,
+        'Proposal #11',
+        '',
+        '1000',
+        'everytime',
+        5,
+        [
+          new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
+            sender: testState.wallets.neutron.demo1.address.toString(),
+            contract: hooksIbcTransferContractAddress,
+            msg: Buffer.from(msg),
+            funds: [],
+          }),
+        ],
       );
     });
 
@@ -498,4 +534,66 @@ describe('Neutron / Governance', () => {
       );
     });
   });
+
+  describe('vote for proposal #6 (no, yes, yes)', () => {
+    const proposalId = 6;
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(
+        proposeSingleContractAddress,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 2', async () => {
+      await cm2.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #6', () => {
+    const proposalId = 6;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('check that schedule was added and executed later', () => {
+    test('check that msg from schedule was executed', async () => {
+      await cm.blockWaiter.waitBlocks(15);
+      const queryResult = await cm.queryContract<{
+        sender: string | null;
+        funds: { denom: string; amount: string }[];
+      }>(hooksIbcTransferContractAddress, {
+        test_msg: { arg: 'test' },
+      });
+
+      expect(queryResult.sender).toEqual(
+        testState.wallets.neutron.demo1.address.toString(),
+      );
+      expect(queryResult.funds).toEqual([]);
+    });
+
+    // TODO
+    // test('check that msg was executed')
+  });
+
+  // schedule was added with invalid message
+  // schedule was removed
+  // schedule was removed from security dao (Optional)
 });

@@ -117,3 +117,25 @@ export const sendProposal = (info: SendProposalInfo): any => ({
     },
   },
 });
+
+export const addSchedule = (
+  name: string,
+  period: number,
+  msgs: string[],
+): any => ({
+  custom: {
+    add_schedule: {
+      name,
+      period,
+      msgs,
+    },
+  },
+});
+
+export const removeSchedule = (name: string): any => ({
+  custom: {
+    remove_schedule: {
+      name,
+    },
+  },
+});
