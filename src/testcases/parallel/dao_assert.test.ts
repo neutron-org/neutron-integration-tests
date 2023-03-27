@@ -1,7 +1,11 @@
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import { Wallet } from '../../types';
-import { getDaoContracts, DaoContracts } from '../../helpers/dao';
+import {
+  getDaoContracts,
+  DaoContracts,
+  getTreasuryContract,
+} from '../../helpers/dao';
 import { getContractsHashes, fetchDataHash } from '../../helpers/env';
 
 describe('DAO / Check', () => {
@@ -18,6 +22,7 @@ describe('DAO / Check', () => {
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
   let votingVaultsLockdropAddress: string;
+  let treasuryContract: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -46,6 +51,7 @@ describe('DAO / Check', () => {
       daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     votingVaultsLockdropAddress =
       daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
+    treasuryContract = await getTreasuryContract(cm_dao);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -103,6 +109,10 @@ describe('DAO / Check', () => {
       expect(preRes).toEqual(proposalOverruleAddress);
       expect(res).toEqual(daoContracts.core.address);
     });
+    test('Treasury is correct', async () => {
+      res = await getTreasuryContract(cm_dao);
+      expect(res).toBeTruthy();
+    });
   });
 
   describe('Checking the association of voting modules with the Dao', () => {
@@ -118,6 +128,11 @@ describe('DAO / Check', () => {
       res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
         dao: {},
       });
+      console.log('ntrn');
+      console.log(res);
+      console.log(daoContracts);
+      const res2 = await cm_dao.getContractInfo(votingVaultsNtrnAddress);
+      console.log(res2);
     });
 
     test.skip('voting lockdrop vaults', async () => {
@@ -126,7 +141,7 @@ describe('DAO / Check', () => {
       });
     });
 
-    test.skip('Dao is the admin of himself', async () => {
+    test('Dao is the admin of himself', async () => {
       res = await cm_dao.getContractInfo(daoContracts.core.address);
       expect(res.contract_info.admin).toEqual(daoContracts.core.address);
     });
@@ -170,11 +185,62 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('Dao core  hash assert', async () => {
+    test('Dao core hash assert', async () => {
       res = await cm_dao.getContractInfo(daoContracts.core.address);
       hash = await fetchDataHash(res.contract_info.code_id);
       hashFromContract = await getContractsHashes();
       expect(hash?.toLowerCase()).toEqual(hashFromContract['cwd_core.wasm']);
+    });
+
+    test('Dao proposal overrule hash assert', async () => {
+      res = await cm_dao.getContractInfo(proposalOverruleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_proposal_single.wasm'],
+      );
+    });
+
+    test('Dao preproposal overrule hash assert', async () => {
+      res = await cm_dao.getContractInfo(preProposalOverruleAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['cwd_pre_propose_overrule.wasm'],
+      );
+    });
+
+    test('Treasury hash assert', async () => {
+      res = await cm_dao.getContractInfo(treasuryContract);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['neutron_treasury.wasm'],
+      );
+    });
+    test('Treasury hash assert', async () => {
+      res = await cm_dao.getContractInfo(treasuryContract);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['neutron_treasury.wasm'],
+      );
+    });
+    test('Dao neutron vauld hash assert', async () => {
+      res = await cm_dao.getContractInfo(votingVaultsNtrnAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['neutron_vault.wasm'],
+      );
+    });
+    test('Dao lockdrop vauld hash assert', async () => {
+      res = await cm_dao.getContractInfo(votingVaultsLockdropAddress);
+      hash = await fetchDataHash(res.contract_info.code_id);
+      hashFromContract = await getContractsHashes();
+      expect(hash?.toLowerCase()).toEqual(
+        hashFromContract['lockdrop_vault.wasm'],
+      );
     });
   });
 });
