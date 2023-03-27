@@ -125,6 +125,7 @@ describe('DAO / Check', () => {
     });
 
     test.skip('voting ntrn vaults', async () => {
+      //We're waiting for a bug to be fixed about the DAO being revealed on the basis of the creator
       res = await cm_dao.queryContract(votingVaultsNtrnAddress, {
         dao: {},
       });
@@ -136,6 +137,7 @@ describe('DAO / Check', () => {
     });
 
     test.skip('voting lockdrop vaults', async () => {
+      //We're waiting for a bug to be fixed about the DAO being revealed on the basis of the creator
       res = await cm_dao.queryContract(votingVaultsLockdropAddress, {
         dao: {},
       });
