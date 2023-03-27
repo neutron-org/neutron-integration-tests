@@ -1081,8 +1081,8 @@ export namespace neutron {
             /** Params neutron_denom */
             neutron_denom?: (string|null);
 
-            /** Params treasury_address */
-            treasury_address?: (string|null);
+            /** Params reserve_address */
+            reserve_address?: (string|null);
         }
 
         /** Represents a Params. */
@@ -1097,8 +1097,8 @@ export namespace neutron {
             /** Params neutron_denom. */
             public neutron_denom: string;
 
-            /** Params treasury_address. */
-            public treasury_address: string;
+            /** Params reserve_address. */
+            public reserve_address: string;
 
             /**
              * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.

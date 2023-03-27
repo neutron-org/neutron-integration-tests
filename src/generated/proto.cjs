@@ -2335,7 +2335,7 @@
                  * @memberof neutron.feeburner
                  * @interface IParams
                  * @property {string|null} [neutron_denom] Params neutron_denom
-                 * @property {string|null} [treasury_address] Params treasury_address
+                 * @property {string|null} [reserve_address] Params reserve_address
                  */
     
                 /**
@@ -2362,12 +2362,12 @@
                 Params.prototype.neutron_denom = "";
     
                 /**
-                 * Params treasury_address.
-                 * @member {string} treasury_address
+                 * Params reserve_address.
+                 * @member {string} reserve_address
                  * @memberof neutron.feeburner.Params
                  * @instance
                  */
-                Params.prototype.treasury_address = "";
+                Params.prototype.reserve_address = "";
     
                 /**
                  * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
@@ -2383,8 +2383,8 @@
                         writer = $Writer.create();
                     if (message.neutron_denom != null && Object.hasOwnProperty.call(message, "neutron_denom"))
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.neutron_denom);
-                    if (message.treasury_address != null && Object.hasOwnProperty.call(message, "treasury_address"))
-                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.treasury_address);
+                    if (message.reserve_address != null && Object.hasOwnProperty.call(message, "reserve_address"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.reserve_address);
                     return writer;
                 };
     
@@ -2423,7 +2423,7 @@
                             message.neutron_denom = reader.string();
                             break;
                         case 2:
-                            message.treasury_address = reader.string();
+                            message.reserve_address = reader.string();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -2463,9 +2463,9 @@
                     if (message.neutron_denom != null && message.hasOwnProperty("neutron_denom"))
                         if (!$util.isString(message.neutron_denom))
                             return "neutron_denom: string expected";
-                    if (message.treasury_address != null && message.hasOwnProperty("treasury_address"))
-                        if (!$util.isString(message.treasury_address))
-                            return "treasury_address: string expected";
+                    if (message.reserve_address != null && message.hasOwnProperty("reserve_address"))
+                        if (!$util.isString(message.reserve_address))
+                            return "reserve_address: string expected";
                     return null;
                 };
     
@@ -2483,8 +2483,8 @@
                     var message = new $root.neutron.feeburner.Params();
                     if (object.neutron_denom != null)
                         message.neutron_denom = String(object.neutron_denom);
-                    if (object.treasury_address != null)
-                        message.treasury_address = String(object.treasury_address);
+                    if (object.reserve_address != null)
+                        message.reserve_address = String(object.reserve_address);
                     return message;
                 };
     
@@ -2503,12 +2503,12 @@
                     var object = {};
                     if (options.defaults) {
                         object.neutron_denom = "";
-                        object.treasury_address = "";
+                        object.reserve_address = "";
                     }
                     if (message.neutron_denom != null && message.hasOwnProperty("neutron_denom"))
                         object.neutron_denom = message.neutron_denom;
-                    if (message.treasury_address != null && message.hasOwnProperty("treasury_address"))
-                        object.treasury_address = message.treasury_address;
+                    if (message.reserve_address != null && message.hasOwnProperty("reserve_address"))
+                        object.reserve_address = message.reserve_address;
                     return object;
                 };
     
