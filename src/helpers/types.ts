@@ -99,6 +99,8 @@ export const NeutronContract = {
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
+  TGE_CREDITS: 'credits.wasm',
+  TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
 };
 
 export type MultiChoiceOption = {

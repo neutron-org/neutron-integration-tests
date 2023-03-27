@@ -7912,9 +7912,10 @@
                  * @property {string|null} [connection_id] RegisteredQuery connection_id
                  * @property {Long|null} [update_period] RegisteredQuery update_period
                  * @property {Long|null} [last_submitted_result_local_height] RegisteredQuery last_submitted_result_local_height
-                 * @property {Long|null} [last_submitted_result_remote_height] RegisteredQuery last_submitted_result_remote_height
+                 * @property {ibc.core.client.v1.IHeight|null} [last_submitted_result_remote_height] RegisteredQuery last_submitted_result_remote_height
                  * @property {Array.<cosmos.base.v1beta1.ICoin>|null} [deposit] RegisteredQuery deposit
                  * @property {Long|null} [submit_timeout] RegisteredQuery submit_timeout
+                 * @property {Long|null} [registered_at_height] RegisteredQuery registered_at_height
                  */
     
                 /**
@@ -8000,11 +8001,11 @@
     
                 /**
                  * RegisteredQuery last_submitted_result_remote_height.
-                 * @member {Long} last_submitted_result_remote_height
+                 * @member {ibc.core.client.v1.IHeight|null|undefined} last_submitted_result_remote_height
                  * @memberof neutron.interchainqueries.RegisteredQuery
                  * @instance
                  */
-                RegisteredQuery.prototype.last_submitted_result_remote_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+                RegisteredQuery.prototype.last_submitted_result_remote_height = null;
     
                 /**
                  * RegisteredQuery deposit.
@@ -8021,6 +8022,14 @@
                  * @instance
                  */
                 RegisteredQuery.prototype.submit_timeout = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
+                 * RegisteredQuery registered_at_height.
+                 * @member {Long} registered_at_height
+                 * @memberof neutron.interchainqueries.RegisteredQuery
+                 * @instance
+                 */
+                RegisteredQuery.prototype.registered_at_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
                  * Encodes the specified RegisteredQuery message. Does not implicitly {@link neutron.interchainqueries.RegisteredQuery.verify|verify} messages.
@@ -8052,12 +8061,14 @@
                     if (message.last_submitted_result_local_height != null && Object.hasOwnProperty.call(message, "last_submitted_result_local_height"))
                         writer.uint32(/* id 8, wireType 0 =*/64).uint64(message.last_submitted_result_local_height);
                     if (message.last_submitted_result_remote_height != null && Object.hasOwnProperty.call(message, "last_submitted_result_remote_height"))
-                        writer.uint32(/* id 9, wireType 0 =*/72).uint64(message.last_submitted_result_remote_height);
+                        $root.ibc.core.client.v1.Height.encode(message.last_submitted_result_remote_height, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                     if (message.deposit != null && message.deposit.length)
                         for (var i = 0; i < message.deposit.length; ++i)
                             $root.cosmos.base.v1beta1.Coin.encode(message.deposit[i], writer.uint32(/* id 10, wireType 2 =*/82).fork()).ldelim();
                     if (message.submit_timeout != null && Object.hasOwnProperty.call(message, "submit_timeout"))
                         writer.uint32(/* id 11, wireType 0 =*/88).uint64(message.submit_timeout);
+                    if (message.registered_at_height != null && Object.hasOwnProperty.call(message, "registered_at_height"))
+                        writer.uint32(/* id 12, wireType 0 =*/96).uint64(message.registered_at_height);
                     return writer;
                 };
     
@@ -8119,7 +8130,7 @@
                             message.last_submitted_result_local_height = reader.uint64();
                             break;
                         case 9:
-                            message.last_submitted_result_remote_height = reader.uint64();
+                            message.last_submitted_result_remote_height = $root.ibc.core.client.v1.Height.decode(reader, reader.uint32());
                             break;
                         case 10:
                             if (!(message.deposit && message.deposit.length))
@@ -8128,6 +8139,9 @@
                             break;
                         case 11:
                             message.submit_timeout = reader.uint64();
+                            break;
+                        case 12:
+                            message.registered_at_height = reader.uint64();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -8194,9 +8208,11 @@
                     if (message.last_submitted_result_local_height != null && message.hasOwnProperty("last_submitted_result_local_height"))
                         if (!$util.isInteger(message.last_submitted_result_local_height) && !(message.last_submitted_result_local_height && $util.isInteger(message.last_submitted_result_local_height.low) && $util.isInteger(message.last_submitted_result_local_height.high)))
                             return "last_submitted_result_local_height: integer|Long expected";
-                    if (message.last_submitted_result_remote_height != null && message.hasOwnProperty("last_submitted_result_remote_height"))
-                        if (!$util.isInteger(message.last_submitted_result_remote_height) && !(message.last_submitted_result_remote_height && $util.isInteger(message.last_submitted_result_remote_height.low) && $util.isInteger(message.last_submitted_result_remote_height.high)))
-                            return "last_submitted_result_remote_height: integer|Long expected";
+                    if (message.last_submitted_result_remote_height != null && message.hasOwnProperty("last_submitted_result_remote_height")) {
+                        var error = $root.ibc.core.client.v1.Height.verify(message.last_submitted_result_remote_height);
+                        if (error)
+                            return "last_submitted_result_remote_height." + error;
+                    }
                     if (message.deposit != null && message.hasOwnProperty("deposit")) {
                         if (!Array.isArray(message.deposit))
                             return "deposit: array expected";
@@ -8209,6 +8225,9 @@
                     if (message.submit_timeout != null && message.hasOwnProperty("submit_timeout"))
                         if (!$util.isInteger(message.submit_timeout) && !(message.submit_timeout && $util.isInteger(message.submit_timeout.low) && $util.isInteger(message.submit_timeout.high)))
                             return "submit_timeout: integer|Long expected";
+                    if (message.registered_at_height != null && message.hasOwnProperty("registered_at_height"))
+                        if (!$util.isInteger(message.registered_at_height) && !(message.registered_at_height && $util.isInteger(message.registered_at_height.low) && $util.isInteger(message.registered_at_height.high)))
+                            return "registered_at_height: integer|Long expected";
                     return null;
                 };
     
@@ -8269,15 +8288,11 @@
                             message.last_submitted_result_local_height = object.last_submitted_result_local_height;
                         else if (typeof object.last_submitted_result_local_height === "object")
                             message.last_submitted_result_local_height = new $util.LongBits(object.last_submitted_result_local_height.low >>> 0, object.last_submitted_result_local_height.high >>> 0).toNumber(true);
-                    if (object.last_submitted_result_remote_height != null)
-                        if ($util.Long)
-                            (message.last_submitted_result_remote_height = $util.Long.fromValue(object.last_submitted_result_remote_height)).unsigned = true;
-                        else if (typeof object.last_submitted_result_remote_height === "string")
-                            message.last_submitted_result_remote_height = parseInt(object.last_submitted_result_remote_height, 10);
-                        else if (typeof object.last_submitted_result_remote_height === "number")
-                            message.last_submitted_result_remote_height = object.last_submitted_result_remote_height;
-                        else if (typeof object.last_submitted_result_remote_height === "object")
-                            message.last_submitted_result_remote_height = new $util.LongBits(object.last_submitted_result_remote_height.low >>> 0, object.last_submitted_result_remote_height.high >>> 0).toNumber(true);
+                    if (object.last_submitted_result_remote_height != null) {
+                        if (typeof object.last_submitted_result_remote_height !== "object")
+                            throw TypeError(".neutron.interchainqueries.RegisteredQuery.last_submitted_result_remote_height: object expected");
+                        message.last_submitted_result_remote_height = $root.ibc.core.client.v1.Height.fromObject(object.last_submitted_result_remote_height);
+                    }
                     if (object.deposit) {
                         if (!Array.isArray(object.deposit))
                             throw TypeError(".neutron.interchainqueries.RegisteredQuery.deposit: array expected");
@@ -8297,6 +8312,15 @@
                             message.submit_timeout = object.submit_timeout;
                         else if (typeof object.submit_timeout === "object")
                             message.submit_timeout = new $util.LongBits(object.submit_timeout.low >>> 0, object.submit_timeout.high >>> 0).toNumber(true);
+                    if (object.registered_at_height != null)
+                        if ($util.Long)
+                            (message.registered_at_height = $util.Long.fromValue(object.registered_at_height)).unsigned = true;
+                        else if (typeof object.registered_at_height === "string")
+                            message.registered_at_height = parseInt(object.registered_at_height, 10);
+                        else if (typeof object.registered_at_height === "number")
+                            message.registered_at_height = object.registered_at_height;
+                        else if (typeof object.registered_at_height === "object")
+                            message.registered_at_height = new $util.LongBits(object.registered_at_height.low >>> 0, object.registered_at_height.high >>> 0).toNumber(true);
                     return message;
                 };
     
@@ -8337,16 +8361,17 @@
                             object.last_submitted_result_local_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.last_submitted_result_local_height = options.longs === String ? "0" : 0;
-                        if ($util.Long) {
-                            var long = new $util.Long(0, 0, true);
-                            object.last_submitted_result_remote_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                        } else
-                            object.last_submitted_result_remote_height = options.longs === String ? "0" : 0;
+                        object.last_submitted_result_remote_height = null;
                         if ($util.Long) {
                             var long = new $util.Long(0, 0, true);
                             object.submit_timeout = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.submit_timeout = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.registered_at_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.registered_at_height = options.longs === String ? "0" : 0;
                     }
                     if (message.id != null && message.hasOwnProperty("id"))
                         if (typeof message.id === "number")
@@ -8377,10 +8402,7 @@
                         else
                             object.last_submitted_result_local_height = options.longs === String ? $util.Long.prototype.toString.call(message.last_submitted_result_local_height) : options.longs === Number ? new $util.LongBits(message.last_submitted_result_local_height.low >>> 0, message.last_submitted_result_local_height.high >>> 0).toNumber(true) : message.last_submitted_result_local_height;
                     if (message.last_submitted_result_remote_height != null && message.hasOwnProperty("last_submitted_result_remote_height"))
-                        if (typeof message.last_submitted_result_remote_height === "number")
-                            object.last_submitted_result_remote_height = options.longs === String ? String(message.last_submitted_result_remote_height) : message.last_submitted_result_remote_height;
-                        else
-                            object.last_submitted_result_remote_height = options.longs === String ? $util.Long.prototype.toString.call(message.last_submitted_result_remote_height) : options.longs === Number ? new $util.LongBits(message.last_submitted_result_remote_height.low >>> 0, message.last_submitted_result_remote_height.high >>> 0).toNumber(true) : message.last_submitted_result_remote_height;
+                        object.last_submitted_result_remote_height = $root.ibc.core.client.v1.Height.toObject(message.last_submitted_result_remote_height, options);
                     if (message.deposit && message.deposit.length) {
                         object.deposit = [];
                         for (var j = 0; j < message.deposit.length; ++j)
@@ -8391,6 +8413,11 @@
                             object.submit_timeout = options.longs === String ? String(message.submit_timeout) : message.submit_timeout;
                         else
                             object.submit_timeout = options.longs === String ? $util.Long.prototype.toString.call(message.submit_timeout) : options.longs === Number ? new $util.LongBits(message.submit_timeout.low >>> 0, message.submit_timeout.high >>> 0).toNumber(true) : message.submit_timeout;
+                    if (message.registered_at_height != null && message.hasOwnProperty("registered_at_height"))
+                        if (typeof message.registered_at_height === "number")
+                            object.registered_at_height = options.longs === String ? String(message.registered_at_height) : message.registered_at_height;
+                        else
+                            object.registered_at_height = options.longs === String ? $util.Long.prototype.toString.call(message.registered_at_height) : options.longs === Number ? new $util.LongBits(message.registered_at_height.low >>> 0, message.registered_at_height.high >>> 0).toNumber(true) : message.registered_at_height;
                     return object;
                 };
     
@@ -8847,6 +8874,7 @@
                  * @interface IParams
                  * @property {Long|null} [query_submit_timeout] Params query_submit_timeout
                  * @property {Array.<cosmos.base.v1beta1.ICoin>|null} [query_deposit] Params query_deposit
+                 * @property {Long|null} [tx_query_removal_limit] Params tx_query_removal_limit
                  */
     
                 /**
@@ -8882,6 +8910,14 @@
                 Params.prototype.query_deposit = $util.emptyArray;
     
                 /**
+                 * Params tx_query_removal_limit.
+                 * @member {Long} tx_query_removal_limit
+                 * @memberof neutron.interchainqueries.Params
+                 * @instance
+                 */
+                Params.prototype.tx_query_removal_limit = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
                  * Encodes the specified Params message. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
                  * @function encode
                  * @memberof neutron.interchainqueries.Params
@@ -8898,6 +8934,8 @@
                     if (message.query_deposit != null && message.query_deposit.length)
                         for (var i = 0; i < message.query_deposit.length; ++i)
                             $root.cosmos.base.v1beta1.Coin.encode(message.query_deposit[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    if (message.tx_query_removal_limit != null && Object.hasOwnProperty.call(message, "tx_query_removal_limit"))
+                        writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.tx_query_removal_limit);
                     return writer;
                 };
     
@@ -8939,6 +8977,9 @@
                             if (!(message.query_deposit && message.query_deposit.length))
                                 message.query_deposit = [];
                             message.query_deposit.push($root.cosmos.base.v1beta1.Coin.decode(reader, reader.uint32()));
+                            break;
+                        case 3:
+                            message.tx_query_removal_limit = reader.uint64();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -8987,6 +9028,9 @@
                                 return "query_deposit." + error;
                         }
                     }
+                    if (message.tx_query_removal_limit != null && message.hasOwnProperty("tx_query_removal_limit"))
+                        if (!$util.isInteger(message.tx_query_removal_limit) && !(message.tx_query_removal_limit && $util.isInteger(message.tx_query_removal_limit.low) && $util.isInteger(message.tx_query_removal_limit.high)))
+                            return "tx_query_removal_limit: integer|Long expected";
                     return null;
                 };
     
@@ -9021,6 +9065,15 @@
                             message.query_deposit[i] = $root.cosmos.base.v1beta1.Coin.fromObject(object.query_deposit[i]);
                         }
                     }
+                    if (object.tx_query_removal_limit != null)
+                        if ($util.Long)
+                            (message.tx_query_removal_limit = $util.Long.fromValue(object.tx_query_removal_limit)).unsigned = true;
+                        else if (typeof object.tx_query_removal_limit === "string")
+                            message.tx_query_removal_limit = parseInt(object.tx_query_removal_limit, 10);
+                        else if (typeof object.tx_query_removal_limit === "number")
+                            message.tx_query_removal_limit = object.tx_query_removal_limit;
+                        else if (typeof object.tx_query_removal_limit === "object")
+                            message.tx_query_removal_limit = new $util.LongBits(object.tx_query_removal_limit.low >>> 0, object.tx_query_removal_limit.high >>> 0).toNumber(true);
                     return message;
                 };
     
@@ -9039,12 +9092,18 @@
                     var object = {};
                     if (options.arrays || options.defaults)
                         object.query_deposit = [];
-                    if (options.defaults)
+                    if (options.defaults) {
                         if ($util.Long) {
                             var long = new $util.Long(0, 0, true);
                             object.query_submit_timeout = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.query_submit_timeout = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.tx_query_removal_limit = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.tx_query_removal_limit = options.longs === String ? "0" : 0;
+                    }
                     if (message.query_submit_timeout != null && message.hasOwnProperty("query_submit_timeout"))
                         if (typeof message.query_submit_timeout === "number")
                             object.query_submit_timeout = options.longs === String ? String(message.query_submit_timeout) : message.query_submit_timeout;
@@ -9055,6 +9114,11 @@
                         for (var j = 0; j < message.query_deposit.length; ++j)
                             object.query_deposit[j] = $root.cosmos.base.v1beta1.Coin.toObject(message.query_deposit[j], options);
                     }
+                    if (message.tx_query_removal_limit != null && message.hasOwnProperty("tx_query_removal_limit"))
+                        if (typeof message.tx_query_removal_limit === "number")
+                            object.tx_query_removal_limit = options.longs === String ? String(message.tx_query_removal_limit) : message.tx_query_removal_limit;
+                        else
+                            object.tx_query_removal_limit = options.longs === String ? $util.Long.prototype.toString.call(message.tx_query_removal_limit) : options.longs === Number ? new $util.LongBits(message.tx_query_removal_limit.low >>> 0, message.tx_query_removal_limit.high >>> 0).toNumber(true) : message.tx_query_removal_limit;
                     return object;
                 };
     
@@ -47178,519 +47242,6 @@
         return google;
     })();
     
-    $root.cosmos_proto = (function() {
-    
-        /**
-         * Namespace cosmos_proto.
-         * @exports cosmos_proto
-         * @namespace
-         */
-        var cosmos_proto = {};
-    
-        cosmos_proto.InterfaceDescriptor = (function() {
-    
-            /**
-             * Properties of an InterfaceDescriptor.
-             * @memberof cosmos_proto
-             * @interface IInterfaceDescriptor
-             * @property {string|null} [name] InterfaceDescriptor name
-             * @property {string|null} [description] InterfaceDescriptor description
-             */
-    
-            /**
-             * Constructs a new InterfaceDescriptor.
-             * @memberof cosmos_proto
-             * @classdesc Represents an InterfaceDescriptor.
-             * @implements IInterfaceDescriptor
-             * @constructor
-             * @param {cosmos_proto.IInterfaceDescriptor=} [properties] Properties to set
-             */
-            function InterfaceDescriptor(properties) {
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-    
-            /**
-             * InterfaceDescriptor name.
-             * @member {string} name
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @instance
-             */
-            InterfaceDescriptor.prototype.name = "";
-    
-            /**
-             * InterfaceDescriptor description.
-             * @member {string} description
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @instance
-             */
-            InterfaceDescriptor.prototype.description = "";
-    
-            /**
-             * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-             * @function encode
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {cosmos_proto.IInterfaceDescriptor} message InterfaceDescriptor message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            InterfaceDescriptor.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-                if (message.description != null && Object.hasOwnProperty.call(message, "description"))
-                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
-                return writer;
-            };
-    
-            /**
-             * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {cosmos_proto.IInterfaceDescriptor} message InterfaceDescriptor message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            InterfaceDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-    
-            /**
-             * Decodes an InterfaceDescriptor message from the specified reader or buffer.
-             * @function decode
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            InterfaceDescriptor.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.cosmos_proto.InterfaceDescriptor();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1:
-                        message.name = reader.string();
-                        break;
-                    case 2:
-                        message.description = reader.string();
-                        break;
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-    
-            /**
-             * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            InterfaceDescriptor.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-    
-            /**
-             * Verifies an InterfaceDescriptor message.
-             * @function verify
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            InterfaceDescriptor.verify = function verify(message) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                if (message.name != null && message.hasOwnProperty("name"))
-                    if (!$util.isString(message.name))
-                        return "name: string expected";
-                if (message.description != null && message.hasOwnProperty("description"))
-                    if (!$util.isString(message.description))
-                        return "description: string expected";
-                return null;
-            };
-    
-            /**
-             * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
-             */
-            InterfaceDescriptor.fromObject = function fromObject(object) {
-                if (object instanceof $root.cosmos_proto.InterfaceDescriptor)
-                    return object;
-                var message = new $root.cosmos_proto.InterfaceDescriptor();
-                if (object.name != null)
-                    message.name = String(object.name);
-                if (object.description != null)
-                    message.description = String(object.description);
-                return message;
-            };
-    
-            /**
-             * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @static
-             * @param {cosmos_proto.InterfaceDescriptor} message InterfaceDescriptor
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            InterfaceDescriptor.toObject = function toObject(message, options) {
-                if (!options)
-                    options = {};
-                var object = {};
-                if (options.defaults) {
-                    object.name = "";
-                    object.description = "";
-                }
-                if (message.name != null && message.hasOwnProperty("name"))
-                    object.name = message.name;
-                if (message.description != null && message.hasOwnProperty("description"))
-                    object.description = message.description;
-                return object;
-            };
-    
-            /**
-             * Converts this InterfaceDescriptor to JSON.
-             * @function toJSON
-             * @memberof cosmos_proto.InterfaceDescriptor
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            InterfaceDescriptor.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-    
-            return InterfaceDescriptor;
-        })();
-    
-        cosmos_proto.ScalarDescriptor = (function() {
-    
-            /**
-             * Properties of a ScalarDescriptor.
-             * @memberof cosmos_proto
-             * @interface IScalarDescriptor
-             * @property {string|null} [name] ScalarDescriptor name
-             * @property {string|null} [description] ScalarDescriptor description
-             * @property {Array.<cosmos_proto.ScalarType>|null} [field_type] ScalarDescriptor field_type
-             * @property {string|null} [legacy_amino_encoding] ScalarDescriptor legacy_amino_encoding
-             */
-    
-            /**
-             * Constructs a new ScalarDescriptor.
-             * @memberof cosmos_proto
-             * @classdesc Represents a ScalarDescriptor.
-             * @implements IScalarDescriptor
-             * @constructor
-             * @param {cosmos_proto.IScalarDescriptor=} [properties] Properties to set
-             */
-            function ScalarDescriptor(properties) {
-                this.field_type = [];
-                if (properties)
-                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                        if (properties[keys[i]] != null)
-                            this[keys[i]] = properties[keys[i]];
-            }
-    
-            /**
-             * ScalarDescriptor name.
-             * @member {string} name
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @instance
-             */
-            ScalarDescriptor.prototype.name = "";
-    
-            /**
-             * ScalarDescriptor description.
-             * @member {string} description
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @instance
-             */
-            ScalarDescriptor.prototype.description = "";
-    
-            /**
-             * ScalarDescriptor field_type.
-             * @member {Array.<cosmos_proto.ScalarType>} field_type
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @instance
-             */
-            ScalarDescriptor.prototype.field_type = $util.emptyArray;
-    
-            /**
-             * ScalarDescriptor legacy_amino_encoding.
-             * @member {string} legacy_amino_encoding
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @instance
-             */
-            ScalarDescriptor.prototype.legacy_amino_encoding = "";
-    
-            /**
-             * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-             * @function encode
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {cosmos_proto.IScalarDescriptor} message ScalarDescriptor message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            ScalarDescriptor.encode = function encode(message, writer) {
-                if (!writer)
-                    writer = $Writer.create();
-                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
-                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
-                if (message.description != null && Object.hasOwnProperty.call(message, "description"))
-                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
-                if (message.field_type != null && message.field_type.length) {
-                    writer.uint32(/* id 3, wireType 2 =*/26).fork();
-                    for (var i = 0; i < message.field_type.length; ++i)
-                        writer.int32(message.field_type[i]);
-                    writer.ldelim();
-                }
-                if (message.legacy_amino_encoding != null && Object.hasOwnProperty.call(message, "legacy_amino_encoding"))
-                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.legacy_amino_encoding);
-                return writer;
-            };
-    
-            /**
-             * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-             * @function encodeDelimited
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {cosmos_proto.IScalarDescriptor} message ScalarDescriptor message or plain object to encode
-             * @param {$protobuf.Writer} [writer] Writer to encode to
-             * @returns {$protobuf.Writer} Writer
-             */
-            ScalarDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
-                return this.encode(message, writer).ldelim();
-            };
-    
-            /**
-             * Decodes a ScalarDescriptor message from the specified reader or buffer.
-             * @function decode
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @param {number} [length] Message length if known beforehand
-             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            ScalarDescriptor.decode = function decode(reader, length) {
-                if (!(reader instanceof $Reader))
-                    reader = $Reader.create(reader);
-                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.cosmos_proto.ScalarDescriptor();
-                while (reader.pos < end) {
-                    var tag = reader.uint32();
-                    switch (tag >>> 3) {
-                    case 1:
-                        message.name = reader.string();
-                        break;
-                    case 2:
-                        message.description = reader.string();
-                        break;
-                    case 3:
-                        if (!(message.field_type && message.field_type.length))
-                            message.field_type = [];
-                        if ((tag & 7) === 2) {
-                            var end2 = reader.uint32() + reader.pos;
-                            while (reader.pos < end2)
-                                message.field_type.push(reader.int32());
-                        } else
-                            message.field_type.push(reader.int32());
-                        break;
-                    case 4:
-                        message.legacy_amino_encoding = reader.string();
-                        break;
-                    default:
-                        reader.skipType(tag & 7);
-                        break;
-                    }
-                }
-                return message;
-            };
-    
-            /**
-             * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
-             * @function decodeDelimited
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            ScalarDescriptor.decodeDelimited = function decodeDelimited(reader) {
-                if (!(reader instanceof $Reader))
-                    reader = new $Reader(reader);
-                return this.decode(reader, reader.uint32());
-            };
-    
-            /**
-             * Verifies a ScalarDescriptor message.
-             * @function verify
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {Object.<string,*>} message Plain object to verify
-             * @returns {string|null} `null` if valid, otherwise the reason why it is not
-             */
-            ScalarDescriptor.verify = function verify(message) {
-                if (typeof message !== "object" || message === null)
-                    return "object expected";
-                if (message.name != null && message.hasOwnProperty("name"))
-                    if (!$util.isString(message.name))
-                        return "name: string expected";
-                if (message.description != null && message.hasOwnProperty("description"))
-                    if (!$util.isString(message.description))
-                        return "description: string expected";
-                if (message.field_type != null && message.hasOwnProperty("field_type")) {
-                    if (!Array.isArray(message.field_type))
-                        return "field_type: array expected";
-                    for (var i = 0; i < message.field_type.length; ++i)
-                        switch (message.field_type[i]) {
-                        default:
-                            return "field_type: enum value[] expected";
-                        case 0:
-                        case 1:
-                        case 2:
-                            break;
-                        }
-                }
-                if (message.legacy_amino_encoding != null && message.hasOwnProperty("legacy_amino_encoding"))
-                    if (!$util.isString(message.legacy_amino_encoding))
-                        return "legacy_amino_encoding: string expected";
-                return null;
-            };
-    
-            /**
-             * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
-             * @function fromObject
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {Object.<string,*>} object Plain object
-             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
-             */
-            ScalarDescriptor.fromObject = function fromObject(object) {
-                if (object instanceof $root.cosmos_proto.ScalarDescriptor)
-                    return object;
-                var message = new $root.cosmos_proto.ScalarDescriptor();
-                if (object.name != null)
-                    message.name = String(object.name);
-                if (object.description != null)
-                    message.description = String(object.description);
-                if (object.field_type) {
-                    if (!Array.isArray(object.field_type))
-                        throw TypeError(".cosmos_proto.ScalarDescriptor.field_type: array expected");
-                    message.field_type = [];
-                    for (var i = 0; i < object.field_type.length; ++i)
-                        switch (object.field_type[i]) {
-                        default:
-                        case "SCALAR_TYPE_UNSPECIFIED":
-                        case 0:
-                            message.field_type[i] = 0;
-                            break;
-                        case "SCALAR_TYPE_STRING":
-                        case 1:
-                            message.field_type[i] = 1;
-                            break;
-                        case "SCALAR_TYPE_BYTES":
-                        case 2:
-                            message.field_type[i] = 2;
-                            break;
-                        }
-                }
-                if (object.legacy_amino_encoding != null)
-                    message.legacy_amino_encoding = String(object.legacy_amino_encoding);
-                return message;
-            };
-    
-            /**
-             * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
-             * @function toObject
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @static
-             * @param {cosmos_proto.ScalarDescriptor} message ScalarDescriptor
-             * @param {$protobuf.IConversionOptions} [options] Conversion options
-             * @returns {Object.<string,*>} Plain object
-             */
-            ScalarDescriptor.toObject = function toObject(message, options) {
-                if (!options)
-                    options = {};
-                var object = {};
-                if (options.arrays || options.defaults)
-                    object.field_type = [];
-                if (options.defaults) {
-                    object.name = "";
-                    object.description = "";
-                    object.legacy_amino_encoding = "";
-                }
-                if (message.name != null && message.hasOwnProperty("name"))
-                    object.name = message.name;
-                if (message.description != null && message.hasOwnProperty("description"))
-                    object.description = message.description;
-                if (message.field_type && message.field_type.length) {
-                    object.field_type = [];
-                    for (var j = 0; j < message.field_type.length; ++j)
-                        object.field_type[j] = options.enums === String ? $root.cosmos_proto.ScalarType[message.field_type[j]] : message.field_type[j];
-                }
-                if (message.legacy_amino_encoding != null && message.hasOwnProperty("legacy_amino_encoding"))
-                    object.legacy_amino_encoding = message.legacy_amino_encoding;
-                return object;
-            };
-    
-            /**
-             * Converts this ScalarDescriptor to JSON.
-             * @function toJSON
-             * @memberof cosmos_proto.ScalarDescriptor
-             * @instance
-             * @returns {Object.<string,*>} JSON object
-             */
-            ScalarDescriptor.prototype.toJSON = function toJSON() {
-                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-            };
-    
-            return ScalarDescriptor;
-        })();
-    
-        /**
-         * ScalarType enum.
-         * @name cosmos_proto.ScalarType
-         * @enum {number}
-         * @property {number} SCALAR_TYPE_UNSPECIFIED=0 SCALAR_TYPE_UNSPECIFIED value
-         * @property {number} SCALAR_TYPE_STRING=1 SCALAR_TYPE_STRING value
-         * @property {number} SCALAR_TYPE_BYTES=2 SCALAR_TYPE_BYTES value
-         */
-        cosmos_proto.ScalarType = (function() {
-            var valuesById = {}, values = Object.create(valuesById);
-            values[valuesById[0] = "SCALAR_TYPE_UNSPECIFIED"] = 0;
-            values[valuesById[1] = "SCALAR_TYPE_STRING"] = 1;
-            values[valuesById[2] = "SCALAR_TYPE_BYTES"] = 2;
-            return values;
-        })();
-    
-        return cosmos_proto;
-    })();
-    
     $root.ibc = (function() {
     
         /**
@@ -51706,6 +51257,519 @@
         })();
     
         return ibc;
+    })();
+    
+    $root.cosmos_proto = (function() {
+    
+        /**
+         * Namespace cosmos_proto.
+         * @exports cosmos_proto
+         * @namespace
+         */
+        var cosmos_proto = {};
+    
+        cosmos_proto.InterfaceDescriptor = (function() {
+    
+            /**
+             * Properties of an InterfaceDescriptor.
+             * @memberof cosmos_proto
+             * @interface IInterfaceDescriptor
+             * @property {string|null} [name] InterfaceDescriptor name
+             * @property {string|null} [description] InterfaceDescriptor description
+             */
+    
+            /**
+             * Constructs a new InterfaceDescriptor.
+             * @memberof cosmos_proto
+             * @classdesc Represents an InterfaceDescriptor.
+             * @implements IInterfaceDescriptor
+             * @constructor
+             * @param {cosmos_proto.IInterfaceDescriptor=} [properties] Properties to set
+             */
+            function InterfaceDescriptor(properties) {
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+    
+            /**
+             * InterfaceDescriptor name.
+             * @member {string} name
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @instance
+             */
+            InterfaceDescriptor.prototype.name = "";
+    
+            /**
+             * InterfaceDescriptor description.
+             * @member {string} description
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @instance
+             */
+            InterfaceDescriptor.prototype.description = "";
+    
+            /**
+             * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+             * @function encode
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {cosmos_proto.IInterfaceDescriptor} message InterfaceDescriptor message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            InterfaceDescriptor.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
+                return writer;
+            };
+    
+            /**
+             * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {cosmos_proto.IInterfaceDescriptor} message InterfaceDescriptor message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            InterfaceDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+    
+            /**
+             * Decodes an InterfaceDescriptor message from the specified reader or buffer.
+             * @function decode
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            InterfaceDescriptor.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.cosmos_proto.InterfaceDescriptor();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.name = reader.string();
+                        break;
+                    case 2:
+                        message.description = reader.string();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+    
+            /**
+             * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            InterfaceDescriptor.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+    
+            /**
+             * Verifies an InterfaceDescriptor message.
+             * @function verify
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            InterfaceDescriptor.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                if (message.name != null && message.hasOwnProperty("name"))
+                    if (!$util.isString(message.name))
+                        return "name: string expected";
+                if (message.description != null && message.hasOwnProperty("description"))
+                    if (!$util.isString(message.description))
+                        return "description: string expected";
+                return null;
+            };
+    
+            /**
+             * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {cosmos_proto.InterfaceDescriptor} InterfaceDescriptor
+             */
+            InterfaceDescriptor.fromObject = function fromObject(object) {
+                if (object instanceof $root.cosmos_proto.InterfaceDescriptor)
+                    return object;
+                var message = new $root.cosmos_proto.InterfaceDescriptor();
+                if (object.name != null)
+                    message.name = String(object.name);
+                if (object.description != null)
+                    message.description = String(object.description);
+                return message;
+            };
+    
+            /**
+             * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @static
+             * @param {cosmos_proto.InterfaceDescriptor} message InterfaceDescriptor
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            InterfaceDescriptor.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (options.defaults) {
+                    object.name = "";
+                    object.description = "";
+                }
+                if (message.name != null && message.hasOwnProperty("name"))
+                    object.name = message.name;
+                if (message.description != null && message.hasOwnProperty("description"))
+                    object.description = message.description;
+                return object;
+            };
+    
+            /**
+             * Converts this InterfaceDescriptor to JSON.
+             * @function toJSON
+             * @memberof cosmos_proto.InterfaceDescriptor
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            InterfaceDescriptor.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+    
+            return InterfaceDescriptor;
+        })();
+    
+        cosmos_proto.ScalarDescriptor = (function() {
+    
+            /**
+             * Properties of a ScalarDescriptor.
+             * @memberof cosmos_proto
+             * @interface IScalarDescriptor
+             * @property {string|null} [name] ScalarDescriptor name
+             * @property {string|null} [description] ScalarDescriptor description
+             * @property {Array.<cosmos_proto.ScalarType>|null} [field_type] ScalarDescriptor field_type
+             * @property {string|null} [legacy_amino_encoding] ScalarDescriptor legacy_amino_encoding
+             */
+    
+            /**
+             * Constructs a new ScalarDescriptor.
+             * @memberof cosmos_proto
+             * @classdesc Represents a ScalarDescriptor.
+             * @implements IScalarDescriptor
+             * @constructor
+             * @param {cosmos_proto.IScalarDescriptor=} [properties] Properties to set
+             */
+            function ScalarDescriptor(properties) {
+                this.field_type = [];
+                if (properties)
+                    for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                        if (properties[keys[i]] != null)
+                            this[keys[i]] = properties[keys[i]];
+            }
+    
+            /**
+             * ScalarDescriptor name.
+             * @member {string} name
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @instance
+             */
+            ScalarDescriptor.prototype.name = "";
+    
+            /**
+             * ScalarDescriptor description.
+             * @member {string} description
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @instance
+             */
+            ScalarDescriptor.prototype.description = "";
+    
+            /**
+             * ScalarDescriptor field_type.
+             * @member {Array.<cosmos_proto.ScalarType>} field_type
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @instance
+             */
+            ScalarDescriptor.prototype.field_type = $util.emptyArray;
+    
+            /**
+             * ScalarDescriptor legacy_amino_encoding.
+             * @member {string} legacy_amino_encoding
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @instance
+             */
+            ScalarDescriptor.prototype.legacy_amino_encoding = "";
+    
+            /**
+             * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+             * @function encode
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {cosmos_proto.IScalarDescriptor} message ScalarDescriptor message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ScalarDescriptor.encode = function encode(message, writer) {
+                if (!writer)
+                    writer = $Writer.create();
+                if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                    writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                if (message.description != null && Object.hasOwnProperty.call(message, "description"))
+                    writer.uint32(/* id 2, wireType 2 =*/18).string(message.description);
+                if (message.field_type != null && message.field_type.length) {
+                    writer.uint32(/* id 3, wireType 2 =*/26).fork();
+                    for (var i = 0; i < message.field_type.length; ++i)
+                        writer.int32(message.field_type[i]);
+                    writer.ldelim();
+                }
+                if (message.legacy_amino_encoding != null && Object.hasOwnProperty.call(message, "legacy_amino_encoding"))
+                    writer.uint32(/* id 4, wireType 2 =*/34).string(message.legacy_amino_encoding);
+                return writer;
+            };
+    
+            /**
+             * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+             * @function encodeDelimited
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {cosmos_proto.IScalarDescriptor} message ScalarDescriptor message or plain object to encode
+             * @param {$protobuf.Writer} [writer] Writer to encode to
+             * @returns {$protobuf.Writer} Writer
+             */
+            ScalarDescriptor.encodeDelimited = function encodeDelimited(message, writer) {
+                return this.encode(message, writer).ldelim();
+            };
+    
+            /**
+             * Decodes a ScalarDescriptor message from the specified reader or buffer.
+             * @function decode
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @param {number} [length] Message length if known beforehand
+             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ScalarDescriptor.decode = function decode(reader, length) {
+                if (!(reader instanceof $Reader))
+                    reader = $Reader.create(reader);
+                var end = length === undefined ? reader.len : reader.pos + length, message = new $root.cosmos_proto.ScalarDescriptor();
+                while (reader.pos < end) {
+                    var tag = reader.uint32();
+                    switch (tag >>> 3) {
+                    case 1:
+                        message.name = reader.string();
+                        break;
+                    case 2:
+                        message.description = reader.string();
+                        break;
+                    case 3:
+                        if (!(message.field_type && message.field_type.length))
+                            message.field_type = [];
+                        if ((tag & 7) === 2) {
+                            var end2 = reader.uint32() + reader.pos;
+                            while (reader.pos < end2)
+                                message.field_type.push(reader.int32());
+                        } else
+                            message.field_type.push(reader.int32());
+                        break;
+                    case 4:
+                        message.legacy_amino_encoding = reader.string();
+                        break;
+                    default:
+                        reader.skipType(tag & 7);
+                        break;
+                    }
+                }
+                return message;
+            };
+    
+            /**
+             * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
+             * @function decodeDelimited
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            ScalarDescriptor.decodeDelimited = function decodeDelimited(reader) {
+                if (!(reader instanceof $Reader))
+                    reader = new $Reader(reader);
+                return this.decode(reader, reader.uint32());
+            };
+    
+            /**
+             * Verifies a ScalarDescriptor message.
+             * @function verify
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {Object.<string,*>} message Plain object to verify
+             * @returns {string|null} `null` if valid, otherwise the reason why it is not
+             */
+            ScalarDescriptor.verify = function verify(message) {
+                if (typeof message !== "object" || message === null)
+                    return "object expected";
+                if (message.name != null && message.hasOwnProperty("name"))
+                    if (!$util.isString(message.name))
+                        return "name: string expected";
+                if (message.description != null && message.hasOwnProperty("description"))
+                    if (!$util.isString(message.description))
+                        return "description: string expected";
+                if (message.field_type != null && message.hasOwnProperty("field_type")) {
+                    if (!Array.isArray(message.field_type))
+                        return "field_type: array expected";
+                    for (var i = 0; i < message.field_type.length; ++i)
+                        switch (message.field_type[i]) {
+                        default:
+                            return "field_type: enum value[] expected";
+                        case 0:
+                        case 1:
+                        case 2:
+                            break;
+                        }
+                }
+                if (message.legacy_amino_encoding != null && message.hasOwnProperty("legacy_amino_encoding"))
+                    if (!$util.isString(message.legacy_amino_encoding))
+                        return "legacy_amino_encoding: string expected";
+                return null;
+            };
+    
+            /**
+             * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
+             * @function fromObject
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {Object.<string,*>} object Plain object
+             * @returns {cosmos_proto.ScalarDescriptor} ScalarDescriptor
+             */
+            ScalarDescriptor.fromObject = function fromObject(object) {
+                if (object instanceof $root.cosmos_proto.ScalarDescriptor)
+                    return object;
+                var message = new $root.cosmos_proto.ScalarDescriptor();
+                if (object.name != null)
+                    message.name = String(object.name);
+                if (object.description != null)
+                    message.description = String(object.description);
+                if (object.field_type) {
+                    if (!Array.isArray(object.field_type))
+                        throw TypeError(".cosmos_proto.ScalarDescriptor.field_type: array expected");
+                    message.field_type = [];
+                    for (var i = 0; i < object.field_type.length; ++i)
+                        switch (object.field_type[i]) {
+                        default:
+                        case "SCALAR_TYPE_UNSPECIFIED":
+                        case 0:
+                            message.field_type[i] = 0;
+                            break;
+                        case "SCALAR_TYPE_STRING":
+                        case 1:
+                            message.field_type[i] = 1;
+                            break;
+                        case "SCALAR_TYPE_BYTES":
+                        case 2:
+                            message.field_type[i] = 2;
+                            break;
+                        }
+                }
+                if (object.legacy_amino_encoding != null)
+                    message.legacy_amino_encoding = String(object.legacy_amino_encoding);
+                return message;
+            };
+    
+            /**
+             * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
+             * @function toObject
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @static
+             * @param {cosmos_proto.ScalarDescriptor} message ScalarDescriptor
+             * @param {$protobuf.IConversionOptions} [options] Conversion options
+             * @returns {Object.<string,*>} Plain object
+             */
+            ScalarDescriptor.toObject = function toObject(message, options) {
+                if (!options)
+                    options = {};
+                var object = {};
+                if (options.arrays || options.defaults)
+                    object.field_type = [];
+                if (options.defaults) {
+                    object.name = "";
+                    object.description = "";
+                    object.legacy_amino_encoding = "";
+                }
+                if (message.name != null && message.hasOwnProperty("name"))
+                    object.name = message.name;
+                if (message.description != null && message.hasOwnProperty("description"))
+                    object.description = message.description;
+                if (message.field_type && message.field_type.length) {
+                    object.field_type = [];
+                    for (var j = 0; j < message.field_type.length; ++j)
+                        object.field_type[j] = options.enums === String ? $root.cosmos_proto.ScalarType[message.field_type[j]] : message.field_type[j];
+                }
+                if (message.legacy_amino_encoding != null && message.hasOwnProperty("legacy_amino_encoding"))
+                    object.legacy_amino_encoding = message.legacy_amino_encoding;
+                return object;
+            };
+    
+            /**
+             * Converts this ScalarDescriptor to JSON.
+             * @function toJSON
+             * @memberof cosmos_proto.ScalarDescriptor
+             * @instance
+             * @returns {Object.<string,*>} JSON object
+             */
+            ScalarDescriptor.prototype.toJSON = function toJSON() {
+                return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+            };
+    
+            return ScalarDescriptor;
+        })();
+    
+        /**
+         * ScalarType enum.
+         * @name cosmos_proto.ScalarType
+         * @enum {number}
+         * @property {number} SCALAR_TYPE_UNSPECIFIED=0 SCALAR_TYPE_UNSPECIFIED value
+         * @property {number} SCALAR_TYPE_STRING=1 SCALAR_TYPE_STRING value
+         * @property {number} SCALAR_TYPE_BYTES=2 SCALAR_TYPE_BYTES value
+         */
+        cosmos_proto.ScalarType = (function() {
+            var valuesById = {}, values = Object.create(valuesById);
+            values[valuesById[0] = "SCALAR_TYPE_UNSPECIFIED"] = 0;
+            values[valuesById[1] = "SCALAR_TYPE_STRING"] = 1;
+            values[valuesById[2] = "SCALAR_TYPE_BYTES"] = 2;
+            return values;
+        })();
+    
+        return cosmos_proto;
     })();
 
     return $root;

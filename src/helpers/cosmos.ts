@@ -287,12 +287,28 @@ export class CosmosWrapper {
     const url = `${this.sdk.url}/wasm/contract/${contract}/smart/${Buffer.from(
       JSON.stringify(query),
     ).toString('base64')}?encoding=base64`;
-    const resp = await axios.get<{
-      result: { smart: string };
-      height: number;
-    }>(url);
-    const parsed = Buffer.from(resp.data.result.smart, 'base64').toString();
-    return JSON.parse(parsed) as T;
+    const resp = await axios
+      .get<{
+        result: { smart: string };
+        height: number;
+      }>(url)
+      .catch((error) => {
+        if (error.response) {
+          throw new Error(
+            `Status: ${JSON.stringify(error.response.status)} \n` +
+              `Response: ${JSON.stringify(error.response.data)} \n` +
+              `Headers: ${JSON.stringify(error.response.headers)}`,
+          );
+        } else if (error.request) {
+          throw new Error(error.request);
+        } else {
+          throw new Error('Error: ' + error.message);
+        }
+        throw new Error(`Config: ${JSON.stringify(error.config)}`);
+      });
+    return JSON.parse(
+      Buffer.from(resp.data.result.smart, 'base64').toString(),
+    ) as T;
   }
 
   async getContractInfo(contract: string): Promise<any> {
