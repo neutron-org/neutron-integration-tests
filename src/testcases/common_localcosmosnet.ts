@@ -127,11 +127,20 @@ export class TestStateLocalCosmosTestNet {
       COSMOS_DENOM,
     );
 
+    const qaCosmosTwo = await this.createQaWallet(
+      cosmosPrefix,
+      this.sdk2,
+      this.blockWaiter2,
+      cosmos.demo2,
+      COSMOS_DENOM,
+    );
+
     this.wallets = {
       cosmos,
       neutron,
       qaNeutron,
       qaCosmos,
+      qaCosmosTwo,
       qaNeutronThree,
       qaNeutronFour,
       qaNeutronFive,

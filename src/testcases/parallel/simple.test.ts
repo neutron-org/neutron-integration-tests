@@ -244,28 +244,28 @@ describe('Neutron / Simple', () => {
       // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
       // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
       test('IBC transfer from a usual account', async () => {
-        const sender = testState.wallets.qaNeutron.genQaWal1.address.toString();
+        const sender = testState.wallets.qaCosmos.genQaWal1.address.toString();
         const middlehop =
-          testState.wallets.qaCosmos.genQaWal1.address.toString();
+          testState.wallets.qaNeutron.genQaWal1.address.toString();
         const receiver =
-          testState.wallets.qaNeutronThree.genQaWal1.address.toString();
+          testState.wallets.qaCosmosTwo.genQaWal1.address.toString();
 
-        let senderBalances = await cm.queryBalances(sender);
+        let senderBalances = await cm2.queryBalances(sender);
         const senderNTRNBalanceBefore = senderBalances.balances.find(
-          (bal): boolean => bal.denom == NEUTRON_DENOM,
+          (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
 
-        let receiverBalances = await cm.queryBalances(receiver);
+        let receiverBalances = await cm2.queryBalances(receiver);
         const receiverNTRNBalanceBefore = receiverBalances.balances.find(
-          (bal): boolean => bal.denom == NEUTRON_DENOM,
+          (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
 
         const transferAmount = '333333';
 
-        const res = await cm.msgIBCTransfer(
+        const res = await cm2.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: NEUTRON_DENOM, amount: transferAmount },
+          { denom: COSMOS_DENOM, amount: transferAmount },
           middlehop,
           {
             revision_number: new Long(2),
@@ -277,25 +277,25 @@ describe('Neutron / Simple', () => {
 
         await cm.blockWaiter.waitBlocks(20);
 
-        const middlehopBalances = await cm2.queryBalances(middlehop);
+        const middlehopBalances = await cm.queryBalances(middlehop);
         const middlehopNTRNBalanceAfter = middlehopBalances.balances.find(
           (bal): boolean =>
             bal.denom ==
-            'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
+            'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         )?.amount;
-        expect(middlehopNTRNBalanceAfter).toEqual('4000');
+        expect(middlehopNTRNBalanceAfter).toEqual('1000');
 
-        senderBalances = await cm.queryBalances(sender);
+        senderBalances = await cm2.queryBalances(sender);
         const senderNTRNBalanceAfter = senderBalances.balances.find(
-          (bal): boolean => bal.denom == NEUTRON_DENOM,
+          (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
         expect(Number(senderNTRNBalanceAfter)).toEqual(
           Number(senderNTRNBalanceBefore) - Number(transferAmount) - 1000, // original balance - transfer amount - fee
         );
 
-        receiverBalances = await cm.queryBalances(receiver);
+        receiverBalances = await cm2.queryBalances(receiver);
         const receiverNTRNBalanceAfter = receiverBalances.balances.find(
-          (bal): boolean => bal.denom == NEUTRON_DENOM,
+          (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
         expect(Number(receiverNTRNBalanceAfter)).toEqual(
           Number(receiverNTRNBalanceBefore) + Number(transferAmount),
