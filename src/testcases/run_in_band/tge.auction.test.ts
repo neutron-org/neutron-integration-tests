@@ -1223,7 +1223,7 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should be able to claim lpATOM_NTRN vesting after vesting period', async () => {
         await waitTill(
-          times.vestTimestamp / 1000 + times.auctionVestingLpDuration,
+          times.vestTimestamp / 1000 + times.auctionVestingLpDuration + 10,
         );
         const [avaliableAtomLp, avaliableUsdcLp] = await Promise.all([
           cm.queryContract<string>(contractAddresses.VESTING_ATOM, {
