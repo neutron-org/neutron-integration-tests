@@ -77,6 +77,21 @@ type Failure = {
   ack_type: string;
 };
 
+export type ScheduleResponse = {
+  schedule: Schedule[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Schedule represents a single cron added schedule
+type Schedule = {
+  name: string;
+  period: number;
+  msgs: any[];
+};
+
 // BalancesResponse is the response model for the bank balances query.
 export type PauseInfoResponse = {
   paused: {

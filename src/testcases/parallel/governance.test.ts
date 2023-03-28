@@ -192,11 +192,12 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    // add schedule with valid message format
     test('create proposal #6, will pass', async () => {
       const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
       await cm.submitAddSchedule(
         preProposeContractAddress,
-        'Proposal #11',
+        'Proposal #6',
         '',
         '1000',
         'everytime',
@@ -209,6 +210,17 @@ describe('Neutron / Governance', () => {
             funds: [],
           }),
         ],
+      );
+    });
+
+    // remove schedule
+    test('create proposal #7, will pass', async () => {
+      await cm.submitRemoveSchedule(
+        preProposeContractAddress,
+        'Proposal #7',
+        '',
+        '1000',
+        'everytime',
       );
     });
 
@@ -574,6 +586,11 @@ describe('Neutron / Governance', () => {
   });
 
   describe('check that schedule was added and executed later', () => {
+    test('check that schedule was added', async () => {
+      const res = await cm.querySchedules();
+      expect(res.schedule.length).toEqual(1);
+    });
+
     test('check that msg from schedule was executed', async () => {
       await cm.blockWaiter.waitBlocks(15);
       const queryResult = await cm.queryContract<{
@@ -588,12 +605,50 @@ describe('Neutron / Governance', () => {
       );
       expect(queryResult.funds).toEqual([]);
     });
-
-    // TODO
-    // test('check that msg was executed')
   });
 
-  // schedule was added with invalid message
-  // schedule was removed
-  // schedule was removed from security dao (Optional)
+  describe('vote for proposal #7 (no, yes, yes)', () => {
+    const proposalId = 7;
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(
+        proposeSingleContractAddress,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 2', async () => {
+      await cm2.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #7', () => {
+    const proposalId = 7;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('check that schedule was removed and executed later', () => {
+    test('check that schedule was removed', async () => {
+      const res = await cm.querySchedules();
+      expect(res.schedule.length).toEqual(0);
+    });
+  });
 });
