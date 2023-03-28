@@ -15,7 +15,7 @@ const GITHUB_API_BASEURL = 'https://api.github.com';
 const NEUTRON_ORG = 'neutron-org';
 const STORAGE_ADDR_BASE =
   'https://storage.googleapis.com/neutron-contracts/neutron-org';
-const DEFAULT_BRANCH = 'neutron_audit_informal_17_01_2023';
+const DEFAULT_BRANCH = 'main';
 const DEFAULT_DIR = 'contracts';
 const CI_TOKEN_ENV_NAME = 'PAT_TOKEN';
 const DEFAULT_TIMEOUT = 15 * 60;
@@ -49,7 +49,7 @@ const downloadFile = async (
 
     const data = fs.readFileSync(outputLocationPath);
     const hash = crypto.createHash('sha256').update(data).digest('hex');
-    if (hash != checksum) {
+    if (hash !== checksum) {
       attempt++;
       console.log(
         `checksum mismatch for file ${outputLocationPath}, retrying (attempt ${attempt})...
@@ -132,14 +132,17 @@ const getLatestCommit = async (repo_name, branch_name) => {
     return resp['commit']['sha'];
   } catch (e) {
     throw new Error(
-      `Branch ${branch_name} not exist in ${repo_name} repo. Internal error: ${e.toString()}`,
+      `Branch ${branch_name} not exist in ${repo_name} repo. Request failed with an error: ${e.toString()}`,
     );
   }
 };
 
 const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
   if (!ci_token) {
-    console.log(`No ${CI_TOKEN_ENV_NAME} provided`);
+    console.log(
+      `No ${CI_TOKEN_ENV_NAME} provided. Please provide one or run the workflow manually here: \
+https://github.com/neutron-org/${repo_name}/actions/workflows/${WORKFLOW_YAML_NAME}`,
+    );
     throw new Error("CI token isn't provided, can't trigger the build");
   }
 
@@ -195,7 +198,7 @@ const normalizeCommitHash = async (repo_name, commit_hash) => {
     resp = await axios.get(url);
   } catch (e) {
     throw new Error(
-      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo. Internal error:\n${e.toString()}`,
+      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo. Request failed with an error:\n${e.toString()}`,
     );
   }
   if (resp.status !== 200) {
@@ -244,20 +247,18 @@ const getChecksumsTxt = async (repo_name, commit_hash, ci_token, timeout) => {
     } catch (e) {
       throw new Error(
         `Cannot get artifacts even after workflow run, might be a workflow issue or timeout is too low. \
-Internal error: ${e.toString()}`,
+Request failed with an error: ${e.toString()}`,
       );
     }
   }
 };
 
 const parseChecksumsTxt = (checksums_txt) => {
-  const regex = /(\S+)  (\S+.wasm)\s/g;
-  return Array.from(checksums_txt.matchAll(regex)).map((v, i, a) => {
-    return {
-      checksum: v[1],
-      file: v[2],
-    };
-  });
+  const regex = /(\S+)\s+(\S+.wasm)\s/g;
+  return Array.from(checksums_txt.matchAll(regex)).map((v) => ({
+    checksum: v[1],
+    file: v[2],
+  }));
 };
 
 const downloadContracts = async (
