@@ -115,7 +115,7 @@ export class CosmosWrapper {
     fee: proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     numAttempts = 10,
-    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Sync,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
     sequence: number = this.wallet.account.sequence,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const protoMsgs: Array<google.protobuf.IAny> = [];
