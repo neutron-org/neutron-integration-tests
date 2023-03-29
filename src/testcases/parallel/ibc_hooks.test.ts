@@ -46,12 +46,12 @@ describe('Neutron / IBC hooks', () => {
   describe('Instantiate hooks ibc transfer contract', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await ntrnDemo1.storeWasm(NeutronContract.HOOK_IBC_TRANSFER);
+      codeId = await ntrnDemo1.storeWasm(NeutronContract.MSG_RECEIVER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await ntrnDemo1.instantiate(codeId, '{}', 'hook_ibc_transfer')
+        await ntrnDemo1.instantiate(codeId, '{}', 'msg_receiver')
       )[0]._contract_address;
     });
   });
@@ -107,12 +107,12 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was executed successfully', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(15);
-        const queryResult = await ntrnDemo1.queryContract<{
-          sender: string | null;
-          funds: { denom: string; amount: string }[];
-        }>(contractAddress, {
-          test_msg: { arg: 'test' },
-        });
+        const queryResult = await ntrnDemo1.queryContract<TestArg>(
+          contractAddress,
+          {
+            test_msg: { arg: 'test' },
+          },
+        );
         // TODO: check that sender is Bech32(Hash("ibc-wasm-hook-intermediaryg" || channelID || sender))
         expect(queryResult.sender).toEqual(
           'neutron1a6j9ylg9le3hq4873t7p54rkvx0nf7kn9etmvqel8cn8apn8844sd2esqj',
@@ -120,6 +120,7 @@ describe('Neutron / IBC hooks', () => {
         expect(queryResult.funds).toEqual([
           { denom: 'untrn', amount: '1000000' },
         ]);
+        expect(queryResult.count).toEqual(1);
       });
 
       test('check contract token balance', async () => {
@@ -183,14 +184,13 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was not executed successfully', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(15);
-        const queryResult = await ntrnDemo1.queryContract<{
-          sender: string;
-          funds: { denom: string; amount: string }[];
-        }>(contractAddress, {
-          test_msg: { arg: 'incorrect_msg_arg' },
-        });
-        expect(queryResult.sender).toEqual('');
-        expect(queryResult.funds).toEqual([]);
+        const queryResult = await ntrnDemo1.queryContract<TestArg>(
+          contractAddress,
+          {
+            test_msg: { arg: 'incorrect_msg_arg' },
+          },
+        );
+        expect(queryResult).toEqual(null);
       });
 
       test('check contract token balance - it still has previous balance', async () => {
@@ -275,3 +275,9 @@ describe('Neutron / IBC hooks', () => {
     });
   });
 });
+
+type TestArg = {
+  sender: string | null;
+  funds: { denom: string; amount: string }[];
+  count: number;
+};
