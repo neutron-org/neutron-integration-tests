@@ -729,16 +729,10 @@ export class CosmosWrapper {
     amount: string,
     name: string,
     period: number,
-    msgs: cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract[],
+    msgs: any[],
     sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
-    const message = JSON.stringify(
-      addSchedule(
-        name,
-        period,
-        msgs.map((m) => JSON.stringify(m.toJSON())),
-      ),
-    );
+    const message = JSON.stringify(addSchedule(name, period, msgs));
     return await this.submitProposal(
       pre_propose_contract,
       title,

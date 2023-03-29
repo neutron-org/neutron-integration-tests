@@ -203,12 +203,12 @@ describe('Neutron / Governance', () => {
         'everytime',
         5,
         [
-          new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
+          {
             sender: testState.wallets.neutron.demo1.address.toString(),
             contract: hooksIbcTransferContractAddress,
-            msg: Buffer.from(msg),
+            msg,
             funds: [],
-          }),
+          },
         ],
       );
     });
