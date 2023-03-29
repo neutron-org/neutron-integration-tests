@@ -15,6 +15,7 @@ describe('Neutron / Governance', () => {
   let preProposeContractAddress: string;
   let proposeSingleContractAddress: string;
   let proposeMultipleContractAddress: string;
+  let mainDao: string;
 
   let hooksIbcTransferContractAddress: string;
 
@@ -48,6 +49,7 @@ describe('Neutron / Governance', () => {
     proposeSingleContractAddress = daoContracts.proposal_modules.single.address;
     proposeMultipleContractAddress =
       daoContracts.proposal_modules.multiple.address;
+    mainDao = daoCoreAddress;
   });
 
   describe('Contracts', () => {
@@ -167,7 +169,7 @@ describe('Neutron / Governance', () => {
         'Proposal #3',
         'This one will pass',
         '1000',
-        daoContracts.core.address,
+        mainDao,
       );
     });
 
@@ -186,14 +188,66 @@ describe('Neutron / Governance', () => {
     test('create proposal #5, will pass', async () => {
       await cm.submitCancelSoftwareUpgradeProposal(
         preProposeContractAddress,
-        'Proposal #4',
+        'Proposal #5',
         'Software upgrade proposal. Will pass',
         '1000',
       );
     });
 
-    // add schedule with valid message format
     test('create proposal #6, will pass', async () => {
+      await cm.submitClientUpdateProposal(
+        preProposeContractAddress,
+        'Proposal #6',
+        'UpdateClient proposal. Will pass',
+        '07-tendermint-1',
+        '07-tendermint-2',
+        '1000',
+      );
+    });
+
+    test('create proposal #7, will pass', async () => {
+      await cm.submitPinCodesProposal(
+        preProposeContractAddress,
+        'Proposal #7',
+        'Pin codes proposal. Will pass',
+        [1, 2],
+        '1000',
+      );
+    });
+
+    test('create proposal #8, will pass', async () => {
+      await cm.submitUnpinCodesProposal(
+        preProposeContractAddress,
+        'Proposal #8',
+        'Unpin codes proposal. Will pass',
+        [1, 2],
+        '1000',
+      );
+    });
+
+    test('create proposal #9, will pass', async () => {
+      await cm.submitUpdateAdminProposal(
+        preProposeContractAddress,
+        'Proposal #9',
+        'Update admin proposal. Will pass',
+        mainDao,
+        cm.wallet.address.toString(),
+        '1000',
+      );
+    });
+
+    test('create proposal #10, will pass', async () => {
+      await cm.submitClearAdminProposal(
+        preProposeContractAddress,
+        'Proposal #10',
+        'Clear admin proposal. Will pass',
+        mainDao,
+        '1000',
+      );
+    });
+
+    // add schedule with valid message format
+    test('create proposal #11, will pass', async () => {
       const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
       await cm.submitAddSchedule(
         preProposeContractAddress,
@@ -214,7 +268,7 @@ describe('Neutron / Governance', () => {
     });
 
     // remove schedule
-    test('create proposal #7, will pass', async () => {
+    test('create proposal #12, will pass', async () => {
       await cm.submitRemoveSchedule(
         preProposeContractAddress,
         'Proposal #7',
@@ -547,8 +601,194 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('vote for proposal #6 (no, yes, yes)', () => {
-    const proposalId = 6;
+  describe('vote for proposal #6 (yes, no, yes)', () => {
+    test('vote YES from wallet 1', async () => {
+      await cm.voteYes(
+        proposeSingleContractAddress,
+        6,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote NO from wallet 2', async () => {
+      await cm2.voteNo(
+        proposeSingleContractAddress,
+        6,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        6,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+  describe('execute proposal #6', () => {
+    test('check if proposal is rejected', async () => {
+      const proposalId = 6;
+      let rawLog: any;
+      try {
+        rawLog = (
+          await cm.executeProposal(proposeSingleContractAddress, proposalId)
+        ).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes('cannot update localhost client with proposal'));
+    });
+  });
+
+  describe('vote for proposal #7 (yes, no, yes)', () => {
+    test('vote YES from wallet 1', async () => {
+      await cm.voteYes(
+        proposeSingleContractAddress,
+        7,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote NO from wallet 2', async () => {
+      await cm2.voteNo(
+        proposeSingleContractAddress,
+        7,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        7,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #7', () => {
+    const proposalId = 7;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('vote for proposal #8 (yes, no, yes)', () => {
+    test('vote YES from wallet 1', async () => {
+      await cm.voteYes(
+        proposeSingleContractAddress,
+        8,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote NO from wallet 2', async () => {
+      await cm2.voteNo(
+        proposeSingleContractAddress,
+        8,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        8,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #8', () => {
+    const proposalId = 8;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('vote for proposal #9 (yes, no, yes)', () => {
+    test('vote YES from wallet 1', async () => {
+      await cm.voteYes(
+        proposeSingleContractAddress,
+        9,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote NO from wallet 2', async () => {
+      await cm2.voteNo(
+        proposeSingleContractAddress,
+        9,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        9,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #9', () => {
+    const proposalId = 9;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('vote for proposal #10 (yes, no, yes)', () => {
+    test('vote YES from wallet 1', async () => {
+      await cm.voteYes(
+        proposeSingleContractAddress,
+        10,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote NO from wallet 2', async () => {
+      await cm2.voteNo(
+        proposeSingleContractAddress,
+        10,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        10,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #10', () => {
+    const proposalId = 10;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('vote for proposal #11 (no, yes, yes)', () => {
+    const proposalId = 11;
     test('vote NO from wallet 1', async () => {
       await cm.voteNo(
         proposeSingleContractAddress,
@@ -572,8 +812,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #6', () => {
-    const proposalId = 6;
+  describe('execute proposal #11', () => {
+    const proposalId = 11;
     test('check if proposal is passed', async () => {
       await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
     });
@@ -607,8 +847,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('vote for proposal #7 (no, yes, yes)', () => {
-    const proposalId = 7;
+  describe('vote for proposal #12 (no, yes, yes)', () => {
+    const proposalId = 12;
     test('vote NO from wallet 1', async () => {
       await cm.voteNo(
         proposeSingleContractAddress,
@@ -632,8 +872,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('execute proposal #7', () => {
-    const proposalId = 7;
+  describe('execute proposal #12', () => {
+    const proposalId = 12;
     test('check if proposal is passed', async () => {
       await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
     });

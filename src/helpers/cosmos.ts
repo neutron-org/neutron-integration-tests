@@ -21,8 +21,14 @@ import {
   removeSchedule,
   paramChangeProposal,
   ParamChangeProposalInfo,
+  pinCodesProposal,
   sendProposal,
   SendProposalInfo,
+  unpinCodesProposal,
+  clientUpdateProposal,
+  upgradeProposal,
+  updateAdminProposal,
+  clearAdminProposal,
 } from './proposal';
 import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
@@ -507,6 +513,168 @@ export class CosmosWrapper {
   ): Promise<InlineResponse20075TxResponse> {
     const message = JSON.stringify(
       paramChangeProposal({ title, description, subspace, key, value }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitPinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitPinCodesProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      pinCodesProposal({ title, description, codes_ids }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+
+  async submitUnpinCodesProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      unpinCodesProposal({ title, description, codes_ids }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClientUpdateProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    subject_client_id: string,
+    substitute_client_id: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      clientUpdateProposal({
+        title,
+        description,
+        subject_client_id,
+        substitute_client_id,
+      }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpgradeProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    upgraded_client_state: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      upgradeProposal({
+        title,
+        description,
+        name,
+        height,
+        info,
+        upgraded_client_state,
+      }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpdateAdminProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    contract: string,
+    new_admin: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      updateAdminProposal({ title, description, contract, new_admin }),
+    );
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClearAdminProposal(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    contract: string,
+    amount: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(
+      clearAdminProposal({ title, description, contract }),
     );
     return await this.submitProposal(
       pre_propose_contract,

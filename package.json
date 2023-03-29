@@ -13,7 +13,7 @@
     "test:interchain_tx_query_plain": "jest -b src/testcases/run_in_band/interchain_tx_query_plain",
     "test:interchain_tx_query_resubmit": "jest --runInBand -b src/testcases/parallel/interchain_tx_query_resubmit",
     "test:treasury": "jest -b src/testcases/run_in_band/treasury",
-    "test:governance": "jest -b src/testcases/parallel/governance",
+    "test:governance": "jest --runInBand -b src/testcases/parallel/governance",
     "test:subdao": "jest -b src/testcases/run_in_band/subdao",
     "test:tge": "jest -b src/testcases/run_in_band/tge",
     "test:tge:airdrop": "jest -b src/testcases/run_in_band/tge.airdrop",
