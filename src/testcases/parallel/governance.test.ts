@@ -3,7 +3,6 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { DaoContracts, getDaoContracts } from '../../helpers/dao';
-import { cosmwasmproto } from '@cosmos-client/cosmwasm';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
