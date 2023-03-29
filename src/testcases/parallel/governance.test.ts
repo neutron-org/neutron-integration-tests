@@ -256,10 +256,8 @@ describe('Neutron / Governance', () => {
         5,
         [
           {
-            sender: testState.wallets.neutron.demo1.address.toString(),
             contract: contractAddress,
             msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
-            funds: [],
           },
         ],
       );
@@ -287,22 +285,16 @@ describe('Neutron / Governance', () => {
         5,
         [
           {
-            sender: testState.wallets.neutron.demo1.address.toString(),
             contract: contractAddress,
             msg: '{"test_msg": {"return_err": true, "arg": ""}}',
-            funds: [],
           },
           {
-            sender: testState.wallets.neutron.demo1.address.toString(),
             contract: contractAddress,
             msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
-            funds: [],
           },
           {
-            sender: testState.wallets.neutron.demo1.address.toString(),
             contract: contractAddress,
             msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
-            funds: [],
           },
         ],
       );
@@ -871,7 +863,7 @@ describe('Neutron / Governance', () => {
       );
 
       expect(queryResult.sender).toEqual(
-        testState.wallets.neutron.demo1.address.toString(),
+        'neutron1cd6wafvehv79pm2yxth40thpyc7dc0yrqkyk95',
       );
       expect(queryResult.funds).toEqual([]);
 
@@ -989,7 +981,7 @@ describe('Neutron / Governance', () => {
       );
 
       expect(queryResult.sender).toEqual(
-        testState.wallets.neutron.demo1.address.toString(),
+        'neutron1cd6wafvehv79pm2yxth40thpyc7dc0yrqkyk95',
       );
       expect(queryResult.funds).toEqual([]);
     });
