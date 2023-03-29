@@ -16,7 +16,7 @@ describe('Neutron / Governance', () => {
   let proposeMultipleContractAddress: string;
   let mainDao: string;
 
-  let hooksIbcTransferContractAddress: string;
+  let contractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -54,12 +54,12 @@ describe('Neutron / Governance', () => {
   describe('Contracts', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm(NeutronContract.HOOK_IBC_TRANSFER);
+      codeId = await cm.storeWasm(NeutronContract.MSG_RECEIVER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await cm.instantiate(codeId, '{}', 'hook_ibc_transfer');
-      hooksIbcTransferContractAddress = res[0]._contract_address;
+      const res = await cm.instantiate(codeId, '{}', 'msg_receiver');
+      contractAddress = res[0]._contract_address;
     });
   });
 
@@ -247,10 +247,9 @@ describe('Neutron / Governance', () => {
 
     // add schedule with valid message format
     test('create proposal #11, will pass', async () => {
-      const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
       await cm.submitAddSchedule(
         preProposeContractAddress,
-        'Proposal #6',
+        'Proposal #11',
         '',
         '1000',
         'everytime',
@@ -258,8 +257,8 @@ describe('Neutron / Governance', () => {
         [
           {
             sender: testState.wallets.neutron.demo1.address.toString(),
-            contract: hooksIbcTransferContractAddress,
-            msg,
+            contract: contractAddress,
+            msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
             funds: [],
           },
         ],
@@ -270,10 +269,42 @@ describe('Neutron / Governance', () => {
     test('create proposal #12, will pass', async () => {
       await cm.submitRemoveSchedule(
         preProposeContractAddress,
-        'Proposal #7',
+        'Proposal #12',
         '',
         '1000',
         'everytime',
+      );
+    });
+
+    // add schedule with 3 messages, first returns error, second in incorrect format, third is valid
+    test('create proposal #13, will pass', async () => {
+      await cm.submitAddSchedule(
+        preProposeContractAddress,
+        'Proposal #13',
+        '',
+        '1000',
+        'everytime',
+        5,
+        [
+          {
+            sender: testState.wallets.neutron.demo1.address.toString(),
+            contract: contractAddress,
+            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+            funds: [],
+          },
+          {
+            sender: testState.wallets.neutron.demo1.address.toString(),
+            contract: contractAddress,
+            msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
+            funds: [],
+          },
+          {
+            sender: testState.wallets.neutron.demo1.address.toString(),
+            contract: contractAddress,
+            msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
+            funds: [],
+          },
+        ],
       );
     });
 
@@ -832,17 +863,30 @@ describe('Neutron / Governance', () => {
 
     test('check that msg from schedule was executed', async () => {
       await cm.blockWaiter.waitBlocks(15);
-      const queryResult = await cm.queryContract<{
-        sender: string | null;
-        funds: { denom: string; amount: string }[];
-      }>(hooksIbcTransferContractAddress, {
-        test_msg: { arg: 'test' },
-      });
+      const queryResult = await cm.queryContract<TestArgResponse>(
+        contractAddress,
+        {
+          test_msg: { arg: 'proposal_11' },
+        },
+      );
 
       expect(queryResult.sender).toEqual(
         testState.wallets.neutron.demo1.address.toString(),
       );
       expect(queryResult.funds).toEqual([]);
+
+      // check that we get increment after waiting > period blocks
+      const beforeCount = queryResult.count;
+      expect(beforeCount).toBeGreaterThan(0);
+
+      await cm.blockWaiter.waitBlocks(10);
+      const queryResultLater = await cm.queryContract<TestArgResponse>(
+        contractAddress,
+        {
+          test_msg: { arg: 'proposal_11' },
+        },
+      );
+      expect(beforeCount).toBeLessThan(queryResultLater.count);
     });
   });
 
@@ -884,10 +928,76 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('check that schedule was removed and executed later', () => {
+  describe('check that schedule was removed', () => {
     test('check that schedule was removed', async () => {
       const res = await cm.querySchedules();
       expect(res.schedule.length).toEqual(0);
     });
   });
+
+  describe('vote for proposal #13 (no, yes, yes)', () => {
+    const proposalId = 13;
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(
+        proposeSingleContractAddress,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 2', async () => {
+      await cm2.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #13', () => {
+    const proposalId = 13;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('check that schedule was added and executed later', () => {
+    test('check that schedule was added', async () => {
+      const res = await cm.querySchedules();
+      expect(res.schedule.length).toEqual(1);
+    });
+
+    test('check that last msg from schedule was still executed despite others with errors', async () => {
+      await cm.blockWaiter.waitBlocks(15);
+      const queryResult = await cm.queryContract<TestArgResponse>(
+        contractAddress,
+        {
+          test_msg: { arg: 'three_messages' },
+        },
+      );
+
+      expect(queryResult.sender).toEqual(
+        testState.wallets.neutron.demo1.address.toString(),
+      );
+      expect(queryResult.funds).toEqual([]);
+    });
+  });
 });
+
+type TestArgResponse = {
+  sender: string | null;
+  funds: { denom: string; amount: string }[];
+  count: number;
+};
