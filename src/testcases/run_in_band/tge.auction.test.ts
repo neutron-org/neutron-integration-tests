@@ -294,28 +294,34 @@ describe('Neutron / TGE / Auction', () => {
       };
     });
     it('shoild instantiate vesting contracts', async () => {
+      let msg = {
+        owner: cm.wallet.address.toString(),
+        vesting_token: {
+          token: { contract_addr: pairs.atom_ntrn.liqiudity },
+        },
+        vesting_managers: [
+          'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+        ],
+      };
       const res = await cm.instantiate(
         codeIds['VESTING_LP'],
-        JSON.stringify({
-          owner:
-            'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
-          vesting_token: {
-            token: { contract_addr: pairs.atom_ntrn.liqiudity },
-          },
-        }),
+        JSON.stringify(msg),
         'vesting_atom_lp',
       );
       expect(res).toBeTruthy();
       contractAddresses['VESTING_ATOM'] = res[0]._contract_address;
+      msg = {
+        owner: cm.wallet.address.toString(),
+        vesting_token: {
+          token: { contract_addr: pairs.usdc_ntrn.liqiudity },
+        },
+        vesting_managers: [
+          'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+        ],
+      };
       const res2 = await cm.instantiate(
         codeIds['VESTING_LP'],
-        JSON.stringify({
-          owner:
-            'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
-          vesting_token: {
-            token: { contract_addr: pairs.usdc_ntrn.liqiudity },
-          },
-        }),
+        JSON.stringify(msg),
         'vesting_usdc_lp',
       );
       expect(res2).toBeTruthy();
