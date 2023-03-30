@@ -690,17 +690,8 @@ export class DaoMember {
   async supportAndExecuteProposal(
     proposal_id: number,
   ): Promise<TimeLockSingleChoiceProposal> {
-    await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
-      JSON.stringify({
-        vote: { proposal_id: proposal_id, vote: 'yes' },
-      }),
-    );
-
-    await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
-      JSON.stringify({ execute: { proposal_id: proposal_id } }),
-    );
+    await this.voteYes(proposal_id);
+    await this.executeProposal(proposal_id);
     return await this.dao.getTimelockedProposal(proposal_id);
   }
 

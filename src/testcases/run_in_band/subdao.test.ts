@@ -2,7 +2,6 @@
 import {
   CosmosWrapper,
   createBankMessage,
-  getEventAttributesFromTx,
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
@@ -13,8 +12,9 @@ import {
   Dao,
   DaoContracts,
   DaoMember,
+  getDaoContracts,
 } from '../../helpers/dao';
-import { getHeight, getWithAttempts, wait } from '../../helpers/wait';
+import { getHeight, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../../types';
@@ -27,6 +27,7 @@ describe('Neutron / Subdao', () => {
   let neutronAccount2: WalletWrapper;
   let subdaoMember1: DaoMember;
   let subdaoMember2: DaoMember;
+  let mainDaoMember: DaoMember;
   let demo1_wallet: Wallet;
   let security_dao_wallet: Wallet;
   let demo2_wallet: Wallet;
@@ -57,17 +58,41 @@ describe('Neutron / Subdao', () => {
       security_dao_addr.toString(),
     );
 
+    const mainDaoAddress = (await neutronChain.getChainAdmins())[0];
+    const daoContracts = await getDaoContracts(neutronChain, mainDaoAddress);
+    const mainDao = new Dao(neutronChain, daoContracts);
+
     subDao = new Dao(neutronChain, subDaoContracts);
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
     subdaoMember2 = new DaoMember(neutronAccount2, subDao);
-
-    await getWithAttempts(
-      neutronChain.blockWaiter,
-      async () => await subDao.queryVotingPower(demo1_addr.toString()),
-      async (response) => response.power == 1,
-      20,
+    mainDaoMember = new DaoMember(neutronAccount2, mainDao);
+    const p = await mainDaoMember.submitSingleChoiceProposal(
+      'add subdao',
+      '',
+      [
+        {
+          update_sub_daos: {
+            to_add: [
+              {
+                addr: subDao.contracts.core.address,
+              },
+            ],
+            to_remove: [],
+          },
+        },
+      ],
+      '1000',
     );
-    await neutronAccount1.msgSend(subDao.contracts.core.address, '10000'); // funding for gas
+    await mainDaoMember.supportAndExecuteProposal(p);
+
+    await neutronChain.getWithAttempts(
+      async () =>
+        await subDao.queryVotingPower(
+          neutronAccount1.wallet.address.toString(),
+        ),
+      async (response) => response.power == 1,
+    );
+    // await neutronAccount1.msgSend(subDao.contracts.core.address, '10000'); // funding for gas
   });
 
   describe('Timelock: Unauthorized', () => {
@@ -143,6 +168,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
+      // TODO rewrite with gov overrule proposal
       await expect(
         subdaoMember1.overruleTimelockedProposal(proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
@@ -175,11 +201,11 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked: success', async () => {
-      await neutronAccount1.msgSend(
-        subDao.contracts.proposal_modules.single.pre_proposal_module
-          .timelock_module.address,
-        '20000',
-      ); // funding for gas
+      // await neutronAccount1.msgSend(
+      //   subDao.contracts.proposal_modules.single.pre_proposal_module
+      //     .timelock_module.address,
+      //   '20000',
+      // ); // funding for gas
       const balance_main_dao = await neutronChain.queryBalances(
         demo1_addr.toString(),
       );
@@ -485,7 +511,7 @@ describe('Neutron / Subdao', () => {
           .timelock_module.address,
         JSON.stringify({
           update_config: {
-            timelock_duration: 50,
+            timelock_duration: 50, // TODO change to overrule_proposal
           },
         }),
       );
@@ -575,7 +601,6 @@ describe('Neutron / Subdao', () => {
   });
 
   describe('Query Proposals', () => {
-    let proposal_id: number;
     let subDAOQueryTestScope: Dao;
     beforeAll(async () => {
       subDAOQueryTestScope = new Dao(
@@ -584,49 +609,16 @@ describe('Neutron / Subdao', () => {
       );
 
       for (let i = 1; i <= 35; i++) {
-        const resp = await neutronAccount1.executeContract(
-          subDAOQueryTestScope.contracts.proposal_modules.single
-            .pre_proposal_module.address,
-          JSON.stringify({
-            propose: {
-              msg: {
-                propose: {
-                  title: `Proposal ${i}`,
-                  description: `proposal ${i} description`,
-                  msgs: [
-                    createBankMessage(
-                      demo1_addr.toString(),
-                      1000,
-                      neutronChain.denom,
-                    ),
-                    createBankMessage(
-                      demo2_addr.toString(),
-                      2000,
-                      neutronChain.denom,
-                    ),
-                  ],
-                },
-              },
-            },
-          }),
-        );
-        proposal_id = Number(
-          getEventAttributesFromTx({ tx_response: resp }, 'wasm', [
-            'proposal_id',
-          ])[0].proposal_id,
+        const proposal_id = await subdaoMember1.submitSingleChoiceProposal(
+          `Proposal ${i}`,
+          `proposal ${i} description`,
+          [
+            createBankMessage(demo1_addr.toString(), 1000, neutronChain.denom),
+            createBankMessage(demo2_addr.toString(), 2000, neutronChain.denom),
+          ],
         );
 
-        await neutronAccount1.executeContract(
-          subDAOQueryTestScope.contracts.proposal_modules.single.address,
-          JSON.stringify({
-            vote: { proposal_id: proposal_id, vote: 'yes' },
-          }),
-        );
-
-        await neutronAccount1.executeContract(
-          subDAOQueryTestScope.contracts.proposal_modules.single.address,
-          JSON.stringify({ execute: { proposal_id: proposal_id } }),
-        );
+        await subdaoMember1.supportAndExecuteProposal(proposal_id);
       }
     });
 
@@ -851,6 +843,9 @@ const setupSubDaoTimelockSet = async (
     ).toString('base64'),
   };
 
+  const mainDao = (await cm.chain.getChainAdmins())[0];
+  const daoContracts = await getDaoContracts(cm.chain, mainDao);
+
   const proposeInstantiateMessage = {
     threshold: { absolute_count: { threshold: '1' } },
     max_voting_period: { height: 10 },
@@ -868,7 +863,9 @@ const setupSubDaoTimelockSet = async (
                 label: 'subDAO timelock contract',
                 msg: Buffer.from(
                   JSON.stringify({
-                    timelock_duration: 20,
+                    overrule_pre_propose:
+                      daoContracts.proposal_modules.overrule.pre_proposal_module
+                        .address,
                   }),
                 ).toString('base64'),
               },
@@ -900,31 +897,27 @@ const setupSubDaoTimelockSet = async (
     JSON.stringify(coreInstantiateMessage),
     'cwd_subdao_core',
   );
+  const f = (arr, id) =>
+    arr.find((v) => Number(v.code_id) == id)!._contract_address;
   return {
     core: {
-      address: res.find((v) => Number(v.code_id) == coreCodeId)!
-        ._contract_address,
+      address: f(res, coreCodeId),
     },
     proposal_modules: {
       single: {
-        address: res.find((v) => Number(v.code_id) == proposeCodeId)!
-          ._contract_address,
+        address: f(res, proposeCodeId),
         pre_proposal_module: {
-          address: res.find((v) => Number(v.code_id) == preProposeCodeId)!
-            ._contract_address,
+          address: f(res, preProposeCodeId),
           timelock_module: {
-            address: res.find((v) => Number(v.code_id) == timelockCodeId)!
-              ._contract_address,
+            address: f(res, timelockCodeId),
           },
         },
       },
     },
     voting_module: {
-      address: res.find((v) => Number(v.code_id) == cw4VotingCodeId)!
-        ._contract_address,
+      address: f(res, cw4VotingCodeId),
       cw4group: {
-        address: res.find((v) => Number(v.code_id) == cw4GroupCodeId)!
-          ._contract_address,
+        address: f(res, cw4GroupCodeId),
       },
     },
   };

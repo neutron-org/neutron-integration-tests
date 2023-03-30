@@ -6,7 +6,7 @@ import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import { BlockWaiter } from './wait';
+import { BlockWaiter, getWithAttempts } from './wait';
 import {
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
@@ -277,6 +277,19 @@ export class CosmosWrapper {
     return await this.queryContract<PauseInfoResponse>(addr, {
       pause_info: {},
     });
+  }
+
+  async getWithAttempts<T>(
+    getFunc: () => Promise<T>,
+    readyFunc: (t: T) => Promise<boolean>,
+    numAttempts = 20,
+  ): Promise<T> {
+    return await getWithAttempts(
+      this.blockWaiter,
+      getFunc,
+      readyFunc,
+      numAttempts,
+    );
   }
 }
 
