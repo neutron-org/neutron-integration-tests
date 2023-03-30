@@ -104,7 +104,7 @@ export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
-  MSG_RECEIVER: 'MSG_RECEIVER.wasm',
+  MSG_RECEIVER: 'msg_receiver.wasm',
   REFLECT: 'reflect.wasm',
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',

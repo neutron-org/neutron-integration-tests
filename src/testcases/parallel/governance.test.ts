@@ -252,7 +252,7 @@ describe('Neutron / Governance', () => {
         'Proposal #11',
         '',
         '1000',
-        'everytime',
+        'proposal11',
         5,
         [
           {
@@ -270,7 +270,7 @@ describe('Neutron / Governance', () => {
         'Proposal #12',
         '',
         '1000',
-        'everytime',
+        'proposal11',
       );
     });
 
@@ -281,7 +281,7 @@ describe('Neutron / Governance', () => {
         'Proposal #13',
         '',
         '1000',
-        'everytime',
+        'proposal13',
         5,
         [
           {
@@ -971,7 +971,7 @@ describe('Neutron / Governance', () => {
       expect(res.schedule.length).toEqual(1);
     });
 
-    test('check that last msg from schedule was still executed despite others with errors', async () => {
+    test('check that last msg from schedule was not executed because there was error in other messages', async () => {
       await cm.blockWaiter.waitBlocks(15);
       const queryResult = await cm.queryContract<TestArgResponse>(
         contractAddress,
@@ -980,10 +980,7 @@ describe('Neutron / Governance', () => {
         },
       );
 
-      expect(queryResult.sender).toEqual(
-        'neutron1cd6wafvehv79pm2yxth40thpyc7dc0yrqkyk95',
-      );
-      expect(queryResult.funds).toEqual([]);
+      expect(queryResult).toEqual(null);
     });
   });
 });
