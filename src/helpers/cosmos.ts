@@ -8,6 +8,7 @@ import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import { BlockWaiter, getWithAttempts } from './wait';
 import {
+  Coin,
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
@@ -1397,3 +1398,9 @@ export const buildContractAddressClassic = (
   const wasmModuleAddress = whash('module', contractID);
   return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
 };
+
+export const filterIBCDenoms = (list: Coin[]) =>
+  list.filter(
+    (coin) =>
+      coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
+  );

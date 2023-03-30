@@ -3,8 +3,7 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
-  IBC_ATOM_DENOM,
-  IBC_USDC_DENOM,
+  filterIBCDenoms,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getHeight, getWithAttempts } from '../../helpers/wait';
@@ -248,12 +247,6 @@ const registerDelegatorDelegationsQuery = async (
     }),
   );
 };
-
-const filterIBCDenoms = (list: Coin[]) =>
-  list.filter(
-    (coin) =>
-      coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
-  );
 
 const validateBalanceQuery = async (
   neutronCm: CosmosWrapper,

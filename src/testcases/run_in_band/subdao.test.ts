@@ -2,10 +2,14 @@
 import {
   CosmosWrapper,
   createBankMassage,
+  filterIBCDenoms,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
 } from '../../helpers/cosmos';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import {
+  Coin,
+  InlineResponse20075TxResponse,
+} from '@cosmos-client/core/cjs/openapi/api';
 import {
   TimelockConfig,
   TimelockProposalListResponse,
@@ -423,6 +427,9 @@ describe('Neutron / Subdao', () => {
       const beforeExecBalance = await cm_main_dao.queryBalances(
         security_dao_addr.toString(),
       );
+      beforeExecBalance.balances = filterIBCDenoms(
+        beforeExecBalance.balances as Coin[],
+      );
       await cm_main_dao.executeProposalWithAttempts(
         subDAO.propose.address,
         proposal_id,
@@ -445,6 +452,9 @@ describe('Neutron / Subdao', () => {
 
       const afterExecBalance = await cm_main_dao.queryBalances(
         security_dao_addr.toString(),
+      );
+      afterExecBalance.balances = filterIBCDenoms(
+        afterExecBalance.balances as Coin[],
       );
       expect(+(afterExecBalance.balances[0].amount || 0)).toEqual(
         +(beforeExecBalance.balances[0].amount || 0) + funding,
