@@ -1213,7 +1213,7 @@ export class CosmosWrapper {
 
   async querySchedules(pagination?: PageRequest): Promise<ScheduleResponse> {
     try {
-      const req = await axios.get<AckFailuresResponse>(
+      const req = await axios.get<ScheduleResponse>(
         `${this.sdk.url}/neutron/cron/schedule`,
         { params: pagination },
       );
