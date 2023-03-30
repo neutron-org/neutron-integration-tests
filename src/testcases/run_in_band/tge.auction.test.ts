@@ -167,6 +167,8 @@ describe('Neutron / TGE / Auction', () => {
         'ASTRO_PAIR',
         'ASTRO_FACTORY',
         'ASTRO_TOKEN',
+        'ASTRO_GENERATOR',
+        'ASTRO_WHITELIST',
         'VESTING_LP',
       ]) {
         const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
@@ -378,6 +380,29 @@ describe('Neutron / TGE / Auction', () => {
       );
       expect(res).toBeTruthy();
       contractAddresses.TGE_LOCKDROP = res[0]._contract_address;
+    });
+    it('should instantiate astro generator', async () => {
+      const msg = {
+        astro_token: {
+          native_token: {
+            denom: NEUTRON_DENOM,
+          },
+        },
+        factory: contractAddresses.ASTRO_FACTORY,
+        owner: cm.wallet.address.toString(),
+        start_block: '1',
+        tokens_per_block: '100',
+        vesting_contract:
+          'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+        whitelist_code_id: parseInt(codeIds.ASTRO_WHITELIST),
+      };
+      const res = await cm.instantiate(
+        codeIds.ASTRO_GENERATOR,
+        JSON.stringify(msg),
+        'astro_generator',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses['ASTRO_GENERATOR'] = res[0]._contract_address;
     });
     it('sets lockdrop address', async () => {
       const res = await cm.executeContract(
@@ -1015,6 +1040,19 @@ describe('Neutron / TGE / Auction', () => {
             ),
           ).rejects.toThrow(/Lock window is closed/);
         });
+      });
+      it('should set generator to lockdrop', async () => {
+        const res = await cm.executeContract(
+          contractAddresses.TGE_LOCKDROP,
+          JSON.stringify({
+            update_config: {
+              new_config: {
+                generator_address: contractAddresses.ASTRO_GENERATOR,
+              },
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
       });
     });
     describe('Init pool', () => {
