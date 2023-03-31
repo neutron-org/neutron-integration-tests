@@ -22,6 +22,10 @@ cosmosclient.codec.register(
   '/osmosis.tokenfactory.v1beta1.MsgMint',
   osmosis.tokenfactory.v1beta1.MsgMint,
 );
+cosmosclient.codec.register(
+  '/osmosis.tokenfactory.v1beta1.MsgBurn',
+  osmosis.tokenfactory.v1beta1.MsgBurn,
+);
 
 interface DenomsFromCreator {
   denoms: string[];
@@ -78,7 +82,6 @@ describe('Neutron / Tokenfactory', () => {
     );
   });
 
-  // Test denom creation, mint some coins and transfer to new account
   test('create denom, mint and transfer', async () => {
     const denom = `test2`;
 
@@ -104,6 +107,48 @@ describe('Neutron / Tokenfactory', () => {
     );
 
     expect(balanceBefore).toEqual(10000);
+  });
+
+  // Test denom creation, mint some coins and burn some of them
+  test('create denom, mint and burn', async () => {
+    const denom = `test3`;
+
+    const data = await msgCreateDenom(
+      cmNeutron,
+      owner_wallet.address.toString(),
+      denom,
+    );
+    const newTokenDenom = getEventAttribute(
+      (data as any).events,
+      'create_denom',
+      'new_token_denom',
+    );
+
+    await msgMintDenom(cmNeutron, owner_wallet.address.toString(), {
+      denom: newTokenDenom,
+      amount: '10000',
+    });
+
+    const balanceBefore = await cmNeutron.queryDenomBalance(
+      owner_wallet.address.toString(),
+      newTokenDenom,
+    );
+
+    expect(balanceBefore).toEqual(10000);
+
+    await msgBurn(
+      cmNeutron,
+      owner_wallet.address.toString(),
+      newTokenDenom,
+      '100',
+    );
+
+    const balanceAfter = await cmNeutron.queryDenomBalance(
+      owner_wallet.address.toString(),
+      newTokenDenom,
+    );
+
+    expect(balanceAfter).toEqual(9900);
   });
 });
 
@@ -163,6 +208,31 @@ const msgCreateDenom = async (
       amount: [{ denom: cmNeutron.denom, amount: '1000' }],
     },
     [msgCreateDenom],
+    10,
+  );
+
+  return res.tx_response!;
+};
+
+const msgBurn = async (
+  cmNeutron: CosmosWrapper,
+  creator: string,
+  denom: string,
+  amountToBurn: string,
+): Promise<InlineResponse20075TxResponse> => {
+  const msgBurn = new osmosis.tokenfactory.v1beta1.MsgBurn({
+    sender: creator,
+    amount: {
+      denom: denom,
+      amount: amountToBurn,
+    },
+  });
+  const res = await cmNeutron.execTx(
+    {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+    },
+    [msgBurn],
     10,
   );
 
