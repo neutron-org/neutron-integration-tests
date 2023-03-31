@@ -13,6 +13,7 @@ services:
       - 8090:9090
     environment:
       - CONTRACTS_BINARIES_DIR=/opt/neutron/contracts
+      - THIRD_PARTY_CONTRACTS_DIR=/opt/neutron/contracts_thirdparty
       - RUN_BACKGROUND=0
 
   gaia-node:
