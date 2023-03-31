@@ -229,8 +229,8 @@ export const getTreasuryContract = async (
 };
 
 export class Dao {
-  chain: CosmosWrapper;
-  contracts: DaoContracts;
+  readonly chain: CosmosWrapper;
+  readonly contracts: DaoContracts;
 
   constructor(cm: CosmosWrapper, contracts: DaoContracts) {
     this.chain = cm;
@@ -350,8 +350,8 @@ export class Dao {
 }
 
 export class DaoMember {
-  user: WalletWrapper;
-  dao: Dao;
+  readonly user: WalletWrapper;
+  readonly dao: Dao;
 
   constructor(cm: WalletWrapper, dao: Dao) {
     this.user = cm;
