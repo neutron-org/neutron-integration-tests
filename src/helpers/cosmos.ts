@@ -75,9 +75,9 @@ cosmosclient.codec.register(
 );
 
 export class CosmosWrapper {
-  sdk: cosmosclient.CosmosSDK;
-  blockWaiter: BlockWaiter;
-  denom: string;
+  readonly sdk: cosmosclient.CosmosSDK;
+  readonly blockWaiter: BlockWaiter;
+  readonly denom: string;
 
   constructor(
     sdk: cosmosclient.CosmosSDK,
@@ -294,8 +294,8 @@ export class CosmosWrapper {
 }
 
 export class WalletWrapper {
-  chain: CosmosWrapper;
-  wallet: Wallet;
+  readonly chain: CosmosWrapper;
+  readonly wallet: Wallet;
 
   constructor(cw: CosmosWrapper, wallet: Wallet) {
     this.chain = cw;
