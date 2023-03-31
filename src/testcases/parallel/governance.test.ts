@@ -1050,7 +1050,7 @@ describe('Neutron / Governance', () => {
       expect(res.schedules.length).toEqual(2);
     });
 
-    test('check that last msg from schedule was not executed because there was error in the last msg', async () => {
+    test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
       await cm.blockWaiter.waitBlocks(15);
       const queryResult = await cm.queryContract<TestArgResponse>(
         contractAddress,
