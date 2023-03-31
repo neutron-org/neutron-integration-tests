@@ -13,6 +13,7 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/icq';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -50,7 +51,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     let codeId: string;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
-        'neutron_interchain_queries.wasm',
+        NeutronContract.INTERCHAIN_QUERIES,
       );
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
