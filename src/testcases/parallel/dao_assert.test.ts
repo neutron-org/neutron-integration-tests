@@ -7,6 +7,7 @@ import {
   getTreasuryContract,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
+import { NeutronContract } from '../../helpers/types';
 
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -56,41 +57,74 @@ describe('DAO / Check', () => {
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
     test('Proposal dao single', async () => {
-      await checkDaoAddress(cm_dao, proposalSingleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        proposalSingleAddress,
+        daoContracts.core.address,
+      );
     });
 
     test('Preproposal dao single', async () => {
-      await checkDaoAddress(cm_dao, preProposalSingleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        preProposalSingleAddress,
+        daoContracts.core.address,
+      );
 
-      const propContract = await cm_dao.queryContract(preProposalSingleAddress, {
-        proposal_module: {},
-      });
+      const propContract = await cm_dao.queryContract(
+        preProposalSingleAddress,
+        {
+          proposal_module: {},
+        },
+      );
       expect(propContract).toEqual(proposalSingleAddress);
     });
 
     test('Proposal dao multiple', async () => {
-      await checkDaoAddress(cm_dao, proposalMultipleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        proposalMultipleAddress,
+        daoContracts.core.address,
+      );
     });
 
     test('Preproposal dao multiple', async () => {
-      await checkDaoAddress(cm_dao, preProposalMultipleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        preProposalMultipleAddress,
+        daoContracts.core.address,
+      );
 
-      const propContract = await cm_dao.queryContract(preProposalMultipleAddress, {
-        proposal_module: {},
-      });
+      const propContract = await cm_dao.queryContract(
+        preProposalMultipleAddress,
+        {
+          proposal_module: {},
+        },
+      );
       expect(propContract).toEqual(proposalMultipleAddress);
     });
 
     test('Proposal dao overrule', async () => {
-      await checkDaoAddress(cm_dao, proposalOverruleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        proposalOverruleAddress,
+        daoContracts.core.address,
+      );
     });
 
     test('Preproposal dao overrule', async () => {
-      await checkDaoAddress(cm_dao, preProposalOverruleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        preProposalOverruleAddress,
+        daoContracts.core.address,
+      );
 
-      const propContract = await cm_dao.queryContract(preProposalOverruleAddress, {
-        proposal_module: {},
-      });
+      const propContract = await cm_dao.queryContract(
+        preProposalOverruleAddress,
+        {
+          proposal_module: {},
+        },
+      );
       expect(propContract).toEqual(proposalOverruleAddress);
     });
     test('Treasury is correct', async () => {
@@ -102,7 +136,11 @@ describe('DAO / Check', () => {
   describe('Checking the association of voting modules with the Dao', () => {
     let res;
     test('voting module', async () => {
-      await checkDaoAddress(cm_dao, votingModuleAddress, daoContracts.core.address);
+      await checkDaoAddress(
+        cm_dao,
+        votingModuleAddress,
+        daoContracts.core.address,
+      );
     });
 
     test('voting ntrn vaults', async () => {
@@ -123,58 +161,105 @@ describe('DAO / Check', () => {
 
   describe('Checking the validity of binary files', () => {
     test('Dao proposal single hash assert', async () => {
-      await checkContractHash(cm_dao, proposalSingleAddress, 'proposalSingleAddress.wasm');
+      await checkContractHash(
+        cm_dao,
+        proposalSingleAddress,
+        NeutronContract.DAO_PROPOSAL_SINGLE,
+      );
     });
 
     test('Dao proposal multiple hash assert', async () => {
-      await checkContractHash(cm_dao, proposalMultipleAddress, 'cwd_proposal_multiple.wasm');
+      await checkContractHash(
+        cm_dao,
+        proposalMultipleAddress,
+        NeutronContract.DAO_PROPOSAL_MULTI,
+      );
     });
 
     test('Dao preproposal single hash assert', async () => {
-      await checkContractHash(cm_dao, preProposalSingleAddress, 'cwd_pre_propose_single.wasm');
+      await checkContractHash(
+        cm_dao,
+        preProposalSingleAddress,
+        NeutronContract.DAO_PREPROPOSAL_SINGLE,
+      );
     });
 
     test('Dao preproposal multiple hash assert', async () => {
-      await checkContractHash(cm_dao, preProposalMultipleAddress, 'preProposalSingleAddress.wasm');
+      await checkContractHash(
+        cm_dao,
+        preProposalMultipleAddress,
+        NeutronContract.DAO_PREPROPOSAL_MULTI,
+      );
     });
 
     test('Dao core hash assert', async () => {
-      await checkContractHash(cm_dao, daoContracts.core.address, 'cwd_core.wasm');
+      await checkContractHash(
+        cm_dao,
+        daoContracts.core.address,
+        NeutronContract.DAO_CORE,
+      );
     });
 
     test('Dao proposal overrule hash assert', async () => {
-      await checkContractHash(cm_dao, proposalOverruleAddress, 'cwd_proposal_single.wasm');
+      await checkContractHash(
+        cm_dao,
+        proposalOverruleAddress,
+        NeutronContract.DAO_PROPOSAL_SINGLE,
+      );
     });
 
     test('Dao preproposal overrule hash assert', async () => {
-      await checkContractHash(cm_dao, preProposalOverruleAddress, 'cwd_pre_propose_overrule.wasm');
+      await checkContractHash(
+        cm_dao,
+        preProposalOverruleAddress,
+        NeutronContract.DAO_PREPROPOSAL_OVERRULE,
+      );
     });
 
     test('Treasury hash assert', async () => {
-      await checkContractHash(cm_dao, treasuryContract, 'neutron_treasury.wasm');
+      await checkContractHash(
+        cm_dao,
+        treasuryContract,
+        NeutronContract.TREASURY,
+      );
     });
-    test('Treasury hash assert', async () => {
-      await checkContractHash(cm_dao, treasuryContract, 'neutron_treasury.wasm');
+    test('Dao neutron vault hash assert', async () => {
+      await checkContractHash(
+        cm_dao,
+        votingVaultsNtrnAddress,
+        NeutronContract.NEUTRON_VAULT,
+      );
     });
-    test('Dao neutron vauld hash assert', async () => {
-      await checkContractHash(cm_dao, votingVaultsNtrnAddress, 'neutron_vault.wasm');
-    });
-    test('Dao lockdrop vauld hash assert', async () => {
-      await checkContractHash(cm_dao, votingVaultsLockdropAddress, 'lockdrop_vault.wasm');
+    test('Dao lockdrop vault hash assert', async () => {
+      await checkContractHash(
+        cm_dao,
+        votingVaultsLockdropAddress,
+        NeutronContract.LOCKDROP_VAULT,
+      );
     });
   });
 });
 
-const checkContractHash = async(cm: CosmosWrapper, contractAddress: string, binaryName: string) => {
+const checkContractHash = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  binaryName: string,
+) => {
   const contractInfo = await cm.getContractInfo(contractAddress);
-  const hashFromChain = (await cm.getCodeDataHash(contractInfo.contract_info.code_id)).toLowerCase();
+  const hashFromChain = (
+    await cm.getCodeDataHash(contractInfo.contract_info.code_id)
+  ).toLowerCase();
   const hashFromBinary = (await getContractsHashes())[binaryName].toLowerCase();
   expect(hashFromChain).toEqual(hashFromBinary);
-}
+};
 
-const checkDaoAddress = async(cm: CosmosWrapper, contractAddress: string, expectedDao: string) => {
+const checkDaoAddress = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  expectedDao: string,
+) => {
   const daoFromContract = await cm.queryContract(contractAddress, {
     dao: {},
   });
   expect(daoFromContract).toEqual(expectedDao);
-}
+};
