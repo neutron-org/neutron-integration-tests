@@ -307,7 +307,7 @@ export class Dao {
   }
 
   async makeSingleChoiceProposalPass(
-    loyalVoters: [DaoMember],
+    loyalVoters: DaoMember[],
     title: string,
     description: string,
     msgs: any[],
