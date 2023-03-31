@@ -78,7 +78,7 @@ type Failure = {
 };
 
 export type ScheduleResponse = {
-  schedule: Schedule[];
+  schedules: Schedule[];
   pagination: {
     next_key: string;
     total: string;

@@ -850,7 +850,7 @@ describe('Neutron / Governance', () => {
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
       const res = await cm.querySchedules();
-      expect(res.schedule.length).toEqual(1);
+      expect(res.schedules.length).toEqual(1);
     });
 
     test('check that msg from schedule was executed', async () => {
@@ -923,7 +923,7 @@ describe('Neutron / Governance', () => {
   describe('check that schedule was removed', () => {
     test('check that schedule was removed', async () => {
       const res = await cm.querySchedules();
-      expect(res.schedule.length).toEqual(0);
+      expect(res.schedules.length).toEqual(0);
     });
   });
 
@@ -968,7 +968,7 @@ describe('Neutron / Governance', () => {
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
       const res = await cm.querySchedules();
-      expect(res.schedule.length).toEqual(1);
+      expect(res.schedules.length).toEqual(1);
     });
 
     test('check that last msg from schedule was not executed because there was error in other messages', async () => {
