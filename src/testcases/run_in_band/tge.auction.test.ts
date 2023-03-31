@@ -360,8 +360,8 @@ describe('Neutron / TGE / Auction', () => {
     it('should instantiate lockdrop contract', async () => {
       times.lockdropInitTs = (Date.now() / 1000 + 10) | 0;
       const msg = {
-        atom_token: pairs.atom_ntrn.contract,
-        usdc_token: pairs.usdc_ntrn.contract,
+        atom_token: pairs.atom_ntrn.liqiudity,
+        usdc_token: pairs.usdc_ntrn.liqiudity,
         credits_contract: contractAddresses.TGE_CREDITS,
         auction_contract: contractAddresses.TGE_AUCTION,
         init_timestamp: times.lockdropInitTs,
