@@ -29,22 +29,6 @@ export const getContractsHashes = async (): Promise<Record<string, string>> => {
   return hashes;
 };
 
-export const fetchDataHash = async (id: number): Promise<string | null> => {
-  try {
-    const host = 'http://127.0.0.1:1317';
-    const res = await axios.get(`${host}/cosmwasm/wasm/v1/code/${id}`);
-    if (res.data.code_info.data_hash) {
-      return res.data.code_info.data_hash;
-    } else {
-      console.error('could not get data_hash');
-      return null;
-    }
-  } catch (error) {
-    console.error('Error during execution:', error);
-    return null;
-  }
-};
-
 export const setup = async (host1: string, host2: string) => {
   if (alreadySetUp) {
     console.log('already set up');
