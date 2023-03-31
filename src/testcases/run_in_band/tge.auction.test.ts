@@ -1226,11 +1226,6 @@ describe('Neutron / TGE / Auction', () => {
       let claimAtomLP: number;
       let claimUsdcLP: number;
       it('should vest LP', async () => {
-        const conf = await cm.queryContract<boolean>(
-          contractAddresses.VESTING_ATOM,
-          { vesting_managers: {} },
-        );
-        console.log({ conf });
         const res = await cm.executeContract(
           contractAddresses.TGE_AUCTION,
           JSON.stringify({
