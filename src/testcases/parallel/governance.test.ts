@@ -300,6 +300,28 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    // add schedule with 3 messages, first is valid, second returns error
+    test('create proposal #14, will pass', async () => {
+      await cm.submitAddSchedule(
+        preProposeContractAddress,
+        'Proposal #14',
+        '',
+        '1000',
+        'proposal14',
+        5,
+        [
+          {
+            contract: contractAddress,
+            msg: '{"test_msg": {"return_err": false, "arg": "correct_msg"}}',
+          },
+          {
+            contract: contractAddress,
+            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+          },
+        ],
+      );
+    });
+
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await cm.submitMultiChoiceParameterChangeProposal(
         [
@@ -977,6 +999,63 @@ describe('Neutron / Governance', () => {
         contractAddress,
         {
           test_msg: { arg: 'three_messages' },
+        },
+      );
+
+      expect(queryResult).toEqual(null);
+    });
+  });
+
+  describe('vote for proposal #14 (no, yes, yes)', () => {
+    const proposalId = 14;
+    test('vote NO from wallet 1', async () => {
+      await cm.voteNo(
+        proposeSingleContractAddress,
+        proposalId,
+        cm.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 2', async () => {
+      await cm2.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm2.wallet.address.toString(),
+      );
+    });
+    test('vote YES from wallet 3', async () => {
+      await cm3.voteYes(
+        proposeSingleContractAddress,
+        proposalId,
+        cm3.wallet.address.toString(),
+      );
+    });
+  });
+
+  describe('execute proposal #14', () => {
+    const proposalId = 14;
+    test('check if proposal is passed', async () => {
+      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await cm.executeProposalWithAttempts(
+        proposeSingleContractAddress,
+        proposalId,
+      );
+    });
+  });
+
+  describe('check that schedule was added and executed later', () => {
+    test('check that schedule was added', async () => {
+      const res = await cm.querySchedules();
+      expect(res.schedules.length).toEqual(2);
+    });
+
+    test('check that last msg from schedule was not executed because there was error in the last msg', async () => {
+      await cm.blockWaiter.waitBlocks(15);
+      const queryResult = await cm.queryContract<TestArgResponse>(
+        contractAddress,
+        {
+          test_msg: { arg: 'correct_msg' },
         },
       );
 
