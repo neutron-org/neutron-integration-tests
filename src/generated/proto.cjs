@@ -54577,7 +54577,8 @@
                      * Properties of a QueryDenomAuthorityMetadataRequest.
                      * @memberof osmosis.tokenfactory.v1beta1
                      * @interface IQueryDenomAuthorityMetadataRequest
-                     * @property {string|null} [denom] QueryDenomAuthorityMetadataRequest denom
+                     * @property {string|null} [creator] QueryDenomAuthorityMetadataRequest creator
+                     * @property {string|null} [subdenom] QueryDenomAuthorityMetadataRequest subdenom
                      */
     
                     /**
@@ -54596,12 +54597,20 @@
                     }
     
                     /**
-                     * QueryDenomAuthorityMetadataRequest denom.
-                     * @member {string} denom
+                     * QueryDenomAuthorityMetadataRequest creator.
+                     * @member {string} creator
                      * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
                      * @instance
                      */
-                    QueryDenomAuthorityMetadataRequest.prototype.denom = "";
+                    QueryDenomAuthorityMetadataRequest.prototype.creator = "";
+    
+                    /**
+                     * QueryDenomAuthorityMetadataRequest subdenom.
+                     * @member {string} subdenom
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @instance
+                     */
+                    QueryDenomAuthorityMetadataRequest.prototype.subdenom = "";
     
                     /**
                      * Encodes the specified QueryDenomAuthorityMetadataRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
@@ -54615,8 +54624,10 @@
                     QueryDenomAuthorityMetadataRequest.encode = function encode(message, writer) {
                         if (!writer)
                             writer = $Writer.create();
-                        if (message.denom != null && Object.hasOwnProperty.call(message, "denom"))
-                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.denom);
+                        if (message.creator != null && Object.hasOwnProperty.call(message, "creator"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.creator);
+                        if (message.subdenom != null && Object.hasOwnProperty.call(message, "subdenom"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.subdenom);
                         return writer;
                     };
     
@@ -54652,7 +54663,10 @@
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
                             case 1:
-                                message.denom = reader.string();
+                                message.creator = reader.string();
+                                break;
+                            case 2:
+                                message.subdenom = reader.string();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -54689,9 +54703,12 @@
                     QueryDenomAuthorityMetadataRequest.verify = function verify(message) {
                         if (typeof message !== "object" || message === null)
                             return "object expected";
-                        if (message.denom != null && message.hasOwnProperty("denom"))
-                            if (!$util.isString(message.denom))
-                                return "denom: string expected";
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            if (!$util.isString(message.creator))
+                                return "creator: string expected";
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            if (!$util.isString(message.subdenom))
+                                return "subdenom: string expected";
                         return null;
                     };
     
@@ -54707,8 +54724,10 @@
                         if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest)
                             return object;
                         var message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest();
-                        if (object.denom != null)
-                            message.denom = String(object.denom);
+                        if (object.creator != null)
+                            message.creator = String(object.creator);
+                        if (object.subdenom != null)
+                            message.subdenom = String(object.subdenom);
                         return message;
                     };
     
@@ -54725,10 +54744,14 @@
                         if (!options)
                             options = {};
                         var object = {};
-                        if (options.defaults)
-                            object.denom = "";
-                        if (message.denom != null && message.hasOwnProperty("denom"))
-                            object.denom = message.denom;
+                        if (options.defaults) {
+                            object.creator = "";
+                            object.subdenom = "";
+                        }
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            object.creator = message.creator;
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            object.subdenom = message.subdenom;
                         return object;
                     };
     

@@ -21662,8 +21662,11 @@ export namespace osmosis {
             /** Properties of a QueryDenomAuthorityMetadataRequest. */
             interface IQueryDenomAuthorityMetadataRequest {
 
-                /** QueryDenomAuthorityMetadataRequest denom */
-                denom?: (string|null);
+                /** QueryDenomAuthorityMetadataRequest creator */
+                creator?: (string|null);
+
+                /** QueryDenomAuthorityMetadataRequest subdenom */
+                subdenom?: (string|null);
             }
 
             /** Represents a QueryDenomAuthorityMetadataRequest. */
@@ -21675,8 +21678,11 @@ export namespace osmosis {
                  */
                 constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest);
 
-                /** QueryDenomAuthorityMetadataRequest denom. */
-                public denom: string;
+                /** QueryDenomAuthorityMetadataRequest creator. */
+                public creator: string;
+
+                /** QueryDenomAuthorityMetadataRequest subdenom. */
+                public subdenom: string;
 
                 /**
                  * Encodes the specified QueryDenomAuthorityMetadataRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.

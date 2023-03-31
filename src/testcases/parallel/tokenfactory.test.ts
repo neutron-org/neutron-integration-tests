@@ -26,9 +26,17 @@ cosmosclient.codec.register(
   '/osmosis.tokenfactory.v1beta1.MsgBurn',
   osmosis.tokenfactory.v1beta1.MsgBurn,
 );
+cosmosclient.codec.register(
+  '/osmosis.tokenfactory.v1beta1.MsgChangeAdmin',
+  osmosis.tokenfactory.v1beta1.MsgChangeAdmin,
+);
 
 interface DenomsFromCreator {
-  denoms: string[];
+  readonly denoms: readonly string[];
+}
+
+interface AuthorityMetadata {
+  readonly authority_metadata: { readonly Admin: string };
 }
 
 describe('Neutron / Tokenfactory', () => {
@@ -82,7 +90,7 @@ describe('Neutron / Tokenfactory', () => {
     );
   });
 
-  test('create denom, mint and transfer', async () => {
+  test('create denom, mint', async () => {
     const denom = `test2`;
 
     const data = await msgCreateDenom(
@@ -109,9 +117,51 @@ describe('Neutron / Tokenfactory', () => {
     expect(balanceBefore).toEqual(10000);
   });
 
+  test('check authority metadata update', async () => {
+    const denom = `test3`;
+
+    const data = await msgCreateDenom(
+      cmNeutron,
+      owner_wallet.address.toString(),
+      denom,
+    );
+    const newTokenDenom = getEventAttribute(
+      (data as any).events,
+      'create_denom',
+      'new_token_denom',
+    );
+
+    const authorityMetadataBefore = await getAuthorityMetadata(
+      cmNeutron.sdk.url,
+      newTokenDenom,
+    );
+
+    expect(authorityMetadataBefore.authority_metadata).toEqual({
+      Admin: owner_wallet.address.toString(),
+    });
+
+    const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
+
+    await msgChangeAdmin(
+      cmNeutron,
+      owner_wallet.address.toString(),
+      newTokenDenom,
+      newAdmin,
+    );
+
+    const authorityMetadataAfter = await getAuthorityMetadata(
+      cmNeutron.sdk.url,
+      newTokenDenom,
+    );
+
+    expect(authorityMetadataAfter.authority_metadata).toEqual({
+      Admin: newAdmin,
+    });
+  });
+
   // Test denom creation, mint some coins and burn some of them
   test('create denom, mint and burn', async () => {
-    const denom = `test3`;
+    const denom = `test4`;
 
     const data = await msgCreateDenom(
       cmNeutron,
@@ -167,6 +217,17 @@ const getDenomsFromCreator = async (
 ): Promise<DenomsFromCreator> => {
   const res = await axios.get<DenomsFromCreator>(
     `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms_from_creator/${creator}`,
+  );
+
+  return res.data;
+};
+
+const getAuthorityMetadata = async (
+  sdkUrl: string,
+  denom: string,
+): Promise<AuthorityMetadata> => {
+  const res = await axios.get<AuthorityMetadata>(
+    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/authority_metadata`,
   );
 
   return res.data;
@@ -233,6 +294,30 @@ const msgBurn = async (
       amount: [{ denom: cmNeutron.denom, amount: '1000' }],
     },
     [msgBurn],
+    10,
+  );
+
+  return res.tx_response!;
+};
+
+// Create MsgChangeAdmin message
+const msgChangeAdmin = async (
+  cmNeutron: CosmosWrapper,
+  creator: string,
+  denom: string,
+  newAdmin: string,
+): Promise<InlineResponse20075TxResponse> => {
+  const msgChangeAdmin = new osmosis.tokenfactory.v1beta1.MsgChangeAdmin({
+    sender: creator,
+    denom,
+    newAdmin,
+  });
+  const res = await cmNeutron.execTx(
+    {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+    },
+    [msgChangeAdmin],
     10,
   );
 
