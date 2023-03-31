@@ -1254,7 +1254,7 @@ export class CosmosWrapper {
       }
       throw e;
     }
-  };
+  }
 }
 
 type TxResponseType = Awaited<ReturnType<typeof rest.tx.getTx>>;
