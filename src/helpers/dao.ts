@@ -773,9 +773,7 @@ export class DaoMember {
     codes_ids: number[],
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      pinCodesProposal({ title, description, codes_ids }),
-    );
+    const message = pinCodesProposal({ title, description, codes_ids });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -794,9 +792,7 @@ export class DaoMember {
     codes_ids: number[],
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      unpinCodesProposal({ title, description, codes_ids }),
-    );
+    const message = unpinCodesProposal({ title, description, codes_ids });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -815,14 +811,12 @@ export class DaoMember {
     substitute_client_id: string,
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      clientUpdateProposal({
-        title,
-        description,
-        subject_client_id,
-        substitute_client_id,
-      }),
-    );
+    const message = clientUpdateProposal({
+      title,
+      description,
+      subject_client_id,
+      substitute_client_id,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -843,16 +837,14 @@ export class DaoMember {
     upgraded_client_state: string,
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      upgradeProposal({
-        title,
-        description,
-        name,
-        height,
-        info,
-        upgraded_client_state,
-      }),
-    );
+    const message = upgradeProposal({
+      title,
+      description,
+      name,
+      height,
+      info,
+      upgraded_client_state,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -871,9 +863,12 @@ export class DaoMember {
     new_admin: string,
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      updateAdminProposal({ title, description, contract, new_admin }),
-    );
+    const message = updateAdminProposal({
+      title,
+      description,
+      contract,
+      new_admin,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -891,9 +886,7 @@ export class DaoMember {
     contract: string,
     amount: string,
   ): Promise<number> {
-    const message = JSON.stringify(
-      clearAdminProposal({ title, description, contract }),
-    );
+    const message = clearAdminProposal({ title, description, contract });
     return await this.submitSingleChoiceProposal(
       title,
       description,
