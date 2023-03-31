@@ -229,17 +229,3 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
     },
   },
 });
-
-export const sendProposal = (info: SendProposalInfo): any => ({
-  bank: {
-    send: {
-      to_address: info.to,
-      amount: [
-        {
-          denom: info.denom,
-          amount: info.amount,
-        },
-      ],
-    },
-  },
-});
