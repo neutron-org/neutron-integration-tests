@@ -14,4 +14,4 @@ contracts/artifacts/
 write-file-atomic*
 junit.xml
 
-*.wasm
+contracts/*.wasm
