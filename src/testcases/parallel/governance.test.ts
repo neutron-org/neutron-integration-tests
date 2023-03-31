@@ -158,8 +158,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #6, will pass', async () => {
-      await cm.submitClientUpdateProposal(
-        preProposeContractAddress,
+      await daoMember1.submitClientUpdateProposal(
         'Proposal #6',
         'UpdateClient proposal. Will pass',
         '07-tendermint-1',
@@ -169,8 +168,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #7, will pass', async () => {
-      await cm.submitPinCodesProposal(
-        preProposeContractAddress,
+      await daoMember1.submitPinCodesProposal(
         'Proposal #7',
         'Pin codes proposal. Will pass',
         [1, 2],
@@ -179,8 +177,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #8, will pass', async () => {
-      await cm.submitUnpinCodesProposal(
-        preProposeContractAddress,
+      await daoMember1.submitUnpinCodesProposal(
         'Proposal #8',
         'Unpin codes proposal. Will pass',
         [1, 2],
@@ -189,22 +186,20 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #9, will pass', async () => {
-      await cm.submitUpdateAdminProposal(
-        preProposeContractAddress,
+      await daoMember1.submitUpdateAdminProposal(
         'Proposal #9',
         'Update admin proposal. Will pass',
-        mainDao,
-        cm.wallet.address.toString(),
+        dao.contracts.core.address,
+        daoMember1.user.wallet.address.toString(),
         '1000',
       );
     });
 
     test('create proposal #10, will pass', async () => {
-      await cm.submitClearAdminProposal(
-        preProposeContractAddress,
+      await daoMember1.submitClearAdminProposal(
         'Proposal #10',
         'Clear admin proposal. Will pass',
-        mainDao,
+        dao.contracts.core.address,
         '1000',
       );
     });
@@ -442,25 +437,13 @@ describe('Neutron / Governance', () => {
 
   describe('vote for proposal #6 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(
-        proposeSingleContractAddress,
-        6,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteYes(6);
     });
     test('vote NO from wallet 2', async () => {
-      await cm2.voteNo(
-        proposeSingleContractAddress,
-        6,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteNo(6);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        6,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(6);
     });
   });
   describe('execute proposal #6', () => {
@@ -468,9 +451,7 @@ describe('Neutron / Governance', () => {
       const proposalId = 6;
       let rawLog: any;
       try {
-        rawLog = (
-          await cm.executeProposal(proposeSingleContractAddress, proposalId)
-        ).raw_log;
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
       } catch (e) {
         rawLog = e.message;
       }
@@ -480,149 +461,89 @@ describe('Neutron / Governance', () => {
 
   describe('vote for proposal #7 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(
-        proposeSingleContractAddress,
-        7,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteYes(7);
     });
     test('vote NO from wallet 2', async () => {
-      await cm2.voteNo(
-        proposeSingleContractAddress,
-        7,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteNo(7);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        7,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(7);
     });
   });
 
   describe('execute proposal #7', () => {
     const proposalId = 7;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('vote for proposal #8 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(
-        proposeSingleContractAddress,
-        8,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteYes(8);
     });
     test('vote NO from wallet 2', async () => {
-      await cm2.voteNo(
-        proposeSingleContractAddress,
-        8,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteNo(8);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        8,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(8);
     });
   });
 
   describe('execute proposal #8', () => {
     const proposalId = 8;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('vote for proposal #9 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(
-        proposeSingleContractAddress,
-        9,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteYes(9);
     });
     test('vote NO from wallet 2', async () => {
-      await cm2.voteNo(
-        proposeSingleContractAddress,
-        9,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteNo(9);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        9,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(9);
     });
   });
 
   describe('execute proposal #9', () => {
     const proposalId = 9;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('vote for proposal #10 (yes, no, yes)', () => {
     test('vote YES from wallet 1', async () => {
-      await cm.voteYes(
-        proposeSingleContractAddress,
-        10,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteYes(10);
     });
     test('vote NO from wallet 2', async () => {
-      await cm2.voteNo(
-        proposeSingleContractAddress,
-        10,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteNo(10);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        10,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(10);
     });
   });
 
   describe('execute proposal #10', () => {
     const proposalId = 10;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 });

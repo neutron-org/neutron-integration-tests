@@ -14,9 +14,15 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import {
+  clearAdminProposal,
+  clientUpdateProposal,
   paramChangeProposal,
   ParamChangeProposalInfo,
+  pinCodesProposal,
   SendProposalInfo,
+  unpinCodesProposal,
+  updateAdminProposal,
+  upgradeProposal,
 } from './proposal';
 
 export type ProposalModule = {
@@ -755,6 +761,144 @@ export class DaoMember {
       'update subDAO config',
       'sets subDAO config to new value',
       [message],
+    );
+  }
+
+  /**
+   * submitPinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitPinCodesProposal(
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      pinCodesProposal({ title, description, codes_ids }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+
+  async submitUnpinCodesProposal(
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      unpinCodesProposal({ title, description, codes_ids }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClientUpdateProposal(
+    title: string,
+    description: string,
+    subject_client_id: string,
+    substitute_client_id: string,
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      clientUpdateProposal({
+        title,
+        description,
+        subject_client_id,
+        substitute_client_id,
+      }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpgradeProposal(
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    upgraded_client_state: string,
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      upgradeProposal({
+        title,
+        description,
+        name,
+        height,
+        info,
+        upgraded_client_state,
+      }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpdateAdminProposal(
+    title: string,
+    description: string,
+    contract: string,
+    new_admin: string,
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      updateAdminProposal({ title, description, contract, new_admin }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClearAdminProposal(
+    title: string,
+    description: string,
+    contract: string,
+    amount: string,
+  ): Promise<number> {
+    const message = JSON.stringify(
+      clearAdminProposal({ title, description, contract }),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
     );
   }
 }
