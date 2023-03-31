@@ -256,7 +256,7 @@ export class CosmosWrapper {
 
     const res = await this.execTx(
       {
-        gas_limit: Long.fromString('2000000'),
+        gas_limit: Long.fromString('4000000'),
         amount: [{ denom: this.denom, amount: '10000' }],
       },
       [msgExecute],

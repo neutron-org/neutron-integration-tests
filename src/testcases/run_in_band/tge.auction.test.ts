@@ -169,6 +169,7 @@ describe('Neutron / TGE / Auction', () => {
         'ASTRO_TOKEN',
         'ASTRO_GENERATOR',
         'ASTRO_WHITELIST',
+        'ASTRO_COIN_REGISTRY',
         'VESTING_LP',
       ]) {
         const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
@@ -196,6 +197,17 @@ describe('Neutron / TGE / Auction', () => {
       expect(res).toBeTruthy();
       contractAddresses['TGE_PRICE_FEED_MOCK'] = res[0]._contract_address;
     });
+    it('should instantiate coin registry', async () => {
+      const res = await cm.instantiate(
+        codeIds['ASTRO_COIN_REGISTRY'],
+        JSON.stringify({
+          owner: cm.wallet.address.toString(),
+        }),
+        'coin_registry',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses['ASTRO_COIN_REGISTRY'] = res[0]._contract_address;
+    });
     it('should instantiate astro pair astro factory', async () => {
       const instantiateMsg = {
         pair_configs: [
@@ -207,12 +219,13 @@ describe('Neutron / TGE / Auction', () => {
             total_fee_bps: 0,
             maker_fee_bps: 0,
             is_disabled: false,
-            is_generator_disabled: true,
+            is_generator_disabled: false,
           },
         ],
         token_code_id: parseInt(codeIds.ASTRO_TOKEN),
         owner: cm.wallet.address.toString(),
         whitelist_code_id: 0,
+        coin_registry_address: contractAddresses['ASTRO_COIN_REGISTRY'],
       };
       const res = await cm.instantiate(
         codeIds.ASTRO_FACTORY,
@@ -302,7 +315,7 @@ describe('Neutron / TGE / Auction', () => {
           token: { contract_addr: pairs.atom_ntrn.liqiudity },
         },
         vesting_managers: [
-          'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
         ],
       };
       const res = await cm.instantiate(
@@ -318,7 +331,7 @@ describe('Neutron / TGE / Auction', () => {
           token: { contract_addr: pairs.usdc_ntrn.liqiudity },
         },
         vesting_managers: [
-          'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
+          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
         ],
       };
       const res2 = await cm.instantiate(
@@ -1074,6 +1087,8 @@ describe('Neutron / TGE / Auction', () => {
           auctionLPBalanceUsdcNtrn,
           lockdropLPBalanceAtomNtrn,
           lockdropLPBalanceUsdcNtrn,
+          generatorLPBalanceAtomNtrn,
+          generatorLPBalanceUsdcNtrn,
         ] = await Promise.all([
           cm.queryContract<AuctionStateResponse>(
             contractAddresses.TGE_AUCTION,
@@ -1117,6 +1132,16 @@ describe('Neutron / TGE / Auction', () => {
               address: contractAddresses.TGE_LOCKDROP,
             },
           }),
+          cm.queryContract<BalanceResponse>(pairs.atom_ntrn.liqiudity, {
+            balance: {
+              address: contractAddresses.ASTRO_GENERATOR,
+            },
+          }),
+          cm.queryContract<BalanceResponse>(pairs.usdc_ntrn.liqiudity, {
+            balance: {
+              address: contractAddresses.ASTRO_GENERATOR,
+            },
+          }),
         ]);
         expect(auctionState.pool_init_timestamp).toBeGreaterThan(0);
         expect(
@@ -1131,12 +1156,20 @@ describe('Neutron / TGE / Auction', () => {
               parseInt(auctionState.usdc_lp_size) / 2,
           ),
         ).toBeLessThan(1);
-        expect(lockdropLPBalanceAtomNtrn).toEqual({
+
+        expect(generatorLPBalanceAtomNtrn).toEqual({
           balance: auctionState.atom_lp_locked,
         });
-        expect(lockdropLPBalanceUsdcNtrn).toEqual({
+        expect(generatorLPBalanceUsdcNtrn).toEqual({
           balance: auctionState.usdc_lp_locked,
         });
+        expect(lockdropLPBalanceAtomNtrn).toEqual({
+          balance: '0',
+        });
+        expect(lockdropLPBalanceUsdcNtrn).toEqual({
+          balance: '0',
+        });
+
         expect(
           Math.abs(
             parseInt(auctionLPBalanceAtomNtrn.balance) -
@@ -1193,6 +1226,11 @@ describe('Neutron / TGE / Auction', () => {
       let claimAtomLP: number;
       let claimUsdcLP: number;
       it('should vest LP', async () => {
+        const conf = await cm.queryContract<boolean>(
+          contractAddresses.VESTING_ATOM,
+          { vesting_managers: {} },
+        );
+        console.log({ conf });
         const res = await cm.executeContract(
           contractAddresses.TGE_AUCTION,
           JSON.stringify({
