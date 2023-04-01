@@ -278,6 +278,20 @@ export class CosmosWrapper {
       pause_info: {},
     });
   }
+
+  async getCodeDataHash(codeId: number): Promise<string> {
+    try {
+      const res = await axios.get(
+        `${this.sdk.url}/cosmwasm/wasm/v1/code/${codeId}`,
+      );
+      return res.data.code_info.data_hash;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
 }
 
 export class WalletWrapper {
