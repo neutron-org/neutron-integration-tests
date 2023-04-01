@@ -1,10 +1,10 @@
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
-import { Wallet } from '../../types';
 import {
   getDaoContracts,
   DaoContracts,
   getTreasuryContract,
+  VotingVaultsModule,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
 import { NeutronContract } from '../../helpers/types';
@@ -12,7 +12,6 @@ import { NeutronContract } from '../../helpers/types';
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm_dao: CosmosWrapper;
-  let dao_wallet: Wallet;
   let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
   let preProposalSingleAddress: string;
@@ -28,12 +27,10 @@ describe('DAO / Check', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    dao_wallet = testState.wallets.qaNeutron.genQaWal1;
 
     cm_dao = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      dao_wallet,
       NEUTRON_DENOM,
     );
     const daoCoreAddress = (await cm_dao.getChainAdmins())[0]; //add assert for some addresses
@@ -48,10 +45,11 @@ describe('DAO / Check', () => {
     preProposalOverruleAddress =
       daoContracts.proposal_modules.overrule.pre_proposal_module.address;
     votingModuleAddress = daoContracts.voting_module.address;
-    votingVaultsNtrnAddress =
-      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
-    votingVaultsLockdropAddress =
-      daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
+    votingVaultsNtrnAddress = (daoContracts.voting_module as VotingVaultsModule)
+      .voting_vaults.ntrn_vault.address;
+    votingVaultsLockdropAddress = (
+      daoContracts.voting_module as VotingVaultsModule
+    ).voting_vaults.lockdrop_vault.address;
     treasuryContract = await getTreasuryContract(cm_dao);
   });
 
