@@ -9,6 +9,7 @@ import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/a
 import { getWithAttempts } from './wait';
 import {
   MultiChoiceOption,
+  NeutronContract,
   SingleChoiceProposal,
   TotalPowerAtHeightResponse,
   VotingPowerAtHeightResponse,
@@ -944,3 +945,195 @@ export class DaoMember {
     );
   }
 }
+
+export const setupSubDaoTimelockSet = async (
+  cm: WalletWrapper,
+  security_dao_addr: string,
+): Promise<DaoContracts> => {
+  const coreCodeId = parseInt(await cm.storeWasm(NeutronContract.C));
+  const cw4VotingCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.CW4_VOTING),
+  );
+  const cw4GroupCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.CW4_GROUP),
+  );
+  const proposeCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_PROPOSAL),
+  );
+  const preProposeCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_PREPROPOSE),
+  );
+  const timelockCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK),
+  );
+
+  const votingModuleInstantiateInfo = {
+    code_id: cw4VotingCodeId,
+    label: 'subDAO_Neutron_voting_module',
+    msg: Buffer.from(
+      JSON.stringify({
+        cw4_group_code_id: cw4GroupCodeId,
+        initial_members: [
+          {
+            addr: cm.wallet.address.toString(),
+            weight: 1,
+          },
+        ],
+      }),
+    ).toString('base64'),
+  };
+
+  const mainDao = (await cm.chain.getChainAdmins())[0];
+  const daoContracts = await getDaoContracts(cm.chain, mainDao);
+
+  const proposeInstantiateMessage = {
+    threshold: { absolute_count: { threshold: '1' } },
+    max_voting_period: { height: 10 },
+    allow_revoting: false,
+    pre_propose_info: {
+      module_may_propose: {
+        info: {
+          code_id: preProposeCodeId,
+          label: 'subDAO prepropose module',
+          msg: Buffer.from(
+            JSON.stringify({
+              open_proposal_submission: true,
+              timelock_module_instantiate_info: {
+                code_id: timelockCodeId,
+                label: 'subDAO timelock contract',
+                msg: Buffer.from(
+                  JSON.stringify({
+                    overrule_pre_propose:
+                      daoContracts.proposal_modules.overrule.pre_proposal_module
+                        .address,
+                  }),
+                ).toString('base64'),
+              },
+            }),
+          ).toString('base64'),
+        },
+      },
+    },
+    close_proposal_on_execution_failure: false,
+  };
+  const proposalModuleInstantiateInfo = {
+    code_id: proposeCodeId,
+    label: 'subDAO proposal contract',
+    msg: Buffer.from(JSON.stringify(proposeInstantiateMessage)).toString(
+      'base64',
+    ),
+  };
+  const coreInstantiateMessage = {
+    name: 'SubDAO core test 1',
+    description: 'serves testing purposes',
+    vote_module_instantiate_info: votingModuleInstantiateInfo,
+    proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
+    dao_uri: 'www.testsubdao.org',
+    main_dao: cm.wallet.address.toString(),
+    security_dao: security_dao_addr,
+  };
+  const res = await cm.instantiateContract(
+    coreCodeId + '',
+    JSON.stringify(coreInstantiateMessage),
+    'cwd_subdao_core',
+  );
+  const f = (arr, id) =>
+    arr.find((v) => Number(v.code_id) == id)!._contract_address;
+  return getSubDaoContracts(cm.chain, f(res, coreCodeId));
+};
+
+export const deployNeutronDao = async (
+  cm: WalletWrapper,
+  security_dao_addr: string,
+): Promise<DaoContracts> => {
+  const coreCodeId = parseInt(await cm.storeWasm(NeutronContract.SUBDAO_CORE));
+  const cw4VotingCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.CW4_VOTING),
+  );
+  const cw4GroupCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.CW4_GROUP),
+  );
+  const proposeCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_PROPOSAL),
+  );
+  const preProposeCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_PREPROPOSE),
+  );
+  const timelockCodeId = parseInt(
+    await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK),
+  );
+
+  const votingModuleInstantiateInfo = {
+    code_id: cw4VotingCodeId,
+    label: 'subDAO_Neutron_voting_module',
+    msg: Buffer.from(
+      JSON.stringify({
+        cw4_group_code_id: cw4GroupCodeId,
+        initial_members: [
+          {
+            addr: cm.wallet.address.toString(),
+            weight: 1,
+          },
+        ],
+      }),
+    ).toString('base64'),
+  };
+
+  const mainDao = (await cm.chain.getChainAdmins())[0];
+  const daoContracts = await getDaoContracts(cm.chain, mainDao);
+
+  const proposeInstantiateMessage = {
+    threshold: { absolute_count: { threshold: '1' } },
+    max_voting_period: { height: 10 },
+    allow_revoting: false,
+    pre_propose_info: {
+      module_may_propose: {
+        info: {
+          code_id: preProposeCodeId,
+          label: 'subDAO prepropose module',
+          msg: Buffer.from(
+            JSON.stringify({
+              open_proposal_submission: true,
+              timelock_module_instantiate_info: {
+                code_id: timelockCodeId,
+                label: 'subDAO timelock contract',
+                msg: Buffer.from(
+                  JSON.stringify({
+                    overrule_pre_propose:
+                      daoContracts.proposal_modules.overrule.pre_proposal_module
+                        .address,
+                  }),
+                ).toString('base64'),
+              },
+            }),
+          ).toString('base64'),
+        },
+      },
+    },
+    close_proposal_on_execution_failure: false,
+  };
+  const proposalModuleInstantiateInfo = {
+    code_id: proposeCodeId,
+    label: 'subDAO proposal contract',
+    msg: Buffer.from(JSON.stringify(proposeInstantiateMessage)).toString(
+      'base64',
+    ),
+  };
+  const coreInstantiateMessage = {
+    name: 'SubDAO core test 1',
+    description: 'serves testing purposes',
+    vote_module_instantiate_info: votingModuleInstantiateInfo,
+    proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
+    dao_uri: 'www.testsubdao.org',
+    main_dao: cm.wallet.address.toString(),
+    security_dao: security_dao_addr,
+  };
+  const res = await cm.instantiateContract(
+    coreCodeId + '',
+    JSON.stringify(coreInstantiateMessage),
+    'cwd_subdao_core',
+  );
+  const f = (arr, id) =>
+    arr.find((v) => Number(v.code_id) == id)!._contract_address;
+  return getSubDaoContracts(cm.chain, f(res, coreCodeId));
+};
