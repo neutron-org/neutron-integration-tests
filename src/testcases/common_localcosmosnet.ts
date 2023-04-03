@@ -7,7 +7,6 @@ import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 import { lock, unlock } from '../helpers/fileMutex';
 
 const config = require('../config.json');
