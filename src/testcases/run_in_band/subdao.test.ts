@@ -11,8 +11,8 @@ import {
   SubDaoConfig,
   Dao,
   DaoMember,
-  getDaoContracts,
   setupSubDaoTimelockSet,
+  deployNeutronDao,
 } from '../../helpers/dao';
 import { getHeight, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -52,14 +52,14 @@ describe('Neutron / Subdao', () => {
     neutronAccount1 = new WalletWrapper(neutronChain, demo1_wallet);
     neutronAccount2 = new WalletWrapper(neutronChain, demo2_wallet);
 
+    const daoContracts = await deployNeutronDao(neutronAccount1);
+    const mainDao = new Dao(neutronChain, daoContracts);
+
     const subDaoContracts = await setupSubDaoTimelockSet(
       neutronAccount1,
+      mainDao.contracts.core.address,
       security_dao_addr.toString(),
     );
-
-    const mainDaoAddress = (await neutronChain.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(neutronChain, mainDaoAddress);
-    const mainDao = new Dao(neutronChain, daoContracts);
 
     subDao = new Dao(neutronChain, subDaoContracts);
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);

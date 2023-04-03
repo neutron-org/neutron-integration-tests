@@ -407,7 +407,7 @@ export class WalletWrapper {
       'code_id',
     ]);
 
-    return attributes[0].code_id;
+    return parseInt(attributes[0].code_id);
   }
 
   async instantiateContract(

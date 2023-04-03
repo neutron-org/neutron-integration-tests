@@ -98,6 +98,7 @@ export const NeutronContract = {
   DAO_PREPROPOSAL_SINGLE: 'cwd_pre_propose_single.wasm',
   DAO_PREPROPOSAL_MULTI: 'cwd_pre_propose_multiple.wasm',
   DAO_PREPROPOSAL_OVERRULE: 'cwd_pre_propose_overrule.wasm',
+  VOTING_REGISTRY: 'neutron_voting_registry.wasm',
   NEUTRON_VAULT: 'neutron_vault.wasm',
   RESERVE: 'neutron_reserve.wasm',
   SUBDAO_CORE: 'cwd_subdao_core.wasm',
