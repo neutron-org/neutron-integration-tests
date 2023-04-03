@@ -42,7 +42,7 @@ interface AuthorityMetadata {
 describe('Neutron / Tokenfactory', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cmNeutron: CosmosWrapper;
-  let owner_wallet: Wallet;
+  let ownerWallet: Wallet;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
