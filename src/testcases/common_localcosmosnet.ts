@@ -7,6 +7,8 @@ import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
+import { lock, unlock } from '../helpers/fileMutex';
 
 const config = require('../config.json');
 
@@ -87,6 +89,7 @@ export class TestStateLocalCosmosTestNet {
     const neutron = await walletSet(this.sdk1, neutronPrefix);
     const cosmos = await walletSet(this.sdk2, cosmosPrefix);
 
+    await lock();
     const qaNeutron = await this.createQaWallet(
       neutronPrefix,
       this.sdk1,
@@ -136,7 +139,7 @@ export class TestStateLocalCosmosTestNet {
       qaNeutronFour,
       qaNeutronFive,
     };
-
+    await unlock();
     return this.wallets;
   }
 
@@ -162,7 +165,6 @@ export class TestStateLocalCosmosTestNet {
           sequence,
           rest.tx.BroadcastTxMode.Block,
         );
-        await cm.blockWaiter.waitBlocks(1);
         const balances = await cm.queryBalances(to.toString());
         if (balances.pagination.total === '0') {
           throw new Error('Could not put tokens on the generated wallet.');
@@ -170,7 +172,6 @@ export class TestStateLocalCosmosTestNet {
         break;
       } catch (e) {
         if (e.message.includes('sequence')) {
-          await cm.blockWaiter.waitBlocks(1);
           attemptCount++;
         } else {
           throw e;
