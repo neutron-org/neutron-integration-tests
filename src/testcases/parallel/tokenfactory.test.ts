@@ -47,11 +47,11 @@ describe('Neutron / Tokenfactory', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    owner_wallet = testState.wallets.qaNeutron.genQaWal1;
+    ownerWallet = testState.wallets.qaNeutron.genQaWal1;
     cmNeutron = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      owner_wallet,
+      ownerWallet,
       NEUTRON_DENOM,
     );
   });
@@ -66,7 +66,7 @@ describe('Neutron / Tokenfactory', () => {
 
     const data = await msgCreateDenom(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       'test1',
     );
 
@@ -77,16 +77,16 @@ describe('Neutron / Tokenfactory', () => {
     );
 
     expect(newTokenDenom).toEqual(
-      `factory/${owner_wallet.address.toString()}/${denom}`,
+      `factory/${ownerWallet.address.toString()}/${denom}`,
     );
 
     const denomsAfter = await getDenomsFromCreator(
       cmNeutron.sdk.url,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
     );
 
     expect(denomsAfter.denoms).toContainEqual(
-      `factory/${owner_wallet.address.toString()}/${denom}`,
+      `factory/${ownerWallet.address.toString()}/${denom}`,
     );
   });
 
@@ -95,7 +95,7 @@ describe('Neutron / Tokenfactory', () => {
 
     const data = await msgCreateDenom(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       denom,
     );
     const newTokenDenom = getEventAttribute(
@@ -104,13 +104,13 @@ describe('Neutron / Tokenfactory', () => {
       'new_token_denom',
     );
 
-    await msgMintDenom(cmNeutron, owner_wallet.address.toString(), {
+    await msgMintDenom(cmNeutron, ownerWallet.address.toString(), {
       denom: newTokenDenom,
       amount: '10000',
     });
 
     const balanceBefore = await cmNeutron.queryDenomBalance(
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       newTokenDenom,
     );
 
@@ -122,7 +122,7 @@ describe('Neutron / Tokenfactory', () => {
 
     const data = await msgCreateDenom(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       denom,
     );
     const newTokenDenom = getEventAttribute(
@@ -137,14 +137,14 @@ describe('Neutron / Tokenfactory', () => {
     );
 
     expect(authorityMetadataBefore.authority_metadata).toEqual({
-      Admin: owner_wallet.address.toString(),
+      Admin: ownerWallet.address.toString(),
     });
 
     const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
 
     await msgChangeAdmin(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       newTokenDenom,
       newAdmin,
     );
@@ -165,7 +165,7 @@ describe('Neutron / Tokenfactory', () => {
 
     const data = await msgCreateDenom(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       denom,
     );
     const newTokenDenom = getEventAttribute(
@@ -174,13 +174,13 @@ describe('Neutron / Tokenfactory', () => {
       'new_token_denom',
     );
 
-    await msgMintDenom(cmNeutron, owner_wallet.address.toString(), {
+    await msgMintDenom(cmNeutron, ownerWallet.address.toString(), {
       denom: newTokenDenom,
       amount: '10000',
     });
 
     const balanceBefore = await cmNeutron.queryDenomBalance(
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       newTokenDenom,
     );
 
@@ -188,13 +188,13 @@ describe('Neutron / Tokenfactory', () => {
 
     await msgBurn(
       cmNeutron,
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       newTokenDenom,
       '100',
     );
 
     const balanceAfter = await cmNeutron.queryDenomBalance(
-      owner_wallet.address.toString(),
+      ownerWallet.address.toString(),
       newTokenDenom,
     );
 
