@@ -153,7 +153,7 @@ export class TestStateLocalCosmosTestNet {
     cm: CosmosWrapper,
     to: AccAddress,
     amount: string,
-    retryCount = 10,
+    retryCount = 100,
   ): Promise<void> => {
     const fee = {
       gas_limit: Long.fromString('200000'),

@@ -3,6 +3,7 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
+  getEventAttribute,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getHeight, getWithAttempts } from '../../helpers/wait';
@@ -128,25 +129,6 @@ const registerBalanceQuery = async (
   expect(queryId).toBeGreaterThanOrEqual(0);
 
   return queryId;
-};
-
-const getEventAttribute = (
-  events: { type: string; attributes: { key: string; value: string }[] }[],
-  eventType: string,
-  attribute: string,
-): string => {
-  const attributes = events
-    .filter((event) => event.type === eventType)
-    .map((event) => event.attributes)
-    .flat();
-
-  const encodedAttr = attributes?.find(
-    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
-  )?.value as string;
-
-  expect(encodedAttr).toBeDefined();
-
-  return Buffer.from(encodedAttr, 'base64').toString('ascii');
 };
 
 const acceptInterchainqueriesParamsChangeProposal = async (
