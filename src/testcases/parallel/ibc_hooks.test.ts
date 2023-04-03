@@ -58,12 +58,12 @@ describe('Neutron / IBC hooks', () => {
 
   describe('IBC Hooks', () => {
     describe('Receive on neutron with memo wasm hook', () => {
-      const transferAmount = '1000000';
+      const transferAmount = 1000000;
       test('IBC transfer from a usual account', async () => {
         const res = await ntrnDemo1.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: NEUTRON_DENOM, amount: transferAmount },
+          { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address.toString(),
           {
             revision_number: new Long(2),
@@ -76,13 +76,11 @@ describe('Neutron / IBC hooks', () => {
 
       test('check IBC token balance', async () => {
         await cosmosDemo2.blockWaiter.waitBlocks(10);
-        const balances = await cosmosDemo2.queryBalances(
+        const res = await cosmosDemo2.queryDenomBalance(
           testState.wallets.cosmos.demo2.address.toString(),
+          transferDenom,
         );
-        expect(
-          balances.balances.find((bal): boolean => bal.denom == transferDenom)
-            ?.amount,
-        ).toEqual(transferAmount);
+        expect(res).toEqual(transferAmount);
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook', async () => {
@@ -92,7 +90,7 @@ describe('Neutron / IBC hooks', () => {
           'channel-0',
           {
             denom: transferDenom,
-            amount: transferAmount,
+            amount: transferAmount.toString(),
           },
           contractAddress,
           {
@@ -126,20 +124,21 @@ describe('Neutron / IBC hooks', () => {
       test('check contract token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
 
-        const res = await ntrnDemo1.queryBalances(contractAddress);
-        expect(
-          res.balances.find((b): boolean => b.denom == ntrnDemo1.denom)?.amount,
-        ).toEqual(transferAmount);
+        const res = await ntrnDemo1.queryDenomBalance(
+          contractAddress,
+          ntrnDemo1.denom,
+        );
+        expect(res).toEqual(transferAmount);
       });
     });
 
     describe('Receive on neutron with incorrectly formatted message', () => {
-      const transferAmount = '300000';
+      const transferAmount = 300000;
       test('IBC transfer from a usual account', async () => {
         const res = await ntrnDemo1.msgIBCTransfer(
           'transfer',
           'channel-0',
-          { denom: NEUTRON_DENOM, amount: transferAmount },
+          { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address.toString(),
           {
             revision_number: new Long(2),
@@ -152,13 +151,11 @@ describe('Neutron / IBC hooks', () => {
 
       test('check IBC token balance', async () => {
         await cosmosDemo2.blockWaiter.waitBlocks(10);
-        const balances = await cosmosDemo2.queryBalances(
+        const balance = await cosmosDemo2.queryDenomBalance(
           testState.wallets.cosmos.demo2.address.toString(),
+          transferDenom,
         );
-        expect(
-          balances.balances.find((bal): boolean => bal.denom == transferDenom)
-            ?.amount,
-        ).toEqual(transferAmount);
+        expect(balance).toEqual(transferAmount);
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with incorrect wasm hook message', async () => {
@@ -169,7 +166,7 @@ describe('Neutron / IBC hooks', () => {
           'channel-0',
           {
             denom: transferDenom,
-            amount: transferAmount,
+            amount: transferAmount.toString(),
           },
           contractAddress,
           {
@@ -196,15 +193,16 @@ describe('Neutron / IBC hooks', () => {
       test('check contract token balance - it still has previous balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
 
-        const res = await ntrnDemo1.queryBalances(contractAddress);
-        expect(
-          res.balances.find((b): boolean => b.denom == ntrnDemo1.denom)?.amount,
-        ).toEqual('1000000');
+        const res = await ntrnDemo1.queryDenomBalance(
+          contractAddress,
+          ntrnDemo1.denom,
+        );
+        expect(res).toEqual(1000000);
       });
     });
 
     describe('Receive on neutron with memo without wasm hook in it', () => {
-      const transferAmount = '500000';
+      const transferAmount = 500000;
 
       test('IBC transfer of atom from a remote chain to Neutron with wasm hook', async () => {
         const res = await cosmosDemo2.msgIBCTransfer(
@@ -212,7 +210,7 @@ describe('Neutron / IBC hooks', () => {
           'channel-0',
           {
             denom: cosmosDemo2.denom,
-            amount: transferAmount,
+            amount: transferAmount.toString(),
           },
           contractAddress,
           {
@@ -227,19 +225,16 @@ describe('Neutron / IBC hooks', () => {
 
       test('check contract token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const res = await ntrnDemo1.queryBalances(contractAddress);
-        expect(
-          res.balances.find(
-            (b): boolean =>
-              b.denom ==
-              'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-          )?.amount,
-        ).toEqual(transferAmount);
+        const res = await ntrnDemo1.queryDenomBalance(
+          contractAddress,
+          'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        );
+        expect(res).toEqual(transferAmount);
       });
     });
 
     describe('Receive on neutron with memo with wasm hook contract returning error', () => {
-      const transferAmount = '500000';
+      const transferAmount = 500000;
 
       test('IBC transfer of atom from a remote chain to Neutron with wasm hook', async () => {
         const msg = '{"test_msg": {"return_err": true, "arg": ""}}';
@@ -248,7 +243,7 @@ describe('Neutron / IBC hooks', () => {
           'channel-0',
           {
             denom: cosmosDemo2.denom,
-            amount: transferAmount,
+            amount: transferAmount.toString(),
           },
           contractAddress,
           {
@@ -263,14 +258,11 @@ describe('Neutron / IBC hooks', () => {
 
       test('check contract token balance', async () => {
         await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const res = await ntrnDemo1.queryBalances(contractAddress);
-        expect(
-          res.balances.find(
-            (b): boolean =>
-              b.denom ==
-              'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-          )?.amount,
-        ).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
+        const res = await ntrnDemo1.queryDenomBalance(
+          contractAddress,
+          'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        );
+        expect(res).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
       });
     });
   });
