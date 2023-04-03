@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { wait } from './wait';
 
-export const lock = async (path = './lock.tmp', timeout = 60000) => {
+export const lock = async (path = './lock.tmp', timeout = 500000) => {
   const start = Date.now();
   // eslint-disable-next-line no-constant-condition
   while (true) {
@@ -33,5 +33,11 @@ export const lock = async (path = './lock.tmp', timeout = 60000) => {
 };
 
 export const unlock = (path = './lock.tmp') => {
-  fs.rmSync(path);
+  try {
+    fs.rmSync(path);
+  } catch (e) {
+    if (e.code !== 'ENOENT') {
+      throw new Error(`Failed to stat lock file: ${path}, ${e}`);
+    }
+  }
 };
