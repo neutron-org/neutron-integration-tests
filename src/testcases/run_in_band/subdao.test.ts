@@ -13,6 +13,7 @@ import {
   DaoContracts,
   DaoMember,
   getDaoContracts,
+  getSubDaoContracts,
 } from '../../helpers/dao';
 import { getHeight, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -66,24 +67,36 @@ describe('Neutron / Subdao', () => {
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
     subdaoMember2 = new DaoMember(neutronAccount2, subDao);
     mainDaoMember = new DaoMember(neutronAccount2, mainDao);
+    await mainDaoMember.bondFunds('1000');
     const p = await mainDaoMember.submitSingleChoiceProposal(
       'add subdao',
       '',
       [
         {
-          update_sub_daos: {
-            to_add: [
-              {
-                addr: subDao.contracts.core.address,
-              },
-            ],
-            to_remove: [],
+          wasm: {
+            execute: {
+              contract_addr: mainDao.contracts.core.address,
+              msg: Buffer.from(
+                JSON.stringify({
+                  update_sub_daos: {
+                    to_add: [
+                      {
+                        addr: subDao.contracts.core.address,
+                      },
+                    ],
+                    to_remove: [],
+                  },
+                }),
+              ).toString('base64'),
+              funds: [],
+            },
           },
         },
       ],
       '1000',
     );
-    await mainDaoMember.supportAndExecuteProposal(p);
+    await mainDaoMember.voteYes(p);
+    await mainDaoMember.executeProposal(p);
 
     await neutronChain.getWithAttempts(
       async () =>
@@ -899,26 +912,5 @@ const setupSubDaoTimelockSet = async (
   );
   const f = (arr, id) =>
     arr.find((v) => Number(v.code_id) == id)!._contract_address;
-  return {
-    core: {
-      address: f(res, coreCodeId),
-    },
-    proposal_modules: {
-      single: {
-        address: f(res, proposeCodeId),
-        pre_proposal_module: {
-          address: f(res, preProposeCodeId),
-          timelock_module: {
-            address: f(res, timelockCodeId),
-          },
-        },
-      },
-    },
-    voting_module: {
-      address: f(res, cw4VotingCodeId),
-      cw4group: {
-        address: f(res, cw4GroupCodeId),
-      },
-    },
-  };
+  return getSubDaoContracts(cm.chain, f(res, coreCodeId));
 };

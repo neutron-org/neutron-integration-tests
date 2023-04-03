@@ -117,6 +117,7 @@ export type DaoContracts = {
     };
   };
   voting_module: VotingVaultsModule | VotingCw4Module;
+  subdaos?: DaoContracts[];
 };
 
 export const getVotingModule = async (
@@ -214,6 +215,63 @@ export const getDaoContracts = async (
     voting_module: {
       address: voting_module_address,
       voting_vaults: voting_vaults,
+    },
+  };
+};
+
+export const getSubDaoContracts = async (
+  cm: CosmosWrapper,
+  dao_address: string,
+): Promise<DaoContracts> => {
+  const voting_module_address = await cm.queryContract<string>(dao_address, {
+    voting_module: {},
+  });
+  const cw4_group_address = await cm.queryContract<string>(
+    voting_module_address,
+    {
+      group_contract: {},
+    },
+  );
+
+  const proposal_modules = await cm.queryContract<[{ address: string }]>(
+    dao_address,
+    { proposal_modules: {} },
+  );
+
+  expect(proposal_modules).toHaveLength(1);
+  const proposal_module = proposal_modules[0];
+
+  const preProposalContract = await cm.queryContract<{
+    Module: { addr: string };
+  }>(proposal_module.address, { proposal_creation_policy: {} });
+  const proposalSingleAddress = proposal_module.address;
+  const preProposalSingleAddress = preProposalContract.Module.addr;
+
+  const timelockAddr = await cm.queryContract<string>(
+    preProposalSingleAddress,
+    { query_extension: { msg: { timelock_address: {} } } },
+  );
+
+  return {
+    core: {
+      address: dao_address,
+    },
+    proposal_modules: {
+      single: {
+        address: proposalSingleAddress,
+        pre_proposal_module: {
+          address: preProposalSingleAddress,
+          timelock_module: {
+            address: timelockAddr,
+          },
+        },
+      },
+    },
+    voting_module: {
+      address: voting_module_address,
+      cw4group: {
+        address: cw4_group_address,
+      },
     },
   };
 };
