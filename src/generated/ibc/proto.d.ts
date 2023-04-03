@@ -7700,10 +7700,10 @@ export namespace ibc {
                     constructor(properties?: ibc.core.channel.v1.IAcknowledgement);
 
                     /** Acknowledgement result. */
-                    public result?: (Uint8Array|null);
+                    public result: Uint8Array;
 
                     /** Acknowledgement error. */
-                    public error?: (string|null);
+                    public error: string;
 
                     /** Acknowledgement response. */
                     public response?: ("result"|"error");
@@ -27335,10 +27335,10 @@ export namespace tendermint {
             constructor(properties?: tendermint.crypto.IPublicKey);
 
             /** PublicKey ed25519. */
-            public ed25519?: (Uint8Array|null);
+            public ed25519: Uint8Array;
 
             /** PublicKey secp256k1. */
-            public secp256k1?: (Uint8Array|null);
+            public secp256k1: Uint8Array;
 
             /** PublicKey sum. */
             public sum?: ("ed25519"|"secp256k1");
@@ -31469,19 +31469,19 @@ export namespace google {
             public selector: string;
 
             /** HttpRule get. */
-            public get?: (string|null);
+            public get: string;
 
             /** HttpRule put. */
-            public put?: (string|null);
+            public put: string;
 
             /** HttpRule post. */
-            public post?: (string|null);
+            public post: string;
 
             /** HttpRule delete. */
-            public delete?: (string|null);
+            public delete: string;
 
             /** HttpRule patch. */
-            public patch?: (string|null);
+            public patch: string;
 
             /** HttpRule custom. */
             public custom?: (google.api.ICustomHttpPattern|null);

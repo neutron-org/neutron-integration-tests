@@ -5,7 +5,7 @@ rm -r ./proto-thirdparty-tmp
 rm -rf ./ibc-go
 
 git clone git@github.com:cosmos/ibc-go.git
-cd ibc-go && git checkout v4.2.0 && cd ../
+cd ibc-go && git checkout v4.3.0 && cd ../
 
 cp -r ibc-go/proto ./proto
 cp -r ibc-go/third_party/proto ./proto-thirdparty-tmp

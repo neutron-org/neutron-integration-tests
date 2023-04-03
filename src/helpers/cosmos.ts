@@ -1,6 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import { ibc as ibc_proto } from '../generated/ibc/proto';
 import axios from 'axios';
