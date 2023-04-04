@@ -1471,3 +1471,22 @@ export const buildContractAddressClassic = (
   const wasmModuleAddress = whash('module', contractID);
   return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
 };
+
+export const getEventAttribute = (
+  events: { type: string; attributes: { key: string; value: string }[] }[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
+};
