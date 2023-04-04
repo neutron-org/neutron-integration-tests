@@ -113,3 +113,15 @@ export type MultiChoiceOption = {
   description: string;
   msgs: any[];
 };
+
+// https://github.com/cosmos/cosmos-sdk/blob/main/proto/cosmos/upgrade/v1beta1/query.proto#L53
+export type CurrentPlanResponse = {
+  plan: Plan | null;
+};
+
+// https://github.com/cosmos/cosmos-sdk/blob/main/proto/cosmos/upgrade/v1beta1/upgrade.proto#L14
+export type Plan = {
+  name: string;
+  height: string;
+  info: string;
+};
