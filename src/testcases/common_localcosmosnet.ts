@@ -145,7 +145,6 @@ export class TestStateLocalCosmosTestNet {
       qaNeutronFour,
       qaNeutronFive,
     };
-
     return this.wallets;
   }
 

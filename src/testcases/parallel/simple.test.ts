@@ -186,6 +186,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await cm.queryBalances(IBC_RELAYER_NEUTRON_ADDRESS);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||

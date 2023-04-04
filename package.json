@@ -21,6 +21,7 @@
     "test:tokenomics": "jest -b src/testcases/parallel/tokenomics",
     "test:lockdrop": "jest -b src/testcases/parallel/lockdrop",
     "test:dao": "jest -b src/testcases/parallel/dao_assert",
+    "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
