@@ -17,6 +17,8 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import bech32 from 'bech32';
 import {
+  addSchedule,
+  removeSchedule,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
@@ -32,6 +34,7 @@ import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
   AckFailuresResponse,
+  ScheduleResponse,
   ChannelsList,
   MultiChoiceOption,
   PageRequest,
@@ -889,6 +892,52 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(addSchedule(name, period, msgs));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(removeSchedule(name));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
@@ -1158,6 +1207,21 @@ export class CosmosWrapper {
     try {
       const req = await axios.get<AckFailuresResponse>(
         `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async querySchedules(pagination?: PageRequest): Promise<ScheduleResponse> {
+    try {
+      const req = await axios.get<ScheduleResponse>(
+        `${this.sdk.url}/neutron/cron/schedule`,
         { params: pagination },
       );
       return req.data;

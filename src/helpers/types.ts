@@ -77,6 +77,21 @@ type Failure = {
   ack_type: string;
 };
 
+export type ScheduleResponse = {
+  schedules: Schedule[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Schedule represents a single cron added schedule
+type Schedule = {
+  name: string;
+  period: number;
+  msgs: any[];
+};
+
 // BalancesResponse is the response model for the bank balances query.
 export type PauseInfoResponse = {
   paused: {
@@ -89,6 +104,7 @@ export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
+  MSG_RECEIVER: 'msg_receiver.wasm',
   REFLECT: 'reflect.wasm',
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
