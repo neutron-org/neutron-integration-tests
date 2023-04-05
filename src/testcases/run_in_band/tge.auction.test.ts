@@ -315,7 +315,7 @@ describe('Neutron / TGE / Auction', () => {
           token: { contract_addr: pairs.atom_ntrn.liqiudity },
         },
         vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
+          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
         ],
       };
       const res = await cm.instantiate(
@@ -331,7 +331,7 @@ describe('Neutron / TGE / Auction', () => {
           token: { contract_addr: pairs.usdc_ntrn.liqiudity },
         },
         vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
+          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
         ],
       };
       const res2 = await cm.instantiate(
