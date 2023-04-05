@@ -4,7 +4,7 @@ import { Wallet } from '../../types';
 import {
   getDaoContracts,
   DaoContracts,
-  getTreasuryContract,
+  getReserveContract,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
 import { NeutronContract } from '../../helpers/types';
@@ -52,7 +52,7 @@ describe('DAO / Check', () => {
       daoContracts.voting_module.voting_vaults.ntrn_vault.address;
     votingVaultsLockdropAddress =
       daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
-    treasuryContract = await getTreasuryContract(cm_dao);
+    treasuryContract = await getReserveContract(cm_dao);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -128,7 +128,7 @@ describe('DAO / Check', () => {
       expect(propContract).toEqual(proposalOverruleAddress);
     });
     test('Treasury is correct', async () => {
-      const trasuryAddress = await getTreasuryContract(cm_dao);
+      const trasuryAddress = await getReserveContract(cm_dao);
       expect(trasuryAddress.length).toBeGreaterThan(0);
     });
   });
