@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -17,6 +17,8 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import bech32 from 'bech32';
 import {
+  addSchedule,
+  removeSchedule,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
@@ -32,6 +34,7 @@ import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
   AckFailuresResponse,
+  ScheduleResponse,
   ChannelsList,
   MultiChoiceOption,
   PageRequest,
@@ -90,6 +93,10 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
+);
+cosmosclient.codec.register(
+  '/ibc.applications.transfer.v1.MsgTransfer',
+  ibc_proto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -885,6 +892,52 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(addSchedule(name, period, msgs));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(removeSchedule(name));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
@@ -1098,15 +1151,18 @@ export class CosmosWrapper {
     token: ICoin,
     receiver: string,
     timeout_height: IHeight,
+    memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibcproto.ibc.applications.transfer.v1.MsgTransfer({
+    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
       timeout_height: timeout_height,
+      memo: memo,
     });
+    msgSend.memo = memo;
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -1151,6 +1207,21 @@ export class CosmosWrapper {
     try {
       const req = await axios.get<AckFailuresResponse>(
         `${this.sdk.url}/neutron/contractmanager/failures/${addr}`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async querySchedules(pagination?: PageRequest): Promise<ScheduleResponse> {
+    try {
+      const req = await axios.get<ScheduleResponse>(
+        `${this.sdk.url}/neutron/cron/schedule`,
         { params: pagination },
       );
       return req.data;
@@ -1240,6 +1311,20 @@ export class CosmosWrapper {
       admins: [string];
     }>(url);
     return resp.data.admins;
+  }
+
+  async getCodeDataHash(codeId: number): Promise<string> {
+    try {
+      const res = await axios.get(
+        `${this.sdk.url}/cosmwasm/wasm/v1/code/${codeId}`,
+      );
+      return res.data.code_info.data_hash;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 }
 
@@ -1385,4 +1470,23 @@ export const buildContractAddressClassic = (
   contractID.writeUintBE(codeID, 15, 6);
   const wasmModuleAddress = whash('module', contractID);
   return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
+};
+
+export const getEventAttribute = (
+  events: { type: string; attributes: { key: string; value: string }[] }[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
 };
