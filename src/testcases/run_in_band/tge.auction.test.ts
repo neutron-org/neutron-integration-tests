@@ -328,7 +328,7 @@ describe('Neutron / TGE / Auction', () => {
         token_info_manager:
           testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
         vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
+          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
         ],
       };
       const res = await cm.instantiate(
@@ -343,7 +343,7 @@ describe('Neutron / TGE / Auction', () => {
         token_info_manager:
           testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
         vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
+          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
         ],
       };
       const res2 = await cm.instantiate(
