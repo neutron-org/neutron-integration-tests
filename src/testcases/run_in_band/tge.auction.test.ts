@@ -322,14 +322,12 @@ describe('Neutron / TGE / Auction', () => {
         },
       };
     });
-    it('shoild instantiate vesting contracts', async () => {
+    it('should instantiate vesting contracts', async () => {
       let msg = {
         owner: cm.wallet.address.toString(),
         token_info_manager:
           testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
-        vesting_managers: [
-          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
-        ],
+        vesting_managers: [],
       };
       const res = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -342,9 +340,7 @@ describe('Neutron / TGE / Auction', () => {
         owner: cm.wallet.address.toString(),
         token_info_manager:
           testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
-        vesting_managers: [
-          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
-        ],
+        vesting_managers: [],
       };
       const res2 = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -537,6 +533,26 @@ describe('Neutron / TGE / Auction', () => {
         }),
       );
       expect(res.code).toEqual(0);
+    });
+    it('sets vesting manager for vesting contracts', async () => {
+      const res1 = await cm.executeContract(
+        contractAddresses.VESTING_ATOM,
+        JSON.stringify({
+          add_vesting_managers: {
+            managers: [contractAddresses.TGE_AUCTION],
+          },
+        }),
+      );
+      expect(res1.code).toEqual(0);
+      const res2 = await cm.executeContract(
+        contractAddresses.VESTING_USDC,
+        JSON.stringify({
+          add_vesting_managers: {
+            managers: [contractAddresses.TGE_AUCTION],
+          },
+        }),
+      );
+      expect(res2.code).toEqual(0);
     });
   });
 
