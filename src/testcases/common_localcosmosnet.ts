@@ -147,16 +147,24 @@ export class TestStateLocalCosmosTestNet {
       COSMOS_DENOM,
     );
 
+    const qaCosmosTwo = await this.createQaWallet(
+      cosmosPrefix,
+      this.sdk2,
+      this.blockWaiter2,
+      cosmos.demo2,
+      COSMOS_DENOM,
+    );
+
     this.wallets = {
       cosmos,
       neutron,
       qaNeutron,
       qaCosmos,
+      qaCosmosTwo,
       qaNeutronThree,
       qaNeutronFour,
       qaNeutronFive,
     };
-
     return this.wallets;
   }
 
@@ -165,7 +173,7 @@ export class TestStateLocalCosmosTestNet {
     to: AccAddress,
     amount: string,
     denom = cm.denom,
-    retryCount = 10,
+    retryCount = 100,
   ): Promise<void> => {
     const fee = {
       gas_limit: Long.fromString('200000'),
