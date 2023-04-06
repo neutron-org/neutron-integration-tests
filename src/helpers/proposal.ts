@@ -229,3 +229,27 @@ export const upgradeProposal = (info: UpgradeInfo): any => ({
     },
   },
 });
+
+export const addSubdaoProposal = (
+  mainDaoCoreAddress: string,
+  subdaoCoreAddress: string,
+): any => ({
+  wasm: {
+    execute: {
+      contract_addr: mainDaoCoreAddress,
+      msg: Buffer.from(
+        JSON.stringify({
+          update_sub_daos: {
+            to_add: [
+              {
+                addr: subdaoCoreAddress,
+              },
+            ],
+            to_remove: [],
+          },
+        }),
+      ).toString('base64'),
+      funds: [],
+    },
+  },
+});

@@ -15,6 +15,7 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import {
+  addSubdaoProposal,
   clearAdminProposal,
   clientUpdateProposal,
   paramChangeProposal,
@@ -41,7 +42,7 @@ export type TimeLockSingleChoiceProposal = {
 
 export type TimelockConfig = {
   owner: string;
-  timelock_duration: number;
+  overrule_pre_propose: string;
   subdao: string;
 };
 
@@ -415,6 +416,36 @@ export class Dao {
         },
       },
     );
+  }
+
+  async getSubDaoList(): Promise<string[]> {
+    const res = await this.chain.queryContract<{ addr: string }[]>(
+      this.contracts.core.address,
+      {
+        list_sub_daos: {},
+      },
+    );
+    return res.map((x) => x.addr);
+  }
+
+  async getOverruleProposalId(
+    timelock_address: string,
+    subdao_proposal_id: number,
+  ): Promise<number> {
+    const res = await this.chain.queryContract<number>(
+      this.contracts.proposal_modules.overrule.pre_proposal_module.address,
+      {
+        query_extension: {
+          msg: {
+            overrule_proposal_id: {
+              timelock_address,
+              subdao_proposal_id,
+            },
+          },
+        },
+      },
+    );
+    return res;
   }
 }
 
@@ -960,7 +991,7 @@ export const setupSubDaoTimelockSet = async (
   cm: WalletWrapper,
   main_dao_address: string,
   security_dao_addr: string,
-): Promise<DaoContracts> => {
+): Promise<Dao> => {
   const coreCodeId = await cm.storeWasm(NeutronContract.SUBDAO_CORE);
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);
   const cw4GroupCodeId = await cm.storeWasm(NeutronContract.CW4_GROUP);
@@ -1034,13 +1065,36 @@ export const setupSubDaoTimelockSet = async (
     security_dao: security_dao_addr,
   };
   const res = await cm.instantiateContract(
-    coreCodeId + '',
+    coreCodeId,
     JSON.stringify(coreInstantiateMessage),
     'cwd_subdao_core',
   );
+
   const f = (arr, id) =>
     arr.find((v) => Number(v.code_id) == id)!._contract_address;
-  return getSubDaoContracts(cm.chain, f(res, coreCodeId));
+
+  const subDao = new Dao(
+    cm.chain,
+    await getSubDaoContracts(cm.chain, f(res, coreCodeId)),
+  );
+
+  const mainDaoMember = new DaoMember(cm, new Dao(cm.chain, daoContracts));
+
+  const p = await mainDaoMember.submitSingleChoiceProposal(
+    'add subdao',
+    '',
+    [
+      addSubdaoProposal(
+        daoContracts.core.address,
+        subDao.contracts.core.address,
+      ),
+    ],
+    '1000',
+  );
+  await mainDaoMember.voteYes(p);
+  await mainDaoMember.executeProposalWithAttempts(p);
+
+  return subDao;
 };
 
 export const deployNeutronDao = async (
@@ -1079,7 +1133,7 @@ export const deployNeutronDao = async (
   };
 
   const neutronVaultCodeIdRes = await cm.instantiateContract(
-    neutronVaultCodeId + '',
+    neutronVaultCodeId,
     JSON.stringify(neutronVaultInitMsg),
     DaoContractLabels.NEUTRON_VAULT,
   );
@@ -1252,7 +1306,7 @@ export const deployNeutronDao = async (
     ],
   };
   const res = await cm.instantiateContract(
-    coreCodeId + '',
+    coreCodeId,
     JSON.stringify(coreInstantiateMessage),
     DaoContractLabels.DAO_CORE,
   );

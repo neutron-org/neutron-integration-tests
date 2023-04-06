@@ -316,6 +316,17 @@ export class WalletWrapper {
     this.wallet = wallet;
   }
 
+  async queryBalances(): Promise<BalancesResponse> {
+    return await this.chain.queryBalances(this.wallet.address.toString());
+  }
+
+  async queryDenomBalance(denom: string): Promise<number> {
+    return await this.chain.queryDenomBalance(
+      this.wallet.address.toString(),
+      denom,
+    );
+  }
+
   /**
    * execTx broadcasts messages and returns the transaction result.
    */
@@ -411,12 +422,12 @@ export class WalletWrapper {
   }
 
   async instantiateContract(
-    codeId: string,
+    codeId: number,
     msg: string | null = null,
     label: string | null = null,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
-      code_id: codeId,
+      code_id: codeId + '',
       sender: this.wallet.address.toString(),
       admin: this.wallet.address.toString(),
       label,
@@ -462,7 +473,9 @@ export class WalletWrapper {
       [msgExecute],
     );
     if (res.tx_response.code !== 0) {
-      throw new Error(res.tx_response.raw_log);
+      throw new Error(
+        `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,
+      );
     }
     return res?.tx_response;
   }
