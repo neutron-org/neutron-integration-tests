@@ -153,10 +153,10 @@ export const getVotingVaults = async (
     [{ address: string; name: string }]
   >(voting_module_address, { voting_vaults: {} });
   const ntrn_vault_address = voting_vaults.filter(
-    (x) => x.name == DaoContractLabels.NEUTRON_VAULT,
+    (x) => x.name == 'voting vault',
   )[0]?.address;
   const lockdrop_vault_address = voting_vaults.filter(
-    (x) => x.name == DaoContractLabels.LOCKDROP_VAULT,
+    (x) => x.name == 'lockdrop vault',
   )[0]?.address;
 
   return {
