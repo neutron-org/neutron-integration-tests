@@ -300,6 +300,21 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async querySchedules(pagination?: PageRequest): Promise<ScheduleResponse> {
+    try {
+      const req = await axios.get<ScheduleResponse>(
+        `${this.sdk.url}/neutron/cron/schedule`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
 }
 
 export class WalletWrapper {
@@ -483,7 +498,7 @@ export class WalletWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
-    const { amount, denom = this.denom } =
+    const { amount, denom = this.chain.denom } =
       typeof coin === 'string' ? { amount: coin } : coin;
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
@@ -817,22 +832,3 @@ export const filterIBCDenoms = (list: Coin[]) =>
     (coin) =>
       coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
   );
-
-export const getEventAttribute = (
-  events: { type: string; attributes: { key: string; value: string }[] }[],
-  eventType: string,
-  attribute: string,
-): string => {
-  const attributes = events
-    .filter((event) => event.type === eventType)
-    .map((event) => event.attributes)
-    .flat();
-
-  const encodedAttr = attributes?.find(
-    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
-  )?.value as string;
-
-  expect(encodedAttr).toBeDefined();
-
-  return Buffer.from(encodedAttr, 'base64').toString('ascii');
-};

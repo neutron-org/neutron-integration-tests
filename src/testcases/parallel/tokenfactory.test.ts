@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { TestStateLocalCosmosTestNet } from './../common_localcosmosnet';
+import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   CosmosWrapper,
   getEventAttribute,
   NEUTRON_DENOM,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import axios from 'axios';
 import { Wallet } from '../../types';
@@ -41,23 +42,24 @@ interface AuthorityMetadata {
 
 describe('Neutron / Tokenfactory', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cmNeutron: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
   let ownerWallet: Wallet;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     ownerWallet = testState.wallets.qaNeutron.genQaWal1;
-    cmNeutron = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      ownerWallet,
       NEUTRON_DENOM,
     );
+    neutronAccount = new WalletWrapper(neutronChain, ownerWallet);
   });
 
   test('tokenfactory module is added', async () => {
-    const paramsPresent = await checkTokenfactoryParams(cmNeutron.sdk.url);
+    const paramsPresent = await checkTokenfactoryParams(neutronChain.sdk.url);
     expect(paramsPresent).toBeTruthy();
   });
 
@@ -65,7 +67,7 @@ describe('Neutron / Tokenfactory', () => {
     const denom = 'test1';
 
     const data = await msgCreateDenom(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       'test1',
     );
@@ -81,7 +83,7 @@ describe('Neutron / Tokenfactory', () => {
     );
 
     const denomsAfter = await getDenomsFromCreator(
-      cmNeutron.sdk.url,
+      neutronChain.sdk.url,
       ownerWallet.address.toString(),
     );
 
@@ -94,7 +96,7 @@ describe('Neutron / Tokenfactory', () => {
     const denom = `test2`;
 
     const data = await msgCreateDenom(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       denom,
     );
@@ -104,12 +106,12 @@ describe('Neutron / Tokenfactory', () => {
       'new_token_denom',
     );
 
-    await msgMintDenom(cmNeutron, ownerWallet.address.toString(), {
+    await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
       denom: newTokenDenom,
       amount: '10000',
     });
 
-    const balanceBefore = await cmNeutron.queryDenomBalance(
+    const balanceBefore = await neutronChain.queryDenomBalance(
       ownerWallet.address.toString(),
       newTokenDenom,
     );
@@ -121,7 +123,7 @@ describe('Neutron / Tokenfactory', () => {
     const denom = `test3`;
 
     const data = await msgCreateDenom(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       denom,
     );
@@ -132,7 +134,7 @@ describe('Neutron / Tokenfactory', () => {
     );
 
     const authorityMetadataBefore = await getAuthorityMetadata(
-      cmNeutron.sdk.url,
+      neutronChain.sdk.url,
       newTokenDenom,
     );
 
@@ -143,14 +145,14 @@ describe('Neutron / Tokenfactory', () => {
     const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
 
     await msgChangeAdmin(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       newTokenDenom,
       newAdmin,
     );
 
     const authorityMetadataAfter = await getAuthorityMetadata(
-      cmNeutron.sdk.url,
+      neutronChain.sdk.url,
       newTokenDenom,
     );
 
@@ -164,7 +166,7 @@ describe('Neutron / Tokenfactory', () => {
     const denom = `test4`;
 
     const data = await msgCreateDenom(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       denom,
     );
@@ -174,12 +176,12 @@ describe('Neutron / Tokenfactory', () => {
       'new_token_denom',
     );
 
-    await msgMintDenom(cmNeutron, ownerWallet.address.toString(), {
+    await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
       denom: newTokenDenom,
       amount: '10000',
     });
 
-    const balanceBefore = await cmNeutron.queryDenomBalance(
+    const balanceBefore = await neutronChain.queryDenomBalance(
       ownerWallet.address.toString(),
       newTokenDenom,
     );
@@ -187,13 +189,13 @@ describe('Neutron / Tokenfactory', () => {
     expect(balanceBefore).toEqual(10000);
 
     await msgBurn(
-      cmNeutron,
+      neutronAccount,
       ownerWallet.address.toString(),
       newTokenDenom,
       '100',
     );
 
-    const balanceAfter = await cmNeutron.queryDenomBalance(
+    const balanceAfter = await neutronChain.queryDenomBalance(
       ownerWallet.address.toString(),
       newTokenDenom,
     );
@@ -234,7 +236,7 @@ const getAuthorityMetadata = async (
 };
 
 const msgMintDenom = async (
-  cmNeutron: CosmosWrapper,
+  cmNeutron: WalletWrapper,
   creator: string,
   amount: ICoin,
 ): Promise<InlineResponse20075TxResponse> => {
@@ -245,7 +247,7 @@ const msgMintDenom = async (
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
     [msgCreateDenom],
     10,
@@ -255,7 +257,7 @@ const msgMintDenom = async (
 };
 
 const msgCreateDenom = async (
-  cmNeutron: CosmosWrapper,
+  cmNeutron: WalletWrapper,
   creator: string,
   subdenom: string,
 ): Promise<InlineResponse20075TxResponse> => {
@@ -266,7 +268,7 @@ const msgCreateDenom = async (
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
     [msgCreateDenom],
     10,
@@ -276,7 +278,7 @@ const msgCreateDenom = async (
 };
 
 const msgBurn = async (
-  cmNeutron: CosmosWrapper,
+  cmNeutron: WalletWrapper,
   creator: string,
   denom: string,
   amountToBurn: string,
@@ -291,7 +293,7 @@ const msgBurn = async (
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
     [msgBurn],
     10,
@@ -302,7 +304,7 @@ const msgBurn = async (
 
 // Create MsgChangeAdmin message
 const msgChangeAdmin = async (
-  cmNeutron: CosmosWrapper,
+  cmNeutron: WalletWrapper,
   creator: string,
   denom: string,
   newAdmin: string,
@@ -315,7 +317,7 @@ const msgChangeAdmin = async (
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.denom, amount: '1000' }],
+      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
     [msgChangeAdmin],
     10,

@@ -173,7 +173,7 @@ export class TestStateLocalCosmosTestNet {
     cm: WalletWrapper,
     to: AccAddress,
     amount: string,
-    denom = cm.denom,
+    denom = cm.chain.denom,
     retryCount = 100,
   ): Promise<void> => {
     const fee = {

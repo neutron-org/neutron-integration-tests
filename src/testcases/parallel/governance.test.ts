@@ -11,6 +11,7 @@ import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
   let daoMember3: DaoMember;
@@ -26,13 +27,14 @@ describe('Neutron / Governance', () => {
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
-    daoMember1 = new DaoMember(
-      new WalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1),
-      dao,
-    );
+    daoMember1 = new DaoMember(neutronAccount, dao);
     daoMember2 = new DaoMember(
       new WalletWrapper(
         neutronChain,
@@ -52,11 +54,15 @@ describe('Neutron / Governance', () => {
   describe('Contracts', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm(NeutronContract.MSG_RECEIVER);
+      codeId = await neutronAccount.storeWasm(NeutronContract.MSG_RECEIVER);
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await cm.instantiate(codeId, '{}', 'msg_receiver');
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'msg_receiver',
+      );
       contractAddress = res[0]._contract_address;
     });
   });
@@ -221,8 +227,7 @@ describe('Neutron / Governance', () => {
 
     // add schedule with valid message format
     test('create proposal #11, will pass', async () => {
-      await cm.submitAddSchedule(
-        preProposeContractAddress,
+      await daoMember1.submitAddSchedule(
         'Proposal #11',
         '',
         '1000',
@@ -239,8 +244,7 @@ describe('Neutron / Governance', () => {
 
     // remove schedule
     test('create proposal #12, will pass', async () => {
-      await cm.submitRemoveSchedule(
-        preProposeContractAddress,
+      await daoMember1.submitRemoveSchedule(
         'Proposal #12',
         '',
         '1000',
@@ -250,8 +254,7 @@ describe('Neutron / Governance', () => {
 
     // add schedule with 3 messages, first returns error, second in incorrect format, third is valid
     test('create proposal #13, will pass', async () => {
-      await cm.submitAddSchedule(
-        preProposeContractAddress,
+      await daoMember1.submitAddSchedule(
         'Proposal #13',
         '',
         '1000',
@@ -276,8 +279,7 @@ describe('Neutron / Governance', () => {
 
     // add schedule with 3 messages, first is valid, second returns error
     test('create proposal #14, will pass', async () => {
-      await cm.submitAddSchedule(
-        preProposeContractAddress,
+      await daoMember1.submitAddSchedule(
         'Proposal #14',
         '',
         '1000',
@@ -642,50 +644,35 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #11 (no, yes, yes)', () => {
     const proposalId = 11;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(
-        proposeSingleContractAddress,
-        proposalId,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(proposalId);
     });
   });
 
   describe('execute proposal #11', () => {
     const proposalId = 11;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cm.querySchedules();
+      const res = await neutronChain.querySchedules();
       expect(res.schedules.length).toEqual(1);
     });
 
     test('check that msg from schedule was executed', async () => {
-      await cm.blockWaiter.waitBlocks(15);
-      const queryResult = await cm.queryContract<TestArgResponse>(
+      await neutronChain.blockWaiter.waitBlocks(15);
+      const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
           test_msg: { arg: 'proposal_11' },
@@ -701,13 +688,11 @@ describe('Neutron / Governance', () => {
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
-      await cm.blockWaiter.waitBlocks(10);
-      const queryResultLater = await cm.queryContract<TestArgResponse>(
-        contractAddress,
-        {
+      await neutronChain.blockWaiter.waitBlocks(10);
+      const queryResultLater =
+        await neutronChain.queryContract<TestArgResponse>(contractAddress, {
           test_msg: { arg: 'proposal_11' },
-        },
-      );
+        });
       expect(beforeCount).toBeLessThan(queryResultLater.count);
     });
   });
@@ -715,44 +700,29 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #12 (no, yes, yes)', () => {
     const proposalId = 12;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(
-        proposeSingleContractAddress,
-        proposalId,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(proposalId);
     });
   });
 
   describe('execute proposal #12', () => {
     const proposalId = 12;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('check that schedule was removed', () => {
     test('check that schedule was removed', async () => {
-      const res = await cm.querySchedules();
+      const res = await neutronChain.querySchedules();
       expect(res.schedules.length).toEqual(0);
     });
   });
@@ -760,50 +730,35 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #13 (no, yes, yes)', () => {
     const proposalId = 13;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(
-        proposeSingleContractAddress,
-        proposalId,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(proposalId);
     });
   });
 
   describe('execute proposal #13', () => {
     const proposalId = 13;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cm.querySchedules();
+      const res = await neutronChain.querySchedules();
       expect(res.schedules.length).toEqual(1);
     });
 
     test('check that last msg from schedule was not executed because there was error in other messages', async () => {
-      await cm.blockWaiter.waitBlocks(15);
-      const queryResult = await cm.queryContract<TestArgResponse>(
+      await neutronChain.blockWaiter.waitBlocks(15);
+      const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
           test_msg: { arg: 'three_messages' },
@@ -817,50 +772,35 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #14 (no, yes, yes)', () => {
     const proposalId = 14;
     test('vote NO from wallet 1', async () => {
-      await cm.voteNo(
-        proposeSingleContractAddress,
-        proposalId,
-        cm.wallet.address.toString(),
-      );
+      await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2', async () => {
-      await cm2.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm2.wallet.address.toString(),
-      );
+      await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3', async () => {
-      await cm3.voteYes(
-        proposeSingleContractAddress,
-        proposalId,
-        cm3.wallet.address.toString(),
-      );
+      await daoMember3.voteYes(proposalId);
     });
   });
 
   describe('execute proposal #14', () => {
     const proposalId = 14;
     test('check if proposal is passed', async () => {
-      await cm.checkPassedProposal(proposeSingleContractAddress, proposalId);
+      await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await cm.executeProposalWithAttempts(
-        proposeSingleContractAddress,
-        proposalId,
-      );
+      await daoMember1.executeProposalWithAttempts(proposalId);
     });
   });
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cm.querySchedules();
+      const res = await neutronChain.querySchedules();
       expect(res.schedules.length).toEqual(2);
     });
 
     test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
-      await cm.blockWaiter.waitBlocks(15);
-      const queryResult = await cm.queryContract<TestArgResponse>(
+      await neutronChain.blockWaiter.waitBlocks(15);
+      const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
           test_msg: { arg: 'correct_msg' },

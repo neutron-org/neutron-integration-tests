@@ -14,11 +14,13 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import {
+  addSchedule,
   clearAdminProposal,
   clientUpdateProposal,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
+  removeSchedule,
   SendProposalInfo,
   unpinCodesProposal,
   updateAdminProposal,
@@ -887,6 +889,43 @@ export class DaoMember {
     amount: string,
   ): Promise<number> {
     const message = clearAdminProposal({ title, description, contract });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+  /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+  ): Promise<number> {
+    const message = JSON.stringify(addSchedule(name, period, msgs));
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+  ): Promise<number> {
+    const message = JSON.stringify(removeSchedule(name));
     return await this.submitSingleChoiceProposal(
       title,
       description,

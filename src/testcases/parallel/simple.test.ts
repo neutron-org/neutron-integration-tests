@@ -204,7 +204,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
-        await cm.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
@@ -271,19 +271,19 @@ describe('Neutron / Simple', () => {
         const receiver =
           testState.wallets.qaCosmosTwo.genQaWal1.address.toString();
 
-        let senderBalances = await cm2.queryBalances(sender);
+        let senderBalances = await neutronChain.queryBalances(sender);
         const senderNTRNBalanceBefore = senderBalances.balances.find(
           (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
 
-        let receiverBalances = await cm2.queryBalances(receiver);
+        let receiverBalances = await neutronChain.queryBalances(receiver);
         const receiverNTRNBalanceBefore = receiverBalances.balances.find(
           (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
 
         const transferAmount = '333333';
 
-        const res = await cm2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: COSMOS_DENOM, amount: transferAmount },
@@ -296,9 +296,9 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await cm.blockWaiter.waitBlocks(20);
+        await neutronChain.blockWaiter.waitBlocks(20);
 
-        const middlehopBalances = await cm.queryBalances(middlehop);
+        const middlehopBalances = await neutronChain.queryBalances(middlehop);
         const middlehopNTRNBalanceAfter = middlehopBalances.balances.find(
           (bal): boolean =>
             bal.denom ==
@@ -306,7 +306,7 @@ describe('Neutron / Simple', () => {
         )?.amount;
         expect(middlehopNTRNBalanceAfter).toEqual('1000');
 
-        senderBalances = await cm2.queryBalances(sender);
+        senderBalances = await neutronChain.queryBalances(sender);
         const senderNTRNBalanceAfter = senderBalances.balances.find(
           (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
@@ -314,7 +314,7 @@ describe('Neutron / Simple', () => {
           Number(senderNTRNBalanceBefore) - Number(transferAmount) - 1000, // original balance - transfer amount - fee
         );
 
-        receiverBalances = await cm2.queryBalances(receiver);
+        receiverBalances = await neutronChain.queryBalances(receiver);
         const receiverNTRNBalanceAfter = receiverBalances.balances.find(
           (bal): boolean => bal.denom == COSMOS_DENOM,
         )?.amount;
