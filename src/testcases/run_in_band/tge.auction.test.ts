@@ -116,6 +116,8 @@ const waitTill = (timestamp: number): Promise<void> => {
 describe('Neutron / TGE / Auction', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm: CosmosWrapper;
+  let cmTokenManager: CosmosWrapper;
+  let cmStranger: CosmosWrapper;
   const codeIds: Record<string, string> = {};
   const contractAddresses: Record<string, string> = {};
   let pairs: {
@@ -142,6 +144,18 @@ describe('Neutron / TGE / Auction', () => {
       testState.sdk1,
       testState.blockWaiter1,
       testState.wallets.qaNeutron.genQaWal1,
+      NEUTRON_DENOM,
+    );
+    cmTokenManager = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.qaNeutronFour.genQaWal1,
+      NEUTRON_DENOM,
+    );
+    cmStranger = new CosmosWrapper(
+      testState.sdk1,
+      testState.blockWaiter1,
+      testState.wallets.qaNeutronFive.genQaWal1,
       NEUTRON_DENOM,
     );
   });
@@ -308,15 +322,12 @@ describe('Neutron / TGE / Auction', () => {
         },
       };
     });
-    it('shoild instantiate vesting contracts', async () => {
+    it('should instantiate vesting contracts', async () => {
       let msg = {
         owner: cm.wallet.address.toString(),
-        vesting_token: {
-          token: { contract_addr: pairs.atom_ntrn.liqiudity },
-        },
-        vesting_managers: [
-          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
-        ],
+        token_info_manager:
+          testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
+        vesting_managers: [],
       };
       const res = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -327,12 +338,9 @@ describe('Neutron / TGE / Auction', () => {
       contractAddresses['VESTING_ATOM'] = res[0]._contract_address;
       msg = {
         owner: cm.wallet.address.toString(),
-        vesting_token: {
-          token: { contract_addr: pairs.usdc_ntrn.liqiudity },
-        },
-        vesting_managers: [
-          'neutron1hkcp8avzchehvt5y8373ac0xyqklz6yalyz2q2t28k0qpvpkeyzsv67q58',
-        ],
+        token_info_manager:
+          testState.wallets.qaNeutronFour.genQaWal1.address.toString(),
+        vesting_managers: [],
       };
       const res2 = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -342,15 +350,54 @@ describe('Neutron / TGE / Auction', () => {
       expect(res2).toBeTruthy();
       contractAddresses['VESTING_USDC'] = res2[0]._contract_address;
     });
+    it('should not be able to set token info by stranger', async () => {
+      await expect(
+        cmStranger.executeContract(
+          contractAddresses['VESTING_ATOM'],
+          JSON.stringify({
+            set_vesting_token: {
+              vesting_token: {
+                token: { contract_addr: pairs.usdc_ntrn.liqiudity },
+              },
+            },
+          }),
+        ),
+      ).rejects.toThrowError(/Unauthorized/);
+    });
+    it('should set vesting tokens by token info manager', async () => {
+      const res1 = await cm.executeContract(
+        contractAddresses['VESTING_ATOM'],
+        JSON.stringify({
+          set_vesting_token: {
+            vesting_token: {
+              token: { contract_addr: pairs.atom_ntrn.liqiudity },
+            },
+          },
+        }),
+      );
+      expect(res1.code).toBe(0);
+      const res2 = await cm.executeContract(
+        contractAddresses['VESTING_USDC'],
+        JSON.stringify({
+          set_vesting_token: {
+            vesting_token: {
+              token: { contract_addr: pairs.usdc_ntrn.liqiudity },
+            },
+          },
+        }),
+      );
+      expect(res2.code).toBe(0);
+    });
     it('should instantiate auction contract', async () => {
-      times.auctionInitTs = (Date.now() / 1000 + 10) | 0;
+      times.auctionInitTs = (Date.now() / 1000 + 20) | 0;
       times.auctionDepositWindow = 30;
       times.auctionWithdrawalWindow = 30;
-      times.auctionLpLockWindow = 30;
+      times.auctionLpLockWindow = 40;
       times.auctionVestingLpDuration = 20;
       const res = await cm.instantiate(
         codeIds.TGE_AUCTION,
         JSON.stringify({
+          denom_manager: cmTokenManager.wallet.address.toString(),
           price_feed_contract: contractAddresses.TGE_PRICE_FEED_MOCK,
           reserve_contract_address: reserveAddress,
           vesting_usdc_contract_address: contractAddresses.VESTING_USDC,
@@ -359,8 +406,6 @@ describe('Neutron / TGE / Auction', () => {
           init_timestamp: times.auctionInitTs,
           deposit_window: times.auctionDepositWindow,
           withdrawal_window: times.auctionWithdrawalWindow,
-          atom_denom: IBC_ATOM_DENOM,
-          usdc_denom: IBC_USDC_DENOM,
           max_exchange_rate_age: 1000,
           min_ntrn_amount: '100000',
           vesting_migration_pack_size: 1,
@@ -370,14 +415,40 @@ describe('Neutron / TGE / Auction', () => {
       );
       contractAddresses.TGE_AUCTION = res[0]._contract_address;
     });
+    it('should not be able to set denoms by stranger', async () => {
+      await expect(
+        cmStranger.executeContract(
+          contractAddresses.TGE_AUCTION,
+          JSON.stringify({
+            set_denoms: {
+              atom_denom: IBC_ATOM_DENOM,
+              usdc_denom: IBC_USDC_DENOM,
+            },
+          }),
+        ),
+      ).rejects.toThrowError(/Only owner and denom_manager can update denoms/);
+    });
+    it('should set denoms by denom manager', async () => {
+      const res = await cmTokenManager.executeContract(
+        contractAddresses.TGE_AUCTION,
+        JSON.stringify({
+          set_denoms: {
+            atom_denom: IBC_ATOM_DENOM,
+            usdc_denom: IBC_USDC_DENOM,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
     it('should instantiate lockdrop contract', async () => {
       times.lockdropInitTs = (Date.now() / 1000 + 10) | 0;
       const msg = {
-        atom_token: pairs.atom_ntrn.liqiudity,
-        usdc_token: pairs.usdc_ntrn.liqiudity,
         credits_contract: contractAddresses.TGE_CREDITS,
         auction_contract: contractAddresses.TGE_AUCTION,
         init_timestamp: times.lockdropInitTs,
+        token_info_manager: cmTokenManager.wallet.address.toString(),
+        // atom_token: pairs.atom_ntrn.liqiudity,
+        // usdc_token: pairs.usdc_ntrn.liqiudity,
         deposit_window: 20,
         withdrawal_window: 40,
         min_lock_duration: 1,
@@ -417,6 +488,33 @@ describe('Neutron / TGE / Auction', () => {
       expect(res).toBeTruthy();
       contractAddresses['ASTRO_GENERATOR'] = res[0]._contract_address;
     });
+    it('should not be able to set token info by stranger', async () => {
+      await expect(
+        cmStranger.executeContract(
+          contractAddresses.TGE_LOCKDROP,
+          JSON.stringify({
+            set_token_info: {
+              atom_token: pairs.atom_ntrn.liqiudity,
+              usdc_token: pairs.usdc_ntrn.liqiudity,
+              generator: contractAddresses.ASTRO_GENERATOR,
+            },
+          }),
+        ),
+      ).rejects.toThrowError(/Unauthorized/);
+    });
+    it('should set to set tokens info by token info manager', async () => {
+      const res = await cmTokenManager.executeContract(
+        contractAddresses.TGE_LOCKDROP,
+        JSON.stringify({
+          set_token_info: {
+            atom_token: pairs.atom_ntrn.liqiudity,
+            usdc_token: pairs.usdc_ntrn.liqiudity,
+            generator: contractAddresses.ASTRO_GENERATOR,
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
     it('sets lockdrop address', async () => {
       const res = await cm.executeContract(
         contractAddresses.TGE_AUCTION,
@@ -435,6 +533,26 @@ describe('Neutron / TGE / Auction', () => {
         }),
       );
       expect(res.code).toEqual(0);
+    });
+    it('sets vesting manager for vesting contracts', async () => {
+      const res1 = await cm.executeContract(
+        contractAddresses.VESTING_ATOM,
+        JSON.stringify({
+          add_vesting_managers: {
+            managers: [contractAddresses.TGE_AUCTION],
+          },
+        }),
+      );
+      expect(res1.code).toEqual(0);
+      const res2 = await cm.executeContract(
+        contractAddresses.VESTING_USDC,
+        JSON.stringify({
+          add_vesting_managers: {
+            managers: [contractAddresses.TGE_AUCTION],
+          },
+        }),
+      );
+      expect(res2.code).toEqual(0);
     });
   });
 
