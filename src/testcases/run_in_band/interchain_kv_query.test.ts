@@ -5,6 +5,7 @@ import {
   getEventAttribute,
   NEUTRON_DENOM,
   WalletWrapper,
+  filterIBCDenoms,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getHeight, getWithAttempts } from '../../helpers/wait';
@@ -17,6 +18,7 @@ import {
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import { paramChangeProposal } from '../../helpers/proposal';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -219,8 +221,8 @@ const validateBalanceQuery = async (
     targetCm.sdk as CosmosSDK,
     address,
   );
-  expect(interchainQueryResult.balances.coins).toEqual(
-    directQueryResult.data.balances,
+  expect(filterIBCDenoms(interchainQueryResult.balances.coins)).toEqual(
+    filterIBCDenoms(directQueryResult.data.balances as Coin[]),
   );
 };
 
@@ -753,6 +755,9 @@ describe('Neutron / Interchain KV Query', () => {
         const balancesBeforeRegistration = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
         );
+        balancesBeforeRegistration.balances = filterIBCDenoms(
+          balancesBeforeRegistration.balances as Coin[],
+        );
 
         const queryId = await registerBalanceQuery(
           neutronAccount,
@@ -776,6 +781,9 @@ describe('Neutron / Interchain KV Query', () => {
         const balancesAfterRegistration = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
         );
+        balancesAfterRegistration.balances = filterIBCDenoms(
+          balancesAfterRegistration.balances as Coin[],
+        );
 
         await removeQueryViaTx(neutronAccount, queryId);
 
@@ -785,11 +793,15 @@ describe('Neutron / Interchain KV Query', () => {
             await neutronChain.queryBalances(
               testState.wallets.neutron.demo1.address.toString(),
             ),
-          async (response) =>
-            response.balances[0].denom ===
-              balancesAfterRegistration.balances[0].denom &&
-            parseInt(response.balances[0].amount || '0') >
-              parseInt(balancesAfterRegistration.balances[0].amount || '0'),
+          async (response) => {
+            const balances = filterIBCDenoms(response.balances as Coin[]);
+            const beforeBalances = balancesAfterRegistration.balances;
+            return (
+              balances[0].denom === balances[0].denom &&
+              parseInt(balances[0].amount || '0') >
+                parseInt(beforeBalances[0].amount || '0')
+            );
+          },
 
           100,
         );
@@ -797,7 +809,9 @@ describe('Neutron / Interchain KV Query', () => {
         const balancesAfterRemoval = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address.toString(),
         );
-
+        balancesAfterRemoval.balances = filterIBCDenoms(
+          balancesAfterRemoval.balances as Coin[],
+        );
         // Add fees (100) that was deducted during removeQueryViaTx call
         const balancesAfterRemovalWithFee = {
           ...balancesAfterRemoval,

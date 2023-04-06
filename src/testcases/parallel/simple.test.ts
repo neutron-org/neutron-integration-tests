@@ -204,6 +204,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
+        await cm.blockWaiter.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
@@ -253,6 +254,73 @@ describe('Neutron / Simple', () => {
             }),
           ),
         ).rejects.toThrow(/invalid coins/);
+      });
+    });
+    describe('Multihops', () => {
+      // 1. Check balance of Account 1 on Chain 1
+      // 2. Check balance of Account 3 on Chain 2
+      // 3. Check balance of Account 2 on Chain 1
+      // 4. Account 1 on Chain 1 sends x tokens to Account 2 on Chain 1 via Account 3 on Chain 2
+      // 5. Check Balance of Account 3 on Chain 2, confirm it stays the same
+      // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
+      // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
+      test('IBC transfer from a usual account', async () => {
+        const sender = testState.wallets.qaCosmos.genQaWal1.address.toString();
+        const middlehop =
+          testState.wallets.qaNeutron.genQaWal1.address.toString();
+        const receiver =
+          testState.wallets.qaCosmosTwo.genQaWal1.address.toString();
+
+        let senderBalances = await cm2.queryBalances(sender);
+        const senderNTRNBalanceBefore = senderBalances.balances.find(
+          (bal): boolean => bal.denom == COSMOS_DENOM,
+        )?.amount;
+
+        let receiverBalances = await cm2.queryBalances(receiver);
+        const receiverNTRNBalanceBefore = receiverBalances.balances.find(
+          (bal): boolean => bal.denom == COSMOS_DENOM,
+        )?.amount;
+
+        const transferAmount = '333333';
+
+        const res = await cm2.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: COSMOS_DENOM, amount: transferAmount },
+          middlehop,
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
+          `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
+        );
+        expect(res.code).toEqual(0);
+
+        await cm.blockWaiter.waitBlocks(20);
+
+        const middlehopBalances = await cm.queryBalances(middlehop);
+        const middlehopNTRNBalanceAfter = middlehopBalances.balances.find(
+          (bal): boolean =>
+            bal.denom ==
+            'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        )?.amount;
+        expect(middlehopNTRNBalanceAfter).toEqual('1000');
+
+        senderBalances = await cm2.queryBalances(sender);
+        const senderNTRNBalanceAfter = senderBalances.balances.find(
+          (bal): boolean => bal.denom == COSMOS_DENOM,
+        )?.amount;
+        expect(Number(senderNTRNBalanceAfter)).toEqual(
+          Number(senderNTRNBalanceBefore) - Number(transferAmount) - 1000, // original balance - transfer amount - fee
+        );
+
+        receiverBalances = await cm2.queryBalances(receiver);
+        const receiverNTRNBalanceAfter = receiverBalances.balances.find(
+          (bal): boolean => bal.denom == COSMOS_DENOM,
+        )?.amount;
+        expect(Number(receiverNTRNBalanceAfter)).toEqual(
+          Number(receiverNTRNBalanceBefore) + Number(transferAmount),
+        );
       });
     });
     describe('Fee in wrong denom', () => {

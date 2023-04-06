@@ -1,13 +1,14 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
-import { ibcproto } from '@cosmos-client/ibc';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
+import { ibc as ibc_proto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import { BlockWaiter } from './wait';
 import {
+  Coin,
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
@@ -19,6 +20,7 @@ import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
   AckFailuresResponse,
+  ScheduleResponse,
   ChannelsList,
   PageRequest,
   PauseInfoResponse,
@@ -26,6 +28,8 @@ import {
 import { getContractBinary } from './env';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
+export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
+export const IBC_USDC_DENOM = process.env.IBC_USDC_DENOM || 'uibcusdc';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
@@ -72,6 +76,10 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   proto.cosmos.params.v1beta1.ParameterChangeProposal,
+);
+cosmosclient.codec.register(
+  '/ibc.applications.transfer.v1.MsgTransfer',
+  ibc_proto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -399,8 +407,8 @@ export class WalletWrapper {
 
   async instantiateContract(
     codeId: string,
-    msg: string | null = null,
-    label: string | null = null,
+    msg: string,
+    label: string,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
@@ -409,12 +417,15 @@ export class WalletWrapper {
       label,
       msg: Buffer.from(msg),
     });
+
     const data = await this.execTx(
       {
         amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
       [msgInit],
+      10,
+      rest.tx.BroadcastTxMode.Block,
     );
 
     if (data.tx_response.code !== 0) {
@@ -443,7 +454,7 @@ export class WalletWrapper {
 
     const res = await this.execTx(
       {
-        gas_limit: Long.fromString('2000000'),
+        gas_limit: Long.fromString('4000000'),
         amount: [{ denom: this.chain.denom, amount: '10000' }],
       },
       [msgExecute],
@@ -459,7 +470,12 @@ export class WalletWrapper {
    */
   async msgSend(
     to: string,
-    amount: string,
+    coin:
+      | {
+          amount: string;
+          denom?: string;
+        }
+      | string,
     fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.chain.denom, amount: '1000' }],
@@ -467,10 +483,12 @@ export class WalletWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
+    const { amount, denom = this.denom } =
+      typeof coin === 'string' ? { amount: coin } : coin;
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      amount: [{ denom: this.chain.denom, amount }],
+      amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
@@ -612,15 +630,18 @@ export class WalletWrapper {
     token: ICoin,
     receiver: string,
     timeout_height: IHeight,
+    memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibcproto.ibc.applications.transfer.v1.MsgTransfer({
+    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
       source_port: source_port,
       source_channel: source_channel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
       timeout_height: timeout_height,
+      memo: memo,
     });
+    msgSend.memo = memo;
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('200000'),
@@ -771,6 +792,31 @@ export const createBankMessage = (
     },
   },
 });
+
+export const getEventAttribute = (
+  events: { type: string; attributes: { key: string; value: string }[] }[],
+  eventType: string,
+  attribute: string,
+): string => {
+  const attributes = events
+    .filter((event) => event.type === eventType)
+    .map((event) => event.attributes)
+    .flat();
+
+  const encodedAttr = attributes?.find(
+    (attr) => attr.key === Buffer.from(attribute).toString('base64'),
+  )?.value as string;
+
+  expect(encodedAttr).toBeDefined();
+
+  return Buffer.from(encodedAttr, 'base64').toString('ascii');
+};
+
+export const filterIBCDenoms = (list: Coin[]) =>
+  list.filter(
+    (coin) =>
+      coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
+  );
 
 export const getEventAttribute = (
   events: { type: string; attributes: { key: string; value: string }[] }[],
