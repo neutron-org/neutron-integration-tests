@@ -791,13 +791,13 @@ export const getIBCDenom = (portName, channelName, denom: string): string => {
 };
 
 export const createBankMessage = (
-  address: string,
+  addr: string,
   amount: number,
   denom: string,
 ) => ({
   bank: {
     send: {
-      to_address: address,
+      to_address: addr,
       amount: [
         {
           denom: denom,
