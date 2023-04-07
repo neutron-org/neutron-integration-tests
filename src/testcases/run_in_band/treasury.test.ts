@@ -85,7 +85,10 @@ describe('Neutron / Treasury', () => {
           vestingDenominator: '100000000000',
         });
 
-        reserveStats = await normalizeReserveBurnedCoins(neutronAccount1, reserve);
+        reserveStats = await normalizeReserveBurnedCoins(
+          neutronAccount1,
+          reserve,
+        );
       });
       test('zero distribution rate', async () => {
         await neutronAccount1.msgSend(reserve, '100000');
@@ -602,11 +605,9 @@ const normalizeReserveBurnedCoins = async (
         distribute: {},
       }),
     );
-    reserveStats = await cm.chain.queryContract<ReserveStats>(reserveAddress,
-      {
-        stats: {},
-      },
-    );
+    reserveStats = await cm.chain.queryContract<ReserveStats>(reserveAddress, {
+      stats: {},
+    });
 
     const burnedCoins = await getBurnedCoinsAmount(cm.chain);
     normalize =
