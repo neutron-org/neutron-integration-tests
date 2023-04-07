@@ -275,7 +275,7 @@ describe('Neutron / Treasury', () => {
         await neutronChain.blockWaiter.waitBlocks(1);
         reserveStats = await normalizeReserveBurnedCoins(
           neutronAccount1,
-          treasury,
+          reserve,
         );
         const burnedCoinsBefore = await getBurnedCoinsAmount(neutronChain);
         await neutronAccount1.simulateFeeBurning(20_000_000);
