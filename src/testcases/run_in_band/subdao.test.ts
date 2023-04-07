@@ -7,10 +7,7 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import {
-  Coin,
-  InlineResponse20075TxResponse,
-} from '@cosmos-client/core/cjs/openapi/api';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 import {
   TimelockConfig,
   TimelockProposalListResponse,
