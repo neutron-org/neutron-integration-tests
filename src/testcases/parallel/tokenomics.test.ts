@@ -9,7 +9,7 @@ import {
 } from '../../helpers/cosmos';
 import Long from 'long';
 import { getWithAttempts } from '../../helpers/wait';
-import { getTreasuryContract } from '../../helpers/dao';
+import { getReserveContract } from '../../helpers/dao';
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -17,7 +17,7 @@ describe('Neutron / Tokenomics', () => {
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
-  let treasuryContractAddress: string;
+  let reserveContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -41,7 +41,7 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.genQaWal1,
     );
 
-    treasuryContractAddress = await getTreasuryContract(neutronChain);
+    reserveContractAddress = await getReserveContract(neutronChain);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -104,16 +104,16 @@ describe('Neutron / Tokenomics', () => {
     });
   });
 
-  describe('Neutron fees are not being sent to Treasury', () => {
+  describe('Neutron fees are not being sent to Reserve', () => {
     let balanceBefore: number;
     const fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
     };
 
-    test('Read Treasury balance', async () => {
+    test('Read Reserve balance', async () => {
       balanceBefore = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
+        reserveContractAddress,
         NEUTRON_DENOM,
       );
     });
@@ -126,9 +126,9 @@ describe('Neutron / Tokenomics', () => {
       );
     });
 
-    test("Balance of Treasury in Neutrons hasn't been increased", async () => {
+    test("Balance of Reserve in Neutrons hasn't been increased", async () => {
       const balanceAfter = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
+        reserveContractAddress,
         NEUTRON_DENOM,
       );
       const diff = balanceAfter - balanceBefore;
@@ -136,7 +136,7 @@ describe('Neutron / Tokenomics', () => {
     });
   });
 
-  describe('75% of non-Neutron fees are sent to Treasury', () => {
+  describe('75% of non-Neutron fees are sent to Reserve', () => {
     let balanceBefore: number;
     const ibcUatomDenom =
       'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
@@ -174,9 +174,9 @@ describe('Neutron / Tokenomics', () => {
       );
     });
 
-    test('Read Treasury balance', async () => {
+    test('Read Reserve balance', async () => {
       balanceBefore = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
+        reserveContractAddress,
         ibcUatomDenom,
       );
     });
@@ -189,9 +189,9 @@ describe('Neutron / Tokenomics', () => {
       );
     });
 
-    test('Balance of Treasury in uatoms has been increased', async () => {
+    test('Balance of Reserve in uatoms has been increased', async () => {
       const balanceAfter = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
+        reserveContractAddress,
         ibcUatomDenom,
       );
       const diff = balanceAfter - balanceBefore;

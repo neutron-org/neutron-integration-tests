@@ -77,6 +77,21 @@ type Failure = {
   ack_type: string;
 };
 
+export type ScheduleResponse = {
+  schedules: Schedule[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Schedule represents a single cron added schedule
+type Schedule = {
+  name: string;
+  period: number;
+  msgs: any[];
+};
+
 // BalancesResponse is the response model for the bank balances query.
 export type PauseInfoResponse = {
   paused: {
@@ -87,6 +102,7 @@ export type PauseInfoResponse = {
 
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
+  MSG_RECEIVER: 'msg_receiver.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
@@ -110,6 +126,17 @@ export const NeutronContract = {
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
   CW4_VOTING: '../contracts_thirdparty/cw4_voting.wasm',
   CW4_GROUP: '../contracts_thirdparty/cw4_group.wasm',
+  TGE_AUCTION: 'neutron_auction.wasm',
+  TGE_LOCKDROP: 'neutron_lockdrop.wasm',
+  TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
+  ASTRO_PAIR: '../contracts_thirdparty/astroport_pair.wasm',
+  ASTRO_COIN_REGISTRY:
+    '../contracts_thirdparty/astroport_native_coin_registry.wasm',
+  ASTRO_FACTORY: '../contracts_thirdparty/astroport_factory.wasm',
+  ASTRO_TOKEN: '../contracts_thirdparty/astroport_token.wasm',
+  ASTRO_GENERATOR: '../contracts_thirdparty/astroport_generator.wasm',
+  ASTRO_WHITELIST: '../contracts_thirdparty/astroport_whitelist.wasm',
+  VESTING_LP: 'vesting_lp.wasm',
 };
 
 export type MultiChoiceOption = {

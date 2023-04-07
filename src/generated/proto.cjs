@@ -1576,6 +1576,2347 @@
             return contractmanager;
         })();
     
+        neutron.cron = (function() {
+    
+            /**
+             * Namespace cron.
+             * @memberof neutron
+             * @namespace
+             */
+            var cron = {};
+    
+            cron.Msg = (function() {
+    
+                /**
+                 * Constructs a new Msg service.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a Msg
+                 * @extends $protobuf.rpc.Service
+                 * @constructor
+                 * @param {$protobuf.RPCImpl} rpcImpl RPC implementation
+                 * @param {boolean} [requestDelimited=false] Whether requests are length-delimited
+                 * @param {boolean} [responseDelimited=false] Whether responses are length-delimited
+                 */
+                function Msg(rpcImpl, requestDelimited, responseDelimited) {
+                    $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
+                }
+    
+                (Msg.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Msg;
+    
+                return Msg;
+            })();
+    
+            cron.Schedule = (function() {
+    
+                /**
+                 * Properties of a Schedule.
+                 * @memberof neutron.cron
+                 * @interface ISchedule
+                 * @property {string|null} [name] Schedule name
+                 * @property {Long|null} [period] Schedule period
+                 * @property {Array.<neutron.cron.IMsgExecuteContract>|null} [msgs] Schedule msgs
+                 * @property {Long|null} [last_execute_height] Schedule last_execute_height
+                 */
+    
+                /**
+                 * Constructs a new Schedule.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a Schedule.
+                 * @implements ISchedule
+                 * @constructor
+                 * @param {neutron.cron.ISchedule=} [properties] Properties to set
+                 */
+                function Schedule(properties) {
+                    this.msgs = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Schedule name.
+                 * @member {string} name
+                 * @memberof neutron.cron.Schedule
+                 * @instance
+                 */
+                Schedule.prototype.name = "";
+    
+                /**
+                 * Schedule period.
+                 * @member {Long} period
+                 * @memberof neutron.cron.Schedule
+                 * @instance
+                 */
+                Schedule.prototype.period = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
+                 * Schedule msgs.
+                 * @member {Array.<neutron.cron.IMsgExecuteContract>} msgs
+                 * @memberof neutron.cron.Schedule
+                 * @instance
+                 */
+                Schedule.prototype.msgs = $util.emptyArray;
+    
+                /**
+                 * Schedule last_execute_height.
+                 * @member {Long} last_execute_height
+                 * @memberof neutron.cron.Schedule
+                 * @instance
+                 */
+                Schedule.prototype.last_execute_height = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
+                 * Encodes the specified Schedule message. Does not implicitly {@link neutron.cron.Schedule.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {neutron.cron.ISchedule} message Schedule message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Schedule.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                    if (message.period != null && Object.hasOwnProperty.call(message, "period"))
+                        writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.period);
+                    if (message.msgs != null && message.msgs.length)
+                        for (var i = 0; i < message.msgs.length; ++i)
+                            $root.neutron.cron.MsgExecuteContract.encode(message.msgs[i], writer.uint32(/* id 3, wireType 2 =*/26).fork()).ldelim();
+                    if (message.last_execute_height != null && Object.hasOwnProperty.call(message, "last_execute_height"))
+                        writer.uint32(/* id 4, wireType 0 =*/32).uint64(message.last_execute_height);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified Schedule message, length delimited. Does not implicitly {@link neutron.cron.Schedule.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {neutron.cron.ISchedule} message Schedule message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Schedule.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a Schedule message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.Schedule} Schedule
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Schedule.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.Schedule();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.name = reader.string();
+                            break;
+                        case 2:
+                            message.period = reader.uint64();
+                            break;
+                        case 3:
+                            if (!(message.msgs && message.msgs.length))
+                                message.msgs = [];
+                            message.msgs.push($root.neutron.cron.MsgExecuteContract.decode(reader, reader.uint32()));
+                            break;
+                        case 4:
+                            message.last_execute_height = reader.uint64();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a Schedule message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.Schedule} Schedule
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Schedule.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a Schedule message.
+                 * @function verify
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                Schedule.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.name != null && message.hasOwnProperty("name"))
+                        if (!$util.isString(message.name))
+                            return "name: string expected";
+                    if (message.period != null && message.hasOwnProperty("period"))
+                        if (!$util.isInteger(message.period) && !(message.period && $util.isInteger(message.period.low) && $util.isInteger(message.period.high)))
+                            return "period: integer|Long expected";
+                    if (message.msgs != null && message.hasOwnProperty("msgs")) {
+                        if (!Array.isArray(message.msgs))
+                            return "msgs: array expected";
+                        for (var i = 0; i < message.msgs.length; ++i) {
+                            var error = $root.neutron.cron.MsgExecuteContract.verify(message.msgs[i]);
+                            if (error)
+                                return "msgs." + error;
+                        }
+                    }
+                    if (message.last_execute_height != null && message.hasOwnProperty("last_execute_height"))
+                        if (!$util.isInteger(message.last_execute_height) && !(message.last_execute_height && $util.isInteger(message.last_execute_height.low) && $util.isInteger(message.last_execute_height.high)))
+                            return "last_execute_height: integer|Long expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a Schedule message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.Schedule} Schedule
+                 */
+                Schedule.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.Schedule)
+                        return object;
+                    var message = new $root.neutron.cron.Schedule();
+                    if (object.name != null)
+                        message.name = String(object.name);
+                    if (object.period != null)
+                        if ($util.Long)
+                            (message.period = $util.Long.fromValue(object.period)).unsigned = true;
+                        else if (typeof object.period === "string")
+                            message.period = parseInt(object.period, 10);
+                        else if (typeof object.period === "number")
+                            message.period = object.period;
+                        else if (typeof object.period === "object")
+                            message.period = new $util.LongBits(object.period.low >>> 0, object.period.high >>> 0).toNumber(true);
+                    if (object.msgs) {
+                        if (!Array.isArray(object.msgs))
+                            throw TypeError(".neutron.cron.Schedule.msgs: array expected");
+                        message.msgs = [];
+                        for (var i = 0; i < object.msgs.length; ++i) {
+                            if (typeof object.msgs[i] !== "object")
+                                throw TypeError(".neutron.cron.Schedule.msgs: object expected");
+                            message.msgs[i] = $root.neutron.cron.MsgExecuteContract.fromObject(object.msgs[i]);
+                        }
+                    }
+                    if (object.last_execute_height != null)
+                        if ($util.Long)
+                            (message.last_execute_height = $util.Long.fromValue(object.last_execute_height)).unsigned = true;
+                        else if (typeof object.last_execute_height === "string")
+                            message.last_execute_height = parseInt(object.last_execute_height, 10);
+                        else if (typeof object.last_execute_height === "number")
+                            message.last_execute_height = object.last_execute_height;
+                        else if (typeof object.last_execute_height === "object")
+                            message.last_execute_height = new $util.LongBits(object.last_execute_height.low >>> 0, object.last_execute_height.high >>> 0).toNumber(true);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a Schedule message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.Schedule
+                 * @static
+                 * @param {neutron.cron.Schedule} message Schedule
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Schedule.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults)
+                        object.msgs = [];
+                    if (options.defaults) {
+                        object.name = "";
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.period = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.period = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.last_execute_height = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.last_execute_height = options.longs === String ? "0" : 0;
+                    }
+                    if (message.name != null && message.hasOwnProperty("name"))
+                        object.name = message.name;
+                    if (message.period != null && message.hasOwnProperty("period"))
+                        if (typeof message.period === "number")
+                            object.period = options.longs === String ? String(message.period) : message.period;
+                        else
+                            object.period = options.longs === String ? $util.Long.prototype.toString.call(message.period) : options.longs === Number ? new $util.LongBits(message.period.low >>> 0, message.period.high >>> 0).toNumber(true) : message.period;
+                    if (message.msgs && message.msgs.length) {
+                        object.msgs = [];
+                        for (var j = 0; j < message.msgs.length; ++j)
+                            object.msgs[j] = $root.neutron.cron.MsgExecuteContract.toObject(message.msgs[j], options);
+                    }
+                    if (message.last_execute_height != null && message.hasOwnProperty("last_execute_height"))
+                        if (typeof message.last_execute_height === "number")
+                            object.last_execute_height = options.longs === String ? String(message.last_execute_height) : message.last_execute_height;
+                        else
+                            object.last_execute_height = options.longs === String ? $util.Long.prototype.toString.call(message.last_execute_height) : options.longs === Number ? new $util.LongBits(message.last_execute_height.low >>> 0, message.last_execute_height.high >>> 0).toNumber(true) : message.last_execute_height;
+                    return object;
+                };
+    
+                /**
+                 * Converts this Schedule to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.Schedule
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Schedule.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return Schedule;
+            })();
+    
+            cron.MsgExecuteContract = (function() {
+    
+                /**
+                 * Properties of a MsgExecuteContract.
+                 * @memberof neutron.cron
+                 * @interface IMsgExecuteContract
+                 * @property {string|null} [contract] MsgExecuteContract contract
+                 * @property {string|null} [msg] MsgExecuteContract msg
+                 */
+    
+                /**
+                 * Constructs a new MsgExecuteContract.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a MsgExecuteContract.
+                 * @implements IMsgExecuteContract
+                 * @constructor
+                 * @param {neutron.cron.IMsgExecuteContract=} [properties] Properties to set
+                 */
+                function MsgExecuteContract(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * MsgExecuteContract contract.
+                 * @member {string} contract
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @instance
+                 */
+                MsgExecuteContract.prototype.contract = "";
+    
+                /**
+                 * MsgExecuteContract msg.
+                 * @member {string} msg
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @instance
+                 */
+                MsgExecuteContract.prototype.msg = "";
+    
+                /**
+                 * Encodes the specified MsgExecuteContract message. Does not implicitly {@link neutron.cron.MsgExecuteContract.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {neutron.cron.IMsgExecuteContract} message MsgExecuteContract message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                MsgExecuteContract.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.contract != null && Object.hasOwnProperty.call(message, "contract"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.contract);
+                    if (message.msg != null && Object.hasOwnProperty.call(message, "msg"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.msg);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified MsgExecuteContract message, length delimited. Does not implicitly {@link neutron.cron.MsgExecuteContract.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {neutron.cron.IMsgExecuteContract} message MsgExecuteContract message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                MsgExecuteContract.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a MsgExecuteContract message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.MsgExecuteContract} MsgExecuteContract
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                MsgExecuteContract.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.MsgExecuteContract();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.contract = reader.string();
+                            break;
+                        case 2:
+                            message.msg = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a MsgExecuteContract message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.MsgExecuteContract} MsgExecuteContract
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                MsgExecuteContract.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a MsgExecuteContract message.
+                 * @function verify
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                MsgExecuteContract.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.contract != null && message.hasOwnProperty("contract"))
+                        if (!$util.isString(message.contract))
+                            return "contract: string expected";
+                    if (message.msg != null && message.hasOwnProperty("msg"))
+                        if (!$util.isString(message.msg))
+                            return "msg: string expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a MsgExecuteContract message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.MsgExecuteContract} MsgExecuteContract
+                 */
+                MsgExecuteContract.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.MsgExecuteContract)
+                        return object;
+                    var message = new $root.neutron.cron.MsgExecuteContract();
+                    if (object.contract != null)
+                        message.contract = String(object.contract);
+                    if (object.msg != null)
+                        message.msg = String(object.msg);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a MsgExecuteContract message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @static
+                 * @param {neutron.cron.MsgExecuteContract} message MsgExecuteContract
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                MsgExecuteContract.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults) {
+                        object.contract = "";
+                        object.msg = "";
+                    }
+                    if (message.contract != null && message.hasOwnProperty("contract"))
+                        object.contract = message.contract;
+                    if (message.msg != null && message.hasOwnProperty("msg"))
+                        object.msg = message.msg;
+                    return object;
+                };
+    
+                /**
+                 * Converts this MsgExecuteContract to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.MsgExecuteContract
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                MsgExecuteContract.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return MsgExecuteContract;
+            })();
+    
+            cron.ScheduleCount = (function() {
+    
+                /**
+                 * Properties of a ScheduleCount.
+                 * @memberof neutron.cron
+                 * @interface IScheduleCount
+                 * @property {number|null} [count] ScheduleCount count
+                 */
+    
+                /**
+                 * Constructs a new ScheduleCount.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a ScheduleCount.
+                 * @implements IScheduleCount
+                 * @constructor
+                 * @param {neutron.cron.IScheduleCount=} [properties] Properties to set
+                 */
+                function ScheduleCount(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * ScheduleCount count.
+                 * @member {number} count
+                 * @memberof neutron.cron.ScheduleCount
+                 * @instance
+                 */
+                ScheduleCount.prototype.count = 0;
+    
+                /**
+                 * Encodes the specified ScheduleCount message. Does not implicitly {@link neutron.cron.ScheduleCount.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {neutron.cron.IScheduleCount} message ScheduleCount message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ScheduleCount.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.count != null && Object.hasOwnProperty.call(message, "count"))
+                        writer.uint32(/* id 1, wireType 0 =*/8).int32(message.count);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified ScheduleCount message, length delimited. Does not implicitly {@link neutron.cron.ScheduleCount.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {neutron.cron.IScheduleCount} message ScheduleCount message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ScheduleCount.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a ScheduleCount message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.ScheduleCount} ScheduleCount
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ScheduleCount.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.ScheduleCount();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.count = reader.int32();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a ScheduleCount message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.ScheduleCount} ScheduleCount
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ScheduleCount.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a ScheduleCount message.
+                 * @function verify
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ScheduleCount.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.count != null && message.hasOwnProperty("count"))
+                        if (!$util.isInteger(message.count))
+                            return "count: integer expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a ScheduleCount message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.ScheduleCount} ScheduleCount
+                 */
+                ScheduleCount.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.ScheduleCount)
+                        return object;
+                    var message = new $root.neutron.cron.ScheduleCount();
+                    if (object.count != null)
+                        message.count = object.count | 0;
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a ScheduleCount message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.ScheduleCount
+                 * @static
+                 * @param {neutron.cron.ScheduleCount} message ScheduleCount
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ScheduleCount.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults)
+                        object.count = 0;
+                    if (message.count != null && message.hasOwnProperty("count"))
+                        object.count = message.count;
+                    return object;
+                };
+    
+                /**
+                 * Converts this ScheduleCount to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.ScheduleCount
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ScheduleCount.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return ScheduleCount;
+            })();
+    
+            cron.Query = (function() {
+    
+                /**
+                 * Constructs a new Query service.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a Query
+                 * @extends $protobuf.rpc.Service
+                 * @constructor
+                 * @param {$protobuf.RPCImpl} rpcImpl RPC implementation
+                 * @param {boolean} [requestDelimited=false] Whether requests are length-delimited
+                 * @param {boolean} [responseDelimited=false] Whether responses are length-delimited
+                 */
+                function Query(rpcImpl, requestDelimited, responseDelimited) {
+                    $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
+                }
+    
+                (Query.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Query;
+    
+                /**
+                 * Callback as used by {@link neutron.cron.Query#params}.
+                 * @memberof neutron.cron.Query
+                 * @typedef ParamsCallback
+                 * @type {function}
+                 * @param {Error|null} error Error, if any
+                 * @param {neutron.cron.QueryParamsResponse} [response] QueryParamsResponse
+                 */
+    
+                /**
+                 * Calls Params.
+                 * @function params
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                 * @param {neutron.cron.Query.ParamsCallback} callback Node-style callback called with the error, if any, and QueryParamsResponse
+                 * @returns {undefined}
+                 * @variation 1
+                 */
+                Object.defineProperty(Query.prototype.params = function params(request, callback) {
+                    return this.rpcCall(params, $root.neutron.cron.QueryParamsRequest, $root.neutron.cron.QueryParamsResponse, request, callback);
+                }, "name", { value: "Params" });
+    
+                /**
+                 * Calls Params.
+                 * @function params
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                 * @returns {Promise<neutron.cron.QueryParamsResponse>} Promise
+                 * @variation 2
+                 */
+    
+                /**
+                 * Callback as used by {@link neutron.cron.Query#schedule}.
+                 * @memberof neutron.cron.Query
+                 * @typedef ScheduleCallback
+                 * @type {function}
+                 * @param {Error|null} error Error, if any
+                 * @param {neutron.cron.QueryGetScheduleResponse} [response] QueryGetScheduleResponse
+                 */
+    
+                /**
+                 * Calls Schedule.
+                 * @function schedule
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQueryGetScheduleRequest} request QueryGetScheduleRequest message or plain object
+                 * @param {neutron.cron.Query.ScheduleCallback} callback Node-style callback called with the error, if any, and QueryGetScheduleResponse
+                 * @returns {undefined}
+                 * @variation 1
+                 */
+                Object.defineProperty(Query.prototype.schedule = function schedule(request, callback) {
+                    return this.rpcCall(schedule, $root.neutron.cron.QueryGetScheduleRequest, $root.neutron.cron.QueryGetScheduleResponse, request, callback);
+                }, "name", { value: "Schedule" });
+    
+                /**
+                 * Calls Schedule.
+                 * @function schedule
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQueryGetScheduleRequest} request QueryGetScheduleRequest message or plain object
+                 * @returns {Promise<neutron.cron.QueryGetScheduleResponse>} Promise
+                 * @variation 2
+                 */
+    
+                /**
+                 * Callback as used by {@link neutron.cron.Query#schedules}.
+                 * @memberof neutron.cron.Query
+                 * @typedef SchedulesCallback
+                 * @type {function}
+                 * @param {Error|null} error Error, if any
+                 * @param {neutron.cron.QuerySchedulesResponse} [response] QuerySchedulesResponse
+                 */
+    
+                /**
+                 * Calls Schedules.
+                 * @function schedules
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQuerySchedulesRequest} request QuerySchedulesRequest message or plain object
+                 * @param {neutron.cron.Query.SchedulesCallback} callback Node-style callback called with the error, if any, and QuerySchedulesResponse
+                 * @returns {undefined}
+                 * @variation 1
+                 */
+                Object.defineProperty(Query.prototype.schedules = function schedules(request, callback) {
+                    return this.rpcCall(schedules, $root.neutron.cron.QuerySchedulesRequest, $root.neutron.cron.QuerySchedulesResponse, request, callback);
+                }, "name", { value: "Schedules" });
+    
+                /**
+                 * Calls Schedules.
+                 * @function schedules
+                 * @memberof neutron.cron.Query
+                 * @instance
+                 * @param {neutron.cron.IQuerySchedulesRequest} request QuerySchedulesRequest message or plain object
+                 * @returns {Promise<neutron.cron.QuerySchedulesResponse>} Promise
+                 * @variation 2
+                 */
+    
+                return Query;
+            })();
+    
+            cron.QueryParamsRequest = (function() {
+    
+                /**
+                 * Properties of a QueryParamsRequest.
+                 * @memberof neutron.cron
+                 * @interface IQueryParamsRequest
+                 */
+    
+                /**
+                 * Constructs a new QueryParamsRequest.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QueryParamsRequest.
+                 * @implements IQueryParamsRequest
+                 * @constructor
+                 * @param {neutron.cron.IQueryParamsRequest=} [properties] Properties to set
+                 */
+                function QueryParamsRequest(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.cron.QueryParamsRequest.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {neutron.cron.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryParamsRequest.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.cron.QueryParamsRequest.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {neutron.cron.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryParamsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QueryParamsRequest} QueryParamsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryParamsRequest.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QueryParamsRequest();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QueryParamsRequest} QueryParamsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryParamsRequest.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QueryParamsRequest message.
+                 * @function verify
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QueryParamsRequest.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QueryParamsRequest} QueryParamsRequest
+                 */
+                QueryParamsRequest.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QueryParamsRequest)
+                        return object;
+                    return new $root.neutron.cron.QueryParamsRequest();
+                };
+    
+                /**
+                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @static
+                 * @param {neutron.cron.QueryParamsRequest} message QueryParamsRequest
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QueryParamsRequest.toObject = function toObject() {
+                    return {};
+                };
+    
+                /**
+                 * Converts this QueryParamsRequest to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QueryParamsRequest
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QueryParamsRequest.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QueryParamsRequest;
+            })();
+    
+            cron.QueryParamsResponse = (function() {
+    
+                /**
+                 * Properties of a QueryParamsResponse.
+                 * @memberof neutron.cron
+                 * @interface IQueryParamsResponse
+                 * @property {neutron.cron.IParams|null} [params] QueryParamsResponse params
+                 */
+    
+                /**
+                 * Constructs a new QueryParamsResponse.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QueryParamsResponse.
+                 * @implements IQueryParamsResponse
+                 * @constructor
+                 * @param {neutron.cron.IQueryParamsResponse=} [properties] Properties to set
+                 */
+                function QueryParamsResponse(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * QueryParamsResponse params.
+                 * @member {neutron.cron.IParams|null|undefined} params
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @instance
+                 */
+                QueryParamsResponse.prototype.params = null;
+    
+                /**
+                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.cron.QueryParamsResponse.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {neutron.cron.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryParamsResponse.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.params != null && Object.hasOwnProperty.call(message, "params"))
+                        $root.neutron.cron.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.cron.QueryParamsResponse.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {neutron.cron.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryParamsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QueryParamsResponse} QueryParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryParamsResponse.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QueryParamsResponse();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.params = $root.neutron.cron.Params.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QueryParamsResponse} QueryParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryParamsResponse.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QueryParamsResponse message.
+                 * @function verify
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QueryParamsResponse.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.params != null && message.hasOwnProperty("params")) {
+                        var error = $root.neutron.cron.Params.verify(message.params);
+                        if (error)
+                            return "params." + error;
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QueryParamsResponse} QueryParamsResponse
+                 */
+                QueryParamsResponse.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QueryParamsResponse)
+                        return object;
+                    var message = new $root.neutron.cron.QueryParamsResponse();
+                    if (object.params != null) {
+                        if (typeof object.params !== "object")
+                            throw TypeError(".neutron.cron.QueryParamsResponse.params: object expected");
+                        message.params = $root.neutron.cron.Params.fromObject(object.params);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @static
+                 * @param {neutron.cron.QueryParamsResponse} message QueryParamsResponse
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QueryParamsResponse.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults)
+                        object.params = null;
+                    if (message.params != null && message.hasOwnProperty("params"))
+                        object.params = $root.neutron.cron.Params.toObject(message.params, options);
+                    return object;
+                };
+    
+                /**
+                 * Converts this QueryParamsResponse to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QueryParamsResponse
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QueryParamsResponse.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QueryParamsResponse;
+            })();
+    
+            cron.QueryGetScheduleRequest = (function() {
+    
+                /**
+                 * Properties of a QueryGetScheduleRequest.
+                 * @memberof neutron.cron
+                 * @interface IQueryGetScheduleRequest
+                 * @property {string|null} [name] QueryGetScheduleRequest name
+                 */
+    
+                /**
+                 * Constructs a new QueryGetScheduleRequest.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QueryGetScheduleRequest.
+                 * @implements IQueryGetScheduleRequest
+                 * @constructor
+                 * @param {neutron.cron.IQueryGetScheduleRequest=} [properties] Properties to set
+                 */
+                function QueryGetScheduleRequest(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * QueryGetScheduleRequest name.
+                 * @member {string} name
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @instance
+                 */
+                QueryGetScheduleRequest.prototype.name = "";
+    
+                /**
+                 * Encodes the specified QueryGetScheduleRequest message. Does not implicitly {@link neutron.cron.QueryGetScheduleRequest.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {neutron.cron.IQueryGetScheduleRequest} message QueryGetScheduleRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryGetScheduleRequest.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.name != null && Object.hasOwnProperty.call(message, "name"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.name);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QueryGetScheduleRequest message, length delimited. Does not implicitly {@link neutron.cron.QueryGetScheduleRequest.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {neutron.cron.IQueryGetScheduleRequest} message QueryGetScheduleRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryGetScheduleRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QueryGetScheduleRequest message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QueryGetScheduleRequest} QueryGetScheduleRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryGetScheduleRequest.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QueryGetScheduleRequest();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.name = reader.string();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QueryGetScheduleRequest message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QueryGetScheduleRequest} QueryGetScheduleRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryGetScheduleRequest.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QueryGetScheduleRequest message.
+                 * @function verify
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QueryGetScheduleRequest.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.name != null && message.hasOwnProperty("name"))
+                        if (!$util.isString(message.name))
+                            return "name: string expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a QueryGetScheduleRequest message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QueryGetScheduleRequest} QueryGetScheduleRequest
+                 */
+                QueryGetScheduleRequest.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QueryGetScheduleRequest)
+                        return object;
+                    var message = new $root.neutron.cron.QueryGetScheduleRequest();
+                    if (object.name != null)
+                        message.name = String(object.name);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a QueryGetScheduleRequest message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @static
+                 * @param {neutron.cron.QueryGetScheduleRequest} message QueryGetScheduleRequest
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QueryGetScheduleRequest.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults)
+                        object.name = "";
+                    if (message.name != null && message.hasOwnProperty("name"))
+                        object.name = message.name;
+                    return object;
+                };
+    
+                /**
+                 * Converts this QueryGetScheduleRequest to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QueryGetScheduleRequest
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QueryGetScheduleRequest.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QueryGetScheduleRequest;
+            })();
+    
+            cron.QueryGetScheduleResponse = (function() {
+    
+                /**
+                 * Properties of a QueryGetScheduleResponse.
+                 * @memberof neutron.cron
+                 * @interface IQueryGetScheduleResponse
+                 * @property {neutron.cron.ISchedule|null} [schedule] QueryGetScheduleResponse schedule
+                 */
+    
+                /**
+                 * Constructs a new QueryGetScheduleResponse.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QueryGetScheduleResponse.
+                 * @implements IQueryGetScheduleResponse
+                 * @constructor
+                 * @param {neutron.cron.IQueryGetScheduleResponse=} [properties] Properties to set
+                 */
+                function QueryGetScheduleResponse(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * QueryGetScheduleResponse schedule.
+                 * @member {neutron.cron.ISchedule|null|undefined} schedule
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @instance
+                 */
+                QueryGetScheduleResponse.prototype.schedule = null;
+    
+                /**
+                 * Encodes the specified QueryGetScheduleResponse message. Does not implicitly {@link neutron.cron.QueryGetScheduleResponse.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {neutron.cron.IQueryGetScheduleResponse} message QueryGetScheduleResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryGetScheduleResponse.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.schedule != null && Object.hasOwnProperty.call(message, "schedule"))
+                        $root.neutron.cron.Schedule.encode(message.schedule, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QueryGetScheduleResponse message, length delimited. Does not implicitly {@link neutron.cron.QueryGetScheduleResponse.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {neutron.cron.IQueryGetScheduleResponse} message QueryGetScheduleResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QueryGetScheduleResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QueryGetScheduleResponse message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QueryGetScheduleResponse} QueryGetScheduleResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryGetScheduleResponse.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QueryGetScheduleResponse();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.schedule = $root.neutron.cron.Schedule.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QueryGetScheduleResponse message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QueryGetScheduleResponse} QueryGetScheduleResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QueryGetScheduleResponse.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QueryGetScheduleResponse message.
+                 * @function verify
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QueryGetScheduleResponse.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.schedule != null && message.hasOwnProperty("schedule")) {
+                        var error = $root.neutron.cron.Schedule.verify(message.schedule);
+                        if (error)
+                            return "schedule." + error;
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a QueryGetScheduleResponse message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QueryGetScheduleResponse} QueryGetScheduleResponse
+                 */
+                QueryGetScheduleResponse.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QueryGetScheduleResponse)
+                        return object;
+                    var message = new $root.neutron.cron.QueryGetScheduleResponse();
+                    if (object.schedule != null) {
+                        if (typeof object.schedule !== "object")
+                            throw TypeError(".neutron.cron.QueryGetScheduleResponse.schedule: object expected");
+                        message.schedule = $root.neutron.cron.Schedule.fromObject(object.schedule);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a QueryGetScheduleResponse message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @static
+                 * @param {neutron.cron.QueryGetScheduleResponse} message QueryGetScheduleResponse
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QueryGetScheduleResponse.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults)
+                        object.schedule = null;
+                    if (message.schedule != null && message.hasOwnProperty("schedule"))
+                        object.schedule = $root.neutron.cron.Schedule.toObject(message.schedule, options);
+                    return object;
+                };
+    
+                /**
+                 * Converts this QueryGetScheduleResponse to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QueryGetScheduleResponse
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QueryGetScheduleResponse.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QueryGetScheduleResponse;
+            })();
+    
+            cron.QuerySchedulesRequest = (function() {
+    
+                /**
+                 * Properties of a QuerySchedulesRequest.
+                 * @memberof neutron.cron
+                 * @interface IQuerySchedulesRequest
+                 * @property {cosmos.base.query.v1beta1.IPageRequest|null} [pagination] QuerySchedulesRequest pagination
+                 */
+    
+                /**
+                 * Constructs a new QuerySchedulesRequest.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QuerySchedulesRequest.
+                 * @implements IQuerySchedulesRequest
+                 * @constructor
+                 * @param {neutron.cron.IQuerySchedulesRequest=} [properties] Properties to set
+                 */
+                function QuerySchedulesRequest(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * QuerySchedulesRequest pagination.
+                 * @member {cosmos.base.query.v1beta1.IPageRequest|null|undefined} pagination
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @instance
+                 */
+                QuerySchedulesRequest.prototype.pagination = null;
+    
+                /**
+                 * Encodes the specified QuerySchedulesRequest message. Does not implicitly {@link neutron.cron.QuerySchedulesRequest.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {neutron.cron.IQuerySchedulesRequest} message QuerySchedulesRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QuerySchedulesRequest.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.pagination != null && Object.hasOwnProperty.call(message, "pagination"))
+                        $root.cosmos.base.query.v1beta1.PageRequest.encode(message.pagination, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QuerySchedulesRequest message, length delimited. Does not implicitly {@link neutron.cron.QuerySchedulesRequest.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {neutron.cron.IQuerySchedulesRequest} message QuerySchedulesRequest message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QuerySchedulesRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QuerySchedulesRequest message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QuerySchedulesRequest} QuerySchedulesRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QuerySchedulesRequest.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QuerySchedulesRequest();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.pagination = $root.cosmos.base.query.v1beta1.PageRequest.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QuerySchedulesRequest message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QuerySchedulesRequest} QuerySchedulesRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QuerySchedulesRequest.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QuerySchedulesRequest message.
+                 * @function verify
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QuerySchedulesRequest.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.pagination != null && message.hasOwnProperty("pagination")) {
+                        var error = $root.cosmos.base.query.v1beta1.PageRequest.verify(message.pagination);
+                        if (error)
+                            return "pagination." + error;
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a QuerySchedulesRequest message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QuerySchedulesRequest} QuerySchedulesRequest
+                 */
+                QuerySchedulesRequest.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QuerySchedulesRequest)
+                        return object;
+                    var message = new $root.neutron.cron.QuerySchedulesRequest();
+                    if (object.pagination != null) {
+                        if (typeof object.pagination !== "object")
+                            throw TypeError(".neutron.cron.QuerySchedulesRequest.pagination: object expected");
+                        message.pagination = $root.cosmos.base.query.v1beta1.PageRequest.fromObject(object.pagination);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a QuerySchedulesRequest message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @static
+                 * @param {neutron.cron.QuerySchedulesRequest} message QuerySchedulesRequest
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QuerySchedulesRequest.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults)
+                        object.pagination = null;
+                    if (message.pagination != null && message.hasOwnProperty("pagination"))
+                        object.pagination = $root.cosmos.base.query.v1beta1.PageRequest.toObject(message.pagination, options);
+                    return object;
+                };
+    
+                /**
+                 * Converts this QuerySchedulesRequest to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QuerySchedulesRequest
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QuerySchedulesRequest.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QuerySchedulesRequest;
+            })();
+    
+            cron.QuerySchedulesResponse = (function() {
+    
+                /**
+                 * Properties of a QuerySchedulesResponse.
+                 * @memberof neutron.cron
+                 * @interface IQuerySchedulesResponse
+                 * @property {Array.<neutron.cron.ISchedule>|null} [schedules] QuerySchedulesResponse schedules
+                 * @property {cosmos.base.query.v1beta1.IPageResponse|null} [pagination] QuerySchedulesResponse pagination
+                 */
+    
+                /**
+                 * Constructs a new QuerySchedulesResponse.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a QuerySchedulesResponse.
+                 * @implements IQuerySchedulesResponse
+                 * @constructor
+                 * @param {neutron.cron.IQuerySchedulesResponse=} [properties] Properties to set
+                 */
+                function QuerySchedulesResponse(properties) {
+                    this.schedules = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * QuerySchedulesResponse schedules.
+                 * @member {Array.<neutron.cron.ISchedule>} schedules
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @instance
+                 */
+                QuerySchedulesResponse.prototype.schedules = $util.emptyArray;
+    
+                /**
+                 * QuerySchedulesResponse pagination.
+                 * @member {cosmos.base.query.v1beta1.IPageResponse|null|undefined} pagination
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @instance
+                 */
+                QuerySchedulesResponse.prototype.pagination = null;
+    
+                /**
+                 * Encodes the specified QuerySchedulesResponse message. Does not implicitly {@link neutron.cron.QuerySchedulesResponse.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {neutron.cron.IQuerySchedulesResponse} message QuerySchedulesResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QuerySchedulesResponse.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.schedules != null && message.schedules.length)
+                        for (var i = 0; i < message.schedules.length; ++i)
+                            $root.neutron.cron.Schedule.encode(message.schedules[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.pagination != null && Object.hasOwnProperty.call(message, "pagination"))
+                        $root.cosmos.base.query.v1beta1.PageResponse.encode(message.pagination, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified QuerySchedulesResponse message, length delimited. Does not implicitly {@link neutron.cron.QuerySchedulesResponse.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {neutron.cron.IQuerySchedulesResponse} message QuerySchedulesResponse message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                QuerySchedulesResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a QuerySchedulesResponse message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.QuerySchedulesResponse} QuerySchedulesResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QuerySchedulesResponse.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.QuerySchedulesResponse();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            if (!(message.schedules && message.schedules.length))
+                                message.schedules = [];
+                            message.schedules.push($root.neutron.cron.Schedule.decode(reader, reader.uint32()));
+                            break;
+                        case 2:
+                            message.pagination = $root.cosmos.base.query.v1beta1.PageResponse.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a QuerySchedulesResponse message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.QuerySchedulesResponse} QuerySchedulesResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                QuerySchedulesResponse.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a QuerySchedulesResponse message.
+                 * @function verify
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                QuerySchedulesResponse.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.schedules != null && message.hasOwnProperty("schedules")) {
+                        if (!Array.isArray(message.schedules))
+                            return "schedules: array expected";
+                        for (var i = 0; i < message.schedules.length; ++i) {
+                            var error = $root.neutron.cron.Schedule.verify(message.schedules[i]);
+                            if (error)
+                                return "schedules." + error;
+                        }
+                    }
+                    if (message.pagination != null && message.hasOwnProperty("pagination")) {
+                        var error = $root.cosmos.base.query.v1beta1.PageResponse.verify(message.pagination);
+                        if (error)
+                            return "pagination." + error;
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a QuerySchedulesResponse message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.QuerySchedulesResponse} QuerySchedulesResponse
+                 */
+                QuerySchedulesResponse.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.QuerySchedulesResponse)
+                        return object;
+                    var message = new $root.neutron.cron.QuerySchedulesResponse();
+                    if (object.schedules) {
+                        if (!Array.isArray(object.schedules))
+                            throw TypeError(".neutron.cron.QuerySchedulesResponse.schedules: array expected");
+                        message.schedules = [];
+                        for (var i = 0; i < object.schedules.length; ++i) {
+                            if (typeof object.schedules[i] !== "object")
+                                throw TypeError(".neutron.cron.QuerySchedulesResponse.schedules: object expected");
+                            message.schedules[i] = $root.neutron.cron.Schedule.fromObject(object.schedules[i]);
+                        }
+                    }
+                    if (object.pagination != null) {
+                        if (typeof object.pagination !== "object")
+                            throw TypeError(".neutron.cron.QuerySchedulesResponse.pagination: object expected");
+                        message.pagination = $root.cosmos.base.query.v1beta1.PageResponse.fromObject(object.pagination);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a QuerySchedulesResponse message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @static
+                 * @param {neutron.cron.QuerySchedulesResponse} message QuerySchedulesResponse
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                QuerySchedulesResponse.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults)
+                        object.schedules = [];
+                    if (options.defaults)
+                        object.pagination = null;
+                    if (message.schedules && message.schedules.length) {
+                        object.schedules = [];
+                        for (var j = 0; j < message.schedules.length; ++j)
+                            object.schedules[j] = $root.neutron.cron.Schedule.toObject(message.schedules[j], options);
+                    }
+                    if (message.pagination != null && message.hasOwnProperty("pagination"))
+                        object.pagination = $root.cosmos.base.query.v1beta1.PageResponse.toObject(message.pagination, options);
+                    return object;
+                };
+    
+                /**
+                 * Converts this QuerySchedulesResponse to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.QuerySchedulesResponse
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                QuerySchedulesResponse.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return QuerySchedulesResponse;
+            })();
+    
+            cron.Params = (function() {
+    
+                /**
+                 * Properties of a Params.
+                 * @memberof neutron.cron
+                 * @interface IParams
+                 * @property {string|null} [security_address] Params security_address
+                 * @property {Long|null} [limit] Params limit
+                 */
+    
+                /**
+                 * Constructs a new Params.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a Params.
+                 * @implements IParams
+                 * @constructor
+                 * @param {neutron.cron.IParams=} [properties] Properties to set
+                 */
+                function Params(properties) {
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * Params security_address.
+                 * @member {string} security_address
+                 * @memberof neutron.cron.Params
+                 * @instance
+                 */
+                Params.prototype.security_address = "";
+    
+                /**
+                 * Params limit.
+                 * @member {Long} limit
+                 * @memberof neutron.cron.Params
+                 * @instance
+                 */
+                Params.prototype.limit = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+    
+                /**
+                 * Encodes the specified Params message. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {neutron.cron.IParams} message Params message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Params.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.security_address != null && Object.hasOwnProperty.call(message, "security_address"))
+                        writer.uint32(/* id 1, wireType 2 =*/10).string(message.security_address);
+                    if (message.limit != null && Object.hasOwnProperty.call(message, "limit"))
+                        writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.limit);
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {neutron.cron.IParams} message Params message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                Params.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a Params message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.Params} Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Params.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.Params();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            message.security_address = reader.string();
+                            break;
+                        case 2:
+                            message.limit = reader.uint64();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a Params message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.Params} Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                Params.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a Params message.
+                 * @function verify
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                Params.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.security_address != null && message.hasOwnProperty("security_address"))
+                        if (!$util.isString(message.security_address))
+                            return "security_address: string expected";
+                    if (message.limit != null && message.hasOwnProperty("limit"))
+                        if (!$util.isInteger(message.limit) && !(message.limit && $util.isInteger(message.limit.low) && $util.isInteger(message.limit.high)))
+                            return "limit: integer|Long expected";
+                    return null;
+                };
+    
+                /**
+                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.Params} Params
+                 */
+                Params.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.Params)
+                        return object;
+                    var message = new $root.neutron.cron.Params();
+                    if (object.security_address != null)
+                        message.security_address = String(object.security_address);
+                    if (object.limit != null)
+                        if ($util.Long)
+                            (message.limit = $util.Long.fromValue(object.limit)).unsigned = true;
+                        else if (typeof object.limit === "string")
+                            message.limit = parseInt(object.limit, 10);
+                        else if (typeof object.limit === "number")
+                            message.limit = object.limit;
+                        else if (typeof object.limit === "object")
+                            message.limit = new $util.LongBits(object.limit.low >>> 0, object.limit.high >>> 0).toNumber(true);
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a Params message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.Params
+                 * @static
+                 * @param {neutron.cron.Params} message Params
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                Params.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.defaults) {
+                        object.security_address = "";
+                        if ($util.Long) {
+                            var long = new $util.Long(0, 0, true);
+                            object.limit = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.limit = options.longs === String ? "0" : 0;
+                    }
+                    if (message.security_address != null && message.hasOwnProperty("security_address"))
+                        object.security_address = message.security_address;
+                    if (message.limit != null && message.hasOwnProperty("limit"))
+                        if (typeof message.limit === "number")
+                            object.limit = options.longs === String ? String(message.limit) : message.limit;
+                        else
+                            object.limit = options.longs === String ? $util.Long.prototype.toString.call(message.limit) : options.longs === Number ? new $util.LongBits(message.limit.low >>> 0, message.limit.high >>> 0).toNumber(true) : message.limit;
+                    return object;
+                };
+    
+                /**
+                 * Converts this Params to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.Params
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                Params.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return Params;
+            })();
+    
+            cron.GenesisState = (function() {
+    
+                /**
+                 * Properties of a GenesisState.
+                 * @memberof neutron.cron
+                 * @interface IGenesisState
+                 * @property {Array.<neutron.cron.ISchedule>|null} [scheduleList] GenesisState scheduleList
+                 * @property {neutron.cron.IParams|null} [params] GenesisState params
+                 */
+    
+                /**
+                 * Constructs a new GenesisState.
+                 * @memberof neutron.cron
+                 * @classdesc Represents a GenesisState.
+                 * @implements IGenesisState
+                 * @constructor
+                 * @param {neutron.cron.IGenesisState=} [properties] Properties to set
+                 */
+                function GenesisState(properties) {
+                    this.scheduleList = [];
+                    if (properties)
+                        for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+    
+                /**
+                 * GenesisState scheduleList.
+                 * @member {Array.<neutron.cron.ISchedule>} scheduleList
+                 * @memberof neutron.cron.GenesisState
+                 * @instance
+                 */
+                GenesisState.prototype.scheduleList = $util.emptyArray;
+    
+                /**
+                 * GenesisState params.
+                 * @member {neutron.cron.IParams|null|undefined} params
+                 * @memberof neutron.cron.GenesisState
+                 * @instance
+                 */
+                GenesisState.prototype.params = null;
+    
+                /**
+                 * Encodes the specified GenesisState message. Does not implicitly {@link neutron.cron.GenesisState.verify|verify} messages.
+                 * @function encode
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {neutron.cron.IGenesisState} message GenesisState message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                GenesisState.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.params != null && Object.hasOwnProperty.call(message, "params"))
+                        $root.neutron.cron.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                    if (message.scheduleList != null && message.scheduleList.length)
+                        for (var i = 0; i < message.scheduleList.length; ++i)
+                            $root.neutron.cron.Schedule.encode(message.scheduleList[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                    return writer;
+                };
+    
+                /**
+                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.cron.GenesisState.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {neutron.cron.IGenesisState} message GenesisState message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                GenesisState.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+    
+                /**
+                 * Decodes a GenesisState message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {neutron.cron.GenesisState} GenesisState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                GenesisState.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    var end = length === undefined ? reader.len : reader.pos + length, message = new $root.neutron.cron.GenesisState();
+                    while (reader.pos < end) {
+                        var tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 2:
+                            if (!(message.scheduleList && message.scheduleList.length))
+                                message.scheduleList = [];
+                            message.scheduleList.push($root.neutron.cron.Schedule.decode(reader, reader.uint32()));
+                            break;
+                        case 1:
+                            message.params = $root.neutron.cron.Params.decode(reader, reader.uint32());
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {neutron.cron.GenesisState} GenesisState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                GenesisState.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+    
+                /**
+                 * Verifies a GenesisState message.
+                 * @function verify
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                GenesisState.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.scheduleList != null && message.hasOwnProperty("scheduleList")) {
+                        if (!Array.isArray(message.scheduleList))
+                            return "scheduleList: array expected";
+                        for (var i = 0; i < message.scheduleList.length; ++i) {
+                            var error = $root.neutron.cron.Schedule.verify(message.scheduleList[i]);
+                            if (error)
+                                return "scheduleList." + error;
+                        }
+                    }
+                    if (message.params != null && message.hasOwnProperty("params")) {
+                        var error = $root.neutron.cron.Params.verify(message.params);
+                        if (error)
+                            return "params." + error;
+                    }
+                    return null;
+                };
+    
+                /**
+                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {neutron.cron.GenesisState} GenesisState
+                 */
+                GenesisState.fromObject = function fromObject(object) {
+                    if (object instanceof $root.neutron.cron.GenesisState)
+                        return object;
+                    var message = new $root.neutron.cron.GenesisState();
+                    if (object.scheduleList) {
+                        if (!Array.isArray(object.scheduleList))
+                            throw TypeError(".neutron.cron.GenesisState.scheduleList: array expected");
+                        message.scheduleList = [];
+                        for (var i = 0; i < object.scheduleList.length; ++i) {
+                            if (typeof object.scheduleList[i] !== "object")
+                                throw TypeError(".neutron.cron.GenesisState.scheduleList: object expected");
+                            message.scheduleList[i] = $root.neutron.cron.Schedule.fromObject(object.scheduleList[i]);
+                        }
+                    }
+                    if (object.params != null) {
+                        if (typeof object.params !== "object")
+                            throw TypeError(".neutron.cron.GenesisState.params: object expected");
+                        message.params = $root.neutron.cron.Params.fromObject(object.params);
+                    }
+                    return message;
+                };
+    
+                /**
+                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof neutron.cron.GenesisState
+                 * @static
+                 * @param {neutron.cron.GenesisState} message GenesisState
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                GenesisState.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    var object = {};
+                    if (options.arrays || options.defaults)
+                        object.scheduleList = [];
+                    if (options.defaults)
+                        object.params = null;
+                    if (message.params != null && message.hasOwnProperty("params"))
+                        object.params = $root.neutron.cron.Params.toObject(message.params, options);
+                    if (message.scheduleList && message.scheduleList.length) {
+                        object.scheduleList = [];
+                        for (var j = 0; j < message.scheduleList.length; ++j)
+                            object.scheduleList[j] = $root.neutron.cron.Schedule.toObject(message.scheduleList[j], options);
+                    }
+                    return object;
+                };
+    
+                /**
+                 * Converts this GenesisState to JSON.
+                 * @function toJSON
+                 * @memberof neutron.cron.GenesisState
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                GenesisState.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+    
+                return GenesisState;
+            })();
+    
+            return cron;
+        })();
+    
         neutron.feeburner = (function() {
     
             /**
@@ -2335,7 +4676,7 @@
                  * @memberof neutron.feeburner
                  * @interface IParams
                  * @property {string|null} [neutron_denom] Params neutron_denom
-                 * @property {string|null} [treasury_address] Params treasury_address
+                 * @property {string|null} [reserve_address] Params reserve_address
                  */
     
                 /**
@@ -2362,12 +4703,12 @@
                 Params.prototype.neutron_denom = "";
     
                 /**
-                 * Params treasury_address.
-                 * @member {string} treasury_address
+                 * Params reserve_address.
+                 * @member {string} reserve_address
                  * @memberof neutron.feeburner.Params
                  * @instance
                  */
-                Params.prototype.treasury_address = "";
+                Params.prototype.reserve_address = "";
     
                 /**
                  * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
@@ -2383,8 +4724,8 @@
                         writer = $Writer.create();
                     if (message.neutron_denom != null && Object.hasOwnProperty.call(message, "neutron_denom"))
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.neutron_denom);
-                    if (message.treasury_address != null && Object.hasOwnProperty.call(message, "treasury_address"))
-                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.treasury_address);
+                    if (message.reserve_address != null && Object.hasOwnProperty.call(message, "reserve_address"))
+                        writer.uint32(/* id 2, wireType 2 =*/18).string(message.reserve_address);
                     return writer;
                 };
     
@@ -2423,7 +4764,7 @@
                             message.neutron_denom = reader.string();
                             break;
                         case 2:
-                            message.treasury_address = reader.string();
+                            message.reserve_address = reader.string();
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -2463,9 +4804,9 @@
                     if (message.neutron_denom != null && message.hasOwnProperty("neutron_denom"))
                         if (!$util.isString(message.neutron_denom))
                             return "neutron_denom: string expected";
-                    if (message.treasury_address != null && message.hasOwnProperty("treasury_address"))
-                        if (!$util.isString(message.treasury_address))
-                            return "treasury_address: string expected";
+                    if (message.reserve_address != null && message.hasOwnProperty("reserve_address"))
+                        if (!$util.isString(message.reserve_address))
+                            return "reserve_address: string expected";
                     return null;
                 };
     
@@ -2483,8 +4824,8 @@
                     var message = new $root.neutron.feeburner.Params();
                     if (object.neutron_denom != null)
                         message.neutron_denom = String(object.neutron_denom);
-                    if (object.treasury_address != null)
-                        message.treasury_address = String(object.treasury_address);
+                    if (object.reserve_address != null)
+                        message.reserve_address = String(object.reserve_address);
                     return message;
                 };
     
@@ -2503,12 +4844,12 @@
                     var object = {};
                     if (options.defaults) {
                         object.neutron_denom = "";
-                        object.treasury_address = "";
+                        object.reserve_address = "";
                     }
                     if (message.neutron_denom != null && message.hasOwnProperty("neutron_denom"))
                         object.neutron_denom = message.neutron_denom;
-                    if (message.treasury_address != null && message.hasOwnProperty("treasury_address"))
-                        object.treasury_address = message.treasury_address;
+                    if (message.reserve_address != null && message.hasOwnProperty("reserve_address"))
+                        object.reserve_address = message.reserve_address;
                     return object;
                 };
     
@@ -13773,6 +16114,7 @@
                  * @property {string|null} [receiver] MsgTransfer receiver
                  * @property {ibc.core.client.v1.IHeight|null} [timeout_height] MsgTransfer timeout_height
                  * @property {Long|null} [timeout_timestamp] MsgTransfer timeout_timestamp
+                 * @property {string|null} [memo] MsgTransfer memo
                  * @property {neutron.feerefunder.IFee|null} [fee] MsgTransfer fee
                  */
     
@@ -13848,6 +16190,14 @@
                 MsgTransfer.prototype.timeout_timestamp = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                 /**
+                 * MsgTransfer memo.
+                 * @member {string} memo
+                 * @memberof neutron.transfer.MsgTransfer
+                 * @instance
+                 */
+                MsgTransfer.prototype.memo = "";
+    
+                /**
                  * MsgTransfer fee.
                  * @member {neutron.feerefunder.IFee|null|undefined} fee
                  * @memberof neutron.transfer.MsgTransfer
@@ -13881,8 +16231,10 @@
                         $root.ibc.core.client.v1.Height.encode(message.timeout_height, writer.uint32(/* id 6, wireType 2 =*/50).fork()).ldelim();
                     if (message.timeout_timestamp != null && Object.hasOwnProperty.call(message, "timeout_timestamp"))
                         writer.uint32(/* id 7, wireType 0 =*/56).uint64(message.timeout_timestamp);
+                    if (message.memo != null && Object.hasOwnProperty.call(message, "memo"))
+                        writer.uint32(/* id 8, wireType 2 =*/66).string(message.memo);
                     if (message.fee != null && Object.hasOwnProperty.call(message, "fee"))
-                        $root.neutron.feerefunder.Fee.encode(message.fee, writer.uint32(/* id 8, wireType 2 =*/66).fork()).ldelim();
+                        $root.neutron.feerefunder.Fee.encode(message.fee, writer.uint32(/* id 9, wireType 2 =*/74).fork()).ldelim();
                     return writer;
                 };
     
@@ -13939,6 +16291,9 @@
                             message.timeout_timestamp = reader.uint64();
                             break;
                         case 8:
+                            message.memo = reader.string();
+                            break;
+                        case 9:
                             message.fee = $root.neutron.feerefunder.Fee.decode(reader, reader.uint32());
                             break;
                         default:
@@ -14001,6 +16356,9 @@
                     if (message.timeout_timestamp != null && message.hasOwnProperty("timeout_timestamp"))
                         if (!$util.isInteger(message.timeout_timestamp) && !(message.timeout_timestamp && $util.isInteger(message.timeout_timestamp.low) && $util.isInteger(message.timeout_timestamp.high)))
                             return "timeout_timestamp: integer|Long expected";
+                    if (message.memo != null && message.hasOwnProperty("memo"))
+                        if (!$util.isString(message.memo))
+                            return "memo: string expected";
                     if (message.fee != null && message.hasOwnProperty("fee")) {
                         var error = $root.neutron.feerefunder.Fee.verify(message.fee);
                         if (error)
@@ -14048,6 +16406,8 @@
                             message.timeout_timestamp = object.timeout_timestamp;
                         else if (typeof object.timeout_timestamp === "object")
                             message.timeout_timestamp = new $util.LongBits(object.timeout_timestamp.low >>> 0, object.timeout_timestamp.high >>> 0).toNumber(true);
+                    if (object.memo != null)
+                        message.memo = String(object.memo);
                     if (object.fee != null) {
                         if (typeof object.fee !== "object")
                             throw TypeError(".neutron.transfer.MsgTransfer.fee: object expected");
@@ -14081,6 +16441,7 @@
                             object.timeout_timestamp = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                         } else
                             object.timeout_timestamp = options.longs === String ? "0" : 0;
+                        object.memo = "";
                         object.fee = null;
                     }
                     if (message.source_port != null && message.hasOwnProperty("source_port"))
@@ -14100,6 +16461,8 @@
                             object.timeout_timestamp = options.longs === String ? String(message.timeout_timestamp) : message.timeout_timestamp;
                         else
                             object.timeout_timestamp = options.longs === String ? $util.Long.prototype.toString.call(message.timeout_timestamp) : options.longs === Number ? new $util.LongBits(message.timeout_timestamp.low >>> 0, message.timeout_timestamp.high >>> 0).toNumber(true) : message.timeout_timestamp;
+                    if (message.memo != null && message.hasOwnProperty("memo"))
+                        object.memo = message.memo;
                     if (message.fee != null && message.hasOwnProperty("fee"))
                         object.fee = $root.neutron.feerefunder.Fee.toObject(message.fee, options);
                     return object;
@@ -51748,6 +54111,3580 @@
         })();
     
         return cosmos_proto;
+    })();
+    
+    $root.osmosis = (function() {
+    
+        /**
+         * Namespace osmosis.
+         * @exports osmosis
+         * @namespace
+         */
+        var osmosis = {};
+    
+        osmosis.tokenfactory = (function() {
+    
+            /**
+             * Namespace tokenfactory.
+             * @memberof osmosis
+             * @namespace
+             */
+            var tokenfactory = {};
+    
+            tokenfactory.v1beta1 = (function() {
+    
+                /**
+                 * Namespace v1beta1.
+                 * @memberof osmosis.tokenfactory
+                 * @namespace
+                 */
+                var v1beta1 = {};
+    
+                v1beta1.Msg = (function() {
+    
+                    /**
+                     * Constructs a new Msg service.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a Msg
+                     * @extends $protobuf.rpc.Service
+                     * @constructor
+                     * @param {$protobuf.RPCImpl} rpcImpl RPC implementation
+                     * @param {boolean} [requestDelimited=false] Whether requests are length-delimited
+                     * @param {boolean} [responseDelimited=false] Whether responses are length-delimited
+                     */
+                    function Msg(rpcImpl, requestDelimited, responseDelimited) {
+                        $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
+                    }
+    
+                    (Msg.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Msg;
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#createDenom}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @typedef CreateDenomCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse} [response] MsgCreateDenomResponse
+                     */
+    
+                    /**
+                     * Calls CreateDenom.
+                     * @function createDenom
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenom} request MsgCreateDenom message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Msg.CreateDenomCallback} callback Node-style callback called with the error, if any, and MsgCreateDenomResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Msg.prototype.createDenom = function createDenom(request, callback) {
+                        return this.rpcCall(createDenom, $root.osmosis.tokenfactory.v1beta1.MsgCreateDenom, $root.osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse, request, callback);
+                    }, "name", { value: "CreateDenom" });
+    
+                    /**
+                     * Calls CreateDenom.
+                     * @function createDenom
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenom} request MsgCreateDenom message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#mint}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @typedef MintCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.MsgMintResponse} [response] MsgMintResponse
+                     */
+    
+                    /**
+                     * Calls Mint.
+                     * @function mint
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMint} request MsgMint message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Msg.MintCallback} callback Node-style callback called with the error, if any, and MsgMintResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Msg.prototype.mint = function mint(request, callback) {
+                        return this.rpcCall(mint, $root.osmosis.tokenfactory.v1beta1.MsgMint, $root.osmosis.tokenfactory.v1beta1.MsgMintResponse, request, callback);
+                    }, "name", { value: "Mint" });
+    
+                    /**
+                     * Calls Mint.
+                     * @function mint
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMint} request MsgMint message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.MsgMintResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#burn}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @typedef BurnCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.MsgBurnResponse} [response] MsgBurnResponse
+                     */
+    
+                    /**
+                     * Calls Burn.
+                     * @function burn
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurn} request MsgBurn message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Msg.BurnCallback} callback Node-style callback called with the error, if any, and MsgBurnResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Msg.prototype.burn = function burn(request, callback) {
+                        return this.rpcCall(burn, $root.osmosis.tokenfactory.v1beta1.MsgBurn, $root.osmosis.tokenfactory.v1beta1.MsgBurnResponse, request, callback);
+                    }, "name", { value: "Burn" });
+    
+                    /**
+                     * Calls Burn.
+                     * @function burn
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurn} request MsgBurn message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.MsgBurnResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#changeAdmin}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @typedef ChangeAdminCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse} [response] MsgChangeAdminResponse
+                     */
+    
+                    /**
+                     * Calls ChangeAdmin.
+                     * @function changeAdmin
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdmin} request MsgChangeAdmin message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Msg.ChangeAdminCallback} callback Node-style callback called with the error, if any, and MsgChangeAdminResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Msg.prototype.changeAdmin = function changeAdmin(request, callback) {
+                        return this.rpcCall(changeAdmin, $root.osmosis.tokenfactory.v1beta1.MsgChangeAdmin, $root.osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse, request, callback);
+                    }, "name", { value: "ChangeAdmin" });
+    
+                    /**
+                     * Calls ChangeAdmin.
+                     * @function changeAdmin
+                     * @memberof osmosis.tokenfactory.v1beta1.Msg
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdmin} request MsgChangeAdmin message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    return Msg;
+                })();
+    
+                v1beta1.MsgCreateDenom = (function() {
+    
+                    /**
+                     * Properties of a MsgCreateDenom.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgCreateDenom
+                     * @property {string|null} [sender] MsgCreateDenom sender
+                     * @property {string|null} [subdenom] MsgCreateDenom subdenom
+                     */
+    
+                    /**
+                     * Constructs a new MsgCreateDenom.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgCreateDenom.
+                     * @implements IMsgCreateDenom
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenom=} [properties] Properties to set
+                     */
+                    function MsgCreateDenom(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * MsgCreateDenom sender.
+                     * @member {string} sender
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @instance
+                     */
+                    MsgCreateDenom.prototype.sender = "";
+    
+                    /**
+                     * MsgCreateDenom subdenom.
+                     * @member {string} subdenom
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @instance
+                     */
+                    MsgCreateDenom.prototype.subdenom = "";
+    
+                    /**
+                     * Encodes the specified MsgCreateDenom message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenom.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenom} message MsgCreateDenom message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgCreateDenom.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.sender);
+                        if (message.subdenom != null && Object.hasOwnProperty.call(message, "subdenom"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.subdenom);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgCreateDenom message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenom.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenom} message MsgCreateDenom message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgCreateDenom.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgCreateDenom message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenom} MsgCreateDenom
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgCreateDenom.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgCreateDenom();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.sender = reader.string();
+                                break;
+                            case 2:
+                                message.subdenom = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgCreateDenom message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenom} MsgCreateDenom
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgCreateDenom.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgCreateDenom message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgCreateDenom.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            if (!$util.isString(message.sender))
+                                return "sender: string expected";
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            if (!$util.isString(message.subdenom))
+                                return "subdenom: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgCreateDenom message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenom} MsgCreateDenom
+                     */
+                    MsgCreateDenom.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgCreateDenom)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.MsgCreateDenom();
+                        if (object.sender != null)
+                            message.sender = String(object.sender);
+                        if (object.subdenom != null)
+                            message.subdenom = String(object.subdenom);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgCreateDenom message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgCreateDenom} message MsgCreateDenom
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgCreateDenom.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.sender = "";
+                            object.subdenom = "";
+                        }
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            object.sender = message.sender;
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            object.subdenom = message.subdenom;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this MsgCreateDenom to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenom
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgCreateDenom.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgCreateDenom;
+                })();
+    
+                v1beta1.MsgCreateDenomResponse = (function() {
+    
+                    /**
+                     * Properties of a MsgCreateDenomResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgCreateDenomResponse
+                     * @property {string|null} [new_token_denom] MsgCreateDenomResponse new_token_denom
+                     */
+    
+                    /**
+                     * Constructs a new MsgCreateDenomResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgCreateDenomResponse.
+                     * @implements IMsgCreateDenomResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse=} [properties] Properties to set
+                     */
+                    function MsgCreateDenomResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * MsgCreateDenomResponse new_token_denom.
+                     * @member {string} new_token_denom
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @instance
+                     */
+                    MsgCreateDenomResponse.prototype.new_token_denom = "";
+    
+                    /**
+                     * Encodes the specified MsgCreateDenomResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse} message MsgCreateDenomResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgCreateDenomResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.new_token_denom != null && Object.hasOwnProperty.call(message, "new_token_denom"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.new_token_denom);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgCreateDenomResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse} message MsgCreateDenomResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgCreateDenomResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgCreateDenomResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse} MsgCreateDenomResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgCreateDenomResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.new_token_denom = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgCreateDenomResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse} MsgCreateDenomResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgCreateDenomResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgCreateDenomResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgCreateDenomResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.new_token_denom != null && message.hasOwnProperty("new_token_denom"))
+                            if (!$util.isString(message.new_token_denom))
+                                return "new_token_denom: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgCreateDenomResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse} MsgCreateDenomResponse
+                     */
+                    MsgCreateDenomResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse();
+                        if (object.new_token_denom != null)
+                            message.new_token_denom = String(object.new_token_denom);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgCreateDenomResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse} message MsgCreateDenomResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgCreateDenomResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.new_token_denom = "";
+                        if (message.new_token_denom != null && message.hasOwnProperty("new_token_denom"))
+                            object.new_token_denom = message.new_token_denom;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this MsgCreateDenomResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgCreateDenomResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgCreateDenomResponse;
+                })();
+    
+                v1beta1.MsgMint = (function() {
+    
+                    /**
+                     * Properties of a MsgMint.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgMint
+                     * @property {string|null} [sender] MsgMint sender
+                     * @property {cosmos.base.v1beta1.ICoin|null} [amount] MsgMint amount
+                     */
+    
+                    /**
+                     * Constructs a new MsgMint.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgMint.
+                     * @implements IMsgMint
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMint=} [properties] Properties to set
+                     */
+                    function MsgMint(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * MsgMint sender.
+                     * @member {string} sender
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @instance
+                     */
+                    MsgMint.prototype.sender = "";
+    
+                    /**
+                     * MsgMint amount.
+                     * @member {cosmos.base.v1beta1.ICoin|null|undefined} amount
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @instance
+                     */
+                    MsgMint.prototype.amount = null;
+    
+                    /**
+                     * Encodes the specified MsgMint message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMint.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMint} message MsgMint message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgMint.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.sender);
+                        if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                            $root.cosmos.base.v1beta1.Coin.encode(message.amount, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgMint message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMint.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMint} message MsgMint message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgMint.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgMint message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMint} MsgMint
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgMint.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgMint();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.sender = reader.string();
+                                break;
+                            case 2:
+                                message.amount = $root.cosmos.base.v1beta1.Coin.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgMint message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMint} MsgMint
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgMint.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgMint message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgMint.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            if (!$util.isString(message.sender))
+                                return "sender: string expected";
+                        if (message.amount != null && message.hasOwnProperty("amount")) {
+                            var error = $root.cosmos.base.v1beta1.Coin.verify(message.amount);
+                            if (error)
+                                return "amount." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgMint message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMint} MsgMint
+                     */
+                    MsgMint.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgMint)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.MsgMint();
+                        if (object.sender != null)
+                            message.sender = String(object.sender);
+                        if (object.amount != null) {
+                            if (typeof object.amount !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.MsgMint.amount: object expected");
+                            message.amount = $root.cosmos.base.v1beta1.Coin.fromObject(object.amount);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgMint message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgMint} message MsgMint
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgMint.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.sender = "";
+                            object.amount = null;
+                        }
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            object.sender = message.sender;
+                        if (message.amount != null && message.hasOwnProperty("amount"))
+                            object.amount = $root.cosmos.base.v1beta1.Coin.toObject(message.amount, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this MsgMint to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMint
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgMint.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgMint;
+                })();
+    
+                v1beta1.MsgMintResponse = (function() {
+    
+                    /**
+                     * Properties of a MsgMintResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgMintResponse
+                     */
+    
+                    /**
+                     * Constructs a new MsgMintResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgMintResponse.
+                     * @implements IMsgMintResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMintResponse=} [properties] Properties to set
+                     */
+                    function MsgMintResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Encodes the specified MsgMintResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMintResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMintResponse} message MsgMintResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgMintResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgMintResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMintResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgMintResponse} message MsgMintResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgMintResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgMintResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMintResponse} MsgMintResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgMintResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgMintResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgMintResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMintResponse} MsgMintResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgMintResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgMintResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgMintResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgMintResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgMintResponse} MsgMintResponse
+                     */
+                    MsgMintResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgMintResponse)
+                            return object;
+                        return new $root.osmosis.tokenfactory.v1beta1.MsgMintResponse();
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgMintResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgMintResponse} message MsgMintResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgMintResponse.toObject = function toObject() {
+                        return {};
+                    };
+    
+                    /**
+                     * Converts this MsgMintResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgMintResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgMintResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgMintResponse;
+                })();
+    
+                v1beta1.MsgBurn = (function() {
+    
+                    /**
+                     * Properties of a MsgBurn.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgBurn
+                     * @property {string|null} [sender] MsgBurn sender
+                     * @property {cosmos.base.v1beta1.ICoin|null} [amount] MsgBurn amount
+                     */
+    
+                    /**
+                     * Constructs a new MsgBurn.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgBurn.
+                     * @implements IMsgBurn
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurn=} [properties] Properties to set
+                     */
+                    function MsgBurn(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * MsgBurn sender.
+                     * @member {string} sender
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @instance
+                     */
+                    MsgBurn.prototype.sender = "";
+    
+                    /**
+                     * MsgBurn amount.
+                     * @member {cosmos.base.v1beta1.ICoin|null|undefined} amount
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @instance
+                     */
+                    MsgBurn.prototype.amount = null;
+    
+                    /**
+                     * Encodes the specified MsgBurn message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurn.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurn} message MsgBurn message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgBurn.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.sender);
+                        if (message.amount != null && Object.hasOwnProperty.call(message, "amount"))
+                            $root.cosmos.base.v1beta1.Coin.encode(message.amount, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgBurn message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurn.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurn} message MsgBurn message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgBurn.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgBurn message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurn} MsgBurn
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgBurn.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgBurn();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.sender = reader.string();
+                                break;
+                            case 2:
+                                message.amount = $root.cosmos.base.v1beta1.Coin.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgBurn message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurn} MsgBurn
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgBurn.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgBurn message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgBurn.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            if (!$util.isString(message.sender))
+                                return "sender: string expected";
+                        if (message.amount != null && message.hasOwnProperty("amount")) {
+                            var error = $root.cosmos.base.v1beta1.Coin.verify(message.amount);
+                            if (error)
+                                return "amount." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgBurn message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurn} MsgBurn
+                     */
+                    MsgBurn.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgBurn)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.MsgBurn();
+                        if (object.sender != null)
+                            message.sender = String(object.sender);
+                        if (object.amount != null) {
+                            if (typeof object.amount !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.MsgBurn.amount: object expected");
+                            message.amount = $root.cosmos.base.v1beta1.Coin.fromObject(object.amount);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgBurn message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgBurn} message MsgBurn
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgBurn.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.sender = "";
+                            object.amount = null;
+                        }
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            object.sender = message.sender;
+                        if (message.amount != null && message.hasOwnProperty("amount"))
+                            object.amount = $root.cosmos.base.v1beta1.Coin.toObject(message.amount, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this MsgBurn to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurn
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgBurn.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgBurn;
+                })();
+    
+                v1beta1.MsgBurnResponse = (function() {
+    
+                    /**
+                     * Properties of a MsgBurnResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgBurnResponse
+                     */
+    
+                    /**
+                     * Constructs a new MsgBurnResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgBurnResponse.
+                     * @implements IMsgBurnResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurnResponse=} [properties] Properties to set
+                     */
+                    function MsgBurnResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Encodes the specified MsgBurnResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurnResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurnResponse} message MsgBurnResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgBurnResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgBurnResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurnResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgBurnResponse} message MsgBurnResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgBurnResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgBurnResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurnResponse} MsgBurnResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgBurnResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgBurnResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgBurnResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurnResponse} MsgBurnResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgBurnResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgBurnResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgBurnResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgBurnResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgBurnResponse} MsgBurnResponse
+                     */
+                    MsgBurnResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgBurnResponse)
+                            return object;
+                        return new $root.osmosis.tokenfactory.v1beta1.MsgBurnResponse();
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgBurnResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgBurnResponse} message MsgBurnResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgBurnResponse.toObject = function toObject() {
+                        return {};
+                    };
+    
+                    /**
+                     * Converts this MsgBurnResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgBurnResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgBurnResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgBurnResponse;
+                })();
+    
+                v1beta1.MsgChangeAdmin = (function() {
+    
+                    /**
+                     * Properties of a MsgChangeAdmin.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgChangeAdmin
+                     * @property {string|null} [sender] MsgChangeAdmin sender
+                     * @property {string|null} [denom] MsgChangeAdmin denom
+                     * @property {string|null} [newAdmin] MsgChangeAdmin newAdmin
+                     */
+    
+                    /**
+                     * Constructs a new MsgChangeAdmin.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgChangeAdmin.
+                     * @implements IMsgChangeAdmin
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdmin=} [properties] Properties to set
+                     */
+                    function MsgChangeAdmin(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * MsgChangeAdmin sender.
+                     * @member {string} sender
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @instance
+                     */
+                    MsgChangeAdmin.prototype.sender = "";
+    
+                    /**
+                     * MsgChangeAdmin denom.
+                     * @member {string} denom
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @instance
+                     */
+                    MsgChangeAdmin.prototype.denom = "";
+    
+                    /**
+                     * MsgChangeAdmin newAdmin.
+                     * @member {string} newAdmin
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @instance
+                     */
+                    MsgChangeAdmin.prototype.newAdmin = "";
+    
+                    /**
+                     * Encodes the specified MsgChangeAdmin message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdmin.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdmin} message MsgChangeAdmin message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgChangeAdmin.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.sender != null && Object.hasOwnProperty.call(message, "sender"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.sender);
+                        if (message.denom != null && Object.hasOwnProperty.call(message, "denom"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.denom);
+                        if (message.newAdmin != null && Object.hasOwnProperty.call(message, "newAdmin"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.newAdmin);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgChangeAdmin message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdmin.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdmin} message MsgChangeAdmin message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgChangeAdmin.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgChangeAdmin message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdmin} MsgChangeAdmin
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgChangeAdmin.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgChangeAdmin();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.sender = reader.string();
+                                break;
+                            case 2:
+                                message.denom = reader.string();
+                                break;
+                            case 3:
+                                message.newAdmin = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgChangeAdmin message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdmin} MsgChangeAdmin
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgChangeAdmin.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgChangeAdmin message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgChangeAdmin.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            if (!$util.isString(message.sender))
+                                return "sender: string expected";
+                        if (message.denom != null && message.hasOwnProperty("denom"))
+                            if (!$util.isString(message.denom))
+                                return "denom: string expected";
+                        if (message.newAdmin != null && message.hasOwnProperty("newAdmin"))
+                            if (!$util.isString(message.newAdmin))
+                                return "newAdmin: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgChangeAdmin message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdmin} MsgChangeAdmin
+                     */
+                    MsgChangeAdmin.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgChangeAdmin)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.MsgChangeAdmin();
+                        if (object.sender != null)
+                            message.sender = String(object.sender);
+                        if (object.denom != null)
+                            message.denom = String(object.denom);
+                        if (object.newAdmin != null)
+                            message.newAdmin = String(object.newAdmin);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgChangeAdmin message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgChangeAdmin} message MsgChangeAdmin
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgChangeAdmin.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.sender = "";
+                            object.denom = "";
+                            object.newAdmin = "";
+                        }
+                        if (message.sender != null && message.hasOwnProperty("sender"))
+                            object.sender = message.sender;
+                        if (message.denom != null && message.hasOwnProperty("denom"))
+                            object.denom = message.denom;
+                        if (message.newAdmin != null && message.hasOwnProperty("newAdmin"))
+                            object.newAdmin = message.newAdmin;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this MsgChangeAdmin to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdmin
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgChangeAdmin.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgChangeAdmin;
+                })();
+    
+                v1beta1.MsgChangeAdminResponse = (function() {
+    
+                    /**
+                     * Properties of a MsgChangeAdminResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IMsgChangeAdminResponse
+                     */
+    
+                    /**
+                     * Constructs a new MsgChangeAdminResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a MsgChangeAdminResponse.
+                     * @implements IMsgChangeAdminResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse=} [properties] Properties to set
+                     */
+                    function MsgChangeAdminResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Encodes the specified MsgChangeAdminResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse} message MsgChangeAdminResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgChangeAdminResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified MsgChangeAdminResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse} message MsgChangeAdminResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    MsgChangeAdminResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a MsgChangeAdminResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse} MsgChangeAdminResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgChangeAdminResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a MsgChangeAdminResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse} MsgChangeAdminResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    MsgChangeAdminResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a MsgChangeAdminResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    MsgChangeAdminResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a MsgChangeAdminResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse} MsgChangeAdminResponse
+                     */
+                    MsgChangeAdminResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse)
+                            return object;
+                        return new $root.osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse();
+                    };
+    
+                    /**
+                     * Creates a plain object from a MsgChangeAdminResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse} message MsgChangeAdminResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    MsgChangeAdminResponse.toObject = function toObject() {
+                        return {};
+                    };
+    
+                    /**
+                     * Converts this MsgChangeAdminResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    MsgChangeAdminResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return MsgChangeAdminResponse;
+                })();
+    
+                v1beta1.Query = (function() {
+    
+                    /**
+                     * Constructs a new Query service.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a Query
+                     * @extends $protobuf.rpc.Service
+                     * @constructor
+                     * @param {$protobuf.RPCImpl} rpcImpl RPC implementation
+                     * @param {boolean} [requestDelimited=false] Whether requests are length-delimited
+                     * @param {boolean} [responseDelimited=false] Whether responses are length-delimited
+                     */
+                    function Query(rpcImpl, requestDelimited, responseDelimited) {
+                        $protobuf.rpc.Service.call(this, rpcImpl, requestDelimited, responseDelimited);
+                    }
+    
+                    (Query.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Query;
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#params}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @typedef ParamsCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.QueryParamsResponse} [response] QueryParamsResponse
+                     */
+    
+                    /**
+                     * Calls Params.
+                     * @function params
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Query.ParamsCallback} callback Node-style callback called with the error, if any, and QueryParamsResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Query.prototype.params = function params(request, callback) {
+                        return this.rpcCall(params, $root.osmosis.tokenfactory.v1beta1.QueryParamsRequest, $root.osmosis.tokenfactory.v1beta1.QueryParamsResponse, request, callback);
+                    }, "name", { value: "Params" });
+    
+                    /**
+                     * Calls Params.
+                     * @function params
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.QueryParamsResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#denomAuthorityMetadata}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @typedef DenomAuthorityMetadataCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse} [response] QueryDenomAuthorityMetadataResponse
+                     */
+    
+                    /**
+                     * Calls DenomAuthorityMetadata.
+                     * @function denomAuthorityMetadata
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest} request QueryDenomAuthorityMetadataRequest message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Query.DenomAuthorityMetadataCallback} callback Node-style callback called with the error, if any, and QueryDenomAuthorityMetadataResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Query.prototype.denomAuthorityMetadata = function denomAuthorityMetadata(request, callback) {
+                        return this.rpcCall(denomAuthorityMetadata, $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest, $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse, request, callback);
+                    }, "name", { value: "DenomAuthorityMetadata" });
+    
+                    /**
+                     * Calls DenomAuthorityMetadata.
+                     * @function denomAuthorityMetadata
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest} request QueryDenomAuthorityMetadataRequest message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    /**
+                     * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#denomsFromCreator}.
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @typedef DenomsFromCreatorCallback
+                     * @type {function}
+                     * @param {Error|null} error Error, if any
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse} [response] QueryDenomsFromCreatorResponse
+                     */
+    
+                    /**
+                     * Calls DenomsFromCreator.
+                     * @function denomsFromCreator
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest} request QueryDenomsFromCreatorRequest message or plain object
+                     * @param {osmosis.tokenfactory.v1beta1.Query.DenomsFromCreatorCallback} callback Node-style callback called with the error, if any, and QueryDenomsFromCreatorResponse
+                     * @returns {undefined}
+                     * @variation 1
+                     */
+                    Object.defineProperty(Query.prototype.denomsFromCreator = function denomsFromCreator(request, callback) {
+                        return this.rpcCall(denomsFromCreator, $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest, $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse, request, callback);
+                    }, "name", { value: "DenomsFromCreator" });
+    
+                    /**
+                     * Calls DenomsFromCreator.
+                     * @function denomsFromCreator
+                     * @memberof osmosis.tokenfactory.v1beta1.Query
+                     * @instance
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest} request QueryDenomsFromCreatorRequest message or plain object
+                     * @returns {Promise<osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse>} Promise
+                     * @variation 2
+                     */
+    
+                    return Query;
+                })();
+    
+                v1beta1.QueryParamsRequest = (function() {
+    
+                    /**
+                     * Properties of a QueryParamsRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryParamsRequest
+                     */
+    
+                    /**
+                     * Constructs a new QueryParamsRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryParamsRequest.
+                     * @implements IQueryParamsRequest
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsRequest=} [properties] Properties to set
+                     */
+                    function QueryParamsRequest(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Encodes the specified QueryParamsRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsRequest.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryParamsRequest.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsRequest.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryParamsRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryParamsRequest message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsRequest} QueryParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryParamsRequest.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryParamsRequest();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsRequest} QueryParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryParamsRequest.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryParamsRequest message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryParamsRequest.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsRequest} QueryParamsRequest
+                     */
+                    QueryParamsRequest.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryParamsRequest)
+                            return object;
+                        return new $root.osmosis.tokenfactory.v1beta1.QueryParamsRequest();
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryParamsRequest} message QueryParamsRequest
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryParamsRequest.toObject = function toObject() {
+                        return {};
+                    };
+    
+                    /**
+                     * Converts this QueryParamsRequest to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsRequest
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryParamsRequest.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryParamsRequest;
+                })();
+    
+                v1beta1.QueryParamsResponse = (function() {
+    
+                    /**
+                     * Properties of a QueryParamsResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryParamsResponse
+                     * @property {osmosis.tokenfactory.v1beta1.IParams|null} [params] QueryParamsResponse params
+                     */
+    
+                    /**
+                     * Constructs a new QueryParamsResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryParamsResponse.
+                     * @implements IQueryParamsResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsResponse=} [properties] Properties to set
+                     */
+                    function QueryParamsResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryParamsResponse params.
+                     * @member {osmosis.tokenfactory.v1beta1.IParams|null|undefined} params
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @instance
+                     */
+                    QueryParamsResponse.prototype.params = null;
+    
+                    /**
+                     * Encodes the specified QueryParamsResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryParamsResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.params != null && Object.hasOwnProperty.call(message, "params"))
+                            $root.osmosis.tokenfactory.v1beta1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryParamsResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryParamsResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsResponse} QueryParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryParamsResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryParamsResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.params = $root.osmosis.tokenfactory.v1beta1.Params.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsResponse} QueryParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryParamsResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryParamsResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryParamsResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.params != null && message.hasOwnProperty("params")) {
+                            var error = $root.osmosis.tokenfactory.v1beta1.Params.verify(message.params);
+                            if (error)
+                                return "params." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryParamsResponse} QueryParamsResponse
+                     */
+                    QueryParamsResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryParamsResponse)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.QueryParamsResponse();
+                        if (object.params != null) {
+                            if (typeof object.params !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.QueryParamsResponse.params: object expected");
+                            message.params = $root.osmosis.tokenfactory.v1beta1.Params.fromObject(object.params);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryParamsResponse} message QueryParamsResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryParamsResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.params = null;
+                        if (message.params != null && message.hasOwnProperty("params"))
+                            object.params = $root.osmosis.tokenfactory.v1beta1.Params.toObject(message.params, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryParamsResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryParamsResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryParamsResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryParamsResponse;
+                })();
+    
+                v1beta1.QueryDenomAuthorityMetadataRequest = (function() {
+    
+                    /**
+                     * Properties of a QueryDenomAuthorityMetadataRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryDenomAuthorityMetadataRequest
+                     * @property {string|null} [creator] QueryDenomAuthorityMetadataRequest creator
+                     * @property {string|null} [subdenom] QueryDenomAuthorityMetadataRequest subdenom
+                     */
+    
+                    /**
+                     * Constructs a new QueryDenomAuthorityMetadataRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryDenomAuthorityMetadataRequest.
+                     * @implements IQueryDenomAuthorityMetadataRequest
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest=} [properties] Properties to set
+                     */
+                    function QueryDenomAuthorityMetadataRequest(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryDenomAuthorityMetadataRequest creator.
+                     * @member {string} creator
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @instance
+                     */
+                    QueryDenomAuthorityMetadataRequest.prototype.creator = "";
+    
+                    /**
+                     * QueryDenomAuthorityMetadataRequest subdenom.
+                     * @member {string} subdenom
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @instance
+                     */
+                    QueryDenomAuthorityMetadataRequest.prototype.subdenom = "";
+    
+                    /**
+                     * Encodes the specified QueryDenomAuthorityMetadataRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest} message QueryDenomAuthorityMetadataRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomAuthorityMetadataRequest.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.creator != null && Object.hasOwnProperty.call(message, "creator"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.creator);
+                        if (message.subdenom != null && Object.hasOwnProperty.call(message, "subdenom"))
+                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.subdenom);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryDenomAuthorityMetadataRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest} message QueryDenomAuthorityMetadataRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomAuthorityMetadataRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomAuthorityMetadataRequest message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest} QueryDenomAuthorityMetadataRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomAuthorityMetadataRequest.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.creator = reader.string();
+                                break;
+                            case 2:
+                                message.subdenom = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomAuthorityMetadataRequest message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest} QueryDenomAuthorityMetadataRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomAuthorityMetadataRequest.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryDenomAuthorityMetadataRequest message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryDenomAuthorityMetadataRequest.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            if (!$util.isString(message.creator))
+                                return "creator: string expected";
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            if (!$util.isString(message.subdenom))
+                                return "subdenom: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryDenomAuthorityMetadataRequest message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest} QueryDenomAuthorityMetadataRequest
+                     */
+                    QueryDenomAuthorityMetadataRequest.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest();
+                        if (object.creator != null)
+                            message.creator = String(object.creator);
+                        if (object.subdenom != null)
+                            message.subdenom = String(object.subdenom);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryDenomAuthorityMetadataRequest message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest} message QueryDenomAuthorityMetadataRequest
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryDenomAuthorityMetadataRequest.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.creator = "";
+                            object.subdenom = "";
+                        }
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            object.creator = message.creator;
+                        if (message.subdenom != null && message.hasOwnProperty("subdenom"))
+                            object.subdenom = message.subdenom;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryDenomAuthorityMetadataRequest to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryDenomAuthorityMetadataRequest.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryDenomAuthorityMetadataRequest;
+                })();
+    
+                v1beta1.QueryDenomAuthorityMetadataResponse = (function() {
+    
+                    /**
+                     * Properties of a QueryDenomAuthorityMetadataResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryDenomAuthorityMetadataResponse
+                     * @property {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null} [authority_metadata] QueryDenomAuthorityMetadataResponse authority_metadata
+                     */
+    
+                    /**
+                     * Constructs a new QueryDenomAuthorityMetadataResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryDenomAuthorityMetadataResponse.
+                     * @implements IQueryDenomAuthorityMetadataResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse=} [properties] Properties to set
+                     */
+                    function QueryDenomAuthorityMetadataResponse(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryDenomAuthorityMetadataResponse authority_metadata.
+                     * @member {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null|undefined} authority_metadata
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @instance
+                     */
+                    QueryDenomAuthorityMetadataResponse.prototype.authority_metadata = null;
+    
+                    /**
+                     * Encodes the specified QueryDenomAuthorityMetadataResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse} message QueryDenomAuthorityMetadataResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomAuthorityMetadataResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.authority_metadata != null && Object.hasOwnProperty.call(message, "authority_metadata"))
+                            $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.encode(message.authority_metadata, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryDenomAuthorityMetadataResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse} message QueryDenomAuthorityMetadataResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomAuthorityMetadataResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomAuthorityMetadataResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse} QueryDenomAuthorityMetadataResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomAuthorityMetadataResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomAuthorityMetadataResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse} QueryDenomAuthorityMetadataResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomAuthorityMetadataResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryDenomAuthorityMetadataResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryDenomAuthorityMetadataResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.authority_metadata != null && message.hasOwnProperty("authority_metadata")) {
+                            var error = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify(message.authority_metadata);
+                            if (error)
+                                return "authority_metadata." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryDenomAuthorityMetadataResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse} QueryDenomAuthorityMetadataResponse
+                     */
+                    QueryDenomAuthorityMetadataResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse();
+                        if (object.authority_metadata != null) {
+                            if (typeof object.authority_metadata !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse.authority_metadata: object expected");
+                            message.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.fromObject(object.authority_metadata);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryDenomAuthorityMetadataResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse} message QueryDenomAuthorityMetadataResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryDenomAuthorityMetadataResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.authority_metadata = null;
+                        if (message.authority_metadata != null && message.hasOwnProperty("authority_metadata"))
+                            object.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.toObject(message.authority_metadata, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryDenomAuthorityMetadataResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryDenomAuthorityMetadataResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryDenomAuthorityMetadataResponse;
+                })();
+    
+                v1beta1.QueryDenomsFromCreatorRequest = (function() {
+    
+                    /**
+                     * Properties of a QueryDenomsFromCreatorRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryDenomsFromCreatorRequest
+                     * @property {string|null} [creator] QueryDenomsFromCreatorRequest creator
+                     */
+    
+                    /**
+                     * Constructs a new QueryDenomsFromCreatorRequest.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryDenomsFromCreatorRequest.
+                     * @implements IQueryDenomsFromCreatorRequest
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest=} [properties] Properties to set
+                     */
+                    function QueryDenomsFromCreatorRequest(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryDenomsFromCreatorRequest creator.
+                     * @member {string} creator
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @instance
+                     */
+                    QueryDenomsFromCreatorRequest.prototype.creator = "";
+    
+                    /**
+                     * Encodes the specified QueryDenomsFromCreatorRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest} message QueryDenomsFromCreatorRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomsFromCreatorRequest.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.creator != null && Object.hasOwnProperty.call(message, "creator"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.creator);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryDenomsFromCreatorRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest} message QueryDenomsFromCreatorRequest message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomsFromCreatorRequest.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomsFromCreatorRequest message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest} QueryDenomsFromCreatorRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomsFromCreatorRequest.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.creator = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomsFromCreatorRequest message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest} QueryDenomsFromCreatorRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomsFromCreatorRequest.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryDenomsFromCreatorRequest message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryDenomsFromCreatorRequest.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            if (!$util.isString(message.creator))
+                                return "creator: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryDenomsFromCreatorRequest message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest} QueryDenomsFromCreatorRequest
+                     */
+                    QueryDenomsFromCreatorRequest.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest();
+                        if (object.creator != null)
+                            message.creator = String(object.creator);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryDenomsFromCreatorRequest message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest} message QueryDenomsFromCreatorRequest
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryDenomsFromCreatorRequest.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.creator = "";
+                        if (message.creator != null && message.hasOwnProperty("creator"))
+                            object.creator = message.creator;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryDenomsFromCreatorRequest to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryDenomsFromCreatorRequest.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryDenomsFromCreatorRequest;
+                })();
+    
+                v1beta1.QueryDenomsFromCreatorResponse = (function() {
+    
+                    /**
+                     * Properties of a QueryDenomsFromCreatorResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IQueryDenomsFromCreatorResponse
+                     * @property {Array.<string>|null} [denoms] QueryDenomsFromCreatorResponse denoms
+                     */
+    
+                    /**
+                     * Constructs a new QueryDenomsFromCreatorResponse.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a QueryDenomsFromCreatorResponse.
+                     * @implements IQueryDenomsFromCreatorResponse
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse=} [properties] Properties to set
+                     */
+                    function QueryDenomsFromCreatorResponse(properties) {
+                        this.denoms = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * QueryDenomsFromCreatorResponse denoms.
+                     * @member {Array.<string>} denoms
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @instance
+                     */
+                    QueryDenomsFromCreatorResponse.prototype.denoms = $util.emptyArray;
+    
+                    /**
+                     * Encodes the specified QueryDenomsFromCreatorResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse} message QueryDenomsFromCreatorResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomsFromCreatorResponse.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.denoms != null && message.denoms.length)
+                            for (var i = 0; i < message.denoms.length; ++i)
+                                writer.uint32(/* id 1, wireType 2 =*/10).string(message.denoms[i]);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified QueryDenomsFromCreatorResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse} message QueryDenomsFromCreatorResponse message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    QueryDenomsFromCreatorResponse.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomsFromCreatorResponse message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse} QueryDenomsFromCreatorResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomsFromCreatorResponse.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                if (!(message.denoms && message.denoms.length))
+                                    message.denoms = [];
+                                message.denoms.push(reader.string());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a QueryDenomsFromCreatorResponse message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse} QueryDenomsFromCreatorResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    QueryDenomsFromCreatorResponse.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a QueryDenomsFromCreatorResponse message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    QueryDenomsFromCreatorResponse.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.denoms != null && message.hasOwnProperty("denoms")) {
+                            if (!Array.isArray(message.denoms))
+                                return "denoms: array expected";
+                            for (var i = 0; i < message.denoms.length; ++i)
+                                if (!$util.isString(message.denoms[i]))
+                                    return "denoms: string[] expected";
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a QueryDenomsFromCreatorResponse message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse} QueryDenomsFromCreatorResponse
+                     */
+                    QueryDenomsFromCreatorResponse.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse();
+                        if (object.denoms) {
+                            if (!Array.isArray(object.denoms))
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse.denoms: array expected");
+                            message.denoms = [];
+                            for (var i = 0; i < object.denoms.length; ++i)
+                                message.denoms[i] = String(object.denoms[i]);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a QueryDenomsFromCreatorResponse message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse} message QueryDenomsFromCreatorResponse
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    QueryDenomsFromCreatorResponse.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.denoms = [];
+                        if (message.denoms && message.denoms.length) {
+                            object.denoms = [];
+                            for (var j = 0; j < message.denoms.length; ++j)
+                                object.denoms[j] = message.denoms[j];
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this QueryDenomsFromCreatorResponse to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    QueryDenomsFromCreatorResponse.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return QueryDenomsFromCreatorResponse;
+                })();
+    
+                v1beta1.DenomAuthorityMetadata = (function() {
+    
+                    /**
+                     * Properties of a DenomAuthorityMetadata.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IDenomAuthorityMetadata
+                     * @property {string|null} [Admin] DenomAuthorityMetadata Admin
+                     */
+    
+                    /**
+                     * Constructs a new DenomAuthorityMetadata.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a DenomAuthorityMetadata.
+                     * @implements IDenomAuthorityMetadata
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata=} [properties] Properties to set
+                     */
+                    function DenomAuthorityMetadata(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * DenomAuthorityMetadata Admin.
+                     * @member {string} Admin
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @instance
+                     */
+                    DenomAuthorityMetadata.prototype.Admin = "";
+    
+                    /**
+                     * Encodes the specified DenomAuthorityMetadata message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata} message DenomAuthorityMetadata message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    DenomAuthorityMetadata.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.Admin != null && Object.hasOwnProperty.call(message, "Admin"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.Admin);
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified DenomAuthorityMetadata message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata} message DenomAuthorityMetadata message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    DenomAuthorityMetadata.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a DenomAuthorityMetadata message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata} DenomAuthorityMetadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    DenomAuthorityMetadata.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.Admin = reader.string();
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a DenomAuthorityMetadata message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata} DenomAuthorityMetadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    DenomAuthorityMetadata.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a DenomAuthorityMetadata message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    DenomAuthorityMetadata.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.Admin != null && message.hasOwnProperty("Admin"))
+                            if (!$util.isString(message.Admin))
+                                return "Admin: string expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a DenomAuthorityMetadata message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata} DenomAuthorityMetadata
+                     */
+                    DenomAuthorityMetadata.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata();
+                        if (object.Admin != null)
+                            message.Admin = String(object.Admin);
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a DenomAuthorityMetadata message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata} message DenomAuthorityMetadata
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    DenomAuthorityMetadata.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults)
+                            object.Admin = "";
+                        if (message.Admin != null && message.hasOwnProperty("Admin"))
+                            object.Admin = message.Admin;
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this DenomAuthorityMetadata to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    DenomAuthorityMetadata.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return DenomAuthorityMetadata;
+                })();
+    
+                v1beta1.Params = (function() {
+    
+                    /**
+                     * Properties of a Params.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IParams
+                     */
+    
+                    /**
+                     * Constructs a new Params.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a Params.
+                     * @implements IParams
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IParams=} [properties] Properties to set
+                     */
+                    function Params(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IParams} message Params message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Params.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified Params message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IParams} message Params message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    Params.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a Params message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.Params} Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Params.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.Params();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a Params message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.Params} Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    Params.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a Params message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    Params.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.Params} Params
+                     */
+                    Params.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.Params)
+                            return object;
+                        return new $root.osmosis.tokenfactory.v1beta1.Params();
+                    };
+    
+                    /**
+                     * Creates a plain object from a Params message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.Params} message Params
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    Params.toObject = function toObject() {
+                        return {};
+                    };
+    
+                    /**
+                     * Converts this Params to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    Params.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return Params;
+                })();
+    
+                v1beta1.GenesisState = (function() {
+    
+                    /**
+                     * Properties of a GenesisState.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IGenesisState
+                     * @property {osmosis.tokenfactory.v1beta1.IParams|null} [params] GenesisState params
+                     * @property {Array.<osmosis.tokenfactory.v1beta1.IGenesisDenom>|null} [factory_denoms] GenesisState factory_denoms
+                     */
+    
+                    /**
+                     * Constructs a new GenesisState.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a GenesisState.
+                     * @implements IGenesisState
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisState=} [properties] Properties to set
+                     */
+                    function GenesisState(properties) {
+                        this.factory_denoms = [];
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * GenesisState params.
+                     * @member {osmosis.tokenfactory.v1beta1.IParams|null|undefined} params
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @instance
+                     */
+                    GenesisState.prototype.params = null;
+    
+                    /**
+                     * GenesisState factory_denoms.
+                     * @member {Array.<osmosis.tokenfactory.v1beta1.IGenesisDenom>} factory_denoms
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @instance
+                     */
+                    GenesisState.prototype.factory_denoms = $util.emptyArray;
+    
+                    /**
+                     * Encodes the specified GenesisState message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisState.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisState} message GenesisState message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    GenesisState.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.params != null && Object.hasOwnProperty.call(message, "params"))
+                            $root.osmosis.tokenfactory.v1beta1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        if (message.factory_denoms != null && message.factory_denoms.length)
+                            for (var i = 0; i < message.factory_denoms.length; ++i)
+                                $root.osmosis.tokenfactory.v1beta1.GenesisDenom.encode(message.factory_denoms[i], writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisState.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisState} message GenesisState message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    GenesisState.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a GenesisState message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisState} GenesisState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    GenesisState.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.GenesisState();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.params = $root.osmosis.tokenfactory.v1beta1.Params.decode(reader, reader.uint32());
+                                break;
+                            case 2:
+                                if (!(message.factory_denoms && message.factory_denoms.length))
+                                    message.factory_denoms = [];
+                                message.factory_denoms.push($root.osmosis.tokenfactory.v1beta1.GenesisDenom.decode(reader, reader.uint32()));
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisState} GenesisState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    GenesisState.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a GenesisState message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    GenesisState.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.params != null && message.hasOwnProperty("params")) {
+                            var error = $root.osmosis.tokenfactory.v1beta1.Params.verify(message.params);
+                            if (error)
+                                return "params." + error;
+                        }
+                        if (message.factory_denoms != null && message.hasOwnProperty("factory_denoms")) {
+                            if (!Array.isArray(message.factory_denoms))
+                                return "factory_denoms: array expected";
+                            for (var i = 0; i < message.factory_denoms.length; ++i) {
+                                var error = $root.osmosis.tokenfactory.v1beta1.GenesisDenom.verify(message.factory_denoms[i]);
+                                if (error)
+                                    return "factory_denoms." + error;
+                            }
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisState} GenesisState
+                     */
+                    GenesisState.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.GenesisState)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.GenesisState();
+                        if (object.params != null) {
+                            if (typeof object.params !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.GenesisState.params: object expected");
+                            message.params = $root.osmosis.tokenfactory.v1beta1.Params.fromObject(object.params);
+                        }
+                        if (object.factory_denoms) {
+                            if (!Array.isArray(object.factory_denoms))
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.GenesisState.factory_denoms: array expected");
+                            message.factory_denoms = [];
+                            for (var i = 0; i < object.factory_denoms.length; ++i) {
+                                if (typeof object.factory_denoms[i] !== "object")
+                                    throw TypeError(".osmosis.tokenfactory.v1beta1.GenesisState.factory_denoms: object expected");
+                                message.factory_denoms[i] = $root.osmosis.tokenfactory.v1beta1.GenesisDenom.fromObject(object.factory_denoms[i]);
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.GenesisState} message GenesisState
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    GenesisState.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.arrays || options.defaults)
+                            object.factory_denoms = [];
+                        if (options.defaults)
+                            object.params = null;
+                        if (message.params != null && message.hasOwnProperty("params"))
+                            object.params = $root.osmosis.tokenfactory.v1beta1.Params.toObject(message.params, options);
+                        if (message.factory_denoms && message.factory_denoms.length) {
+                            object.factory_denoms = [];
+                            for (var j = 0; j < message.factory_denoms.length; ++j)
+                                object.factory_denoms[j] = $root.osmosis.tokenfactory.v1beta1.GenesisDenom.toObject(message.factory_denoms[j], options);
+                        }
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this GenesisState to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisState
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    GenesisState.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return GenesisState;
+                })();
+    
+                v1beta1.GenesisDenom = (function() {
+    
+                    /**
+                     * Properties of a GenesisDenom.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @interface IGenesisDenom
+                     * @property {string|null} [denom] GenesisDenom denom
+                     * @property {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null} [authority_metadata] GenesisDenom authority_metadata
+                     */
+    
+                    /**
+                     * Constructs a new GenesisDenom.
+                     * @memberof osmosis.tokenfactory.v1beta1
+                     * @classdesc Represents a GenesisDenom.
+                     * @implements IGenesisDenom
+                     * @constructor
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisDenom=} [properties] Properties to set
+                     */
+                    function GenesisDenom(properties) {
+                        if (properties)
+                            for (var keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                                if (properties[keys[i]] != null)
+                                    this[keys[i]] = properties[keys[i]];
+                    }
+    
+                    /**
+                     * GenesisDenom denom.
+                     * @member {string} denom
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @instance
+                     */
+                    GenesisDenom.prototype.denom = "";
+    
+                    /**
+                     * GenesisDenom authority_metadata.
+                     * @member {osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null|undefined} authority_metadata
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @instance
+                     */
+                    GenesisDenom.prototype.authority_metadata = null;
+    
+                    /**
+                     * Encodes the specified GenesisDenom message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisDenom.verify|verify} messages.
+                     * @function encode
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisDenom} message GenesisDenom message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    GenesisDenom.encode = function encode(message, writer) {
+                        if (!writer)
+                            writer = $Writer.create();
+                        if (message.denom != null && Object.hasOwnProperty.call(message, "denom"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.denom);
+                        if (message.authority_metadata != null && Object.hasOwnProperty.call(message, "authority_metadata"))
+                            $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.encode(message.authority_metadata, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        return writer;
+                    };
+    
+                    /**
+                     * Encodes the specified GenesisDenom message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisDenom.verify|verify} messages.
+                     * @function encodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.IGenesisDenom} message GenesisDenom message or plain object to encode
+                     * @param {$protobuf.Writer} [writer] Writer to encode to
+                     * @returns {$protobuf.Writer} Writer
+                     */
+                    GenesisDenom.encodeDelimited = function encodeDelimited(message, writer) {
+                        return this.encode(message, writer).ldelim();
+                    };
+    
+                    /**
+                     * Decodes a GenesisDenom message from the specified reader or buffer.
+                     * @function decode
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @param {number} [length] Message length if known beforehand
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisDenom} GenesisDenom
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    GenesisDenom.decode = function decode(reader, length) {
+                        if (!(reader instanceof $Reader))
+                            reader = $Reader.create(reader);
+                        var end = length === undefined ? reader.len : reader.pos + length, message = new $root.osmosis.tokenfactory.v1beta1.GenesisDenom();
+                        while (reader.pos < end) {
+                            var tag = reader.uint32();
+                            switch (tag >>> 3) {
+                            case 1:
+                                message.denom = reader.string();
+                                break;
+                            case 2:
+                                message.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.decode(reader, reader.uint32());
+                                break;
+                            default:
+                                reader.skipType(tag & 7);
+                                break;
+                            }
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Decodes a GenesisDenom message from the specified reader or buffer, length delimited.
+                     * @function decodeDelimited
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisDenom} GenesisDenom
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    GenesisDenom.decodeDelimited = function decodeDelimited(reader) {
+                        if (!(reader instanceof $Reader))
+                            reader = new $Reader(reader);
+                        return this.decode(reader, reader.uint32());
+                    };
+    
+                    /**
+                     * Verifies a GenesisDenom message.
+                     * @function verify
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {Object.<string,*>} message Plain object to verify
+                     * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                     */
+                    GenesisDenom.verify = function verify(message) {
+                        if (typeof message !== "object" || message === null)
+                            return "object expected";
+                        if (message.denom != null && message.hasOwnProperty("denom"))
+                            if (!$util.isString(message.denom))
+                                return "denom: string expected";
+                        if (message.authority_metadata != null && message.hasOwnProperty("authority_metadata")) {
+                            var error = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify(message.authority_metadata);
+                            if (error)
+                                return "authority_metadata." + error;
+                        }
+                        return null;
+                    };
+    
+                    /**
+                     * Creates a GenesisDenom message from a plain object. Also converts values to their respective internal types.
+                     * @function fromObject
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {Object.<string,*>} object Plain object
+                     * @returns {osmosis.tokenfactory.v1beta1.GenesisDenom} GenesisDenom
+                     */
+                    GenesisDenom.fromObject = function fromObject(object) {
+                        if (object instanceof $root.osmosis.tokenfactory.v1beta1.GenesisDenom)
+                            return object;
+                        var message = new $root.osmosis.tokenfactory.v1beta1.GenesisDenom();
+                        if (object.denom != null)
+                            message.denom = String(object.denom);
+                        if (object.authority_metadata != null) {
+                            if (typeof object.authority_metadata !== "object")
+                                throw TypeError(".osmosis.tokenfactory.v1beta1.GenesisDenom.authority_metadata: object expected");
+                            message.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.fromObject(object.authority_metadata);
+                        }
+                        return message;
+                    };
+    
+                    /**
+                     * Creates a plain object from a GenesisDenom message. Also converts values to other types if specified.
+                     * @function toObject
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @static
+                     * @param {osmosis.tokenfactory.v1beta1.GenesisDenom} message GenesisDenom
+                     * @param {$protobuf.IConversionOptions} [options] Conversion options
+                     * @returns {Object.<string,*>} Plain object
+                     */
+                    GenesisDenom.toObject = function toObject(message, options) {
+                        if (!options)
+                            options = {};
+                        var object = {};
+                        if (options.defaults) {
+                            object.denom = "";
+                            object.authority_metadata = null;
+                        }
+                        if (message.denom != null && message.hasOwnProperty("denom"))
+                            object.denom = message.denom;
+                        if (message.authority_metadata != null && message.hasOwnProperty("authority_metadata"))
+                            object.authority_metadata = $root.osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.toObject(message.authority_metadata, options);
+                        return object;
+                    };
+    
+                    /**
+                     * Converts this GenesisDenom to JSON.
+                     * @function toJSON
+                     * @memberof osmosis.tokenfactory.v1beta1.GenesisDenom
+                     * @instance
+                     * @returns {Object.<string,*>} JSON object
+                     */
+                    GenesisDenom.prototype.toJSON = function toJSON() {
+                        return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                    };
+    
+                    return GenesisDenom;
+                })();
+    
+                return v1beta1;
+            })();
+    
+            return tokenfactory;
+        })();
+    
+        return osmosis;
     })();
 
     return $root;

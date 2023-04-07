@@ -16,11 +16,13 @@ import {
 } from './types';
 import {
   addSubdaoProposal,
+  addSchedule,
   clearAdminProposal,
   clientUpdateProposal,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
+  removeSchedule,
   SendProposalInfo,
   unpinCodesProposal,
   updateAdminProposal,
@@ -288,10 +290,10 @@ export const getSubDaoContracts = async (
   };
 };
 
-export const getTreasuryContract = async (
+export const getReserveContract = async (
   cm: CosmosWrapper,
 ): Promise<string> => {
-  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress`;
+  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=ReserveAddress`;
   const resp = await axios.get<{
     param: { value: string };
   }>(url);
@@ -978,6 +980,43 @@ export class DaoMember {
     amount: string,
   ): Promise<number> {
     const message = clearAdminProposal({ title, description, contract });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+  /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+  ): Promise<number> {
+    const message = addSchedule(name, period, msgs);
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+  ): Promise<number> {
+    const message = removeSchedule(name);
     return await this.submitSingleChoiceProposal(
       title,
       description,

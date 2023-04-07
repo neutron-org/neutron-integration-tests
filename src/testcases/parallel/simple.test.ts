@@ -22,6 +22,7 @@ describe('Neutron / Simple', () => {
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
+  let gaiaAccount2: WalletWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
@@ -44,6 +45,10 @@ describe('Neutron / Simple', () => {
     gaiaAccount = new WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
+    );
+    gaiaAccount2 = new WalletWrapper(
+      gaiaChain,
+      testState.wallets.qaCosmosTwo.genQaWal1,
     );
   });
 
@@ -204,6 +209,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
+        await neutronChain.blockWaiter.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
@@ -253,6 +259,68 @@ describe('Neutron / Simple', () => {
             }),
           ),
         ).rejects.toThrow(/invalid coins/);
+      });
+    });
+    describe('Multihops', () => {
+      // 1. Check balance of Account 1 on Chain 1
+      // 2. Check balance of Account 3 on Chain 2
+      // 3. Check balance of Account 2 on Chain 1
+      // 4. Account 1 on Chain 1 sends x tokens to Account 2 on Chain 1 via Account 3 on Chain 2
+      // 5. Check Balance of Account 3 on Chain 2, confirm it stays the same
+      // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
+      // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
+      test('IBC transfer from a usual account', async () => {
+        const sender = gaiaAccount.wallet.address.toString();
+        const middlehop = neutronAccount.wallet.address.toString();
+        const receiver = gaiaAccount2.wallet.address.toString();
+        const senderNTRNBalanceBefore = await gaiaChain.queryDenomBalance(
+          sender,
+          COSMOS_DENOM,
+        );
+
+        const receiverNTRNBalanceBefore = await gaiaChain.queryDenomBalance(
+          receiver,
+          COSMOS_DENOM,
+        );
+
+        const transferAmount = 333333;
+
+        const res = await gaiaAccount.msgIBCTransfer(
+          'transfer',
+          'channel-0',
+          { denom: COSMOS_DENOM, amount: transferAmount + '' },
+          middlehop,
+          {
+            revision_number: new Long(2),
+            revision_height: new Long(100000000),
+          },
+          `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
+        );
+        expect(res.code).toEqual(0);
+
+        await neutronChain.blockWaiter.waitBlocks(20);
+
+        const middlehopNTRNBalanceAfter = await neutronChain.queryDenomBalance(
+          middlehop,
+          'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        );
+        expect(middlehopNTRNBalanceAfter).toEqual(1000);
+
+        const senderNTRNBalanceAfter = await gaiaChain.queryDenomBalance(
+          sender,
+          COSMOS_DENOM,
+        );
+        expect(senderNTRNBalanceAfter).toEqual(
+          senderNTRNBalanceBefore - transferAmount - 1000, // original balance - transfer amount - fee
+        );
+
+        const receiverNTRNBalanceAfter = await gaiaChain.queryDenomBalance(
+          receiver,
+          COSMOS_DENOM,
+        );
+        expect(receiverNTRNBalanceAfter).toEqual(
+          receiverNTRNBalanceBefore + transferAmount,
+        );
       });
     });
     describe('Fee in wrong denom', () => {
