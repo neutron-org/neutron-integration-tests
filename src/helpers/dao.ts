@@ -907,7 +907,7 @@ export class DaoMember {
     period: number,
     msgs: any[],
   ): Promise<number> {
-    const message = JSON.stringify(addSchedule(name, period, msgs));
+    const message = addSchedule(name, period, msgs);
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -925,7 +925,7 @@ export class DaoMember {
     amount: string,
     name: string,
   ): Promise<number> {
-    const message = JSON.stringify(removeSchedule(name));
+    const message = removeSchedule(name);
     return await this.submitSingleChoiceProposal(
       title,
       description,
