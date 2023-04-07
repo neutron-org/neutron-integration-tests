@@ -109,6 +109,7 @@ export const DaoContractLabels = {
 };
 
 export type DaoContracts = {
+  name: string;
   core: {
     address: string;
   };
@@ -171,10 +172,14 @@ export const getDaoContracts = async (
   cm: CosmosWrapper,
   dao_address: string,
 ): Promise<DaoContracts> => {
+  const config = await cm.queryContract<{ name: string }>(dao_address, {
+    config: {},
+  });
+
   const voting_module_address = await getVotingModule(cm, dao_address);
   const voting_vaults = await getVotingVaults(cm, voting_module_address);
 
-  const proposal_modules = await cm.queryContract<[{ address: string }]>(
+  const proposal_modules = await cm.queryContract<{ address: string }[]>(
     dao_address,
     { proposal_modules: {} },
   );
@@ -210,7 +215,17 @@ export const getDaoContracts = async (
     }
   }
 
+  const subdaosList = await cm.queryContract<{ addr: string }[]>(dao_address, {
+    list_sub_daos: {},
+  });
+
+  const subdaos = [];
+  for (const subdao of subdaosList) {
+    subdaos.push(await getSubDaoContracts(cm, subdao.addr));
+  }
+
   return {
+    name: config.name,
     core: { address: dao_address },
     proposal_modules: {
       single: {
@@ -230,6 +245,7 @@ export const getDaoContracts = async (
       address: voting_module_address,
       voting_vaults: voting_vaults,
     },
+    subdaos,
   };
 };
 
@@ -237,6 +253,10 @@ export const getSubDaoContracts = async (
   cm: CosmosWrapper,
   dao_address: string,
 ): Promise<DaoContracts> => {
+  const config = await cm.queryContract<{ name: string }>(dao_address, {
+    config: {},
+  });
+
   const voting_module_address = await cm.queryContract<string>(dao_address, {
     voting_module: {},
   });
@@ -267,6 +287,7 @@ export const getSubDaoContracts = async (
   );
 
   return {
+    name: config.name,
     core: {
       address: dao_address,
     },
