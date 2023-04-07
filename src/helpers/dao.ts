@@ -185,10 +185,10 @@ export const getDaoContracts = async (
   };
 };
 
-export const getTreasuryContract = async (
+export const getReserveContract = async (
   cm: CosmosWrapper,
 ): Promise<string> => {
-  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress`;
+  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=ReserveAddress`;
   const resp = await axios.get<{
     param: { value: string };
   }>(url);
