@@ -43,6 +43,7 @@ import {
   SingleChoiceProposal,
   TotalPowerAtHeightResponse,
   VotingPowerAtHeightResponse,
+  CurrentPlanResponse,
 } from './types';
 import { getContractBinary } from './env';
 import { getDaoContracts } from './dao';
@@ -1235,6 +1236,21 @@ export class CosmosWrapper {
       const req = await axios.get<ScheduleResponse>(
         `${this.sdk.url}/neutron/cron/schedule`,
         { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryCurrentUpgradePlan(): Promise<CurrentPlanResponse> {
+    try {
+      const req = await axios.get<CurrentPlanResponse>(
+        `${this.sdk.url}/cosmos/upgrade/v1beta1/current_plan`,
+        {},
       );
       return req.data;
     } catch (e) {
