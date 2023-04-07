@@ -10,7 +10,7 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { Wallet } from '../../types';
 import { NeutronContract } from '../../helpers/types';
 
-interface TreasuryStats {
+interface ReserveStats {
   readonly total_distributed: string;
   readonly total_reserved: string;
   readonly total_processed_burned_coins: string;
@@ -57,15 +57,15 @@ describe('Neutron / Treasury', () => {
 
   describe('Treasury', () => {
     let dsc: string;
-    let treasury: string;
     let reserve: string;
+    let treasury: string;
     beforeAll(async () => {
       dsc = await setupDSC(
         neutronAccount1,
         main_dao_addr.toString(),
         security_dao_addr.toString(),
       );
-      reserve = await setupReserve(
+      treasury = await setupTreasury(
         neutronAccount1,
         main_dao_addr.toString(),
         security_dao_addr.toString(),
@@ -73,27 +73,24 @@ describe('Neutron / Treasury', () => {
     });
 
     describe('some corner cases', () => {
-      let treasuryStats: TreasuryStats;
+      let reserveStats: ReserveStats;
       beforeEach(async () => {
-        treasury = await setupTreasury(neutronAccount1, {
+        reserve = await setupReserve(neutronAccount1, {
           mainDaoAddress: main_dao_addr.toString(),
           securityDaoAddress: security_dao_addr.toString(),
           distributionRate: '0.0',
           minPeriod: 1,
           distributionContract: dsc,
-          reserveContract: reserve,
+          treasuryContract: treasury,
           vestingDenominator: '100000000000',
         });
 
-        treasuryStats = await normalizeTreasuryBurnedCoins(
-          neutronAccount1,
-          treasury,
-        );
+        reserveStats = await normalizeReserveBurnedCoins(neutronAccount1, reserve);
       });
       test('zero distribution rate', async () => {
-        await neutronAccount1.msgSend(treasury, '100000');
+        await neutronAccount1.msgSend(reserve, '100000');
         const res = await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
@@ -101,73 +98,73 @@ describe('Neutron / Treasury', () => {
 
         expect(res.code).toEqual(0);
 
-        const stats = (await neutronChain.queryContract(treasury, {
+        const stats = (await neutronChain.queryContract(reserve, {
           stats: {},
         })) as any;
         expect(parseInt(stats.total_distributed)).toEqual(0);
         expect(parseInt(stats.total_reserved)).toBeGreaterThan(0);
       });
       test('burned coins increment', async () => {
-        await neutronAccount1.msgSend(treasury, '100000');
+        await neutronAccount1.msgSend(reserve, '100000');
         let burnedCoins = await getBurnedCoinsAmount(neutronChain);
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
 
-        let stats = (await neutronChain.queryContract(treasury, {
+        let stats = (await neutronChain.queryContract(reserve, {
           stats: {},
         })) as any;
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
 
         burnedCoins = await getBurnedCoinsAmount(neutronChain);
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
-        stats = await neutronChain.queryContract(treasury, { stats: {} });
+        stats = await neutronChain.queryContract(reserve, { stats: {} });
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
       });
-      test('drain treasury', async () => {
+      test('drain reserve', async () => {
         await neutronAccount1.simulateFeeBurning(1750);
 
-        await neutronAccount1.msgSend(treasury, '2');
+        await neutronAccount1.msgSend(reserve, '2');
 
         // First distribution
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
 
-        let treasuryBalance = await neutronChain.queryDenomBalance(
-          treasury,
+        let reserveBalance = await neutronChain.queryDenomBalance(
+          reserve,
           neutronChain.denom,
         );
-        expect(treasuryBalance).toEqual(1);
+        expect(reserveBalance).toEqual(1);
 
         // Second distribution
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
-        treasuryBalance = await neutronChain.queryDenomBalance(
-          treasury,
+        reserveBalance = await neutronChain.queryDenomBalance(
+          reserve,
           neutronChain.denom,
         );
-        expect(treasuryBalance).toEqual(0);
+        expect(reserveBalance).toEqual(0);
 
         // Third distribution
         await expect(
           neutronAccount1.executeContract(
-            treasury,
+            reserve,
             JSON.stringify({
               distribute: {},
             }),
@@ -192,7 +189,7 @@ describe('Neutron / Treasury', () => {
       test('payout by unauthorized', async () => {
         await expect(
           neutronAccount2.executeContract(
-            reserve,
+            treasury,
             JSON.stringify({
               payout: {
                 recipient: holder_2_addr.toString(),
@@ -204,35 +201,35 @@ describe('Neutron / Treasury', () => {
       });
 
       test('burned coins amount u32 safe calculation', async () => {
-        await neutronAccount1.msgSend(treasury, '100000');
+        await neutronAccount1.msgSend(reserve, '100000');
         // u32::MAX
         await neutronAccount1.simulateFeeBurning(4_294_967_295);
 
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
-        const afterStats = (await neutronChain.queryContract(treasury, {
+        const afterStats = (await neutronChain.queryContract(reserve, {
           stats: {},
         })) as any;
 
         expect(
           parseInt(afterStats.total_processed_burned_coins) -
-            parseInt(treasuryStats.total_processed_burned_coins),
+            parseInt(reserveStats.total_processed_burned_coins),
         ).toEqual(4_294_967_295);
 
         const burnedCoins = await getBurnedCoinsAmount(neutronChain);
 
         await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
         );
 
-        const stats = (await neutronChain.queryContract(treasury, {
+        const stats = (await neutronChain.queryContract(reserve, {
           stats: {},
         })) as any;
         expect(stats.total_processed_burned_coins).toEqual(`${burnedCoins}`);
@@ -240,22 +237,22 @@ describe('Neutron / Treasury', () => {
     });
 
     describe('happy path', () => {
-      let lastReserveBalance: number;
-      let treasuryStats: TreasuryStats;
+      let lastTreasuryBalance: number;
+      let reserveStats: ReserveStats;
       beforeAll(async () => {
-        lastReserveBalance = await neutronChain.queryDenomBalance(
-          reserve,
+        lastTreasuryBalance = await neutronChain.queryDenomBalance(
+          treasury,
           NEUTRON_DENOM,
         );
       });
       test('set shares', async () => {
-        treasury = await setupTreasury(neutronAccount1, {
+        reserve = await setupReserve(neutronAccount1, {
           mainDaoAddress: main_dao_addr.toString(),
           securityDaoAddress: security_dao_addr.toString(),
           distributionRate: '0.21',
           minPeriod: 1,
           distributionContract: dsc,
-          reserveContract: reserve,
+          treasuryContract: treasury,
           vestingDenominator: '100000000000',
         });
         await neutronAccount1.executeContract(
@@ -273,16 +270,16 @@ describe('Neutron / Treasury', () => {
 
       test('fund', async () => {
         await neutronChain.blockWaiter.waitBlocks(1);
-        treasuryStats = await normalizeTreasuryBurnedCoins(
+        reserveStats = await normalizeReserveBurnedCoins(
           neutronAccount1,
           treasury,
         );
         const burnedCoinsBefore = await getBurnedCoinsAmount(neutronChain);
         await neutronAccount1.simulateFeeBurning(20_000_000);
-        await neutronAccount1.msgSend(treasury, '1000000000');
+        await neutronAccount1.msgSend(reserve, '1000000000');
 
         const res = await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             distribute: {},
           }),
@@ -292,34 +289,32 @@ describe('Neutron / Treasury', () => {
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(neutronChain);
 
-        const stats = await neutronChain.queryContract(treasury, {
+        const stats = await neutronChain.queryContract(reserve, {
           stats: {},
         });
         expect(stats).toEqual(
           expect.objectContaining({
             total_distributed: '42013',
-            total_reserved: `${
-              158050 + parseInt(treasuryStats.total_reserved)
-            }`,
+            total_reserved: `${158050 + parseInt(reserveStats.total_reserved)}`,
             total_processed_burned_coins: `${
               parseInt(burnedCoinsAfter!) -
               parseInt(burnedCoinsBefore!) +
-              parseInt(treasuryStats.total_processed_burned_coins)
+              parseInt(reserveStats.total_processed_burned_coins)
             }`,
           }),
         );
       });
 
-      test('verify reserve', async () => {
+      test('verify treasury', async () => {
         await neutronChain.blockWaiter.waitBlocks(1);
-        const reserveBalance = await neutronChain.queryDenomBalance(
-          reserve,
+        const treasuryBalance = await neutronChain.queryDenomBalance(
+          treasury,
           NEUTRON_DENOM,
         );
-        expect(reserveBalance - lastReserveBalance).toEqual(
-          158050 + parseInt(treasuryStats.total_reserved),
+        expect(treasuryBalance - lastTreasuryBalance).toEqual(
+          158050 + parseInt(reserveStats.total_reserved),
         );
-        lastReserveBalance = reserveBalance;
+        lastTreasuryBalance = treasuryBalance;
       });
       test('verify pendings', async () => {
         const pending = await neutronChain.queryContract(dsc, {
@@ -368,7 +363,7 @@ describe('Neutron / Treasury', () => {
         );
 
         const res = await neutronAccount1.executeContract(
-          reserve,
+          treasury,
           JSON.stringify({
             payout: {
               recipient: holder_2_addr.toString(),
@@ -386,7 +381,7 @@ describe('Neutron / Treasury', () => {
             key: 'recipient',
             value: holder_2_addr.toString(),
           },
-          { key: 'sender', value: reserve },
+          { key: 'sender', value: treasury },
           { key: 'amount', value: `158051${NEUTRON_DENOM}` },
         ]);
 
@@ -395,30 +390,30 @@ describe('Neutron / Treasury', () => {
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(158051);
-        const reserveBalance = await neutronChain.queryDenomBalance(
-          reserve,
+        const treasuryBalance = await neutronChain.queryDenomBalance(
+          treasury,
           NEUTRON_DENOM,
         );
-        expect(lastReserveBalance - reserveBalance).toEqual(158051);
+        expect(lastTreasuryBalance - treasuryBalance).toEqual(158051);
       });
     });
 
     describe('update treasury config', () => {
       beforeEach(async () => {
-        treasury = await setupTreasury(neutronAccount1, {
+        reserve = await setupReserve(neutronAccount1, {
           mainDaoAddress: main_dao_addr.toString(),
           securityDaoAddress: security_dao_addr.toString(),
           distributionRate: '0.23',
           minPeriod: 1000,
           distributionContract: dsc,
-          reserveContract: reserve,
+          treasuryContract: treasury,
           vestingDenominator: '100000000000',
         });
       });
-      test('update treasury config by unauthorized', async () => {
+      test('update reserve config by unauthorized', async () => {
         await expect(
           neutronAccount2.executeContract(
-            treasury,
+            reserve,
             JSON.stringify({
               update_config: {
                 distributionRate: '0.11',
@@ -427,9 +422,9 @@ describe('Neutron / Treasury', () => {
           ),
         ).rejects.toThrow(/Unauthorized/);
       });
-      test('update treasury config by owner', async () => {
+      test('update reserve config by owner', async () => {
         const res = await neutronAccount1.executeContract(
-          treasury,
+          reserve,
           JSON.stringify({
             update_config: {
               distribution_rate: '0.11',
@@ -444,7 +439,7 @@ describe('Neutron / Treasury', () => {
           distribution_rate: string;
           min_period: number;
           distribution_contract: string;
-        }>(treasury, {
+        }>(reserve, {
           config: {},
         });
         expect(config.distribution_rate).toEqual('0.11');
@@ -464,18 +459,18 @@ describe('Neutron / Treasury', () => {
         main_dao_addr.toString(),
         security_dao_addr.toString(),
       );
-      reserve = await setupReserve(
+      treasury = await setupTreasury(
         neutronAccount1,
         main_dao_addr.toString(),
         security_dao_addr.toString(),
       );
-      treasury = await setupTreasury(neutronAccount1, {
+      reserve = await setupReserve(neutronAccount1, {
         mainDaoAddress: main_dao_addr.toString(),
         securityDaoAddress: security_dao_addr.toString(),
         distributionRate: '0.21',
         minPeriod: 1000,
         distributionContract: dsc,
-        reserveContract: reserve,
+        treasuryContract: treasury,
         vestingDenominator: '100000000000',
       });
     });
@@ -509,13 +504,13 @@ describe('Neutron / Treasury', () => {
       );
     });
 
-    test('treasury', async () => {
-      await neutronAccount1.msgSend(treasury, '10000000');
+    test('reserve', async () => {
+      await neutronAccount1.msgSend(reserve, '10000000');
       await neutronAccount1.testExecControl(
-        treasury,
+        reserve,
         async () => {
           const res = await neutronAccount1.executeContract(
-            treasury,
+            reserve,
             JSON.stringify({
               distribute: {},
             }),
@@ -523,7 +518,7 @@ describe('Neutron / Treasury', () => {
           return res.code;
         },
         async () => {
-          const stats = await neutronChain.queryContract(treasury, {
+          const stats = await neutronChain.queryContract(reserve, {
             stats: {},
           });
           expect(stats).toEqual({
@@ -535,16 +530,16 @@ describe('Neutron / Treasury', () => {
       );
     });
 
-    test('reserve', async () => {
+    test('treasury', async () => {
       const balanceBefore = await neutronChain.queryDenomBalance(
         holder_2_addr,
         NEUTRON_DENOM,
       );
       await neutronAccount1.testExecControl(
-        reserve,
+        treasury,
         async () => {
           const res = await neutronAccount1.executeContract(
-            reserve,
+            treasury,
             JSON.stringify({
               payout: {
                 recipient: holder_2_addr.toString(),
@@ -586,29 +581,28 @@ const setupDSC = async (
 };
 
 /**
- * normalizeTreasuryBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
+ * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
-const normalizeTreasuryBurnedCoins = async (
+const normalizeReserveBurnedCoins = async (
   cm: WalletWrapper,
-  treasuryAddress: string,
-): Promise<TreasuryStats> => {
+  reserveAddress: string,
+): Promise<ReserveStats> => {
   // Normalize state
   let normalize = true;
-  let treasuryStats: TreasuryStats = {
+  let reserveStats: ReserveStats = {
     total_processed_burned_coins: '0',
     total_reserved: '0',
     total_distributed: '0',
   };
   while (normalize) {
-    await cm.msgSend(treasuryAddress, '1');
+    await cm.msgSend(reserveAddress, '1');
     await cm.executeContract(
-      treasuryAddress,
+      reserveAddress,
       JSON.stringify({
         distribute: {},
       }),
     );
-    treasuryStats = await cm.chain.queryContract<TreasuryStats>(
-      treasuryAddress,
+    reserveStats = await cm.chain.queryContract<ReserveStats>(reserveAddress,
       {
         stats: {},
       },
@@ -616,11 +610,11 @@ const normalizeTreasuryBurnedCoins = async (
 
     const burnedCoins = await getBurnedCoinsAmount(cm.chain);
     normalize =
-      parseInt(treasuryStats.total_processed_burned_coins) + 7500 !==
+      parseInt(reserveStats.total_processed_burned_coins) + 7500 !==
       parseInt(burnedCoins!);
   }
 
-  return treasuryStats;
+  return reserveStats;
 };
 
 const getBurnedCoinsAmount = async (
@@ -630,12 +624,12 @@ const getBurnedCoinsAmount = async (
   return totalBurnedNeutrons.total_burned_neutrons_amount.coin.amount;
 };
 
-const setupReserve = async (
+const setupTreasury = async (
   cm: WalletWrapper,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.RESERVE);
+  const codeId = await cm.storeWasm(NeutronContract.TREASURY);
   return (
     await cm.instantiateContract(
       codeId,
@@ -644,24 +638,24 @@ const setupReserve = async (
         security_dao_address: securityDaoAddress,
         denom: NEUTRON_DENOM,
       }),
-      'reserve',
+      'treasury',
     )
   )[0]._contract_address;
 };
 
-const setupTreasury = async (
+const setupReserve = async (
   cm: WalletWrapper,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
     minPeriod: number;
     distributionContract: string;
-    reserveContract: string;
+    treasuryContract: string;
     securityDaoAddress: string;
     vestingDenominator: string;
   },
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.TREASURY);
+  const codeId = await cm.storeWasm(NeutronContract.RESERVE);
   return (
     await cm.instantiateContract(
       codeId,
@@ -671,11 +665,11 @@ const setupTreasury = async (
         distribution_rate: opts.distributionRate,
         min_period: opts.minPeriod,
         distribution_contract: opts.distributionContract,
-        reserve_contract: opts.reserveContract,
+        treasury_contract: opts.treasuryContract,
         security_dao_address: opts.securityDaoAddress,
         vesting_denominator: opts.vestingDenominator,
       }),
-      'treasury',
+      'reserve',
     )
   )[0]._contract_address;
 };

@@ -3,7 +3,7 @@ import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import {
   getDaoContracts,
   DaoContracts,
-  getTreasuryContract,
+  getReserveContract,
   VotingVaultsModule,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
@@ -22,7 +22,7 @@ describe('DAO / Check', () => {
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
   let votingVaultsLockdropAddress: string;
-  let treasuryContract: string;
+  let reserveContract: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -50,7 +50,7 @@ describe('DAO / Check', () => {
     votingVaultsLockdropAddress = (
       daoContracts.voting_module as VotingVaultsModule
     ).voting_vaults.lockdrop_vault.address;
-    treasuryContract = await getTreasuryContract(cm_dao);
+    reserveContract = await getReserveContract(cm_dao);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -125,9 +125,9 @@ describe('DAO / Check', () => {
       );
       expect(propContract).toEqual(proposalOverruleAddress);
     });
-    test('Treasury is correct', async () => {
-      const trasuryAddress = await getTreasuryContract(cm_dao);
-      expect(trasuryAddress.length).toBeGreaterThan(0);
+    test('Reserve is correct', async () => {
+      const reserveAddress = await getReserveContract(cm_dao);
+      expect(reserveAddress.length).toBeGreaterThan(0);
     });
   });
 
@@ -214,12 +214,8 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('Treasury hash assert', async () => {
-      await checkContractHash(
-        cm_dao,
-        treasuryContract,
-        NeutronContract.TREASURY,
-      );
+    test('Reserve hash assert', async () => {
+      await checkContractHash(cm_dao, reserveContract, NeutronContract.RESERVE);
     });
     test('Dao neutron vault hash assert', async () => {
       await checkContractHash(
