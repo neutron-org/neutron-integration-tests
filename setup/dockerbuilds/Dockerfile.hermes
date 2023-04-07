@@ -2,12 +2,12 @@ FROM rust:1.65-bullseye as builder
 ADD ./hermes/ /app/network/hermes/
 WORKDIR /app
 RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    git clone https://github.com/informalsystems/hermes && \
-    cd hermes && \
-    git checkout v1.4.0 && \
-    cargo build --release --bin hermes && \
+    VERSION=v1.4.0 && \
+    TARNAME="hermes-${VERSION}-${PLATFORM}-unknown-linux-gnu.tar.gz" && \
+    wget "https://github.com/informalsystems/hermes/releases/download/${VERSION}/${TARNAME}" && \
+    tar -xf "$TARNAME" && \
     mkdir -p $HOME/.hermes/bin && \
-    mv ./target/release/hermes $HOME/.hermes/bin/
+    mv ./hermes $HOME/.hermes/bin/
 
 FROM debian:bullseye-slim
 COPY --from=builder /root/.hermes/bin/hermes /usr/local/bin/
