@@ -316,6 +316,21 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async queryCurrentUpgradePlan(): Promise<CurrentPlanResponse> {
+    try {
+      const req = await axios.get<CurrentPlanResponse>(
+        `${this.sdk.url}/cosmos/upgrade/v1beta1/current_plan`,
+        {},
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
 }
 
 export class WalletWrapper {
