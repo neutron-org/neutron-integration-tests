@@ -8,6 +8,7 @@ import { CodeId, Wallet } from '../types';
 import Long from 'long';
 import { BlockWaiter, getWithAttempts } from './wait';
 import {
+  Coin,
   CosmosTxV1beta1GetTxResponse,
   InlineResponse20075TxResponse,
 } from '@cosmos-client/core/cjs/openapi/api';
@@ -17,6 +18,8 @@ import { ibc } from '@cosmos-client/ibc/cjs/proto';
 import crypto from 'crypto';
 import bech32 from 'bech32';
 import {
+  addSchedule,
+  removeSchedule,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
@@ -32,6 +35,7 @@ import ICoin = cosmos.base.v1beta1.ICoin;
 import IHeight = ibc.core.client.v1.IHeight;
 import {
   AckFailuresResponse,
+  ScheduleResponse,
   ChannelsList,
   MultiChoiceOption,
   PageRequest,
@@ -45,6 +49,8 @@ import { getContractBinary } from './env';
 import { getDaoContracts } from './dao';
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
+export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
+export const IBC_USDC_DENOM = process.env.IBC_USDC_DENOM || 'uibcusdc';
 export const COSMOS_DENOM = process.env.COSMOS_DENOM || 'uatom';
 export const IBC_RELAYER_NEUTRON_ADDRESS =
   'neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u';
@@ -211,8 +217,8 @@ export class CosmosWrapper {
 
   async instantiate(
     codeId: string,
-    msg: string | null = null,
-    label: string | null = null,
+    msg: string,
+    label: string,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId,
@@ -221,12 +227,15 @@ export class CosmosWrapper {
       label,
       msg: Buffer.from(msg),
     });
+
     const data = await this.execTx(
       {
         amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
         gas_limit: Long.fromString('600000000'),
       },
       [msgInit],
+      10,
+      rest.tx.BroadcastTxMode.Block,
     );
 
     if (data.tx_response.code !== 0) {
@@ -255,7 +264,7 @@ export class CosmosWrapper {
 
     const res = await this.execTx(
       {
-        gas_limit: Long.fromString('2000000'),
+        gas_limit: Long.fromString('4000000'),
         amount: [{ denom: this.denom, amount: '10000' }],
       },
       [msgExecute],
@@ -311,7 +320,6 @@ export class CosmosWrapper {
         } else {
           throw new Error('Error: ' + error.message);
         }
-        throw new Error(`Config: ${JSON.stringify(error.config)}`);
       });
     return JSON.parse(
       Buffer.from(resp.data.result.smart, 'base64').toString(),
@@ -329,7 +337,12 @@ export class CosmosWrapper {
    */
   async msgSend(
     to: string,
-    amount: string,
+    coin:
+      | {
+          amount: string;
+          denom?: string;
+        }
+      | string,
     fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: this.denom, amount: '1000' }],
@@ -337,10 +350,12 @@ export class CosmosWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
+    const { amount, denom = this.denom } =
+      typeof coin === 'string' ? { amount: coin } : coin;
     const msgSend = new proto.cosmos.bank.v1beta1.MsgSend({
       from_address: this.wallet.address.toString(),
       to_address: to,
-      amount: [{ denom: this.denom, amount }],
+      amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
     return res?.tx_response;
@@ -890,6 +905,52 @@ export class CosmosWrapper {
   }
 
   /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(addSchedule(name, period, msgs));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    pre_propose_contract: string,
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    sender: string = this.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    const message = JSON.stringify(removeSchedule(name));
+    return await this.submitProposal(
+      pre_propose_contract,
+      title,
+      description,
+      message,
+      amount,
+      sender,
+    );
+  }
+
+  /**
    * voteYes  vote 'yes' for given proposal.
    */
   async voteYes(
@@ -1170,6 +1231,21 @@ export class CosmosWrapper {
     }
   }
 
+  async querySchedules(pagination?: PageRequest): Promise<ScheduleResponse> {
+    try {
+      const req = await axios.get<ScheduleResponse>(
+        `${this.sdk.url}/neutron/cron/schedule`,
+        { params: pagination },
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
   async queryCurrentUpgradePlan(): Promise<CurrentPlanResponse> {
     try {
       const req = await axios.get<CurrentPlanResponse>(
@@ -1423,6 +1499,12 @@ export const buildContractAddressClassic = (
   const wasmModuleAddress = whash('module', contractID);
   return bech32.encode(prefix, bech32.toWords([...wasmModuleAddress]));
 };
+
+export const filterIBCDenoms = (list: Coin[]) =>
+  list.filter(
+    (coin) =>
+      coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
+  );
 
 export const getEventAttribute = (
   events: { type: string; attributes: { key: string; value: string }[] }[],
