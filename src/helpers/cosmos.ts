@@ -24,6 +24,7 @@ import {
   ChannelsList,
   PageRequest,
   PauseInfoResponse,
+  CurrentPlanResponse,
 } from './types';
 import { getContractBinary } from './env';
 

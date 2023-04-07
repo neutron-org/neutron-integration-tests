@@ -506,6 +506,15 @@ describe('Neutron / Governance', () => {
     });
   });
 
+  describe('check state change from proposal #4 execution', () => {
+    test('check if software current plan was created', async () => {
+      const currentPlan = await cm.queryCurrentUpgradePlan();
+      expect(currentPlan.plan?.height).toEqual('500');
+      expect(currentPlan.plan?.name).toEqual('Plan #1');
+      expect(currentPlan.plan?.info).toEqual('Plan info');
+    });
+  });
+
   describe('vote for proposal #5 (no, yes, yes)', () => {
     const proposalId = 5;
     test('vote NO from wallet 1', async () => {
@@ -526,6 +535,13 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
+  describe('check state change from proposal #5 execution', () => {
+    test('check if software current plan was removed', async () => {
+      const currentPlan = await cm.queryCurrentUpgradePlan();
+      expect(currentPlan.plan).toBeNull();
     });
   });
 
