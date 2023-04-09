@@ -7,11 +7,8 @@ import { NeutronContract } from '../../helpers/types';
 import { wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
-const getTimestamp = (secondsFromNow: number): string =>
-  (
-    BigInt(Date.now()) * BigInt(1000000) +
-    BigInt(secondsFromNow * 1000000 * 1000)
-  ).toString();
+const getTimestamp = (secondsFromNow: number): number =>
+  (Date.now() / 1000 + secondsFromNow) | 0;
 
 describe('Neutron / TGE / Credits', () => {
   let testState: TestStateLocalCosmosTestNet;
