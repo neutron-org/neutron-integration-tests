@@ -281,10 +281,14 @@ export const getSubDaoContracts = async (
   const proposalSingleAddress = proposal_module.address;
   const preProposalSingleAddress = preProposalContract.Module.addr;
 
-  const timelockAddr = await cm.queryContract<string>(
-    preProposalSingleAddress,
-    { query_extension: { msg: { timelock_address: {} } } },
-  );
+  let timelockAddr;
+  try {
+    timelockAddr = await cm.queryContract<string>(preProposalSingleAddress, {
+      query_extension: { msg: { timelock_address: {} } },
+    });
+  } catch (e) {
+    timelockAddr = null;
+  }
 
   return {
     name: config.name,
@@ -506,7 +510,7 @@ export class DaoMember {
   }
 
   /**
-   * voteYes  vote for option for given multi choice proposal.
+   * voteForOption  vote for option for given multi choice proposal.
    */
   async voteForOption(
     proposalId: number,
@@ -523,9 +527,11 @@ export class DaoMember {
   }
 
   async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+    const vaultAddress = (
+      this.dao.contracts.voting_module as VotingVaultsModule
+    ).voting_vaults.ntrn_vault.address;
     return await this.user.executeContract(
-      (this.dao.contracts.voting_module as VotingVaultsModule).voting_vaults
-        .ntrn_vault.address,
+      vaultAddress,
       JSON.stringify({
         bond: {},
       }),
@@ -535,7 +541,7 @@ export class DaoMember {
   }
 
   /**
-   * submitProposal creates proposal with given message.
+   * submitSingleChoiceProposal creates proposal with given message.
    */
   async submitSingleChoiceProposal(
     title: string,
@@ -1187,7 +1193,7 @@ export const deployNeutronDao = async (
         addr: cm.wallet.address.toString(),
       },
     },
-    name: DaoContractLabels.NEUTRON_VAULT,
+    name: 'voting vault',
     denom: cm.chain.denom,
     description: 'a simple voting vault for testing purposes',
   };

@@ -322,8 +322,9 @@ describe('Neutron / Subdao', () => {
           .timelock_module.address,
         '10000',
       ); // to let the timelock contract fulfill the proposal
-      const beforeExecBalance = await neutronChain.queryBalances(
+      const beforeExecBalance = await neutronChain.queryDenomBalance(
         security_dao_addr.toString(),
+        neutronChain.denom,
       );
       await subdaoMember1.executeProposalWithAttempts(proposal_id);
 
@@ -334,12 +335,11 @@ describe('Neutron / Subdao', () => {
       expect(timelocked_prop.status).toEqual('executed');
       expect(timelocked_prop.msgs).toHaveLength(1);
 
-      const afterExecBalance = await neutronChain.queryBalances(
+      const afterExecBalance = await neutronChain.queryDenomBalance(
         security_dao_addr.toString(),
+        neutronChain.denom,
       );
-      expect(+(afterExecBalance.balances[0].amount || 0)).toEqual(
-        +(beforeExecBalance.balances[0].amount || 0) + funding,
-      );
+      expect(afterExecBalance).toEqual(beforeExecBalance + funding);
     });
 
     test('auto unpause on pause timeout', async () => {
