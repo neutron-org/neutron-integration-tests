@@ -123,6 +123,8 @@ export const NeutronContract = {
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
+  CW4_VOTING: '../contracts_thirdparty/cw4_voting.wasm',
+  CW4_GROUP: '../contracts_thirdparty/cw4_group.wasm',
   TGE_AUCTION: 'neutron_auction.wasm',
   TGE_LOCKDROP: 'neutron_lockdrop.wasm',
   TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',

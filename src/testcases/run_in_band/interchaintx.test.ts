@@ -6,6 +6,7 @@ import {
   CosmosWrapper,
   getSequenceId,
   NEUTRON_DENOM,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import {
   AckFailuresResponse,
@@ -19,8 +20,10 @@ import { getIca } from '../../helpers/ica';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm1: CosmosWrapper;
-  let cm2: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
@@ -31,17 +34,23 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm1 = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-    cm2 = new CosmosWrapper(
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
+    );
+    gaiaAccount = new WalletWrapper(
+      gaiaChain,
+      testState.wallets.qaCosmos.genQaWal1,
     );
   });
 
@@ -49,12 +58,16 @@ describe('Neutron / Interchain TXs', () => {
     let codeId: string;
     describe('Setup', () => {
       test('store contract', async () => {
-        codeId = await cm1.storeWasm(NeutronContract.INTERCHAIN_TXS);
+        codeId = await neutronAccount.storeWasm(NeutronContract.INTERCHAIN_TXS);
         expect(parseInt(codeId)).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
         const res = (
-          await cm1.instantiate(codeId, JSON.stringify({}), 'interchaintx')
+          await neutronAccount.instantiateContract(
+            codeId,
+            JSON.stringify({}),
+            'interchaintx',
+          )
         )[0]._contract_address;
 
         contractAddress = res;
@@ -62,7 +75,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     describe('Create ICAs and setup contract', () => {
       test('create ICA1', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             register: {
@@ -74,7 +87,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
       });
       test('create ICA2', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             register: {
@@ -87,8 +100,8 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
-          cm1.blockWaiter,
-          () => cm1.listIBCChannels(),
+          neutronChain.blockWaiter,
+          () => neutronChain.listIBCChannels(),
           // Wait until there are 3 channels:
           // - one exists already, it is open for IBC transfers;
           // - two more should appear soon since we are opening them implicitly
@@ -108,7 +121,7 @@ describe('Neutron / Interchain TXs', () => {
 
       test('get ica address', async () => {
         const ica1 = await getIca(
-          cm1,
+          neutronChain,
           contractAddress,
           icaId1,
           connectionId,
@@ -119,7 +132,7 @@ describe('Neutron / Interchain TXs', () => {
         icaAddress1 = ica1.interchain_account_address;
 
         const ica2 = await getIca(
-          cm1,
+          neutronChain,
           contractAddress,
           icaId2,
           connectionId,
@@ -131,11 +144,11 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('set payer fees', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             set_fees: {
-              denom: cm1.denom,
+              denom: neutronChain.denom,
               ack_fee: '2000',
               recv_fee: '0',
               timeout_fee: '2000',
@@ -145,19 +158,19 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
       });
       test('fund contract to pay fees', async () => {
-        const res = await cm1.msgSend(contractAddress, '100000');
+        const res = await neutronAccount.msgSend(contractAddress, '100000');
         expect(res.code).toEqual(0);
       });
       test('add some money to ICAs', async () => {
-        const res1 = await cm2.msgSend(icaAddress1.toString(), '10000');
+        const res1 = await gaiaAccount.msgSend(icaAddress1.toString(), '10000');
         expect(res1.code).toEqual(0);
-        const res2 = await cm2.msgSend(icaAddress2.toString(), '10000');
+        const res2 = await gaiaAccount.msgSend(icaAddress2.toString(), '10000');
         expect(res2.code).toEqual(0);
       });
     });
     describe('Send Interchain TX', () => {
       test('delegate from first ICA', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate: {
@@ -166,25 +179,30 @@ describe('Neutron / Interchain TXs', () => {
                 testState.wallets.cosmos.val1.address as cosmosclient.ValAddress
               ).toString(),
               amount: '2000',
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
             },
           }),
         );
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res.raw_log);
 
-        await waitForAck(cm1, contractAddress, icaId1, sequenceId);
-        const qres = await getAck(cm1, contractAddress, icaId1, sequenceId);
+        await waitForAck(neutronChain, contractAddress, icaId1, sequenceId);
+        const qres = await getAck(
+          neutronChain,
+          contractAddress,
+          icaId1,
+          sequenceId,
+        );
         expect(qres).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
       test('check validator state', async () => {
         const res1 = await getWithAttempts(
-          cm2.blockWaiter,
+          gaiaChain.blockWaiter,
           () =>
             rest.staking.delegatorDelegations(
-              cm2.sdk as CosmosSDK,
+              gaiaChain.sdk as CosmosSDK,
               icaAddress1 as unknown as AccAddress,
             ),
           async (delegations) =>
@@ -192,7 +210,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res1.data.delegation_responses).toEqual([
           {
-            balance: { amount: '2000', denom: cm2.denom },
+            balance: { amount: '2000', denom: gaiaChain.denom },
             delegation: {
               delegator_address: icaAddress1,
               shares: '2000.000000000000000000',
@@ -202,27 +220,29 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
         const res2 = await rest.staking.delegatorDelegations(
-          cm2.sdk as CosmosSDK,
+          gaiaChain.sdk as CosmosSDK,
           icaAddress2 as unknown as AccAddress,
         );
         expect(res2.data.delegation_responses).toEqual([]);
       });
       test('check contract balance', async () => {
-        const res = await cm1.queryBalances(contractAddress);
-        const balance = res.balances.find((b) => b.denom === cm1.denom)?.amount;
+        const res = await neutronChain.queryBalances(contractAddress);
+        const balance = res.balances.find(
+          (b) => b.denom === neutronChain.denom,
+        )?.amount;
         expect(balance).toEqual('98000');
       });
     });
     describe('Error cases', () => {
       test('delegate for unknown validator from second ICA', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate: {
               interchain_account_id: icaId2,
               validator: 'nonexistent_address',
               amount: '2000',
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
             },
           }),
         );
@@ -230,8 +250,13 @@ describe('Neutron / Interchain TXs', () => {
 
         const sequenceId = getSequenceId(res.raw_log);
 
-        await waitForAck(cm1, contractAddress, icaId2, sequenceId);
-        const qres = await getAck(cm1, contractAddress, icaId2, sequenceId);
+        await waitForAck(neutronChain, contractAddress, icaId2, sequenceId);
+        const qres = await getAck(
+          neutronChain,
+          contractAddress,
+          icaId2,
+          sequenceId,
+        );
         expect(qres).toMatchObject<AcknowledgementResult>({
           error: [
             'message',
@@ -240,15 +265,15 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('undelegate from first ICA, delegate from second ICA', async () => {
-        await cleanAckResults(cm1, contractAddress);
-        const res1 = await cm1.executeContract(
+        await cleanAckResults(neutronAccount, contractAddress);
+        const res1 = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             undelegate: {
               interchain_account_id: icaId1,
               validator: testState.wallets.cosmos.val1.address.toString(),
               amount: '1000',
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
             },
           }),
         );
@@ -256,14 +281,14 @@ describe('Neutron / Interchain TXs', () => {
 
         const sequenceId1 = getSequenceId(res1.raw_log);
 
-        const res2 = await cm1.executeContract(
+        const res2 = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate: {
               interchain_account_id: icaId2,
               validator: testState.wallets.cosmos.val1.address.toString(),
               amount: '2000',
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
             },
           }),
         );
@@ -272,7 +297,7 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId2 = getSequenceId(res2.raw_log);
 
         const qres1 = await waitForAck(
-          cm1,
+          neutronChain,
           contractAddress,
           icaId1,
           sequenceId1,
@@ -282,7 +307,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         const qres2 = await waitForAck(
-          cm1,
+          neutronChain,
           contractAddress,
           icaId2,
           sequenceId2,
@@ -292,15 +317,15 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('delegate with timeout', async () => {
-        await cleanAckResults(cm1, contractAddress);
-        const res = await cm1.executeContract(
+        await cleanAckResults(neutronAccount, contractAddress);
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate: {
               interchain_account_id: icaId1,
               validator: testState.wallets.cosmos.val1.address.toString(),
               amount: '10',
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
               timeout: 1,
             },
           }),
@@ -310,8 +335,19 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId = getSequenceId(res.raw_log);
 
         // timeout handling may be slow, hence we wait for up to 100 blocks here
-        await waitForAck(cm1, contractAddress, icaId1, sequenceId, 100);
-        const qres1 = await getAck(cm1, contractAddress, icaId1, sequenceId);
+        await waitForAck(
+          neutronChain,
+          contractAddress,
+          icaId1,
+          sequenceId,
+          100,
+        );
+        const qres1 = await getAck(
+          neutronChain,
+          contractAddress,
+          icaId1,
+          sequenceId,
+        );
         expect(qres1).toMatchObject<AcknowledgementResult>({
           timeout: 'message',
         });
@@ -321,14 +357,14 @@ describe('Neutron / Interchain TXs', () => {
         try {
           rawLog =
             (
-              await cm1.executeContract(
+              await neutronAccount.executeContract(
                 contractAddress,
                 JSON.stringify({
                   delegate: {
                     interchain_account_id: icaId1,
                     validator: testState.wallets.cosmos.val1.address.toString(),
                     amount: '10',
-                    denom: cm2.denom,
+                    denom: gaiaChain.denom,
                     timeout: 1,
                   },
                 }),
@@ -341,11 +377,11 @@ describe('Neutron / Interchain TXs', () => {
       });
       describe('zero fee', () => {
         beforeAll(async () => {
-          await cm1.executeContract(
+          await neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               set_fees: {
-                denom: cm1.denom,
+                denom: neutronChain.denom,
                 ack_fee: '0',
                 recv_fee: '0',
                 timeout_fee: '0',
@@ -355,7 +391,7 @@ describe('Neutron / Interchain TXs', () => {
         });
         test('delegate with zero fee', async () => {
           await expect(
-            cm1.executeContract(
+            neutronAccount.executeContract(
               contractAddress,
               JSON.stringify({
                 delegate: {
@@ -365,7 +401,7 @@ describe('Neutron / Interchain TXs', () => {
                       .address as cosmosclient.ValAddress
                   ).toString(),
                   amount: '2000',
-                  denom: cm2.denom,
+                  denom: gaiaChain.denom,
                 },
               }),
             ),
@@ -374,11 +410,11 @@ describe('Neutron / Interchain TXs', () => {
       });
       describe('insufficient funds for fee', () => {
         beforeAll(async () => {
-          await cm1.executeContract(
+          await neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               set_fees: {
-                denom: cm1.denom,
+                denom: neutronChain.denom,
                 ack_fee: '9999999999',
                 recv_fee: '0',
                 timeout_fee: '9999999999',
@@ -387,11 +423,11 @@ describe('Neutron / Interchain TXs', () => {
           );
         });
         afterAll(async () => {
-          await cm1.executeContract(
+          await neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               set_fees: {
-                denom: cm1.denom,
+                denom: neutronChain.denom,
                 ack_fee: '2000',
                 recv_fee: '0',
                 timeout_fee: '2000',
@@ -401,7 +437,7 @@ describe('Neutron / Interchain TXs', () => {
         });
         test('delegate with zero fee', async () => {
           await expect(
-            cm1.executeContract(
+            neutronAccount.executeContract(
               contractAddress,
               JSON.stringify({
                 delegate: {
@@ -411,7 +447,7 @@ describe('Neutron / Interchain TXs', () => {
                       .address as cosmosclient.ValAddress
                   ).toString(),
                   amount: '2000',
-                  denom: cm2.denom,
+                  denom: gaiaChain.denom,
                 },
               }),
             ),
@@ -421,7 +457,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     describe('Recreation', () => {
       test('recreate ICA1', async () => {
-        const res = await cm1.executeContract(
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             register: {
@@ -432,8 +468,8 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
         await getWithAttempts(
-          cm1.blockWaiter,
-          async () => cm1.listIBCChannels(),
+          neutronChain.blockWaiter,
+          async () => neutronChain.listIBCChannels(),
           // Wait until there are 4 channels:
           // - one exists already, it is open for IBC transfers;
           // - two channels are already opened via ICA registration before
@@ -441,22 +477,22 @@ describe('Neutron / Interchain TXs', () => {
           async (channels) => channels.channels.length == 4,
         );
         await getWithAttempts(
-          cm1.blockWaiter,
-          () => cm1.listIBCChannels(),
+          neutronChain.blockWaiter,
+          () => neutronChain.listIBCChannels(),
           async (channels) =>
             channels.channels.find((c) => c.channel_id == 'channel-3')?.state ==
             'STATE_OPEN',
         );
       });
       test('delegate from first ICA after ICA recreation', async () => {
-        await cleanAckResults(cm1, contractAddress);
-        const res = await cm1.executeContract(
+        await cleanAckResults(neutronAccount, contractAddress);
+        const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate: {
               interchain_account_id: icaId1,
               validator: testState.wallets.cosmos.val1.address.toString(),
-              denom: cm2.denom,
+              denom: gaiaChain.denom,
               amount: '20',
             },
           }),
@@ -464,19 +500,24 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res.raw_log);
 
-        const qres = await waitForAck(cm1, contractAddress, icaId1, sequenceId);
+        const qres = await waitForAck(
+          neutronChain,
+          contractAddress,
+          icaId1,
+          sequenceId,
+        );
         expect(qres).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
       test('check validator state after ICA recreation', async () => {
         const res = await rest.staking.delegatorDelegations(
-          cm2.sdk as CosmosSDK,
+          gaiaChain.sdk as CosmosSDK,
           icaAddress1 as unknown as AccAddress,
         );
         expect(res.data.delegation_responses).toEqual([
           {
-            balance: { amount: '1020', denom: cm2.denom },
+            balance: { amount: '1020', denom: gaiaChain.denom },
             delegation: {
               delegator_address: icaAddress1,
               shares: '1020.000000000000000000',
@@ -489,13 +530,15 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     test('delegate with sudo failure', async () => {
-      await cleanAckResults(cm1, contractAddress);
+      await cleanAckResults(neutronAccount, contractAddress);
 
-      const failuresBeforeCall = await cm1.queryAckFailures(contractAddress);
+      const failuresBeforeCall = await neutronChain.queryAckFailures(
+        contractAddress,
+      );
       expect(failuresBeforeCall.failures.length).toEqual(0);
 
       // Mock sudo handler to fail
-      await cm1.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           integration_tests_set_sudo_failure_mock: {},
@@ -503,37 +546,37 @@ describe('Neutron / Interchain TXs', () => {
       );
 
       // Testing ACK failure
-      await cm1.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId1,
             validator: testState.wallets.cosmos.val1.address.toString(),
             amount: '10',
-            denom: cm2.denom,
+            denom: gaiaChain.denom,
           },
         }),
       );
 
-      await cm1.blockWaiter.waitBlocks(10);
+      await neutronChain.blockWaiter.waitBlocks(10);
 
       // Testing ACK timeout failure
-      await cm1.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           delegate: {
             interchain_account_id: icaId1,
             validator: testState.wallets.cosmos.val1.address.toString(),
             amount: '10',
-            denom: cm2.denom,
+            denom: gaiaChain.denom,
             timeout: 1,
           },
         }),
       );
 
       const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-        cm1.blockWaiter,
-        async () => cm1.queryAckFailures(contractAddress),
+        neutronChain.blockWaiter,
+        async () => neutronChain.queryAckFailures(contractAddress),
         // Wait until there 2 failure in the list
         async (data) => data.failures.length == 2,
         100,
@@ -554,7 +597,7 @@ describe('Neutron / Interchain TXs', () => {
       ]);
 
       // Restore sudo handler to state
-      await cm1.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           integration_tests_unset_sudo_failure_mock: {},
@@ -567,7 +610,7 @@ describe('Neutron / Interchain TXs', () => {
 /**
  * cleanAckResults clears all ACK's from contract storage
  */
-const cleanAckResults = (cm: CosmosWrapper, contractAddress: string) =>
+const cleanAckResults = (cm: WalletWrapper, contractAddress: string) =>
   cm.executeContract(
     contractAddress,
     JSON.stringify({ clean_ack_results: {} }),

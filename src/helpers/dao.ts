@@ -1,5 +1,31 @@
 import axios from 'axios';
-import { CosmosWrapper } from './cosmos';
+import {
+  CosmosWrapper,
+  createBankMessage,
+  getEventAttribute,
+  WalletWrapper,
+} from './cosmos';
+import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { getWithAttempts } from './wait';
+import {
+  MultiChoiceOption,
+  SingleChoiceProposal,
+  TotalPowerAtHeightResponse,
+  VotingPowerAtHeightResponse,
+} from './types';
+import {
+  addSchedule,
+  clearAdminProposal,
+  clientUpdateProposal,
+  paramChangeProposal,
+  ParamChangeProposalInfo,
+  pinCodesProposal,
+  removeSchedule,
+  SendProposalInfo,
+  unpinCodesProposal,
+  updateAdminProposal,
+  upgradeProposal,
+} from './proposal';
 
 export type ProposalModule = {
   address: string;
@@ -46,6 +72,25 @@ export type VaultBondingStatus = {
   height: number;
 };
 
+export type VotingVaultsModule = {
+  address: string;
+  voting_vaults: {
+    ntrn_vault: {
+      address: string;
+    };
+    lockdrop_vault: {
+      address: string;
+    };
+  };
+};
+
+export type VotingCw4Module = {
+  address: string;
+  cw4group: {
+    address: string;
+  };
+};
+
 export type DaoContracts = {
   core: {
     address: string;
@@ -55,49 +100,39 @@ export type DaoContracts = {
       address: string;
       pre_proposal_module: {
         address: string;
+        timelock_module?: {
+          address: string;
+        };
       };
     };
-    multiple: {
+    multiple?: {
       address: string;
       pre_proposal_module: {
         address: string;
       };
     };
-    overrule: {
+    overrule?: {
       address: string;
       pre_proposal_module: {
         address: string;
       };
     };
   };
-  voting_module: {
-    address: string;
-    voting_vaults: {
-      ntrn_vault: {
-        address: string;
-      };
-      lockdrop_vault: {
-        address: string;
-      };
-    };
-  };
+  voting_module: VotingVaultsModule | VotingCw4Module;
 };
 
 export const getVotingModule = async (
   cm: CosmosWrapper,
   dao_address: string,
-): Promise<string> => {
-  const voting_module_address = await cm.queryContract<string>(dao_address, {
+): Promise<string> =>
+  await cm.queryContract<string>(dao_address, {
     voting_module: {},
   });
-
-  return voting_module_address;
-};
 
 export const getVotingVaults = async (
   cm: CosmosWrapper,
   voting_module_address: string,
-): Promise<DaoContracts['voting_module']['voting_vaults']> => {
+): Promise<VotingVaultsModule['voting_vaults']> => {
   const voting_vaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(voting_module_address, { voting_vaults: {} });
@@ -194,3 +229,708 @@ export const getReserveContract = async (
   }>(url);
   return JSON.parse(resp.data.param.value);
 };
+
+export class Dao {
+  readonly chain: CosmosWrapper;
+  readonly contracts: DaoContracts;
+
+  constructor(cm: CosmosWrapper, contracts: DaoContracts) {
+    this.chain = cm;
+    this.contracts = contracts;
+  }
+
+  async checkPassedProposal(proposalId: number) {
+    await getWithAttempts(
+      this.chain.blockWaiter,
+      async () => await this.queryProposal(proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
+    );
+  }
+
+  async checkPassedMultiChoiceProposal(proposalId: number) {
+    await getWithAttempts(
+      this.chain.blockWaiter,
+      async () => await this.queryMultiChoiceProposal(proposalId),
+      async (response) => response.proposal.status === 'passed',
+      20,
+    );
+  }
+
+  async checkExecutedMultiChoiceProposal(proposalId: number) {
+    await getWithAttempts(
+      this.chain.blockWaiter,
+      async () => await this.queryMultiChoiceProposal(proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async queryMultiChoiceProposal(proposalId: number): Promise<any> {
+    return await this.chain.queryContract<any>(
+      this.contracts.proposal_modules.multiple.address,
+      {
+        proposal: {
+          proposal_id: proposalId,
+        },
+      },
+    );
+  }
+
+  async queryProposal(proposalId: number): Promise<SingleChoiceProposal> {
+    return await this.chain.queryContract<SingleChoiceProposal>(
+      this.contracts.proposal_modules.single.address,
+      {
+        proposal: {
+          proposal_id: proposalId,
+        },
+      },
+    );
+  }
+
+  async queryTotalVotingPower(): Promise<TotalPowerAtHeightResponse> {
+    return await this.chain.queryContract<TotalPowerAtHeightResponse>(
+      this.contracts.core.address,
+      {
+        total_power_at_height: {},
+      },
+    );
+  }
+
+  async queryVotingPower(addr: string): Promise<VotingPowerAtHeightResponse> {
+    return await this.chain.queryContract<VotingPowerAtHeightResponse>(
+      this.contracts.core.address,
+      {
+        voting_power_at_height: {
+          address: addr,
+        },
+      },
+    );
+  }
+
+  async makeSingleChoiceProposalPass(
+    loyalVoters: DaoMember[],
+    title: string,
+    description: string,
+    msgs: any[],
+    deposit: string,
+  ) {
+    const proposal_id = await loyalVoters[0].submitSingleChoiceProposal(
+      title,
+      description,
+      msgs,
+      deposit,
+    );
+    await loyalVoters[0].user.chain.blockWaiter.waitBlocks(1);
+
+    for (const voter of loyalVoters) {
+      await voter.voteYes(proposal_id);
+    }
+    await loyalVoters[0].executeProposal(proposal_id);
+
+    await getWithAttempts(
+      loyalVoters[0].user.chain.blockWaiter,
+      async () => await this.queryProposal(proposal_id),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async getTimelockedProposal(
+    proposal_id: number,
+  ): Promise<TimeLockSingleChoiceProposal> {
+    return this.chain.queryContract<TimeLockSingleChoiceProposal>(
+      this.contracts.proposal_modules.single.pre_proposal_module.timelock_module
+        .address,
+      {
+        proposal: {
+          proposal_id: proposal_id,
+        },
+      },
+    );
+  }
+}
+
+export class DaoMember {
+  readonly user: WalletWrapper;
+  readonly dao: Dao;
+
+  constructor(cm: WalletWrapper, dao: Dao) {
+    this.user = cm;
+    this.dao = dao;
+  }
+
+  /**
+   * voteYes  vote 'yes' for given proposal.
+   */
+  async voteYes(proposalId: number): Promise<InlineResponse20075TxResponse> {
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
+      [],
+      this.user.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * voteNo  vote 'no' for given proposal.
+   */
+  async voteNo(proposalId: number): Promise<InlineResponse20075TxResponse> {
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
+      [],
+      this.user.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * voteYes  vote for option for given multi choice proposal.
+   */
+  async voteForOption(
+    proposalId: number,
+    optionId: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.multiple.address,
+      JSON.stringify({
+        vote: { proposal_id: proposalId, vote: { option_id: optionId } },
+      }),
+      [],
+      this.user.wallet.address.toString(),
+    );
+  }
+
+  async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+    return await this.user.executeContract(
+      (this.dao.contracts.voting_module as VotingVaultsModule).voting_vaults
+        .ntrn_vault.address,
+      JSON.stringify({
+        bond: {},
+      }),
+      [{ denom: this.user.chain.denom, amount: amount }],
+      this.user.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * submitProposal creates proposal with given message.
+   */
+  async submitSingleChoiceProposal(
+    title: string,
+    description: string,
+    msgs: any[],
+    deposit = '',
+  ): Promise<number> {
+    let depositFunds = [];
+    if (deposit !== '') {
+      depositFunds = [{ denom: this.user.chain.denom, amount: deposit }];
+    }
+    const proposalTx = await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module.address,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              msgs,
+            },
+          },
+        },
+      }),
+      depositFunds,
+      this.user.wallet.address.toString(),
+    );
+
+    const attribute = getEventAttribute(
+      (proposalTx as any).events,
+      'wasm',
+      'proposal_id',
+    );
+
+    const proposalId = parseInt(attribute);
+    expect(proposalId).toBeGreaterThanOrEqual(0);
+    return proposalId;
+  }
+
+  /**
+   * executeProposal executes given proposal.
+   */
+  async executeProposal(
+    proposalId: number,
+    sender: string = this.user.wallet.address.toString(),
+  ): Promise<InlineResponse20075TxResponse> {
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  async executeProposalWithAttempts(proposalId: number) {
+    await this.executeProposal(proposalId);
+    await getWithAttempts(
+      this.user.chain.blockWaiter,
+      async () => await this.dao.queryProposal(proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  async executeMultiChoiceProposalWithAttempts(proposalId: number) {
+    await this.executeMultiChoiceProposal(proposalId);
+    await getWithAttempts(
+      this.user.chain.blockWaiter,
+      async () => await this.dao.queryMultiChoiceProposal(proposalId),
+      async (response) => response.proposal.status === 'executed',
+      20,
+    );
+  }
+
+  /**
+   * executeMultiChoiceProposal executes given multichoice proposal.
+   */
+  async executeMultiChoiceProposal(
+    proposalId: number,
+    sender: string = this.user.wallet.address.toString(),
+  ): Promise<any> {
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.multiple.address,
+      JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      sender,
+    );
+  }
+
+  /**
+   * submitSendProposal creates proposal to send funds from DAO core contract for given address.
+   */
+  async submitSendProposal(
+    title: string,
+    description: string,
+    dest: { recipient: string; amount: number; denom: string }[],
+    deposit = '',
+  ): Promise<number> {
+    const messages = dest.map((d) =>
+      createBankMessage(d.recipient, d.amount, d.denom),
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      messages,
+      deposit,
+    );
+  }
+
+  /**
+   * submitParameterChangeProposal creates parameter change proposal.
+   */
+  async submitParameterChangeProposal(
+    title: string,
+    description: string,
+    subspace: string,
+    key: string,
+    value: string,
+    deposit: string,
+  ): Promise<number> {
+    const message = paramChangeProposal({
+      title,
+      description,
+      subspace,
+      key,
+      value,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
+  }
+
+  /**
+   * submitMultiChoiceSendProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceSendProposal(
+    choices: SendProposalInfo[],
+    title: string,
+    description: string,
+    deposit: string,
+  ): Promise<number> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [
+        createBankMessage(choice.to, parseInt(choice.amount), choice.denom),
+      ],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      deposit,
+      messages,
+    );
+  }
+
+  /**
+   * submitMultiChoiceParameterChangeProposal creates parameter change proposal with multiple choices.
+   */
+  async submitMultiChoiceParameterChangeProposal(
+    choices: ParamChangeProposalInfo[],
+    title: string,
+    description: string,
+    deposit: string,
+  ): Promise<number> {
+    const messages: MultiChoiceOption[] = choices.map((choice, idx) => ({
+      description: 'choice' + idx,
+      msgs: [paramChangeProposal(choice)],
+    }));
+    return await this.submitMultiChoiceProposal(
+      title,
+      description,
+      deposit,
+      messages,
+    );
+  }
+
+  /**
+   * submitMultiChoiceProposal creates multi-choice proposal with given message.
+   */
+  async submitMultiChoiceProposal(
+    title: string,
+    description: string,
+    deposit: string,
+    options: MultiChoiceOption[],
+  ): Promise<number> {
+    const proposalTx = await this.user.executeContract(
+      this.dao.contracts.proposal_modules.multiple.pre_proposal_module.address,
+      JSON.stringify({
+        propose: {
+          msg: {
+            propose: {
+              title: title,
+              description: description,
+              choices: { options },
+            },
+          },
+        },
+      }),
+      [{ denom: this.user.chain.denom, amount: deposit }],
+      this.user.wallet.address.toString(),
+    );
+
+    const attribute = getEventAttribute(
+      (proposalTx as any).events,
+      'wasm',
+      'proposal_id',
+    );
+
+    const proposalId = parseInt(attribute);
+    expect(proposalId).toBeGreaterThanOrEqual(0);
+    return proposalId;
+  }
+
+  /**
+   * submitSoftwareUpgradeProposal creates proposal.
+   */
+  async submitSoftwareUpgradeProposal(
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    deposit: string,
+  ): Promise<number> {
+    const message = {
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            software_upgrade_proposal: {
+              title,
+              description,
+              plan: {
+                name,
+                height,
+                info,
+              },
+            },
+          },
+        },
+      },
+    };
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
+  }
+
+  /**
+   * submitCancelSoftwareUpgradeProposal creates proposal.
+   */
+  async submitCancelSoftwareUpgradeProposal(
+    title: string,
+    description: string,
+    deposit: string,
+  ): Promise<number> {
+    const message = {
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            cancel_software_upgrade_proposal: {
+              title,
+              description,
+            },
+          },
+        },
+      },
+    };
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
+  }
+
+  async supportAndExecuteProposal(
+    proposal_id: number,
+  ): Promise<TimeLockSingleChoiceProposal> {
+    await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({
+        vote: { proposal_id: proposal_id, vote: 'yes' },
+      }),
+    );
+
+    await this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.address,
+      JSON.stringify({ execute: { proposal_id: proposal_id } }),
+    );
+    return await this.dao.getTimelockedProposal(proposal_id);
+  }
+
+  async executeTimelockedProposal(
+    proposal_id: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module
+        .timelock_module.address,
+      JSON.stringify({
+        execute_proposal: {
+          proposal_id: proposal_id,
+        },
+      }),
+    );
+  }
+
+  async overruleTimelockedProposal(
+    proposal_id: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    return this.user.executeContract(
+      this.dao.contracts.proposal_modules.single.pre_proposal_module
+        .timelock_module.address,
+      JSON.stringify({
+        overrule_proposal: {
+          proposal_id: proposal_id,
+        },
+      }),
+    );
+  }
+
+  async submitUpdateSubDaoConfigProposal(new_config: {
+    name?: string;
+    description?: string;
+    dao_uri?: string;
+  }): Promise<number> {
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: this.dao.contracts.core.address,
+          msg: Buffer.from(
+            JSON.stringify({
+              update_config: new_config,
+            }),
+          ).toString('base64'),
+          funds: [],
+        },
+      },
+    };
+
+    return await this.submitSingleChoiceProposal(
+      'update subDAO config',
+      'sets subDAO config to new value',
+      [message],
+    );
+  }
+
+  /**
+   * submitPinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitPinCodesProposal(
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+  ): Promise<number> {
+    const message = pinCodesProposal({ title, description, codes_ids });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+
+  async submitUnpinCodesProposal(
+    title: string,
+    description: string,
+    codes_ids: number[],
+    amount: string,
+  ): Promise<number> {
+    const message = unpinCodesProposal({ title, description, codes_ids });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClientUpdateProposal(
+    title: string,
+    description: string,
+    subject_client_id: string,
+    substitute_client_id: string,
+    amount: string,
+  ): Promise<number> {
+    const message = clientUpdateProposal({
+      title,
+      description,
+      subject_client_id,
+      substitute_client_id,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpgradeProposal(
+    title: string,
+    description: string,
+    name: string,
+    height: number,
+    info: string,
+    upgraded_client_state: string,
+    amount: string,
+  ): Promise<number> {
+    const message = upgradeProposal({
+      title,
+      description,
+      name,
+      height,
+      info,
+      upgraded_client_state,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitUpdateAdminProposal(
+    title: string,
+    description: string,
+    contract: string,
+    new_admin: string,
+    amount: string,
+  ): Promise<number> {
+    const message = updateAdminProposal({
+      title,
+      description,
+      contract,
+      new_admin,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitClearAdminProposal(
+    title: string,
+    description: string,
+    contract: string,
+    amount: string,
+  ): Promise<number> {
+    const message = clearAdminProposal({ title, description, contract });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+  /**
+   * submitAddSchedule creates proposal to add new schedule.
+   */
+  async submitAddSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+    period: number,
+    msgs: any[],
+  ): Promise<number> {
+    const message = addSchedule(name, period, msgs);
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitRemoveSchedule creates proposal to remove added schedule.
+   */
+  async submitRemoveSchedule(
+    title: string,
+    description: string,
+    amount: string,
+    name: string,
+  ): Promise<number> {
+    const message = removeSchedule(name);
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+}
