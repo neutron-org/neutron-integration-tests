@@ -37,7 +37,6 @@ export type ProposalModule = {
 
 export type TimeLockSingleChoiceProposal = {
   id: number;
-  timelock_ts: number; //  The timestamp at which the proposal was submitted to the timelock contract.
   msgs: Array<Record<string, any>>; // Vec<CosmosMsg<NeutronMsg>>
   status: string;
 };
@@ -845,17 +844,64 @@ export class DaoMember {
   }
 
   async overruleTimelockedProposal(
+    timelock_address: string,
     proposal_id: number,
   ): Promise<InlineResponse20075TxResponse> {
-    return this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.pre_proposal_module
-        .timelock_module.address,
+    const prop_id = await this.dao.getOverruleProposalId(
+      timelock_address,
+      proposal_id,
+    );
+    await this.user.executeContract(
+      this.dao.contracts.proposal_modules.overrule.address,
+      JSON.stringify({ vote: { proposal_id: prop_id, vote: 'yes' } }),
+      [],
+      this.user.wallet.address.toString(),
+    );
+    return await this.user.executeContract(
+      this.dao.contracts.proposal_modules.overrule.address,
+      JSON.stringify({ execute: { proposal_id: proposal_id } }),
+      [],
+      this.user.wallet.address.toString(),
+    );
+  }
+
+  /**
+   * submitOverruleProposal tries to create overrule proposal.
+   * Actually, it will always fail since even while creation of overrule proposals
+   * is permissionless, there is no moment in time when user can do that.
+   * The overrule proposal is created automatically when subdao proposal is timelocked
+   * and there is no way to create it for non-timelocked proposal or create a duplicate.
+   * Thus, this function is for testing purposes only.
+   */
+  async submitOverruleProposal(
+    timelock_address: string,
+    proposal_id: number,
+  ): Promise<number> {
+    const proposalTx = await this.user.executeContract(
+      this.dao.contracts.proposal_modules.overrule.pre_proposal_module.address,
       JSON.stringify({
-        overrule_proposal: {
-          proposal_id: proposal_id,
+        propose: {
+          msg: {
+            propose_overrule: {
+              timelock_contract: timelock_address,
+              proposal_id,
+            },
+          },
         },
       }),
+      [],
+      this.user.wallet.address.toString(),
     );
+
+    const attribute = getEventAttribute(
+      (proposalTx as any).events,
+      'wasm',
+      'proposal_id',
+    );
+
+    const proposalId = parseInt(attribute);
+    expect(proposalId).toBeGreaterThanOrEqual(0);
+    return proposalId;
   }
 
   async submitUpdateSubDaoConfigProposal(new_config: {
@@ -1057,6 +1103,7 @@ export const setupSubDaoTimelockSet = async (
   cm: WalletWrapper,
   main_dao_address: string,
   security_dao_addr: string,
+  mockMainDao: boolean,
 ): Promise<Dao> => {
   const coreCodeId = await cm.storeWasm(NeutronContract.SUBDAO_CORE);
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);
@@ -1127,7 +1174,7 @@ export const setupSubDaoTimelockSet = async (
     vote_module_instantiate_info: votingModuleInstantiateInfo,
     proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
     dao_uri: 'www.testsubdao.org',
-    main_dao: cm.wallet.address.toString(),
+    main_dao: mockMainDao ? cm.wallet.address : daoContracts.core.address,
     security_dao: security_dao_addr,
   };
   const res = await cm.instantiateContract(
@@ -1322,12 +1369,9 @@ export const deployNeutronDao = async (
     },
     close_proposal_on_execution_failure: false,
     threshold: {
-      threshold_quorum: {
-        quorum: {
-          percent: '0.20',
-        },
-        threshold: {
-          majority: {},
+      absolute_percentage: {
+        percentage: {
+          percent: '0.10',
         },
       },
     },

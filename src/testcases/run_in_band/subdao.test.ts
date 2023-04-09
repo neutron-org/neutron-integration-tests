@@ -18,6 +18,7 @@ import { getHeight, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../../types';
+import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -62,6 +63,7 @@ describe('Neutron / Subdao', () => {
       neutronAccount1,
       mainDao.contracts.core.address,
       security_dao_addr.toString(),
+      true,
     );
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
@@ -148,9 +150,8 @@ describe('Neutron / Subdao', () => {
     });
 
     test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
-      // TODO rewrite with gov overrule proposal
       await expect(
-        subdaoMember1.overruleTimelockedProposal(proposal_id),
+        overruleTimelockedProposalMock(subdaoMember1, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
     });
   });
@@ -204,7 +205,7 @@ describe('Neutron / Subdao', () => {
 
     test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
-        subdaoMember1.overruleTimelockedProposal(proposal_id),
+        overruleTimelockedProposalMock(subdaoMember1, proposal_id),
       ).rejects.toThrow(/Wrong proposal status \(executed\)/);
     });
   });
@@ -231,12 +232,12 @@ describe('Neutron / Subdao', () => {
 
     test('overrule timelocked(Timelocked): Unauthorized', async () => {
       await expect(
-        subdaoMember2.overruleTimelockedProposal(proposal_id),
+        overruleTimelockedProposalMock(subdaoMember2, proposal_id),
       ).rejects.toThrow(/Unauthorized/);
     });
 
     test('overrule timelocked(Timelocked): Success', async () => {
-      await subdaoMember1.overruleTimelockedProposal(proposal_id);
+      await overruleTimelockedProposalMock(subdaoMember1, proposal_id);
       const timelocked_prop = await subDao.getTimelockedProposal(proposal_id);
       expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('overruled');
@@ -508,6 +509,7 @@ describe('Neutron / Subdao', () => {
         neutronAccount1,
         mainDao.contracts.core.address,
         demo1_addr.toString(),
+        true,
       );
       subDAOQueryTestScopeMember = new DaoMember(
         neutronAccount1,
@@ -670,3 +672,18 @@ describe('Neutron / Subdao', () => {
     });
   });
 });
+
+async function overruleTimelockedProposalMock(
+  acc: DaoMember,
+  proposal_id: number,
+): Promise<InlineResponse20075TxResponse> {
+  return acc.user.executeContract(
+    acc.dao.contracts.proposal_modules.single.pre_proposal_module
+      .timelock_module.address,
+    JSON.stringify({
+      overrule_proposal: {
+        proposal_id: proposal_id,
+      },
+    }),
+  );
+}
