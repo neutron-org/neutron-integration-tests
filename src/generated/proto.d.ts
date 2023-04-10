@@ -695,6 +695,1049 @@ export namespace neutron {
         }
     }
 
+    /** Namespace cron. */
+    namespace cron {
+
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+        }
+
+        /** Properties of a Schedule. */
+        interface ISchedule {
+
+            /** Schedule name */
+            name?: (string|null);
+
+            /** Schedule period */
+            period?: (Long|null);
+
+            /** Schedule msgs */
+            msgs?: (neutron.cron.IMsgExecuteContract[]|null);
+
+            /** Schedule last_execute_height */
+            last_execute_height?: (Long|null);
+        }
+
+        /** Represents a Schedule. */
+        class Schedule implements ISchedule {
+
+            /**
+             * Constructs a new Schedule.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.ISchedule);
+
+            /** Schedule name. */
+            public name: string;
+
+            /** Schedule period. */
+            public period: Long;
+
+            /** Schedule msgs. */
+            public msgs: neutron.cron.IMsgExecuteContract[];
+
+            /** Schedule last_execute_height. */
+            public last_execute_height: Long;
+
+            /**
+             * Encodes the specified Schedule message. Does not implicitly {@link neutron.cron.Schedule.verify|verify} messages.
+             * @param message Schedule message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.ISchedule, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Schedule message, length delimited. Does not implicitly {@link neutron.cron.Schedule.verify|verify} messages.
+             * @param message Schedule message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.ISchedule, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Schedule message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Schedule
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.Schedule;
+
+            /**
+             * Decodes a Schedule message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Schedule
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.Schedule;
+
+            /**
+             * Verifies a Schedule message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Schedule message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Schedule
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.Schedule;
+
+            /**
+             * Creates a plain object from a Schedule message. Also converts values to other types if specified.
+             * @param message Schedule
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.Schedule, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Schedule to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgExecuteContract. */
+        interface IMsgExecuteContract {
+
+            /** MsgExecuteContract contract */
+            contract?: (string|null);
+
+            /** MsgExecuteContract msg */
+            msg?: (string|null);
+        }
+
+        /** Represents a MsgExecuteContract. */
+        class MsgExecuteContract implements IMsgExecuteContract {
+
+            /**
+             * Constructs a new MsgExecuteContract.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IMsgExecuteContract);
+
+            /** MsgExecuteContract contract. */
+            public contract: string;
+
+            /** MsgExecuteContract msg. */
+            public msg: string;
+
+            /**
+             * Encodes the specified MsgExecuteContract message. Does not implicitly {@link neutron.cron.MsgExecuteContract.verify|verify} messages.
+             * @param message MsgExecuteContract message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IMsgExecuteContract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgExecuteContract message, length delimited. Does not implicitly {@link neutron.cron.MsgExecuteContract.verify|verify} messages.
+             * @param message MsgExecuteContract message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IMsgExecuteContract, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgExecuteContract message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgExecuteContract
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.MsgExecuteContract;
+
+            /**
+             * Decodes a MsgExecuteContract message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgExecuteContract
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.MsgExecuteContract;
+
+            /**
+             * Verifies a MsgExecuteContract message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgExecuteContract message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgExecuteContract
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.MsgExecuteContract;
+
+            /**
+             * Creates a plain object from a MsgExecuteContract message. Also converts values to other types if specified.
+             * @param message MsgExecuteContract
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.MsgExecuteContract, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgExecuteContract to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a ScheduleCount. */
+        interface IScheduleCount {
+
+            /** ScheduleCount count */
+            count?: (number|null);
+        }
+
+        /** Represents a ScheduleCount. */
+        class ScheduleCount implements IScheduleCount {
+
+            /**
+             * Constructs a new ScheduleCount.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IScheduleCount);
+
+            /** ScheduleCount count. */
+            public count: number;
+
+            /**
+             * Encodes the specified ScheduleCount message. Does not implicitly {@link neutron.cron.ScheduleCount.verify|verify} messages.
+             * @param message ScheduleCount message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IScheduleCount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified ScheduleCount message, length delimited. Does not implicitly {@link neutron.cron.ScheduleCount.verify|verify} messages.
+             * @param message ScheduleCount message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IScheduleCount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a ScheduleCount message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns ScheduleCount
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.ScheduleCount;
+
+            /**
+             * Decodes a ScheduleCount message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns ScheduleCount
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.ScheduleCount;
+
+            /**
+             * Verifies a ScheduleCount message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a ScheduleCount message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns ScheduleCount
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.ScheduleCount;
+
+            /**
+             * Creates a plain object from a ScheduleCount message. Also converts values to other types if specified.
+             * @param message ScheduleCount
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.ScheduleCount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this ScheduleCount to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Represents a Query */
+        class Query extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Query service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+             */
+            public params(request: neutron.cron.IQueryParamsRequest, callback: neutron.cron.Query.ParamsCallback): void;
+
+            /**
+             * Calls Params.
+             * @param request QueryParamsRequest message or plain object
+             * @returns Promise
+             */
+            public params(request: neutron.cron.IQueryParamsRequest): Promise<neutron.cron.QueryParamsResponse>;
+
+            /**
+             * Calls Schedule.
+             * @param request QueryGetScheduleRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QueryGetScheduleResponse
+             */
+            public schedule(request: neutron.cron.IQueryGetScheduleRequest, callback: neutron.cron.Query.ScheduleCallback): void;
+
+            /**
+             * Calls Schedule.
+             * @param request QueryGetScheduleRequest message or plain object
+             * @returns Promise
+             */
+            public schedule(request: neutron.cron.IQueryGetScheduleRequest): Promise<neutron.cron.QueryGetScheduleResponse>;
+
+            /**
+             * Calls Schedules.
+             * @param request QuerySchedulesRequest message or plain object
+             * @param callback Node-style callback called with the error, if any, and QuerySchedulesResponse
+             */
+            public schedules(request: neutron.cron.IQuerySchedulesRequest, callback: neutron.cron.Query.SchedulesCallback): void;
+
+            /**
+             * Calls Schedules.
+             * @param request QuerySchedulesRequest message or plain object
+             * @returns Promise
+             */
+            public schedules(request: neutron.cron.IQuerySchedulesRequest): Promise<neutron.cron.QuerySchedulesResponse>;
+        }
+
+        namespace Query {
+
+            /**
+             * Callback as used by {@link neutron.cron.Query#params}.
+             * @param error Error, if any
+             * @param [response] QueryParamsResponse
+             */
+            type ParamsCallback = (error: (Error|null), response?: neutron.cron.QueryParamsResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.cron.Query#schedule}.
+             * @param error Error, if any
+             * @param [response] QueryGetScheduleResponse
+             */
+            type ScheduleCallback = (error: (Error|null), response?: neutron.cron.QueryGetScheduleResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.cron.Query#schedules}.
+             * @param error Error, if any
+             * @param [response] QuerySchedulesResponse
+             */
+            type SchedulesCallback = (error: (Error|null), response?: neutron.cron.QuerySchedulesResponse) => void;
+        }
+
+        /** Properties of a QueryParamsRequest. */
+        interface IQueryParamsRequest {
+        }
+
+        /** Represents a QueryParamsRequest. */
+        class QueryParamsRequest implements IQueryParamsRequest {
+
+            /**
+             * Constructs a new QueryParamsRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQueryParamsRequest);
+
+            /**
+             * Encodes the specified QueryParamsRequest message. Does not implicitly {@link neutron.cron.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link neutron.cron.QueryParamsRequest.verify|verify} messages.
+             * @param message QueryParamsRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QueryParamsRequest;
+
+            /**
+             * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QueryParamsRequest;
+
+            /**
+             * Verifies a QueryParamsRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QueryParamsRequest;
+
+            /**
+             * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+             * @param message QueryParamsRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryParamsResponse. */
+        interface IQueryParamsResponse {
+
+            /** QueryParamsResponse params */
+            params?: (neutron.cron.IParams|null);
+        }
+
+        /** Represents a QueryParamsResponse. */
+        class QueryParamsResponse implements IQueryParamsResponse {
+
+            /**
+             * Constructs a new QueryParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQueryParamsResponse);
+
+            /** QueryParamsResponse params. */
+            public params?: (neutron.cron.IParams|null);
+
+            /**
+             * Encodes the specified QueryParamsResponse message. Does not implicitly {@link neutron.cron.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link neutron.cron.QueryParamsResponse.verify|verify} messages.
+             * @param message QueryParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QueryParamsResponse;
+
+            /**
+             * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QueryParamsResponse;
+
+            /**
+             * Verifies a QueryParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QueryParamsResponse;
+
+            /**
+             * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+             * @param message QueryParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryGetScheduleRequest. */
+        interface IQueryGetScheduleRequest {
+
+            /** QueryGetScheduleRequest name */
+            name?: (string|null);
+        }
+
+        /** Represents a QueryGetScheduleRequest. */
+        class QueryGetScheduleRequest implements IQueryGetScheduleRequest {
+
+            /**
+             * Constructs a new QueryGetScheduleRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQueryGetScheduleRequest);
+
+            /** QueryGetScheduleRequest name. */
+            public name: string;
+
+            /**
+             * Encodes the specified QueryGetScheduleRequest message. Does not implicitly {@link neutron.cron.QueryGetScheduleRequest.verify|verify} messages.
+             * @param message QueryGetScheduleRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQueryGetScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryGetScheduleRequest message, length delimited. Does not implicitly {@link neutron.cron.QueryGetScheduleRequest.verify|verify} messages.
+             * @param message QueryGetScheduleRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQueryGetScheduleRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryGetScheduleRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryGetScheduleRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QueryGetScheduleRequest;
+
+            /**
+             * Decodes a QueryGetScheduleRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryGetScheduleRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QueryGetScheduleRequest;
+
+            /**
+             * Verifies a QueryGetScheduleRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryGetScheduleRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryGetScheduleRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QueryGetScheduleRequest;
+
+            /**
+             * Creates a plain object from a QueryGetScheduleRequest message. Also converts values to other types if specified.
+             * @param message QueryGetScheduleRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QueryGetScheduleRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryGetScheduleRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QueryGetScheduleResponse. */
+        interface IQueryGetScheduleResponse {
+
+            /** QueryGetScheduleResponse schedule */
+            schedule?: (neutron.cron.ISchedule|null);
+        }
+
+        /** Represents a QueryGetScheduleResponse. */
+        class QueryGetScheduleResponse implements IQueryGetScheduleResponse {
+
+            /**
+             * Constructs a new QueryGetScheduleResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQueryGetScheduleResponse);
+
+            /** QueryGetScheduleResponse schedule. */
+            public schedule?: (neutron.cron.ISchedule|null);
+
+            /**
+             * Encodes the specified QueryGetScheduleResponse message. Does not implicitly {@link neutron.cron.QueryGetScheduleResponse.verify|verify} messages.
+             * @param message QueryGetScheduleResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQueryGetScheduleResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QueryGetScheduleResponse message, length delimited. Does not implicitly {@link neutron.cron.QueryGetScheduleResponse.verify|verify} messages.
+             * @param message QueryGetScheduleResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQueryGetScheduleResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QueryGetScheduleResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QueryGetScheduleResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QueryGetScheduleResponse;
+
+            /**
+             * Decodes a QueryGetScheduleResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QueryGetScheduleResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QueryGetScheduleResponse;
+
+            /**
+             * Verifies a QueryGetScheduleResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QueryGetScheduleResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QueryGetScheduleResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QueryGetScheduleResponse;
+
+            /**
+             * Creates a plain object from a QueryGetScheduleResponse message. Also converts values to other types if specified.
+             * @param message QueryGetScheduleResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QueryGetScheduleResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QueryGetScheduleResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QuerySchedulesRequest. */
+        interface IQuerySchedulesRequest {
+
+            /** QuerySchedulesRequest pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+        }
+
+        /** Represents a QuerySchedulesRequest. */
+        class QuerySchedulesRequest implements IQuerySchedulesRequest {
+
+            /**
+             * Constructs a new QuerySchedulesRequest.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQuerySchedulesRequest);
+
+            /** QuerySchedulesRequest pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+
+            /**
+             * Encodes the specified QuerySchedulesRequest message. Does not implicitly {@link neutron.cron.QuerySchedulesRequest.verify|verify} messages.
+             * @param message QuerySchedulesRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQuerySchedulesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QuerySchedulesRequest message, length delimited. Does not implicitly {@link neutron.cron.QuerySchedulesRequest.verify|verify} messages.
+             * @param message QuerySchedulesRequest message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQuerySchedulesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QuerySchedulesRequest message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QuerySchedulesRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QuerySchedulesRequest;
+
+            /**
+             * Decodes a QuerySchedulesRequest message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QuerySchedulesRequest
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QuerySchedulesRequest;
+
+            /**
+             * Verifies a QuerySchedulesRequest message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QuerySchedulesRequest message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QuerySchedulesRequest
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QuerySchedulesRequest;
+
+            /**
+             * Creates a plain object from a QuerySchedulesRequest message. Also converts values to other types if specified.
+             * @param message QuerySchedulesRequest
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QuerySchedulesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QuerySchedulesRequest to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a QuerySchedulesResponse. */
+        interface IQuerySchedulesResponse {
+
+            /** QuerySchedulesResponse schedules */
+            schedules?: (neutron.cron.ISchedule[]|null);
+
+            /** QuerySchedulesResponse pagination */
+            pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+        }
+
+        /** Represents a QuerySchedulesResponse. */
+        class QuerySchedulesResponse implements IQuerySchedulesResponse {
+
+            /**
+             * Constructs a new QuerySchedulesResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IQuerySchedulesResponse);
+
+            /** QuerySchedulesResponse schedules. */
+            public schedules: neutron.cron.ISchedule[];
+
+            /** QuerySchedulesResponse pagination. */
+            public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+
+            /**
+             * Encodes the specified QuerySchedulesResponse message. Does not implicitly {@link neutron.cron.QuerySchedulesResponse.verify|verify} messages.
+             * @param message QuerySchedulesResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IQuerySchedulesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified QuerySchedulesResponse message, length delimited. Does not implicitly {@link neutron.cron.QuerySchedulesResponse.verify|verify} messages.
+             * @param message QuerySchedulesResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IQuerySchedulesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a QuerySchedulesResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns QuerySchedulesResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.QuerySchedulesResponse;
+
+            /**
+             * Decodes a QuerySchedulesResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns QuerySchedulesResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.QuerySchedulesResponse;
+
+            /**
+             * Verifies a QuerySchedulesResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a QuerySchedulesResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns QuerySchedulesResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.QuerySchedulesResponse;
+
+            /**
+             * Creates a plain object from a QuerySchedulesResponse message. Also converts values to other types if specified.
+             * @param message QuerySchedulesResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.QuerySchedulesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this QuerySchedulesResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params security_address */
+            security_address?: (string|null);
+
+            /** Params limit */
+            limit?: (Long|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IParams);
+
+            /** Params security_address. */
+            public security_address: string;
+
+            /** Params limit. */
+            public limit: Long;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a GenesisState. */
+        interface IGenesisState {
+
+            /** GenesisState scheduleList */
+            scheduleList?: (neutron.cron.ISchedule[]|null);
+
+            /** GenesisState params */
+            params?: (neutron.cron.IParams|null);
+        }
+
+        /** Represents a GenesisState. */
+        class GenesisState implements IGenesisState {
+
+            /**
+             * Constructs a new GenesisState.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IGenesisState);
+
+            /** GenesisState scheduleList. */
+            public scheduleList: neutron.cron.ISchedule[];
+
+            /** GenesisState params. */
+            public params?: (neutron.cron.IParams|null);
+
+            /**
+             * Encodes the specified GenesisState message. Does not implicitly {@link neutron.cron.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link neutron.cron.GenesisState.verify|verify} messages.
+             * @param message GenesisState message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.GenesisState;
+
+            /**
+             * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns GenesisState
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.GenesisState;
+
+            /**
+             * Verifies a GenesisState message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns GenesisState
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.GenesisState;
+
+            /**
+             * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+             * @param message GenesisState
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this GenesisState to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+    }
+
     /** Namespace feeburner. */
     namespace feeburner {
 
@@ -1081,8 +2124,8 @@ export namespace neutron {
             /** Params neutron_denom */
             neutron_denom?: (string|null);
 
-            /** Params treasury_address */
-            treasury_address?: (string|null);
+            /** Params reserve_address */
+            reserve_address?: (string|null);
         }
 
         /** Represents a Params. */
@@ -1097,8 +2140,8 @@ export namespace neutron {
             /** Params neutron_denom. */
             public neutron_denom: string;
 
-            /** Params treasury_address. */
-            public treasury_address: string;
+            /** Params reserve_address. */
+            public reserve_address: string;
 
             /**
              * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
@@ -3451,7 +4494,7 @@ export namespace neutron {
             last_submitted_result_local_height?: (Long|null);
 
             /** RegisteredQuery last_submitted_result_remote_height */
-            last_submitted_result_remote_height?: (Long|null);
+            last_submitted_result_remote_height?: (ibc.core.client.v1.IHeight|null);
 
             /** RegisteredQuery deposit */
             deposit?: (cosmos.base.v1beta1.ICoin[]|null);
@@ -3497,7 +4540,7 @@ export namespace neutron {
             public last_submitted_result_local_height: Long;
 
             /** RegisteredQuery last_submitted_result_remote_height. */
-            public last_submitted_result_remote_height: Long;
+            public last_submitted_result_remote_height?: (ibc.core.client.v1.IHeight|null);
 
             /** RegisteredQuery deposit. */
             public deposit: cosmos.base.v1beta1.ICoin[];
@@ -5972,6 +7015,9 @@ export namespace neutron {
             /** MsgTransfer timeout_timestamp */
             timeout_timestamp?: (Long|null);
 
+            /** MsgTransfer memo */
+            memo?: (string|null);
+
             /** MsgTransfer fee */
             fee?: (neutron.feerefunder.IFee|null);
         }
@@ -6005,6 +7051,9 @@ export namespace neutron {
 
             /** MsgTransfer timeout_timestamp. */
             public timeout_timestamp: Long;
+
+            /** MsgTransfer memo. */
+            public memo: string;
 
             /** MsgTransfer fee. */
             public fee?: (neutron.feerefunder.IFee|null);
@@ -18295,207 +19344,6 @@ export namespace google {
     }
 }
 
-/** Namespace cosmos_proto. */
-export namespace cosmos_proto {
-
-    /** Properties of an InterfaceDescriptor. */
-    interface IInterfaceDescriptor {
-
-        /** InterfaceDescriptor name */
-        name?: (string|null);
-
-        /** InterfaceDescriptor description */
-        description?: (string|null);
-    }
-
-    /** Represents an InterfaceDescriptor. */
-    class InterfaceDescriptor implements IInterfaceDescriptor {
-
-        /**
-         * Constructs a new InterfaceDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
-
-        /** InterfaceDescriptor name. */
-        public name: string;
-
-        /** InterfaceDescriptor description. */
-        public description: string;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Verifies an InterfaceDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns InterfaceDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
-         * @param message InterfaceDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this InterfaceDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a ScalarDescriptor. */
-    interface IScalarDescriptor {
-
-        /** ScalarDescriptor name */
-        name?: (string|null);
-
-        /** ScalarDescriptor description */
-        description?: (string|null);
-
-        /** ScalarDescriptor field_type */
-        field_type?: (cosmos_proto.ScalarType[]|null);
-
-        /** ScalarDescriptor legacy_amino_encoding */
-        legacy_amino_encoding?: (string|null);
-    }
-
-    /** Represents a ScalarDescriptor. */
-    class ScalarDescriptor implements IScalarDescriptor {
-
-        /**
-         * Constructs a new ScalarDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IScalarDescriptor);
-
-        /** ScalarDescriptor name. */
-        public name: string;
-
-        /** ScalarDescriptor description. */
-        public description: string;
-
-        /** ScalarDescriptor field_type. */
-        public field_type: cosmos_proto.ScalarType[];
-
-        /** ScalarDescriptor legacy_amino_encoding. */
-        public legacy_amino_encoding: string;
-
-        /**
-         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Verifies a ScalarDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ScalarDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
-         * @param message ScalarDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ScalarDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** ScalarType enum. */
-    enum ScalarType {
-        SCALAR_TYPE_UNSPECIFIED = 0,
-        SCALAR_TYPE_STRING = 1,
-        SCALAR_TYPE_BYTES = 2
-    }
-}
-
 /** Namespace ibc. */
 export namespace ibc {
 
@@ -20294,6 +21142,1908 @@ export namespace ibc {
                      */
                     public toJSON(): { [k: string]: any };
                 }
+            }
+        }
+    }
+}
+
+/** Namespace cosmos_proto. */
+export namespace cosmos_proto {
+
+    /** Properties of an InterfaceDescriptor. */
+    interface IInterfaceDescriptor {
+
+        /** InterfaceDescriptor name */
+        name?: (string|null);
+
+        /** InterfaceDescriptor description */
+        description?: (string|null);
+    }
+
+    /** Represents an InterfaceDescriptor. */
+    class InterfaceDescriptor implements IInterfaceDescriptor {
+
+        /**
+         * Constructs a new InterfaceDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
+
+        /** InterfaceDescriptor name. */
+        public name: string;
+
+        /** InterfaceDescriptor description. */
+        public description: string;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Verifies an InterfaceDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns InterfaceDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
+         * @param message InterfaceDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this InterfaceDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** Properties of a ScalarDescriptor. */
+    interface IScalarDescriptor {
+
+        /** ScalarDescriptor name */
+        name?: (string|null);
+
+        /** ScalarDescriptor description */
+        description?: (string|null);
+
+        /** ScalarDescriptor field_type */
+        field_type?: (cosmos_proto.ScalarType[]|null);
+
+        /** ScalarDescriptor legacy_amino_encoding */
+        legacy_amino_encoding?: (string|null);
+    }
+
+    /** Represents a ScalarDescriptor. */
+    class ScalarDescriptor implements IScalarDescriptor {
+
+        /**
+         * Constructs a new ScalarDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IScalarDescriptor);
+
+        /** ScalarDescriptor name. */
+        public name: string;
+
+        /** ScalarDescriptor description. */
+        public description: string;
+
+        /** ScalarDescriptor field_type. */
+        public field_type: cosmos_proto.ScalarType[];
+
+        /** ScalarDescriptor legacy_amino_encoding. */
+        public legacy_amino_encoding: string;
+
+        /**
+         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Verifies a ScalarDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ScalarDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
+         * @param message ScalarDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ScalarDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** ScalarType enum. */
+    enum ScalarType {
+        SCALAR_TYPE_UNSPECIFIED = 0,
+        SCALAR_TYPE_STRING = 1,
+        SCALAR_TYPE_BYTES = 2
+    }
+}
+
+/** Namespace osmosis. */
+export namespace osmosis {
+
+    /** Namespace tokenfactory. */
+    namespace tokenfactory {
+
+        /** Namespace v1beta1. */
+        namespace v1beta1 {
+
+            /** Represents a Msg */
+            class Msg extends $protobuf.rpc.Service {
+
+                /**
+                 * Constructs a new Msg service.
+                 * @param rpcImpl RPC implementation
+                 * @param [requestDelimited=false] Whether requests are length-delimited
+                 * @param [responseDelimited=false] Whether responses are length-delimited
+                 */
+                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                /**
+                 * Calls CreateDenom.
+                 * @param request MsgCreateDenom message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgCreateDenomResponse
+                 */
+                public createDenom(request: osmosis.tokenfactory.v1beta1.IMsgCreateDenom, callback: osmosis.tokenfactory.v1beta1.Msg.CreateDenomCallback): void;
+
+                /**
+                 * Calls CreateDenom.
+                 * @param request MsgCreateDenom message or plain object
+                 * @returns Promise
+                 */
+                public createDenom(request: osmosis.tokenfactory.v1beta1.IMsgCreateDenom): Promise<osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse>;
+
+                /**
+                 * Calls Mint.
+                 * @param request MsgMint message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgMintResponse
+                 */
+                public mint(request: osmosis.tokenfactory.v1beta1.IMsgMint, callback: osmosis.tokenfactory.v1beta1.Msg.MintCallback): void;
+
+                /**
+                 * Calls Mint.
+                 * @param request MsgMint message or plain object
+                 * @returns Promise
+                 */
+                public mint(request: osmosis.tokenfactory.v1beta1.IMsgMint): Promise<osmosis.tokenfactory.v1beta1.MsgMintResponse>;
+
+                /**
+                 * Calls Burn.
+                 * @param request MsgBurn message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgBurnResponse
+                 */
+                public burn(request: osmosis.tokenfactory.v1beta1.IMsgBurn, callback: osmosis.tokenfactory.v1beta1.Msg.BurnCallback): void;
+
+                /**
+                 * Calls Burn.
+                 * @param request MsgBurn message or plain object
+                 * @returns Promise
+                 */
+                public burn(request: osmosis.tokenfactory.v1beta1.IMsgBurn): Promise<osmosis.tokenfactory.v1beta1.MsgBurnResponse>;
+
+                /**
+                 * Calls ChangeAdmin.
+                 * @param request MsgChangeAdmin message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgChangeAdminResponse
+                 */
+                public changeAdmin(request: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin, callback: osmosis.tokenfactory.v1beta1.Msg.ChangeAdminCallback): void;
+
+                /**
+                 * Calls ChangeAdmin.
+                 * @param request MsgChangeAdmin message or plain object
+                 * @returns Promise
+                 */
+                public changeAdmin(request: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin): Promise<osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse>;
+            }
+
+            namespace Msg {
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#createDenom}.
+                 * @param error Error, if any
+                 * @param [response] MsgCreateDenomResponse
+                 */
+                type CreateDenomCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#mint}.
+                 * @param error Error, if any
+                 * @param [response] MsgMintResponse
+                 */
+                type MintCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgMintResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#burn}.
+                 * @param error Error, if any
+                 * @param [response] MsgBurnResponse
+                 */
+                type BurnCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgBurnResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#changeAdmin}.
+                 * @param error Error, if any
+                 * @param [response] MsgChangeAdminResponse
+                 */
+                type ChangeAdminCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse) => void;
+            }
+
+            /** Properties of a MsgCreateDenom. */
+            interface IMsgCreateDenom {
+
+                /** MsgCreateDenom sender */
+                sender?: (string|null);
+
+                /** MsgCreateDenom subdenom */
+                subdenom?: (string|null);
+            }
+
+            /** Represents a MsgCreateDenom. */
+            class MsgCreateDenom implements IMsgCreateDenom {
+
+                /**
+                 * Constructs a new MsgCreateDenom.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgCreateDenom);
+
+                /** MsgCreateDenom sender. */
+                public sender: string;
+
+                /** MsgCreateDenom subdenom. */
+                public subdenom: string;
+
+                /**
+                 * Encodes the specified MsgCreateDenom message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenom.verify|verify} messages.
+                 * @param message MsgCreateDenom message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgCreateDenom, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgCreateDenom message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenom.verify|verify} messages.
+                 * @param message MsgCreateDenom message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgCreateDenom, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgCreateDenom message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgCreateDenom
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgCreateDenom;
+
+                /**
+                 * Decodes a MsgCreateDenom message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgCreateDenom
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgCreateDenom;
+
+                /**
+                 * Verifies a MsgCreateDenom message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgCreateDenom message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgCreateDenom
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgCreateDenom;
+
+                /**
+                 * Creates a plain object from a MsgCreateDenom message. Also converts values to other types if specified.
+                 * @param message MsgCreateDenom
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgCreateDenom, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgCreateDenom to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgCreateDenomResponse. */
+            interface IMsgCreateDenomResponse {
+
+                /** MsgCreateDenomResponse new_token_denom */
+                new_token_denom?: (string|null);
+            }
+
+            /** Represents a MsgCreateDenomResponse. */
+            class MsgCreateDenomResponse implements IMsgCreateDenomResponse {
+
+                /**
+                 * Constructs a new MsgCreateDenomResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse);
+
+                /** MsgCreateDenomResponse new_token_denom. */
+                public new_token_denom: string;
+
+                /**
+                 * Encodes the specified MsgCreateDenomResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse.verify|verify} messages.
+                 * @param message MsgCreateDenomResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgCreateDenomResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse.verify|verify} messages.
+                 * @param message MsgCreateDenomResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgCreateDenomResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgCreateDenomResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgCreateDenomResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse;
+
+                /**
+                 * Decodes a MsgCreateDenomResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgCreateDenomResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse;
+
+                /**
+                 * Verifies a MsgCreateDenomResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgCreateDenomResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgCreateDenomResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse;
+
+                /**
+                 * Creates a plain object from a MsgCreateDenomResponse message. Also converts values to other types if specified.
+                 * @param message MsgCreateDenomResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgCreateDenomResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgCreateDenomResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgMint. */
+            interface IMsgMint {
+
+                /** MsgMint sender */
+                sender?: (string|null);
+
+                /** MsgMint amount */
+                amount?: (cosmos.base.v1beta1.ICoin|null);
+            }
+
+            /** Represents a MsgMint. */
+            class MsgMint implements IMsgMint {
+
+                /**
+                 * Constructs a new MsgMint.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgMint);
+
+                /** MsgMint sender. */
+                public sender: string;
+
+                /** MsgMint amount. */
+                public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /**
+                 * Encodes the specified MsgMint message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMint.verify|verify} messages.
+                 * @param message MsgMint message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgMint, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgMint message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMint.verify|verify} messages.
+                 * @param message MsgMint message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgMint, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgMint message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgMint
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgMint;
+
+                /**
+                 * Decodes a MsgMint message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgMint
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgMint;
+
+                /**
+                 * Verifies a MsgMint message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgMint message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgMint
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgMint;
+
+                /**
+                 * Creates a plain object from a MsgMint message. Also converts values to other types if specified.
+                 * @param message MsgMint
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgMint, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgMint to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgMintResponse. */
+            interface IMsgMintResponse {
+            }
+
+            /** Represents a MsgMintResponse. */
+            class MsgMintResponse implements IMsgMintResponse {
+
+                /**
+                 * Constructs a new MsgMintResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgMintResponse);
+
+                /**
+                 * Encodes the specified MsgMintResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMintResponse.verify|verify} messages.
+                 * @param message MsgMintResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgMintResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgMintResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMintResponse.verify|verify} messages.
+                 * @param message MsgMintResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgMintResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgMintResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgMintResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgMintResponse;
+
+                /**
+                 * Decodes a MsgMintResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgMintResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgMintResponse;
+
+                /**
+                 * Verifies a MsgMintResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgMintResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgMintResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgMintResponse;
+
+                /**
+                 * Creates a plain object from a MsgMintResponse message. Also converts values to other types if specified.
+                 * @param message MsgMintResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgMintResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgMintResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgBurn. */
+            interface IMsgBurn {
+
+                /** MsgBurn sender */
+                sender?: (string|null);
+
+                /** MsgBurn amount */
+                amount?: (cosmos.base.v1beta1.ICoin|null);
+            }
+
+            /** Represents a MsgBurn. */
+            class MsgBurn implements IMsgBurn {
+
+                /**
+                 * Constructs a new MsgBurn.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgBurn);
+
+                /** MsgBurn sender. */
+                public sender: string;
+
+                /** MsgBurn amount. */
+                public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /**
+                 * Encodes the specified MsgBurn message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurn.verify|verify} messages.
+                 * @param message MsgBurn message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgBurn, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgBurn message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurn.verify|verify} messages.
+                 * @param message MsgBurn message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgBurn, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgBurn message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgBurn
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgBurn;
+
+                /**
+                 * Decodes a MsgBurn message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgBurn
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgBurn;
+
+                /**
+                 * Verifies a MsgBurn message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgBurn message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgBurn
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgBurn;
+
+                /**
+                 * Creates a plain object from a MsgBurn message. Also converts values to other types if specified.
+                 * @param message MsgBurn
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgBurn, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgBurn to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgBurnResponse. */
+            interface IMsgBurnResponse {
+            }
+
+            /** Represents a MsgBurnResponse. */
+            class MsgBurnResponse implements IMsgBurnResponse {
+
+                /**
+                 * Constructs a new MsgBurnResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgBurnResponse);
+
+                /**
+                 * Encodes the specified MsgBurnResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurnResponse.verify|verify} messages.
+                 * @param message MsgBurnResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgBurnResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgBurnResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurnResponse.verify|verify} messages.
+                 * @param message MsgBurnResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgBurnResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgBurnResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgBurnResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgBurnResponse;
+
+                /**
+                 * Decodes a MsgBurnResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgBurnResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgBurnResponse;
+
+                /**
+                 * Verifies a MsgBurnResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgBurnResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgBurnResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgBurnResponse;
+
+                /**
+                 * Creates a plain object from a MsgBurnResponse message. Also converts values to other types if specified.
+                 * @param message MsgBurnResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgBurnResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgBurnResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgChangeAdmin. */
+            interface IMsgChangeAdmin {
+
+                /** MsgChangeAdmin sender */
+                sender?: (string|null);
+
+                /** MsgChangeAdmin denom */
+                denom?: (string|null);
+
+                /** MsgChangeAdmin newAdmin */
+                newAdmin?: (string|null);
+            }
+
+            /** Represents a MsgChangeAdmin. */
+            class MsgChangeAdmin implements IMsgChangeAdmin {
+
+                /**
+                 * Constructs a new MsgChangeAdmin.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin);
+
+                /** MsgChangeAdmin sender. */
+                public sender: string;
+
+                /** MsgChangeAdmin denom. */
+                public denom: string;
+
+                /** MsgChangeAdmin newAdmin. */
+                public newAdmin: string;
+
+                /**
+                 * Encodes the specified MsgChangeAdmin message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdmin.verify|verify} messages.
+                 * @param message MsgChangeAdmin message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgChangeAdmin message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdmin.verify|verify} messages.
+                 * @param message MsgChangeAdmin message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgChangeAdmin message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgChangeAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgChangeAdmin;
+
+                /**
+                 * Decodes a MsgChangeAdmin message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgChangeAdmin
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgChangeAdmin;
+
+                /**
+                 * Verifies a MsgChangeAdmin message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgChangeAdmin message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgChangeAdmin
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgChangeAdmin;
+
+                /**
+                 * Creates a plain object from a MsgChangeAdmin message. Also converts values to other types if specified.
+                 * @param message MsgChangeAdmin
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgChangeAdmin, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgChangeAdmin to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgChangeAdminResponse. */
+            interface IMsgChangeAdminResponse {
+            }
+
+            /** Represents a MsgChangeAdminResponse. */
+            class MsgChangeAdminResponse implements IMsgChangeAdminResponse {
+
+                /**
+                 * Constructs a new MsgChangeAdminResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse);
+
+                /**
+                 * Encodes the specified MsgChangeAdminResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse.verify|verify} messages.
+                 * @param message MsgChangeAdminResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgChangeAdminResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse.verify|verify} messages.
+                 * @param message MsgChangeAdminResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgChangeAdminResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgChangeAdminResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgChangeAdminResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse;
+
+                /**
+                 * Decodes a MsgChangeAdminResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgChangeAdminResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse;
+
+                /**
+                 * Verifies a MsgChangeAdminResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgChangeAdminResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgChangeAdminResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse;
+
+                /**
+                 * Creates a plain object from a MsgChangeAdminResponse message. Also converts values to other types if specified.
+                 * @param message MsgChangeAdminResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgChangeAdminResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Represents a Query */
+            class Query extends $protobuf.rpc.Service {
+
+                /**
+                 * Constructs a new Query service.
+                 * @param rpcImpl RPC implementation
+                 * @param [requestDelimited=false] Whether requests are length-delimited
+                 * @param [responseDelimited=false] Whether responses are length-delimited
+                 */
+                constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                /**
+                 * Calls Params.
+                 * @param request QueryParamsRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+                 */
+                public params(request: osmosis.tokenfactory.v1beta1.IQueryParamsRequest, callback: osmosis.tokenfactory.v1beta1.Query.ParamsCallback): void;
+
+                /**
+                 * Calls Params.
+                 * @param request QueryParamsRequest message or plain object
+                 * @returns Promise
+                 */
+                public params(request: osmosis.tokenfactory.v1beta1.IQueryParamsRequest): Promise<osmosis.tokenfactory.v1beta1.QueryParamsResponse>;
+
+                /**
+                 * Calls DenomAuthorityMetadata.
+                 * @param request QueryDenomAuthorityMetadataRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and QueryDenomAuthorityMetadataResponse
+                 */
+                public denomAuthorityMetadata(request: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest, callback: osmosis.tokenfactory.v1beta1.Query.DenomAuthorityMetadataCallback): void;
+
+                /**
+                 * Calls DenomAuthorityMetadata.
+                 * @param request QueryDenomAuthorityMetadataRequest message or plain object
+                 * @returns Promise
+                 */
+                public denomAuthorityMetadata(request: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest): Promise<osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse>;
+
+                /**
+                 * Calls DenomsFromCreator.
+                 * @param request QueryDenomsFromCreatorRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and QueryDenomsFromCreatorResponse
+                 */
+                public denomsFromCreator(request: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest, callback: osmosis.tokenfactory.v1beta1.Query.DenomsFromCreatorCallback): void;
+
+                /**
+                 * Calls DenomsFromCreator.
+                 * @param request QueryDenomsFromCreatorRequest message or plain object
+                 * @returns Promise
+                 */
+                public denomsFromCreator(request: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest): Promise<osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse>;
+            }
+
+            namespace Query {
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#params}.
+                 * @param error Error, if any
+                 * @param [response] QueryParamsResponse
+                 */
+                type ParamsCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.QueryParamsResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#denomAuthorityMetadata}.
+                 * @param error Error, if any
+                 * @param [response] QueryDenomAuthorityMetadataResponse
+                 */
+                type DenomAuthorityMetadataCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#denomsFromCreator}.
+                 * @param error Error, if any
+                 * @param [response] QueryDenomsFromCreatorResponse
+                 */
+                type DenomsFromCreatorCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse) => void;
+            }
+
+            /** Properties of a QueryParamsRequest. */
+            interface IQueryParamsRequest {
+            }
+
+            /** Represents a QueryParamsRequest. */
+            class QueryParamsRequest implements IQueryParamsRequest {
+
+                /**
+                 * Constructs a new QueryParamsRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryParamsRequest);
+
+                /**
+                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsRequest.verify|verify} messages.
+                 * @param message QueryParamsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsRequest.verify|verify} messages.
+                 * @param message QueryParamsRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryParamsRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryParamsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryParamsRequest;
+
+                /**
+                 * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryParamsRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryParamsRequest;
+
+                /**
+                 * Verifies a QueryParamsRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryParamsRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryParamsRequest;
+
+                /**
+                 * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+                 * @param message QueryParamsRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryParamsRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryParamsResponse. */
+            interface IQueryParamsResponse {
+
+                /** QueryParamsResponse params */
+                params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+            }
+
+            /** Represents a QueryParamsResponse. */
+            class QueryParamsResponse implements IQueryParamsResponse {
+
+                /**
+                 * Constructs a new QueryParamsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryParamsResponse);
+
+                /** QueryParamsResponse params. */
+                public params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+
+                /**
+                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsResponse.verify|verify} messages.
+                 * @param message QueryParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryParamsResponse.verify|verify} messages.
+                 * @param message QueryParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryParamsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryParamsResponse;
+
+                /**
+                 * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryParamsResponse;
+
+                /**
+                 * Verifies a QueryParamsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryParamsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryParamsResponse;
+
+                /**
+                 * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+                 * @param message QueryParamsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryParamsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryDenomAuthorityMetadataRequest. */
+            interface IQueryDenomAuthorityMetadataRequest {
+
+                /** QueryDenomAuthorityMetadataRequest creator */
+                creator?: (string|null);
+
+                /** QueryDenomAuthorityMetadataRequest subdenom */
+                subdenom?: (string|null);
+            }
+
+            /** Represents a QueryDenomAuthorityMetadataRequest. */
+            class QueryDenomAuthorityMetadataRequest implements IQueryDenomAuthorityMetadataRequest {
+
+                /**
+                 * Constructs a new QueryDenomAuthorityMetadataRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest);
+
+                /** QueryDenomAuthorityMetadataRequest creator. */
+                public creator: string;
+
+                /** QueryDenomAuthorityMetadataRequest subdenom. */
+                public subdenom: string;
+
+                /**
+                 * Encodes the specified QueryDenomAuthorityMetadataRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
+                 * @param message QueryDenomAuthorityMetadataRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryDenomAuthorityMetadataRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
+                 * @param message QueryDenomAuthorityMetadataRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryDenomAuthorityMetadataRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryDenomAuthorityMetadataRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest;
+
+                /**
+                 * Decodes a QueryDenomAuthorityMetadataRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryDenomAuthorityMetadataRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest;
+
+                /**
+                 * Verifies a QueryDenomAuthorityMetadataRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryDenomAuthorityMetadataRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryDenomAuthorityMetadataRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest;
+
+                /**
+                 * Creates a plain object from a QueryDenomAuthorityMetadataRequest message. Also converts values to other types if specified.
+                 * @param message QueryDenomAuthorityMetadataRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryDenomAuthorityMetadataRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryDenomAuthorityMetadataResponse. */
+            interface IQueryDenomAuthorityMetadataResponse {
+
+                /** QueryDenomAuthorityMetadataResponse authority_metadata */
+                authority_metadata?: (osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null);
+            }
+
+            /** Represents a QueryDenomAuthorityMetadataResponse. */
+            class QueryDenomAuthorityMetadataResponse implements IQueryDenomAuthorityMetadataResponse {
+
+                /**
+                 * Constructs a new QueryDenomAuthorityMetadataResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse);
+
+                /** QueryDenomAuthorityMetadataResponse authority_metadata. */
+                public authority_metadata?: (osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null);
+
+                /**
+                 * Encodes the specified QueryDenomAuthorityMetadataResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse.verify|verify} messages.
+                 * @param message QueryDenomAuthorityMetadataResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryDenomAuthorityMetadataResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse.verify|verify} messages.
+                 * @param message QueryDenomAuthorityMetadataResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryDenomAuthorityMetadataResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryDenomAuthorityMetadataResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse;
+
+                /**
+                 * Decodes a QueryDenomAuthorityMetadataResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryDenomAuthorityMetadataResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse;
+
+                /**
+                 * Verifies a QueryDenomAuthorityMetadataResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryDenomAuthorityMetadataResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryDenomAuthorityMetadataResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse;
+
+                /**
+                 * Creates a plain object from a QueryDenomAuthorityMetadataResponse message. Also converts values to other types if specified.
+                 * @param message QueryDenomAuthorityMetadataResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryDenomAuthorityMetadataResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryDenomsFromCreatorRequest. */
+            interface IQueryDenomsFromCreatorRequest {
+
+                /** QueryDenomsFromCreatorRequest creator */
+                creator?: (string|null);
+            }
+
+            /** Represents a QueryDenomsFromCreatorRequest. */
+            class QueryDenomsFromCreatorRequest implements IQueryDenomsFromCreatorRequest {
+
+                /**
+                 * Constructs a new QueryDenomsFromCreatorRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest);
+
+                /** QueryDenomsFromCreatorRequest creator. */
+                public creator: string;
+
+                /**
+                 * Encodes the specified QueryDenomsFromCreatorRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest.verify|verify} messages.
+                 * @param message QueryDenomsFromCreatorRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryDenomsFromCreatorRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest.verify|verify} messages.
+                 * @param message QueryDenomsFromCreatorRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryDenomsFromCreatorRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryDenomsFromCreatorRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest;
+
+                /**
+                 * Decodes a QueryDenomsFromCreatorRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryDenomsFromCreatorRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest;
+
+                /**
+                 * Verifies a QueryDenomsFromCreatorRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryDenomsFromCreatorRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryDenomsFromCreatorRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest;
+
+                /**
+                 * Creates a plain object from a QueryDenomsFromCreatorRequest message. Also converts values to other types if specified.
+                 * @param message QueryDenomsFromCreatorRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryDenomsFromCreatorRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryDenomsFromCreatorResponse. */
+            interface IQueryDenomsFromCreatorResponse {
+
+                /** QueryDenomsFromCreatorResponse denoms */
+                denoms?: (string[]|null);
+            }
+
+            /** Represents a QueryDenomsFromCreatorResponse. */
+            class QueryDenomsFromCreatorResponse implements IQueryDenomsFromCreatorResponse {
+
+                /**
+                 * Constructs a new QueryDenomsFromCreatorResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse);
+
+                /** QueryDenomsFromCreatorResponse denoms. */
+                public denoms: string[];
+
+                /**
+                 * Encodes the specified QueryDenomsFromCreatorResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse.verify|verify} messages.
+                 * @param message QueryDenomsFromCreatorResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryDenomsFromCreatorResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse.verify|verify} messages.
+                 * @param message QueryDenomsFromCreatorResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryDenomsFromCreatorResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryDenomsFromCreatorResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse;
+
+                /**
+                 * Decodes a QueryDenomsFromCreatorResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryDenomsFromCreatorResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse;
+
+                /**
+                 * Verifies a QueryDenomsFromCreatorResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryDenomsFromCreatorResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryDenomsFromCreatorResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse;
+
+                /**
+                 * Creates a plain object from a QueryDenomsFromCreatorResponse message. Also converts values to other types if specified.
+                 * @param message QueryDenomsFromCreatorResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryDenomsFromCreatorResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a DenomAuthorityMetadata. */
+            interface IDenomAuthorityMetadata {
+
+                /** DenomAuthorityMetadata Admin */
+                Admin?: (string|null);
+            }
+
+            /** Represents a DenomAuthorityMetadata. */
+            class DenomAuthorityMetadata implements IDenomAuthorityMetadata {
+
+                /**
+                 * Constructs a new DenomAuthorityMetadata.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata);
+
+                /** DenomAuthorityMetadata Admin. */
+                public Admin: string;
+
+                /**
+                 * Encodes the specified DenomAuthorityMetadata message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify|verify} messages.
+                 * @param message DenomAuthorityMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified DenomAuthorityMetadata message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata.verify|verify} messages.
+                 * @param message DenomAuthorityMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DenomAuthorityMetadata message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns DenomAuthorityMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata;
+
+                /**
+                 * Decodes a DenomAuthorityMetadata message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns DenomAuthorityMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata;
+
+                /**
+                 * Verifies a DenomAuthorityMetadata message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a DenomAuthorityMetadata message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns DenomAuthorityMetadata
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata;
+
+                /**
+                 * Creates a plain object from a DenomAuthorityMetadata message. Also converts values to other types if specified.
+                 * @param message DenomAuthorityMetadata
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.DenomAuthorityMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this DenomAuthorityMetadata to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Params. */
+            interface IParams {
+            }
+
+            /** Represents a Params. */
+            class Params implements IParams {
+
+                /**
+                 * Constructs a new Params.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IParams);
+
+                /**
+                 * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Verifies a Params message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Params
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Creates a plain object from a Params message. Also converts values to other types if specified.
+                 * @param message Params
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Params to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a GenesisState. */
+            interface IGenesisState {
+
+                /** GenesisState params */
+                params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+
+                /** GenesisState factory_denoms */
+                factory_denoms?: (osmosis.tokenfactory.v1beta1.IGenesisDenom[]|null);
+            }
+
+            /** Represents a GenesisState. */
+            class GenesisState implements IGenesisState {
+
+                /**
+                 * Constructs a new GenesisState.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IGenesisState);
+
+                /** GenesisState params. */
+                public params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+
+                /** GenesisState factory_denoms. */
+                public factory_denoms: osmosis.tokenfactory.v1beta1.IGenesisDenom[];
+
+                /**
+                 * Encodes the specified GenesisState message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisState.verify|verify} messages.
+                 * @param message GenesisState message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisState.verify|verify} messages.
+                 * @param message GenesisState message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a GenesisState message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GenesisState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.GenesisState;
+
+                /**
+                 * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns GenesisState
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.GenesisState;
+
+                /**
+                 * Verifies a GenesisState message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns GenesisState
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.GenesisState;
+
+                /**
+                 * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+                 * @param message GenesisState
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this GenesisState to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a GenesisDenom. */
+            interface IGenesisDenom {
+
+                /** GenesisDenom denom */
+                denom?: (string|null);
+
+                /** GenesisDenom authority_metadata */
+                authority_metadata?: (osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null);
+            }
+
+            /** Represents a GenesisDenom. */
+            class GenesisDenom implements IGenesisDenom {
+
+                /**
+                 * Constructs a new GenesisDenom.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IGenesisDenom);
+
+                /** GenesisDenom denom. */
+                public denom: string;
+
+                /** GenesisDenom authority_metadata. */
+                public authority_metadata?: (osmosis.tokenfactory.v1beta1.IDenomAuthorityMetadata|null);
+
+                /**
+                 * Encodes the specified GenesisDenom message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisDenom.verify|verify} messages.
+                 * @param message GenesisDenom message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IGenesisDenom, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified GenesisDenom message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.GenesisDenom.verify|verify} messages.
+                 * @param message GenesisDenom message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IGenesisDenom, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a GenesisDenom message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns GenesisDenom
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.GenesisDenom;
+
+                /**
+                 * Decodes a GenesisDenom message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns GenesisDenom
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.GenesisDenom;
+
+                /**
+                 * Verifies a GenesisDenom message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a GenesisDenom message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns GenesisDenom
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.GenesisDenom;
+
+                /**
+                 * Creates a plain object from a GenesisDenom message. Also converts values to other types if specified.
+                 * @param message GenesisDenom
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.GenesisDenom, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this GenesisDenom to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
             }
         }
     }

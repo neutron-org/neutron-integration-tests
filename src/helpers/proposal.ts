@@ -6,6 +6,41 @@ export type ParamChangeProposalInfo = {
   value: string;
 };
 
+export type PinCodesInfo = {
+  title: string;
+  description: string;
+  codes_ids: number[];
+};
+
+export type UpdateAdmin = {
+  title: string;
+  description: string;
+  contract: string;
+  new_admin: string;
+};
+
+export type ClearAdmin = {
+  title: string;
+  description: string;
+  contract: string;
+};
+
+export type ClientUpdateInfo = {
+  title: string;
+  description: string;
+  subject_client_id: string;
+  substitute_client_id;
+};
+
+export type UpgradeInfo = {
+  title: string;
+  description: string;
+  name: string;
+  height: number;
+  info: string;
+  upgraded_client_state: string;
+};
+
 export type SendProposalInfo = {
   to: string;
   denom: string;
@@ -104,6 +139,97 @@ export const paramChangeProposal = (info: ParamChangeProposalInfo): any => ({
   },
 });
 
+export const pinCodesProposal = (info: PinCodesInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        pin_codes_proposal: {
+          title: info.title,
+          description: info.description,
+          code_ids: info.codes_ids,
+        },
+      },
+    },
+  },
+});
+
+export const unpinCodesProposal = (info: PinCodesInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        unpin_codes_proposal: {
+          title: info.title,
+          description: info.description,
+          code_ids: info.codes_ids,
+        },
+      },
+    },
+  },
+});
+
+export const updateAdminProposal = (info: UpdateAdmin): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        update_admin_proposal: {
+          title: info.title,
+          description: info.description,
+          contract: info.contract,
+          new_admin: info.new_admin,
+        },
+      },
+    },
+  },
+});
+
+export const clearAdminProposal = (info: ClearAdmin): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        clear_admin_proposal: {
+          title: info.title,
+          description: info.description,
+          contract: info.contract,
+        },
+      },
+    },
+  },
+});
+
+export const clientUpdateProposal = (info: ClientUpdateInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        client_update_proposal: {
+          title: info.title,
+          description: info.description,
+          subject_client_id: info.subject_client_id,
+          substitute_client_id: info.substitute_client_id,
+        },
+      },
+    },
+  },
+});
+
+export const upgradeProposal = (info: UpgradeInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        upgrade_proposal: {
+          title: info.title,
+          description: info.description,
+          plan: {
+            name: info.name,
+            height: info.height,
+            info: info.info,
+          },
+          upgraded_client_state: info.upgraded_client_state,
+        },
+      },
+    },
+  },
+});
+
 export const sendProposal = (info: SendProposalInfo): any => ({
   bank: {
     send: {
@@ -114,6 +240,28 @@ export const sendProposal = (info: SendProposalInfo): any => ({
           amount: info.amount,
         },
       ],
+    },
+  },
+});
+
+export const addSchedule = (
+  name: string,
+  period: number,
+  msgs: string[],
+): any => ({
+  custom: {
+    add_schedule: {
+      name,
+      period,
+      msgs,
+    },
+  },
+});
+
+export const removeSchedule = (name: string): any => ({
+  custom: {
+    remove_schedule: {
+      name,
     },
   },
 });

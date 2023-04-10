@@ -1,6 +1,6 @@
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import axios, { AxiosResponse } from 'axios';
-import { CosmosWrapper } from './cosmos';
+import { CosmosWrapper, WalletWrapper } from './cosmos';
 import { getWithAttempts } from './wait';
 import { rest } from '@cosmos-client/core';
 
@@ -26,7 +26,10 @@ export const getRegisteredQuery = (
       connection_id: string;
       update_period: number;
       last_submitted_result_local_height: number;
-      last_submitted_result_remote_height: number;
+      last_submitted_result_remote_height: {
+        revision_number: number;
+        revision_height: number;
+      };
       deposit: { denom: string; amount: string }[];
       submit_timeout: number;
       registered_at_height: number;
@@ -52,8 +55,8 @@ export const waitForICQResultWithRemoteHeight = (
     cm.blockWaiter,
     () => getRegisteredQuery(cm, contractAddress, queryId),
     async (query) =>
-      query.registered_query.last_submitted_result_remote_height >=
-      targetHeight,
+      query.registered_query.last_submitted_result_remote_height
+        .revision_height >= targetHeight,
     numAttempts,
   );
 
@@ -130,7 +133,7 @@ export const postResubmitTxs = async (
  * the given parameters and checks the tx result to be successful.
  */
 export const registerTransfersQuery = async (
-  cm: CosmosWrapper,
+  cm: WalletWrapper,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -147,7 +150,10 @@ export const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(cm.sdk as CosmosSDK, res.txhash as string);
+  const tx = await rest.tx.getTx(
+    cm.chain.sdk as CosmosSDK,
+    res.txhash as string,
+  );
   expect(tx?.data.tx_response?.code).toEqual(0);
 };
 

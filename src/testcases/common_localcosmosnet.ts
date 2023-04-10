@@ -1,12 +1,19 @@
 import { exec } from 'child_process';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { Wallet } from '../types';
-import { COSMOS_DENOM, mnemonicToWallet } from '../helpers/cosmos';
+import {
+  COSMOS_DENOM,
+  mnemonicToWallet,
+  WalletWrapper,
+  IBC_ATOM_DENOM,
+  IBC_USDC_DENOM,
+} from '../helpers/cosmos';
 import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 
 const config = require('../config.json');
 
@@ -93,6 +100,20 @@ export class TestStateLocalCosmosTestNet {
       this.blockWaiter1,
       neutron.demo1,
       NEUTRON_DENOM,
+      [
+        {
+          denom: NEUTRON_DENOM,
+          amount: '11500000000',
+        },
+        {
+          denom: IBC_ATOM_DENOM,
+          amount: '11500000000',
+        },
+        {
+          denom: IBC_USDC_DENOM,
+          amount: '11500000000',
+        },
+      ],
     );
 
     const qaNeutronThree = await this.createQaWallet(
@@ -127,50 +148,54 @@ export class TestStateLocalCosmosTestNet {
       COSMOS_DENOM,
     );
 
+    const qaCosmosTwo = await this.createQaWallet(
+      cosmosPrefix,
+      this.sdk2,
+      this.blockWaiter2,
+      cosmos.demo2,
+      COSMOS_DENOM,
+    );
+
     this.wallets = {
       cosmos,
       neutron,
       qaNeutron,
       qaCosmos,
+      qaCosmosTwo,
       qaNeutronThree,
       qaNeutronFour,
       qaNeutronFive,
     };
-
     return this.wallets;
   }
 
   sendTokensWithRetry = async (
-    cm: CosmosWrapper,
+    cm: WalletWrapper,
     to: AccAddress,
     amount: string,
-    retryCount = 10,
+    denom = cm.chain.denom,
+    retryCount = 100,
   ): Promise<void> => {
     const fee = {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cm.denom, amount: '1000' }],
+      amount: [{ denom: cm.chain.denom, amount: '1000' }],
     };
     let attemptCount = 0;
     let res;
     while (retryCount > attemptCount) {
       try {
-        const sequence = await cm.getSeq(cm.sdk, cm.wallet.address);
+        const sequence = await cm.chain.getSeq(cm.wallet.address);
         res = await cm.msgSend(
           to.toString(),
-          amount,
+          { amount, denom },
           fee,
           sequence,
           rest.tx.BroadcastTxMode.Block,
         );
-        await cm.blockWaiter.waitBlocks(1);
-        const balances = await cm.queryBalances(to.toString());
-        if (balances.pagination.total === '0') {
-          throw new Error('Could not put tokens on the generated wallet.');
-        }
         break;
       } catch (e) {
         if (e.message.includes('sequence')) {
-          await cm.blockWaiter.waitBlocks(1);
+          await cm.chain.blockWaiter.waitBlocks(1);
           attemptCount++;
         } else {
           throw e;
@@ -188,11 +213,21 @@ export class TestStateLocalCosmosTestNet {
     blockWaiter: BlockWaiter,
     wallet: Wallet,
     denom: string,
-    tokens = '11500000000',
+    balances: Coin[] = [],
   ) {
-    const cm = new CosmosWrapper(sdk, blockWaiter, wallet, denom);
+    if (balances.length === 0) {
+      balances = [
+        {
+          denom,
+          amount: '11500000000',
+        },
+      ];
+    }
+    const cm = new WalletWrapper(
+      new CosmosWrapper(sdk, blockWaiter, denom),
+      wallet,
+    );
     const mnemonic = generateMnemonic();
-    // const address = await createAddress(mnemonic);
     const newWallet = await mnemonicToWallet(
       cosmosclient.AccAddress,
       sdk,
@@ -200,7 +235,14 @@ export class TestStateLocalCosmosTestNet {
       prefix,
       false,
     );
-    await this.sendTokensWithRetry(cm, newWallet.address, tokens);
+    for (const balance of balances) {
+      await this.sendTokensWithRetry(
+        cm,
+        newWallet.address,
+        balance.amount,
+        balance.denom,
+      );
+    }
     const wal = await mnemonicToWallet(
       cosmosclient.AccAddress,
       sdk,

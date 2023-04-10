@@ -1,5 +1,9 @@
 import MerkleTree from 'merkletreejs';
-import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import {
+  CosmosWrapper,
+  NEUTRON_DENOM,
+  WalletWrapper,
+} from '../../helpers/cosmos';
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import crypto from 'crypto';
@@ -47,8 +51,9 @@ const waitTill = (timestamp: string): Promise<void> =>
 
 describe('Neutron / TGE / Airdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
-  let cmSecond: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount1: WalletWrapper;
+  let neutronAccount2: WalletWrapper;
   const codeIds: Record<string, string> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
@@ -56,24 +61,22 @@ describe('Neutron / TGE / Airdrop', () => {
   let reserveAddress: string;
 
   beforeAll(async () => {
-    times.airdropStart = getTimestamp(30);
-    times.airdropVestingStart = getTimestamp(40);
-    times.creditsWhenWithdrawable = getTimestamp(50);
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();
-    cm = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-    cmSecond = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
+    neutronAccount1 = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
+    neutronAccount2 = new WalletWrapper(
+      neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
-      NEUTRON_DENOM,
     );
     const accounts = [
       {
@@ -85,11 +88,11 @@ describe('Neutron / TGE / Airdrop', () => {
         amount: '200000',
       },
       {
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       },
       {
-        address: cmSecond.wallet.address.toString(),
+        address: neutronAccount2.wallet.address.toString(),
         amount: '100000',
       },
     ];
@@ -99,16 +102,18 @@ describe('Neutron / TGE / Airdrop', () => {
   describe('Deploy', () => {
     it('should store contracts', async () => {
       for (const contract of ['TGE_CREDITS', 'TGE_AIRDROP']) {
-        const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
+        const codeId = parseInt(
+          await neutronAccount1.storeWasm(NeutronContract[contract]),
+        );
         expect(codeId).toBeGreaterThan(0);
         codeIds[contract] = codeId.toString();
       }
     });
     it('should instantiate credits contract', async () => {
-      const res = await cm.instantiate(
+      const res = await neutronAccount1.instantiateContract(
         codeIds['TGE_CREDITS'],
         JSON.stringify({
-          dao_address: cm.wallet.address.toString(),
+          dao_address: neutronAccount1.wallet.address.toString(),
         }),
         'credits',
       );
@@ -116,6 +121,9 @@ describe('Neutron / TGE / Airdrop', () => {
       contractAddresses['TGE_CREDITS'] = res[0]._contract_address;
     });
     it('should instantiate airdrop contract', async () => {
+      times.airdropStart = getTimestamp(30);
+      times.airdropVestingStart = getTimestamp(40);
+
       const initParams = {
         credits_address: contractAddresses['TGE_CREDITS'],
         reserve_address: reserveAddress,
@@ -126,7 +134,7 @@ describe('Neutron / TGE / Airdrop', () => {
         total_amount: '100000000',
         hrp: 'neutron',
       };
-      const res = await cm.instantiate(
+      const res = await neutronAccount1.instantiateContract(
         codeIds['TGE_AIRDROP'],
         JSON.stringify(initParams),
         'airdrop',
@@ -135,7 +143,8 @@ describe('Neutron / TGE / Airdrop', () => {
       contractAddresses['TGE_AIRDROP'] = res[0]._contract_address;
     });
     it('should set airdrop address for credits contract', async () => {
-      const res = await cm.executeContract(
+      times.creditsWhenWithdrawable = getTimestamp(50);
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_CREDITS'],
         JSON.stringify({
           update_config: {
@@ -155,24 +164,24 @@ describe('Neutron / TGE / Airdrop', () => {
     let proofSecond: string[];
     beforeAll(() => {
       proofMain = airdrop.getMerkleProof({
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       });
       proofSecond = airdrop.getMerkleProof({
-        address: cmSecond.wallet.address.toString(),
+        address: neutronAccount2.wallet.address.toString(),
         amount: '100000',
       });
     });
     it('should not claim before airdrop start', async () => {
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '300000',
           proof: proofMain,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
@@ -183,7 +192,7 @@ describe('Neutron / TGE / Airdrop', () => {
         pause: {},
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
@@ -193,31 +202,31 @@ describe('Neutron / TGE / Airdrop', () => {
       await waitTill(times.airdropStart);
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '300000',
           proof: proofMain,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
       ).rejects.toThrow(); //TODO: check error message
     });
     it('should return is claimed false', async () => {
-      const res = await cm.queryContract<{ is_claimed: boolean }>(
+      const res = await neutronChain.queryContract<{ is_claimed: boolean }>(
         contractAddresses['TGE_AIRDROP'],
         {
           is_claimed: {
-            address: cm.wallet.address.toString(),
+            address: neutronAccount1.wallet.address.toString(),
           },
         },
       );
       expect(res).toEqual({ is_claimed: false });
     });
     it('should mint credits CW20 tokens', async () => {
-      const res = await cm.executeContract(
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_CREDITS'],
         JSON.stringify({
           mint: {},
@@ -228,18 +237,18 @@ describe('Neutron / TGE / Airdrop', () => {
     });
     it('should not claim airdrop more than needed', async () => {
       const proofs = airdrop.getMerkleProof({
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       });
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '400000',
           proof: proofs,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
@@ -252,13 +261,13 @@ describe('Neutron / TGE / Airdrop', () => {
       });
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '400000',
           proof: proofs,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
@@ -266,28 +275,28 @@ describe('Neutron / TGE / Airdrop', () => {
     });
     it('should claim airdrop', async () => {
       const proofs = airdrop.getMerkleProof({
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       });
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '300000',
           proof: proofs,
         },
       };
-      const res = await cm.executeContract(
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify(payload),
       );
       expect(res.code).toEqual(0);
     });
     it('should return is claimed true', async () => {
-      const res = await cm.queryContract<{ is_claimed: boolean }>(
+      const res = await neutronChain.queryContract<{ is_claimed: boolean }>(
         contractAddresses['TGE_AIRDROP'],
         {
           is_claimed: {
-            address: cm.wallet.address.toString(),
+            address: neutronAccount1.wallet.address.toString(),
           },
         },
       );
@@ -295,36 +304,36 @@ describe('Neutron / TGE / Airdrop', () => {
     });
     it('should not claim twice', async () => {
       const proofs = airdrop.getMerkleProof({
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       });
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '300000',
           proof: proofs,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
       ).rejects.toThrow(/Already claimed/);
     });
     it('should return correct balance', async () => {
-      const res = await cm.queryContract<{ balance: string }>(
+      const res = await neutronChain.queryContract<{ balance: string }>(
         contractAddresses['TGE_CREDITS'],
         {
           balance: {
-            address: cm.wallet.address.toString(),
+            address: neutronAccount1.wallet.address.toString(),
           },
         },
       );
       expect(res).toEqual({ balance: '300000' });
     });
     it('should return is_pause false', async () => {
-      const res = await cm.queryContract<{ is_paused: boolean }>(
+      const res = await neutronChain.queryContract<{ is_paused: boolean }>(
         contractAddresses['TGE_AIRDROP'],
         {
           is_paused: {},
@@ -336,14 +345,14 @@ describe('Neutron / TGE / Airdrop', () => {
       const payload = {
         pause: {},
       };
-      const res = await cm.executeContract(
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify(payload),
       );
       expect(res.code).toEqual(0);
     });
     it('should return is_pause true', async () => {
-      const res = await cm.queryContract<{ is_paused: boolean }>(
+      const res = await neutronChain.queryContract<{ is_paused: boolean }>(
         contractAddresses['TGE_AIRDROP'],
         {
           is_paused: {},
@@ -353,18 +362,18 @@ describe('Neutron / TGE / Airdrop', () => {
     });
     it('should not claim bc of pause', async () => {
       const proofs = airdrop.getMerkleProof({
-        address: cm.wallet.address.toString(),
+        address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
       });
       const payload = {
         claim: {
-          address: cm.wallet.address.toString(),
+          address: neutronAccount1.wallet.address.toString(),
           amount: '300000',
           proof: proofs,
         },
       };
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
@@ -374,7 +383,7 @@ describe('Neutron / TGE / Airdrop', () => {
       const payload = {
         resume: {},
       };
-      const res = await cm.executeContract(
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify(payload),
       );
@@ -383,12 +392,12 @@ describe('Neutron / TGE / Airdrop', () => {
     it('should be able to claim after resume', async () => {
       const payload = {
         claim: {
-          address: cmSecond.wallet.address.toString(),
+          address: neutronAccount2.wallet.address.toString(),
           amount: '100000',
           proof: proofSecond,
         },
       };
-      const res = await cmSecond.executeContract(
+      const res = await neutronAccount2.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify(payload),
         [],
@@ -396,17 +405,16 @@ describe('Neutron / TGE / Airdrop', () => {
       expect(res.code).toEqual(0);
     });
     it('should return correct total claimed', async () => {
-      const res = await cm.queryContract<{ total_claimed: string }>(
-        contractAddresses['TGE_AIRDROP'],
-        {
-          total_claimed: {},
-        },
-      );
+      const res = await neutronChain.queryContract<{
+        total_claimed: string;
+      }>(contractAddresses['TGE_AIRDROP'], {
+        total_claimed: {},
+      });
       expect(res).toEqual({ total_claimed: '400000' });
     });
     it('should not be able to withdraw all before end', async () => {
       await expect(
-        cm.executeContract(
+        neutronAccount1.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify({
             withdraw_all: {},
@@ -423,18 +431,17 @@ describe('Neutron / TGE / Airdrop', () => {
           BigInt(times.airdropVestingStart) + BigInt(30 * 1000000 * 1000)
         ).toString(),
       );
-      const availableBalanceCNTRN = await cm.queryContract<{ balance: string }>(
-        contractAddresses['TGE_CREDITS'],
-        {
-          balance: {
-            address: contractAddresses['TGE_AIRDROP'],
-          },
+      const availableBalanceCNTRN = await neutronChain.queryContract<{
+        balance: string;
+      }>(contractAddresses['TGE_CREDITS'], {
+        balance: {
+          address: contractAddresses['TGE_AIRDROP'],
         },
-      );
+      });
       const reserveBalanceNTRN = (
-        await cm.queryBalances(reserveAddress)
+        await neutronChain.queryBalances(reserveAddress)
       ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount;
-      const res = await cm.executeContract(
+      const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify({
           withdraw_all: {},
@@ -443,7 +450,7 @@ describe('Neutron / TGE / Airdrop', () => {
       );
       expect(res.code).toEqual(0);
 
-      const availableBalanceCNTRNAfter = await cm.queryContract<{
+      const availableBalanceCNTRNAfter = await neutronChain.queryContract<{
         balance: string;
       }>(contractAddresses['TGE_CREDITS'], {
         balance: {
@@ -451,7 +458,7 @@ describe('Neutron / TGE / Airdrop', () => {
         },
       });
       const reserveBalanceNTRNAfter = (
-        await cm.queryBalances(reserveAddress)
+        await neutronChain.queryBalances(reserveAddress)
       ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount;
       expect(availableBalanceCNTRNAfter.balance).toEqual('0');
       expect(
