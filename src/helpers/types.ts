@@ -33,12 +33,12 @@ export type SingleChoiceProposal = {
   readonly total_power: string;
   readonly proposal: {
     status:
-      | 'open'
-      | 'rejected'
-      | 'passed'
-      | 'executed'
-      | 'closed'
-      | 'execution_failed';
+    | 'open'
+    | 'rejected'
+    | 'passed'
+    | 'executed'
+    | 'closed'
+    | 'execution_failed';
   };
 };
 
@@ -98,6 +98,8 @@ export const NeutronContract = {
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
+  VESTING_VAULT: 'vesting_vault.wasm',
+  ORACLE_HISTORY: 'astroport_oracle.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
   TGE_AUCTION: 'neutron_auction.wasm',

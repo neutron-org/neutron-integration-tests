@@ -5,6 +5,7 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/cosmos';
 import { NeutronContract } from '../../helpers/types';
+import { getHeight } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 const MIN_LIQUDITY = 1000;
@@ -13,6 +14,7 @@ const USDC_DEPOSIT_AMOUNT = 90000;
 const NTRN_AMOUNT = 200000;
 const ATOM_RATE = 10000000;
 const USDC_RATE = 1000000;
+const NTRN_INCENTIVIZE_AMOUNT = 10000;
 
 const getLpSize = (token1: number, token2: number) =>
   (Math.sqrt(token1 * token2) - MIN_LIQUDITY) | 0;
@@ -22,6 +24,11 @@ type PairInfo = {
   contract_addr: string;
   liquidity_token: string;
   pair_type: Record<string, object>;
+};
+
+type PowerResponse = {
+  power: string;
+  height: number;
 };
 
 type UserInfoResponse = {
@@ -132,6 +139,7 @@ describe('Neutron / TGE / Auction', () => {
   let usdcLpSize = 0;
   let atomLpLocked = 0;
   let usdcLpLocked = 0;
+  let tge_end_height = 0;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -171,6 +179,9 @@ describe('Neutron / TGE / Auction', () => {
         'ASTRO_WHITELIST',
         'ASTRO_COIN_REGISTRY',
         'VESTING_LP',
+        'VESTING_VAULT',
+        'LOCKDROP_VAULT',
+        'ORACLE_HISTORY',
       ]) {
         const codeId = parseInt(await cm.storeWasm(NeutronContract[contract]));
         expect(codeId).toBeGreaterThan(0);
@@ -235,6 +246,33 @@ describe('Neutron / TGE / Auction', () => {
       expect(res).toBeTruthy();
       contractAddresses['ASTRO_FACTORY'] = res[0]._contract_address;
     });
+    it('should instantiate oracle USDC contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['ORACLE_HISTORY'],
+        JSON.stringify({
+          factory_contract: contractAddresses.ASTRO_FACTORY,
+          period: 1,
+          manager: cm.wallet.address.toString(),
+        }),
+        'oracle usdc',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.ORACLE_USDC = res[0]._contract_address;
+    });
+    it('should instantiate oracle ATOM contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['ORACLE_HISTORY'],
+        JSON.stringify({
+          factory_contract: contractAddresses.ASTRO_FACTORY,
+          period: 1,
+          manager: cm.wallet.address.toString(),
+        }),
+        'oracle atom',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.ORACLE_ATOM = res[0]._contract_address;
+    });
+
     it('should create pair ATOM/NTRN', async () => {
       const createMsg = {
         create_pair: {
@@ -308,15 +346,57 @@ describe('Neutron / TGE / Auction', () => {
         },
       };
     });
+    it('set assets USDC Oracle', async () => {
+      const setAssets = {
+        set_asset_infos: [
+          {
+            native_token: {
+              denom: IBC_USDC_DENOM,
+            },
+          },
+          {
+            native_token: {
+              denom: NEUTRON_DENOM,
+            },
+          },
+        ],
+      };
+
+      const res = await cm.executeContract(
+        contractAddresses.ORACLE_USDC,
+        JSON.stringify(setAssets),
+      );
+      expect(res.code).toBe(0);
+    });
+    it('set assets ATOM Oracle', async () => {
+      const setAssets = {
+        set_asset_infos: [
+          {
+            native_token: {
+              denom: IBC_ATOM_DENOM,
+            },
+          },
+          {
+            native_token: {
+              denom: NEUTRON_DENOM,
+            },
+          },
+        ],
+      };
+
+      const res = await cm.executeContract(
+        contractAddresses.ORACLE_ATOM,
+        JSON.stringify(setAssets),
+      );
+      expect(res.code).toBe(0);
+    });
     it('shoild instantiate vesting contracts', async () => {
       let msg = {
         owner: cm.wallet.address.toString(),
         vesting_token: {
           token: { contract_addr: pairs.atom_ntrn.liqiudity },
         },
-        vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
-        ],
+        vesting_managers: [],
       };
       const res = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -330,9 +410,7 @@ describe('Neutron / TGE / Auction', () => {
         vesting_token: {
           token: { contract_addr: pairs.usdc_ntrn.liqiudity },
         },
-        vesting_managers: [
-          'neutron1yzrwpjdlvc7mjgd7gqyg94uy8lzh3m4snuexlspy0cxhjc9phhkscax8yc',
-        ],
+        vesting_managers: [],
       };
       const res2 = await cm.instantiate(
         codeIds['VESTING_LP'],
@@ -343,11 +421,13 @@ describe('Neutron / TGE / Auction', () => {
       contractAddresses['VESTING_USDC'] = res2[0]._contract_address;
     });
     it('should instantiate auction contract', async () => {
-      times.auctionInitTs = (Date.now() / 1000 + 10) | 0;
+      times.auctionInitTs = (Date.now() / 1000 + 30) | 0;
       times.auctionDepositWindow = 30;
       times.auctionWithdrawalWindow = 30;
-      times.auctionLpLockWindow = 30;
+      // times.auctionLpLockWindow = 45;
       times.auctionVestingLpDuration = 20;
+      times.lockdropDepositDuration = 40;
+      times.lockdropWithdrawalDuration = 45;
       const res = await cm.instantiate(
         codeIds.TGE_AUCTION,
         JSON.stringify({
@@ -355,7 +435,7 @@ describe('Neutron / TGE / Auction', () => {
           reserve_contract_address: reserveAddress,
           vesting_usdc_contract_address: contractAddresses.VESTING_USDC,
           vesting_atom_contract_address: contractAddresses.VESTING_ATOM,
-          lp_tokens_lock_window: times.auctionLpLockWindow,
+          lp_tokens_lock_window: times.lockdropDepositDuration + times.lockdropWithdrawalDuration,
           init_timestamp: times.auctionInitTs,
           deposit_window: times.auctionDepositWindow,
           withdrawal_window: times.auctionWithdrawalWindow,
@@ -371,20 +451,22 @@ describe('Neutron / TGE / Auction', () => {
       contractAddresses.TGE_AUCTION = res[0]._contract_address;
     });
     it('should instantiate lockdrop contract', async () => {
-      times.lockdropInitTs = (Date.now() / 1000 + 10) | 0;
+      times.lockdropInitTs = (Date.now() / 1000 + 30) | 0;
       const msg = {
         atom_token: pairs.atom_ntrn.liqiudity,
         usdc_token: pairs.usdc_ntrn.liqiudity,
         credits_contract: contractAddresses.TGE_CREDITS,
         auction_contract: contractAddresses.TGE_AUCTION,
         init_timestamp: times.lockdropInitTs,
-        deposit_window: 20,
-        withdrawal_window: 40,
+        lock_window: times.lockdropDepositDuration,
+        withdrawal_window: times.lockdropWithdrawalDuration,
         min_lock_duration: 1,
         max_lock_duration: 2,
-        max_positions_per_user: 2,
-        lock_window: 1000,
-        lockup_rewards_info: [{ duration: 1, coefficient: '0' }],
+        max_positions_per_user: 3,
+        lockup_rewards_info: [
+          { duration: 1, coefficient: '0' },
+          { duration: 2, coefficient: '1' },
+        ],
       };
       const res = await cm.instantiate(
         codeIds['TGE_LOCKDROP'],
@@ -394,6 +476,100 @@ describe('Neutron / TGE / Auction', () => {
       expect(res).toBeTruthy();
       contractAddresses.TGE_LOCKDROP = res[0]._contract_address;
     });
+    it('should update vesting managers vesting lp atom', async () => {
+      const addManagers = {
+        add_vesting_managers: {
+          managers: [contractAddresses.TGE_AUCTION],
+        },
+      };
+
+      const res = await cm.executeContract(
+        contractAddresses.VESTING_ATOM,
+        JSON.stringify(addManagers),
+      );
+      expect(res.code).toBe(0);
+    });
+
+    it('should update vesting managers vesting lp usdc', async () => {
+      const addManagers = {
+        add_vesting_managers: {
+          managers: [contractAddresses.TGE_AUCTION],
+        },
+      };
+
+      const res = await cm.executeContract(
+        contractAddresses.VESTING_USDC,
+        JSON.stringify(addManagers),
+      );
+      expect(res.code).toBe(0);
+    });
+
+    it('should instantiate lockdrop vault atom contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['LOCKDROP_VAULT'],
+        JSON.stringify({
+          name: 'Lockdrop vault atom',
+          description: 'Lockdrop vault atom',
+          lockdrop_contract: contractAddresses.TGE_LOCKDROP,
+          oracle_contract: contractAddresses.ORACLE_ATOM,
+          owner: { address: { addr: cm.wallet.address.toString() } },
+          manager: cm.wallet.address.toString(),
+        }),
+        'Lockdrop vault atom',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.LOCKDROP_VAULT_ATOM = res[0]._contract_address;
+    });
+    it('should instantiate lockdrop vault usdc contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['LOCKDROP_VAULT'],
+        JSON.stringify({
+          name: 'Lockdrop vault usdc',
+          description: 'Lockdrop vault usdc',
+          lockdrop_contract: contractAddresses.TGE_LOCKDROP,
+          oracle_contract: contractAddresses.ORACLE_USDC,
+          owner: { address: { addr: cm.wallet.address.toString() } },
+          manager: cm.wallet.address.toString(),
+        }),
+        'Lockdrop vault usdc',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.LOCKDROP_VAULT_USDC = res[0]._contract_address;
+    });
+    it('should instantiate vesting vault atom contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['VESTING_VAULT'],
+        JSON.stringify({
+          name: 'Vesting vault atom',
+          description: 'Vesting vault atom',
+          lockdrop_contract: contractAddresses.VESTING_ATOM,
+          oracle_contract: contractAddresses.ORACLE_ATOM,
+          owner: { address: { addr: cm.wallet.address.toString() } },
+          manager: cm.wallet.address.toString(),
+        }),
+        'Vesting vault atom',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.VESTING_VAULT_ATOM = res[0]._contract_address;
+    });
+
+    it('should instantiate vesting vault usdc contract', async () => {
+      const res = await cm.instantiate(
+        codeIds['VESTING_VAULT'],
+        JSON.stringify({
+          name: 'Vesting vault usdc',
+          description: 'Vesting vault usdc',
+          lockdrop_contract: contractAddresses.VESTING_USDC,
+          oracle_contract: contractAddresses.ORACLE_USDC,
+          owner: { address: { addr: cm.wallet.address.toString() } },
+          manager: cm.wallet.address.toString(),
+        }),
+        'Vesting vault usdc',
+      );
+      expect(res).toBeTruthy();
+      contractAddresses.VESTING_VAULT_USDC = res[0]._contract_address;
+    });
+
     it('should instantiate astro generator', async () => {
       const msg = {
         astro_token: {
@@ -663,6 +839,23 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
     describe('Phase 3', () => {
+      describe('intentivizing lockdrop', () => {
+        it('should incentivize lockdrop', async () => {
+          const res = await cm.executeContract(
+            contractAddresses.TGE_LOCKDROP,
+            JSON.stringify({
+              increase_ntrn_incentives: {},
+            }),
+            [
+              {
+                amount: String(NTRN_INCENTIVIZE_AMOUNT),
+                denom: NEUTRON_DENOM,
+              },
+            ],
+          );
+          expect(res.code).toEqual(0);
+        });
+      });
       describe('set_pool_size', () => {
         it('should not be able to set pool size before withdrawal_window is closed', async () => {
           await expect(
@@ -677,9 +870,9 @@ describe('Neutron / TGE / Auction', () => {
         it('should not be able to set pool size bc of wrong price feed data', async () => {
           await waitTill(
             times.auctionInitTs +
-              times.auctionDepositWindow +
-              times.auctionWithdrawalWindow +
-              5,
+            times.auctionDepositWindow +
+            times.auctionWithdrawalWindow +
+            5,
           );
           await expect(
             cm.executeContract(
@@ -895,9 +1088,19 @@ describe('Neutron / TGE / Auction', () => {
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
               lock_lp: {
-                amount: '100',
+                amount: '50',
                 asset: 'USDC',
                 duration: 1,
+              },
+            }),
+          );
+          const res2 = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              lock_lp: {
+                amount: '50',
+                asset: 'USDC',
+                duration: 2,
               },
             }),
           );
@@ -910,6 +1113,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(res.code).toEqual(0);
+          expect(res2.code).toEqual(0);
           usdcLpLocked += 100;
           expect(parseInt(userInfo.usdc_lp_locked)).toEqual(100);
           const info = await cm.queryContract<LockDropInfoResponse>(
@@ -920,9 +1124,13 @@ describe('Neutron / TGE / Auction', () => {
               },
             },
           );
-          expect(info.lockup_infos).toHaveLength(2);
+          expect(info.lockup_infos).toHaveLength(3);
           expect(info.lockup_infos[1]).toMatchObject({
-            lp_units_locked: usdcLpLocked.toString(),
+            lp_units_locked: String(usdcLpLocked / 2),
+            pool_type: 'USDC',
+          });
+          expect(info.lockup_infos[2]).toMatchObject({
+            lp_units_locked: String(usdcLpLocked / 2),
             pool_type: 'USDC',
           });
         });
@@ -1007,12 +1215,23 @@ describe('Neutron / TGE / Auction', () => {
           expect(parseInt(userInfo.atom_lp_locked)).toEqual(67);
         });
         it('should be able to withdraw USDC LP tokens', async () => {
-          const res = await cm.executeContract(
+          let res = await cm.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
               withdraw_lp: {
                 asset: 'USDC',
-                amount: '10',
+                amount: '5',
+                duration: 2,
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+          res = await cm.executeContract(
+            contractAddresses.TGE_AUCTION,
+            JSON.stringify({
+              withdraw_lp: {
+                asset: 'USDC',
+                amount: '5',
                 duration: 1,
               },
             }),
@@ -1028,17 +1247,25 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           expect(info.lockup_infos[1]).toMatchObject({
-            lp_units_locked: usdcLpLocked.toString(),
+            lp_units_locked: String(usdcLpLocked / 2),
             pool_type: 'USDC',
           });
+          expect(info.lockup_infos[2]).toMatchObject({
+            lp_units_locked: String(usdcLpLocked / 2),
+            pool_type: 'USDC',
+          });
+          expect(2 * Number(info.lockup_infos[1].ntrn_rewards)).toEqual(
+            Number(info.lockup_infos[2].ntrn_rewards),
+          );
         });
         it('should not be able to lock tokens when time is up', async () => {
           await waitTill(
-            times.auctionInitTs +
-              times.auctionDepositWindow +
-              times.auctionWithdrawalWindow +
-              times.auctionLpLockWindow +
-              5,
+            // times.auctionInitTs +
+            // times.auctionDepositWindow +
+            // times.auctionWithdrawalWindow +
+            times.lockdropInitTs +
+            times.lockdropDepositDuration +
+            5,
           );
           await expect(
             cm.executeContract(
@@ -1147,13 +1374,13 @@ describe('Neutron / TGE / Auction', () => {
         expect(
           Math.abs(
             parseInt(reserveLPBalanceAtomNtrn.balance) -
-              parseInt(auctionState.atom_lp_size) / 2,
+            parseInt(auctionState.atom_lp_size) / 2,
           ),
         ).toBeLessThan(1);
         expect(
           Math.abs(
             parseInt(reserveLPBalanceUsdcNtrn.balance) -
-              parseInt(auctionState.usdc_lp_size) / 2,
+            parseInt(auctionState.usdc_lp_size) / 2,
           ),
         ).toBeLessThan(1);
 
@@ -1173,15 +1400,15 @@ describe('Neutron / TGE / Auction', () => {
         expect(
           Math.abs(
             parseInt(auctionLPBalanceAtomNtrn.balance) -
-              (parseInt(auctionState.atom_lp_size) / 2 -
-                parseInt(auctionState.atom_lp_locked)),
+            (parseInt(auctionState.atom_lp_size) / 2 -
+              parseInt(auctionState.atom_lp_locked)),
           ),
         ).toBeLessThan(1);
         expect(
           Math.abs(
             parseInt(auctionLPBalanceUsdcNtrn.balance) -
-              (parseInt(auctionState.usdc_lp_size) / 2 -
-                parseInt(auctionState.usdc_lp_locked)),
+            (parseInt(auctionState.usdc_lp_size) / 2 -
+              parseInt(auctionState.usdc_lp_locked)),
           ),
         ).toBeLessThan(1);
 
@@ -1210,6 +1437,24 @@ describe('Neutron / TGE / Auction', () => {
           parseInt(usdcPoolInfo.total_share) - MIN_LIQUDITY,
           -1,
         );
+      });
+      it('update oracles', async () => {
+        tge_end_height = await getHeight(cm.sdk);
+        const res = await cm.executeContract(
+          contractAddresses.ORACLE_ATOM,
+          JSON.stringify({
+            update: {},
+          }),
+        );
+        expect(res.code).toEqual(0);
+
+        const res2 = await cm.executeContract(
+          contractAddresses.ORACLE_USDC,
+          JSON.stringify({
+            update: {},
+          }),
+        );
+        expect(res2.code).toEqual(0);
       });
       it('should not be able to init pool twice', async () => {
         await expect(
@@ -1345,6 +1590,84 @@ describe('Neutron / TGE / Auction', () => {
         ]);
         expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -1);
         expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -1);
+      });
+      describe('vaults', () => {
+        it('oracle works', async () => {
+          const info = await cm.queryContract<any>(
+            contractAddresses.ORACLE_ATOM,
+            {
+              t_w_a_p_at_height: {
+                token: { native_token: { denom: NEUTRON_DENOM } },
+                height: String(tge_end_height + 10),
+              },
+            },
+          );
+          console.log(info);
+        });
+      });
+      it('vesting voting power', async () => {
+        const info = await cm.queryContract<PowerResponse>(
+          contractAddresses.VESTING_VAULT_ATOM,
+          {
+            voting_power_at_height: {
+              address: cm.wallet.address.toString(),
+              height: tge_end_height + 10,
+            },
+          },
+        );
+        // expect(parseInt(info.power)).toBeGreaterThan(0);
+        console.log(info);
+      });
+      it('lockdrop voting power', async () => {
+        const userinfo = await cm.queryContract<LockDropInfoResponse>(
+          contractAddresses.TGE_LOCKDROP,
+          {
+            user_info: {
+              address: cm.wallet.address.toString(),
+            },
+          },
+        );
+        console.log(userinfo);
+        const info = await cm.queryContract<PowerResponse>(
+          contractAddresses.LOCKDROP_VAULT_ATOM,
+          {
+            voting_power_at_height: {
+              address: cm.wallet.address.toString(),
+              height: tge_end_height + 10,
+            },
+          },
+        );
+        // expect(parseInt(info.power)).toBeGreaterThan(0);
+        console.log(info);
+      });
+      it('should get locjdrop rewards', async () => {
+        await waitTill(
+          times.lockdropInitTs +
+          times.lockdropDepositDuration +
+          times.lockdropWithdrawalDuration +
+          1
+        )
+        const balance_before = await cm.queryDenomBalance(
+          cm.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        console.log(balance_before);
+        const res = await cm.executeContract(
+          contractAddresses.TGE_LOCKDROP,
+          JSON.stringify({
+            claim_rewards_and_optionally_unlock: {
+              pool_type: 'USDC',
+              duration: 2,
+              withdraw_lp_stake: false,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+        const balance_after = await cm.queryDenomBalance(
+          cm.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        console.log(balance_after);
       });
     });
   });
