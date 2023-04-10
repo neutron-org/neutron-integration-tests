@@ -7,8 +7,8 @@ import {
 import {
   Dao,
   DaoMember,
-  setupSubDaoTimelockSet,
   deployNeutronDao,
+  deploySubdao,
 } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
@@ -49,38 +49,62 @@ describe('Neutron / Subdao', () => {
     mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
     await mainDaoMember2.bondFunds('1000');
 
-    subDao = await setupSubDaoTimelockSet(
+    subDao = await deploySubdao(
       neutronAccount1,
-      mainDao.contracts.core.address,
+      daoContracts.core.address,
+      daoContracts.proposal_modules.overrule.pre_proposal_module.address,
       neutronAccount1.wallet.address.toString(),
-      false,
     );
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
-
-    const subDaosList = await mainDao.getSubDaoList();
-    expect(subDaosList).toContain(subDao.contracts.core.address);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
   });
 
   describe('Overrule timelocked', () => {
-    let proposal_id: number;
-    beforeAll(async () => {
-      proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
-        {
-          recipient: neutronAccount2.wallet.address.toString(),
-          amount: 2000,
-          denom: neutronChain.denom,
-        },
-      ]);
-
-      const timelocked_prop = await subdaoMember1.supportAndExecuteProposal(
-        proposal_id,
+    let timelockedPropId: number;
+    test('timelock fails since subdao is not in list', async () => {
+      const proposal_id = await subdaoMember1.submitSendProposal(
+        'send',
+        'send',
+        [
+          {
+            recipient: neutronAccount2.wallet.address.toString(),
+            amount: 2000,
+            denom: neutronChain.denom,
+          },
+        ],
       );
 
-      expect(timelocked_prop.id).toEqual(proposal_id);
+      await expect(
+        subdaoMember1.supportAndExecuteProposal(proposal_id),
+      ).rejects.toThrow(/Subdao isn't in the list./);
+    });
+
+    test('add subdao to list', async () => {
+      await mainDaoMember1.addSubdaoToDao(subDao.contracts.core.address);
+
+      const subDaosList = await mainDao.getSubDaoList();
+      expect(subDaosList).toContain(subDao.contracts.core.address);
+    });
+
+    test('successfully timelocked', async () => {
+      timelockedPropId = await subdaoMember1.submitSendProposal(
+        'send',
+        'send',
+        [
+          {
+            recipient: neutronAccount2.wallet.address.toString(),
+            amount: 2000,
+            denom: neutronChain.denom,
+          },
+        ],
+      );
+      const timelocked_prop = await subdaoMember1.supportAndExecuteProposal(
+        timelockedPropId,
+      );
+      expect(timelocked_prop.id).toEqual(timelockedPropId);
       expect(timelocked_prop.status).toEqual('timelocked');
       expect(timelocked_prop.msgs).toHaveLength(1);
     });
@@ -90,7 +114,10 @@ describe('Neutron / Subdao', () => {
         subDao.contracts.proposal_modules.single.pre_proposal_module
           .timelock_module.address;
       await expect(
-        mainDaoMember1.submitOverruleProposal(timelockAddress, proposal_id),
+        mainDaoMember1.submitOverruleProposal(
+          timelockAddress,
+          timelockedPropId,
+        ),
       ).rejects.toThrow(/already created/);
     });
 
@@ -99,18 +126,26 @@ describe('Neutron / Subdao', () => {
         subDao.contracts.proposal_modules.single.pre_proposal_module
           .timelock_module.address;
       // we vote No from user with significant voting power to test if proposal is executed anyway
-      await voteAgainstOverrule(mainDaoMember1, timelockAddress, proposal_id);
+      await voteAgainstOverrule(
+        mainDaoMember1,
+        timelockAddress,
+        timelockedPropId,
+      );
       await mainDaoMember2.overruleTimelockedProposal(
         timelockAddress,
-        proposal_id,
+        timelockedPropId,
       );
-      const prop = await mainDao.queryOverruleProposal(proposal_id);
+      const prop = await mainDao.queryOverruleProposal(
+        await mainDao.getOverruleProposalId(timelockAddress, timelockedPropId),
+      );
       // let's check that proposal passed even while the majority is against it
       expect(parseInt(prop.proposal.votes.yes)).toBeLessThan(
         parseInt(prop.proposal.votes.no),
       );
-      const timelocked_prop = await subDao.getTimelockedProposal(proposal_id);
-      expect(timelocked_prop.id).toEqual(proposal_id);
+      const timelocked_prop = await subDao.getTimelockedProposal(
+        timelockedPropId,
+      );
+      expect(timelocked_prop.id).toEqual(timelockedPropId);
       expect(timelocked_prop.status).toEqual('overruled');
       expect(timelocked_prop.msgs).toHaveLength(1);
     });

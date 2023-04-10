@@ -843,17 +843,19 @@ export class DaoMember {
     timelock_address: string,
     proposal_id: number,
   ): Promise<InlineResponse20075TxResponse> {
-    const prop_id = await this.dao.getOverruleProposalId(
+    const overruleProposalId = await this.dao.getOverruleProposalId(
       timelock_address,
       proposal_id,
     );
     await this.user.executeContract(
       this.dao.contracts.proposal_modules.overrule.address,
-      JSON.stringify({ vote: { proposal_id: prop_id, vote: 'yes' } }),
+      JSON.stringify({
+        vote: { proposal_id: overruleProposalId, vote: 'yes' },
+      }),
     );
     return await this.user.executeContract(
       this.dao.contracts.proposal_modules.overrule.address,
-      JSON.stringify({ execute: { proposal_id: proposal_id } }),
+      JSON.stringify({ execute: { proposal_id: overruleProposalId } }),
     );
   }
 
@@ -1089,6 +1091,17 @@ export class DaoMember {
   async queryVotingPower(): Promise<VotingPowerAtHeightResponse> {
     return await this.dao.queryVotingPower(this.user.wallet.address.toString());
   }
+
+  async addSubdaoToDao(subDaoCore: string) {
+    const p = await this.submitSingleChoiceProposal(
+      'add subdao',
+      '',
+      [addSubdaoProposal(this.dao.contracts.core.address, subDaoCore)],
+      '1000',
+    );
+    await this.voteYes(p);
+    await this.executeProposalWithAttempts(p);
+  }
 }
 
 export const deploySubdao = async (
@@ -1187,20 +1200,8 @@ export const setupSubDaoTimelockSet = async (
   );
 
   const mainDaoMember = new DaoMember(cm, new Dao(cm.chain, daoContracts));
+  await mainDaoMember.addSubdaoToDao(subDao.contracts.core.address);
 
-  const p = await mainDaoMember.submitSingleChoiceProposal(
-    'add subdao',
-    '',
-    [
-      addSubdaoProposal(
-        daoContracts.core.address,
-        subDao.contracts.core.address,
-      ),
-    ],
-    '1000',
-  );
-  await mainDaoMember.voteYes(p);
-  await mainDaoMember.executeProposalWithAttempts(p);
   return subDao;
 };
 
