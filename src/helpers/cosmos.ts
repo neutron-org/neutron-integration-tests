@@ -498,8 +498,8 @@ export class WalletWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
-    sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
+    const sender = this.wallet.address.toString();
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
       sender,
       contract,

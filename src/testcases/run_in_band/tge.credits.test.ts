@@ -6,6 +6,7 @@ import {
 import { NeutronContract } from '../../helpers/types';
 import { wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { CodeId } from '../../types';
 
 const getTimestamp = (secondsFromNow: number): string =>
   (
@@ -60,16 +61,14 @@ describe('Neutron / TGE / Credits', () => {
   });
 
   describe('Deploy', () => {
-    let codeId: number;
+    let codeId: CodeId;
     it('should store contract', async () => {
-      codeId = parseInt(
-        await neutronAccount1.storeWasm(NeutronContract['TGE_CREDITS']),
-      );
+      codeId = await neutronAccount1.storeWasm(NeutronContract['TGE_CREDITS']);
       expect(codeId).toBeGreaterThan(0);
     });
     it('should instantiate credits contract', async () => {
       const res = await neutronAccount1.instantiateContract(
-        codeId.toString(),
+        codeId,
         JSON.stringify({
           dao_address: neutronAccount1.wallet.address.toString(),
         }),

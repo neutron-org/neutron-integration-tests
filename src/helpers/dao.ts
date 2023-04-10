@@ -492,7 +492,6 @@ export class DaoMember {
       this.dao.contracts.proposal_modules.single.address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
       [],
-      this.user.wallet.address.toString(),
     );
   }
 
@@ -504,7 +503,6 @@ export class DaoMember {
       this.dao.contracts.proposal_modules.single.address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
       [],
-      this.user.wallet.address.toString(),
     );
   }
 
@@ -521,7 +519,6 @@ export class DaoMember {
         vote: { proposal_id: proposalId, vote: { option_id: optionId } },
       }),
       [],
-      this.user.wallet.address.toString(),
     );
   }
 
@@ -535,7 +532,6 @@ export class DaoMember {
         bond: {},
       }),
       [{ denom: this.user.chain.denom, amount: amount }],
-      this.user.wallet.address.toString(),
     );
   }
 
@@ -566,7 +562,6 @@ export class DaoMember {
         },
       }),
       depositFunds,
-      this.user.wallet.address.toString(),
     );
 
     const attribute = getEventAttribute(
@@ -585,13 +580,11 @@ export class DaoMember {
    */
   async executeProposal(
     proposalId: number,
-    sender: string = this.user.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposal_modules.single.address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
-      sender,
     );
   }
 
@@ -618,15 +611,11 @@ export class DaoMember {
   /**
    * executeMultiChoiceProposal executes given multichoice proposal.
    */
-  async executeMultiChoiceProposal(
-    proposalId: number,
-    sender: string = this.user.wallet.address.toString(),
-  ): Promise<any> {
+  async executeMultiChoiceProposal(proposalId: number): Promise<any> {
     return await this.user.executeContract(
       this.dao.contracts.proposal_modules.multiple.address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
       [],
-      sender,
     );
   }
 
@@ -743,7 +732,6 @@ export class DaoMember {
         },
       }),
       [{ denom: this.user.chain.denom, amount: deposit }],
-      this.user.wallet.address.toString(),
     );
 
     const attribute = getEventAttribute(
@@ -855,13 +843,11 @@ export class DaoMember {
       this.dao.contracts.proposal_modules.overrule.address,
       JSON.stringify({ vote: { proposal_id: prop_id, vote: 'yes' } }),
       [],
-      this.user.wallet.address.toString(),
     );
     return await this.user.executeContract(
       this.dao.contracts.proposal_modules.overrule.address,
       JSON.stringify({ execute: { proposal_id: proposal_id } }),
       [],
-      this.user.wallet.address.toString(),
     );
   }
 
@@ -890,7 +876,6 @@ export class DaoMember {
         },
       }),
       [],
-      this.user.wallet.address.toString(),
     );
 
     const attribute = getEventAttribute(

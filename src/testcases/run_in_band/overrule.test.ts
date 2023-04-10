@@ -138,6 +138,5 @@ async function voteAgainstOverrule(
     member.dao.contracts.proposal_modules.overrule.address,
     JSON.stringify({ vote: { proposal_id: prop_id, vote: 'no' } }),
     [],
-    member.user.wallet.address.toString(),
   );
 }
