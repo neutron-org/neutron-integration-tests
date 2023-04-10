@@ -72,14 +72,8 @@ describe('Neutron / Subdao', () => {
     const subDaosList = await mainDao.getSubDaoList();
     expect(subDaosList).toContain(subDao.contracts.core.address);
 
-    await neutronChain.getWithAttempts(
-      async () =>
-        await subDao.queryVotingPower(
-          neutronAccount1.wallet.address.toString(),
-        ),
-      async (response) => response.power == 1,
-    );
-    // await neutronAccount1.msgSend(subDao.contracts.core.address, '10000'); // funding for gas
+    const votingPower = await subdaoMember1.queryVotingPower();
+    expect(votingPower.power).toEqual('1');
   });
 
   describe('Timelock: Unauthorized', () => {

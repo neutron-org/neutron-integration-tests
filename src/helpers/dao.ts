@@ -1085,6 +1085,10 @@ export class DaoMember {
       amount,
     );
   }
+
+  async queryVotingPower(): Promise<VotingPowerAtHeightResponse> {
+    return await this.dao.queryVotingPower(this.user.wallet.address.toString());
+  }
 }
 
 export const deploySubdao = async (

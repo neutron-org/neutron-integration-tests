@@ -11,8 +11,6 @@ import {
   deployNeutronDao,
 } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { Wallet } from '../../types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 describe('Neutron / Subdao', () => {
@@ -23,29 +21,25 @@ describe('Neutron / Subdao', () => {
   let subdaoMember1: DaoMember;
   let mainDaoMember1: DaoMember;
   let mainDaoMember2: DaoMember;
-  let demo1_wallet: Wallet;
-  let security_dao_wallet: Wallet;
-  let demo2_wallet: Wallet;
-  let security_dao_addr: AccAddress | ValAddress;
-  let demo2_addr: AccAddress | ValAddress;
   let subDao: Dao;
   let mainDao: Dao;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    demo1_wallet = testState.wallets.neutron.demo1;
-    security_dao_wallet = testState.wallets.neutron.icq;
-    demo2_wallet = testState.wallets.neutron.demo2;
-    security_dao_addr = security_dao_wallet.address;
-    demo2_addr = demo2_wallet.address;
     neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new WalletWrapper(neutronChain, demo1_wallet);
-    neutronAccount2 = new WalletWrapper(neutronChain, demo2_wallet);
+    neutronAccount1 = new WalletWrapper(
+      neutronChain,
+      testState.wallets.neutron.demo1,
+    );
+    neutronAccount2 = new WalletWrapper(
+      neutronChain,
+      testState.wallets.neutron.demo2,
+    );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
     mainDao = new Dao(neutronChain, daoContracts);
@@ -58,7 +52,7 @@ describe('Neutron / Subdao', () => {
     subDao = await setupSubDaoTimelockSet(
       neutronAccount1,
       mainDao.contracts.core.address,
-      security_dao_addr.toString(),
+      neutronAccount1.wallet.address.toString(),
       false,
     );
 
@@ -67,13 +61,8 @@ describe('Neutron / Subdao', () => {
     const subDaosList = await mainDao.getSubDaoList();
     expect(subDaosList).toContain(subDao.contracts.core.address);
 
-    await neutronChain.getWithAttempts(
-      async () =>
-        await subDao.queryVotingPower(
-          neutronAccount1.wallet.address.toString(),
-        ),
-      async (response) => response.power == 1,
-    );
+    const votingPower = await subdaoMember1.queryVotingPower();
+    expect(votingPower.power).toEqual('1');
   });
 
   describe('Overrule timelocked', () => {
@@ -81,7 +70,7 @@ describe('Neutron / Subdao', () => {
     beforeAll(async () => {
       proposal_id = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: demo2_addr.toString(),
+          recipient: neutronAccount2.wallet.address.toString(),
           amount: 2000,
           denom: neutronChain.denom,
         },
