@@ -542,8 +542,12 @@ describe('Neutron / TGE / Auction', () => {
       const res1 = await cmInstantiator.executeContract(
         contractAddresses.VESTING_ATOM,
         JSON.stringify({
-          add_vesting_managers: {
-            managers: [contractAddresses.TGE_AUCTION],
+          with_managers_extension: {
+            msg: {
+              add_vesting_managers: {
+                managers: [contractAddresses.TGE_AUCTION],
+              },
+            },
           },
         }),
       );
@@ -551,8 +555,12 @@ describe('Neutron / TGE / Auction', () => {
       const res2 = await cmInstantiator.executeContract(
         contractAddresses.VESTING_USDC,
         JSON.stringify({
-          add_vesting_managers: {
-            managers: [contractAddresses.TGE_AUCTION],
+          with_managers_extension: {
+            msg: {
+              add_vesting_managers: {
+                managers: [contractAddresses.TGE_AUCTION],
+              },
+            },
           },
         }),
       );
