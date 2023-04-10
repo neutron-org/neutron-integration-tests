@@ -5,10 +5,10 @@ build-gaia:
 		@docker buildx build --load --build-context app=$(APP_DIR)/gaia --build-context setup=$(APP_DIR)/neutron/network -t gaia-node -f dockerbuilds/Dockerfile.gaia --build-arg BINARY=gaiad .
 
 build-neutron:
-		@docker buildx build --load --build-context app=$(APP_DIR)/neutron -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
+		cd $(APP_DIR)/neutron && $(MAKE) build-docker-image
 
 build-hermes:
-		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.0.0 .
+		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.3.0-a285c01 .
 
 build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker

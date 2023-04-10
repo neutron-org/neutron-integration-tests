@@ -33,12 +33,12 @@ export type SingleChoiceProposal = {
   readonly total_power: string;
   readonly proposal: {
     status:
-    | 'open'
-    | 'rejected'
-    | 'passed'
-    | 'executed'
-    | 'closed'
-    | 'execution_failed';
+      | 'open'
+      | 'rejected'
+      | 'passed'
+      | 'executed'
+      | 'closed'
+      | 'execution_failed';
   };
 };
 
@@ -77,6 +77,21 @@ type Failure = {
   ack_type: string;
 };
 
+export type ScheduleResponse = {
+  schedules: Schedule[];
+  pagination: {
+    next_key: string;
+    total: string;
+  };
+};
+
+// Schedule represents a single cron added schedule
+type Schedule = {
+  name: string;
+  period: number;
+  msgs: any[];
+};
+
 // BalancesResponse is the response model for the bank balances query.
 export type PauseInfoResponse = {
   paused: {
@@ -87,11 +102,19 @@ export type PauseInfoResponse = {
 
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
+  MSG_RECEIVER: 'msg_receiver.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
   TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
+  DAO_CORE: 'cwd_core.wasm',
+  DAO_PROPOSAL_SINGLE: 'cwd_proposal_single.wasm',
+  DAO_PROPOSAL_MULTI: 'cwd_proposal_multiple.wasm',
+  DAO_PREPROPOSAL_SINGLE: 'cwd_pre_propose_single.wasm',
+  DAO_PREPROPOSAL_MULTI: 'cwd_pre_propose_multiple.wasm',
+  DAO_PREPROPOSAL_OVERRULE: 'cwd_pre_propose_overrule.wasm',
+  NEUTRON_VAULT: 'neutron_vault.wasm',
   RESERVE: 'neutron_reserve.wasm',
   SUBDAO_CORE: 'cwd_subdao_core.wasm',
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
@@ -102,6 +125,8 @@ export const NeutronContract = {
   ORACLE_HISTORY: 'astroport_oracle.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
+  CW4_VOTING: '../contracts_thirdparty/cw4_voting.wasm',
+  CW4_GROUP: '../contracts_thirdparty/cw4_group.wasm',
   TGE_AUCTION: 'neutron_auction.wasm',
   TGE_LOCKDROP: 'neutron_lockdrop.wasm',
   TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
@@ -118,4 +143,16 @@ export const NeutronContract = {
 export type MultiChoiceOption = {
   description: string;
   msgs: any[];
+};
+
+// https://github.com/cosmos/cosmos-sdk/blob/main/proto/cosmos/upgrade/v1beta1/query.proto#L53
+export type CurrentPlanResponse = {
+  plan: Plan | null;
+};
+
+// https://github.com/cosmos/cosmos-sdk/blob/main/proto/cosmos/upgrade/v1beta1/upgrade.proto#L14
+export type Plan = {
+  name: string;
+  height: string;
+  info: string;
 };
