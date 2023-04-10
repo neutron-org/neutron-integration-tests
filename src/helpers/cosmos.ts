@@ -874,3 +874,5 @@ export const filterIBCDenoms = (list: Coin[]) =>
     (coin) =>
       coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
   );
+
+export const wrapMsg = (x) => Buffer.from(JSON.stringify(x)).toString('base64');

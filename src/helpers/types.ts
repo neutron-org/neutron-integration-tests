@@ -39,11 +39,11 @@ export type SingleChoiceProposal = {
       | 'executed'
       | 'closed'
       | 'execution_failed';
-  };
-  readonly votes: {
-    yes: string;
-    no: string;
-    abstain: string;
+    readonly votes: {
+      yes: string;
+      no: string;
+      abstain: string;
+    };
   };
 };
 

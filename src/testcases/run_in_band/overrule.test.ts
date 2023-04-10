@@ -117,7 +117,9 @@ describe('Neutron / Subdao', () => {
       );
       const prop = await mainDao.queryOverruleProposal(proposal_id);
       // let's check that proposal passed even while the majority is against it
-      expect(parseInt(prop.votes.yes)).toBeLessThan(parseInt(prop.votes.no));
+      expect(parseInt(prop.proposal.votes.yes)).toBeLessThan(
+        parseInt(prop.proposal.votes.no),
+      );
       const timelocked_prop = await subDao.getTimelockedProposal(proposal_id);
       expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('overruled');
@@ -139,6 +141,5 @@ async function voteAgainstOverrule(
   return await member.user.executeContract(
     member.dao.contracts.proposal_modules.overrule.address,
     JSON.stringify({ vote: { proposal_id: prop_id, vote: 'no' } }),
-    [],
   );
 }
