@@ -115,7 +115,9 @@ describe('Neutron / Subdao', () => {
         timelockAddress,
         proposal_id,
       );
-      // todo check vote distribution on overrule proposal
+      const prop = await mainDao.queryOverruleProposal(proposal_id);
+      // let's check that proposal passed even while the majority is against it
+      expect(parseInt(prop.votes.yes)).toBeLessThan(parseInt(prop.votes.no));
       const timelocked_prop = await subDao.getTimelockedProposal(proposal_id);
       expect(timelocked_prop.id).toEqual(proposal_id);
       expect(timelocked_prop.status).toEqual('overruled');

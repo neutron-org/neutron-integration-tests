@@ -381,6 +381,18 @@ export class Dao {
       },
     );
   }
+  async queryOverruleProposal(
+    proposalId: number,
+  ): Promise<SingleChoiceProposal> {
+    return await this.chain.queryContract<SingleChoiceProposal>(
+      this.contracts.proposal_modules.overrule.address,
+      {
+        proposal: {
+          proposal_id: proposalId,
+        },
+      },
+    );
+  }
 
   async queryTotalVotingPower(): Promise<TotalPowerAtHeightResponse> {
     return await this.chain.queryContract<TotalPowerAtHeightResponse>(

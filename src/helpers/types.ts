@@ -40,6 +40,11 @@ export type SingleChoiceProposal = {
       | 'closed'
       | 'execution_failed';
   };
+  readonly votes: {
+    yes: string;
+    no: string;
+    abstain: string;
+  };
 };
 
 export type TotalPowerAtHeightResponse = {
