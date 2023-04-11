@@ -796,6 +796,12 @@ describe('Neutron / TGE / Auction', () => {
     });
     describe('Phase 3', () => {
       describe('set_pool_size', () => {
+        it('transfer some ATOM directly to auction contract to try affect pool', async () => {
+          await cmInstantiator.msgSend(contractAddresses.TGE_AUCTION, {
+            amount: '100000000',
+            denom: IBC_ATOM_DENOM,
+          });
+        });
         it('should not be able to set pool size before withdrawal_window is closed', async () => {
           await expect(
             cmInstantiator.executeContract(
@@ -1371,6 +1377,12 @@ describe('Neutron / TGE / Auction', () => {
         expect(usdcLpSize).toBeCloseTo(
           parseInt(usdcPoolInfo.total_share) - MIN_LIQUDITY,
           -1,
+        );
+        expect(auctionState.atom_lp_size).toEqual(
+          auctionState.lp_atom_shares_minted,
+        );
+        expect(auctionState.usdc_lp_size).toEqual(
+          auctionState.lp_usdc_shares_minted,
         );
       });
       it('should not be able to init pool twice', async () => {
