@@ -393,7 +393,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res2.code).toBe(0);
     });
     it('should instantiate auction contract', async () => {
-      times.auctionInitTs = (Date.now() / 1000 + 20) | 0;
+      times.auctionInitTs = (Date.now() / 1000 + 30) | 0;
       times.auctionDepositWindow = 30;
       times.auctionWithdrawalWindow = 30;
       times.auctionLpLockWindow = 40;
@@ -401,7 +401,7 @@ describe('Neutron / TGE / Auction', () => {
       const res = await cmInstantiator.instantiateContract(
         codeIds.TGE_AUCTION,
         JSON.stringify({
-          denom_manager: cmTokenManager.wallet.address.toString(),
+          token_info_manager: cmTokenManager.wallet.address.toString(),
           price_feed_contract: contractAddresses.TGE_PRICE_FEED_MOCK,
           reserve_contract_address: reserveAddress,
           vesting_usdc_contract_address: contractAddresses.VESTING_USDC,
@@ -424,7 +424,7 @@ describe('Neutron / TGE / Auction', () => {
         cmStranger.executeContract(
           contractAddresses.TGE_AUCTION,
           JSON.stringify({
-            set_denoms: {
+            set_token_info: {
               atom_denom: IBC_ATOM_DENOM,
               usdc_denom: IBC_USDC_DENOM,
             },
@@ -436,7 +436,7 @@ describe('Neutron / TGE / Auction', () => {
       const res = await cmTokenManager.executeContract(
         contractAddresses.TGE_AUCTION,
         JSON.stringify({
-          set_denoms: {
+          set_token_info: {
             atom_denom: IBC_ATOM_DENOM,
             usdc_denom: IBC_USDC_DENOM,
           },
@@ -526,12 +526,22 @@ describe('Neutron / TGE / Auction', () => {
           update_config: {
             new_config: {
               lockdrop_contract_address: contractAddresses.TGE_LOCKDROP,
-              pool_info: {
-                ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
-                ntrn_atom_pool_address: pairs.atom_ntrn.contract,
-                ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
-                ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
-              },
+            },
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+    });
+    it('sets pool info', async () => {
+      const res = await cmTokenManager.executeContract(
+        contractAddresses.TGE_AUCTION,
+        JSON.stringify({
+          set_token_info: {
+            pool_info: {
+              ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
+              ntrn_atom_pool_address: pairs.atom_ntrn.contract,
+              ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
+              ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
             },
           },
         }),
@@ -786,6 +796,12 @@ describe('Neutron / TGE / Auction', () => {
     });
     describe('Phase 3', () => {
       describe('set_pool_size', () => {
+        it('transfer some ATOM directly to auction contract to try affect pool', async () => {
+          await cmInstantiator.msgSend(contractAddresses.TGE_AUCTION, {
+            amount: '100000000',
+            denom: IBC_ATOM_DENOM,
+          });
+        });
         it('should not be able to set pool size before withdrawal_window is closed', async () => {
           await expect(
             cmInstantiator.executeContract(
@@ -1361,6 +1377,12 @@ describe('Neutron / TGE / Auction', () => {
         expect(usdcLpSize).toBeCloseTo(
           parseInt(usdcPoolInfo.total_share) - MIN_LIQUDITY,
           -1,
+        );
+        expect(auctionState.atom_lp_size).toEqual(
+          auctionState.lp_atom_shares_minted,
+        );
+        expect(auctionState.usdc_lp_size).toEqual(
+          auctionState.lp_usdc_shares_minted,
         );
       });
       it('should not be able to init pool twice', async () => {
