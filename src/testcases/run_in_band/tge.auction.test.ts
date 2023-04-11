@@ -270,7 +270,7 @@ describe('Neutron / TGE / Auction', () => {
         JSON.stringify({
           factory_contract: contractAddresses.ASTRO_FACTORY,
           period: 1,
-          manager: cmStranger.wallet.address.toString(),
+          manager: cmTokenManager.wallet.address.toString(),
         }),
         'oracle usdc',
       );
@@ -283,7 +283,7 @@ describe('Neutron / TGE / Auction', () => {
         JSON.stringify({
           factory_contract: contractAddresses.ASTRO_FACTORY,
           period: 1,
-          manager: cmStranger.wallet.address.toString(),
+          manager: cmTokenManager.wallet.address.toString(),
         }),
         'oracle atom',
       );
@@ -380,7 +380,7 @@ describe('Neutron / TGE / Auction', () => {
         ],
       };
 
-      const res = await cmInstantiator.executeContract(
+      const res = await cmTokenManager.executeContract(
         contractAddresses.ORACLE_USDC,
         JSON.stringify(setAssets),
       );
@@ -402,7 +402,7 @@ describe('Neutron / TGE / Auction', () => {
         ],
       };
 
-      const res = await cmInstantiator.executeContract(
+      const res = await cmTokenManager.executeContract(
         contractAddresses.ORACLE_ATOM,
         JSON.stringify(setAssets),
       );
@@ -475,13 +475,18 @@ describe('Neutron / TGE / Auction', () => {
       expect(res2.code).toBe(0);
     });
     it('should instantiate auction contract', async () => {
-      times.auctionInitTs = (Date.now() / 1000 + 30) | 0;
-      times.auctionDepositWindow = 30;
-      times.auctionWithdrawalWindow = 30;
-      times.auctionLpLockWindow = 45;
+      times.auctionInitTs = (Date.now() / 1000 + 60) | 0;
+      times.auctionDepositWindow = 60;
+      times.auctionWithdrawalWindow = 60;
+      // times.auctionLpLockWindow = 45;
       times.auctionVestingLpDuration = 20;
-      times.lockdropDepositDuration = 40;
-      times.lockdropWithdrawalDuration = 45;
+      times.lockdropDepositDuration = 60;
+      times.lockdropWithdrawalDuration = 60;
+      times.lockdropInitTs =
+        times.auctionInitTs +
+        times.auctionDepositWindow +
+        times.auctionWithdrawalWindow +
+        5;
       const res = await cmInstantiator.instantiateContract(
         codeIds.TGE_AUCTION,
         JSON.stringify({
@@ -530,7 +535,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
     });
     it('should instantiate lockdrop contract', async () => {
-      times.lockdropInitTs = (Date.now() / 1000 + 30) | 0;
+      // times.lockdropInitTs = (Date.now() / 1000 + 60) | 0;
       const msg = {
         credits_contract: contractAddresses.TGE_CREDITS,
         auction_contract: contractAddresses.TGE_AUCTION,
@@ -784,7 +789,7 @@ describe('Neutron / TGE / Auction', () => {
         ).rejects.toThrow(/Deposit window closed/);
       });
       it('should allow deposit ATOM', async () => {
-        await waitTill(times.auctionInitTs + 10);
+        await waitTill(times.auctionInitTs + 3);
         const atomBalanceBefore = await neutronChain.queryDenomBalance(
           cmInstantiator.wallet.address.toString(),
           IBC_ATOM_DENOM,
@@ -1021,9 +1026,9 @@ describe('Neutron / TGE / Auction', () => {
         it('should not be able to set pool size bc of wrong price feed data', async () => {
           await waitTill(
             times.auctionInitTs +
-              times.auctionDepositWindow +
-              times.auctionWithdrawalWindow +
-              5,
+            times.auctionDepositWindow +
+            times.auctionWithdrawalWindow +
+            5,
           );
           await expect(
             cmInstantiator.executeContract(
@@ -1118,7 +1123,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should be able to set pool size', async () => {
           const time = (Date.now() / 1000) | 0;
-          const r1 = await cmInstantiator.executeContract(
+          const r1 = await cmTokenManager.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
               set_rate: {
@@ -1132,7 +1137,7 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           expect(r1.code).toEqual(0);
-          const r2 = await cmInstantiator.executeContract(
+          const r2 = await cmTokenManager.executeContract(
             contractAddresses.TGE_PRICE_FEED_MOCK,
             JSON.stringify({
               set_rate: {
@@ -1147,7 +1152,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(r2.code).toEqual(0);
 
-          const res = await cmInstantiator.executeContract(
+          const res = await cmTokenManager.executeContract(
             contractAddresses.TGE_AUCTION,
             JSON.stringify({
               set_pool_size: {},
@@ -1445,7 +1450,14 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
     describe('Init pool', () => {
+
       it('should init pool', async () => {
+        await waitTill(
+          // times.auctionInitTs +
+          // times.auctionDepositWindow +
+          // times.auctionWithdrawalWindow +
+          times.lockdropInitTs + times.lockdropDepositDuration + times.lockdropWithdrawalDuration + 5,
+        );
         const res = await cmInstantiator.executeContract(
           contractAddresses.TGE_AUCTION,
           JSON.stringify({
@@ -1553,13 +1565,13 @@ describe('Neutron / TGE / Auction', () => {
         expect(
           Math.abs(
             parseInt(reserveLPBalanceAtomNtrn.balance) -
-              parseInt(auctionState.atom_lp_size) / 2,
+            parseInt(auctionState.atom_lp_size) / 2,
           ),
         ).toBeLessThan(1);
         expect(
           Math.abs(
             parseInt(reserveLPBalanceUsdcNtrn.balance) -
-              parseInt(auctionState.usdc_lp_size) / 2,
+            parseInt(auctionState.usdc_lp_size) / 2,
           ),
         ).toBeLessThan(1);
 
@@ -1579,15 +1591,15 @@ describe('Neutron / TGE / Auction', () => {
         expect(
           Math.abs(
             parseInt(auctionLPBalanceAtomNtrn.balance) -
-              (parseInt(auctionState.atom_lp_size) / 2 -
-                parseInt(auctionState.atom_lp_locked)),
+            (parseInt(auctionState.atom_lp_size) / 2 -
+              parseInt(auctionState.atom_lp_locked)),
           ),
         ).toBeLessThan(1);
         expect(
           Math.abs(
             parseInt(auctionLPBalanceUsdcNtrn.balance) -
-              (parseInt(auctionState.usdc_lp_size) / 2 -
-                parseInt(auctionState.usdc_lp_locked)),
+            (parseInt(auctionState.usdc_lp_size) / 2 -
+              parseInt(auctionState.usdc_lp_locked)),
           ),
         ).toBeLessThan(1);
 
@@ -1838,9 +1850,9 @@ describe('Neutron / TGE / Auction', () => {
       it('should get locjdrop rewards', async () => {
         await waitTill(
           times.lockdropInitTs +
-            times.lockdropDepositDuration +
-            times.lockdropWithdrawalDuration +
-            1,
+          times.lockdropDepositDuration +
+          times.lockdropWithdrawalDuration +
+          1,
         );
         const balance_before = await neutronChain.queryDenomBalance(
           cmInstantiator.wallet.address.toString(),
