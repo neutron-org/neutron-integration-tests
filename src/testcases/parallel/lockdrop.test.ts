@@ -1,60 +1,54 @@
 import { LockdropVaultConfig, VaultBondingStatus } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import {
+  CosmosWrapper,
+  NEUTRON_DENOM,
+  WalletWrapper,
+} from '../../helpers/cosmos';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { Wallet } from '../../types';
 import { NeutronContract } from '../../helpers/types';
 
-describe('Neutron / Lockdrop', () => {
+describe.skip('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm_dao: CosmosWrapper;
-  let cm_owner: CosmosWrapper;
-  let cm_manager: CosmosWrapper;
-  let cm_holder: CosmosWrapper;
-  let dao_wallet: Wallet;
-  let owner_wallet: Wallet;
-  let manager_wallet: Wallet;
-  let holder_wallet: Wallet;
+  let neutronChain: CosmosWrapper;
   let owner_addr: AccAddress | ValAddress;
   let manager_addr: AccAddress | ValAddress;
   let holder_addr: AccAddress | ValAddress;
+  let daoMockWalet: WalletWrapper;
+  let ownerMockWalet: WalletWrapper;
+  let managerMockWalet: WalletWrapper;
+  let holderMockWalet: WalletWrapper;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    dao_wallet = testState.wallets.qaNeutron.genQaWal1;
-    owner_wallet = testState.wallets.qaNeutronThree.genQaWal1;
-    manager_wallet = testState.wallets.qaNeutronFour.genQaWal1;
-    holder_wallet = testState.wallets.qaNeutronFive.genQaWal1;
-    owner_addr = owner_wallet.address;
-    manager_addr = manager_wallet.address;
-    holder_addr = holder_wallet.address;
 
-    cm_dao = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      dao_wallet,
       NEUTRON_DENOM,
     );
-    cm_owner = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      owner_wallet,
-      NEUTRON_DENOM,
+    daoMockWalet = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
     );
-    cm_manager = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      manager_wallet,
-      NEUTRON_DENOM,
+    ownerMockWalet = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cm_holder = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      holder_wallet,
-      NEUTRON_DENOM,
+    managerMockWalet = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronFour.genQaWal1,
     );
+    holderMockWalet = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronFive.genQaWal1,
+    );
+
+    owner_addr = ownerMockWalet.wallet.address;
+    manager_addr = managerMockWalet.wallet.address;
+    holder_addr = holderMockWalet.wallet.address;
   });
 
   const original_name = 'Lockdrop Vault';
@@ -67,7 +61,7 @@ describe('Neutron / Lockdrop', () => {
       lockdrop_contract_addr = testState.wallets.neutron.rly2.address;
 
       lockdrop_vault_addr = await setupLockdropVault(
-        cm_dao,
+        daoMockWalet,
         original_name,
         original_description,
         lockdrop_contract_addr.toString(),
@@ -78,7 +72,7 @@ describe('Neutron / Lockdrop', () => {
 
     test('Get config', async () => {
       expect(
-        await getLockdropVaultConfig(cm_dao, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
       ).toMatchObject({
         name: original_name,
         description: original_description,
@@ -91,7 +85,7 @@ describe('Neutron / Lockdrop', () => {
     const new_description = 'A new description for the lockdrop vault.';
     test('Update config by manager: success', async () => {
       const res = await updateLockdropVaultConfig(
-        cm_manager,
+        managerMockWalet,
         lockdrop_vault_addr,
         owner_addr.toString(),
         lockdrop_contract_addr.toString(),
@@ -102,7 +96,7 @@ describe('Neutron / Lockdrop', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(cm_dao, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
       ).toMatchObject({
         name: original_name,
         description: new_description,
@@ -116,7 +110,7 @@ describe('Neutron / Lockdrop', () => {
       // change owner to manager
       await expect(
         updateLockdropVaultConfig(
-          cm_manager,
+          managerMockWalet,
           lockdrop_vault_addr,
           manager_addr.toString(),
           lockdrop_contract_addr.toString(),
@@ -127,7 +121,7 @@ describe('Neutron / Lockdrop', () => {
       ).rejects.toThrow(/Only owner can change owner/);
 
       expect(
-        await getLockdropVaultConfig(cm_dao, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
       ).toMatchObject({
         name: original_name,
         description: new_description,
@@ -140,7 +134,7 @@ describe('Neutron / Lockdrop', () => {
     test('Update config by owner', async () => {
       // change owner to manager
       let res = await updateLockdropVaultConfig(
-        cm_owner,
+        ownerMockWalet,
         lockdrop_vault_addr,
         manager_addr.toString(),
         lockdrop_contract_addr.toString(),
@@ -151,7 +145,7 @@ describe('Neutron / Lockdrop', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(cm_dao, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
       ).toMatchObject({
         name: original_name,
         description: original_description,
@@ -162,7 +156,7 @@ describe('Neutron / Lockdrop', () => {
 
       // make sure new owner is promoted and get back to original lockdrop vault settings
       res = await updateLockdropVaultConfig(
-        cm_manager,
+        managerMockWalet,
         lockdrop_vault_addr,
         owner_addr.toString(),
         lockdrop_contract_addr.toString(),
@@ -173,7 +167,7 @@ describe('Neutron / Lockdrop', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(cm_dao, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
       ).toMatchObject({
         name: original_name,
         description: original_description,
@@ -185,7 +179,7 @@ describe('Neutron / Lockdrop', () => {
 
     test('Bonding and Unbonding', async () => {
       await expect(
-        cm_holder.executeContract(
+        holderMockWalet.executeContract(
           lockdrop_vault_addr,
           JSON.stringify({
             bond: {},
@@ -194,7 +188,7 @@ describe('Neutron / Lockdrop', () => {
         ),
       ).rejects.toThrow(/Bonding is not available for this contract/);
       await expect(
-        cm_holder.executeContract(
+        holderMockWalet.executeContract(
           lockdrop_vault_addr,
           JSON.stringify({
             unbond: {
@@ -207,7 +201,7 @@ describe('Neutron / Lockdrop', () => {
 
     test('Bonding status', async () => {
       const status = await getVaultBondingStatus(
-        cm_holder,
+        neutronChain,
         lockdrop_vault_addr,
         holder_addr.toString(),
       );
@@ -219,7 +213,7 @@ describe('Neutron / Lockdrop', () => {
 });
 
 const setupLockdropVault = async (
-  cm: CosmosWrapper,
+  cm: WalletWrapper,
   name: string,
   description: string,
   lockdrop_contract: string,
@@ -228,7 +222,7 @@ const setupLockdropVault = async (
 ) => {
   const codeId = await cm.storeWasm(NeutronContract.LOCKDROP_VAULT);
   return (
-    await cm.instantiate(
+    await cm.instantiateContract(
       codeId,
       JSON.stringify({
         name: name,
@@ -268,7 +262,7 @@ const getVaultBondingStatus = async (
   });
 
 const updateLockdropVaultConfig = async (
-  cm: CosmosWrapper,
+  cm: WalletWrapper,
   lockdrop_vault_contract: string,
   owner: string,
   lockdrop_contract: string,

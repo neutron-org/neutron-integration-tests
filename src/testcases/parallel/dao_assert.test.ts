@@ -1,10 +1,10 @@
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
-import { Wallet } from '../../types';
 import {
   getDaoContracts,
   DaoContracts,
   getReserveContract,
+  VotingVaultsModule,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
 import { NeutronContract } from '../../helpers/types';
@@ -12,7 +12,6 @@ import { NeutronContract } from '../../helpers/types';
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
   let cm_dao: CosmosWrapper;
-  let dao_wallet: Wallet;
   let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
   let preProposalSingleAddress: string;
@@ -22,18 +21,15 @@ describe('DAO / Check', () => {
   let preProposalOverruleAddress: string;
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
-  let votingVaultsLockdropAddress: string;
   let reserveContract: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    dao_wallet = testState.wallets.qaNeutron.genQaWal1;
 
     cm_dao = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      dao_wallet,
       NEUTRON_DENOM,
     );
     const daoCoreAddress = (await cm_dao.getChainAdmins())[0]; //add assert for some addresses
@@ -48,10 +44,8 @@ describe('DAO / Check', () => {
     preProposalOverruleAddress =
       daoContracts.proposal_modules.overrule.pre_proposal_module.address;
     votingModuleAddress = daoContracts.voting_module.address;
-    votingVaultsNtrnAddress =
-      daoContracts.voting_module.voting_vaults.ntrn_vault.address;
-    votingVaultsLockdropAddress =
-      daoContracts.voting_module.voting_vaults.lockdrop_vault.address;
+    votingVaultsNtrnAddress = (daoContracts.voting_module as VotingVaultsModule)
+      .voting_vaults.ntrn_vault.address;
     reserveContract = await getReserveContract(cm_dao);
   });
 
@@ -148,11 +142,6 @@ describe('DAO / Check', () => {
       expect(res.contract_info.admin).toEqual(daoContracts.core.address);
     });
 
-    test('voting lockdrop vaults', async () => {
-      res = await cm_dao.getContractInfo(votingVaultsLockdropAddress);
-      expect(res.contract_info.admin).toEqual(daoContracts.core.address);
-    });
-
     test('Dao is the admin of himself', async () => {
       res = await cm_dao.getContractInfo(daoContracts.core.address);
       expect(res.contract_info.admin).toEqual(daoContracts.core.address);
@@ -224,13 +213,6 @@ describe('DAO / Check', () => {
         cm_dao,
         votingVaultsNtrnAddress,
         NeutronContract.NEUTRON_VAULT,
-      );
-    });
-    test('Dao lockdrop vault hash assert', async () => {
-      await checkContractHash(
-        cm_dao,
-        votingVaultsLockdropAddress,
-        NeutronContract.LOCKDROP_VAULT,
       );
     });
   });

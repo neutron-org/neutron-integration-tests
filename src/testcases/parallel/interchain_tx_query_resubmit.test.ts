@@ -2,6 +2,7 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
@@ -12,47 +13,62 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/icq';
+import { NeutronContract } from '../../helpers/types';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let cm: CosmosWrapper;
-  let cm2: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    cm = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.qaNeutron.genQaWal1,
       NEUTRON_DENOM,
     );
-    cm2 = new CosmosWrapper(
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.qaCosmos.genQaWal1,
       COSMOS_DENOM,
+    );
+    gaiaAccount = new WalletWrapper(
+      gaiaChain,
+      testState.wallets.qaCosmos.genQaWal1,
     );
   });
 
   describe('deploy contract', () => {
     let codeId: string;
     test('store contract', async () => {
-      codeId = await cm.storeWasm('neutron_interchain_queries.wasm');
+      codeId = await neutronAccount.storeWasm(
+        NeutronContract.INTERCHAIN_QUERIES,
+      );
       expect(parseInt(codeId)).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await cm.instantiate(codeId, '{}', 'neutron_interchain_queries')
+        await neutronAccount.instantiateContract(
+          codeId,
+          '{}',
+          'neutron_interchain_queries',
+        )
       )[0]._contract_address;
     });
   });
 
   describe('prepare ICQ for failing', () => {
     test('enable mock', async () => {
-      await cm.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           integration_tests_set_query_mock: {},
@@ -70,9 +86,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
-      await cm.msgSend(contractAddress, '1000000');
+      await neutronAccount.msgSend(contractAddress, '1000000');
       await registerTransfersQuery(
-        cm,
+        neutronAccount,
         contractAddress,
         connectionId,
         query1UpdatePeriod,
@@ -81,7 +97,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(cm, contractAddress, 1);
+      const query = await getRegisteredQuery(neutronChain, contractAddress, 1);
       expect(query.registered_query.id).toEqual(1);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -97,18 +113,21 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('check failed txs', async () => {
       for (let i = 0; i < 5; i++) {
-        const res = await cm2.msgSend(watchedAddr1, amountToAddr1_1.toString());
+        const res = await gaiaAccount.msgSend(
+          watchedAddr1,
+          amountToAddr1_1.toString(),
+        );
         expect(res.code).toEqual(0);
       }
 
-      await cm.blockWaiter.waitBlocks(5);
+      await neutronChain.blockWaiter.waitBlocks(5);
 
       const txs = await getUnsuccessfulTxs(testState.icq_web_host);
       expect(txs.length).toEqual(5);
     });
 
     test('resubmit failed tx', async () => {
-      await cm.executeContract(
+      await neutronAccount.executeContract(
         contractAddress,
         JSON.stringify({
           integration_tests_unset_query_mock: {},
@@ -121,10 +140,10 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icq_web_host, resubmit_txs);
       expect(resp.status).toEqual(200);
 
-      await cm.blockWaiter.waitBlocks(20);
+      await neutronChain.blockWaiter.waitBlocks(20);
 
       await waitForTransfersAmount(
-        cm,
+        neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query1UpdatePeriod * 2,
@@ -134,7 +153,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(txs.length).toEqual(0);
 
       const deposits = await queryRecipientTxs(
-        cm,
+        neutronChain,
         contractAddress,
         watchedAddr1,
       );
