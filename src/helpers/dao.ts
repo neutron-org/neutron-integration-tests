@@ -155,6 +155,7 @@ export const getVotingVaults = async (
   const voting_vaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(voting_module_address, { voting_vaults: {} });
+
   const ntrn_vault_address = voting_vaults.filter(
     (x) => x.name == 'voting vault',
   )[0]?.address;
