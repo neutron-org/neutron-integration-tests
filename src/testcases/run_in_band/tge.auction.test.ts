@@ -533,15 +533,17 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
     });
     it('sets pool info', async () => {
-      const res = await cmTokenManager.executeContract(
+      const res = await cmInstantiator.executeContract(
         contractAddresses.TGE_AUCTION,
         JSON.stringify({
-          set_token_info: {
-            pool_info: {
-              ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
-              ntrn_atom_pool_address: pairs.atom_ntrn.contract,
-              ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
-              ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
+          update_config: {
+            new_config: {
+              pool_info: {
+                ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
+                ntrn_atom_pool_address: pairs.atom_ntrn.contract,
+                ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
+                ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
+              },
             },
           },
         }),
