@@ -1,18 +1,14 @@
-FROM rust:1.65-bullseye as builder
-ADD ./hermes/ /app/network/hermes/
-WORKDIR /app
-RUN PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    git clone https://github.com/informalsystems/hermes && \
-    cd hermes && \
-    git checkout v1.4.0 && \
-    cargo build --release --bin hermes && \
-    mkdir -p $HOME/.hermes/bin && \
-    mv ./target/release/hermes $HOME/.hermes/bin/
-
-FROM debian:bullseye-slim
-COPY --from=builder /root/.hermes/bin/hermes /usr/local/bin/
+FROM ubuntu:23.04
 COPY ./hermes/ /app/network/hermes/
 WORKDIR /app
+RUN apt-get update && apt-get install -y wget && \
+    PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
+    VERSION=v1.4.0 && \
+    TARNAME="hermes-${VERSION}-${PLATFORM}-unknown-linux-gnu.tar.gz" && \
+    wget "https://github.com/informalsystems/hermes/releases/download/${VERSION}/${TARNAME}" && \
+    tar -xf "$TARNAME" && \
+    mv ./hermes /usr/local/bin/ && \
+    rm -rf "$TARNAME"
 
 CMD /app/network/hermes/restore-keys.sh && \
     /app/network/hermes/create-conn.sh && \
