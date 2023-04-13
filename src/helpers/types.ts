@@ -121,6 +121,8 @@ export const NeutronContract = {
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
+  VESTING_VAULT: '../contracts_thirdparty/astroport_vesting.wasm',
+  ORACLE_HISTORY: 'astroport_oracle.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
   CW4_VOTING: '../contracts_thirdparty/cw4_voting.wasm',
@@ -136,6 +138,7 @@ export const NeutronContract = {
   ASTRO_GENERATOR: '../contracts_thirdparty/astroport_generator.wasm',
   ASTRO_WHITELIST: '../contracts_thirdparty/astroport_whitelist.wasm',
   VESTING_LP: 'vesting_lp.wasm',
+  VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
 };
 
 export type MultiChoiceOption = {
@@ -153,4 +156,56 @@ export type Plan = {
   name: string;
   height: string;
   info: string;
+};
+
+export const nativeToken = (denom: string, amount: string): Asset => {
+  return {
+    info: nativeTokenInfo(denom),
+    amount: amount,
+  };
+};
+
+export const token = (contractAddr: string, amount: string): Asset => {
+  return {
+    info: tokenInfo(contractAddr),
+    amount: amount,
+  };
+};
+
+export const nativeTokenInfo = (denom: string): NativeToken => {
+  return {
+    native_token: {
+      denom: denom,
+    },
+  };
+};
+
+export const tokenInfo = (contractAddr: string): Token => {
+  return {
+    token: {
+      contract_addr: contractAddr,
+    },
+  };
+};
+
+export type PoolStatus = {
+  assets: Asset[];
+  total_share: string;
+};
+
+export type Asset = {
+  info: Token | NativeToken;
+  amount: string;
+};
+
+export type Token = {
+  token: {
+    contract_addr: string;
+  };
+};
+
+export type NativeToken = {
+  native_token: {
+    denom: string;
+  };
 };
