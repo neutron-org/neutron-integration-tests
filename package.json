@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:subdao && yarn test:treasury",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:subdao && yarn test:treasury && yarn test:overrule && yarn test:ibc_hooks",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
     "test:interchain_kv_query": "jest -b src/testcases/run_in_band/interchain_kv_query",
@@ -24,6 +24,7 @@
     "test:dao": "jest -b src/testcases/parallel/dao_assert",
     "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
+    "test:overrule": "jest -b src/testcases/run_in_band/overrule",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"

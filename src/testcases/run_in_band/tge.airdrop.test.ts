@@ -7,6 +7,7 @@ import {
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import crypto from 'crypto';
+import { CodeId } from '../../types';
 
 const sha256 = (x: string): Buffer => {
   const hash = crypto.createHash('sha256');
@@ -52,7 +53,7 @@ describe('Neutron / TGE / Airdrop', () => {
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
-  const codeIds: Record<string, string> = {};
+  const codeIds: Record<string, CodeId> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
   const times: Record<string, number> = {};
@@ -100,11 +101,11 @@ describe('Neutron / TGE / Airdrop', () => {
   describe('Deploy', () => {
     it('should store contracts', async () => {
       for (const contract of ['TGE_CREDITS', 'TGE_AIRDROP']) {
-        const codeId = parseInt(
-          await neutronAccount1.storeWasm(NeutronContract[contract]),
+        const codeId = await neutronAccount1.storeWasm(
+          NeutronContract[contract],
         );
         expect(codeId).toBeGreaterThan(0);
-        codeIds[contract] = codeId.toString();
+        codeIds[contract] = codeId;
       }
     });
     it('should instantiate credits contract', async () => {

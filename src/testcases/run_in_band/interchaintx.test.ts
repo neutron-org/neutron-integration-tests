@@ -55,11 +55,11 @@ describe('Neutron / Interchain TXs', () => {
   });
 
   describe('Interchain Tx with multiple ICAs', () => {
-    let codeId: string;
+    let codeId: number;
     describe('Setup', () => {
       test('store contract', async () => {
         codeId = await neutronAccount.storeWasm(NeutronContract.INTERCHAIN_TXS);
-        expect(parseInt(codeId)).toBeGreaterThan(0);
+        expect(codeId).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
         const res = (

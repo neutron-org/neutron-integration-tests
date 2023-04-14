@@ -19,6 +19,7 @@ import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import { paramChangeProposal } from '../../helpers/proposal';
 import { Coin } from '@cosmos-client/core/cjs/openapi/api';
+import { CodeId } from '../../types';
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -165,7 +166,6 @@ const removeQuery = async (
   cm: WalletWrapper,
   contractAddress: string,
   queryId: number,
-  sender: string = cm.wallet.address.toString(),
 ) =>
   await cm.executeContract(
     contractAddress,
@@ -175,7 +175,6 @@ const removeQuery = async (
       },
     }),
     [],
-    sender,
   );
 
 const removeQueryViaTx = async (
@@ -268,12 +267,12 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Instantiate interchain queries contract', () => {
-    let codeId: string;
+    let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
         NeutronContract.INTERCHAIN_QUERIES,
       );
-      expect(parseInt(codeId)).toBeGreaterThan(0);
+      expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
