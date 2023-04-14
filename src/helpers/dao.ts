@@ -36,6 +36,8 @@ export type ProposalModule = {
   status: string;
 };
 
+export type GetSubdaoResponse = { addr: string; charter: string };
+
 export type TimeLockSingleChoiceProposal = {
   id: number;
   msgs: Array<Record<string, any>>; // Vec<CosmosMsg<NeutronMsg>>
@@ -466,6 +468,17 @@ export class Dao {
       },
     );
     return res.map((x) => x.addr);
+  }
+
+  async querySubDao(subdaoAddress: string): Promise<GetSubdaoResponse> {
+    return this.chain.queryContract<GetSubdaoResponse>(
+      this.contracts.core.address,
+      {
+        get_sub_dao: {
+          address: subdaoAddress,
+        },
+      },
+    );
   }
 
   async getOverruleProposalId(

@@ -82,11 +82,28 @@ describe('Neutron / Subdao', () => {
       ).rejects.toThrow(/Subdao isn't in the list./);
     });
 
+    test('dao has no subdaos', async () => {
+      const subDaosList = await mainDao.getSubDaoList();
+      expect(subDaosList).toHaveLength(0);
+
+      await expect(
+        mainDao.querySubDao(subDao.contracts.core.address),
+      ).rejects.toThrow(/SubDao not found/);
+    });
+
     test('add subdao to list', async () => {
       await mainDaoMember1.addSubdaoToDao(subDao.contracts.core.address);
 
       const subDaosList = await mainDao.getSubDaoList();
       expect(subDaosList).toContain(subDao.contracts.core.address);
+
+      const subDaoResponse = await mainDao.querySubDao(
+        subDao.contracts.core.address,
+      );
+      expect(subDaoResponse).toEqual({
+        addr: subDao.contracts.core.address,
+        charter: null,
+      });
     });
 
     test('successfully timelocked', async () => {
