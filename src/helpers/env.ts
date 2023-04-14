@@ -51,12 +51,13 @@ export const setup = async (host1: string, host2: string) => {
   }
   showVersions();
   await showContractsHashes();
-
+  console.log('wait 1');
   await waitForHTTP(host1);
-  await waitForChannel(host1);
-  await waitForHTTP(host2);
-  await waitForChannel(host2);
-  await wait(20); // FIXME: this hardcoded sleep is here to wait until hermes is fully initialized.
+  !process.env.NO_WAIT_CHANNEL1 && (await waitForChannel(host1));
+  !process.env.NO_WAIT_HTTP2 && (await waitForHTTP(host2));
+  !process.env.NO_WAIT_CHANNEL2 && (await waitForChannel(host2));
+  !process.env.NO_WAIT_DELAY && (await wait(20)); // FIXME: this hardcoded sleep is here to wait until hermes is fully initialized.
+  console.log('wait done');
   //                        proper fix would be to monitor hermes status events.
   alreadySetUp = true;
 };
