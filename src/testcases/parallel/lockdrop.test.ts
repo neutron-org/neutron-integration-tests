@@ -12,9 +12,9 @@ import { NeutronContract } from '../../helpers/types';
 describe('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
-  let owner_addr: AccAddress | ValAddress;
-  let manager_addr: AccAddress | ValAddress;
-  let holder_addr: AccAddress | ValAddress;
+  let ownerAddr: AccAddress | ValAddress;
+  let managerAddr: AccAddress | ValAddress;
+  let holderAddr: AccAddress | ValAddress;
   let daoMockWalet: WalletWrapper;
   let ownerMockWalet: WalletWrapper;
   let managerMockWalet: WalletWrapper;
@@ -46,63 +46,63 @@ describe('Neutron / Lockdrop', () => {
       testState.wallets.qaNeutronFive.genQaWal1,
     );
 
-    owner_addr = ownerMockWalet.wallet.address;
-    manager_addr = managerMockWalet.wallet.address;
-    holder_addr = holderMockWalet.wallet.address;
+    ownerAddr = ownerMockWalet.wallet.address;
+    managerAddr = managerMockWalet.wallet.address;
+    holderAddr = holderMockWalet.wallet.address;
   });
 
-  const original_name = 'Lockdrop Vault';
-  const original_description = 'A lockdrop vault for test purposes.';
+  const originalName = 'Lockdrop Vault';
+  const originalDescription = 'A lockdrop vault for test purposes.';
   describe('Lockdrop vault', () => {
-    let lockdrop_contract_addr: AccAddress | ValAddress;
-    let lockdrop_vault_addr: string;
+    let lockdropContractAddr: AccAddress | ValAddress;
+    let lockdropVaultAddr: string;
     test('Instantiate', async () => {
       // TODO: add a real lockdrop contract when it's implemented
-      lockdrop_contract_addr = testState.wallets.neutron.rly2.address;
+      lockdropContractAddr = testState.wallets.neutron.rly2.address;
 
-      lockdrop_vault_addr = await setupLockdropVault(
+      lockdropVaultAddr = await setupLockdropVault(
         daoMockWalet,
-        original_name,
-        original_description,
-        lockdrop_contract_addr.toString(),
-        owner_addr.toString(),
-        manager_addr.toString(),
+        originalName,
+        originalDescription,
+        lockdropContractAddr.toString(),
+        ownerAddr.toString(),
+        managerAddr.toString(),
       );
     });
 
     test('Get config', async () => {
       expect(
-        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
       ).toMatchObject({
-        name: original_name,
-        description: original_description,
-        lockdrop_contract: lockdrop_contract_addr.toString(),
-        owner: owner_addr.toString(),
-        manager: manager_addr.toString(),
+        name: originalName,
+        description: originalDescription,
+        lockdrop_contract: lockdropContractAddr.toString(),
+        owner: ownerAddr.toString(),
+        manager: managerAddr.toString(),
       });
     });
 
-    const new_description = 'A new description for the lockdrop vault.';
+    const newDescription = 'A new description for the lockdrop vault.';
     test('Update config by manager: success', async () => {
       const res = await updateLockdropVaultConfig(
         managerMockWalet,
-        lockdrop_vault_addr,
-        owner_addr.toString(),
-        lockdrop_contract_addr.toString(),
-        manager_addr.toString(),
-        original_name,
-        new_description,
+        lockdropVaultAddr,
+        ownerAddr.toString(),
+        lockdropContractAddr.toString(),
+        managerAddr.toString(),
+        originalName,
+        newDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
       ).toMatchObject({
-        name: original_name,
-        description: new_description,
-        lockdrop_contract: lockdrop_contract_addr.toString(),
-        owner: owner_addr.toString(),
-        manager: manager_addr.toString(),
+        name: originalName,
+        description: newDescription,
+        lockdrop_contract: lockdropContractAddr.toString(),
+        owner: ownerAddr.toString(),
+        manager: managerAddr.toString(),
       });
     });
 
@@ -111,23 +111,23 @@ describe('Neutron / Lockdrop', () => {
       await expect(
         updateLockdropVaultConfig(
           managerMockWalet,
-          lockdrop_vault_addr,
-          manager_addr.toString(),
-          lockdrop_contract_addr.toString(),
-          manager_addr.toString(),
-          original_name,
-          original_description,
+          lockdropVaultAddr,
+          managerAddr.toString(),
+          lockdropContractAddr.toString(),
+          managerAddr.toString(),
+          originalName,
+          originalDescription,
         ),
       ).rejects.toThrow(/Only owner can change owner/);
 
       expect(
-        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
       ).toMatchObject({
-        name: original_name,
-        description: new_description,
-        lockdrop_contract: lockdrop_contract_addr.toString(),
-        owner: owner_addr.toString(),
-        manager: manager_addr.toString(),
+        name: originalName,
+        description: newDescription,
+        lockdrop_contract: lockdropContractAddr.toString(),
+        owner: ownerAddr.toString(),
+        manager: managerAddr.toString(),
       });
     });
 
@@ -135,52 +135,52 @@ describe('Neutron / Lockdrop', () => {
       // change owner to manager
       let res = await updateLockdropVaultConfig(
         ownerMockWalet,
-        lockdrop_vault_addr,
-        manager_addr.toString(),
-        lockdrop_contract_addr.toString(),
-        manager_addr.toString(),
-        original_name,
-        original_description,
+        lockdropVaultAddr,
+        managerAddr.toString(),
+        lockdropContractAddr.toString(),
+        managerAddr.toString(),
+        originalName,
+        originalDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
       ).toMatchObject({
-        name: original_name,
-        description: original_description,
-        lockdrop_contract: lockdrop_contract_addr.toString(),
-        owner: manager_addr.toString(),
-        manager: manager_addr.toString(),
+        name: originalName,
+        description: originalDescription,
+        lockdrop_contract: lockdropContractAddr.toString(),
+        owner: managerAddr.toString(),
+        manager: managerAddr.toString(),
       });
 
       // make sure new owner is promoted and get back to original lockdrop vault settings
       res = await updateLockdropVaultConfig(
         managerMockWalet,
-        lockdrop_vault_addr,
-        owner_addr.toString(),
-        lockdrop_contract_addr.toString(),
-        manager_addr.toString(),
-        original_name,
-        original_description,
+        lockdropVaultAddr,
+        ownerAddr.toString(),
+        lockdropContractAddr.toString(),
+        managerAddr.toString(),
+        originalName,
+        originalDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
-        await getLockdropVaultConfig(neutronChain, lockdrop_vault_addr),
+        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
       ).toMatchObject({
-        name: original_name,
-        description: original_description,
-        lockdrop_contract: lockdrop_contract_addr.toString(),
-        owner: owner_addr.toString(),
-        manager: manager_addr.toString(),
+        name: originalName,
+        description: originalDescription,
+        lockdrop_contract: lockdropContractAddr.toString(),
+        owner: ownerAddr.toString(),
+        manager: managerAddr.toString(),
       });
     });
 
     test('Bonding and Unbonding', async () => {
       await expect(
         holderMockWalet.executeContract(
-          lockdrop_vault_addr,
+          lockdropVaultAddr,
           JSON.stringify({
             bond: {},
           }),
@@ -189,7 +189,7 @@ describe('Neutron / Lockdrop', () => {
       ).rejects.toThrow(/Bonding is not available for this contract/);
       await expect(
         holderMockWalet.executeContract(
-          lockdrop_vault_addr,
+          lockdropVaultAddr,
           JSON.stringify({
             unbond: {
               amount: '1000',
@@ -202,8 +202,8 @@ describe('Neutron / Lockdrop', () => {
     test('Bonding status', async () => {
       const status = await getVaultBondingStatus(
         neutronChain,
-        lockdrop_vault_addr,
-        holder_addr.toString(),
+        lockdropVaultAddr,
+        holderAddr.toString(),
       );
       expect(status.bonding_enabled).toEqual(false);
       expect(status.unbondable_abount).toEqual('0');
@@ -216,7 +216,7 @@ const setupLockdropVault = async (
   cm: WalletWrapper,
   name: string,
   description: string,
-  lockdrop_contract: string,
+  lockdropContract: string,
   owner?: string,
   manager?: string,
 ) => {
@@ -227,7 +227,7 @@ const setupLockdropVault = async (
       JSON.stringify({
         name: name,
         description: description,
-        lockdrop_contract: lockdrop_contract,
+        lockdrop_contract: lockdropContract,
         owner: {
           address: {
             addr: owner,
@@ -242,19 +242,19 @@ const setupLockdropVault = async (
 
 const getLockdropVaultConfig = async (
   cm: CosmosWrapper,
-  lockdrop_vault_contract: string,
+  lockdropVaultContract: string,
 ): Promise<LockdropVaultConfig> =>
-  cm.queryContract<LockdropVaultConfig>(lockdrop_vault_contract, {
+  cm.queryContract<LockdropVaultConfig>(lockdropVaultContract, {
     get_config: {},
   });
 
 const getVaultBondingStatus = async (
   cm: CosmosWrapper,
-  lockdrop_vault_contract: string,
+  lockdropVaultContract: string,
   address: string,
   height?: number,
 ): Promise<VaultBondingStatus> =>
-  cm.queryContract<VaultBondingStatus>(lockdrop_vault_contract, {
+  cm.queryContract<VaultBondingStatus>(lockdropVaultContract, {
     bonding_status: {
       height: height,
       address: address,
@@ -263,19 +263,19 @@ const getVaultBondingStatus = async (
 
 const updateLockdropVaultConfig = async (
   cm: WalletWrapper,
-  lockdrop_vault_contract: string,
+  lockdropVaultContract: string,
   owner: string,
-  lockdrop_contract: string,
+  lockdropContract: string,
   manager: string,
   name: string,
   description: string,
 ): Promise<InlineResponse20075TxResponse> =>
   cm.executeContract(
-    lockdrop_vault_contract,
+    lockdropVaultContract,
     JSON.stringify({
       update_config: {
         owner: owner,
-        lockdrop_contract: lockdrop_contract,
+        lockdrop_contract: lockdropContract,
         manager: manager,
         name: name,
         description: description,
