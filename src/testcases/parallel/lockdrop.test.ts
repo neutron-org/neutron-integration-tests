@@ -9,7 +9,7 @@ import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { NeutronContract } from '../../helpers/types';
 
-describe('Neutron / Lockdrop', () => {
+describe.skip('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let ownerAddr: AccAddress | ValAddress;

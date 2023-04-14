@@ -7,11 +7,8 @@ import { NeutronContract } from '../../helpers/types';
 import { wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
-const getTimestamp = (secondsFromNow: number): string =>
-  (
-    BigInt(Date.now()) * BigInt(1000000) +
-    BigInt(secondsFromNow * 1000000 * 1000)
-  ).toString();
+const getTimestamp = (secondsFromNow: number): number =>
+  (Date.now() / 1000 + secondsFromNow) | 0;
 
 describe('Neutron / TGE / Credits', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -244,6 +241,33 @@ describe('Neutron / TGE / Credits', () => {
   });
   describe('Vest', () => {
     const startTime = (Date.now() / 1000 + 10) | 0;
+    it('should not be able to vest without funds', async () => {
+      await expect(
+        airdropMock.executeContract(
+          contractAddresses['TGE_CREDITS'],
+          JSON.stringify({
+            add_vesting: {
+              address: neutronAccount2Address,
+              amount: '1000000',
+              start_time: startTime,
+              duration: 10,
+            },
+          }),
+        ),
+      ).rejects.toThrow(/No funds supplied/);
+    });
+    it('should transfer some to another address', async () => {
+      const res = await airdropMock.executeContract(
+        contractAddresses['TGE_CREDITS'],
+        JSON.stringify({
+          transfer: {
+            amount: '1000000',
+            recipient: neutronAccount2Address,
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+    });
     it('should be able to vest', async () => {
       const res = await airdropMock.executeContract(
         contractAddresses['TGE_CREDITS'],
@@ -291,18 +315,6 @@ describe('Neutron / TGE / Credits', () => {
         ),
       ).rejects.toThrow(/Too early to claim/);
     });
-    it('should transfer some to another address', async () => {
-      const res = await airdropMock.executeContract(
-        contractAddresses['TGE_CREDITS'],
-        JSON.stringify({
-          transfer: {
-            amount: '500000',
-            recipient: neutronAccount2Address,
-          },
-        }),
-      );
-      expect(res.code).toBe(0);
-    });
     it('should return withdrawable amount', async () => {
       await wait(15);
       const res = await neutronChain.queryContract<{ amount: string }>(
@@ -313,7 +325,7 @@ describe('Neutron / TGE / Credits', () => {
           },
         },
       );
-      expect(res).toEqual({ amount: '500000' });
+      expect(res).toEqual({ amount: '1000000' });
     });
 
     it('should be able to withdraw after vesting', async () => {
@@ -342,7 +354,7 @@ describe('Neutron / TGE / Credits', () => {
         neutronAccount2Address,
         NEUTRON_DENOM,
       );
-      expect(balanceNtrnAfter - balanceNtrnBefore).toBe(490000); //fees you know
+      expect(balanceNtrnAfter - balanceNtrnBefore).toBe(990000); //fees you know
     });
   });
 });

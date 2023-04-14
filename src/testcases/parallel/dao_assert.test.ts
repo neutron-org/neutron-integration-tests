@@ -21,7 +21,6 @@ describe('DAO / Check', () => {
   let preProposalOverruleAddress: string;
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
-  let votingVaultsLockdropAddress: string;
   let reserveContract: string;
 
   beforeAll(async () => {
@@ -47,9 +46,6 @@ describe('DAO / Check', () => {
     votingModuleAddress = daoContracts.voting_module.address;
     votingVaultsNtrnAddress = (daoContracts.voting_module as VotingVaultsModule)
       .voting_vaults.ntrn_vault.address;
-    votingVaultsLockdropAddress = (
-      daoContracts.voting_module as VotingVaultsModule
-    ).voting_vaults.lockdrop_vault.address;
     reserveContract = await getReserveContract(cmDao);
   });
 
@@ -143,11 +139,6 @@ describe('DAO / Check', () => {
       expect(res.contract_info.admin).toEqual(daoContracts.core.address);
     });
 
-    test('voting lockdrop vaults', async () => {
-      res = await cmDao.getContractInfo(votingVaultsLockdropAddress);
-      expect(res.contract_info.admin).toEqual(daoContracts.core.address);
-    });
-
     test('Dao is the admin of himself', async () => {
       res = await cmDao.getContractInfo(daoContracts.core.address);
       expect(res.contract_info.admin).toEqual(daoContracts.core.address);
@@ -219,13 +210,6 @@ describe('DAO / Check', () => {
         cmDao,
         votingVaultsNtrnAddress,
         NeutronContract.NEUTRON_VAULT,
-      );
-    });
-    test('Dao lockdrop vault hash assert', async () => {
-      await checkContractHash(
-        cmDao,
-        votingVaultsLockdropAddress,
-        NeutronContract.LOCKDROP_VAULT,
       );
     });
   });

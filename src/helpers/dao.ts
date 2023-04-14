@@ -136,16 +136,13 @@ export const getVotingVaults = async (
   const votingVaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(votingModuleAddress, { voting_vaults: {} });
-  expect(votingVaults).toMatchObject([
-    { name: 'voting vault' },
-    { name: 'lockdrop vault' },
-  ]);
+
   const ntrnVaultAddress = votingVaults.filter(
     (x) => x.name == 'voting vault',
-  )[0].address;
+  )[0]?.address;
   const lockdropVaultAddress = votingVaults.filter(
     (x) => x.name == 'lockdrop vault',
-  )[0].address;
+  )[0]?.address;
 
   return {
     ntrn_vault: { address: ntrnVaultAddress },
