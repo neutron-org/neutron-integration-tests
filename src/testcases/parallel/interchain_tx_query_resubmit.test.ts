@@ -78,10 +78,10 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     });
   });
 
-  const addr1 = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
+  const addrFirst = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
   const expectedIncomingTransfers = 5;
-  const amountToAddr1_1 = 10000;
-  const watchedAddr1: string = addr1;
+  const amountToAddrFirst1 = 10000;
+  const watchedAddr1: string = addrFirst;
   const query1UpdatePeriod = 4;
 
   describe('utilise single transfers query', () => {
@@ -116,7 +116,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       for (let i = 0; i < 5; i++) {
         const res = await gaiaAccount.msgSend(
           watchedAddr1,
-          amountToAddr1_1.toString(),
+          amountToAddrFirst1.toString(),
         );
         expect(res.code).toEqual(0);
       }
@@ -135,10 +135,10 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         }),
       );
 
-      const resubmit_txs = (
+      const resubmitTxs = (
         await getUnsuccessfulTxs(testState.icq_web_host)
       ).map((tx) => ({ query_id: tx.query_id, hash: tx.submitted_tx_hash }));
-      const resp = await postResubmitTxs(testState.icq_web_host, resubmit_txs);
+      const resp = await postResubmitTxs(testState.icq_web_host, resubmitTxs);
       expect(resp.status).toEqual(200);
 
       await neutronChain.blockWaiter.waitBlocks(20);
