@@ -7,6 +7,7 @@ import {
 } from '../../helpers/cosmos';
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { CodeId } from '../../types';
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 10000;
@@ -120,7 +121,7 @@ describe('Neutron / TGE / Auction', () => {
   let cmInstantiator: WalletWrapper;
   let cmTokenManager: WalletWrapper;
   let cmStranger: WalletWrapper;
-  const codeIds: Record<string, string> = {};
+  const codeIds: Record<string, CodeId> = {};
   const contractAddresses: Record<string, string> = {};
   let pairs: {
     atom_ntrn: { contract: string; liqiudity: string };
@@ -188,11 +189,11 @@ describe('Neutron / TGE / Auction', () => {
         'ASTRO_COIN_REGISTRY',
         'VESTING_LP',
       ]) {
-        const codeId = parseInt(
-          await cmInstantiator.storeWasm(NeutronContract[contract]),
+        const codeId = await cmInstantiator.storeWasm(
+          NeutronContract[contract],
         );
         expect(codeId).toBeGreaterThan(0);
-        codeIds[contract] = codeId.toString();
+        codeIds[contract] = codeId;
       }
     });
     it('should instantiate credits contract', async () => {
@@ -230,7 +231,7 @@ describe('Neutron / TGE / Auction', () => {
       const instantiateMsg = {
         pair_configs: [
           {
-            code_id: parseInt(codeIds.ASTRO_PAIR),
+            code_id: codeIds.ASTRO_PAIR,
             pair_type: {
               xyk: {},
             },
@@ -240,7 +241,7 @@ describe('Neutron / TGE / Auction', () => {
             is_generator_disabled: false,
           },
         ],
-        token_code_id: parseInt(codeIds.ASTRO_TOKEN),
+        token_code_id: codeIds.ASTRO_TOKEN,
         owner: cmInstantiator.wallet.address.toString(),
         whitelist_code_id: 0,
         coin_registry_address: contractAddresses['ASTRO_COIN_REGISTRY'],
@@ -482,7 +483,7 @@ describe('Neutron / TGE / Auction', () => {
         tokens_per_block: '100',
         vesting_contract:
           'neutron1ell22k43hs2jtx8x50jz96agaqju5jwn87ued0mzcfglzlw6um0ssqx6x5',
-        whitelist_code_id: parseInt(codeIds.ASTRO_WHITELIST),
+        whitelist_code_id: codeIds.ASTRO_WHITELIST,
       };
       const res = await cmInstantiator.instantiateContract(
         codeIds.ASTRO_GENERATOR,
@@ -533,15 +534,17 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
     });
     it('sets pool info', async () => {
-      const res = await cmTokenManager.executeContract(
+      const res = await cmInstantiator.executeContract(
         contractAddresses.TGE_AUCTION,
         JSON.stringify({
-          set_token_info: {
-            pool_info: {
-              ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
-              ntrn_atom_pool_address: pairs.atom_ntrn.contract,
-              ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
-              ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
+          update_config: {
+            new_config: {
+              pool_info: {
+                ntrn_usdc_pool_address: pairs.usdc_ntrn.contract,
+                ntrn_atom_pool_address: pairs.atom_ntrn.contract,
+                ntrn_usdc_lp_token_address: pairs.usdc_ntrn.liqiudity,
+                ntrn_atom_lp_token_address: pairs.atom_ntrn.liqiudity,
+              },
             },
           },
         }),

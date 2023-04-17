@@ -3,14 +3,18 @@ import {
   COSMOS_DENOM,
   CosmosWrapper,
   NEUTRON_DENOM,
+  WalletWrapper,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { NeutronContract } from '../../helpers/types';
+import { CodeId } from '../../types';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let ntrnDemo1: CosmosWrapper;
-  let cosmosDemo2: CosmosWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
   let contractAddress: string;
   const transferDenom =
     'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
@@ -18,18 +22,21 @@ describe('Neutron / IBC hooks', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    ntrnDemo1 = new CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
-      testState.wallets.neutron.demo1,
       NEUTRON_DENOM,
     );
-    cosmosDemo2 = new CosmosWrapper(
+    neutronAccount = new WalletWrapper(
+      neutronChain,
+      testState.wallets.neutron.demo1,
+    );
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
-      testState.wallets.cosmos.demo2,
       COSMOS_DENOM,
     );
+    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
   });
 
   describe('Wallets', () => {
@@ -44,14 +51,14 @@ describe('Neutron / IBC hooks', () => {
   });
 
   describe('Instantiate hooks ibc transfer contract', () => {
-    let codeId: string;
+    let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await ntrnDemo1.storeWasm(NeutronContract.MSG_RECEIVER);
-      expect(parseInt(codeId)).toBeGreaterThan(0);
+      codeId = await neutronAccount.storeWasm(NeutronContract.MSG_RECEIVER);
+      expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await ntrnDemo1.instantiate(codeId, '{}', 'msg_receiver')
+        await neutronAccount.instantiateContract(codeId, '{}', 'msg_receiver')
       )[0]._contract_address;
     });
   });
@@ -60,7 +67,7 @@ describe('Neutron / IBC hooks', () => {
     describe('Receive on neutron with memo wasm hook', () => {
       const transferAmount = 1000000;
       test('IBC transfer from a usual account', async () => {
-        const res = await ntrnDemo1.msgIBCTransfer(
+        const res = await neutronAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
@@ -71,12 +78,12 @@ describe('Neutron / IBC hooks', () => {
           },
         );
         expect(res.code).toEqual(0);
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(10);
       });
 
       test('check IBC token balance', async () => {
-        await cosmosDemo2.blockWaiter.waitBlocks(10);
-        const res = await cosmosDemo2.queryDenomBalance(
+        await gaiaChain.blockWaiter.waitBlocks(10);
+        const res = await gaiaChain.queryDenomBalance(
           testState.wallets.cosmos.demo2.address.toString(),
           transferDenom,
         );
@@ -85,7 +92,7 @@ describe('Neutron / IBC hooks', () => {
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with wasm hook', async () => {
         const msg = '{"test_msg": {"return_err": false, "arg": "test"}}';
-        const res = await cosmosDemo2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           {
@@ -100,12 +107,12 @@ describe('Neutron / IBC hooks', () => {
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
         expect(res.code).toEqual(0);
-        await cosmosDemo2.blockWaiter.waitBlocks(15);
+        await gaiaChain.blockWaiter.waitBlocks(15);
       });
 
       test('check hook was executed successfully', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(15);
-        const queryResult = await ntrnDemo1.queryContract<TestArg>(
+        await neutronChain.blockWaiter.waitBlocks(15);
+        const queryResult = await neutronChain.queryContract<TestArg>(
           contractAddress,
           {
             test_msg: { arg: 'test' },
@@ -122,11 +129,11 @@ describe('Neutron / IBC hooks', () => {
       });
 
       test('check contract token balance', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(10);
 
-        const res = await ntrnDemo1.queryDenomBalance(
+        const res = await neutronChain.queryDenomBalance(
           contractAddress,
-          ntrnDemo1.denom,
+          neutronChain.denom,
         );
         expect(res).toEqual(transferAmount);
       });
@@ -135,7 +142,7 @@ describe('Neutron / IBC hooks', () => {
     describe('Receive on neutron with incorrectly formatted message', () => {
       const transferAmount = 300000;
       test('IBC transfer from a usual account', async () => {
-        const res = await ntrnDemo1.msgIBCTransfer(
+        const res = await neutronAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
@@ -146,12 +153,12 @@ describe('Neutron / IBC hooks', () => {
           },
         );
         expect(res.code).toEqual(0);
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(10);
       });
 
       test('check IBC token balance', async () => {
-        await cosmosDemo2.blockWaiter.waitBlocks(10);
-        const balance = await cosmosDemo2.queryDenomBalance(
+        await gaiaChain.blockWaiter.waitBlocks(10);
+        const balance = await gaiaChain.queryDenomBalance(
           testState.wallets.cosmos.demo2.address.toString(),
           transferDenom,
         );
@@ -161,7 +168,7 @@ describe('Neutron / IBC hooks', () => {
       test('IBC transfer of Neutrons from a remote chain to Neutron with incorrect wasm hook message', async () => {
         const msg =
           '{"incorrect_msg_kind": {"return_err": false, "arg": "incorrect_msg_arg"}}';
-        const res = await cosmosDemo2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           {
@@ -176,12 +183,12 @@ describe('Neutron / IBC hooks', () => {
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
         expect(res.code).toEqual(0);
-        await cosmosDemo2.blockWaiter.waitBlocks(15);
+        await gaiaChain.blockWaiter.waitBlocks(15);
       });
 
       test('check hook was not executed successfully', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(15);
-        const queryResult = await ntrnDemo1.queryContract<TestArg>(
+        await neutronChain.blockWaiter.waitBlocks(15);
+        const queryResult = await neutronChain.queryContract<TestArg>(
           contractAddress,
           {
             test_msg: { arg: 'incorrect_msg_arg' },
@@ -191,11 +198,11 @@ describe('Neutron / IBC hooks', () => {
       });
 
       test('check contract token balance - it still has previous balance', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(10);
 
-        const res = await ntrnDemo1.queryDenomBalance(
+        const res = await neutronChain.queryDenomBalance(
           contractAddress,
-          ntrnDemo1.denom,
+          neutronChain.denom,
         );
         expect(res).toEqual(1000000);
       });
@@ -205,11 +212,11 @@ describe('Neutron / IBC hooks', () => {
       const transferAmount = 500000;
 
       test('IBC transfer of atom from a remote chain to Neutron with wasm hook', async () => {
-        const res = await cosmosDemo2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           {
-            denom: cosmosDemo2.denom,
+            denom: gaiaChain.denom,
             amount: transferAmount.toString(),
           },
           contractAddress,
@@ -220,12 +227,12 @@ describe('Neutron / IBC hooks', () => {
           `{"othermemohook": {}}`,
         );
         expect(res.code).toEqual(0);
-        await cosmosDemo2.blockWaiter.waitBlocks(15);
+        await gaiaChain.blockWaiter.waitBlocks(15);
       });
 
       test('check contract token balance', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const res = await ntrnDemo1.queryDenomBalance(
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const res = await neutronChain.queryDenomBalance(
           contractAddress,
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
@@ -238,11 +245,11 @@ describe('Neutron / IBC hooks', () => {
 
       test('IBC transfer of atom from a remote chain to Neutron with wasm hook', async () => {
         const msg = '{"test_msg": {"return_err": true, "arg": ""}}';
-        const res = await cosmosDemo2.msgIBCTransfer(
+        const res = await gaiaAccount.msgIBCTransfer(
           'transfer',
           'channel-0',
           {
-            denom: cosmosDemo2.denom,
+            denom: gaiaChain.denom,
             amount: transferAmount.toString(),
           },
           contractAddress,
@@ -253,12 +260,12 @@ describe('Neutron / IBC hooks', () => {
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
         expect(res.code).toEqual(0);
-        await cosmosDemo2.blockWaiter.waitBlocks(15);
+        await gaiaChain.blockWaiter.waitBlocks(15);
       });
 
       test('check contract token balance', async () => {
-        await ntrnDemo1.blockWaiter.waitBlocks(10);
-        const res = await ntrnDemo1.queryDenomBalance(
+        await neutronChain.blockWaiter.waitBlocks(10);
+        const res = await neutronChain.queryDenomBalance(
           contractAddress,
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );

@@ -32,4 +32,4 @@ export class Wallet {
   }
 }
 
-export type CodeId = string;
+export type CodeId = number;
