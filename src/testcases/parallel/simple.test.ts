@@ -15,6 +15,7 @@ import {
 
 import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import { CodeId } from '../../types';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -64,10 +65,10 @@ describe('Neutron / Simple', () => {
   });
 
   describe('Contracts', () => {
-    let codeId: string;
+    let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(NeutronContract.IBC_TRANSFER);
-      expect(parseInt(codeId)).toBeGreaterThan(0);
+      expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
       const res = await neutronAccount.instantiateContract(
