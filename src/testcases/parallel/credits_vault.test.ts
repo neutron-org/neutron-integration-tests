@@ -64,7 +64,7 @@ describe('Neutron / Credits Vault', () => {
         daoAddr.toString(),
         airdropAddr.toString(),
         lockdropAddr.toString(),
-        '1676016745597000',
+        1676016745597000,
       );
 
       creditsVaultAddr = await setupCreditsVault(
@@ -314,7 +314,7 @@ const setupCreditsContract = async (
   daoAddress: string,
   airdropAddress: string,
   lockdropAddress: string,
-  whenWithdrawable: string,
+  whenWithdrawable: number,
 ) => {
   const codeId = await wallet.storeWasm(NeutronContract.TGE_CREDITS);
   const creditsContractAddress = (
@@ -343,7 +343,7 @@ const updateCreditsContractConfig = async (
   creditsContractAddress: string,
   airdropAddress: string,
   lockdropAddress: string,
-  whenWithdrawable: string,
+  whenWithdrawable: number,
 ): Promise<InlineResponse20075TxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
