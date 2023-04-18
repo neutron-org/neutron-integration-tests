@@ -160,3 +160,14 @@ export type Plan = {
   height: string;
   info: string;
 };
+
+export type PinnedCodesResponse = {
+  code_ids: number[];
+};
+
+
+export type ContractAdminResponse = {
+  contract_info: {
+    admin: string;
+  };
+};

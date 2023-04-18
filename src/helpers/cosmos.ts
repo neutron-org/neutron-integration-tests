@@ -24,7 +24,7 @@ import {
   ChannelsList,
   PageRequest,
   PauseInfoResponse,
-  CurrentPlanResponse,
+  CurrentPlanResponse, PinnedCodesResponse, ContractAdminResponse,
 } from './types';
 import { getContractBinary } from './env';
 
@@ -344,7 +344,38 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async queryPinnedCodes(): Promise<PinnedCodesResponse> {
+    try {
+      const req = await axios.get<PinnedCodesResponse>(
+        `${this.sdk.url}/cosmwasm/wasm/v1/codes/pinned`,
+        {},
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryContractAdmin(address: string): Promise<string> {
+    try {
+      const req = await axios.get<ContractAdminResponse>(
+        `${this.sdk.url}cosmwasm/wasm/v1/contract/${address} `,
+        {},
+      );
+      return req.data.contract_info.admin;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
 }
+
 
 export class WalletWrapper {
   readonly chain: CosmosWrapper;
@@ -548,6 +579,19 @@ export class WalletWrapper {
       amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
+    return res?.tx_response;
+  }
+
+  async msgSendBinding(
+    msg: any,
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.chain.denom, amount: '1000' }],
+    },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+  ): Promise<InlineResponse20075TxResponse> {
+    const res = await this.execTx(fee, [msg], 10, mode, sequence);
     return res?.tx_response;
   }
 

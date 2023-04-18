@@ -7,6 +7,7 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import { unpinCodesProposal } from '../../helpers/proposal';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -296,6 +297,19 @@ describe('Neutron / Governance', () => {
           },
         ],
       );
+    });
+
+    test('send binding message from non-admin. should fail ', async () => {
+      const msg = unpinCodesProposal({
+        title: 'Proposal wich',
+        description: 'Unpin codes proposal. Will reject',
+        codes_ids: [1, 2],
+      });
+      await expect(
+        await daoMember1.user.msgSendBinding(msg).catch((e) => {
+          throw new Error(e.response.data);
+        }),
+      ).rejects.toThrow('only admin');
     });
 
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
@@ -589,6 +603,10 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
+    test('check that codes were pinned', async () => {
+      const res = await neutronChain.queryPinnedCodes();
+      expect(res.code_ids).toEqual(2);
+    });
   });
 
   describe('vote for proposal #8 (yes, no, yes)', () => {
@@ -600,6 +618,10 @@ describe('Neutron / Governance', () => {
     });
     test('vote YES from wallet 3', async () => {
       await daoMember3.voteYes(8);
+    });
+    test('check that codes were unpinned', async () => {
+      const res = await neutronChain.queryPinnedCodes();
+      expect(res.code_ids).toEqual(0);
     });
   });
 
@@ -632,6 +654,12 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+    test('check that admin was changed', async () => {
+      const admin = await neutronChain.queryContractAdmin(
+        dao.contracts.core.address,
+      );
+      expect(admin).toEqual(daoMember1.user.wallet.address.toString());
     });
   });
 
