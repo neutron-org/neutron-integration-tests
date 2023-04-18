@@ -194,6 +194,36 @@ export const tokenInfo = (contractAddr: string): Token => {
   };
 };
 
+export const vestingAccount = (
+  addr: string,
+  schedules: VestingSchedule[],
+): VestingAccount => {
+  return {
+    address: addr,
+    schedules: schedules,
+  };
+};
+
+export const vestingSchedule = (
+  startPoint: VestingSchedulePoint,
+  endPoint?: VestingSchedulePoint,
+): VestingSchedule => {
+  return {
+    start_point: startPoint,
+    end_point: endPoint,
+  };
+};
+
+export const vestingSchedulePount = (
+  time: number,
+  amount: string,
+): VestingSchedulePoint => {
+  return {
+    time: time,
+    amount: amount,
+  };
+};
+
 export type PoolStatus = {
   assets: Asset[];
   total_share: string;
@@ -214,4 +244,19 @@ export type NativeToken = {
   native_token: {
     denom: string;
   };
+};
+
+export type VestingAccount = {
+  address: string;
+  schedules: VestingSchedule[];
+};
+
+export type VestingSchedule = {
+  start_point: VestingSchedulePoint;
+  end_point: VestingSchedulePoint | undefined;
+};
+
+export type VestingSchedulePoint = {
+  time: number;
+  amount: string;
 };
