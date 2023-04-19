@@ -89,9 +89,9 @@ describe('Neutron / TGE / Vesting vault', () => {
 
   describe('vesting LP vault', () => {
     test('check initial config', async () => {
-      const vault_address = contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY];
+      const vaultAddress = contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY];
       const config = await neutronChain.queryContract<VestingLpVaultConfig>(
-        vault_address,
+        vaultAddress,
         { get_config: {} },
       );
       expect(config.name).toEqual('Vesting lp vault');
@@ -113,72 +113,68 @@ describe('Neutron / TGE / Vesting vault', () => {
     });
 
     test('make sure bonding is disabled', async () => {
-      const vault_address = contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY];
+      const vaultAddress = contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY];
       await expect(
-        neutronChain.queryContract(vault_address, { list_bonders: {} }),
+        neutronChain.queryContract(vaultAddress, { list_bonders: {} }),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
-        neutronChain.queryContract(vault_address, {
+        neutronChain.queryContract(vaultAddress, {
           bonding_status: { address: 'addr' },
         }),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
         cmInstantiator.executeContract(
-          vault_address,
+          vaultAddress,
           JSON.stringify({ bond: {} }),
         ),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
         cmInstantiator.executeContract(
-          vault_address,
+          vaultAddress,
           JSON.stringify({ unbond: { amount: '1000' } }),
         ),
       ).rejects.toThrow(/Direct unbonding is not available for this contract/);
     });
 
-    const ntrn_provide_amount = 500_000_000; // 500 NTRN per each pool (ATOM, USDC)
-    const atom_ntrn_provide_ratio = 1 / 5; // i.e. 1 ATOM = 5 NTRN
-    const atom_provide_amount = ntrn_provide_amount * atom_ntrn_provide_ratio; // i.e. 100 ATOM
-    const usdc_ntrn_provide_ratio = 4; // i.e. 1 NTRN = 4 USDC
-    const usdc_provide_amount = ntrn_provide_amount * usdc_ntrn_provide_ratio; // i.e. 2_000 USDC
+    const ntrnProvideAmount = 500_000_000; // 500 NTRN per each pool (ATOM, USDC)
+    const atomNtrnProvideRatio = 1 / 5; // i.e. 1 ATOM = 5 NTRN
+    const atomProvideAmount = ntrnProvideAmount * atomNtrnProvideRatio; // i.e. 100 ATOM
+    const usdcNtrnProvideRatio = 4; // i.e. 1 NTRN = 4 USDC
+    const usdcProvideAmount = ntrnProvideAmount * usdcNtrnProvideRatio; // i.e. 2_000 USDC
 
-    const atom_ntrn_total_share = Math.floor(
-      Math.sqrt(atom_provide_amount * ntrn_provide_amount),
+    const atomNtrnTotalShare = Math.floor(
+      Math.sqrt(atomProvideAmount * ntrnProvideAmount),
     );
-    const usdc_ntrn_total_share = Math.floor(
-      Math.sqrt(usdc_provide_amount * ntrn_provide_amount),
+    const usdcNtrnTotalShare = Math.floor(
+      Math.sqrt(usdcProvideAmount * ntrnProvideAmount),
     );
     // astroport allocates 1000 of the total share to the pool itself as a dust attack protection
-    const atom_ntrn_provider_share = atom_ntrn_total_share - 1000;
-    const usdc_ntrn_provider_share = usdc_ntrn_total_share - 1000;
+    const atomNtrnProviderShare = atomNtrnTotalShare - 1000;
+    const usdcNtrnProviderShare = usdcNtrnTotalShare - 1000;
 
-    const user1_atom_vesting_amount = Math.round(
-      atom_ntrn_provider_share * (1 / 3),
-    );
-    const user2_atom_vesting_amount =
-      atom_ntrn_provider_share - user1_atom_vesting_amount;
+    const user1AtomVestingAmount = Math.round(atomNtrnProviderShare * (1 / 3));
+    const user2AtomVestingAmount =
+      atomNtrnProviderShare - user1AtomVestingAmount;
 
-    const user1_usdc_vesting_amount = Math.round(
-      usdc_ntrn_provider_share * (1 / 3),
-    );
-    const user2_usdc_vesting_amount =
-      usdc_ntrn_provider_share - user1_usdc_vesting_amount;
+    const user1UsdcVestingAmount = Math.round(usdcNtrnProviderShare * (1 / 3));
+    const user2UsdcVestingAmount =
+      usdcNtrnProviderShare - user1UsdcVestingAmount;
     describe('prepare oracles', () => {
       test('provide liquidity to NTRN_ATOM pool', async () => {
-        const provided_assets = [
-          nativeToken(IBC_ATOM_DENOM, atom_provide_amount.toString()),
-          nativeToken(NEUTRON_DENOM, ntrn_provide_amount.toString()),
+        const providedAssets = [
+          nativeToken(IBC_ATOM_DENOM, atomProvideAmount.toString()),
+          nativeToken(NEUTRON_DENOM, ntrnProvideAmount.toString()),
         ];
         // as manager so it gets lp tokens necessary for future register_vesting_accounts call
         const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_ATOM_PAIR_CONTRACT_KEY],
-          JSON.stringify({ provide_liquidity: { assets: provided_assets } }),
+          JSON.stringify({ provide_liquidity: { assets: providedAssets } }),
           [
-            { amount: atom_provide_amount.toString(), denom: IBC_ATOM_DENOM },
-            { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
+            { amount: atomProvideAmount.toString(), denom: IBC_ATOM_DENOM },
+            { amount: ntrnProvideAmount.toString(), denom: NEUTRON_DENOM },
           ],
         );
         expect(execRes.code).toBe(0);
@@ -189,23 +185,23 @@ describe('Neutron / TGE / Vesting vault', () => {
             { pool: {} },
           ),
         ).toEqual({
-          assets: provided_assets,
-          total_share: atom_ntrn_total_share.toString(),
+          assets: providedAssets,
+          total_share: atomNtrnTotalShare.toString(),
         });
       });
 
       test('provide liquidity to NTRN_USDC pool', async () => {
-        const provided_assets = [
-          nativeToken(IBC_USDC_DENOM, usdc_provide_amount.toString()),
-          nativeToken(NEUTRON_DENOM, ntrn_provide_amount.toString()),
+        const providedAssets = [
+          nativeToken(IBC_USDC_DENOM, usdcProvideAmount.toString()),
+          nativeToken(NEUTRON_DENOM, ntrnProvideAmount.toString()),
         ];
         // as manager so it gets lp tokens necessary for future register_vesting_accounts call
         const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_USDC_PAIR_CONTRACT_KEY],
-          JSON.stringify({ provide_liquidity: { assets: provided_assets } }),
+          JSON.stringify({ provide_liquidity: { assets: providedAssets } }),
           [
-            { amount: usdc_provide_amount.toString(), denom: IBC_USDC_DENOM },
-            { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
+            { amount: usdcProvideAmount.toString(), denom: IBC_USDC_DENOM },
+            { amount: ntrnProvideAmount.toString(), denom: NEUTRON_DENOM },
           ],
         );
         expect(execRes.code).toBe(0);
@@ -216,8 +212,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             { pool: {} },
           ),
         ).toEqual({
-          assets: provided_assets,
-          total_share: usdc_ntrn_total_share.toString(),
+          assets: providedAssets,
+          total_share: usdcNtrnTotalShare.toString(),
         });
       });
 
@@ -273,7 +269,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ).toStrictEqual([
           [
             nativeTokenInfo(IBC_ATOM_DENOM),
-            (consultAmount * atom_ntrn_provide_ratio).toString(), // expect to receive 1_000 NTRN * 1/5 = 20 ATOM
+            (consultAmount * atomNtrnProvideRatio).toString(), // expect to receive 1_000 NTRN * 1/5 = 20 ATOM
           ],
         ]);
 
@@ -290,7 +286,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ).toStrictEqual([
           [
             nativeTokenInfo(NEUTRON_DENOM),
-            (consultAmount / atom_ntrn_provide_ratio).toString(), // expect to receive 1_000 ATOM / 1/5 = 500 NTRN
+            (consultAmount / atomNtrnProvideRatio).toString(), // expect to receive 1_000 ATOM / 1/5 = 500 NTRN
           ],
         ]);
       });
@@ -323,7 +319,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ).toStrictEqual([
           [
             nativeTokenInfo(IBC_USDC_DENOM),
-            (consultAmount * usdc_ntrn_provide_ratio).toString(), // expect to receive 1_000 NTRN * 4 = 400 USDC
+            (consultAmount * usdcNtrnProvideRatio).toString(), // expect to receive 1_000 NTRN * 4 = 400 USDC
           ],
         ]);
 
@@ -340,7 +336,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ).toStrictEqual([
           [
             nativeTokenInfo(NEUTRON_DENOM),
-            (consultAmount / usdc_ntrn_provide_ratio).toString(), // expect to receive 1_000 USDC / 4 = 25 NTRN
+            (consultAmount / usdcNtrnProvideRatio).toString(), // expect to receive 1_000 USDC / 4 = 25 NTRN
           ],
         ]);
       });
@@ -353,7 +349,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           JSON.stringify({
             send: {
               contract: contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
-              amount: atom_ntrn_provider_share.toString(),
+              amount: atomNtrnProviderShare.toString(),
               msg: Buffer.from(
                 JSON.stringify({
                   register_vesting_accounts: {
@@ -362,7 +358,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                         vestingSchedule(
                           vestingSchedulePount(
                             0,
-                            user1_atom_vesting_amount.toString(),
+                            user1AtomVestingAmount.toString(),
                           ),
                         ),
                       ]),
@@ -370,7 +366,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                         vestingSchedule(
                           vestingSchedulePount(
                             0,
-                            user2_atom_vesting_amount.toString(),
+                            user2AtomVestingAmount.toString(),
                           ),
                         ),
                       ]),
@@ -389,7 +385,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           JSON.stringify({
             send: {
               contract: contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
-              amount: usdc_ntrn_provider_share.toString(),
+              amount: usdcNtrnProviderShare.toString(),
               msg: Buffer.from(
                 JSON.stringify({
                   register_vesting_accounts: {
@@ -398,7 +394,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                         vestingSchedule(
                           vestingSchedulePount(
                             0,
-                            user1_usdc_vesting_amount.toString(),
+                            user1UsdcVestingAmount.toString(),
                           ),
                         ),
                       ]),
@@ -406,7 +402,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                         vestingSchedule(
                           vestingSchedulePount(
                             0,
-                            user2_usdc_vesting_amount.toString(),
+                            user2UsdcVestingAmount.toString(),
                           ),
                         ),
                       ]),
@@ -440,7 +436,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                 },
               },
             ),
-          ).toBe(user1_atom_vesting_amount.toString());
+          ).toBe(user1AtomVestingAmount.toString());
         });
         test('user2 ATOM lp contract', async () => {
           expect(
@@ -457,7 +453,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                 },
               },
             ),
-          ).toBe(user2_atom_vesting_amount.toString());
+          ).toBe(user2AtomVestingAmount.toString());
         });
         test('user1 USDC lp contract', async () => {
           expect(
@@ -474,7 +470,7 @@ describe('Neutron / TGE / Vesting vault', () => {
                 },
               },
             ),
-          ).toBe(user1_usdc_vesting_amount.toString());
+          ).toBe(user1UsdcVestingAmount.toString());
         });
         test('user2 USDC lp contract', async () => {
           expect(
@@ -491,33 +487,33 @@ describe('Neutron / TGE / Vesting vault', () => {
                 },
               },
             ),
-          ).toBe(user2_usdc_vesting_amount.toString());
+          ).toBe(user2UsdcVestingAmount.toString());
         });
       });
     });
 
     describe('voting power', () => {
-      let ntrn_twap_in_atom: number;
-      let ntrn_twap_in_usdc: number;
+      let ntrnTwapInAtom: number;
+      let ntrnTwapInUsdc: number;
       describe('check initial voting power', () => {
         test('get TWAPs', async () => {
-          const ntrn_twap_in_atom_resp = await getTwapAtHeight(
+          const ntrnTwapInAtomResp = await getTwapAtHeight(
             neutronChain,
             contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
             nativeTokenInfo(NEUTRON_DENOM),
             111111,
           );
-          ntrn_twap_in_atom = ntrn_twap_in_atom_resp[0].twap;
-          expect(ntrn_twap_in_atom).toBe(0.2);
+          ntrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
+          expect(ntrnTwapInAtom).toBe(0.2);
 
-          const ntrn_twap_in_usdc_resp = await getTwapAtHeight(
+          const ntrnTwapInUsdcResp = await getTwapAtHeight(
             neutronChain,
             contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
             nativeTokenInfo(NEUTRON_DENOM),
             111111,
           );
-          ntrn_twap_in_usdc = ntrn_twap_in_usdc_resp[0].twap;
-          expect(ntrn_twap_in_usdc).toBe(4);
+          ntrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
+          expect(ntrnTwapInUsdc).toBe(4);
         });
         test('total power at height', async () => {
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -526,10 +522,10 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              atom_ntrn_provider_share,
-              usdc_ntrn_provider_share,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              atomNtrnProviderShare,
+              usdcNtrnProviderShare,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -544,10 +540,10 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              user1_atom_vesting_amount,
-              user1_usdc_vesting_amount,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user1AtomVestingAmount,
+              user1UsdcVestingAmount,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -562,25 +558,23 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              user2_atom_vesting_amount,
-              user2_usdc_vesting_amount,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user2AtomVestingAmount,
+              user2UsdcVestingAmount,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
       });
 
       describe('check voting power on claim', () => {
-        const user1_partial_claim_atom = Math.round(
-          user1_atom_vesting_amount / 2,
-        );
+        const user1PartialClaimAtom = Math.round(user1AtomVestingAmount / 2);
         test('user1 partial ATOM claim', async () => {
           const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
             JSON.stringify({
               claim: {
-                amount: user1_partial_claim_atom.toString(),
+                amount: user1PartialClaimAtom.toString(),
               },
             }),
           );
@@ -597,22 +591,20 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              user1_atom_vesting_amount - user1_partial_claim_atom,
-              user1_usdc_vesting_amount,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user1AtomVestingAmount - user1PartialClaimAtom,
+              user1UsdcVestingAmount,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
-        const user1_partial_claim_usdc = Math.round(
-          user1_usdc_vesting_amount / 3,
-        );
+        const user1PartialClaimUsdc = Math.round(user1UsdcVestingAmount / 3);
         test('user1 partial USDC claim', async () => {
           const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
             JSON.stringify({
               claim: {
-                amount: user1_partial_claim_usdc.toString(),
+                amount: user1PartialClaimUsdc.toString(),
               },
             }),
           );
@@ -629,10 +621,10 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              user1_atom_vesting_amount - user1_partial_claim_atom,
-              user1_usdc_vesting_amount - user1_partial_claim_usdc,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user1AtomVestingAmount - user1PartialClaimAtom,
+              user1UsdcVestingAmount - user1PartialClaimUsdc,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -643,10 +635,10 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              atom_ntrn_provider_share - user1_partial_claim_atom,
-              usdc_ntrn_provider_share - user1_partial_claim_usdc,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              atomNtrnProviderShare - user1PartialClaimAtom,
+              usdcNtrnProviderShare - user1PartialClaimUsdc,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -672,9 +664,9 @@ describe('Neutron / TGE / Vesting vault', () => {
           expect(+res.power).toBe(
             calcVotingPower(
               0,
-              user2_usdc_vesting_amount,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user2UsdcVestingAmount,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -705,14 +697,14 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
           expect(+res.power).toBe(
             calcVotingPower(
-              atom_ntrn_provider_share -
-                user1_partial_claim_atom -
-                user2_atom_vesting_amount,
-              usdc_ntrn_provider_share -
-                user1_partial_claim_usdc -
-                user2_usdc_vesting_amount,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              atomNtrnProviderShare -
+                user1PartialClaimAtom -
+                user2AtomVestingAmount,
+              usdcNtrnProviderShare -
+                user1PartialClaimUsdc -
+                user2UsdcVestingAmount,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -738,9 +730,9 @@ describe('Neutron / TGE / Vesting vault', () => {
           expect(+res.power).toBe(
             calcVotingPower(
               0,
-              user1_usdc_vesting_amount - user1_partial_claim_usdc,
-              ntrn_twap_in_atom,
-              ntrn_twap_in_usdc,
+              user1UsdcVestingAmount - user1PartialClaimUsdc,
+              ntrnTwapInAtom,
+              ntrnTwapInUsdc,
             ),
           );
         });
@@ -1120,13 +1112,13 @@ const getTwapAtHeight = async (
 };
 
 const calcVotingPower = (
-  atom_lp_tokens: number,
-  usdc_lp_tokens: number,
-  ntrn_twap_in_atom: number,
-  ntrn_twap_in_usdc: number,
+  atomLpTokens: number,
+  usdcLpTokens: number,
+  ntrnTwapInAtom: number,
+  ntrnTwapInUsdc: number,
 ): number =>
-  Math.round(atom_lp_tokens * Math.sqrt(ntrn_twap_in_atom)) +
-  Math.round(usdc_lp_tokens * Math.sqrt(ntrn_twap_in_usdc));
+  Math.round(atomLpTokens * Math.sqrt(ntrnTwapInAtom)) +
+  Math.round(usdcLpTokens * Math.sqrt(ntrnTwapInUsdc));
 
 type PrecisionResponse = {
   denom: string;

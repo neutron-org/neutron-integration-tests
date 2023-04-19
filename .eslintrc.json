@@ -25,7 +25,8 @@
       { "ignoreRestSiblings": true }
     ],
     "no-useless-return": ["error"],
-    "arrow-body-style": ["error", "as-needed"]
+    "arrow-body-style": ["error", "as-needed"],
+    "camelcase":["error", { "properties": "never" }]
   },
   "overrides": [
     {
