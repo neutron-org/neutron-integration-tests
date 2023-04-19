@@ -33,6 +33,7 @@ const ASTRO_COIN_REGISTRY_CONTRACT_KEY = 'ASTRO_COIN_REGISTRY';
 const VESTING_LP_CONTRACT_KEY = 'VESTING_LP';
 const VESTING_LP_VAULT_CONTRACT_KEY = 'VESTING_LP_VAULT';
 const ORACLE_HISTORY_CONTRACT_KEY = 'ORACLE_HISTORY';
+const CW20_BASE_CONTRACT_KEY = 'CW20_BASE';
 // specific contract keys used across the tests
 const VESTING_LP_USDC_CONTRACT_KEY = 'VESTING_LP_USDC';
 const VESTING_LP_ATOM_CONTRACT_KEY = 'VESTING_LP_ATOM';
@@ -762,6 +763,138 @@ describe('Neutron / TGE / Vesting vault', () => {
             { total_power_at_height: {} },
           );
           expect(+res.power).toBe(0);
+        });
+      });
+    });
+
+    describe('misc', () => {
+      test('managed extension is disabled', async () => {
+        await expect(
+          cmInstantiator.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              managed_extension: {
+                msg: {
+                  remove_vesting_accounts: {
+                    vesting_accounts: [],
+                    clawback_account: cmUser1.wallet.address.toString(),
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Extension is not enabled for the contract: managed/);
+        await expect(
+          cmInstantiator.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              managed_extension: {
+                msg: {
+                  remove_vesting_accounts: {
+                    vesting_accounts: [],
+                    clawback_account: cmUser1.wallet.address.toString(),
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Extension is not enabled for the contract: managed/);
+      });
+
+      test('set vesting token not allowed to a stranger', async () => {
+        await expect(
+          cmUser1.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  token: {
+                    contract_addr:
+                      contractAddresses[NTRN_USDC_LP_TOKEN_CONTRACT_KEY],
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+
+        await expect(
+          cmUser2.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  token: {
+                    contract_addr:
+                      contractAddresses[NTRN_ATOM_LP_TOKEN_CONTRACT_KEY],
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+      });
+
+      describe('register vesting accounts not allowed to a stranger', () => {
+        test('via send cw20', async () => {
+          // create a random cw20 token with allocation to user1
+          const codeId = await cmInstantiator.storeWasm(
+            NeutronContract[CW20_BASE_CONTRACT_KEY],
+          );
+          expect(codeId).toBeGreaterThan(0);
+          const initRes = await cmInstantiator.instantiateContract(
+            codeId,
+            JSON.stringify({
+              name: 'a cw20 token',
+              symbol: 'TKN',
+              decimals: 6,
+              initial_balances: [
+                { address: cmUser1.wallet.address.toString(), amount: '1000' },
+              ],
+            }),
+            'a_cw20_token',
+          );
+          expect(initRes).toBeTruthy();
+
+          await expect(
+            cmUser1.executeContract(
+              initRes[0]._contract_address,
+              JSON.stringify({
+                send: {
+                  contract: contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+                  amount: '1000',
+                  msg: Buffer.from(
+                    JSON.stringify({
+                      register_vesting_accounts: {
+                        vesting_accounts: [
+                          vestingAccount(cmUser1.wallet.address.toString(), [
+                            vestingSchedule(vestingSchedulePount(0, '1000')),
+                          ]),
+                        ],
+                      },
+                    }),
+                  ).toString('base64'),
+                },
+              }),
+            ),
+          ).rejects.toThrow(/Unauthorized/);
+        });
+        test('via direct exec msg', async () => {
+          await expect(
+            cmUser2.executeContract(
+              contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+              JSON.stringify({
+                register_vesting_accounts: {
+                  vesting_accounts: [
+                    vestingAccount(cmUser2.wallet.address.toString(), [
+                      vestingSchedule(vestingSchedulePount(0, '1000')),
+                    ]),
+                  ],
+                },
+              }),
+              [{ denom: NEUTRON_DENOM, amount: '1000' }],
+            ),
+          ).rejects.toThrow(/Unauthorized/);
         });
       });
     });
