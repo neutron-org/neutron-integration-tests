@@ -82,10 +82,6 @@ describe('Neutron / TGE / Vesting vault', () => {
       cmInstantiator,
       cmManager,
     );
-    console.log('contract addresses:');
-    console.log(contractAddresses);
-    console.log('user1:', cmUser1.wallet.address.toString());
-    console.log('user2:', cmUser2.wallet.address.toString());
   });
 
   describe('vesting LP vault', () => {
