@@ -4,8 +4,6 @@
 // 1.2. init pools, provide liquidity
 // 1.3. init oracles aimed to pools
 
-import { proto } from '@cosmos-client/core';
-import _ from 'lodash';
 import {
   CosmosWrapper,
   IBC_ATOM_DENOM,
@@ -17,7 +15,6 @@ import {
   NeutronContract,
   nativeToken,
   PoolStatus,
-  Asset,
   nativeTokenInfo,
   vestingAccount,
   vestingSchedule,
@@ -25,7 +22,7 @@ import {
   NativeToken,
   Token,
 } from '../../helpers/types';
-import { BlockWaiter, getHeight, wait } from '../../helpers/wait';
+import { getHeight, wait } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 
 // general contract keys used across the tests
@@ -176,7 +173,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           nativeToken(NEUTRON_DENOM, ntrn_provide_amount.toString()),
         ];
         // as manager so it gets lp tokens necessary for future register_vesting_accounts call
-        const res = await cmManager.executeContract(
+        const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_ATOM_PAIR_CONTRACT_KEY],
           JSON.stringify({ provide_liquidity: { assets: provided_assets } }),
           [
@@ -184,6 +181,7 @@ describe('Neutron / TGE / Vesting vault', () => {
             { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
           ],
         );
+        expect(execRes.code).toBe(0);
 
         expect(
           await neutronChain.queryContract<PoolStatus>(
@@ -202,7 +200,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           nativeToken(NEUTRON_DENOM, ntrn_provide_amount.toString()),
         ];
         // as manager so it gets lp tokens necessary for future register_vesting_accounts call
-        const res = await cmManager.executeContract(
+        const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_USDC_PAIR_CONTRACT_KEY],
           JSON.stringify({ provide_liquidity: { assets: provided_assets } }),
           [
@@ -210,6 +208,7 @@ describe('Neutron / TGE / Vesting vault', () => {
             { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
           ],
         );
+        expect(execRes.code).toBe(0);
 
         expect(
           await neutronChain.queryContract<PoolStatus>(
@@ -223,7 +222,7 @@ describe('Neutron / TGE / Vesting vault', () => {
       });
 
       test('set asset infos for oracles', async () => {
-        let res = await cmManager.executeContract(
+        let execRes = await cmManager.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({
             set_asset_infos: [
@@ -232,8 +231,9 @@ describe('Neutron / TGE / Vesting vault', () => {
             ],
           }),
         );
+        expect(execRes.code).toBe(0);
 
-        res = await cmManager.executeContract(
+        execRes = await cmManager.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({
             set_asset_infos: [
@@ -242,23 +242,26 @@ describe('Neutron / TGE / Vesting vault', () => {
             ],
           }),
         );
+        expect(execRes.code).toBe(0);
       });
 
       test('call NTRN_ATOM oracle update', async () => {
-        let res = await cmInstantiator.executeContract(
+        let execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
+        expect(execRes.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
-        res = await cmInstantiator.executeContract(
+        execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
+        expect(execRes.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
-          await neutronChain.queryContract<{}>(
+          await neutronChain.queryContract<Record<string, unknown>>(
             contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
             {
               consult: {
@@ -275,7 +278,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ]);
 
         expect(
-          await neutronChain.queryContract<{}>(
+          await neutronChain.queryContract<Record<string, unknown>>(
             contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
             {
               consult: {
@@ -293,20 +296,22 @@ describe('Neutron / TGE / Vesting vault', () => {
       });
 
       test('call NTRN_USDC oracle update', async () => {
-        let res = await cmInstantiator.executeContract(
+        let execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
+        expect(execRes.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
-        res = await cmInstantiator.executeContract(
+        execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
+        expect(execRes.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
-          await neutronChain.queryContract<{}>(
+          await neutronChain.queryContract<Record<string, unknown>>(
             contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
             {
               consult: {
@@ -323,7 +328,7 @@ describe('Neutron / TGE / Vesting vault', () => {
         ]);
 
         expect(
-          await neutronChain.queryContract<{}>(
+          await neutronChain.queryContract<Record<string, unknown>>(
             contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
             {
               consult: {
@@ -343,7 +348,7 @@ describe('Neutron / TGE / Vesting vault', () => {
 
     describe('prepare vesting lp vault', () => {
       test('create ATOM vesting accounts', async () => {
-        const res = await cmManager.executeContract(
+        const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_ATOM_LP_TOKEN_CONTRACT_KEY],
           JSON.stringify({
             send: {
@@ -376,9 +381,10 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           }),
         );
+        expect(execRes.code).toBe(0);
       });
       test('create USDC vesting accounts', async () => {
-        const res = await cmManager.executeContract(
+        const execRes = await cmManager.executeContract(
           contractAddresses[NTRN_USDC_LP_TOKEN_CONTRACT_KEY],
           JSON.stringify({
             send: {
@@ -411,6 +417,7 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           }),
         );
+        expect(execRes.code).toBe(0);
       });
       describe('check unclaimed amounts', () => {
         let currentHeight: number;
@@ -569,7 +576,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           user1_atom_vesting_amount / 2,
         );
         test('user1 partial ATOM claim', async () => {
-          await cmUser1.executeContract(
+          const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
             JSON.stringify({
               claim: {
@@ -577,6 +584,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               },
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -600,7 +608,7 @@ describe('Neutron / TGE / Vesting vault', () => {
           user1_usdc_vesting_amount / 3,
         );
         test('user1 partial USDC claim', async () => {
-          await cmUser1.executeContract(
+          const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
             JSON.stringify({
               claim: {
@@ -608,6 +616,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               },
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -643,12 +652,13 @@ describe('Neutron / TGE / Vesting vault', () => {
         });
 
         test('user2 full ATOM claim', async () => {
-          await cmUser2.executeContract(
+          const execRes = await cmUser2.executeContract(
             contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
             JSON.stringify({
               claim: {},
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -669,12 +679,13 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
         });
         test('user2 full USDC claim', async () => {
-          await cmUser2.executeContract(
+          const execRes = await cmUser2.executeContract(
             contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
             JSON.stringify({
               claim: {},
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -707,12 +718,13 @@ describe('Neutron / TGE / Vesting vault', () => {
         });
 
         test('user1 full ATOM claim', async () => {
-          await cmUser1.executeContract(
+          const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
             JSON.stringify({
               claim: {},
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -733,12 +745,13 @@ describe('Neutron / TGE / Vesting vault', () => {
           );
         });
         test('user1 full USDC claim', async () => {
-          await cmUser1.executeContract(
+          const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
             JSON.stringify({
               claim: {},
             }),
           );
+          expect(execRes.code).toBe(0);
           await neutronChain.blockWaiter.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -828,7 +841,7 @@ const storeTokensPrecision = async (
   instantiator: WalletWrapper,
   contractAddresses: Record<string, string>,
 ) => {
-  const res = await instantiator.executeContract(
+  const execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_COIN_REGISTRY_CONTRACT_KEY],
     JSON.stringify({
       add: {
@@ -840,6 +853,7 @@ const storeTokensPrecision = async (
       },
     }),
   );
+  expect(execRes.code).toBe(0);
 
   expect(
     await chain.queryContract<PrecisionResponse[]>(
@@ -943,10 +957,11 @@ const deployPairs = async (
     },
   };
 
-  let res = await instantiator.executeContract(
+  let execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
+  expect(execRes.code).toBe(0);
 
   createMsg = {
     create_pair: {
@@ -968,10 +983,11 @@ const deployPairs = async (
     },
   };
 
-  res = await instantiator.executeContract(
+  execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
+  expect(execRes.code).toBe(0);
 
   const pairs = await chain.queryContract<{ pairs: PairInfo[] }>(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
@@ -1025,7 +1041,7 @@ const setVestingLpAssets = async (
   instantiator: WalletWrapper,
   contractAddresses: Record<string, string>,
 ) => {
-  let res = await instantiator.executeContract(
+  let execRes = await instantiator.executeContract(
     contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
     JSON.stringify({
       set_vesting_token: {
@@ -1037,8 +1053,9 @@ const setVestingLpAssets = async (
       },
     }),
   );
+  expect(execRes.code).toBe(0);
 
-  res = await instantiator.executeContract(
+  execRes = await instantiator.executeContract(
     contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
     JSON.stringify({
       set_vesting_token: {
@@ -1050,6 +1067,7 @@ const setVestingLpAssets = async (
       },
     }),
   );
+  expect(execRes.code).toBe(0);
 };
 
 const deployVestingLpVaultContract = async (
@@ -1058,7 +1076,7 @@ const deployVestingLpVaultContract = async (
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
-  let res = await instantiator.instantiateContract(
+  const res = await instantiator.instantiateContract(
     codeIds[VESTING_LP_VAULT_CONTRACT_KEY],
     JSON.stringify({
       name: 'Vesting lp vault',
@@ -1095,7 +1113,7 @@ const getTwapAtHeight = async (
     },
   });
   const twaps: TwapAtHeight[] = [];
-  for (let asset of res) {
+  for (const asset of res) {
     twaps.push({ info: asset[0], twap: +asset[1] });
   }
   return twaps;
@@ -1106,12 +1124,9 @@ const calcVotingPower = (
   usdc_lp_tokens: number,
   ntrn_twap_in_atom: number,
   ntrn_twap_in_usdc: number,
-): number => {
-  return (
-    Math.round(atom_lp_tokens * Math.sqrt(ntrn_twap_in_atom)) +
-    Math.round(usdc_lp_tokens * Math.sqrt(ntrn_twap_in_usdc))
-  );
-};
+): number =>
+  Math.round(atom_lp_tokens * Math.sqrt(ntrn_twap_in_atom)) +
+  Math.round(usdc_lp_tokens * Math.sqrt(ntrn_twap_in_usdc));
 
 type PrecisionResponse = {
   denom: string;

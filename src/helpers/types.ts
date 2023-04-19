@@ -164,65 +164,51 @@ export type Plan = {
   info: string;
 };
 
-export const nativeToken = (denom: string, amount: string): Asset => {
-  return {
-    info: nativeTokenInfo(denom),
-    amount: amount,
-  };
-};
+export const nativeToken = (denom: string, amount: string): Asset => ({
+  info: nativeTokenInfo(denom),
+  amount: amount,
+});
 
-export const token = (contractAddr: string, amount: string): Asset => {
-  return {
-    info: tokenInfo(contractAddr),
-    amount: amount,
-  };
-};
+export const token = (contractAddr: string, amount: string): Asset => ({
+  info: tokenInfo(contractAddr),
+  amount: amount,
+});
 
-export const nativeTokenInfo = (denom: string): NativeToken => {
-  return {
-    native_token: {
-      denom: denom,
-    },
-  };
-};
+export const nativeTokenInfo = (denom: string): NativeToken => ({
+  native_token: {
+    denom: denom,
+  },
+});
 
-export const tokenInfo = (contractAddr: string): Token => {
-  return {
-    token: {
-      contract_addr: contractAddr,
-    },
-  };
-};
+export const tokenInfo = (contractAddr: string): Token => ({
+  token: {
+    contract_addr: contractAddr,
+  },
+});
 
 export const vestingAccount = (
   addr: string,
   schedules: VestingSchedule[],
-): VestingAccount => {
-  return {
-    address: addr,
-    schedules: schedules,
-  };
-};
+): VestingAccount => ({
+  address: addr,
+  schedules: schedules,
+});
 
 export const vestingSchedule = (
   startPoint: VestingSchedulePoint,
   endPoint?: VestingSchedulePoint,
-): VestingSchedule => {
-  return {
-    start_point: startPoint,
-    end_point: endPoint,
-  };
-};
+): VestingSchedule => ({
+  start_point: startPoint,
+  end_point: endPoint,
+});
 
 export const vestingSchedulePount = (
   time: number,
   amount: string,
-): VestingSchedulePoint => {
-  return {
-    time: time,
-    amount: amount,
-  };
-};
+): VestingSchedulePoint => ({
+  time: time,
+  amount: amount,
+});
 
 export type PoolStatus = {
   assets: Asset[];
