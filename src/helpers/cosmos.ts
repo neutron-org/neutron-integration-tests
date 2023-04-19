@@ -24,7 +24,10 @@ import {
   ChannelsList,
   PageRequest,
   PauseInfoResponse,
-  CurrentPlanResponse, PinnedCodesResponse, ContractAdminResponse, IcaHostParamsResponse,
+  CurrentPlanResponse,
+  PinnedCodesResponse,
+  ContractAdminResponse,
+  IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
 
@@ -378,7 +381,7 @@ export class CosmosWrapper {
   async queryContractAdmin(address: string): Promise<string> {
     try {
       const req = await axios.get<ContractAdminResponse>(
-        `${this.sdk.url}cosmwasm/wasm/v1/contract/${address} `,
+        `${this.sdk.url}/cosmwasm/wasm/v1/contract/${address} `,
         {},
       );
       return req.data.contract_info.admin;
@@ -390,7 +393,6 @@ export class CosmosWrapper {
     }
   }
 }
-
 
 export class WalletWrapper {
   readonly chain: CosmosWrapper;
