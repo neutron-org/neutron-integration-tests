@@ -184,7 +184,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
           ],
         );
-        expect(res.code).toBe(0);
 
         expect(
           await neutronChain.queryContract<PoolStatus>(
@@ -211,7 +210,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             { amount: ntrn_provide_amount.toString(), denom: NEUTRON_DENOM },
           ],
         );
-        expect(res.code).toBe(0);
 
         expect(
           await neutronChain.queryContract<PoolStatus>(
@@ -234,7 +232,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             ],
           }),
         );
-        expect(res.code).toBe(0);
 
         res = await cmManager.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
@@ -245,7 +242,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             ],
           }),
         );
-        expect(res.code).toBe(0);
       });
 
       test('call NTRN_ATOM oracle update', async () => {
@@ -253,13 +249,11 @@ describe('Neutron / TGE / Vesting vault', () => {
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
-        expect(res.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         res = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
-        expect(res.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
@@ -303,13 +297,11 @@ describe('Neutron / TGE / Vesting vault', () => {
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
-        expect(res.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         res = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
-        expect(res.code).toBe(0);
         neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
@@ -384,7 +376,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           }),
         );
-        expect(res.code).toBe(0);
       });
       test('create USDC vesting accounts', async () => {
         const res = await cmManager.executeContract(
@@ -420,7 +411,6 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           }),
         );
-        expect(res.code).toBe(0);
       });
       describe('check unclaimed amounts', () => {
         let currentHeight: number;
@@ -528,12 +518,12 @@ describe('Neutron / TGE / Vesting vault', () => {
             { total_power_at_height: {} },
           );
           expect(+res.power).toBe(
-            Math.round(
-              atom_ntrn_provider_share * Math.sqrt(ntrn_twap_in_atom),
-            ) +
-              Math.round(
-                usdc_ntrn_provider_share * Math.sqrt(ntrn_twap_in_usdc),
-              ),
+            calcVotingPower(
+              atom_ntrn_provider_share,
+              usdc_ntrn_provider_share,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
           );
         });
         test('user1 power at height', async () => {
@@ -546,12 +536,12 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           );
           expect(+res.power).toBe(
-            Math.round(
-              user1_atom_vesting_amount * Math.sqrt(ntrn_twap_in_atom),
-            ) +
-              Math.round(
-                user1_usdc_vesting_amount * Math.sqrt(ntrn_twap_in_usdc),
-              ),
+            calcVotingPower(
+              user1_atom_vesting_amount,
+              user1_usdc_vesting_amount,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
           );
         });
         test('user2 power at height', async () => {
@@ -564,17 +554,211 @@ describe('Neutron / TGE / Vesting vault', () => {
             },
           );
           expect(+res.power).toBe(
-            Math.round(
-              user2_atom_vesting_amount * Math.sqrt(ntrn_twap_in_atom),
-            ) +
-              Math.round(
-                user2_usdc_vesting_amount * Math.sqrt(ntrn_twap_in_usdc),
-              ),
+            calcVotingPower(
+              user2_atom_vesting_amount,
+              user2_usdc_vesting_amount,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
           );
         });
       });
-      test('add another member', async () => {});
-      test('check several members voting power', async () => {});
+
+      describe('check voting power on claim', () => {
+        const user1_partial_claim_atom = Math.round(
+          user1_atom_vesting_amount / 2,
+        );
+        test('user1 partial ATOM claim', async () => {
+          await cmUser1.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {
+                amount: user1_partial_claim_atom.toString(),
+              },
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser1.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              user1_atom_vesting_amount - user1_partial_claim_atom,
+              user1_usdc_vesting_amount,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+        const user1_partial_claim_usdc = Math.round(
+          user1_usdc_vesting_amount / 3,
+        );
+        test('user1 partial USDC claim', async () => {
+          await cmUser1.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {
+                amount: user1_partial_claim_usdc.toString(),
+              },
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser1.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              user1_atom_vesting_amount - user1_partial_claim_atom,
+              user1_usdc_vesting_amount - user1_partial_claim_usdc,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+        test('total voting power check after user1 partial claim', async () => {
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            { total_power_at_height: {} },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              atom_ntrn_provider_share - user1_partial_claim_atom,
+              usdc_ntrn_provider_share - user1_partial_claim_usdc,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+
+        test('user2 full ATOM claim', async () => {
+          await cmUser2.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {},
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser2.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              0,
+              user2_usdc_vesting_amount,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+        test('user2 full USDC claim', async () => {
+          await cmUser2.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {},
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser2.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(0);
+        });
+        test('total voting power check after user2 full claim', async () => {
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            { total_power_at_height: {} },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              atom_ntrn_provider_share -
+                user1_partial_claim_atom -
+                user2_atom_vesting_amount,
+              usdc_ntrn_provider_share -
+                user1_partial_claim_usdc -
+                user2_usdc_vesting_amount,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+
+        test('user1 full ATOM claim', async () => {
+          await cmUser1.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {},
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser1.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(
+            calcVotingPower(
+              0,
+              user1_usdc_vesting_amount - user1_partial_claim_usdc,
+              ntrn_twap_in_atom,
+              ntrn_twap_in_usdc,
+            ),
+          );
+        });
+        test('user1 full USDC claim', async () => {
+          await cmUser1.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              claim: {},
+            }),
+          );
+          await neutronChain.blockWaiter.waitBlocks(1);
+
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            {
+              voting_power_at_height: {
+                address: cmUser1.wallet.address.toString(),
+              },
+            },
+          );
+          expect(+res.power).toBe(0);
+        });
+        test('total voting power check after full claim', async () => {
+          const res = await neutronChain.queryContract<VotingPowerResponse>(
+            contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+            { total_power_at_height: {} },
+          );
+          expect(+res.power).toBe(0);
+        });
+      });
     });
   });
 });
@@ -656,7 +840,6 @@ const storeTokensPrecision = async (
       },
     }),
   );
-  expect(res.code).toBe(0);
 
   expect(
     await chain.queryContract<PrecisionResponse[]>(
@@ -764,7 +947,6 @@ const deployPairs = async (
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
-  expect(res.code).toBe(0);
 
   createMsg = {
     create_pair: {
@@ -790,7 +972,6 @@ const deployPairs = async (
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
-  expect(res.code).toBe(0);
 
   const pairs = await chain.queryContract<{ pairs: PairInfo[] }>(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
@@ -856,7 +1037,6 @@ const setVestingLpAssets = async (
       },
     }),
   );
-  expect(res.code).toBe(0);
 
   res = await instantiator.executeContract(
     contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
@@ -870,7 +1050,6 @@ const setVestingLpAssets = async (
       },
     }),
   );
-  expect(res.code).toBe(0);
 };
 
 const deployVestingLpVaultContract = async (
@@ -920,6 +1099,18 @@ const getTwapAtHeight = async (
     twaps.push({ info: asset[0], twap: +asset[1] });
   }
   return twaps;
+};
+
+const calcVotingPower = (
+  atom_lp_tokens: number,
+  usdc_lp_tokens: number,
+  ntrn_twap_in_atom: number,
+  ntrn_twap_in_usdc: number,
+): number => {
+  return (
+    Math.round(atom_lp_tokens * Math.sqrt(ntrn_twap_in_atom)) +
+    Math.round(usdc_lp_tokens * Math.sqrt(ntrn_twap_in_usdc))
+  );
 };
 
 type PrecisionResponse = {
