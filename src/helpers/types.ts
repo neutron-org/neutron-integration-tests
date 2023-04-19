@@ -165,6 +165,11 @@ export type PinnedCodesResponse = {
   code_ids: number[];
 };
 
+export type IcaHostParamsResponse = {
+  params: {
+    host_enabled: boolean;
+  };
+};
 
 export type ContractAdminResponse = {
   contract_info: {

@@ -382,6 +382,10 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
+    test('check if proposal is passed', async () => {
+      const host = await neutronChain.queryHostEnabled();
+      expect(host).toEqual(false);
+    });
   });
 
   describe('vote for proposal #2 (no, yes, no)', () => {

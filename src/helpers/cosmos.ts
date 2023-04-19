@@ -24,7 +24,7 @@ import {
   ChannelsList,
   PageRequest,
   PauseInfoResponse,
-  CurrentPlanResponse, PinnedCodesResponse, ContractAdminResponse,
+  CurrentPlanResponse, PinnedCodesResponse, ContractAdminResponse, IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
 
@@ -352,6 +352,21 @@ export class CosmosWrapper {
         {},
       );
       return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryHostEnabled(): Promise<boolean> {
+    try {
+      const req = await axios.get<IcaHostParamsResponse>(
+        `${this.sdk.url}/ibc/apps/interchain_accounts/host/v1/params`,
+        {},
+      );
+      return req.data.params.host_enabled;
     } catch (e) {
       if (e.response?.data?.message !== undefined) {
         throw new Error(e.response?.data?.message);
