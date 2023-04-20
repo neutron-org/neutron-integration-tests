@@ -1394,8 +1394,8 @@ const calcVotingPower = (
   ntrnTwapInAtom: number,
   ntrnTwapInUsdc: number,
 ): number =>
-  Math.round(atomLpTokens * Math.sqrt(ntrnTwapInAtom)) +
-  Math.round(usdcLpTokens * Math.sqrt(ntrnTwapInUsdc));
+  Math.floor(atomLpTokens / Math.sqrt(ntrnTwapInAtom)) +
+  Math.floor(usdcLpTokens / Math.sqrt(ntrnTwapInUsdc));
 
 type PrecisionResponse = {
   denom: string;
