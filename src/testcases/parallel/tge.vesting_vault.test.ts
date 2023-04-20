@@ -91,22 +91,20 @@ describe('Neutron / TGE / Vesting vault', () => {
         vaultAddress,
         { get_config: {} },
       );
-      expect(config.name).toEqual('Vesting lp vault');
-      expect(config.description).toEqual('A vesting lp vault');
-      expect(config.atom_vesting_lp_contract).toEqual(
-        contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
-      );
-      expect(config.atom_oracle_contract).toEqual(
-        contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
-      );
-      expect(config.usdc_vesting_lp_contract).toEqual(
-        contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
-      );
-      expect(config.usdc_oracle_contract).toEqual(
-        contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
-      );
-      expect(config.owner).toEqual(cmInstantiator.wallet.address.toString());
-      expect(config.manager).toEqual(cmManager.wallet.address.toString());
+      expect(config).toMatchObject({
+        name: 'Vesting lp vault',
+        description: 'A vesting lp vault',
+        atom_vesting_lp_contract:
+          contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+        atom_oracle_contract:
+          contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
+        usdc_vesting_lp_contract:
+          contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+        usdc_oracle_contract:
+          contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
+        owner: cmInstantiator.wallet.address.toString(),
+        manager: cmManager.wallet.address.toString(),
+      });
     });
 
     test('make sure bonding is disabled', async () => {
