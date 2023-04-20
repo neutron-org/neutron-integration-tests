@@ -1,9 +1,3 @@
-// vesting lp:
-// 1. prerequisites: vesting-lp contract, atom oracle contract and usdc oracle contract
-// 1.1. init vesting-lp, set asset_infos by manager, add vesting accounts
-// 1.2. init pools, provide liquidity
-// 1.3. init oracles aimed to pools
-
 import {
   CosmosWrapper,
   IBC_ATOM_DENOM,
