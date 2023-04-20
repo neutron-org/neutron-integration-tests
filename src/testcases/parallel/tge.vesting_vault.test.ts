@@ -496,7 +496,7 @@ describe('Neutron / TGE / Vesting vault', () => {
             neutronChain,
             contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
             nativeTokenInfo(NEUTRON_DENOM),
-            111111,
+            Number.MAX_SAFE_INTEGER,
           );
           initNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
           expect(initNtrnTwapInAtom).toBe(0.2);
@@ -505,7 +505,7 @@ describe('Neutron / TGE / Vesting vault', () => {
             neutronChain,
             contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
             nativeTokenInfo(NEUTRON_DENOM),
-            111111,
+            Number.MAX_SAFE_INTEGER,
           );
           initNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
           expect(initNtrnTwapInUsdc).toBe(4);
@@ -842,7 +842,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               neutronChain,
               contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
               nativeTokenInfo(NEUTRON_DENOM),
-              111111,
+              Number.MAX_SAFE_INTEGER,
             );
             let newNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
             expect(newNtrnTwapInAtom).not.toBe(initNtrnTwapInAtom);
@@ -851,7 +851,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               neutronChain,
               contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
               nativeTokenInfo(NEUTRON_DENOM),
-              111111,
+              Number.MAX_SAFE_INTEGER,
             );
             let newNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
             expect(newNtrnTwapInUsdc).not.toBe(initNtrnTwapInUsdc);
