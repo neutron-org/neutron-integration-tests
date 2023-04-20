@@ -844,7 +844,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               nativeTokenInfo(NEUTRON_DENOM),
               Number.MAX_SAFE_INTEGER,
             );
-            let newNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
+            const newNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
             expect(newNtrnTwapInAtom).not.toBe(initNtrnTwapInAtom);
 
             const ntrnTwapInUsdcResp = await getTwapAtHeight(
@@ -853,7 +853,7 @@ describe('Neutron / TGE / Vesting vault', () => {
               nativeTokenInfo(NEUTRON_DENOM),
               Number.MAX_SAFE_INTEGER,
             );
-            let newNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
+            const newNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
             expect(newNtrnTwapInUsdc).not.toBe(initNtrnTwapInUsdc);
           });
         });
