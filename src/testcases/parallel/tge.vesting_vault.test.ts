@@ -487,9 +487,9 @@ describe('Neutron / TGE / Vesting vault', () => {
       });
     });
 
+    let initNtrnTwapInAtom: number;
+    let initNtrnTwapInUsdc: number;
     describe('voting power', () => {
-      let ntrnTwapInAtom: number;
-      let ntrnTwapInUsdc: number;
       describe('check initial voting power', () => {
         test('get TWAPs', async () => {
           const ntrnTwapInAtomResp = await getTwapAtHeight(
@@ -498,8 +498,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             nativeTokenInfo(NEUTRON_DENOM),
             111111,
           );
-          ntrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
-          expect(ntrnTwapInAtom).toBe(0.2);
+          initNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
+          expect(initNtrnTwapInAtom).toBe(0.2);
 
           const ntrnTwapInUsdcResp = await getTwapAtHeight(
             neutronChain,
@@ -507,8 +507,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             nativeTokenInfo(NEUTRON_DENOM),
             111111,
           );
-          ntrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
-          expect(ntrnTwapInUsdc).toBe(4);
+          initNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
+          expect(initNtrnTwapInUsdc).toBe(4);
         });
         test('total power at height', async () => {
           const res = await neutronChain.queryContract<VotingPowerResponse>(
@@ -519,8 +519,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               atomNtrnProviderShare,
               usdcNtrnProviderShare,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -537,8 +537,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               user1AtomVestingAmount,
               user1UsdcVestingAmount,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -555,15 +555,20 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               user2AtomVestingAmount,
               user2UsdcVestingAmount,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
       });
 
+      let heightBeforeClaim: number;
       describe('check voting power on claim', () => {
         const user1PartialClaimAtom = Math.round(user1AtomVestingAmount / 2);
+        beforeAll(async () => {
+          heightBeforeClaim = await getHeight(neutronChain.sdk);
+          await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
+        });
         test('user1 partial ATOM claim', async () => {
           const execRes = await cmUser1.executeContract(
             contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
@@ -588,8 +593,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               user1AtomVestingAmount - user1PartialClaimAtom,
               user1UsdcVestingAmount,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -618,8 +623,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               user1AtomVestingAmount - user1PartialClaimAtom,
               user1UsdcVestingAmount - user1PartialClaimUsdc,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -632,8 +637,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               atomNtrnProviderShare - user1PartialClaimAtom,
               usdcNtrnProviderShare - user1PartialClaimUsdc,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -660,8 +665,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               0,
               user2UsdcVestingAmount,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -698,8 +703,8 @@ describe('Neutron / TGE / Vesting vault', () => {
               usdcNtrnProviderShare -
                 user1PartialClaimUsdc -
                 user2UsdcVestingAmount,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -726,8 +731,8 @@ describe('Neutron / TGE / Vesting vault', () => {
             calcVotingPower(
               0,
               user1UsdcVestingAmount - user1PartialClaimUsdc,
-              ntrnTwapInAtom,
-              ntrnTwapInUsdc,
+              initNtrnTwapInAtom,
+              initNtrnTwapInUsdc,
             ),
           );
         });
@@ -757,6 +762,157 @@ describe('Neutron / TGE / Vesting vault', () => {
             { total_power_at_height: {} },
           );
           expect(+res.power).toBe(0);
+        });
+      });
+
+      describe('historical voting power', () => {
+        describe('mutate current TWAPs', () => {
+          // we user here different ratios to change asset proportions in the pools and therefore change TWAPs
+          const newNtrnProvideAmount = 500_000_000; // 500 NTRN per each pool (ATOM, USDC)
+          const newAtomProvideAmount =
+            newNtrnProvideAmount * (atomNtrnProvideRatio * 1.2);
+          const newUsdcProvideAmount =
+            newNtrnProvideAmount * (usdcNtrnProvideRatio * 1.2);
+          test('provide liquidity to NTRN_ATOM pool', async () => {
+            const providedAssets = [
+              nativeToken(IBC_ATOM_DENOM, newAtomProvideAmount.toString()),
+              nativeToken(NEUTRON_DENOM, newNtrnProvideAmount.toString()),
+            ];
+            const execRes = await cmManager.executeContract(
+              contractAddresses[NTRN_ATOM_PAIR_CONTRACT_KEY],
+              JSON.stringify({
+                provide_liquidity: {
+                  assets: providedAssets,
+                  slippage_tolerance: '0.5',
+                },
+              }),
+              [
+                {
+                  amount: newAtomProvideAmount.toString(),
+                  denom: IBC_ATOM_DENOM,
+                },
+                {
+                  amount: newNtrnProvideAmount.toString(),
+                  denom: NEUTRON_DENOM,
+                },
+              ],
+            );
+            expect(execRes.code).toBe(0);
+          });
+          test('provide liquidity to NTRN_USDC pool', async () => {
+            const providedAssets = [
+              nativeToken(IBC_USDC_DENOM, newUsdcProvideAmount.toString()),
+              nativeToken(NEUTRON_DENOM, newNtrnProvideAmount.toString()),
+            ];
+            const execRes = await cmManager.executeContract(
+              contractAddresses[NTRN_USDC_PAIR_CONTRACT_KEY],
+              JSON.stringify({
+                provide_liquidity: {
+                  assets: providedAssets,
+                  slippage_tolerance: '0.5',
+                },
+              }),
+              [
+                {
+                  amount: newUsdcProvideAmount.toString(),
+                  denom: IBC_USDC_DENOM,
+                },
+                {
+                  amount: newNtrnProvideAmount.toString(),
+                  denom: NEUTRON_DENOM,
+                },
+              ],
+            );
+            expect(execRes.code).toBe(0);
+          });
+          test('make sure TWAPs changed', async () => {
+            let execRes = await cmInstantiator.executeContract(
+              contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
+              JSON.stringify({ update: {} }),
+            );
+            expect(execRes.code).toBe(0);
+            execRes = await cmInstantiator.executeContract(
+              contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
+              JSON.stringify({ update: {} }),
+            );
+            expect(execRes.code).toBe(0);
+            neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAPs are available
+
+            const ntrnTwapInAtomResp = await getTwapAtHeight(
+              neutronChain,
+              contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
+              nativeTokenInfo(NEUTRON_DENOM),
+              111111,
+            );
+            let newNtrnTwapInAtom = ntrnTwapInAtomResp[0].twap;
+            expect(newNtrnTwapInAtom).not.toBe(initNtrnTwapInAtom);
+
+            const ntrnTwapInUsdcResp = await getTwapAtHeight(
+              neutronChain,
+              contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
+              nativeTokenInfo(NEUTRON_DENOM),
+              111111,
+            );
+            let newNtrnTwapInUsdc = ntrnTwapInUsdcResp[0].twap;
+            expect(newNtrnTwapInUsdc).not.toBe(initNtrnTwapInUsdc);
+          });
+        });
+
+        // voting power at height = heightBeforeClaim should be the same as it was
+        // at that point regardless of the following claim calls and TWAP changes.
+        describe('check voting power before claim', () => {
+          test('total power', async () => {
+            const res = await neutronChain.queryContract<VotingPowerResponse>(
+              contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+              { total_power_at_height: { height: heightBeforeClaim } },
+            );
+            expect(+res.power).toBe(
+              calcVotingPower(
+                atomNtrnProviderShare,
+                usdcNtrnProviderShare,
+                initNtrnTwapInAtom,
+                initNtrnTwapInUsdc,
+              ),
+            );
+          });
+          test('user1 power', async () => {
+            const res = await neutronChain.queryContract<VotingPowerResponse>(
+              contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+              {
+                voting_power_at_height: {
+                  address: cmUser1.wallet.address.toString(),
+                  height: heightBeforeClaim,
+                },
+              },
+            );
+            expect(+res.power).toBe(
+              calcVotingPower(
+                user1AtomVestingAmount,
+                user1UsdcVestingAmount,
+                initNtrnTwapInAtom,
+                initNtrnTwapInUsdc,
+              ),
+            );
+          });
+          test('user2 power', async () => {
+            const res = await neutronChain.queryContract<VotingPowerResponse>(
+              contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
+              {
+                voting_power_at_height: {
+                  address: cmUser2.wallet.address.toString(),
+                  height: heightBeforeClaim,
+                },
+              },
+            );
+            expect(+res.power).toBe(
+              calcVotingPower(
+                user2AtomVestingAmount,
+                user2UsdcVestingAmount,
+                initNtrnTwapInAtom,
+                initNtrnTwapInUsdc,
+              ),
+            );
+          });
         });
       });
     });
