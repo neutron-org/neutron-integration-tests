@@ -7,7 +7,6 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
-import { unpinCodesProposal } from '../../helpers/proposal';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
