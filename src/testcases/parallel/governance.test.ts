@@ -299,17 +299,6 @@ describe('Neutron / Governance', () => {
       );
     });
 
-    test('send binding message from non-admin. should fail ', async () => {
-      const msg = unpinCodesProposal({
-        title: 'Proposal wich',
-        description: 'Unpin codes proposal. Will reject',
-        codes_ids: [1, 2],
-      });
-      // await expect(await daoMember1.user.msgSendBinding(msg)).rejects.toThrow(
-      //   /only admin/,
-      // );
-    });
-
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         [

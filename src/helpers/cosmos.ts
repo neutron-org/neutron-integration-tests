@@ -599,19 +599,6 @@ export class WalletWrapper {
     return res?.tx_response;
   }
 
-  async msgSendBinding(
-    msg: any,
-    fee = {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.chain.denom, amount: '1000' }],
-    },
-    sequence: number = this.wallet.account.sequence,
-    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
-  ): Promise<InlineResponse20075TxResponse> {
-    const res = await this.execTx(fee, [msg], 10, mode, sequence);
-    return res?.tx_response;
-  }
-
   /**
    * Tests a pausable contract execution control.
    * @param testingContract is the contract the method tests;
