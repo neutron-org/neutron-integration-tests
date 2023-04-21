@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { ibc as ibcProto } from '../generated/ibc/proto';
+import { cosmos as CosmosAdmin, ibc as ibcProto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -30,6 +30,7 @@ import {
   IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
+const adminmodule = CosmosAdmin.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
@@ -596,6 +597,39 @@ export class WalletWrapper {
       amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
+    return res?.tx_response;
+  }
+
+  async msgSendDirectProposal(
+    subspace: string,
+    key: string,
+    value: string,
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.chain.denom, amount: '1000' }],
+    },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+  ): Promise<InlineResponse20075TxResponse> {
+
+    const msg = new adminmodule.adminmodule.MsgSubmitProposal({
+      content: google.protobuf.Any.fromObject(
+        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+          title: 'mock',
+          description: 'mock',
+          changes: [
+            new proto.cosmos.params.v1beta1.ParamChange({
+              key: key,
+              subspace: subspace,
+              value: value,
+            }),
+          ],
+        }),
+      ),
+      proposer: this.wallet.account.address,
+    });
+    console.log(msg);
+    const res = await this.execTx(fee, [msg], 1, mode, sequence);
     return res?.tx_response;
   }
 

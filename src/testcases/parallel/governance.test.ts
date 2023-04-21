@@ -7,6 +7,9 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import { Client } from '@neutron-org/client-ts';
+import { Secp256k1HdWallet } from '@cosmjs/amino';
+const config = require('../../config.json');
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -122,6 +125,14 @@ describe('Neutron / Governance', () => {
   });
 
   describe('create several proposals', () => {
+    test('submit admin proposal from non-admin addr, should fail', async () => {
+      await daoMember1.user.msgSendDirectProposal(
+        'icahost',
+        'HostEnabled',
+        'false',
+      );
+    });
+
     test('create proposal #1, will pass', async () => {
       await daoMember1.submitParameterChangeProposal(
         'Proposal #1',
