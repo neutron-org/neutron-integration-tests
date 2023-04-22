@@ -6425,19 +6425,19 @@ export namespace google {
             public selector: string;
 
             /** HttpRule get. */
-            public get: string;
+            public get?: (string|null);
 
             /** HttpRule put. */
-            public put: string;
+            public put?: (string|null);
 
             /** HttpRule post. */
-            public post: string;
+            public post?: (string|null);
 
             /** HttpRule delete. */
-            public delete: string;
+            public delete?: (string|null);
 
             /** HttpRule patch. */
-            public patch: string;
+            public patch?: (string|null);
 
             /** HttpRule custom. */
             public custom?: (google.api.ICustomHttpPattern|null);
@@ -14310,10 +14310,10 @@ export namespace ibc {
                     constructor(properties?: ibc.core.channel.v1.IAcknowledgement);
 
                     /** Acknowledgement result. */
-                    public result: Uint8Array;
+                    public result?: (Uint8Array|null);
 
                     /** Acknowledgement error. */
-                    public error: string;
+                    public error?: (string|null);
 
                     /** Acknowledgement response. */
                     public response?: ("result"|"error");
@@ -32787,10 +32787,10 @@ export namespace tendermint {
             constructor(properties?: tendermint.crypto.IPublicKey);
 
             /** PublicKey ed25519. */
-            public ed25519: Uint8Array;
+            public ed25519?: (Uint8Array|null);
 
             /** PublicKey secp256k1. */
-            public secp256k1: Uint8Array;
+            public secp256k1?: (Uint8Array|null);
 
             /** PublicKey sum. */
             public sum?: ("ed25519"|"secp256k1");

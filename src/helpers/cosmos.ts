@@ -86,6 +86,10 @@ cosmosclient.codec.register(
   '/ibc.applications.transfer.v1.MsgTransfer',
   ibcProto.applications.transfer.v1.MsgTransfer,
 );
+cosmosclient.codec.register(
+  '/cosmos.adminmodule.adminmodule.MsgSubmitProposal',
+  adminmodule.adminmodule.MsgSubmitProposal,
+);
 
 export class CosmosWrapper {
   readonly sdk: cosmosclient.CosmosSDK;
@@ -611,9 +615,8 @@ export class WalletWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
-
     const msg = new adminmodule.adminmodule.MsgSubmitProposal({
-      content: google.protobuf.Any.fromObject(
+      content: cosmosclient.codec.instanceToProtoAny(
         new proto.cosmos.params.v1beta1.ParameterChangeProposal({
           title: 'mock',
           description: 'mock',
@@ -628,7 +631,6 @@ export class WalletWrapper {
       ),
       proposer: this.wallet.account.address,
     });
-    console.log(msg);
     const res = await this.execTx(fee, [msg], 1, mode, sequence);
     return res?.tx_response;
   }
