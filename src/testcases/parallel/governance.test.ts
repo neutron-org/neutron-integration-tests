@@ -126,11 +126,15 @@ describe('Neutron / Governance', () => {
 
   describe('create several proposals', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
+      const hostStatus = neutronChain.queryHostEnabled();
+      expect(hostStatus).toEqual(true);
       await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
         'false',
       );
+      const afterProposalHostStatus = neutronChain.queryHostEnabled();
+      expect(afterProposalHostStatus).toEqual(true);
     });
 
     test('create proposal #1, will pass', async () => {
