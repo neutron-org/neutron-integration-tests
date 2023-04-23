@@ -167,7 +167,7 @@ export type PinnedCodesResponse = {
 
 export type IcaHostParamsResponse = {
   params: {
-    host_enabled: boolean;
+    host_enabled: string;
   };
 };
 

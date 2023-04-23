@@ -368,7 +368,7 @@ export class CosmosWrapper {
     }
   }
 
-  async queryHostEnabled(): Promise<boolean> {
+  async queryHostEnabled(): Promise<string> {
     try {
       const req = await axios.get<IcaHostParamsResponse>(
         `${this.sdk.url}/ibc/apps/interchain_accounts/host/v1/params`,
