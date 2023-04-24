@@ -125,18 +125,6 @@ describe('Neutron / Governance', () => {
   });
 
   describe('create several proposals', () => {
-    test('submit admin proposal from non-admin addr, should fail', async () => {
-      const hostStatus = neutronChain.queryHostEnabled();
-      expect(hostStatus).toEqual(true);
-      await daoMember1.user.msgSendDirectProposal(
-        'icahost',
-        'HostEnabled',
-        'false',
-      );
-      const afterProposalHostStatus = neutronChain.queryHostEnabled();
-      expect(afterProposalHostStatus).toEqual(true);
-    });
-
     test('create proposal #1, will pass', async () => {
       await daoMember1.submitParameterChangeProposal(
         'Proposal #1',
@@ -863,6 +851,20 @@ describe('Neutron / Governance', () => {
       );
 
       expect(queryResult).toEqual(null);
+    });
+  });
+  describe('check that only admin can create valid proposals', () => {
+    test('submit admin proposal from non-admin addr, should fail', async () => {
+      const hostStatus = await neutronChain.queryHostEnabled();
+      expect(hostStatus).toEqual(true);
+      const res = await daoMember1.user.msgSendDirectProposal(
+        'icahost',
+        'HostEnabled',
+        'false',
+      );
+      expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
+      const afterProposalHostStatus = await neutronChain.queryHostEnabled();
+      expect(afterProposalHostStatus).toEqual(true);
     });
   });
 });

@@ -368,7 +368,7 @@ export class CosmosWrapper {
     }
   }
 
-  async queryHostEnabled(): Promise<string> {
+  async queryHostEnabled(): Promise<boolean> {
     try {
       const req = await axios.get<IcaHostParamsResponse>(
         `${this.sdk.url}/ibc/apps/interchain_accounts/host/v1/params`,
@@ -631,7 +631,7 @@ export class WalletWrapper {
       ),
       proposer: this.wallet.account.address,
     });
-    const res = await this.execTx(fee, [msg], 1, mode, sequence);
+    const res = await this.execTx(fee, [msg], 10, mode, sequence);
     return res?.tx_response;
   }
 
