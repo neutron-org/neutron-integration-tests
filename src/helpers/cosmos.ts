@@ -384,18 +384,8 @@ export class CosmosWrapper {
   }
 
   async queryContractAdmin(address: string): Promise<string> {
-    try {
-      const req = await axios.get<ContractAdminResponse>(
-        `${this.sdk.url}/cosmwasm/wasm/v1/contract/${address} `,
-        {},
-      );
-      return req.data.contract_info.admin;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
+    const resp = await this.getContractInfo(address);
+    return resp.contract_info.admin;
   }
 }
 
