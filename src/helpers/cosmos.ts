@@ -26,7 +26,6 @@ import {
   PauseInfoResponse,
   CurrentPlanResponse,
   PinnedCodesResponse,
-  ContractAdminResponse,
   IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
