@@ -21,14 +21,14 @@ describe('Neutron / Treasury', () => {
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
-  let main_dao_wallet: Wallet;
-  let security_dao_wallet: Wallet;
-  let holder_1_wallet: Wallet;
-  let holder_2_wallet: Wallet;
-  let main_dao_addr: AccAddress | ValAddress;
-  let security_dao_addr: AccAddress | ValAddress;
-  let holder_1_addr: AccAddress | ValAddress;
-  let holder_2_addr: AccAddress | ValAddress;
+  let mainDaoWallet: Wallet;
+  let securityDaoWallet: Wallet;
+  let holder1Wallet: Wallet;
+  let holder2Wallet: Wallet;
+  let mainDaoAddr: AccAddress | ValAddress;
+  let securityDaoAddr: AccAddress | ValAddress;
+  let holder1Addr: AccAddress | ValAddress;
+  let holder2Addr: AccAddress | ValAddress;
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
@@ -45,14 +45,14 @@ describe('Neutron / Treasury', () => {
       neutronChain,
       testState.wallets.neutron.demo2,
     );
-    main_dao_wallet = testState.wallets.neutron.demo1;
-    security_dao_wallet = testState.wallets.neutron.icq;
-    holder_1_wallet = testState.wallets.neutron.demo2;
-    holder_2_wallet = testState.wallets.neutron.rly1;
-    main_dao_addr = main_dao_wallet.address;
-    security_dao_addr = security_dao_wallet.address;
-    holder_1_addr = holder_1_wallet.address;
-    holder_2_addr = holder_2_wallet.address;
+    mainDaoWallet = testState.wallets.neutron.demo1;
+    securityDaoWallet = testState.wallets.neutron.icq;
+    holder1Wallet = testState.wallets.neutron.demo2;
+    holder2Wallet = testState.wallets.neutron.rly1;
+    mainDaoAddr = mainDaoWallet.address;
+    securityDaoAddr = securityDaoWallet.address;
+    holder1Addr = holder1Wallet.address;
+    holder2Addr = holder2Wallet.address;
   });
 
   describe('Treasury', () => {
@@ -62,13 +62,13 @@ describe('Neutron / Treasury', () => {
     beforeAll(async () => {
       dsc = await setupDSC(
         neutronAccount1,
-        main_dao_addr.toString(),
-        security_dao_addr.toString(),
+        mainDaoAddr.toString(),
+        securityDaoAddr.toString(),
       );
       treasury = await setupTreasury(
         neutronAccount1,
-        main_dao_addr.toString(),
-        security_dao_addr.toString(),
+        mainDaoAddr.toString(),
+        securityDaoAddr.toString(),
       );
     });
 
@@ -76,8 +76,8 @@ describe('Neutron / Treasury', () => {
       let reserveStats: ReserveStats;
       beforeEach(async () => {
         reserve = await setupReserve(neutronAccount1, {
-          mainDaoAddress: main_dao_addr.toString(),
-          securityDaoAddress: security_dao_addr.toString(),
+          mainDaoAddress: mainDaoAddr.toString(),
+          securityDaoAddress: securityDaoAddr.toString(),
           distributionRate: '0.0',
           minPeriod: 1,
           distributionContract: dsc,
@@ -181,8 +181,8 @@ describe('Neutron / Treasury', () => {
             JSON.stringify({
               set_shares: {
                 shares: [
-                  [holder_1_addr.toString(), '1'],
-                  [holder_2_addr.toString(), '2'],
+                  [holder1Addr.toString(), '1'],
+                  [holder2Addr.toString(), '2'],
                 ],
               },
             }),
@@ -195,7 +195,7 @@ describe('Neutron / Treasury', () => {
             treasury,
             JSON.stringify({
               payout: {
-                recipient: holder_2_addr.toString(),
+                recipient: holder2Addr.toString(),
                 amount: '1400000',
               },
             }),
@@ -250,8 +250,8 @@ describe('Neutron / Treasury', () => {
       });
       test('set shares', async () => {
         reserve = await setupReserve(neutronAccount1, {
-          mainDaoAddress: main_dao_addr.toString(),
-          securityDaoAddress: security_dao_addr.toString(),
+          mainDaoAddress: mainDaoAddr.toString(),
+          securityDaoAddress: securityDaoAddr.toString(),
           distributionRate: '0.21',
           minPeriod: 1,
           distributionContract: dsc,
@@ -263,8 +263,8 @@ describe('Neutron / Treasury', () => {
           JSON.stringify({
             set_shares: {
               shares: [
-                [holder_1_addr.toString(), '1'],
-                [holder_2_addr.toString(), '2'],
+                [holder1Addr.toString(), '1'],
+                [holder2Addr.toString(), '2'],
               ],
             },
           }),
@@ -324,13 +324,13 @@ describe('Neutron / Treasury', () => {
           pending: {},
         });
         expect(pending).toEqual([
-          [holder_1_addr.toString(), '14005'],
-          [holder_2_addr.toString(), '28008'],
+          [holder1Addr.toString(), '14005'],
+          [holder2Addr.toString(), '28008'],
         ]);
       });
       test('claim pending', async () => {
         const balanceBefore = await neutronChain.queryDenomBalance(
-          holder_1_addr,
+          holder1Addr,
           NEUTRON_DENOM,
         );
         const res = await neutronAccount2.executeContract(
@@ -347,21 +347,21 @@ describe('Neutron / Treasury', () => {
         expect(attrs).toEqual([
           {
             key: 'recipient',
-            value: holder_1_addr.toString(),
+            value: holder1Addr.toString(),
           },
           { key: 'sender', value: dsc },
           { key: 'amount', value: `14005${NEUTRON_DENOM}` },
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(
-          holder_1_addr,
+          holder1Addr,
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(4005);
       });
       test('payout', async () => {
         const balanceBefore = await neutronChain.queryDenomBalance(
-          holder_2_addr,
+          holder2Addr,
           NEUTRON_DENOM,
         );
 
@@ -369,7 +369,7 @@ describe('Neutron / Treasury', () => {
           treasury,
           JSON.stringify({
             payout: {
-              recipient: holder_2_addr.toString(),
+              recipient: holder2Addr.toString(),
               amount: '158051',
             },
           }),
@@ -382,14 +382,14 @@ describe('Neutron / Treasury', () => {
         expect(attrs).toEqual([
           {
             key: 'recipient',
-            value: holder_2_addr.toString(),
+            value: holder2Addr.toString(),
           },
           { key: 'sender', value: treasury },
           { key: 'amount', value: `158051${NEUTRON_DENOM}` },
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(
-          holder_2_addr,
+          holder2Addr,
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(158051);
@@ -404,8 +404,8 @@ describe('Neutron / Treasury', () => {
     describe('update treasury config', () => {
       beforeEach(async () => {
         reserve = await setupReserve(neutronAccount1, {
-          mainDaoAddress: main_dao_addr.toString(),
-          securityDaoAddress: security_dao_addr.toString(),
+          mainDaoAddress: mainDaoAddr.toString(),
+          securityDaoAddress: securityDaoAddr.toString(),
           distributionRate: '0.23',
           minPeriod: 1000,
           distributionContract: dsc,
@@ -432,7 +432,7 @@ describe('Neutron / Treasury', () => {
             update_config: {
               distribution_rate: '0.11',
               min_period: 500,
-              dao: main_dao_addr.toString(),
+              dao: mainDaoAddr.toString(),
               distribution_contract: dsc,
             },
           }),
@@ -459,17 +459,17 @@ describe('Neutron / Treasury', () => {
     beforeAll(async () => {
       dsc = await setupDSC(
         neutronAccount1,
-        main_dao_addr.toString(),
-        security_dao_addr.toString(),
+        mainDaoAddr.toString(),
+        securityDaoAddr.toString(),
       );
       treasury = await setupTreasury(
         neutronAccount1,
-        main_dao_addr.toString(),
-        security_dao_addr.toString(),
+        mainDaoAddr.toString(),
+        securityDaoAddr.toString(),
       );
       reserve = await setupReserve(neutronAccount1, {
-        mainDaoAddress: main_dao_addr.toString(),
-        securityDaoAddress: security_dao_addr.toString(),
+        mainDaoAddress: mainDaoAddr.toString(),
+        securityDaoAddress: securityDaoAddr.toString(),
         distributionRate: '0.21',
         minPeriod: 1000,
         distributionContract: dsc,
@@ -487,8 +487,8 @@ describe('Neutron / Treasury', () => {
             JSON.stringify({
               set_shares: {
                 shares: [
-                  [holder_1_addr.toString(), '1'],
-                  [holder_2_addr.toString(), '2'],
+                  [holder1Addr.toString(), '1'],
+                  [holder2Addr.toString(), '2'],
                 ],
               },
             }),
@@ -500,8 +500,8 @@ describe('Neutron / Treasury', () => {
             shares: {},
           });
           expect(shares).toEqual([
-            [holder_1_addr.toString(), '1'],
-            [holder_2_addr.toString(), '2'],
+            [holder1Addr.toString(), '1'],
+            [holder2Addr.toString(), '2'],
           ]);
         },
       );
@@ -535,7 +535,7 @@ describe('Neutron / Treasury', () => {
 
     test('treasury', async () => {
       const balanceBefore = await neutronChain.queryDenomBalance(
-        holder_2_addr,
+        holder2Addr,
         NEUTRON_DENOM,
       );
       await neutronAccount1.testExecControl(
@@ -545,7 +545,7 @@ describe('Neutron / Treasury', () => {
             treasury,
             JSON.stringify({
               payout: {
-                recipient: holder_2_addr.toString(),
+                recipient: holder2Addr.toString(),
                 amount: '332120',
               },
             }),
@@ -554,7 +554,7 @@ describe('Neutron / Treasury', () => {
         },
         async () => {
           const balanceAfter = await neutronChain.queryDenomBalance(
-            holder_2_addr,
+            holder2Addr,
             NEUTRON_DENOM,
           );
           expect(balanceAfter - balanceBefore).toEqual(332120);

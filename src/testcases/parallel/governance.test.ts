@@ -52,10 +52,10 @@ describe('Neutron / Governance', () => {
   });
 
   describe('Contracts', () => {
-    let codeId: string;
+    let codeId: number;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(NeutronContract.MSG_RECEIVER);
-      expect(parseInt(codeId)).toBeGreaterThan(0);
+      expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
       const res = await neutronAccount.instantiateContract(

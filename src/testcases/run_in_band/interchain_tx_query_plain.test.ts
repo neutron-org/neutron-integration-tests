@@ -15,6 +15,7 @@ import {
   waitForTransfersAmount,
 } from '../../helpers/icq';
 import { NeutronContract } from '../../helpers/types';
+import { CodeId } from '../../types';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -46,12 +47,12 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   describe('deploy contract', () => {
-    let codeId: string;
+    let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
         NeutronContract.INTERCHAIN_QUERIES,
       );
-      expect(parseInt(codeId)).toBeGreaterThan(0);
+      expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
@@ -64,16 +65,16 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const addr1 = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
-  const addr2 = 'cosmos14uxvu22lhrazyxadaqv5d6lswu0p276lmp7pvc';
-  const addr3 = 'cosmos1m4n7gt76c4edkcpg698pwy56jkxqsre4v7p2sa';
+  const addrFirst = 'cosmos1fj6yqrkpw6fmp7f7jhj57dujfpwal4m2sj5tcp';
+  const addrSecond = 'cosmos14uxvu22lhrazyxadaqv5d6lswu0p276lmp7pvc';
+  const addrThird = 'cosmos1m4n7gt76c4edkcpg698pwy56jkxqsre4v7p2sa';
   let addr1ExpectedBalance = 0;
   let addr2ExpectedBalance = 0;
   let addr3ExpectedBalance = 0;
   let expectedIncomingTransfers = 0;
-  const amountToAddr1_1 = 10000;
-  const amountToAddr2_1 = 5000;
-  const watchedAddr1: string = addr1;
+  const amountToAddrFirst1 = 10000;
+  const amountToAddrSecond1 = 5000;
+  const watchedAddr1: string = addrFirst;
   const query1UpdatePeriod = 4;
   describe('utilize single transfers query', () => {
     test('register transfers query', async () => {
@@ -104,12 +105,12 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('handle callback on a sending', async () => {
-      addr1ExpectedBalance += amountToAddr1_1;
+      addr1ExpectedBalance += amountToAddrFirst1;
       let balances = await gaiaChain.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr1,
-        amountToAddr1_1.toString(),
+        amountToAddrFirst1.toString(),
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
@@ -140,13 +141,13 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('handle callback on a sending to a different address', async () => {
-      const differentAddr = addr2;
-      addr2ExpectedBalance += amountToAddr2_1;
+      const differentAddr = addrSecond;
+      addr2ExpectedBalance += amountToAddrSecond1;
       let balances = await gaiaChain.queryBalances(differentAddr);
       expect(balances.balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         differentAddr,
-        amountToAddr2_1.toString(),
+        amountToAddrSecond1.toString(),
       );
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(differentAddr);
@@ -205,7 +206,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const watchedAddr2 = addr2;
+  const watchedAddr2 = addrSecond;
   const query2UpdatePeriod = 3;
   describe('utilize multiple transfers queries', () => {
     test('register the second transfers query', async () => {
@@ -264,10 +265,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
   });
 
-  const watchedAddr3: string = addr3;
+  const watchedAddr3: string = addrThird;
   const query3UpdatePeriod = 4;
-  const amountToAddr3_1 = 3000;
-  const amountToAddr3_2 = 4000;
+  const amountToAddrThird1 = 3000;
+  const amountToAddrThird2 = 4000;
   describe('check update period', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
@@ -297,12 +298,12 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check first sending handling', async () => {
-      addr3ExpectedBalance += amountToAddr3_1;
+      addr3ExpectedBalance += amountToAddrThird1;
       let balances = await gaiaChain.queryBalances(watchedAddr3);
       expect(balances.balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr3,
-        amountToAddr3_1.toString(),
+        amountToAddrThird1.toString(),
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
@@ -340,10 +341,10 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check second sending handling', async () => {
-      addr3ExpectedBalance += amountToAddr3_2;
+      addr3ExpectedBalance += amountToAddrThird2;
       const res = await gaiaAccount.msgSend(
         watchedAddr3,
-        amountToAddr3_2.toString(),
+        amountToAddrThird2.toString(),
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
@@ -364,7 +365,7 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: (addr3ExpectedBalance - amountToAddr3_2).toString(),
+          amount: (addr3ExpectedBalance - amountToAddrThird2).toString(),
         },
       ]);
 
@@ -384,24 +385,24 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr3_1.toString(),
+          amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr3_2.toString(),
+          amount: amountToAddrThird2.toString(),
         },
       ]);
     });
   });
 
-  const amountToAddr1_2 = 2000;
-  const amountToAddr2_2 = 3000;
+  const amountToAddrFirst2 = 2000;
+  const amountToAddrSecond2 = 3000;
   describe('handle multiple transfers', () => {
     test('exec tx with two transfers', async () => {
-      addr1ExpectedBalance += amountToAddr1_2;
-      addr2ExpectedBalance += amountToAddr2_2;
+      addr1ExpectedBalance += amountToAddrFirst2;
+      addr2ExpectedBalance += amountToAddrSecond2;
       const res = await gaiaAccount.execTx(
         {
           gas_limit: Long.fromString('200000'),
@@ -412,14 +413,17 @@ describe('Neutron / Interchain TX Query', () => {
             from_address: gaiaAccount.wallet.address.toString(),
             to_address: watchedAddr1,
             amount: [
-              { denom: gaiaChain.denom, amount: amountToAddr1_2.toString() },
+              { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
             ],
           }),
           new proto.cosmos.bank.v1beta1.MsgSend({
             from_address: gaiaAccount.wallet.address.toString(),
             to_address: watchedAddr2,
             amount: [
-              { denom: gaiaChain.denom, amount: amountToAddr2_2.toString() },
+              {
+                denom: gaiaChain.denom,
+                amount: amountToAddrSecond2.toString(),
+              },
             ],
           }),
         ],
@@ -457,13 +461,13 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr1,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr1_1.toString(),
+          amount: amountToAddrFirst1.toString(),
         },
         {
           recipient: watchedAddr1,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr1_2.toString(),
+          amount: amountToAddrFirst2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(
@@ -476,13 +480,13 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr2,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr2_1.toString(),
+          amount: amountToAddrSecond1.toString(),
         },
         {
           recipient: watchedAddr2,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr2_2.toString(),
+          amount: amountToAddrSecond2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(
@@ -495,32 +499,32 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr3,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr3_1.toString(),
+          amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: amountToAddr3_2.toString(),
+          amount: amountToAddrThird2.toString(),
         },
       ]);
     });
   });
 
-  const addr4 = 'cosmos1p0qgeqgardg73apsrc2k5efm5dcwhnvkc0y4tq';
+  const addrForth = 'cosmos1p0qgeqgardg73apsrc2k5efm5dcwhnvkc0y4tq';
   let addr4ExpectedBalance = 0;
-  const amountToAddr4_1 = 4000;
-  const watchedAddr4: string = addr4;
+  const amountToAddrForth1 = 4000;
+  const watchedAddr4: string = addrForth;
   const query4UpdatePeriod = 4;
   // this case tests the following scenario:
   // there is a tx of a remote height 10, and a tx of a remote height 20
   // we submit the second one, and then submit the first one, and want to make sure there is
   // no problem with submitting an older height after a younger one submitted
   describe('submit older height after younger one', () => {
-    const addr5 = 'cosmos1szkcj46xg65ux8t8ge9jl79azj4qltdqgz9l39';
+    const addrFifth = 'cosmos1szkcj46xg65ux8t8ge9jl79azj4qltdqgz9l39';
     let addr5ExpectedBalance = 0;
-    const amountToAddr5_1 = 5000;
-    const watchedAddr5: string = addr5;
+    const amountToAddrFifth1 = 5000;
+    const watchedAddr5: string = addrFifth;
     const query5UpdatePeriod = 12;
 
     // by these checks we ensure the transactions will be processed in the desired order
@@ -550,12 +554,12 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('make older sending', async () => {
-      addr5ExpectedBalance += amountToAddr5_1;
+      addr5ExpectedBalance += amountToAddrFifth1;
       let balances = await gaiaChain.queryBalances(watchedAddr5);
       expect(balances.balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr5,
-        amountToAddr5_1.toString(),
+        amountToAddrFifth1.toString(),
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
@@ -594,12 +598,12 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('make younger sending and check', async () => {
-      addr4ExpectedBalance += amountToAddr4_1;
+      addr4ExpectedBalance += amountToAddrForth1;
       let balances = await gaiaChain.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr4,
-        amountToAddr4_1.toString(),
+        amountToAddrForth1.toString(),
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
@@ -661,8 +665,8 @@ describe('Neutron / Interchain TX Query', () => {
 
   describe('check contract state is reverted on failed sudo', () => {
     // contract handles only transfers <= 20000, otherwise it ends callback with an error.
-    const amountToAddr4_2 = 21000;
-    let transfers_amount_before_sending: number;
+    const amountToAddrForth2 = 21000;
+    let transfersAmountBeforeSending: number;
     test('send amount that is more than contract allows', async () => {
       // contract tracks total amount of transfers to addresses it watches.
       const transfers = await queryTransfersNumber(
@@ -670,7 +674,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
       );
       expect(transfers.transfers_number).toBeGreaterThan(0);
-      transfers_amount_before_sending = transfers.transfers_number;
+      transfersAmountBeforeSending = transfers.transfers_number;
 
       let balances = await gaiaChain.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
@@ -678,9 +682,9 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
       const res = await gaiaAccount.msgSend(
         watchedAddr4,
-        amountToAddr4_2.toString(),
+        amountToAddrForth2.toString(),
       );
-      addr4ExpectedBalance += amountToAddr4_2;
+      addr4ExpectedBalance += amountToAddrForth2;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr4);
       expect(balances.balances).toEqual([
@@ -700,7 +704,7 @@ describe('Neutron / Interchain TX Query', () => {
           recipient: watchedAddr4,
           sender: gaiaAccount.wallet.address.toString(),
           denom: gaiaChain.denom,
-          amount: (addr4ExpectedBalance - amountToAddr4_2).toString(),
+          amount: (addr4ExpectedBalance - amountToAddrForth2).toString(),
         },
       ]);
       // contract handles only transfers not greater than 20000, otherwise it ends callback with an
@@ -710,9 +714,7 @@ describe('Neutron / Interchain TX Query', () => {
         neutronChain,
         contractAddress,
       );
-      expect(transfers.transfers_number).toEqual(
-        transfers_amount_before_sending,
-      );
+      expect(transfers.transfers_number).toEqual(transfersAmountBeforeSending);
     });
   });
 

@@ -7,6 +7,7 @@ import {
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import crypto from 'crypto';
+import { CodeId } from '../../types';
 
 const sha256 = (x: string): Buffer => {
   const hash = crypto.createHash('sha256');
@@ -36,17 +37,15 @@ class Airdrop {
   }
 }
 
-const getTimestamp = (secondsFromNow: number): string =>
-  (
-    BigInt(Date.now()) * BigInt(1000000) +
-    BigInt(secondsFromNow * 1000000 * 1000)
-  ).toString();
+const getTimestamp = (secondsFromNow: number): number =>
+  (Date.now() / 1000 + secondsFromNow) | 0;
 
-const waitTill = (timestamp: string): Promise<void> =>
+const waitTill = (timestamp: number): Promise<void> =>
   new Promise((resolve) => {
+    const diff = timestamp - Date.now() / 1000;
     setTimeout(() => {
       resolve();
-    }, Number(BigInt(timestamp) / BigInt(1000000)) - Date.now());
+    }, diff * 1000);
   });
 
 describe('Neutron / TGE / Airdrop', () => {
@@ -54,10 +53,10 @@ describe('Neutron / TGE / Airdrop', () => {
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
-  const codeIds: Record<string, string> = {};
+  const codeIds: Record<string, CodeId> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
-  const times: Record<string, string> = {};
+  const times: Record<string, number> = {};
   let reserveAddress: string;
 
   beforeAll(async () => {
@@ -102,11 +101,11 @@ describe('Neutron / TGE / Airdrop', () => {
   describe('Deploy', () => {
     it('should store contracts', async () => {
       for (const contract of ['TGE_CREDITS', 'TGE_AIRDROP']) {
-        const codeId = parseInt(
-          await neutronAccount1.storeWasm(NeutronContract[contract]),
+        const codeId = await neutronAccount1.storeWasm(
+          NeutronContract[contract],
         );
         expect(codeId).toBeGreaterThan(0);
-        codeIds[contract] = codeId.toString();
+        codeIds[contract] = codeId;
       }
     });
     it('should instantiate credits contract', async () => {
@@ -123,14 +122,14 @@ describe('Neutron / TGE / Airdrop', () => {
     it('should instantiate airdrop contract', async () => {
       times.airdropStart = getTimestamp(30);
       times.airdropVestingStart = getTimestamp(40);
-
+      times.vestingDuration = 25;
       const initParams = {
         credits_address: contractAddresses['TGE_CREDITS'],
         reserve_address: reserveAddress,
         merkle_root: airdrop.getMerkleRoot(),
         airdrop_start: times.airdropStart,
         vesting_start: times.airdropVestingStart,
-        vesting_duration_seconds: 25,
+        vesting_duration_seconds: times.vestingDuration,
         total_amount: '100000000',
         hrp: 'neutron',
       };
@@ -199,7 +198,6 @@ describe('Neutron / TGE / Airdrop', () => {
       ).rejects.toThrow(/Airdrop begins at/);
     });
     it('should not claim before airdrop mint', async () => {
-      await waitTill(times.airdropStart);
       const payload = {
         claim: {
           address: neutronAccount1.wallet.address.toString(),
@@ -212,7 +210,7 @@ describe('Neutron / TGE / Airdrop', () => {
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify(payload),
         ),
-      ).rejects.toThrow(); //TODO: check error message
+      ).rejects.toThrow(/Airdrop begins at/);
     });
     it('should return is claimed false', async () => {
       const res = await neutronChain.queryContract<{ is_claimed: boolean }>(
@@ -236,6 +234,7 @@ describe('Neutron / TGE / Airdrop', () => {
       expect(res.code).toEqual(0);
     });
     it('should not claim airdrop more than needed', async () => {
+      await waitTill(times.airdropStart + 5);
       const proofs = airdrop.getMerkleProof({
         address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
@@ -426,11 +425,7 @@ describe('Neutron / TGE / Airdrop', () => {
       );
     });
     it('should be able to withdraw all', async () => {
-      await waitTill(
-        (
-          BigInt(times.airdropVestingStart) + BigInt(30 * 1000000 * 1000)
-        ).toString(),
-      );
+      await waitTill(times.airdropVestingStart + times.vestingDuration + 5);
       const availableBalanceCNTRN = await neutronChain.queryContract<{
         balance: string;
       }>(contractAddresses['TGE_CREDITS'], {

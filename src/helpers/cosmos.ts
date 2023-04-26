@@ -1,12 +1,12 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { ibc as ibc_proto } from '../generated/ibc/proto';
+import { ibc as ibcProto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import { BlockWaiter } from './wait';
+import { BlockWaiter, getWithAttempts } from './wait';
 import {
   Coin,
   CosmosTxV1beta1GetTxResponse,
@@ -80,7 +80,7 @@ cosmosclient.codec.register(
 );
 cosmosclient.codec.register(
   '/ibc.applications.transfer.v1.MsgTransfer',
-  ibc_proto.applications.transfer.v1.MsgTransfer,
+  ibcProto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -288,6 +288,19 @@ export class CosmosWrapper {
     });
   }
 
+  async getWithAttempts<T>(
+    getFunc: () => Promise<T>,
+    readyFunc: (t: T) => Promise<boolean>,
+    numAttempts = 20,
+  ): Promise<T> {
+    return await getWithAttempts(
+      this.blockWaiter,
+      getFunc,
+      readyFunc,
+      numAttempts,
+    );
+  }
+
   async getCodeDataHash(codeId: number): Promise<string> {
     try {
       const res = await axios.get(
@@ -340,6 +353,17 @@ export class WalletWrapper {
   constructor(cw: CosmosWrapper, wallet: Wallet) {
     this.chain = cw;
     this.wallet = wallet;
+  }
+
+  async queryBalances(): Promise<BalancesResponse> {
+    return await this.chain.queryBalances(this.wallet.address.toString());
+  }
+
+  async queryDenomBalance(denom: string): Promise<number> {
+    return await this.chain.queryDenomBalance(
+      this.wallet.address.toString(),
+      denom,
+    );
   }
 
   /**
@@ -433,16 +457,16 @@ export class WalletWrapper {
       'code_id',
     ]);
 
-    return attributes[0].code_id;
+    return parseInt(attributes[0].code_id);
   }
 
   async instantiateContract(
-    codeId: string,
+    codeId: number,
     msg: string,
     label: string,
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
-      code_id: codeId,
+      code_id: codeId + '',
       sender: this.wallet.address.toString(),
       admin: this.wallet.address.toString(),
       label,
@@ -474,8 +498,8 @@ export class WalletWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
-    sender: string = this.wallet.address.toString(),
   ): Promise<InlineResponse20075TxResponse> {
+    const sender = this.wallet.address.toString();
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
       sender,
       contract,
@@ -491,7 +515,9 @@ export class WalletWrapper {
       [msgExecute],
     );
     if (res.tx_response.code !== 0) {
-      throw new Error(res.tx_response.raw_log);
+      throw new Error(
+        `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,
+      );
     }
     return res?.tx_response;
   }
@@ -581,12 +607,12 @@ export class WalletWrapper {
     await actionCheck();
 
     // pause contract again for a short period
-    const short_pause_duration = 5;
+    const shortPauseDuration = 5;
     res = await this.executeContract(
       testingContract,
       JSON.stringify({
         pause: {
-          duration: short_pause_duration,
+          duration: shortPauseDuration,
         },
       }),
     );
@@ -598,7 +624,7 @@ export class WalletWrapper {
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
-    await this.chain.blockWaiter.waitBlocks(short_pause_duration);
+    await this.chain.blockWaiter.waitBlocks(shortPauseDuration);
     pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
@@ -656,20 +682,20 @@ export class WalletWrapper {
    * msgSend processes an IBC transfer, waits two blocks and returns the tx hash.
    */
   async msgIBCTransfer(
-    source_port: string,
-    source_channel: string,
+    sourcePort: string,
+    sourceChannel: string,
     token: ICoin,
     receiver: string,
-    timeout_height: IHeight,
+    timeoutHeight: IHeight,
     memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
-      source_port: source_port,
-      source_channel: source_channel,
+    const msgSend = new ibcProto.applications.transfer.v1.MsgTransfer({
+      source_port: sourcePort,
+      source_channel: sourceChannel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
-      timeout_height: timeout_height,
+      timeout_height: timeoutHeight,
       memo: memo,
     });
     msgSend.memo = memo;
@@ -848,3 +874,5 @@ export const filterIBCDenoms = (list: Coin[]) =>
     (coin) =>
       coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
   );
+
+export const wrapMsg = (x) => Buffer.from(JSON.stringify(x)).toString('base64');
