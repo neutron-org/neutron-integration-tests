@@ -118,7 +118,7 @@ describe('DAO / Check', () => {
       );
       expect(propContract).toEqual(proposalOverruleAddress);
     });
-    test('Reserve is correct', async () => {
+    test('Treasury is correct', async () => {
       const treasuryAddress = await getTreasuryContract(cmDao);
       expect(treasuryAddress.length).toBeGreaterThan(0);
     });
@@ -202,7 +202,7 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('Reserve hash assert', async () => {
+    test('Treasury hash assert', async () => {
       await checkContractHash(
         cmDao,
         treasuryContract,
