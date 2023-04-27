@@ -3,8 +3,8 @@ import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
 import {
   getDaoContracts,
   DaoContracts,
-  getReserveContract,
   VotingVaultsModule,
+  getTreasuryContract,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
 import { NeutronContract } from '../../helpers/types';
@@ -21,7 +21,7 @@ describe('DAO / Check', () => {
   let preProposalOverruleAddress: string;
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
-  let reserveContract: string;
+  let treasuryContract: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -46,7 +46,7 @@ describe('DAO / Check', () => {
     votingModuleAddress = daoContracts.voting_module.address;
     votingVaultsNtrnAddress = (daoContracts.voting_module as VotingVaultsModule)
       .voting_vaults.ntrn_vault.address;
-    reserveContract = await getReserveContract(cmDao);
+    treasuryContract = await getTreasuryContract(cmDao);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -118,9 +118,9 @@ describe('DAO / Check', () => {
       );
       expect(propContract).toEqual(proposalOverruleAddress);
     });
-    test('Reserve is correct', async () => {
-      const reserveAddress = await getReserveContract(cmDao);
-      expect(reserveAddress.length).toBeGreaterThan(0);
+    test('Treasury is correct', async () => {
+      const treasuryAddress = await getTreasuryContract(cmDao);
+      expect(treasuryAddress.length).toBeGreaterThan(0);
     });
   });
 
@@ -202,8 +202,12 @@ describe('DAO / Check', () => {
       );
     });
 
-    test('Reserve hash assert', async () => {
-      await checkContractHash(cmDao, reserveContract, NeutronContract.RESERVE);
+    test('Treasury hash assert', async () => {
+      await checkContractHash(
+        cmDao,
+        treasuryContract,
+        NeutronContract.TREASURY,
+      );
     });
     test('Dao neutron vault hash assert', async () => {
       await checkContractHash(
