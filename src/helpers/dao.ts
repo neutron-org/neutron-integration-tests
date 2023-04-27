@@ -325,6 +325,16 @@ export const getReserveContract = async (
   return JSON.parse(resp.data.param.value);
 };
 
+export const getTreasuryContract = async (
+  cm: CosmosWrapper,
+): Promise<string> => {
+  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress`;
+  const resp = await axios.get<{
+    param: { value: string };
+  }>(url);
+  return JSON.parse(resp.data.param.value);
+};
+
 export class Dao {
   readonly chain: CosmosWrapper;
   readonly contracts: DaoContracts;
