@@ -139,7 +139,9 @@ export type DaoContracts = {
     };
   };
   voting: VotingVaultsModule | VotingCw4Module;
-  subdaos?: DaoContracts[];
+  subdaos?: {
+    [name: string]: DaoContracts;
+  };
 };
 
 export const getVotingModule = async (
@@ -222,9 +224,10 @@ export const getDaoContracts = async (
     list_sub_daos: {},
   });
 
-  const subdaos = [];
+  const subdaos = {};
   for (const subdao of subdaosList) {
-    subdaos.push(await getSubDaoContracts(cm, subdao.addr));
+    const subDaoContracts = await getSubDaoContracts(cm, subdao.addr);
+    subdaos[subDaoContracts.name] = subDaoContracts;
   }
 
   return {
