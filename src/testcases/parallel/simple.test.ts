@@ -25,6 +25,7 @@ describe('Neutron / Simple', () => {
   let gaiaAccount: WalletWrapper;
   let gaiaAccount2: WalletWrapper;
   let contractAddress: string;
+  let receiverContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -77,6 +78,39 @@ describe('Neutron / Simple', () => {
         'ibc_transfer',
       );
       contractAddress = res[0]._contract_address;
+    });
+  });
+
+  describe('Staking', () => {
+    test('store and instantiate mgs receiver contract', async () => {
+      const codeId = await neutronAccount.storeWasm(
+        NeutronContract.MSG_RECEIVER,
+      );
+      expect(codeId).toBeGreaterThan(0);
+
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'msg_receiver',
+      );
+      receiverContractAddress = res[0]._contract_address;
+    });
+    test('staking queries must fail since we have no staking module in Neutron', async () => {
+      let exceptionThrown = false;
+      try {
+        await neutronAccount.executeContract(
+          receiverContractAddress,
+          JSON.stringify({
+            call_staking: {},
+          }),
+        );
+      } catch (err) {
+        const error = err as Error;
+        expect(error.message).toMatch(/Staking is not supported/i);
+        exceptionThrown = true;
+      }
+
+      expect(exceptionThrown).toBeTruthy();
     });
   });
 
