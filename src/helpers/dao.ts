@@ -78,11 +78,11 @@ export type VaultBondingStatus = {
 
 export type VotingVaultsModule = {
   address: string;
-  voting_vaults: {
-    ntrn_vault: {
+  vaults: {
+    ntrn: {
       address: string;
     };
-    lockdrop_vault: {
+    lockdrop: {
       address: string;
     };
   };
@@ -115,30 +115,30 @@ export type DaoContracts = {
   core: {
     address: string;
   };
-  proposal_modules: {
+  proposal: {
     single: {
       address: string;
-      pre_proposal_module: {
+      pre_propose: {
         address: string;
-        timelock_module?: {
+        timelock?: {
           address: string;
         };
       };
     };
     multiple?: {
       address: string;
-      pre_proposal_module: {
+      pre_propose: {
         address: string;
       };
     };
     overrule?: {
       address: string;
-      pre_proposal_module: {
+      pre_propose: {
         address: string;
       };
     };
   };
-  voting_module: VotingVaultsModule | VotingCw4Module;
+  voting: VotingVaultsModule | VotingCw4Module;
   subdaos?: DaoContracts[];
 };
 
@@ -153,7 +153,7 @@ export const getVotingModule = async (
 export const getVotingVaults = async (
   cm: CosmosWrapper,
   votingModuleAddress: string,
-): Promise<VotingVaultsModule['voting_vaults']> => {
+): Promise<VotingVaultsModule['vaults']> => {
   const votingVaults = await cm.queryContract<
     [{ address: string; name: string }]
   >(votingModuleAddress, { voting_vaults: {} });
@@ -166,8 +166,8 @@ export const getVotingVaults = async (
   )[0]?.address;
 
   return {
-    ntrn_vault: { address: ntrnVaultAddress },
-    lockdrop_vault: { address: lockdropVaultAddress },
+    ntrn: { address: ntrnVaultAddress },
+    lockdrop: { address: lockdropVaultAddress },
   };
 };
 
@@ -230,23 +230,23 @@ export const getDaoContracts = async (
   return {
     name: config.name,
     core: { address: daoAddress },
-    proposal_modules: {
+    proposal: {
       single: {
         address: proposalSingleAddress,
-        pre_proposal_module: { address: preProposalSingleAddress },
+        pre_propose: { address: preProposalSingleAddress },
       },
       multiple: {
         address: proposalMultipleAddress,
-        pre_proposal_module: { address: preProposalMultipleAddress },
+        pre_propose: { address: preProposalMultipleAddress },
       },
       overrule: {
         address: proposalOverruleAddress,
-        pre_proposal_module: { address: preProposalOverruleAddress },
+        pre_propose: { address: preProposalOverruleAddress },
       },
     },
-    voting_module: {
+    voting: {
       address: votingModuleAddress,
-      voting_vaults: votingVaults,
+      vaults: votingVaults,
     },
     subdaos,
   };
@@ -295,18 +295,18 @@ export const getSubDaoContracts = async (
     core: {
       address: daoAddress,
     },
-    proposal_modules: {
+    proposal: {
       single: {
         address: proposalSingleAddress,
-        pre_proposal_module: {
+        pre_propose: {
           address: preProposalSingleAddress,
-          timelock_module: {
+          timelock: {
             address: timelockAddr,
           },
         },
       },
     },
-    voting_module: {
+    voting: {
       address: votingModuleAddress,
       cw4group: {
         address: cw4GroupAddress,
@@ -373,7 +373,7 @@ export class Dao {
 
   async queryMultiChoiceProposal(proposalId: number): Promise<any> {
     return await this.chain.queryContract<any>(
-      this.contracts.proposal_modules.multiple.address,
+      this.contracts.proposal.multiple.address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -384,7 +384,7 @@ export class Dao {
 
   async queryProposal(proposalId: number): Promise<SingleChoiceProposal> {
     return await this.chain.queryContract<SingleChoiceProposal>(
-      this.contracts.proposal_modules.single.address,
+      this.contracts.proposal.single.address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -396,7 +396,7 @@ export class Dao {
     proposalId: number,
   ): Promise<SingleChoiceProposal> {
     return await this.chain.queryContract<SingleChoiceProposal>(
-      this.contracts.proposal_modules.overrule.address,
+      this.contracts.proposal.overrule.address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -457,8 +457,7 @@ export class Dao {
     proposalId: number,
   ): Promise<TimeLockSingleChoiceProposal> {
     return this.chain.queryContract<TimeLockSingleChoiceProposal>(
-      this.contracts.proposal_modules.single.pre_proposal_module.timelock_module
-        .address,
+      this.contracts.proposal.single.pre_propose.timelock.address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -493,7 +492,7 @@ export class Dao {
     subdaoProposalId: number,
   ): Promise<number> {
     const res = await this.chain.queryContract<number>(
-      this.contracts.proposal_modules.overrule.pre_proposal_module.address,
+      this.contracts.proposal.overrule.pre_propose.address,
       {
         query_extension: {
           msg: {
@@ -523,7 +522,7 @@ export class DaoMember {
    */
   async voteYes(proposalId: number): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
+      this.dao.contracts.proposal.single.address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
     );
   }
@@ -533,7 +532,7 @@ export class DaoMember {
    */
   async voteNo(proposalId: number): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
+      this.dao.contracts.proposal.single.address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
     );
   }
@@ -546,7 +545,7 @@ export class DaoMember {
     optionId: number,
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.multiple.address,
+      this.dao.contracts.proposal.multiple.address,
       JSON.stringify({
         vote: { proposal_id: proposalId, vote: { option_id: optionId } },
       }),
@@ -554,9 +553,8 @@ export class DaoMember {
   }
 
   async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
-    const vaultAddress = (
-      this.dao.contracts.voting_module as VotingVaultsModule
-    ).voting_vaults.ntrn_vault.address;
+    const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
+      .vaults.ntrn.address;
     return await this.user.executeContract(
       vaultAddress,
       JSON.stringify({
@@ -580,7 +578,7 @@ export class DaoMember {
       depositFunds = [{ denom: this.user.chain.denom, amount: deposit }];
     }
     const proposalTx = await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.pre_proposal_module.address,
+      this.dao.contracts.proposal.single.pre_propose.address,
       JSON.stringify({
         propose: {
           msg: {
@@ -613,7 +611,7 @@ export class DaoMember {
     proposalId: number,
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.address,
+      this.dao.contracts.proposal.single.address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
     );
   }
@@ -643,7 +641,7 @@ export class DaoMember {
    */
   async executeMultiChoiceProposal(proposalId: number): Promise<any> {
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.multiple.address,
+      this.dao.contracts.proposal.multiple.address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
     );
   }
@@ -748,7 +746,7 @@ export class DaoMember {
     options: MultiChoiceOption[],
   ): Promise<number> {
     const proposalTx = await this.user.executeContract(
-      this.dao.contracts.proposal_modules.multiple.pre_proposal_module.address,
+      this.dao.contracts.proposal.multiple.pre_propose.address,
       JSON.stringify({
         propose: {
           msg: {
@@ -850,8 +848,7 @@ export class DaoMember {
     proposalId: number,
   ): Promise<InlineResponse20075TxResponse> {
     return this.user.executeContract(
-      this.dao.contracts.proposal_modules.single.pre_proposal_module
-        .timelock_module.address,
+      this.dao.contracts.proposal.single.pre_propose.timelock.address,
       JSON.stringify({
         execute_proposal: {
           proposal_id: proposalId,
@@ -869,13 +866,13 @@ export class DaoMember {
       proposalId,
     );
     await this.user.executeContract(
-      this.dao.contracts.proposal_modules.overrule.address,
+      this.dao.contracts.proposal.overrule.address,
       JSON.stringify({
         vote: { proposal_id: overruleProposalId, vote: 'yes' },
       }),
     );
     return await this.user.executeContract(
-      this.dao.contracts.proposal_modules.overrule.address,
+      this.dao.contracts.proposal.overrule.address,
       JSON.stringify({ execute: { proposal_id: overruleProposalId } }),
     );
   }
@@ -893,7 +890,7 @@ export class DaoMember {
     proposalId: number,
   ): Promise<number> {
     const proposalTx = await this.user.executeContract(
-      this.dao.contracts.proposal_modules.overrule.pre_proposal_module.address,
+      this.dao.contracts.proposal.overrule.pre_propose.address,
       JSON.stringify({
         propose: {
           msg: {
@@ -1224,7 +1221,7 @@ export const setupSubDaoTimelockSet = async (
   const subDao = await deploySubdao(
     cm,
     mockMainDao ? cm.wallet.address.toString() : daoContracts.core.address,
-    daoContracts.proposal_modules.overrule.pre_proposal_module.address,
+    daoContracts.proposal.overrule.pre_propose.address,
     securityDaoAddr,
   );
 

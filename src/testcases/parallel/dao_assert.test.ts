@@ -34,18 +34,17 @@ describe('DAO / Check', () => {
     );
     const daoCoreAddress = (await cmDao.getChainAdmins())[0]; //add assert for some addresses
     daoContracts = await getDaoContracts(cmDao, daoCoreAddress);
-    proposalSingleAddress = daoContracts.proposal_modules.single.address;
-    preProposalSingleAddress =
-      daoContracts.proposal_modules.single.pre_proposal_module.address;
-    proposalMultipleAddress = daoContracts.proposal_modules.multiple.address;
+    proposalSingleAddress = daoContracts.proposal.single.address;
+    preProposalSingleAddress = daoContracts.proposal.single.pre_propose.address;
+    proposalMultipleAddress = daoContracts.proposal.multiple.address;
     preProposalMultipleAddress =
-      daoContracts.proposal_modules.multiple.pre_proposal_module.address;
-    proposalOverruleAddress = daoContracts.proposal_modules.overrule.address;
+      daoContracts.proposal.multiple.pre_propose.address;
+    proposalOverruleAddress = daoContracts.proposal.overrule.address;
     preProposalOverruleAddress =
-      daoContracts.proposal_modules.overrule.pre_proposal_module.address;
-    votingModuleAddress = daoContracts.voting_module.address;
-    votingVaultsNtrnAddress = (daoContracts.voting_module as VotingVaultsModule)
-      .voting_vaults.ntrn_vault.address;
+      daoContracts.proposal.overrule.pre_propose.address;
+    votingModuleAddress = daoContracts.voting.address;
+    votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
+      .ntrn.address;
     treasuryContract = await getTreasuryContract(cmDao);
   });
 
