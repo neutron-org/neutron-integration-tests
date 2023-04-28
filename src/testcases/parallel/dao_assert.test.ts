@@ -44,7 +44,7 @@ describe('DAO / Check', () => {
       daoContracts.proposal.overrule.pre_propose.address;
     votingModuleAddress = daoContracts.voting.address;
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
-      .ntrn.address;
+      .neutron.address;
     treasuryContract = await getTreasuryContract(cmDao);
   });
 

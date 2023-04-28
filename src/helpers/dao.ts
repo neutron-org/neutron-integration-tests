@@ -79,7 +79,7 @@ export type VaultBondingStatus = {
 export type VotingVaultsModule = {
   address: string;
   vaults: {
-    ntrn: {
+    neutron: {
       address: string;
     };
     lockdrop: {
@@ -168,7 +168,7 @@ export const getVotingVaults = async (
   )[0]?.address;
 
   return {
-    ntrn: { address: ntrnVaultAddress },
+    neutron: { address: ntrnVaultAddress },
     lockdrop: { address: lockdropVaultAddress },
   };
 };
@@ -316,16 +316,6 @@ export const getSubDaoContracts = async (
       },
     },
   };
-};
-
-export const getReserveContract = async (
-  cm: CosmosWrapper,
-): Promise<string> => {
-  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=ReserveAddress`;
-  const resp = await axios.get<{
-    param: { value: string };
-  }>(url);
-  return JSON.parse(resp.data.param.value);
 };
 
 export const getTreasuryContract = async (
@@ -557,7 +547,7 @@ export class DaoMember {
 
   async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
     const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
-      .vaults.ntrn.address;
+      .vaults.neutron.address;
     return await this.user.executeContract(
       vaultAddress,
       JSON.stringify({
