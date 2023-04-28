@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { ibc as ibc_proto } from '../generated/ibc/proto';
+import { ibc as ibcProto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -80,7 +80,7 @@ cosmosclient.codec.register(
 );
 cosmosclient.codec.register(
   '/ibc.applications.transfer.v1.MsgTransfer',
-  ibc_proto.applications.transfer.v1.MsgTransfer,
+  ibcProto.applications.transfer.v1.MsgTransfer,
 );
 
 export class CosmosWrapper {
@@ -607,12 +607,12 @@ export class WalletWrapper {
     await actionCheck();
 
     // pause contract again for a short period
-    const short_pause_duration = 5;
+    const shortPauseDuration = 5;
     res = await this.executeContract(
       testingContract,
       JSON.stringify({
         pause: {
-          duration: short_pause_duration,
+          duration: shortPauseDuration,
         },
       }),
     );
@@ -624,7 +624,7 @@ export class WalletWrapper {
     expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
     // wait and check contract's pause info after unpausing
-    await this.chain.blockWaiter.waitBlocks(short_pause_duration);
+    await this.chain.blockWaiter.waitBlocks(shortPauseDuration);
     pauseInfo = await this.chain.queryPausedInfo(testingContract);
     expect(pauseInfo).toEqual({ unpaused: {} });
     expect(pauseInfo.paused).toEqual(undefined);
@@ -682,20 +682,20 @@ export class WalletWrapper {
    * msgSend processes an IBC transfer, waits two blocks and returns the tx hash.
    */
   async msgIBCTransfer(
-    source_port: string,
-    source_channel: string,
+    sourcePort: string,
+    sourceChannel: string,
     token: ICoin,
     receiver: string,
-    timeout_height: IHeight,
+    timeoutHeight: IHeight,
     memo?: string,
   ): Promise<InlineResponse20075TxResponse> {
-    const msgSend = new ibc_proto.applications.transfer.v1.MsgTransfer({
-      source_port: source_port,
-      source_channel: source_channel,
+    const msgSend = new ibcProto.applications.transfer.v1.MsgTransfer({
+      source_port: sourcePort,
+      source_channel: sourceChannel,
       token: token,
       sender: this.wallet.address.toString(),
       receiver: receiver,
-      timeout_height: timeout_height,
+      timeout_height: timeoutHeight,
       memo: memo,
     });
     msgSend.memo = memo;

@@ -144,46 +144,46 @@ export type DaoContracts = {
 
 export const getVotingModule = async (
   cm: CosmosWrapper,
-  dao_address: string,
+  daoAddress: string,
 ): Promise<string> =>
-  await cm.queryContract<string>(dao_address, {
+  await cm.queryContract<string>(daoAddress, {
     voting_module: {},
   });
 
 export const getVotingVaults = async (
   cm: CosmosWrapper,
-  voting_module_address: string,
+  votingModuleAddress: string,
 ): Promise<VotingVaultsModule['voting_vaults']> => {
-  const voting_vaults = await cm.queryContract<
+  const votingVaults = await cm.queryContract<
     [{ address: string; name: string }]
-  >(voting_module_address, { voting_vaults: {} });
+  >(votingModuleAddress, { voting_vaults: {} });
 
-  const ntrn_vault_address = voting_vaults.filter(
+  const ntrnVaultAddress = votingVaults.filter(
     (x) => x.name == 'voting vault',
   )[0]?.address;
-  const lockdrop_vault_address = voting_vaults.filter(
+  const lockdropVaultAddress = votingVaults.filter(
     (x) => x.name == 'lockdrop vault',
   )[0]?.address;
 
   return {
-    ntrn_vault: { address: ntrn_vault_address },
-    lockdrop_vault: { address: lockdrop_vault_address },
+    ntrn_vault: { address: ntrnVaultAddress },
+    lockdrop_vault: { address: lockdropVaultAddress },
   };
 };
 
 export const getDaoContracts = async (
   cm: CosmosWrapper,
-  dao_address: string,
+  daoAddress: string,
 ): Promise<DaoContracts> => {
-  const config = await cm.queryContract<{ name: string }>(dao_address, {
+  const config = await cm.queryContract<{ name: string }>(daoAddress, {
     config: {},
   });
 
-  const voting_module_address = await getVotingModule(cm, dao_address);
-  const voting_vaults = await getVotingVaults(cm, voting_module_address);
+  const votingModuleAddress = await getVotingModule(cm, daoAddress);
+  const votingVaults = await getVotingVaults(cm, votingModuleAddress);
 
-  const proposal_modules = await cm.queryContract<{ address: string }[]>(
-    dao_address,
+  const proposalModules = await cm.queryContract<{ address: string }[]>(
+    daoAddress,
     { proposal_modules: {} },
   );
 
@@ -195,30 +195,30 @@ export const getDaoContracts = async (
   let preProposalMultipleAddress = '';
   let preProposalOverruleAddress = '';
 
-  for (const proposal_module of proposal_modules) {
+  for (const proposalModule of proposalModules) {
     const proposalContractInfo = await cm.getContractInfo(
-      proposal_module.address,
+      proposalModule.address,
     );
     const preProposalContract = await cm.queryContract<{
       Module: { addr: string };
-    }>(proposal_module.address, { proposal_creation_policy: {} });
+    }>(proposalModule.address, { proposal_creation_policy: {} });
     switch (proposalContractInfo['contract_info']['label']) {
       case DaoContractLabels.DAO_PROPOSAL_OVERRULE:
-        proposalOverruleAddress = proposal_module.address;
+        proposalOverruleAddress = proposalModule.address;
         preProposalOverruleAddress = preProposalContract.Module.addr;
         break;
       case DaoContractLabels.DAO_PROPOSAL_MULTIPLE:
-        proposalMultipleAddress = proposal_module.address;
+        proposalMultipleAddress = proposalModule.address;
         preProposalMultipleAddress = preProposalContract.Module.addr;
         break;
       case DaoContractLabels.DAO_PROPOSAL_SINGLE:
-        proposalSingleAddress = proposal_module.address;
+        proposalSingleAddress = proposalModule.address;
         preProposalSingleAddress = preProposalContract.Module.addr;
         break;
     }
   }
 
-  const subdaosList = await cm.queryContract<{ addr: string }[]>(dao_address, {
+  const subdaosList = await cm.queryContract<{ addr: string }[]>(daoAddress, {
     list_sub_daos: {},
   });
 
@@ -229,7 +229,7 @@ export const getDaoContracts = async (
 
   return {
     name: config.name,
-    core: { address: dao_address },
+    core: { address: daoAddress },
     proposal_modules: {
       single: {
         address: proposalSingleAddress,
@@ -245,8 +245,8 @@ export const getDaoContracts = async (
       },
     },
     voting_module: {
-      address: voting_module_address,
-      voting_vaults: voting_vaults,
+      address: votingModuleAddress,
+      voting_vaults: votingVaults,
     },
     subdaos,
   };
@@ -254,34 +254,31 @@ export const getDaoContracts = async (
 
 export const getSubDaoContracts = async (
   cm: CosmosWrapper,
-  dao_address: string,
+  daoAddress: string,
 ): Promise<DaoContracts> => {
-  const config = await cm.queryContract<{ name: string }>(dao_address, {
+  const config = await cm.queryContract<{ name: string }>(daoAddress, {
     config: {},
   });
 
-  const voting_module_address = await cm.queryContract<string>(dao_address, {
+  const votingModuleAddress = await cm.queryContract<string>(daoAddress, {
     voting_module: {},
   });
-  const cw4_group_address = await cm.queryContract<string>(
-    voting_module_address,
-    {
-      group_contract: {},
-    },
-  );
+  const cw4GroupAddress = await cm.queryContract<string>(votingModuleAddress, {
+    group_contract: {},
+  });
 
-  const proposal_modules = await cm.queryContract<[{ address: string }]>(
-    dao_address,
+  const proposalModules = await cm.queryContract<[{ address: string }]>(
+    daoAddress,
     { proposal_modules: {} },
   );
 
-  expect(proposal_modules).toHaveLength(1);
-  const proposal_module = proposal_modules[0];
+  expect(proposalModules).toHaveLength(1);
+  const proposalModule = proposalModules[0];
 
   const preProposalContract = await cm.queryContract<{
     Module: { addr: string };
-  }>(proposal_module.address, { proposal_creation_policy: {} });
-  const proposalSingleAddress = proposal_module.address;
+  }>(proposalModule.address, { proposal_creation_policy: {} });
+  const proposalSingleAddress = proposalModule.address;
   const preProposalSingleAddress = preProposalContract.Module.addr;
 
   let timelockAddr;
@@ -296,7 +293,7 @@ export const getSubDaoContracts = async (
   return {
     name: config.name,
     core: {
-      address: dao_address,
+      address: daoAddress,
     },
     proposal_modules: {
       single: {
@@ -310,9 +307,9 @@ export const getSubDaoContracts = async (
       },
     },
     voting_module: {
-      address: voting_module_address,
+      address: votingModuleAddress,
       cw4group: {
-        address: cw4_group_address,
+        address: cw4GroupAddress,
       },
     },
   };
@@ -322,6 +319,16 @@ export const getReserveContract = async (
   cm: CosmosWrapper,
 ): Promise<string> => {
   const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=ReserveAddress`;
+  const resp = await axios.get<{
+    param: { value: string };
+  }>(url);
+  return JSON.parse(resp.data.param.value);
+};
+
+export const getTreasuryContract = async (
+  cm: CosmosWrapper,
+): Promise<string> => {
+  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress`;
   const resp = await axios.get<{
     param: { value: string };
   }>(url);
@@ -425,7 +432,7 @@ export class Dao {
     msgs: any[],
     deposit: string,
   ) {
-    const proposal_id = await loyalVoters[0].submitSingleChoiceProposal(
+    const proposalId = await loyalVoters[0].submitSingleChoiceProposal(
       title,
       description,
       msgs,
@@ -434,27 +441,27 @@ export class Dao {
     await loyalVoters[0].user.chain.blockWaiter.waitBlocks(1);
 
     for (const voter of loyalVoters) {
-      await voter.voteYes(proposal_id);
+      await voter.voteYes(proposalId);
     }
-    await loyalVoters[0].executeProposal(proposal_id);
+    await loyalVoters[0].executeProposal(proposalId);
 
     await getWithAttempts(
       loyalVoters[0].user.chain.blockWaiter,
-      async () => await this.queryProposal(proposal_id),
+      async () => await this.queryProposal(proposalId),
       async (response) => response.proposal.status === 'executed',
       20,
     );
   }
 
   async getTimelockedProposal(
-    proposal_id: number,
+    proposalId: number,
   ): Promise<TimeLockSingleChoiceProposal> {
     return this.chain.queryContract<TimeLockSingleChoiceProposal>(
       this.contracts.proposal_modules.single.pre_proposal_module.timelock_module
         .address,
       {
         proposal: {
-          proposal_id: proposal_id,
+          proposal_id: proposalId,
         },
       },
     );
@@ -482,8 +489,8 @@ export class Dao {
   }
 
   async getOverruleProposalId(
-    timelock_address: string,
-    subdao_proposal_id: number,
+    timelockAddress: string,
+    subdaoProposalId: number,
   ): Promise<number> {
     const res = await this.chain.queryContract<number>(
       this.contracts.proposal_modules.overrule.pre_proposal_module.address,
@@ -491,8 +498,8 @@ export class Dao {
         query_extension: {
           msg: {
             overrule_proposal_id: {
-              timelock_address,
-              subdao_proposal_id,
+              timelock_address: timelockAddress,
+              subdao_proposal_id: subdaoProposalId,
             },
           },
         },
@@ -832,34 +839,34 @@ export class DaoMember {
   }
 
   async supportAndExecuteProposal(
-    proposal_id: number,
+    proposalId: number,
   ): Promise<TimeLockSingleChoiceProposal> {
-    await this.voteYes(proposal_id);
-    await this.executeProposal(proposal_id);
-    return await this.dao.getTimelockedProposal(proposal_id);
+    await this.voteYes(proposalId);
+    await this.executeProposal(proposalId);
+    return await this.dao.getTimelockedProposal(proposalId);
   }
 
   async executeTimelockedProposal(
-    proposal_id: number,
+    proposalId: number,
   ): Promise<InlineResponse20075TxResponse> {
     return this.user.executeContract(
       this.dao.contracts.proposal_modules.single.pre_proposal_module
         .timelock_module.address,
       JSON.stringify({
         execute_proposal: {
-          proposal_id: proposal_id,
+          proposal_id: proposalId,
         },
       }),
     );
   }
 
   async overruleTimelockedProposal(
-    timelock_address: string,
-    proposal_id: number,
+    timelockAddress: string,
+    proposalId: number,
   ): Promise<InlineResponse20075TxResponse> {
     const overruleProposalId = await this.dao.getOverruleProposalId(
-      timelock_address,
-      proposal_id,
+      timelockAddress,
+      proposalId,
     );
     await this.user.executeContract(
       this.dao.contracts.proposal_modules.overrule.address,
@@ -882,8 +889,8 @@ export class DaoMember {
    * Thus, this function is for testing purposes only.
    */
   async submitOverruleProposal(
-    timelock_address: string,
-    proposal_id: number,
+    timelockAddress: string,
+    proposalId: number,
   ): Promise<number> {
     const proposalTx = await this.user.executeContract(
       this.dao.contracts.proposal_modules.overrule.pre_proposal_module.address,
@@ -891,8 +898,8 @@ export class DaoMember {
         propose: {
           msg: {
             propose_overrule: {
-              timelock_contract: timelock_address,
-              proposal_id,
+              timelock_contract: timelockAddress,
+              proposal_id: proposalId,
             },
           },
         },
@@ -905,12 +912,12 @@ export class DaoMember {
       'proposal_id',
     );
 
-    const proposalId = parseInt(attribute);
-    expect(proposalId).toBeGreaterThanOrEqual(0);
-    return proposalId;
+    const proposalId1 = parseInt(attribute);
+    expect(proposalId1).toBeGreaterThanOrEqual(0);
+    return proposalId1;
   }
 
-  async submitUpdateSubDaoConfigProposal(new_config: {
+  async submitUpdateSubDaoConfigProposal(newConfig: {
     name?: string;
     description?: string;
     dao_uri?: string;
@@ -920,7 +927,7 @@ export class DaoMember {
         execute: {
           contract_addr: this.dao.contracts.core.address,
           msg: wrapMsg({
-            update_config: new_config,
+            update_config: newConfig,
           }),
           funds: [],
         },
@@ -940,10 +947,14 @@ export class DaoMember {
   async submitPinCodesProposal(
     title: string,
     description: string,
-    codes_ids: number[],
+    codesIds: number[],
     amount: string,
   ): Promise<number> {
-    const message = pinCodesProposal({ title, description, codes_ids });
+    const message = pinCodesProposal({
+      title,
+      description,
+      codes_ids: codesIds,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -959,10 +970,14 @@ export class DaoMember {
   async submitUnpinCodesProposal(
     title: string,
     description: string,
-    codes_ids: number[],
+    codesIds: number[],
     amount: string,
   ): Promise<number> {
-    const message = unpinCodesProposal({ title, description, codes_ids });
+    const message = unpinCodesProposal({
+      title,
+      description,
+      codes_ids: codesIds,
+    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -977,15 +992,15 @@ export class DaoMember {
   async submitClientUpdateProposal(
     title: string,
     description: string,
-    subject_client_id: string,
-    substitute_client_id: string,
+    subjectClientId: string,
+    substituteClientId: string,
     amount: string,
   ): Promise<number> {
     const message = clientUpdateProposal({
       title,
       description,
-      subject_client_id,
-      substitute_client_id,
+      subject_client_id: subjectClientId,
+      substitute_client_id: substituteClientId,
     });
     return await this.submitSingleChoiceProposal(
       title,
@@ -1004,7 +1019,7 @@ export class DaoMember {
     name: string,
     height: number,
     info: string,
-    upgraded_client_state: string,
+    upgradedClientState: string,
     amount: string,
   ): Promise<number> {
     const message = upgradeProposal({
@@ -1013,7 +1028,7 @@ export class DaoMember {
       name,
       height,
       info,
-      upgraded_client_state,
+      upgraded_client_state: upgradedClientState,
     });
     return await this.submitSingleChoiceProposal(
       title,
@@ -1030,14 +1045,14 @@ export class DaoMember {
     title: string,
     description: string,
     contract: string,
-    new_admin: string,
+    newAdmin: string,
     amount: string,
   ): Promise<number> {
     const message = updateAdminProposal({
       title,
       description,
       contract,
-      new_admin,
+      new_admin: newAdmin,
     });
     return await this.submitSingleChoiceProposal(
       title,
@@ -1120,9 +1135,9 @@ export class DaoMember {
 
 export const deploySubdao = async (
   cm: WalletWrapper,
-  main_dao_core_address: string,
-  overrule_pre_propose_address: string,
-  security_dao_addr: string,
+  mainDaoCoreAddress: string,
+  overrulePreProposeAddress: string,
+  securityDaoAddr: string,
 ): Promise<Dao> => {
   const coreCodeId = await cm.storeWasm(NeutronContract.SUBDAO_CORE);
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);
@@ -1161,7 +1176,7 @@ export const deploySubdao = async (
               code_id: timelockCodeId,
               label: 'subDAO timelock contract',
               msg: wrapMsg({
-                overrule_pre_propose: overrule_pre_propose_address,
+                overrule_pre_propose: overrulePreProposeAddress,
               }),
             },
           }),
@@ -1181,8 +1196,8 @@ export const deploySubdao = async (
     vote_module_instantiate_info: votingModuleInstantiateInfo,
     proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
     dao_uri: 'www.testsubdao.org',
-    main_dao: main_dao_core_address,
-    security_dao: security_dao_addr,
+    main_dao: mainDaoCoreAddress,
+    security_dao: securityDaoAddr,
   };
   const res = await cm.instantiateContract(
     coreCodeId,
@@ -1191,7 +1206,7 @@ export const deploySubdao = async (
   );
 
   const f = (arr, id) =>
-    arr.find((v) => Number(v.code_id) == id)!._contract_address;
+    (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
 
   return new Dao(
     cm.chain,
@@ -1201,16 +1216,16 @@ export const deploySubdao = async (
 
 export const setupSubDaoTimelockSet = async (
   cm: WalletWrapper,
-  main_dao_address: string,
-  security_dao_addr: string,
+  mainDaoAddress: string,
+  securityDaoAddr: string,
   mockMainDao: boolean,
 ): Promise<Dao> => {
-  const daoContracts = await getDaoContracts(cm.chain, main_dao_address);
+  const daoContracts = await getDaoContracts(cm.chain, mainDaoAddress);
   const subDao = await deploySubdao(
     cm,
     mockMainDao ? cm.wallet.address.toString() : daoContracts.core.address,
     daoContracts.proposal_modules.overrule.pre_proposal_module.address,
-    security_dao_addr,
+    securityDaoAddr,
   );
 
   const mainDaoMember = new DaoMember(cm, new Dao(cm.chain, daoContracts));
@@ -1261,7 +1276,7 @@ export const deployNeutronDao = async (
   );
 
   const f = (arr, id) =>
-    arr.find((v) => Number(v.code_id) == id)!._contract_address;
+    (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
   const neutronVaultAddess = f(neutronVaultCodeIdRes, neutronVaultCodeId);
   const votingRegistryInstantiateInfo = {
     admin: {

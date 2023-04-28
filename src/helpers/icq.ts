@@ -112,18 +112,18 @@ export type ResubmitQuery = {
 };
 
 export const getUnsuccessfulTxs = async (
-  icq_web_host: string,
+  icqWebHost: string,
 ): Promise<Array<UnsuccessfulSubmitIcqTx>> => {
-  const url = `${icq_web_host}/unsuccessful-txs`;
+  const url = `${icqWebHost}/unsuccessful-txs`;
   const req = await axios.get<Array<UnsuccessfulSubmitIcqTx>>(url);
   return req.data;
 };
 
 export const postResubmitTxs = async (
-  icq_web_host: string,
+  icqWebHost: string,
   txs: Array<ResubmitQuery>,
 ): Promise<AxiosResponse> => {
-  const url = `${icq_web_host}/resubmit-txs`;
+  const url = `${icqWebHost}/resubmit-txs`;
   const data = { txs: txs };
   return await axios.post(url, data);
 };
