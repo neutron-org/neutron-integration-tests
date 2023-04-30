@@ -110,6 +110,12 @@ export const DaoContractLabels = {
   DAO_PROPOSAL_OVERRULE: 'DAO_Neutron_cw-proposal-overrule',
 };
 
+export const DaoPrefixes = {
+  'Neutron DAO': 'neutron',
+  'Security SubDAO': 'security',
+  'Grants SubDAO': 'grants',
+};
+
 export type DaoContracts = {
   name: string;
   core: {
@@ -139,7 +145,7 @@ export type DaoContracts = {
     };
   };
   voting: VotingVaultsModule | VotingCw4Module;
-  subdaos?: {
+  subdao?: {
     [name: string]: DaoContracts;
   };
 };
@@ -227,7 +233,7 @@ export const getDaoContracts = async (
   const subdaos = {};
   for (const subdao of subdaosList) {
     const subDaoContracts = await getSubDaoContracts(cm, subdao.addr);
-    subdaos[subDaoContracts.name] = subDaoContracts;
+    subdaos[DaoPrefixes[subDaoContracts.name]] = subDaoContracts;
   }
 
   return {
@@ -251,7 +257,7 @@ export const getDaoContracts = async (
       address: votingModuleAddress,
       vaults: votingVaults,
     },
-    subdaos,
+    subdao: subdaos,
   };
 };
 

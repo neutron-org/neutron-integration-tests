@@ -46,6 +46,7 @@ describe('DAO / Check', () => {
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
       .neutron.address;
     treasuryContract = await getTreasuryContract(cmDao);
+    console.log(JSON.stringify(daoContracts));
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
