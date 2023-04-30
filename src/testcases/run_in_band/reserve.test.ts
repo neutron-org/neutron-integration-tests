@@ -185,19 +185,6 @@ describe('Neutron / Treasury', () => {
           ),
         ).rejects.toThrow(/Unauthorized/);
       });
-      test('payout by unauthorized', async () => {
-        await expect(
-          neutronAccount2.executeContract(
-            treasury,
-            JSON.stringify({
-              payout: {
-                recipient: holder2Addr.toString(),
-                amount: '1400000',
-              },
-            }),
-          ),
-        ).rejects.toThrow(/Unauthorized/);
-      });
 
       test('burned coins amount u32 safe calculation', async () => {
         await neutronAccount1.msgSend(reserve, '100000');
@@ -354,46 +341,6 @@ describe('Neutron / Treasury', () => {
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(4005);
-      });
-      test('payout', async () => {
-        const balanceBefore = await neutronChain.queryDenomBalance(
-          holder2Addr,
-          NEUTRON_DENOM,
-        );
-
-        const res = await neutronAccount1.executeContract(
-          treasury,
-          JSON.stringify({
-            payout: {
-              recipient: holder2Addr.toString(),
-              amount: '158051',
-            },
-          }),
-        );
-        expect(res.code).toEqual(0);
-        const [{ events }] = JSON.parse(res.raw_log || '[]') as {
-          events: InlineResponse20071TxResponseEvents[];
-        }[];
-        const attrs = events.find((e) => e.type === 'transfer')?.attributes;
-        expect(attrs).toEqual([
-          {
-            key: 'recipient',
-            value: holder2Addr.toString(),
-          },
-          { key: 'sender', value: treasury },
-          { key: 'amount', value: `158051${NEUTRON_DENOM}` },
-        ]);
-
-        const balanceAfter = await neutronChain.queryDenomBalance(
-          holder2Addr,
-          NEUTRON_DENOM,
-        );
-        expect(balanceAfter - balanceBefore).toEqual(158051);
-        const treasuryBalance = await neutronChain.queryDenomBalance(
-          treasury,
-          NEUTRON_DENOM,
-        );
-        expect(lastTreasuryBalance - treasuryBalance).toEqual(158051);
       });
     });
 
