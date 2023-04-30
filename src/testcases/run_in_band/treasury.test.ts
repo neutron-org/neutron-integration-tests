@@ -65,11 +65,7 @@ describe('Neutron / Treasury', () => {
         mainDaoAddr.toString(),
         securityDaoAddr.toString(),
       );
-      treasury = await setupTreasury(
-        neutronAccount1,
-        mainDaoAddr.toString(),
-        securityDaoAddr.toString(),
-      );
+      treasury = (await neutronChain.getChainAdmins())[0];
     });
 
     describe('some corner cases', () => {
@@ -462,11 +458,7 @@ describe('Neutron / Treasury', () => {
         mainDaoAddr.toString(),
         securityDaoAddr.toString(),
       );
-      treasury = await setupTreasury(
-        neutronAccount1,
-        mainDaoAddr.toString(),
-        securityDaoAddr.toString(),
-      );
+      treasury = (await neutronChain.getChainAdmins())[0];
       reserve = await setupReserve(neutronAccount1, {
         mainDaoAddress: mainDaoAddr.toString(),
         securityDaoAddress: securityDaoAddr.toString(),
@@ -532,35 +524,6 @@ describe('Neutron / Treasury', () => {
         },
       );
     });
-
-    test('treasury', async () => {
-      const balanceBefore = await neutronChain.queryDenomBalance(
-        holder2Addr,
-        NEUTRON_DENOM,
-      );
-      await neutronAccount1.testExecControl(
-        treasury,
-        async () => {
-          const res = await neutronAccount1.executeContract(
-            treasury,
-            JSON.stringify({
-              payout: {
-                recipient: holder2Addr.toString(),
-                amount: '332120',
-              },
-            }),
-          );
-          return res.code;
-        },
-        async () => {
-          const balanceAfter = await neutronChain.queryDenomBalance(
-            holder2Addr,
-            NEUTRON_DENOM,
-          );
-          expect(balanceAfter - balanceBefore).toEqual(332120);
-        },
-      );
-    });
   });
 });
 
@@ -623,25 +586,6 @@ const getBurnedCoinsAmount = async (
 ): Promise<string | undefined | null> => {
   const totalBurnedNeutrons = await cm.queryTotalBurnedNeutronsAmount();
   return totalBurnedNeutrons.total_burned_neutrons_amount.coin.amount;
-};
-
-const setupTreasury = async (
-  cm: WalletWrapper,
-  mainDaoAddress: string,
-  securityDaoAddress: string,
-) => {
-  const codeId = await cm.storeWasm(NeutronContract.TREASURY);
-  return (
-    await cm.instantiateContract(
-      codeId,
-      JSON.stringify({
-        main_dao_address: mainDaoAddress,
-        security_dao_address: securityDaoAddress,
-        denom: NEUTRON_DENOM,
-      }),
-      'treasury',
-    )
-  )[0]._contract_address;
 };
 
 const setupReserve = async (
