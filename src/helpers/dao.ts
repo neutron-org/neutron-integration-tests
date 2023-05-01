@@ -498,7 +498,7 @@ export class Dao {
     timelockAddress: string,
     subdaoProposalId: number,
   ): Promise<number> {
-    const res = await this.chain.queryContract<number>(
+    return await this.chain.queryContract<number>(
       this.contracts.proposals.overrule.pre_propose.address,
       {
         query_extension: {
@@ -511,7 +511,6 @@ export class Dao {
         },
       },
     );
-    return res;
   }
 }
 
