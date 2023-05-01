@@ -152,8 +152,12 @@ export class CosmosWrapper {
 
   async getContractInfo(contract: string): Promise<any> {
     const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
-    const resp = await axios.get(url);
-    return resp.data;
+    try {
+      const resp = await axios.get(url);
+      return resp.data;
+    } catch (e) {
+      throw new Error(e.response?.data?.message);
+    }
   }
 
   async getSeq(address: cosmosclient.AccAddress): Promise<number> {
