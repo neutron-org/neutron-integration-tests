@@ -140,10 +140,8 @@ export class CosmosWrapper {
           );
         } else if (error.request) {
           throw new Error(error.request);
-        } else {
-          throw new Error('Error: ' + error.message);
         }
-        throw new Error(`Config: ${JSON.stringify(error.config)}`);
+        throw new Error('Error: ' + error.message);
       });
     return JSON.parse(
       Buffer.from(resp.data.result.smart, 'base64').toString(),
@@ -152,8 +150,12 @@ export class CosmosWrapper {
 
   async getContractInfo(contract: string): Promise<any> {
     const url = `${this.sdk.url}/cosmwasm/wasm/v1/contract/${contract}?encoding=base64`;
-    const resp = await axios.get(url);
-    return resp.data;
+    try {
+      const resp = await axios.get(url);
+      return resp.data;
+    } catch (e) {
+      throw new Error(e.response?.data?.message);
+    }
   }
 
   async getSeq(address: cosmosclient.AccAddress): Promise<number> {
@@ -487,11 +489,10 @@ export class WalletWrapper {
       throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
     }
 
-    const attributes = getEventAttributesFromTx(data, 'instantiate', [
+    return getEventAttributesFromTx(data, 'instantiate', [
       '_contract_address',
       'code_id',
     ]);
-    return attributes;
   }
 
   async executeContract(
