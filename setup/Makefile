@@ -23,3 +23,10 @@ start-cosmopark-no-rebuild:
 
 stop-cosmopark:
 		@$(COMPOSE) down -t0 --remove-orphans -v
+
+start-neutron-node:
+		@$(COMPOSE) up neutron-node
+
+clean:
+		@echo "Removing previous testing data"
+		-@docker volume rm neutron-testing-data
