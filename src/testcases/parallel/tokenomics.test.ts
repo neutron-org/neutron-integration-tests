@@ -127,6 +127,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
+      await neutronChain.blockWaiter.waitBlocks(1);
       const balanceAfter = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         NEUTRON_DENOM,
