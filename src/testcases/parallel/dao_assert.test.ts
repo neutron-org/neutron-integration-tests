@@ -217,7 +217,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         treasuryContract,
-        NeutronContract.TREASURY,
+        NeutronContract.DAO_CORE,
       );
     });
     test('Dao neutron vault hash assert', async () => {

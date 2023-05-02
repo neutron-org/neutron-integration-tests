@@ -111,7 +111,6 @@ export const NeutronContract = {
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
-  TREASURY: 'neutron_treasury.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   DAO_CORE: 'cwd_core.wasm',
   DAO_PROPOSAL_SINGLE: 'cwd_proposal_single.wasm',
