@@ -172,11 +172,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked: success', async () => {
-      await neutronAccount1.msgSend(
-        subDao.contracts.proposal_modules.single.pre_proposal_module
-          .timelock_module?.address || '',
-        '20000',
-      ); // fund the subdao treasury
+      await neutronAccount1.msgSend(subDao.contracts.core.address, '20000'); // fund the subdao treasury
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
       await wait(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -312,11 +308,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
     });
     test('execute proposal when subDAO is unpaused', async () => {
-      await neutronAccount1.msgSend(
-        subDao.contracts.proposal_modules?.single.pre_proposal_module
-          .timelock_module?.address || '',
-        '10000',
-      ); // to let the timelock contract fulfill the proposal
+      await neutronAccount1.msgSend(subDao.contracts.core.address, '10000'); // to let the timelock contract fulfill the proposal
       const beforeExecBalance = await neutronChain.queryDenomBalance(
         securityDaoAddr.toString(),
         neutronChain.denom,
