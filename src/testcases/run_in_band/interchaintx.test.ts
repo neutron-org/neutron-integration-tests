@@ -260,7 +260,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(qres).toMatchObject<AcknowledgementResult>({
           error: [
             'message',
-            'ABCI code: 1: error handling packet on host chain: see events for details',
+            'ABCI code: 1: error handling packet: see events for details',
           ],
         });
       });
