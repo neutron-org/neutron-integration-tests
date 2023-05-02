@@ -110,12 +110,19 @@ describe('Neutron / Governance', () => {
 
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
+      const balanceBefore = await neutronChain.queryDenomBalance(
+        dao.contracts.core.address,
+        NEUTRON_DENOM,
+      );
       await daoMember1.user.msgSend(dao.contracts.core.address, '1000');
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
-          await neutronChain.queryBalances(dao.contracts.core.address),
-        async (response) => response.balances[0].amount == '1000',
+          await neutronChain.queryDenomBalance(
+            dao.contracts.core.address,
+            NEUTRON_DENOM,
+          ),
+        async (response) => response == balanceBefore + 1000,
         20,
       );
     });

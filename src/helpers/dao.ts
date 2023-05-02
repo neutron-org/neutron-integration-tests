@@ -315,16 +315,6 @@ export const getSubDaoContracts = async (
   };
 };
 
-export const getReserveContract = async (
-  cm: CosmosWrapper,
-): Promise<string> => {
-  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=ReserveAddress`;
-  const resp = await axios.get<{
-    param: { value: string };
-  }>(url);
-  return JSON.parse(resp.data.param.value);
-};
-
 export const getTreasuryContract = async (
   cm: CosmosWrapper,
 ): Promise<string> => {
@@ -492,7 +482,7 @@ export class Dao {
     timelockAddress: string,
     subdaoProposalId: number,
   ): Promise<number> {
-    const res = await this.chain.queryContract<number>(
+    return await this.chain.queryContract<number>(
       this.contracts.proposal_modules.overrule.pre_proposal_module.address,
       {
         query_extension: {
@@ -505,7 +495,6 @@ export class Dao {
         },
       },
     );
-    return res;
   }
 }
 
@@ -1205,7 +1194,7 @@ export const deploySubdao = async (
     'cwd_subdao_core',
   );
 
-  const f = (arr, id) =>
+  const f = (arr: Record<string, string>[], id: number) =>
     (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
 
   return new Dao(
@@ -1275,7 +1264,7 @@ export const deployNeutronDao = async (
     DaoContractLabels.NEUTRON_VAULT,
   );
 
-  const f = (arr, id) =>
+  const f = (arr: Record<string, string>[], id: number) =>
     (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
   const neutronVaultAddess = f(neutronVaultCodeIdRes, neutronVaultCodeId);
   const votingRegistryInstantiateInfo = {
