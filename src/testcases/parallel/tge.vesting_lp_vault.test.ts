@@ -38,7 +38,7 @@ const NTRN_ATOM_LP_TOKEN_CONTRACT_KEY = 'NTRN_ATOM_LP_TOKEN';
 const NTRN_USDC_PAIR_CONTRACT_KEY = 'NTRN_USDC_PAIR';
 const NTRN_USDC_LP_TOKEN_CONTRACT_KEY = 'NTRN_USDC_LP_TOKEN';
 
-describe('Neutron / TGE / Vesting vault', () => {
+describe('Neutron / TGE / Vesting LP vault', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let cmInstantiator: WalletWrapper;
