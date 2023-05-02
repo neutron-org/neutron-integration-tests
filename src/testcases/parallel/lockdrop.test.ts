@@ -13,11 +13,9 @@ describe.skip('Neutron / Lockdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let ownerAddr: AccAddress | ValAddress;
-  let managerAddr: AccAddress | ValAddress;
   let holderAddr: AccAddress | ValAddress;
   let daoMockWalet: WalletWrapper;
   let ownerMockWalet: WalletWrapper;
-  let managerMockWalet: WalletWrapper;
   let holderMockWalet: WalletWrapper;
 
   beforeAll(async () => {
@@ -37,17 +35,12 @@ describe.skip('Neutron / Lockdrop', () => {
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    managerMockWalet = new WalletWrapper(
-      neutronChain,
-      testState.wallets.qaNeutronFour.genQaWal1,
-    );
     holderMockWalet = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
 
     ownerAddr = ownerMockWalet.wallet.address;
-    managerAddr = managerMockWalet.wallet.address;
     holderAddr = holderMockWalet.wallet.address;
   });
 
@@ -66,7 +59,6 @@ describe.skip('Neutron / Lockdrop', () => {
         originalDescription,
         lockdropContractAddr.toString(),
         ownerAddr.toString(),
-        managerAddr.toString(),
       );
     });
 
@@ -78,43 +70,18 @@ describe.skip('Neutron / Lockdrop', () => {
         description: originalDescription,
         lockdrop_contract: lockdropContractAddr.toString(),
         owner: ownerAddr.toString(),
-        manager: managerAddr.toString(),
       });
     });
 
     const newDescription = 'A new description for the lockdrop vault.';
-    test('Update config by manager: success', async () => {
-      const res = await updateLockdropVaultConfig(
-        managerMockWalet,
-        lockdropVaultAddr,
-        ownerAddr.toString(),
-        lockdropContractAddr.toString(),
-        managerAddr.toString(),
-        originalName,
-        newDescription,
-      );
-      expect(res.code).toEqual(0);
-
-      expect(
-        await getLockdropVaultConfig(neutronChain, lockdropVaultAddr),
-      ).toMatchObject({
-        name: originalName,
-        description: newDescription,
-        lockdrop_contract: lockdropContractAddr.toString(),
-        owner: ownerAddr.toString(),
-        manager: managerAddr.toString(),
-      });
-    });
-
-    test('Update config by manager: permission denied', async () => {
-      // change owner to manager
+    test('Update config by a holder: permission denied', async () => {
+      // change owner to the holder
       await expect(
         updateLockdropVaultConfig(
-          managerMockWalet,
+          holderMockWalet,
           lockdropVaultAddr,
-          managerAddr.toString(),
+          holderAddr.toString(),
           lockdropContractAddr.toString(),
-          managerAddr.toString(),
           originalName,
           originalDescription,
         ),
@@ -127,18 +94,16 @@ describe.skip('Neutron / Lockdrop', () => {
         description: newDescription,
         lockdrop_contract: lockdropContractAddr.toString(),
         owner: ownerAddr.toString(),
-        manager: managerAddr.toString(),
       });
     });
 
     test('Update config by owner', async () => {
-      // change owner to manager
+      // change owner to the holder
       let res = await updateLockdropVaultConfig(
         ownerMockWalet,
         lockdropVaultAddr,
-        managerAddr.toString(),
+        holderAddr.toString(),
         lockdropContractAddr.toString(),
-        managerAddr.toString(),
         originalName,
         originalDescription,
       );
@@ -150,17 +115,15 @@ describe.skip('Neutron / Lockdrop', () => {
         name: originalName,
         description: originalDescription,
         lockdrop_contract: lockdropContractAddr.toString(),
-        owner: managerAddr.toString(),
-        manager: managerAddr.toString(),
+        owner: holderAddr.toString(),
       });
 
       // make sure new owner is promoted and get back to original lockdrop vault settings
       res = await updateLockdropVaultConfig(
-        managerMockWalet,
+        holderMockWalet,
         lockdropVaultAddr,
         ownerAddr.toString(),
         lockdropContractAddr.toString(),
-        managerAddr.toString(),
         originalName,
         originalDescription,
       );
@@ -173,7 +136,6 @@ describe.skip('Neutron / Lockdrop', () => {
         description: originalDescription,
         lockdrop_contract: lockdropContractAddr.toString(),
         owner: ownerAddr.toString(),
-        manager: managerAddr.toString(),
       });
     });
 
@@ -218,7 +180,6 @@ const setupLockdropVault = async (
   description: string,
   lockdropContract: string,
   owner?: string,
-  manager?: string,
 ) => {
   const codeId = await cm.storeWasm(NeutronContract.LOCKDROP_VAULT);
   return (
@@ -233,7 +194,6 @@ const setupLockdropVault = async (
             addr: owner,
           },
         },
-        manager: manager,
       }),
       'lockdrop_vault',
     )
@@ -266,7 +226,6 @@ const updateLockdropVaultConfig = async (
   lockdropVaultContract: string,
   owner: string,
   lockdropContract: string,
-  manager: string,
   name: string,
   description: string,
 ): Promise<InlineResponse20075TxResponse> =>
@@ -276,7 +235,6 @@ const updateLockdropVaultConfig = async (
       update_config: {
         owner: owner,
         lockdrop_contract: lockdropContract,
-        manager: manager,
         name: name,
         description: description,
       },
