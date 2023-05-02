@@ -47,7 +47,6 @@ describe('DAO / Check', () => {
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
       .neutron.address;
     treasuryContract = await getTreasuryContract(neutronChain);
-    console.log(JSON.stringify(daoContracts));
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -246,7 +245,6 @@ describe('DAO / Check', () => {
           );
         }
         for (const contractAddress of contractsList) {
-          console.log(contractAddress);
           await verifyAdmin(
             neutronChain,
             contractAddress,
