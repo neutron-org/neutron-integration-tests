@@ -308,7 +308,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
     });
     test('execute proposal when subDAO is unpaused', async () => {
-      await neutronAccount1.msgSend(subDao.contracts.core.address, '10000'); // to let the timelock contract fulfill the proposal
+      await neutronAccount1.msgSend(subDao.contracts.core.address, '10000');
       const beforeExecBalance = await neutronChain.queryDenomBalance(
         securityDaoAddr.toString(),
         neutronChain.denom,
