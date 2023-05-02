@@ -1194,7 +1194,7 @@ export const deploySubdao = async (
     'cwd_subdao_core',
   );
 
-  const f = (arr, id) =>
+  const f = (arr: Record<string, string>[], id: number) =>
     (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
 
   return new Dao(
@@ -1264,7 +1264,7 @@ export const deployNeutronDao = async (
     DaoContractLabels.NEUTRON_VAULT,
   );
 
-  const f = (arr, id) =>
+  const f = (arr: Record<string, string>[], id: number) =>
     (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
   const neutronVaultAddess = f(neutronVaultCodeIdRes, neutronVaultCodeId);
   const votingRegistryInstantiateInfo = {
