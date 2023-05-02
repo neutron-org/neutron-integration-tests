@@ -145,6 +145,8 @@ export const NeutronContract = {
   ASTRO_WHITELIST: '../contracts_thirdparty/astroport_whitelist.wasm',
   VESTING_LP: 'vesting_lp.wasm',
   VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
+  RESCUEEER: 'rescueeer.wasm',
+  MULTISIG: '../contracts_thirdparty/cw3_fixed_multisig.wasm',
 };
 
 export type MultiChoiceOption = {

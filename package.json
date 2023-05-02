@@ -25,6 +25,7 @@
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "test:overrule": "jest -b src/testcases/run_in_band/overrule",
     "test:tge:vesting_lp_vault": "jest -b src/testcases/parallel/tge.vesting_lp_vault",
+    "test:rescueeer": "jest -b src/testcases/parallel/rescueeer",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"

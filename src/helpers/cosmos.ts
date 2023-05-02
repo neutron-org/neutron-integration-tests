@@ -466,11 +466,12 @@ export class WalletWrapper {
     codeId: number,
     msg: string,
     label: string,
+    admin: string = this.wallet.address.toString(),
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId + '',
       sender: this.wallet.address.toString(),
-      admin: this.wallet.address.toString(),
+      admin: admin,
       label,
       msg: Buffer.from(msg),
     });
@@ -493,6 +494,28 @@ export class WalletWrapper {
       '_contract_address',
       'code_id',
     ]);
+  }
+
+  async migrateContract(
+    contract: string,
+    migrateMsg: any,
+    codeId: number,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msg = new cosmwasmproto.cosmwasm.wasm.v1.MsgMigrateContract({
+      sender: this.wallet.address.toString(),
+      contract: contract,
+      code_id: codeId,
+      msg: Buffer.from(JSON.stringify(migrateMsg)),
+    });
+    const res = await this.execTx(
+      {
+        amount: [{ denom: NEUTRON_DENOM, amount: '250000' }],
+        gas_limit: Long.fromString('60000000'),
+      },
+      [msg],
+    );
+
+    return res?.tx_response;
   }
 
   async executeContract(
