@@ -17,7 +17,7 @@ const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';
 const CW20_BASE_CONTRACT_KEY = 'CW20_BASE';
 
-describe('Neutron / TGE / Vesting vault', () => {
+describe('Neutron / TGE / Investors vesting vault', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let cmInstantiator: WalletWrapper;
