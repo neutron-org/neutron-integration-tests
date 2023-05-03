@@ -41,7 +41,7 @@ describe('Neutron / Subdao', () => {
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
-    if (!daoContracts || !daoContracts.core || !daoContracts.proposal_modules) {
+    if (!daoContracts || !daoContracts.core || !daoContracts.proposals) {
       throw new Error('Failed to deploy dao');
     }
     mainDao = new Dao(neutronChain, daoContracts);
@@ -54,8 +54,7 @@ describe('Neutron / Subdao', () => {
     subDao = await deploySubdao(
       neutronAccount1,
       daoContracts.core.address,
-      daoContracts.proposal_modules.overrule?.pre_proposal_module?.address ||
-        '',
+      daoContracts.proposals.overrule?.pre_propose?.address || '',
       neutronAccount1.wallet.address.toString(),
     );
 
@@ -131,8 +130,7 @@ describe('Neutron / Subdao', () => {
 
     test('create duplicate overrule', async () => {
       const timelockAddress =
-        subDao.contracts.proposal_modules.single.pre_proposal_module
-          .timelock_module?.address || '';
+        subDao.contracts.proposals.single.pre_propose.timelock?.address || '';
       await expect(
         mainDaoMember1.submitOverruleProposal(
           timelockAddress,
@@ -143,8 +141,7 @@ describe('Neutron / Subdao', () => {
 
     test('overrule timelocked(Timelocked): Success', async () => {
       const timelockAddress =
-        subDao.contracts.proposal_modules.single.pre_proposal_module
-          .timelock_module?.address || '';
+        subDao.contracts.proposals.single.pre_propose.timelock?.address || '';
       // we vote No from user with significant voting power to test if proposal is executed anyway
       await voteAgainstOverrule(
         mainDaoMember1,
@@ -183,7 +180,7 @@ async function voteAgainstOverrule(
     proposalId,
   );
   return await member.user.executeContract(
-    member.dao.contracts.proposal_modules.overrule?.address || '',
+    member.dao.contracts.proposals.overrule?.address || '',
     JSON.stringify({ vote: { proposal_id: propId, vote: 'no' } }),
   );
 }
