@@ -944,6 +944,37 @@ export class DaoMember {
     );
   }
 
+  async submitUpdateSubDaoMultisigParticipants(
+    newParticipants: string[],
+  ): Promise<number> {
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: (this.dao.contracts.voting as VotingCw4Module).cw4group
+            .address,
+          msg: wrapMsg({
+            update_members: {
+              remove: [],
+              add: [
+                newParticipants.map((m) => ({
+                  addr: m,
+                  weight: 1,
+                })),
+              ],
+            },
+          }),
+          funds: [],
+        },
+      },
+    };
+
+    return await this.submitSingleChoiceProposal(
+      'update members',
+      'update members',
+      [message],
+    );
+  }
+
   /**
    * submitPinCodesProposal creates proposal which pins given code ids to wasmvm.
    */

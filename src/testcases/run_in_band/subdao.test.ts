@@ -240,6 +240,48 @@ describe('Neutron / Subdao', () => {
     });
   });
 
+  describe('Update members', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateSubDaoMultisigParticipants([
+        subdaoMember2.user.wallet.address.toString(),
+      ]);
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+          proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await wait(20);
+      const votingPowerBefore = await subdaoMember2.queryVotingPower();
+      expect(votingPowerBefore.power).toEqual(0);
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      expect(votingPowerBefore.power).toEqual(1);
+
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked(Executed): WrongStatus error', async () => {
+      await expect(
+          subdaoMember1.executeTimelockedProposal(proposalId),
+      ).rejects.toThrow(/Wrong proposal status \(executed\)/);
+    });
+
+    test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
+      await expect(
+          overruleTimelockedProposalMock(subdaoMember1, proposalId),
+      ).rejects.toThrow(/Wrong proposal status \(executed\)/);
+    });
+  });
+
   describe('execution control', () => {
     const funding = 1000;
     let proposalId: number;
