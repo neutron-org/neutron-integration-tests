@@ -147,6 +147,8 @@ export const NeutronContract = {
   VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
   RESCUEEER: 'rescueeer.wasm',
   MULTISIG: '../contracts_thirdparty/cw3_fixed_multisig.wasm',
+  VESTING_INVESTORS: 'vesting_investors.wasm',
+  INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
 };
 
 export type MultiChoiceOption = {

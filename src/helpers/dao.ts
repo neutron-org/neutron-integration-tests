@@ -16,8 +16,8 @@ import {
   VotingPowerAtHeightResponse,
 } from './types';
 import {
-  addSubdaoProposal,
   addSchedule,
+  addSubdaoProposal,
   clearAdminProposal,
   clientUpdateProposal,
   paramChangeProposal,
@@ -67,7 +67,6 @@ export type LockdropVaultConfig = {
   description: string;
   lockdrop_contract: string;
   owner: string;
-  manager: string;
 };
 
 export type VaultBondingStatus = {
@@ -399,6 +398,7 @@ export class Dao {
       },
     );
   }
+
   async queryOverruleProposal(
     proposalId: number,
   ): Promise<SingleChoiceProposal> {
@@ -1082,6 +1082,7 @@ export class DaoMember {
       amount,
     );
   }
+
   /**
    * submitAddSchedule creates proposal to add new schedule.
    */
@@ -1262,11 +1263,7 @@ export const deployNeutronDao = async (
 
   const neutronVaultCodeId = await cm.storeWasm(NeutronContract.NEUTRON_VAULT);
   const neutronVaultInitMsg = {
-    owner: {
-      address: {
-        addr: cm.wallet.address.toString(),
-      },
-    },
+    owner: cm.wallet.address.toString(),
     name: 'voting vault',
     denom: cm.chain.denom,
     description: 'a simple voting vault for testing purposes',
@@ -1289,11 +1286,7 @@ export const deployNeutronDao = async (
     label: DaoContractLabels.DAO_VOTING_REGISTRY,
     msg: wrapMsg({
       manager: null,
-      owner: {
-        address: {
-          addr: cm.wallet.address.toString(),
-        },
-      },
+      owner: cm.wallet.address.toString(),
       voting_vaults: [neutronVaultAddess],
     }),
   };
