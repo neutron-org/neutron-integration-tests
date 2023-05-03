@@ -165,7 +165,7 @@ describe('Rescueer', () => {
             },
           }),
         ),
-      ).rejects.toThrow(/End of life haven't reached yet/);
+      ).rejects.toThrow(/End of life hasn't reached yet/);
 
       await wait(eol - Math.floor(Date.now() / 1000) + 3);
 
