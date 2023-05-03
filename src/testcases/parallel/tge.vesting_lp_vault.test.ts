@@ -83,7 +83,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       const vaultAddress = contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY];
       const config = await neutronChain.queryContract<VestingLpVaultConfig>(
         vaultAddress,
-        { get_config: {} },
+        { config: {} },
       );
       expect(config).toMatchObject({
         name: 'Vesting lp vault',
@@ -97,7 +97,6 @@ describe('Neutron / TGE / Vesting LP vault', () => {
         usdc_oracle_contract:
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
         owner: cmInstantiator.wallet.address.toString(),
-        manager: cmManager.wallet.address.toString(),
       });
     });
 
@@ -1356,12 +1355,7 @@ const deployVestingLpVaultContract = async (
       usdc_vesting_lp_contract: contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
       usdc_oracle_contract:
         contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
-      owner: {
-        address: {
-          addr: instantiator.wallet.address.toString(),
-        },
-      },
-      manager: cmManager.wallet.address.toString(),
+      owner: instantiator.wallet.address.toString(),
     }),
     'vesting_lp_vault',
   );
