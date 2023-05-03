@@ -426,7 +426,7 @@ describe('Neutron / TGE / Airdrop', () => {
       expect(availableBalanceCNTRNAfter.balance).toEqual('0');
       expect(
         parseInt(reserveBalanceNTRNAfter || '0') -
-        parseInt(reserveBalanceNTRN || '0'),
+          parseInt(reserveBalanceNTRN || '0'),
       ).toEqual(parseInt(availableBalanceCNTRN.balance));
     });
   });
