@@ -67,7 +67,6 @@ export type LockdropVaultConfig = {
   description: string;
   lockdrop_contract: string;
   owner: string;
-  manager: string;
 };
 
 export type VaultBondingStatus = {
