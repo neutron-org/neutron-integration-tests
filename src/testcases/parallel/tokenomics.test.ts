@@ -172,6 +172,7 @@ describe('Neutron / Tokenomics', () => {
           balances.balances.find(
             (balance) => balance.denom === ibcUatomDenom,
           ) !== undefined,
+        40, // it takes a lot of time to receive IBC atom
       );
     });
 
