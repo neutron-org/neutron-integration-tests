@@ -33,12 +33,12 @@ export type SingleChoiceProposal = {
   readonly total_power: string;
   readonly proposal: {
     status:
-    | 'open'
-    | 'rejected'
-    | 'passed'
-    | 'executed'
-    | 'closed'
-    | 'execution_failed';
+      | 'open'
+      | 'rejected'
+      | 'passed'
+      | 'executed'
+      | 'closed'
+      | 'execution_failed';
     readonly votes: {
       yes: string;
       no: string;
