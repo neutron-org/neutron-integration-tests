@@ -955,12 +955,10 @@ export class DaoMember {
           msg: wrapMsg({
             update_members: {
               remove: [],
-              add: [
-                newParticipants.map((m) => ({
-                  addr: m,
-                  weight: 1,
-                })),
-              ],
+              add: newParticipants.map((m) => ({
+                addr: m,
+                weight: 1,
+              })),
             },
           }),
           funds: [],

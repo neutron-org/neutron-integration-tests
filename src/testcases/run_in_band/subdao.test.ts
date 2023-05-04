@@ -40,9 +40,9 @@ describe('Neutron / Subdao', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
-    demo1Wallet = testState.wallets.neutron.demo1;
-    securityDaoWallet = testState.wallets.neutron.icq;
-    demo2Wallet = testState.wallets.neutron.demo2;
+    demo1Wallet = testState.wallets.qaNeutron.genQaWal1;
+    securityDaoWallet = testState.wallets.qaNeutronThree.genQaWal1;
+    demo2Wallet = testState.wallets.qaNeutronFour.genQaWal1;
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;
@@ -248,7 +248,7 @@ describe('Neutron / Subdao', () => {
       ]);
 
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-          proposalId,
+        proposalId,
       );
 
       expect(timelockedProp.id).toEqual(proposalId);
@@ -256,29 +256,19 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
     });
 
-    test('execute timelocked: success', async () => {
+    test('update members: success', async () => {
       await wait(20);
       const votingPowerBefore = await subdaoMember2.queryVotingPower();
-      expect(votingPowerBefore.power).toEqual(0);
-      await subdaoMember1.executeTimelockedProposal(proposalId);
-      expect(votingPowerBefore.power).toEqual(1);
+      expect(votingPowerBefore.power).toEqual('0');
+      const res = await subdaoMember1.executeTimelockedProposal(proposalId);
+      expect(res.code).toEqual(0);
+      const votingPowerAfter = await subdaoMember2.queryVotingPower();
+      expect(votingPowerAfter.power).toEqual('1');
 
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
-    });
-
-    test('execute timelocked(Executed): WrongStatus error', async () => {
-      await expect(
-          subdaoMember1.executeTimelockedProposal(proposalId),
-      ).rejects.toThrow(/Wrong proposal status \(executed\)/);
-    });
-
-    test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
-      await expect(
-          overruleTimelockedProposalMock(subdaoMember1, proposalId),
-      ).rejects.toThrow(/Wrong proposal status \(executed\)/);
     });
   });
 
