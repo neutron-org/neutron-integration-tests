@@ -5,6 +5,7 @@ import {
   DaoContracts,
   VotingVaultsModule,
   getTreasuryContract,
+  getDaoAdmin,
 } from '../../helpers/dao';
 import { getContractsHashes } from '../../helpers/env';
 import { NeutronContract } from '../../helpers/types';
@@ -22,6 +23,7 @@ describe('DAO / Check', () => {
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
   let treasuryContract: string;
+  let rescueeerAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -47,6 +49,8 @@ describe('DAO / Check', () => {
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
       .neutron.address;
     treasuryContract = await getTreasuryContract(neutronChain);
+    // since we consider rescueeer as a dao admin, we simply get its address w this ugly way
+    rescueeerAddress = await getDaoAdmin(neutronChain, daoCoreAddress);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -140,16 +144,16 @@ describe('DAO / Check', () => {
       await verifyAdmin(
         neutronChain,
         votingVaultsNtrnAddress,
-        daoContracts.core.address,
+        rescueeerAddress,
       );
       await verifyLabel(neutronChain, daoContracts, votingVaultsNtrnAddress);
     });
 
-    test('Dao is the admin of himself', async () => {
+    test('Dao is not the admin of himself, should be rescueeer', async () => {
       await verifyAdmin(
         neutronChain,
         daoContracts.core.address,
-        daoContracts.core.address,
+        rescueeerAddress,
       );
       await verifyLabel(neutronChain, daoContracts, daoContracts.core.address);
     });
@@ -231,17 +235,17 @@ describe('DAO / Check', () => {
   describe('Test subdaos', () => {
     test('Check subdaos contracts admins and labels', async () => {
       for (const subdaoIndex in daoContracts.subdaos) {
-        const sudao = daoContracts.subdaos[subdaoIndex];
+        const subdao = daoContracts.subdaos[subdaoIndex];
+        await verifyAdmin(neutronChain, subdao.core.address, rescueeerAddress);
         const contractsList = [
-          sudao.core.address,
-          sudao.proposals.single.address,
-          sudao.proposals.single.pre_propose.address,
-          sudao.voting.address,
+          subdao.proposals.single.address,
+          subdao.proposals.single.pre_propose.address,
+          subdao.voting.address,
           // (sudao.voting as VotingCw4Module).cw4group.address, //  todo fix this
         ];
-        if (sudao.proposals.single.pre_propose.timelock.address) {
+        if (subdao.proposals.single.pre_propose.timelock.address) {
           contractsList.push(
-            sudao.proposals.single.pre_propose.timelock.address,
+            subdao.proposals.single.pre_propose.timelock.address,
           );
         }
         for (const contractAddress of contractsList) {
