@@ -262,6 +262,7 @@ describe('Neutron / Subdao', () => {
       expect(votingPowerBefore.power).toEqual('0');
       const res = await subdaoMember1.executeTimelockedProposal(proposalId);
       expect(res.code).toEqual(0);
+      await neutronChain.blockWaiter.waitBlocks(1);
       const votingPowerAfter = await subdaoMember2.queryVotingPower();
       expect(votingPowerAfter.power).toEqual('1');
 
