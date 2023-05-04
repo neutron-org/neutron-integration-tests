@@ -5,7 +5,7 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
+import { Asset, NeutronContract } from '../../helpers/types';
 import { getHeight } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { CodeId } from '../../types';
@@ -30,10 +30,7 @@ type PairInfo = {
   pair_type: Record<string, object>;
 };
 
-type PowerResponse = {
-  power: string;
-  height: number;
-};
+type TwapAtHeight = [Asset, string][];
 
 type UserInfoResponse = {
   usdc_deposited: string;
@@ -2148,330 +2145,300 @@ describe('Neutron / TGE / Auction', () => {
         expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -1);
         expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -1);
       });
-      describe('vaults', () => {
-        describe('basic checks', () => {
-          it('oracle works', async () => {
-            let info = await neutronChain.queryContract<any>(
-              contractAddresses.ORACLE_ATOM,
-              {
-                t_w_a_p_at_height: {
-                  token: { native_token: { denom: NEUTRON_DENOM } },
-                  height: String(tgeEndHeight + 10),
-                },
+    });
+    describe('vaults', () => {
+      describe('basic checks', () => {
+        it('oracle works', async () => {
+          const rateNtrnAtom = await neutronChain.queryContract<TwapAtHeight>(
+            contractAddresses.ORACLE_ATOM,
+            {
+              t_w_a_p_at_height: {
+                token: { native_token: { denom: NEUTRON_DENOM } },
+                height: String(tgeEndHeight + 10),
               },
-            );
-            console.log('atom oracle ', info);
-            info = await neutronChain.queryContract<any>(
-              contractAddresses.ORACLE_USDC,
-              {
-                t_w_a_p_at_height: {
-                  token: { native_token: { denom: NEUTRON_DENOM } },
-                  height: String(tgeEndHeight + 10),
-                },
+            },
+          );
+          const rateAtomNtrn = await neutronChain.queryContract<TwapAtHeight>(
+            contractAddresses.ORACLE_ATOM,
+            {
+              t_w_a_p_at_height: {
+                token: { native_token: { denom: IBC_ATOM_DENOM } },
+                height: String(tgeEndHeight + 10),
               },
-            );
-            console.log('usdc oracle ', info);
-          });
-
-          it('vesting voting power', async () => {
-            const info = await neutronChain.queryContract<PowerResponse>(
-              contractAddresses.VESTING_VAULT,
-              {
-                voting_power_at_height: {
-                  address: cmInstantiator.wallet.address.toString(),
-                  height: tgeEndHeight + 10,
-                },
+            },
+          );
+          // rate a->b should be ~ 1/(rate b-> a)
+          expect(
+            Math.abs(
+              Number(rateAtomNtrn[0][1]) * Number(rateNtrnAtom[0][1]) - 1,
+            ),
+          ).toBeLessThan(0.03);
+          const rateNtrnUsdc = await neutronChain.queryContract<TwapAtHeight>(
+            contractAddresses.ORACLE_USDC,
+            {
+              t_w_a_p_at_height: {
+                token: { native_token: { denom: NEUTRON_DENOM } },
+                height: String(tgeEndHeight + 10),
               },
-            );
-            // expect(parseInt(info.power)).toBeGreaterThan(0);
-            console.log('vesting power', info);
-          });
-        });
-        describe('governance checks', () => {
-          it('no voting power', async () => {
-            for (const v of [
-              'airdropOnly',
-              'airdropAuctionVesting',
-              'airdropAuctionLockdrop',
-              'airdropAuctionLockdropVesting',
-              'auctionVesting',
-              'auctionLockdrop',
-              'auctionLockdropVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              expect((await member.queryVotingPower()).power | 0).toBe(0);
-            }
-          });
-
-          it('add lockdrop vault to the registry', async () => {
-            let tvp = await dao.queryTotalVotingPower();
-            expect(tvp.power | 0).toBe(1000);
-            const propID = await daoMember1.submitSingleChoiceProposal(
-              'Proposal #1',
-              'add LOCKDROP_VAULT',
-              [
-                {
-                  wasm: {
-                    execute: {
-                      contract_addr: dao.contracts.voting.address,
-                      msg: Buffer.from(
-                        `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.LOCKDROP_VAULT}"}}`,
-                      ).toString('base64'),
-                      funds: [],
-                    },
-                  },
-                },
-              ],
-              '1000',
-            );
-            await daoMember1.voteYes(propID);
-            await daoMember1.executeProposal(propID);
-            tvp = await dao.queryTotalVotingPower();
-            expect(tvp.power | 0).toBeGreaterThan(1000);
-            // lockdrop participants get voting power
-            for (const v of [
-              'airdropAuctionLockdrop',
-              'airdropAuctionLockdropVesting',
-              'auctionLockdrop',
-              'auctionLockdropVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              expect(
-                (await member.queryVotingPower()).power | 0,
-              ).toBeGreaterThan(0);
-            }
-            for (const v of [
-              'airdropOnly',
-              'airdropAuctionVesting',
-              'auctionVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              expect((await member.queryVotingPower()).power | 0).toBe(0);
-            }
-          });
-
-          it('add vesting vault to the registry', async () => {
-            const tvp = await dao.queryTotalVotingPower();
-            const propID = await daoMember1.submitSingleChoiceProposal(
-              'Proposal #2',
-              'add VESTING_VAULT',
-              [
-                {
-                  wasm: {
-                    execute: {
-                      contract_addr: dao.contracts.voting.address,
-                      msg: Buffer.from(
-                        `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.VESTING_VAULT}"}}`,
-                      ).toString('base64'),
-                      funds: [],
-                    },
-                  },
-                },
-              ],
-              '1000',
-            );
-            await daoMember1.voteYes(propID);
-            const prop = await dao.queryProposal(propID);
-            // we connected new voting vault(vesting voting vault), now its not enough
-            // daoMember1 voting power to pass proposal
-            // lockdrop participant should vote
-            expect(prop.proposal).toMatchObject({ status: 'open' });
-            const vp: Record<string, number> = {};
-            for (const v of [
-              'airdropAuctionLockdrop',
-              'airdropAuctionLockdropVesting',
-              'auctionLockdrop',
-              'auctionLockdropVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              console.log('voting power - ', v);
-              console.log(await member.queryVotingPower());
-              vp[v] = (await member.queryVotingPower()).power | 0;
-              if ((await dao.queryProposal(propID)).proposal.status == 'open') {
-                await member.voteYes(propID);
-              }
-            }
-            await daoMember1.executeProposal(propID);
-            const tvpNew = await dao.queryTotalVotingPower();
-            expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
-            // vesting participants get(increase) the voting power
-            for (const v of [
-              'airdropAuctionVesting',
-              'airdropAuctionLockdropVesting',
-              'auctionVesting',
-              'auctionLockdropVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              console.log('voting power - ', v);
-              console.log(await member.queryVotingPower());
-              expect(
-                (await member.queryVotingPower()).power | 0,
-              ).toBeGreaterThan(vp[v] | 0);
-            }
-          });
-
-          it('add credits vault to the registry', async () => {
-            const tvp = await dao.queryTotalVotingPower();
-            const propID = await daoMember1.submitSingleChoiceProposal(
-              'Proposal #3',
-              'add CREDITS_VAULT',
-              [
-                {
-                  wasm: {
-                    execute: {
-                      contract_addr: dao.contracts.voting.address,
-                      msg: Buffer.from(
-                        `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.CREDITS_VAULT}"}}`,
-                      ).toString('base64'),
-                      funds: [],
-                    },
-                  },
-                },
-              ],
-              '1000',
-            );
-            await daoMember1.voteYes(propID);
-            const prop = await dao.queryProposal(propID);
-            // lockdrop and vesting participants should vote
-            expect(prop.proposal).toMatchObject({ status: 'open' });
-            const vp: Record<string, number> = {};
-            for (const v of [
-              'airdropAuctionVesting',
-              'airdropAuctionLockdrop',
-              'airdropAuctionLockdropVesting',
-              'auctionLockdrop',
-              'auctionLockdropVesting',
-              'auctionVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              console.log('voting power - ', v);
-              console.log(await member.queryVotingPower());
-              vp[v] = (await member.queryVotingPower()).power | 0;
-              if ((await dao.queryProposal(propID)).proposal.status == 'open') {
-                await member.voteYes(propID);
-              }
-            }
-            await daoMember1.executeProposal(propID);
-            const tvpNew = await dao.queryTotalVotingPower();
-            expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
-            // airdrop participants get(increase) the voting power
-            for (const v of [
-              'airdropOnly',
-              'airdropAuctionVesting',
-              'airdropAuctionLockdrop',
-              'airdropAuctionLockdropVesting',
-            ]) {
-              const member = new DaoMember(tgeWallets[v], dao);
-              console.log('voting power - ', v);
-              console.log(await member.queryVotingPower());
-              expect(
-                (await member.queryVotingPower()).power | 0,
-              ).toBeGreaterThan(vp[v] | 0);
-            }
-          });
-          // TODO: enble and implement later https://github.com/neutron-org/neutron-dao/pull/61
-          // Total power = total balance - airdrop balance
-          // it('airdrop contract should not have voting power', async () => {
-          //   expect(
-          //     (await dao.queryVotingPower(contractAddresses.TGE_AIRDROP))
-          //       .power | 0,
-          //   ).toBe(0);
-          // });
+            },
+          );
+          const rateUsdcNtrn = await neutronChain.queryContract<TwapAtHeight>(
+            contractAddresses.ORACLE_USDC,
+            {
+              t_w_a_p_at_height: {
+                token: { native_token: { denom: IBC_USDC_DENOM } },
+                height: String(tgeEndHeight + 10),
+              },
+            },
+          );
+          expect(
+            Math.abs(
+              Number(rateNtrnUsdc[0][1]) * Number(rateUsdcNtrn[0][1]) - 1,
+            ),
+          ).toBeLessThan(0.03);
+          console.log('usdc oracle ', rateNtrnAtom);
         });
       });
-      describe('lockdrop', () => {
-        let balanceBeforeLockdrop: number;
-        let balanceBeforeAirdopLockdrop: number;
-        it('query balance before claim rewards', async () => {
-          balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
-            tgeWallets['auctionLockdrop'].wallet.address.toString(),
-            NEUTRON_DENOM,
-          );
-          balanceBeforeAirdopLockdrop = await neutronChain.queryDenomBalance(
-            tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
-            NEUTRON_DENOM,
-          );
-        });
-
-        it('should get lockdrop rewards', async () => {
-          await waitTill(
-            times.lockdropInitTs +
-              times.lockdropDepositDuration +
-              times.lockdropWithdrawalDuration +
-              1,
-          );
-          const balanceBefore = await neutronChain.queryDenomBalance(
-            cmInstantiator.wallet.address.toString(),
-            NEUTRON_DENOM,
-          );
-          console.log(balanceBefore);
-          const res = await cmInstantiator.executeContract(
-            contractAddresses.TGE_LOCKDROP,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'USDC',
-                duration: 2,
-                withdraw_lp_stake: false,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
-          const balanceAfter = await neutronChain.queryDenomBalance(
-            cmInstantiator.wallet.address.toString(),
-            NEUTRON_DENOM,
-          );
-          console.log(balanceAfter);
-
+      describe('governance checks', () => {
+        // vaults have not connected yet
+        it('no voting power', async () => {
           for (const v of [
             'airdropOnly',
             'airdropAuctionVesting',
+            'airdropAuctionLockdrop',
+            'airdropAuctionLockdropVesting',
             'auctionVesting',
+            'auctionLockdrop',
+            'auctionLockdropVesting',
           ]) {
-            console.log('claiming unexisting rewards - ', v);
-            await expect(
-              tgeWallets[v].executeContract(
-                contractAddresses.TGE_LOCKDROP,
-                JSON.stringify({
-                  claim_rewards_and_optionally_unlock: {
-                    pool_type: 'USDC',
-                    duration: 1,
-                    withdraw_lp_stake: false,
-                  },
-                }),
-              ),
-            ).rejects.toThrowError(/LockupInfoV1 not found/);
-            await expect(
-              tgeWallets[v].executeContract(
-                contractAddresses.TGE_LOCKDROP,
-                JSON.stringify({
-                  claim_rewards_and_optionally_unlock: {
-                    pool_type: 'ATOM',
-                    duration: 1,
-                    withdraw_lp_stake: false,
-                  },
-                }),
-              ),
-            ).rejects.toThrowError(/LockupInfoV1 not found/);
+            const member = new DaoMember(tgeWallets[v], dao);
+            expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
+        });
 
+        it('add lockdrop vault to the registry', async () => {
+          let tvp = await dao.queryTotalVotingPower();
+          expect(tvp.power | 0).toBe(1000);
+          const propID = await daoMember1.submitSingleChoiceProposal(
+            'Proposal #1',
+            'add LOCKDROP_VAULT',
+            [
+              {
+                wasm: {
+                  execute: {
+                    contract_addr: dao.contracts.voting.address,
+                    msg: Buffer.from(
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.LOCKDROP_VAULT}"}}`,
+                    ).toString('base64'),
+                    funds: [],
+                  },
+                },
+              },
+            ],
+            '1000',
+          );
+          await daoMember1.voteYes(propID);
+          await daoMember1.executeProposal(propID);
+          tvp = await dao.queryTotalVotingPower();
+          expect(tvp.power | 0).toBeGreaterThan(1000);
+          // lockdrop participants get voting power
           for (const v of [
             'airdropAuctionLockdrop',
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            console.log('claiming rewards - ', v);
-            const userInfo =
-              await neutronChain.queryContract<LockDropInfoResponse>(
-                contractAddresses.TGE_LOCKDROP,
-                {
-                  user_info: {
-                    address: tgeWallets[v].wallet.address.toString(),
+            const member = new DaoMember(tgeWallets[v], dao);
+            expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
+              0,
+            );
+          }
+          for (const v of [
+            'airdropOnly',
+            'airdropAuctionVesting',
+            'auctionVesting',
+          ]) {
+            const member = new DaoMember(tgeWallets[v], dao);
+            expect((await member.queryVotingPower()).power | 0).toBe(0);
+          }
+        });
+
+        it('add vesting vault to the registry', async () => {
+          const tvp = await dao.queryTotalVotingPower();
+          const propID = await daoMember1.submitSingleChoiceProposal(
+            'Proposal #2',
+            'add VESTING_VAULT',
+            [
+              {
+                wasm: {
+                  execute: {
+                    contract_addr: dao.contracts.voting.address,
+                    msg: Buffer.from(
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.VESTING_VAULT}"}}`,
+                    ).toString('base64'),
+                    funds: [],
                   },
                 },
-              );
-            console.log(userInfo);
-            const res = await tgeWallets[v].executeContract(
+              },
+            ],
+            '1000',
+          );
+          await daoMember1.voteYes(propID);
+          const prop = await dao.queryProposal(propID);
+          // we connected new voting vault(vesting voting vault), now its not enough
+          // daoMember1 voting power to pass proposal
+          // lockdrop participant should vote
+          expect(prop.proposal).toMatchObject({ status: 'open' });
+          const vp: Record<string, number> = {};
+          for (const v of [
+            'airdropAuctionLockdrop',
+            'airdropAuctionLockdropVesting',
+            'auctionLockdrop',
+            'auctionLockdropVesting',
+          ]) {
+            const member = new DaoMember(tgeWallets[v], dao);
+            console.log('voting power - ', v);
+            console.log(await member.queryVotingPower());
+            vp[v] = (await member.queryVotingPower()).power | 0;
+            if ((await dao.queryProposal(propID)).proposal.status == 'open') {
+              await member.voteYes(propID);
+            }
+          }
+          await daoMember1.executeProposal(propID);
+          const tvpNew = await dao.queryTotalVotingPower();
+          expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
+          // vesting participants get(increase) the voting power
+          for (const v of [
+            'airdropAuctionVesting',
+            'airdropAuctionLockdropVesting',
+            'auctionVesting',
+            'auctionLockdropVesting',
+          ]) {
+            const member = new DaoMember(tgeWallets[v], dao);
+            console.log('voting power - ', v);
+            console.log(await member.queryVotingPower());
+            expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
+              vp[v] | 0,
+            );
+          }
+        });
+
+        it('add credits vault to the registry', async () => {
+          const tvp = await dao.queryTotalVotingPower();
+          const propID = await daoMember1.submitSingleChoiceProposal(
+            'Proposal #3',
+            'add CREDITS_VAULT',
+            [
+              {
+                wasm: {
+                  execute: {
+                    contract_addr: dao.contracts.voting.address,
+                    msg: Buffer.from(
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${contractAddresses.CREDITS_VAULT}"}}`,
+                    ).toString('base64'),
+                    funds: [],
+                  },
+                },
+              },
+            ],
+            '1000',
+          );
+          await daoMember1.voteYes(propID);
+          const prop = await dao.queryProposal(propID);
+          // lockdrop and vesting participants should vote
+          expect(prop.proposal).toMatchObject({ status: 'open' });
+          const vp: Record<string, number> = {};
+          for (const v of [
+            'airdropAuctionVesting',
+            'airdropAuctionLockdrop',
+            'airdropAuctionLockdropVesting',
+            'auctionLockdrop',
+            'auctionLockdropVesting',
+            'auctionVesting',
+          ]) {
+            const member = new DaoMember(tgeWallets[v], dao);
+            console.log('voting power - ', v);
+            console.log(await member.queryVotingPower());
+            vp[v] = (await member.queryVotingPower()).power | 0;
+            if ((await dao.queryProposal(propID)).proposal.status == 'open') {
+              await member.voteYes(propID);
+            }
+          }
+          await daoMember1.executeProposal(propID);
+          const tvpNew = await dao.queryTotalVotingPower();
+          expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
+          // airdrop participants get(increase) the voting power
+          for (const v of [
+            'airdropOnly',
+            'airdropAuctionVesting',
+            'airdropAuctionLockdrop',
+            'airdropAuctionLockdropVesting',
+          ]) {
+            const member = new DaoMember(tgeWallets[v], dao);
+            console.log('voting power - ', v);
+            console.log(await member.queryVotingPower());
+            expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
+              vp[v] | 0,
+            );
+          }
+        });
+        // TODO: enable and implement later https://github.com/neutron-org/neutron-dao/pull/61
+        // Total power = total balance - airdrop balance
+        // it('airdrop contract should not have voting power', async () => {
+        // });
+      });
+    });
+    describe('lockdrop', () => {
+      let balanceBeforeLockdrop: number;
+      let balanceBeforeAirdopLockdrop: number;
+      it('query balance before claim rewards', async () => {
+        balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
+          tgeWallets['auctionLockdrop'].wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        balanceBeforeAirdopLockdrop = await neutronChain.queryDenomBalance(
+          tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+      });
+
+      it('should get lockdrop rewards', async () => {
+        await waitTill(
+          times.lockdropInitTs +
+            times.lockdropDepositDuration +
+            times.lockdropWithdrawalDuration +
+            1,
+        );
+        const balanceBefore = await neutronChain.queryDenomBalance(
+          cmInstantiator.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        console.log(balanceBefore);
+        const res = await cmInstantiator.executeContract(
+          contractAddresses.TGE_LOCKDROP,
+          JSON.stringify({
+            claim_rewards_and_optionally_unlock: {
+              pool_type: 'USDC',
+              duration: 2,
+              withdraw_lp_stake: false,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+        const balanceAfter = await neutronChain.queryDenomBalance(
+          cmInstantiator.wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        console.log(balanceAfter);
+
+        for (const v of [
+          'airdropOnly',
+          'airdropAuctionVesting',
+          'auctionVesting',
+        ]) {
+          console.log('claiming unexisting rewards - ', v);
+          await expect(
+            tgeWallets[v].executeContract(
               contractAddresses.TGE_LOCKDROP,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
@@ -2480,72 +2447,115 @@ describe('Neutron / TGE / Auction', () => {
                   withdraw_lp_stake: false,
                 },
               }),
-            );
-            expect(res.code).toEqual(0);
-            console.log(JSON.stringify(res, null, 2));
-          }
-
-          for (const v of [
-            'airdropAuctionLockdrop',
-            'airdropAuctionLockdropVesting',
-            'auctionLockdrop',
-            'auctionLockdropVesting',
-          ]) {
-            console.log('claim staked USDC lp - ', v);
-            let res = await tgeWallets[v].executeContract(
-              contractAddresses.TGE_LOCKDROP,
-              JSON.stringify({
-                claim_rewards_and_optionally_unlock: {
-                  pool_type: 'USDC',
-                  duration: 1,
-                  withdraw_lp_stake: true,
-                },
-              }),
-            );
-            expect(res.code).toEqual(0);
-            console.log('claim staked ATOM lp - ', v);
-            res = await tgeWallets[v].executeContract(
+            ),
+          ).rejects.toThrowError(/LockupInfoV1 not found/);
+          await expect(
+            tgeWallets[v].executeContract(
               contractAddresses.TGE_LOCKDROP,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
                   pool_type: 'ATOM',
                   duration: 1,
-                  withdraw_lp_stake: true,
+                  withdraw_lp_stake: false,
                 },
               }),
+            ),
+          ).rejects.toThrowError(/LockupInfoV1 not found/);
+        }
+
+        for (const v of [
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+        ]) {
+          console.log('claiming rewards - ', v);
+          const userInfo =
+            await neutronChain.queryContract<LockDropInfoResponse>(
+              contractAddresses.TGE_LOCKDROP,
+              {
+                user_info: {
+                  address: tgeWallets[v].wallet.address.toString(),
+                },
+              },
             );
-            expect(res.code).toEqual(0);
-          }
-        });
-        it('should get extra untrn from unclaimed airdrop', async () => {
-          const balanceAfterLockdrop = await neutronChain.queryDenomBalance(
-            tgeWallets['auctionLockdrop'].wallet.address.toString(),
-            NEUTRON_DENOM,
+          console.log(userInfo);
+          const res = await tgeWallets[v].executeContract(
+            contractAddresses.TGE_LOCKDROP,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'USDC',
+                duration: 1,
+                withdraw_lp_stake: false,
+              },
+            }),
           );
-          const balanceAfterAirdopLockdrop =
-            await neutronChain.queryDenomBalance(
-              tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
-              NEUTRON_DENOM,
-            );
-          console.log(
-            balanceBeforeAirdopLockdrop,
-            balanceAfterAirdopLockdrop,
-            balanceBeforeLockdrop,
-            balanceAfterLockdrop,
+          expect(res.code).toEqual(0);
+          console.log(JSON.stringify(res, null, 2));
+        }
+
+        for (const v of [
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+        ]) {
+          console.log('claim staked USDC lp - ', v);
+          let res = await tgeWallets[v].executeContract(
+            contractAddresses.TGE_LOCKDROP,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'USDC',
+                duration: 1,
+                withdraw_lp_stake: true,
+              },
+            }),
           );
-          // we have to take into account
-          // every wallet has executed 3 tx during `should get lockdrop rewards` stage
-          // every tx costs 10000untrn
-          const claimedRewardWithAirdrop =
-            balanceAfterAirdopLockdrop - balanceBeforeAirdopLockdrop + 30_000;
-          const claimedRewardNoAirdrop =
-            balanceAfterLockdrop - balanceBeforeLockdrop + 30_000;
-          // claimed rewards + airdrop should be ~2 times bigger than clear reward.
-          // 3317 + 3371 vs 3317
-          expect(
-            claimedRewardWithAirdrop - 2 * claimedRewardNoAirdrop,
-          ).toBeLessThan(100);
-        });
+          expect(res.code).toEqual(0);
+          console.log('claim staked ATOM lp - ', v);
+          res = await tgeWallets[v].executeContract(
+            contractAddresses.TGE_LOCKDROP,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'ATOM',
+                duration: 1,
+                withdraw_lp_stake: true,
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+        }
+      });
+      it('should get extra untrn from unclaimed airdrop', async () => {
+        const balanceAfterLockdrop = await neutronChain.queryDenomBalance(
+          tgeWallets['auctionLockdrop'].wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        const balanceAfterAirdopLockdrop = await neutronChain.queryDenomBalance(
+          tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
+          NEUTRON_DENOM,
+        );
+        console.log(
+          balanceBeforeAirdopLockdrop,
+          balanceAfterAirdopLockdrop,
+          balanceBeforeLockdrop,
+          balanceAfterLockdrop,
+        );
+        // we have to take into account
+        // every wallet has executed 3 tx during `should get lockdrop rewards` stage
+        // every tx costs 10000untrn.
+        const feeCompensation = 30_000;
+        const claimedRewardWithAirdrop =
+          balanceAfterAirdopLockdrop -
+          balanceBeforeAirdopLockdrop +
+          feeCompensation;
+        const claimedRewardNoAirdrop =
+          balanceAfterLockdrop - balanceBeforeLockdrop + feeCompensation;
+        // claimed rewards + airdrop should be ~2 times bigger than clear reward.
+        // 3317(reward) + 3371(3317 extra airdrop + 54 vested airdrop) vs 3317
+        expect(
+          claimedRewardWithAirdrop - 2 * claimedRewardNoAirdrop,
+        ).toBeLessThan(100);
       });
     });
   });
