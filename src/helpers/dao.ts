@@ -268,6 +268,14 @@ export const getDaoContracts = async (
   };
 };
 
+export const getDaoAdmin = async (
+  cm: CosmosWrapper,
+  daoAddress: string,
+): Promise<string> => {
+  const daoInfo = await cm.getContractInfo(daoAddress);
+  return daoInfo['contract_info']['admin'];
+};
+
 export const getSubDaoContracts = async (
   cm: CosmosWrapper,
   daoAddress: string,
