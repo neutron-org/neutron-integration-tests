@@ -273,8 +273,9 @@ export const getDaoAdmin = async (
   daoAddress: string,
 ): Promise<string> => {
   const daoInfo = await cm.getContractInfo(daoAddress);
-  return  daoInfo['contract_info']['admin'];
-}
+  return daoInfo['contract_info']['admin'];
+};
+
 export const getSubDaoContracts = async (
   cm: CosmosWrapper,
   daoAddress: string,
