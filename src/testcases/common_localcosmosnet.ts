@@ -250,7 +250,7 @@ export class TestStateLocalCosmosTestNet {
       mnemonic,
       prefix,
     );
-
+    console.log(wal.address.toString());
     return { genQaWal1: wal };
   }
 }
