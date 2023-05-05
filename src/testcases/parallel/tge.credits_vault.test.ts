@@ -107,6 +107,21 @@ describe('Neutron / Credits Vault', () => {
       });
     });
 
+    test('Airdrop always has zero voting power', async () => {
+      const currentHeight = await getHeight(neutronChain.sdk);
+      expect(
+        await getVotingPowerAtHeight(
+          neutronChain,
+          creditsVaultAddr,
+          airdropAddr.toString(),
+          currentHeight,
+        ),
+      ).toMatchObject({
+        height: currentHeight,
+        power: '0',
+      });
+    });
+
     test('Airdrop is never included in total voting power', async () => {
       let currentHeight = await getHeight(neutronChain.sdk);
       expect(
