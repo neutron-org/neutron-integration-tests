@@ -74,7 +74,7 @@ export type CreditsVaultConfig = {
   description: string;
   credits_contract_address: string;
   owner: string;
-  manager: string;
+  airdrop_contract_address: string;
 };
 
 export type VaultBondingStatus = {

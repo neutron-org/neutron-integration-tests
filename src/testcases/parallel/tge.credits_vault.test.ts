@@ -15,29 +15,24 @@ describe('Neutron / Credits Vault', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let daoWallet: Wallet;
-  let managerWallet: Wallet;
   let airdropWallet: Wallet;
   let lockdropWallet: Wallet;
 
   let daoAccount: WalletWrapper;
-  let managerAccount: WalletWrapper;
+  let airdropAccount: WalletWrapper;
 
   let daoAddr: AccAddress | ValAddress;
   let airdropAddr: AccAddress | ValAddress;
   let lockdropAddr: AccAddress | ValAddress;
-  let managerAddr: AccAddress | ValAddress;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
     await testState.init();
     daoWallet = testState.wallets.qaNeutron.genQaWal1;
-    managerWallet = testState.wallets.qaNeutronThree.genQaWal1;
     airdropWallet = testState.wallets.qaNeutronFour.genQaWal1;
     lockdropWallet = testState.wallets.qaNeutronFive.genQaWal1;
 
-    airdropAddr = airdropWallet.address;
     lockdropAddr = lockdropWallet.address;
-    managerAddr = managerWallet.address;
 
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -47,11 +42,11 @@ describe('Neutron / Credits Vault', () => {
 
     daoAccount = new WalletWrapper(neutronChain, daoWallet);
     daoAddr = daoAccount.wallet.address;
-
-    managerAccount = new WalletWrapper(neutronChain, managerWallet);
-    managerAddr = managerAccount.wallet.address;
+    airdropAccount = new WalletWrapper(neutronChain, airdropWallet);
+    airdropAddr = airdropAccount.wallet.address;
   });
 
+  const originalName = 'credits_vault';
   const originalDescription = 'A credits vault for test purposes.';
   describe('Credits vault', () => {
     let creditsContractAddr: string;
@@ -68,10 +63,11 @@ describe('Neutron / Credits Vault', () => {
 
       creditsVaultAddr = await setupCreditsVault(
         daoAccount,
-        creditsContractAddr,
+        originalName,
         originalDescription,
+        creditsContractAddr,
         daoAddr.toString(),
-        managerAddr.toString(),
+        airdropAddr.toString(),
       );
     });
 
@@ -79,102 +75,40 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
+        name: originalName,
         description: originalDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
-        manager: managerAddr.toString(),
+        airdrop_contract_address: airdropAddr.toString(),
       });
     });
 
+    const newName = 'new_credits_vault';
     const newDescription = 'A new description for the credits vault.';
-    test('Update config by manager: success', async () => {
+    test('Update config', async () => {
       const res = await updateVaultConfig(
-        managerAccount,
-        creditsVaultAddr,
-        creditsContractAddr,
-        newDescription,
-        daoAddr.toString(),
-        managerAddr.toString(),
-      );
-      expect(res.code).toEqual(0);
-
-      expect(
-        await getVaultConfig(neutronChain, creditsVaultAddr),
-      ).toMatchObject({
-        description: newDescription,
-        credits_contract_address: creditsContractAddr,
-        owner: daoAddr.toString(),
-        manager: managerAddr.toString(),
-      });
-    });
-
-    test('Update config by manager: permission denied', async () => {
-      // change owner to manager
-      await expect(
-        updateVaultConfig(
-          managerAccount,
-          creditsVaultAddr,
-          creditsContractAddr,
-          newDescription,
-          managerAddr.toString(),
-          managerAddr.toString(),
-        ),
-      ).rejects.toThrow(/Only owner can change owner/);
-
-      expect(
-        await getVaultConfig(neutronChain, creditsVaultAddr),
-      ).toMatchObject({
-        description: originalDescription,
-        credits_contract_address: creditsContractAddr,
-        owner: daoAddr.toString(),
-        manager: managerAddr.toString(),
-      });
-    });
-
-    test('Update config by owner', async () => {
-      // change owner to manager
-      let res = await updateVaultConfig(
         daoAccount,
         creditsVaultAddr,
         creditsContractAddr,
-        originalDescription,
-        managerAddr.toString(),
-        managerAddr.toString(),
-      );
-      expect(res.code).toEqual(0);
-
-      expect(
-        await getVaultConfig(neutronChain, creditsVaultAddr),
-      ).toMatchObject({
-        description: originalDescription,
-        credits_contract_address: creditsContractAddr,
-        owner: managerAddr.toString(),
-        manager: managerAddr.toString(),
-      });
-
-      // make sure new owner is promoted and get back to original lockdrop vault settings
-      res = await updateVaultConfig(
-        managerAccount,
-        creditsVaultAddr,
-        creditsContractAddr,
-        originalDescription,
+        newName,
+        newDescription,
         daoAddr.toString(),
-        managerAddr.toString(),
       );
       expect(res.code).toEqual(0);
 
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: originalDescription,
+        name: newName,
+        description: newDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
-        manager: managerAddr.toString(),
+        airdrop_contract_address: airdropAddr.toString(),
       });
     });
 
-    test('Query total voting power at height', async () => {
-      const currentHeight = await getHeight(neutronChain.sdk);
+    test('Airdrop is never included in total voting power', async () => {
+      let currentHeight = await getHeight(neutronChain.sdk);
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -185,20 +119,49 @@ describe('Neutron / Credits Vault', () => {
         height: currentHeight,
         power: '0',
       });
-    });
 
-    test('Query airdrop address voting power at height', async () => {
-      const currentHeight = await getHeight(neutronChain.sdk);
+      await mintTokens(daoAccount, creditsContractAddr, '1000');
+
+      currentHeight = await getHeight(neutronChain.sdk);
       expect(
-        await getVotingPowerAtHeight(
+        await getTotalPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          airdropAddr.toString(),
           currentHeight,
         ),
       ).toMatchObject({
         height: currentHeight,
         power: '0',
+      });
+
+      await sendTokens(
+        airdropAccount,
+        creditsContractAddr,
+        daoAddr.toString(),
+        '500',
+      );
+
+      currentHeight = await getHeight(neutronChain.sdk);
+      expect(
+        await getVotingPowerAtHeight(
+          neutronChain,
+          creditsVaultAddr,
+          daoAddr.toString(),
+          currentHeight,
+        ),
+      ).toMatchObject({
+        height: currentHeight,
+        power: '500',
+      });
+      expect(
+        await getTotalPowerAtHeight(
+          neutronChain,
+          creditsVaultAddr,
+          currentHeight,
+        ),
+      ).toMatchObject({
+        height: currentHeight,
+        power: '500',
       });
     });
 
@@ -206,10 +169,22 @@ describe('Neutron / Credits Vault', () => {
       const firstHeight = await getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
+      await sendTokens(
+        airdropAccount,
+        creditsContractAddr,
+        daoAddr.toString(),
+        '1000',
+      );
       await neutronChain.blockWaiter.waitBlocks(1);
       const secondHeight = await getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
+      await sendTokens(
+        airdropAccount,
+        creditsContractAddr,
+        daoAddr.toString(),
+        '1000',
+      );
       await neutronChain.blockWaiter.waitBlocks(1);
       const thirdHeight = await getHeight(neutronChain.sdk);
 
@@ -227,7 +202,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          airdropAddr.toString(),
+          daoAddr.toString(),
           secondHeight,
         ),
       ).toMatchObject({
@@ -249,7 +224,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          airdropAddr.toString(),
+          daoAddr.toString(),
           firstHeight,
         ),
       ).toMatchObject({
@@ -271,7 +246,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          airdropAddr.toString(),
+          daoAddr.toString(),
           thirdHeight,
         ),
       ).toMatchObject({
@@ -284,24 +259,22 @@ describe('Neutron / Credits Vault', () => {
 
 const setupCreditsVault = async (
   wallet: WalletWrapper,
-  creditsContractAddress: string,
+  name: string,
   description: string,
-  owner?: string,
-  manager?: string,
+  creditsContractAddress: string,
+  owner: string,
+  airdropContractAddress: string,
 ) => {
   const codeId = await wallet.storeWasm(NeutronContract.CREDITS_VAULT);
   return (
     await wallet.instantiateContract(
       codeId,
       JSON.stringify({
-        credits_contract_address: creditsContractAddress,
+        name,
         description,
-        owner: {
-          address: {
-            addr: owner,
-          },
-        },
-        manager,
+        credits_contract_address: creditsContractAddress,
+        owner,
+        airdrop_contract_address: airdropContractAddress,
       }),
       'credits_vault',
     )
@@ -362,7 +335,7 @@ const getVaultConfig = async (
   creditsVaultContract: string,
 ): Promise<CreditsVaultConfig> =>
   cm.queryContract<CreditsVaultConfig>(creditsVaultContract, {
-    get_config: {},
+    config: {},
   });
 
 const getTotalPowerAtHeight = async (
@@ -407,22 +380,38 @@ const mintTokens = async (
     ],
   );
 
+const sendTokens = async (
+  wallet: WalletWrapper,
+  creditsContractAddress: string,
+  recipient: string,
+  amount: string,
+): Promise<InlineResponse20075TxResponse> =>
+  wallet.executeContract(
+    creditsContractAddress,
+    JSON.stringify({
+      transfer: {
+        recipient,
+        amount,
+      },
+    }),
+  );
+
 const updateVaultConfig = async (
   wallet: WalletWrapper,
   vaultContract: string,
   creditsContractAddress: string,
+  name: string,
   description: string,
   owner?: string,
-  manager?: string,
 ): Promise<InlineResponse20075TxResponse> =>
   wallet.executeContract(
     vaultContract,
     JSON.stringify({
       update_config: {
         credits_contract_address: creditsContractAddress,
-        description,
         owner,
-        manager,
+        name,
+        description,
       },
     }),
   );
