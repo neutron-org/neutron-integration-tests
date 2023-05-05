@@ -228,7 +228,6 @@ export class TestStateLocalCosmosTestNet {
       wallet,
     );
     const mnemonic = generateMnemonic();
-    console.log(mnemonic);
     const newWallet = await mnemonicToWallet(
       cosmosclient.AccAddress,
       sdk,
@@ -250,7 +249,6 @@ export class TestStateLocalCosmosTestNet {
       mnemonic,
       prefix,
     );
-    console.log(wal.address.toString());
     return { genQaWal1: wal };
   }
 }

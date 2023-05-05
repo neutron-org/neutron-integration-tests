@@ -14,10 +14,8 @@ const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
 
 let alreadySetUp = false;
 
-export const getContractBinary = async (fileName: string): Promise<Buffer> => {
-  console.log(fileName, CONTRACTS_PATH);
-  return fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
-};
+export const getContractBinary = async (fileName: string): Promise<Buffer> =>
+  fsPromise.readFile(path.resolve(CONTRACTS_PATH, fileName));
 
 export const getContractsHashes = async (): Promise<Record<string, string>> => {
   const hashes = {};

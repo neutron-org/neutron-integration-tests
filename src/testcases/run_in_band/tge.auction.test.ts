@@ -19,6 +19,7 @@ const NTRN_AMOUNT = 200000;
 const ATOM_RATE = 10000000;
 const USDC_RATE = 1000000;
 const NTRN_INCENTIVIZE_AMOUNT = 10000;
+const feeSize = 10_000;
 
 const getLpSize = (token1: number, token2: number) =>
   (Math.sqrt(token1 * token2) - MIN_LIQUDITY) | 0;
@@ -174,7 +175,6 @@ describe('Neutron / TGE / Auction', () => {
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    console.log(daoContracts);
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(cmInstantiator, dao);
     await daoMember1.bondFunds('1000');
@@ -214,7 +214,6 @@ describe('Neutron / TGE / Auction', () => {
           )
         ).genQaWal1,
       );
-      console.log('new wallet', v);
     }
   });
 
@@ -771,7 +770,6 @@ describe('Neutron / TGE / Auction', () => {
       );
       expect(res).toBeTruthy();
       contractAddresses['ASTRO_GENERATOR'] = res[0]._contract_address;
-      console.log(contractAddresses);
     });
     it('should not be able to set token info by stranger', async () => {
       await expect(
@@ -1870,7 +1868,6 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
         ]);
-        console.log('auction state: ', auctionState);
         expect(auctionState.pool_init_timestamp).toBeGreaterThan(0);
         expect(
           Math.abs(
@@ -2060,11 +2057,6 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
         ]);
-        console.log(
-          'vesting info ',
-          JSON.stringify(vestingInfoAtom, null, 2),
-          JSON.stringify(vestingInfoUsdc, null, 2),
-        );
         // round?
         expect(parseInt(lpAuctionBalanceUsdc.balance)).toBeLessThanOrEqual(7);
         expect(parseInt(lpAuctionBalanceAtom.balance)).toBeLessThanOrEqual(7);
@@ -2196,7 +2188,6 @@ describe('Neutron / TGE / Auction', () => {
               Number(rateNtrnUsdc[0][1]) * Number(rateUsdcNtrn[0][1]) - 1,
             ),
           ).toBeLessThan(0.03);
-          console.log('usdc oracle ', rateNtrnAtom);
         });
       });
       describe('governance checks', () => {
@@ -2297,8 +2288,6 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const member = new DaoMember(tgeWallets[v], dao);
-            console.log('voting power - ', v);
-            console.log(await member.queryVotingPower());
             vp[v] = (await member.queryVotingPower()).power | 0;
             if ((await dao.queryProposal(propID)).proposal.status == 'open') {
               await member.voteYes(propID);
@@ -2315,8 +2304,6 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const member = new DaoMember(tgeWallets[v], dao);
-            console.log('voting power - ', v);
-            console.log(await member.queryVotingPower());
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -2357,8 +2344,6 @@ describe('Neutron / TGE / Auction', () => {
             'auctionVesting',
           ]) {
             const member = new DaoMember(tgeWallets[v], dao);
-            console.log('voting power - ', v);
-            console.log(await member.queryVotingPower());
             vp[v] = (await member.queryVotingPower()).power | 0;
             if ((await dao.queryProposal(propID)).proposal.status == 'open') {
               await member.voteYes(propID);
@@ -2375,8 +2360,6 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
           ]) {
             const member = new DaoMember(tgeWallets[v], dao);
-            console.log('voting power - ', v);
-            console.log(await member.queryVotingPower());
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -2413,7 +2396,6 @@ describe('Neutron / TGE / Auction', () => {
           cmInstantiator.wallet.address.toString(),
           NEUTRON_DENOM,
         );
-        console.log(balanceBefore);
         const res = await cmInstantiator.executeContract(
           contractAddresses.TGE_LOCKDROP,
           JSON.stringify({
@@ -2429,14 +2411,14 @@ describe('Neutron / TGE / Auction', () => {
           cmInstantiator.wallet.address.toString(),
           NEUTRON_DENOM,
         );
-        console.log(balanceAfter);
+        // we need to compensait paid fees
+        expect(balanceAfter + feeSize).toBeGreaterThan(balanceBefore);
 
         for (const v of [
           'airdropOnly',
           'airdropAuctionVesting',
           'auctionVesting',
         ]) {
-          console.log('claiming unexisting rewards - ', v);
           await expect(
             tgeWallets[v].executeContract(
               contractAddresses.TGE_LOCKDROP,
@@ -2469,17 +2451,6 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdrop',
           'auctionLockdropVesting',
         ]) {
-          console.log('claiming rewards - ', v);
-          const userInfo =
-            await neutronChain.queryContract<LockDropInfoResponse>(
-              contractAddresses.TGE_LOCKDROP,
-              {
-                user_info: {
-                  address: tgeWallets[v].wallet.address.toString(),
-                },
-              },
-            );
-          console.log(userInfo);
           const res = await tgeWallets[v].executeContract(
             contractAddresses.TGE_LOCKDROP,
             JSON.stringify({
@@ -2491,7 +2462,6 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           expect(res.code).toEqual(0);
-          console.log(JSON.stringify(res, null, 2));
         }
 
         for (const v of [
@@ -2500,7 +2470,6 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdrop',
           'auctionLockdropVesting',
         ]) {
-          console.log('claim staked USDC lp - ', v);
           let res = await tgeWallets[v].executeContract(
             contractAddresses.TGE_LOCKDROP,
             JSON.stringify({
@@ -2512,7 +2481,6 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           expect(res.code).toEqual(0);
-          console.log('claim staked ATOM lp - ', v);
           res = await tgeWallets[v].executeContract(
             contractAddresses.TGE_LOCKDROP,
             JSON.stringify({
@@ -2535,16 +2503,10 @@ describe('Neutron / TGE / Auction', () => {
           tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
           NEUTRON_DENOM,
         );
-        console.log(
-          balanceBeforeAirdopLockdrop,
-          balanceAfterAirdopLockdrop,
-          balanceBeforeLockdrop,
-          balanceAfterLockdrop,
-        );
         // we have to take into account
         // every wallet has executed 3 tx during `should get lockdrop rewards` stage
         // every tx costs 10000untrn.
-        const feeCompensation = 30_000;
+        const feeCompensation = 3 * feeSize;
         const claimedRewardWithAirdrop =
           balanceAfterAirdopLockdrop -
           balanceBeforeAirdopLockdrop +
