@@ -466,11 +466,12 @@ export class WalletWrapper {
     codeId: number,
     msg: string,
     label: string,
+    admin: string = this.wallet.address.toString(),
   ): Promise<Array<Record<string, string>>> {
     const msgInit = new cosmwasmproto.cosmwasm.wasm.v1.MsgInstantiateContract({
       code_id: codeId + '',
       sender: this.wallet.address.toString(),
-      admin: this.wallet.address.toString(),
+      admin: admin,
       label,
       msg: Buffer.from(msg),
     });
