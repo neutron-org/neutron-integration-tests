@@ -319,6 +319,7 @@ describe('Neutron / TGE / Auction', () => {
           description: 'credits_vault',
           credits_contract_address: contractAddresses['TGE_CREDITS'],
           owner: cmInstantiator.wallet.address.toString(),
+          airdrop_contract_address: contractAddresses['TGE_AIRDROP'],
         }),
         'credits vault',
       );
