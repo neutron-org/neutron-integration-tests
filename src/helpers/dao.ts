@@ -342,9 +342,12 @@ export class Dao {
     );
   }
 
-  async queryProposal(proposalId: number): Promise<SingleChoiceProposal> {
+  async queryProposal(
+    proposalId: number,
+    customModule = 'single',
+  ): Promise<SingleChoiceProposal> {
     return await this.chain.queryContract<SingleChoiceProposal>(
-      this.contracts.proposals.single.address,
+      this.contracts.proposals[customModule].address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -416,9 +419,10 @@ export class Dao {
 
   async getTimelockedProposal(
     proposalId: number,
+    customModule = 'single',
   ): Promise<TimeLockSingleChoiceProposal> {
     return this.chain.queryContract<TimeLockSingleChoiceProposal>(
-      this.contracts.proposals.single.pre_propose.timelock.address,
+      this.contracts.proposals[customModule].pre_propose.timelock.address,
       {
         proposal: {
           proposal_id: proposalId,
@@ -480,9 +484,12 @@ export class DaoMember {
   /**
    * voteYes  vote 'yes' for given proposal.
    */
-  async voteYes(proposalId: number): Promise<InlineResponse20075TxResponse> {
+  async voteYes(
+    proposalId: number,
+    customModule = 'single',
+  ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposals.single.address,
+      this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
     );
   }
@@ -490,9 +497,12 @@ export class DaoMember {
   /**
    * voteNo  vote 'no' for given proposal.
    */
-  async voteNo(proposalId: number): Promise<InlineResponse20075TxResponse> {
+  async voteNo(
+    proposalId: number,
+    customModule = 'single',
+  ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposals.single.address,
+      this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
     );
   }
@@ -532,13 +542,14 @@ export class DaoMember {
     description: string,
     msgs: any[],
     deposit = '',
+    customModule = 'single',
   ): Promise<number> {
     let depositFunds = [];
     if (deposit !== '') {
       depositFunds = [{ denom: this.user.chain.denom, amount: deposit }];
     }
     const proposalTx = await this.user.executeContract(
-      this.dao.contracts.proposals.single.pre_propose.address,
+      this.dao.contracts.proposals[customModule].pre_propose.address,
       JSON.stringify({
         propose: {
           msg: {
@@ -569,9 +580,10 @@ export class DaoMember {
    */
   async executeProposal(
     proposalId: number,
+    customModule = 'single',
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
-      this.dao.contracts.proposals.single.address,
+      this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
     );
   }
@@ -798,17 +810,19 @@ export class DaoMember {
 
   async supportAndExecuteProposal(
     proposalId: number,
+    customModule = 'single',
   ): Promise<TimeLockSingleChoiceProposal> {
-    await this.voteYes(proposalId);
-    await this.executeProposal(proposalId);
-    return await this.dao.getTimelockedProposal(proposalId);
+    await this.voteYes(proposalId, customModule);
+    await this.executeProposal(proposalId, customModule);
+    return await this.dao.getTimelockedProposal(proposalId, customModule);
   }
 
   async executeTimelockedProposal(
     proposalId: number,
+    customModule = 'single',
   ): Promise<InlineResponse20075TxResponse> {
     return this.user.executeContract(
-      this.dao.contracts.proposals.single.pre_propose.timelock.address,
+      this.dao.contracts.proposals[customModule].pre_propose.timelock.address,
       JSON.stringify({
         execute_proposal: {
           proposal_id: proposalId,
@@ -874,11 +888,14 @@ export class DaoMember {
     return proposalId1;
   }
 
-  async submitUpdateSubDaoConfigProposal(newConfig: {
-    name?: string;
-    description?: string;
-    dao_uri?: string;
-  }): Promise<number> {
+  async submitUpdateSubDaoConfigProposal(
+    newConfig: {
+      name?: string;
+      description?: string;
+      dao_uri?: string;
+    },
+    customModule = 'single',
+  ): Promise<number> {
     const message = {
       wasm: {
         execute: {
@@ -895,6 +912,8 @@ export class DaoMember {
       'update subDAO config',
       'sets subDAO config to new value',
       [message],
+      '',
+      customModule,
     );
   }
 
@@ -1130,8 +1149,11 @@ export const deploySubdao = async (
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);
   const cw4GroupCodeId = await cm.storeWasm(NeutronContract.CW4_GROUP);
   const proposeCodeId = await cm.storeWasm(NeutronContract.SUBDAO_PROPOSAL);
-  const preProposeCodeId = await cm.storeWasm(
+  const preProposeTimelockedCodeId = await cm.storeWasm(
     NeutronContract.SUBDAO_PREPROPOSE,
+  );
+  const preProposeNonTimelockedCodeId = await cm.storeWasm(
+    NeutronContract.DAO_PREPROPOSAL_SINGLE,
   );
   const timelockCodeId = await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK);
   const votingModuleInstantiateInfo = {
@@ -1155,7 +1177,7 @@ export const deploySubdao = async (
     pre_propose_info: {
       module_may_propose: {
         info: {
-          code_id: preProposeCodeId,
+          code_id: preProposeTimelockedCodeId,
           label: 'neutron.subdaos.test.proposal.single.pre_propose',
           msg: wrapMsg({
             open_proposal_submission: true,
@@ -1178,12 +1200,70 @@ export const deploySubdao = async (
     label: 'neutron.subdaos.test.proposal.single',
     msg: wrapMsg(proposeInstantiateMessage),
   };
+
+  const propose2InstantiateMessage = {
+    threshold: { absolute_count: { threshold: '1' } },
+    max_voting_period: { height: 10 },
+    allow_revoting: false,
+    pre_propose_info: {
+      module_may_propose: {
+        info: {
+          code_id: preProposeTimelockedCodeId,
+          label: 'neutron.subdaos.test.proposal.single2.pre_propose',
+          msg: wrapMsg({
+            open_proposal_submission: true,
+            timelock_module_instantiate_info: {
+              code_id: timelockCodeId,
+              label:
+                'neutron.subdaos.test.proposal.single2.pre_propose.timelock',
+              msg: wrapMsg({
+                overrule_pre_propose: overrulePreProposeAddress,
+              }),
+            },
+          }),
+        },
+      },
+    },
+    close_proposal_on_execution_failure: false,
+  };
+  const proposal2ModuleInstantiateInfo = {
+    code_id: proposeCodeId,
+    label: 'neutron.subdaos.test.proposal.single2',
+    msg: wrapMsg(propose2InstantiateMessage),
+  };
+
+  const nonTimelockedProposeInstantiateMessage = {
+    threshold: { absolute_count: { threshold: '1' } },
+    max_voting_period: { height: 10 },
+    allow_revoting: false,
+    pre_propose_info: {
+      module_may_propose: {
+        info: {
+          code_id: preProposeNonTimelockedCodeId,
+          label: 'neutron.subdaos.test.proposal.single_nt.pre_propose',
+          msg: wrapMsg({
+            open_proposal_submission: true,
+          }),
+        },
+      },
+    },
+    close_proposal_on_execution_failure: false,
+  };
+  const nonTimelockedProposalModuleInstantiateInfo = {
+    code_id: proposeCodeId,
+    label: 'neutron.subdaos.test.proposal.single_nt',
+    msg: wrapMsg(nonTimelockedProposeInstantiateMessage),
+  };
+
   const coreInstantiateMessage = {
     name: 'SubDAO core test 1',
     description: 'serves testing purposes',
     vote_module_instantiate_info: votingModuleInstantiateInfo,
-    proposal_modules_instantiate_info: [proposalModuleInstantiateInfo],
-    dao_uri: 'www.testsubdao.org',
+    proposal_modules_instantiate_info: [
+      proposalModuleInstantiateInfo,
+      nonTimelockedProposalModuleInstantiateInfo,
+      proposal2ModuleInstantiateInfo,
+    ],
     main_dao: mainDaoCoreAddress,
     security_dao: securityDaoAddr,
   };

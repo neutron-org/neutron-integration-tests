@@ -240,6 +240,105 @@ describe('Neutron / Subdao', () => {
     });
   });
 
+  describe('Timelock2: Succeed execution', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
+        {
+          name: 'dao name after timelock2',
+        },
+        'single2',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+        'single2',
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await wait(20);
+      await subdaoMember1.executeTimelockedProposal(proposalId, 'single2');
+
+      const timelockedProp = await subDao.getTimelockedProposal(
+        proposalId,
+        'single2',
+      );
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+  });
+
+  describe('Overrule timelocked2', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
+        {
+          name: 'dao name after timelock2',
+        },
+        'single2',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+        'single2',
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('overrule timelocked(Timelocked): Success', async () => {
+      await overruleTimelockedProposalMock(
+        subdaoMember1,
+        proposalId,
+        'single2',
+      );
+      const timelockedProp = await subDao.getTimelockedProposal(
+        proposalId,
+        'single2',
+      );
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('overruled');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+  });
+
+  describe('Non-timelock: Succeed execution', () => {
+    let proposalId: number;
+    test('Non-timelock: Succeed execution', async () => {
+      const newDaoName = 'dao name after non-timelock';
+
+      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
+        {
+          name: newDaoName,
+        },
+        'single_nt',
+      );
+
+      await subdaoMember1.voteYes(proposalId, 'single_nt');
+      await subdaoMember1.executeProposal(proposalId, 'single_nt');
+
+      const p = await subDao.queryProposal(proposalId, 'single_nt');
+      expect(p.proposal.status).toEqual('executed');
+
+      const configAfter = await neutronChain.queryContract<SubDaoConfig>(
+        subDao.contracts.core.address,
+        {
+          config: {},
+        },
+      );
+
+      expect(configAfter.name).toEqual(newDaoName);
+    });
+  });
+
   describe('Update members', () => {
     let proposalId: number;
     beforeAll(async () => {
@@ -675,9 +774,10 @@ describe('Neutron / Subdao', () => {
 async function overruleTimelockedProposalMock(
   acc: DaoMember,
   proposalId: number,
+  customModule = 'single',
 ): Promise<InlineResponse20075TxResponse> {
   return acc.user.executeContract(
-    acc.dao.contracts.proposals.single.pre_propose.timelock.address,
+    acc.dao.contracts.proposals[customModule].pre_propose.timelock.address,
     JSON.stringify({
       overrule_proposal: {
         proposal_id: proposalId,
