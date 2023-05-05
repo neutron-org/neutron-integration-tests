@@ -239,7 +239,7 @@ describe('DAO / Check', () => {
           sudao.voting.address,
           // (sudao.voting as VotingCw4Module).cw4group.address, //  todo fix this
         ];
-        if (sudao.proposals.single.pre_propose.timelock.address) {
+        if (sudao.proposals.single.pre_propose.timelock) {
           contractsList.push(
             sudao.proposals.single.pre_propose.timelock.address,
           );

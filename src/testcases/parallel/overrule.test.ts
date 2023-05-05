@@ -33,11 +33,11 @@ describe('Neutron / Subdao', () => {
     );
     neutronAccount1 = new WalletWrapper(
       neutronChain,
-      testState.wallets.neutron.demo1,
+      testState.wallets.qaNeutron.genQaWal1,
     );
     neutronAccount2 = new WalletWrapper(
       neutronChain,
-      testState.wallets.neutron.demo2,
+      testState.wallets.qaNeutronThree.genQaWal1,
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
