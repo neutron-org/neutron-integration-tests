@@ -136,6 +136,7 @@ describe('Neutron / Credits Vault', () => {
       });
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
+      await neutronChain.blockWaiter.waitBlocks(1);
 
       currentHeight = await getHeight(neutronChain.sdk);
       expect(
@@ -155,6 +156,7 @@ describe('Neutron / Credits Vault', () => {
         daoAddr.toString(),
         '500',
       );
+      await neutronChain.blockWaiter.waitBlocks(1);
 
       currentHeight = await getHeight(neutronChain.sdk);
       expect(
