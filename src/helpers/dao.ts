@@ -1156,12 +1156,13 @@ export const deploySubdao = async (
       module_may_propose: {
         info: {
           code_id: preProposeCodeId,
-          label: 'subDAO prepropose module',
+          label: 'neutron.subdaos.test.proposal.single.pre_propose',
           msg: wrapMsg({
             open_proposal_submission: true,
             timelock_module_instantiate_info: {
               code_id: timelockCodeId,
-              label: 'subDAO timelock contract',
+              label:
+                'neutron.subdaos.test.proposal.single.pre_propose.timelock',
               msg: wrapMsg({
                 overrule_pre_propose: overrulePreProposeAddress,
               }),
@@ -1174,7 +1175,7 @@ export const deploySubdao = async (
   };
   const proposalModuleInstantiateInfo = {
     code_id: proposeCodeId,
-    label: 'subDAO proposal contract',
+    label: 'neutron.subdaos.test.proposal.single',
     msg: wrapMsg(proposeInstantiateMessage),
   };
   const coreInstantiateMessage = {
@@ -1189,7 +1190,7 @@ export const deploySubdao = async (
   const res = await cm.instantiateContract(
     coreCodeId,
     JSON.stringify(coreInstantiateMessage),
-    'cwd_subdao_core',
+    'neutron.subdaos.test.core',
   );
 
   const f = (arr: Record<string, string>[], id: number) =>
