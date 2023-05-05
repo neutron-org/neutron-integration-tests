@@ -30,12 +30,6 @@ import {
   upgradeProposal,
 } from './proposal';
 
-export type ProposalModule = {
-  address: string;
-  prefix: string;
-  status: string;
-};
-
 export type GetSubdaoResponse = { addr: string; charter: string };
 
 export type TimeLockSingleChoiceProposal = {
@@ -94,6 +88,16 @@ export type VotingCw4Module = {
   };
 };
 
+export type ProposalModule = {
+  address: string;
+  pre_propose: {
+    address: string;
+    timelock?: {
+      address: string;
+    };
+  };
+};
+
 export const DaoContractLabels = {
   DAO_CORE: 'neutron.core',
   NEUTRON_VAULT: 'neutron.voting.vaults.neutron',
@@ -121,27 +125,7 @@ export type DaoContracts = {
     address: string;
   };
   proposals: {
-    single: {
-      address: string;
-      pre_propose: {
-        address: string;
-        timelock?: {
-          address: string;
-        };
-      };
-    };
-    multiple?: {
-      address: string;
-      pre_propose: {
-        address: string;
-      };
-    };
-    overrule?: {
-      address: string;
-      pre_propose: {
-        address: string;
-      };
-    };
+    [name: string]: ProposalModule;
   };
   voting: VotingVaultsModule | VotingCw4Module;
   subdaos?: {
@@ -186,6 +170,54 @@ export const getVotingVaults = async (
   };
 };
 
+export const getProposalModules = async (
+  cm: CosmosWrapper,
+  daoAddress: string,
+): Promise<DaoContracts['proposals']> => {
+  const proposalModules = await cm.queryContract<{ address: string }[]>(
+    daoAddress,
+    { proposal_modules: {} },
+  );
+
+  const proposalsStructure: DaoContracts['proposals'] = {};
+
+  for (const proposalModule of proposalModules) {
+    const proposalContractInfo = await cm.getContractInfo(
+      proposalModule.address,
+    );
+    const preProposalContract = await cm.queryContract<{
+      Module: { addr: string };
+    }>(proposalModule.address, { proposal_creation_policy: {} });
+    const modulePath =
+      proposalContractInfo['contract_info']['label'].split('.');
+    const moduleType = modulePath.at(-1);
+
+    const preProposeModule: ProposalModule['pre_propose'] = {
+      address: preProposalContract.Module.addr,
+    };
+
+    try {
+      const timelockAddr = await cm.queryContract<string>(
+        preProposalContract.Module.addr,
+        {
+          query_extension: { msg: { timelock_address: {} } },
+        },
+      );
+      preProposeModule.timelock = {
+        address: timelockAddr,
+      };
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+
+    proposalsStructure[moduleType] = {
+      address: proposalModule.address,
+      pre_propose: preProposeModule,
+    };
+  }
+
+  return proposalsStructure;
+};
+
 export const getDaoContracts = async (
   cm: CosmosWrapper,
   daoAddress: string,
@@ -197,41 +229,7 @@ export const getDaoContracts = async (
   const votingModuleAddress = await getVotingModule(cm, daoAddress);
   const votingVaults = await getVotingVaults(cm, votingModuleAddress);
 
-  const proposalModules = await cm.queryContract<{ address: string }[]>(
-    daoAddress,
-    { proposal_modules: {} },
-  );
-
-  let proposalSingleAddress = '';
-  let proposalMultipleAddress = '';
-  let proposalOverruleAddress = '';
-
-  let preProposalSingleAddress = '';
-  let preProposalMultipleAddress = '';
-  let preProposalOverruleAddress = '';
-
-  for (const proposalModule of proposalModules) {
-    const proposalContractInfo = await cm.getContractInfo(
-      proposalModule.address,
-    );
-    const preProposalContract = await cm.queryContract<{
-      Module: { addr: string };
-    }>(proposalModule.address, { proposal_creation_policy: {} });
-    switch (proposalContractInfo['contract_info']['label']) {
-      case DaoContractLabels.DAO_PROPOSAL_OVERRULE:
-        proposalOverruleAddress = proposalModule.address;
-        preProposalOverruleAddress = preProposalContract.Module.addr;
-        break;
-      case DaoContractLabels.DAO_PROPOSAL_MULTIPLE:
-        proposalMultipleAddress = proposalModule.address;
-        preProposalMultipleAddress = preProposalContract.Module.addr;
-        break;
-      case DaoContractLabels.DAO_PROPOSAL_SINGLE:
-        proposalSingleAddress = proposalModule.address;
-        preProposalSingleAddress = preProposalContract.Module.addr;
-        break;
-    }
-  }
+  const proposalsStructure = await getProposalModules(cm, daoAddress);
 
   const subdaosList = await cm.queryContract<{ addr: string }[]>(daoAddress, {
     list_sub_daos: {},
@@ -246,20 +244,7 @@ export const getDaoContracts = async (
   return {
     name: config.name,
     core: { address: daoAddress },
-    proposals: {
-      single: {
-        address: proposalSingleAddress,
-        pre_propose: { address: preProposalSingleAddress },
-      },
-      multiple: {
-        address: proposalMultipleAddress,
-        pre_propose: { address: preProposalMultipleAddress },
-      },
-      overrule: {
-        address: proposalOverruleAddress,
-        pre_propose: { address: preProposalOverruleAddress },
-      },
-    },
+    proposals: proposalsStructure,
     voting: {
       address: votingModuleAddress,
       vaults: votingVaults,
@@ -283,45 +268,14 @@ export const getSubDaoContracts = async (
     group_contract: {},
   });
 
-  const proposalModules = await cm.queryContract<[{ address: string }]>(
-    daoAddress,
-    { proposal_modules: {} },
-  );
-
-  expect(proposalModules).toHaveLength(1);
-  const proposalModule = proposalModules[0];
-
-  const preProposalContract = await cm.queryContract<{
-    Module: { addr: string };
-  }>(proposalModule.address, { proposal_creation_policy: {} });
-  const proposalSingleAddress = proposalModule.address;
-  const preProposalSingleAddress = preProposalContract.Module.addr;
-
-  let timelockAddr;
-  try {
-    timelockAddr = await cm.queryContract<string>(preProposalSingleAddress, {
-      query_extension: { msg: { timelock_address: {} } },
-    });
-  } catch (e) {
-    timelockAddr = null;
-  }
+  const proposalsStructure = await getProposalModules(cm, daoAddress);
 
   return {
     name: config.name,
     core: {
       address: daoAddress,
     },
-    proposals: {
-      single: {
-        address: proposalSingleAddress,
-        pre_propose: {
-          address: preProposalSingleAddress,
-          timelock: {
-            address: timelockAddr,
-          },
-        },
-      },
-    },
+    proposals: proposalsStructure,
     voting: {
       address: votingModuleAddress,
       cw4group: {
