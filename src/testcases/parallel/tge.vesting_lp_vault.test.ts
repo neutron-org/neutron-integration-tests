@@ -829,7 +829,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               JSON.stringify({ update: {} }),
             );
             expect(execRes.code).toBe(0);
-            neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAPs are available
+            await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAPs are available
 
             const ntrnTwapInAtomResp = await getTwapAtHeight(
               neutronChain,
