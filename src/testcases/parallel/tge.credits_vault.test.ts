@@ -5,7 +5,6 @@ import {
   WalletWrapper,
 } from '../../helpers/cosmos';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-// import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { Wallet } from '../../types';
 import { CreditsVaultConfig } from '../../helpers/dao';
 import { NeutronContract } from '../../helpers/types';
@@ -53,7 +52,7 @@ describe('Neutron / Credits Vault', () => {
     managerAddr = managerAccount.wallet.address;
   });
 
-  const original_description = 'A credtis vault for test purposes.';
+  const originalDescription = 'A credits vault for test purposes.';
   describe('Credits vault', () => {
     let creditsContractAddr: string;
     let creditsVaultAddr: string;
@@ -70,7 +69,7 @@ describe('Neutron / Credits Vault', () => {
       creditsVaultAddr = await setupCreditsVault(
         daoAccount,
         creditsContractAddr,
-        original_description,
+        originalDescription,
         daoAddr.toString(),
         managerAddr.toString(),
       );
@@ -80,20 +79,20 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: original_description,
+        description: originalDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
         manager: managerAddr.toString(),
       });
     });
 
-    const new_description = 'A new description for the credits vault.';
+    const newDescription = 'A new description for the credits vault.';
     test('Update config by manager: success', async () => {
       const res = await updateVaultConfig(
         managerAccount,
         creditsVaultAddr,
         creditsContractAddr,
-        new_description,
+        newDescription,
         daoAddr.toString(),
         managerAddr.toString(),
       );
@@ -102,7 +101,7 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: new_description,
+        description: newDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
         manager: managerAddr.toString(),
@@ -116,7 +115,7 @@ describe('Neutron / Credits Vault', () => {
           managerAccount,
           creditsVaultAddr,
           creditsContractAddr,
-          new_description,
+          newDescription,
           managerAddr.toString(),
           managerAddr.toString(),
         ),
@@ -125,7 +124,7 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: original_description,
+        description: originalDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
         manager: managerAddr.toString(),
@@ -138,7 +137,7 @@ describe('Neutron / Credits Vault', () => {
         daoAccount,
         creditsVaultAddr,
         creditsContractAddr,
-        original_description,
+        originalDescription,
         managerAddr.toString(),
         managerAddr.toString(),
       );
@@ -147,7 +146,7 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: original_description,
+        description: originalDescription,
         credits_contract_address: creditsContractAddr,
         owner: managerAddr.toString(),
         manager: managerAddr.toString(),
@@ -158,7 +157,7 @@ describe('Neutron / Credits Vault', () => {
         managerAccount,
         creditsVaultAddr,
         creditsContractAddr,
-        original_description,
+        originalDescription,
         daoAddr.toString(),
         managerAddr.toString(),
       );
@@ -167,7 +166,7 @@ describe('Neutron / Credits Vault', () => {
       expect(
         await getVaultConfig(neutronChain, creditsVaultAddr),
       ).toMatchObject({
-        description: original_description,
+        description: originalDescription,
         credits_contract_address: creditsContractAddr,
         owner: daoAddr.toString(),
         manager: managerAddr.toString(),
@@ -410,14 +409,14 @@ const mintTokens = async (
 
 const updateVaultConfig = async (
   wallet: WalletWrapper,
-  vault_contract: string,
+  vaultContract: string,
   creditsContractAddress: string,
   description: string,
   owner?: string,
   manager?: string,
 ): Promise<InlineResponse20075TxResponse> =>
   wallet.executeContract(
-    vault_contract,
+    vaultContract,
     JSON.stringify({
       update_config: {
         credits_contract_address: creditsContractAddress,
