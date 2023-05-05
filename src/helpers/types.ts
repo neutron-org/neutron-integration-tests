@@ -146,6 +146,8 @@ export const NeutronContract = {
   VESTING_LP: 'vesting_lp.wasm',
   VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
   CREDITS_VAULT: 'credits_vault.wasm',
+  VESTING_INVESTORS: 'vesting_investors.wasm',
+  INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
 };
 
 export type MultiChoiceOption = {
