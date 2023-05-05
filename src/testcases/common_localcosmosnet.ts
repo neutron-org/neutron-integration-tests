@@ -194,12 +194,8 @@ export class TestStateLocalCosmosTestNet {
         );
         break;
       } catch (e) {
-        if (e.message.includes('sequence')) {
-          await cm.chain.blockWaiter.waitBlocks(1);
-          attemptCount++;
-        } else {
-          throw e;
-        }
+        await cm.chain.blockWaiter.waitBlocks(1);
+        attemptCount++;
       }
     }
     if (!res) {
