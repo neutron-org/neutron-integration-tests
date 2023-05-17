@@ -1,3 +1,6 @@
+import {google} from "../generated/proto";
+import Any = google.protobuf.Any;
+
 export type ParamChangeProposalInfo = {
   title: string;
   description: string;
@@ -38,7 +41,7 @@ export type UpgradeInfo = {
   name: string;
   height: number;
   info: string;
-  upgraded_client_state: string;
+  upgraded_client_state: Any;
 };
 
 export type SendProposalInfo = {
