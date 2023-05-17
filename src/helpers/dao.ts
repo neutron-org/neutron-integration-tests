@@ -73,7 +73,7 @@ export type CreditsVaultConfig = {
 
 export type VaultBondingStatus = {
   bonding_enabled: string;
-  unbondable_abount: string;
+  unbondable_amount: string;
   height: number;
 };
 
@@ -539,6 +539,17 @@ export class DaoMember {
         bond: {},
       }),
       [{ denom: this.user.chain.denom, amount: amount }],
+    );
+  }
+
+  async unbondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+    const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
+      .vaults.neutron.address;
+    return await this.user.executeContract(
+      vaultAddress,
+      JSON.stringify({
+        unbond: { amount: amount },
+      }),
     );
   }
 

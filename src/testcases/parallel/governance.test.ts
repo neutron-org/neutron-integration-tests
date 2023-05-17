@@ -270,7 +270,7 @@ describe('Neutron / Governance', () => {
         'Proposal #12',
         '',
         '1000',
-        'proposal11',
+        'proposal12',
       );
     });
 
@@ -317,6 +317,29 @@ describe('Neutron / Governance', () => {
             msg: '{"test_msg": {"return_err": true, "arg": ""}}',
           },
         ],
+      );
+    });
+
+    test('create proposal #15, will pass', async () => {
+      for (let i = 0; i < 100; i++)
+        await neutronAccount.storeWasm(NeutronContract.RESERVE);
+      const codeids = Array.from({ length: 100 }, (_, i) => i + 1);
+      await daoMember1.submitPinCodesProposal(
+        'Proposal #15',
+        'Pin codes proposal. Will pass',
+        codeids,
+        '1000',
+      );
+    });
+
+    test('create proposal #16, will be rejected', async () => {
+      await daoMember1.submitParameterChangeProposal(
+        'Proposal #16',
+        'Param change proposal. This one will not pass',
+        'icahost',
+        'HostEnabled',
+        'false',
+        '1000',
       );
     });
 
@@ -861,6 +884,64 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
+  describe('vote for proposal #15 (no, yes, yes)', () => {
+    const proposalId = 15;
+    test('vote NO from wallet 1', async () => {
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2', async () => {
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3', async () => {
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('execute proposal #15', () => {
+    const proposalId = 15;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
+  describe('vote for proposal #16 (no, yes, yes)', () => {
+    const proposalId = 16;
+    test('vote NO from wallet 1 with unbonded funds', async () => {
+      await daoMember1.unbondFunds('1000');
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2 with unbonded funds', async () => {
+      await daoMember2.unbondFunds('1000');
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3 with unbonded funds', async () => {
+      await daoMember3.unbondFunds('1000');
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('execute proposal #16', () => {
+    test('check if proposal is still open', async () => {
+      const proposalId = 16;
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes("proposal is not in 'passed' state"));
+      await getWithAttempts(
+        neutronChain.blockWaiter,
+        async () => await dao.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'open',
+        20,
+      );
     });
   });
 
