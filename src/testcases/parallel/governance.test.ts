@@ -18,6 +18,7 @@ describe('Neutron / Governance', () => {
   let dao: Dao;
 
   let contractAddress: string;
+  let contractAddressForAdminMigration: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -49,6 +50,20 @@ describe('Neutron / Governance', () => {
       ),
       dao,
     );
+
+    const contractCodeId = await neutronAccount.storeWasm(
+      NeutronContract.IBC_TRANSFER,
+    );
+    expect(contractCodeId).toBeGreaterThan(0);
+    const contractRes = await neutronAccount.instantiateContract(
+      contractCodeId,
+      '{}',
+      'ibc_transfer',
+      dao.contracts.core.address,
+    );
+    contractAddressForAdminMigration = contractRes[0]._contract_address;
+    expect(contractAddressForAdminMigration).toBeDefined();
+    expect(contractAddressForAdminMigration).not.toEqual('');
   });
 
   describe('Contracts', () => {
@@ -110,12 +125,19 @@ describe('Neutron / Governance', () => {
 
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
+      const balanceBefore = await neutronChain.queryDenomBalance(
+        dao.contracts.core.address,
+        NEUTRON_DENOM,
+      );
       await daoMember1.user.msgSend(dao.contracts.core.address, '1000');
       await getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
-          await neutronChain.queryBalances(dao.contracts.core.address),
-        async (response) => response.balances[0].amount == '1000',
+          await neutronChain.queryDenomBalance(
+            dao.contracts.core.address,
+            NEUTRON_DENOM,
+          ),
+        async (response) => response == balanceBefore + 1000,
         20,
       );
     });
@@ -210,7 +232,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitUpdateAdminProposal(
         'Proposal #9',
         'Update admin proposal. Will pass',
-        dao.contracts.core.address,
+        contractAddressForAdminMigration,
         daoMember1.user.wallet.address.toString(),
         '1000',
       );
@@ -220,7 +242,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitClearAdminProposal(
         'Proposal #10',
         'Clear admin proposal. Will pass',
-        dao.contracts.core.address,
+        contractAddressForAdminMigration,
         '1000',
       );
     });
@@ -644,6 +666,11 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+      const contractInfo = await neutronChain.getContractInfo(
+        contractAddressForAdminMigration,
+      );
+      const newAdmin = contractInfo.contract_info.admin;
+      expect(newAdmin).toEqual(daoMember1.user.wallet.address.toString());
     });
     test('check that admin was changed', async () => {
       const admin = await neutronChain.queryContractAdmin(
@@ -672,6 +699,11 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+      const contractInfo = await neutronChain.getContractInfo(
+        contractAddressForAdminMigration,
+      );
+      const newAdmin = contractInfo.contract_info.admin;
+      expect(newAdmin).toEqual('');
     });
     test('check that admin was changed', async () => {
       const admin = await neutronChain.queryContractAdmin(
