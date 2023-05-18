@@ -60,6 +60,8 @@ export type LockdropVaultConfig = {
   name: string;
   description: string;
   lockdrop_contract: string;
+  oracle_usdc_contract: string;
+  oracle_atom_contract: string;
   owner: string;
 };
 
