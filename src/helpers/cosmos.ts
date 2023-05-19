@@ -89,6 +89,10 @@ cosmosclient.codec.register(
   '/cosmos.adminmodule.adminmodule.MsgSubmitProposal',
   adminmodule.MsgSubmitProposal,
 );
+cosmosclient.codec.register(
+  '/ibc.lightclients.tendermint.v1.ClientState',
+  ibcProto.lightclients.tendermint.v1.ClientState,
+);
 
 export class CosmosWrapper {
   readonly sdk: cosmosclient.CosmosSDK;

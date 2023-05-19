@@ -29,7 +29,7 @@ import {
   updateAdminProposal,
   upgradeProposal,
 } from './proposal';
-import ibc from '../generated/ibc/proto';
+import { ibc } from '../generated/ibc/proto';
 import { cosmosclient } from '@cosmos-client/core';
 
 export type GetSubdaoResponse = { addr: string; charter: string };
@@ -1013,7 +1013,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitClientUpdateProposal creates proposal which updates client .
    */
   async submitClientUpdateProposal(
     title: string,
@@ -1053,7 +1053,9 @@ export class DaoMember {
       name,
       height,
       info,
-      upgraded_client_state: null,
+      upgraded_client_state: cosmosclient.codec.instanceToProtoAny(
+        new ibc.lightclients.tendermint.v1.ClientState({}),
+      ),
     });
     return await this.submitSingleChoiceProposal(
       title,

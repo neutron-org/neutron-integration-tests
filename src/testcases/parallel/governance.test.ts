@@ -414,7 +414,7 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
-    test('check if proposal is passed', async () => {
+    test('check if host is not enabled after proposal execution', async () => {
       const host = await neutronChain.queryHostEnabled();
       expect(host).toEqual(false);
     });
