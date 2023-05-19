@@ -247,7 +247,6 @@ export class TestStateLocalCosmosTestNet {
       mnemonic,
       prefix,
     );
-
     return { genQaWal1: wal };
   }
 }
