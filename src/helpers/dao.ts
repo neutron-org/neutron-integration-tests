@@ -990,7 +990,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitUnpinCodesProposal creates proposal which unpins given code ids to wasmvm.
    */
 
   async submitUnpinCodesProposal(
@@ -1013,7 +1013,7 @@ export class DaoMember {
   }
 
   /**
-   * submitClientUpdateProposal creates proposal which updates client .
+   * submitClientUpdateProposal creates proposal which updates client.
    */
   async submitClientUpdateProposal(
     title: string,
@@ -1037,7 +1037,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUpgradeProposal creates proposal which pins given code ids to wasmvm.
+   * submitUpgradeProposal creates proposal which upgrades ibc.
    */
   async submitUpgradeProposal(
     title: string,
@@ -1066,7 +1066,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   * submitUpdateAminProposal creates proposal which updates an admin of a contract.
    */
   async submitUpdateAdminProposal(
     title: string,
@@ -1090,7 +1090,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   * submitClearAdminProposal creates proposal which removes an admin of a contract.
    */
   async submitClearAdminProposal(
     title: string,
