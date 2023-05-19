@@ -250,7 +250,6 @@ export type VestingSchedulePoint = {
   amount: string;
 };
 
-
 export type PinnedCodesResponse = {
   code_ids: number[];
 };

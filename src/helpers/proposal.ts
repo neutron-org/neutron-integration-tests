@@ -1,4 +1,4 @@
-import {google} from "../generated/proto";
+import { google } from '../generated/proto';
 import Any = google.protobuf.Any;
 
 export type ParamChangeProposalInfo = {
