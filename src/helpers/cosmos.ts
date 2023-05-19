@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { cosmos as CosmosAdmin, ibc as ibcProto } from '../generated/ibc/proto';
+import { cosmos as AdminProto, ibc as ibcProto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -29,7 +29,7 @@ import {
   IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
-const adminmodule = CosmosAdmin.adminmodule;
+const adminmodule = AdminProto.adminmodule.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
@@ -91,7 +91,7 @@ cosmosclient.codec.register(
 );
 cosmosclient.codec.register(
   '/cosmos.adminmodule.adminmodule.MsgSubmitProposal',
-  adminmodule.adminmodule.MsgSubmitProposal,
+  adminmodule.MsgSubmitProposal,
 );
 
 export class CosmosWrapper {
@@ -610,7 +610,7 @@ export class WalletWrapper {
     sequence: number = this.wallet.account.sequence,
     mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
   ): Promise<InlineResponse20075TxResponse> {
-    const msg = new adminmodule.adminmodule.MsgSubmitProposal({
+    const msg = new adminmodule.MsgSubmitProposal({
       content: cosmosclient.codec.instanceToProtoAny(
         new proto.cosmos.params.v1beta1.ParameterChangeProposal({
           title: 'mock',
