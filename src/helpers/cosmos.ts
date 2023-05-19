@@ -86,10 +86,6 @@ cosmosclient.codec.register(
   ibcProto.applications.transfer.v1.MsgTransfer,
 );
 cosmosclient.codec.register(
-  '/ibc.lightclients.tendermint.v1.ConsensusState',
-  ibcProto.lightclients.tendermint.v1.ConsensusState,
-);
-cosmosclient.codec.register(
   '/cosmos.adminmodule.adminmodule.MsgSubmitProposal',
   adminmodule.MsgSubmitProposal,
 );

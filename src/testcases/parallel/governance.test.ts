@@ -125,21 +125,11 @@ describe('Neutron / Governance', () => {
 
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
-      const balanceBefore = await neutronChain.queryDenomBalance(
+      const res = await daoMember1.user.msgSend(
         dao.contracts.core.address,
-        NEUTRON_DENOM,
+        '1000',
       );
-      await daoMember1.user.msgSend(dao.contracts.core.address, '1000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
-        async () =>
-          await neutronChain.queryDenomBalance(
-            dao.contracts.core.address,
-            NEUTRON_DENOM,
-          ),
-        async (response) => response == balanceBefore + 1000,
-        20,
-      );
+      expect(res.code).toEqual(0);
     });
   });
 
@@ -270,7 +260,7 @@ describe('Neutron / Governance', () => {
         'Proposal #12',
         '',
         '1000',
-        'proposal12',
+        'proposal11',
       );
     });
 

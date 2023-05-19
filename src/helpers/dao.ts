@@ -1053,9 +1053,7 @@ export class DaoMember {
       name,
       height,
       info,
-      upgraded_client_state: cosmosclient.codec.instanceToProtoAny(
-        new ibc.ibc.lightclients.tendermint.v1.ConsensusState({}),
-      ),
+      upgraded_client_state: null,
     });
     return await this.submitSingleChoiceProposal(
       title,
