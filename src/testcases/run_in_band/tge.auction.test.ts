@@ -1805,10 +1805,6 @@ describe('Neutron / TGE / Auction', () => {
             );
           }
         });
-        // TODO: enable and implement later https://github.com/neutron-org/neutron-dao/pull/61
-        // Total power = total balance - airdrop balance
-        // it('airdrop contract should not have voting power', async () => {
-        // });
       });
     });
     describe('lockdrop', () => {
