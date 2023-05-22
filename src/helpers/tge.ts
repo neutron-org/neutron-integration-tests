@@ -3,7 +3,11 @@ import crypto from 'crypto';
 import { CosmosWrapper, WalletWrapper } from './cosmos';
 import { CodeId } from '../types';
 import { NeutronContract } from './types';
-import { LockdropVaultConfig } from './dao';
+import {
+  CreditsVaultConfig,
+  LockdropVaultConfig,
+  VestingLpVaultConfig,
+} from './dao';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 const sha256 = (x: string): Buffer => {
@@ -78,7 +82,7 @@ export class Tge {
     astroFactory: string;
     vestingAtomLp: string;
     vestingUsdcLp: string;
-    vestingVault: string;
+    vestingLpVault: string;
     auction: string;
     lockdrop: string;
     astroGenerator: string;
@@ -101,8 +105,10 @@ export class Tge {
     amount: string;
   }[];
   airdrop: Airdrop;
-  vestingVaultName: string;
-  vestingVaultDescription: string;
+  vestingLpVaultName: string;
+  vestingLpVaultDescription: string;
+  creditsVaultName: string;
+  creditsVaultDescription: string;
 
   constructor(
     chain: CosmosWrapper,
@@ -127,7 +133,7 @@ export class Tge {
       astroFactory: null,
       vestingAtomLp: null,
       vestingUsdcLp: null,
-      vestingVault: null,
+      vestingLpVault: null,
       auction: null,
       lockdrop: null,
       astroGenerator: null,
@@ -152,8 +158,10 @@ export class Tge {
     this.times.vestTimestamp = 0;
     this.lockdropVaultName = 'Lockdrop vault';
     this.lockdropVaultDescription = 'A lockdrop vault for testing purposes';
-    this.vestingVaultName = 'Vesting vault';
-    this.vestingVaultDescription = 'A vesting vault for testing purposes';
+    this.vestingLpVaultName = 'Vesting LP vault';
+    this.vestingLpVaultDescription = 'A vesting LP vault for testing purposes';
+    this.creditsVaultName = 'Credits vault';
+    this.creditsVaultDescription = 'A credits vault for testing purposes';
     this.airdropAccounts = [];
   }
 
@@ -173,7 +181,7 @@ export class Tge {
       'VESTING_LP',
       'LOCKDROP_VAULT',
       'CREDITS_VAULT',
-      'VESTING_VAULT',
+      'VESTING_LP_VAULT',
       'ORACLE_HISTORY',
     ]) {
       const codeId = await this.instantiator.storeWasm(
@@ -206,8 +214,8 @@ export class Tge {
     this.contracts.creditsVault = await instantiateCreditsVault(
       this.instantiator,
       this.codeIds.CREDITS_VAULT,
-      'credits vault',
-      'credits_vault',
+      this.creditsVaultName,
+      this.creditsVaultDescription,
       this.contracts.credits,
       this.instantiator.wallet.address.toString(),
       this.contracts.airdrop,
@@ -450,11 +458,11 @@ export class Tge {
       this.tokenInfoManager.wallet.address.toString(),
     );
 
-    this.contracts.vestingVault = await instantiateVestingVault(
+    this.contracts.vestingLpVault = await instantiateVestingLpVault(
       this.instantiator,
-      this.codeIds.VESTING_VAULT,
-      this.vestingVaultName,
-      this.vestingVaultDescription,
+      this.codeIds.VESTING_LP_VAULT,
+      this.vestingLpVaultName,
+      this.vestingLpVaultDescription,
       this.contracts.lockdrop,
       this.contracts.oracleAtom,
       this.contracts.oracleUsdc,
@@ -659,6 +667,34 @@ export const instantiateCreditsVault = async (
   expect(res).toBeTruthy();
   return res[0]._contract_address;
 };
+
+export const executeCreditsVaultUpdateConfig = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  creditsContract: string | null,
+  owner: string | null,
+  name: string | null,
+  description: string | null,
+) =>
+  cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      update_config: {
+        credits_contract_address: creditsContract,
+        owner,
+        name,
+        description,
+      },
+    }),
+  );
+
+export const queryCreditsVaultConfig = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+) =>
+  cm.queryContract<CreditsVaultConfig>(contractAddress, {
+    config: {},
+  });
 
 export type LockupRewardsInfo = {
   duration: number;
@@ -1025,6 +1061,40 @@ export const queryLockdropVaultConfig = async (
     config: {},
   });
 
+export const executeVestingLpVaultUpdateConfig = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  owner: string,
+  atomVestingLp: string,
+  atomOracle: string,
+  usdcVestingLp: string,
+  usdcOracle: string,
+  name: string,
+  description: string,
+) =>
+  cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      update_config: {
+        owner,
+        atom_vesting_lp_contract: atomVestingLp,
+        atom_oracle_contract: atomOracle,
+        usdc_vesting_lp_contract: usdcVestingLp,
+        usdc_oracle_contract: usdcOracle,
+        name,
+        description,
+      },
+    }),
+  );
+
+export const queryVestingLpVaultConfig = async (
+  cm: CosmosWrapper,
+  contractAddress: string,
+) =>
+  cm.queryContract<VestingLpVaultConfig>(contractAddress, {
+    config: {},
+  });
+
 export const instantiateAstroportOracle = async (
   cm: WalletWrapper,
   codeId: CodeId,
@@ -1070,7 +1140,7 @@ export const executeAstroportOracleSetAssetInfos = async (
     }),
   );
 
-export const instantiateVestingVault = async (
+export const instantiateVestingLpVault = async (
   cm: WalletWrapper,
   codeId: CodeId,
   name: string,
@@ -1082,7 +1152,7 @@ export const instantiateVestingVault = async (
   usdcVestingLp: string,
   owner: string,
   tokenInfoManager: string,
-  label = 'vesting_vault',
+  label = 'vesting_lp_vault',
 ) => {
   const res = await cm.instantiateContract(
     codeId,

@@ -10,11 +10,15 @@ import { getHeight } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   executeAuctionSetTokenInfo,
+  executeCreditsVaultUpdateConfig,
   executeLockdropSetTokenInfo,
   executeLockdropVaultUpdateConfig,
   executeVestingLpSetVestingToken,
+  executeVestingLpVaultUpdateConfig,
   getTimestamp,
+  queryCreditsVaultConfig,
   queryLockdropVaultConfig,
+  queryVestingLpVaultConfig,
   Tge,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
@@ -1698,14 +1702,14 @@ describe('Neutron / TGE / Auction', () => {
           const tvp = await dao.queryTotalVotingPower();
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #2',
-            'add VESTING_VAULT',
+            'add VESTING_LP_VAULT',
             [
               {
                 wasm: {
                   execute: {
                     contract_addr: dao.contracts.voting.address,
                     msg: Buffer.from(
-                      `{"add_voting_vault": {"new_voting_vault_contract":"${tge.contracts.vestingVault}"}}`,
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${tge.contracts.vestingLpVault}"}}`,
                     ).toString('base64'),
                     funds: [],
                   },
@@ -1958,8 +1962,8 @@ describe('Neutron / TGE / Auction', () => {
     });
   });
 
-  describe('Lockdrop vault', () => {
-    test('Get config', async () => {
+  describe('Vaults', () => {
+    test('Get lockdrop vault config', async () => {
       expect(
         await queryLockdropVaultConfig(
           neutronChain,
@@ -1975,7 +1979,36 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
 
-    test('Update config: permission denied', async () => {
+    test('Get vesting LP vault config', async () => {
+      expect(
+        await queryVestingLpVaultConfig(
+          neutronChain,
+          tge.contracts.vestingLpVault,
+        ),
+      ).toMatchObject({
+        name: tge.vestingLpVaultName,
+        description: tge.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
+        atom_oracle_contract: tge.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        owner: tge.instantiator.wallet.address.toString(),
+      });
+    });
+
+    test('Get credits vault config', async () => {
+      expect(
+        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+      ).toMatchObject({
+        name: tge.creditsVaultName,
+        description: tge.creditsVaultDescription,
+        credits_contract_address: tge.contracts.credits,
+        owner: tge.instantiator.wallet.address.toString(),
+        airdrop_contract_address: tge.contracts.airdrop,
+      });
+    });
+
+    test('Update lockdrop vault config: permission denied', async () => {
       await expect(
         executeLockdropVaultUpdateConfig(
           cmStranger,
@@ -2004,29 +2037,91 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
 
-    test('Bonding and Unbonding', async () => {
+    test('Update vesting LP vault config: permission denied', async () => {
       await expect(
-        cmStranger.executeContract(
-          tge.contracts.lockdropVault,
-          JSON.stringify({
-            bond: {},
-          }),
-          [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        executeVestingLpVaultUpdateConfig(
+          cmStranger,
+          tge.contracts.vestingLpVault,
+          cmStranger.wallet.address.toString(),
+          tge.contracts.vestingUsdcLp,
+          tge.contracts.oracleUsdc,
+          tge.contracts.vestingAtomLp,
+          tge.contracts.oracleAtom,
+          'name',
+          'description',
         ),
-      ).rejects.toThrow(/Bonding is not available for this contract/);
-      await expect(
-        cmStranger.executeContract(
-          tge.contracts.lockdropVault,
-          JSON.stringify({
-            unbond: {
-              amount: '1000',
-            },
-          }),
+      ).rejects.toThrow(/Unauthorized/);
+
+      expect(
+        await queryVestingLpVaultConfig(
+          neutronChain,
+          tge.contracts.vestingLpVault,
         ),
-      ).rejects.toThrow(/Direct unbonding is not available for this contract/);
+      ).toMatchObject({
+        name: tge.vestingLpVaultName,
+        description: tge.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
+        atom_oracle_contract: tge.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        owner: tge.instantiator.wallet.address.toString(),
+      });
     });
 
-    test('Change owner to stranger', async () => {
+    test('Update credits vault config: permission denied', async () => {
+      await expect(
+        executeCreditsVaultUpdateConfig(
+          cmStranger,
+          tge.contracts.creditsVault,
+          tge.contracts.auction,
+          cmStranger.wallet.address.toString(),
+          'name',
+          'description',
+        ),
+      ).rejects.toThrow(/Unauthorized/);
+
+      expect(
+        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+      ).toMatchObject({
+        name: tge.creditsVaultName,
+        description: tge.creditsVaultDescription,
+        credits_contract_address: tge.contracts.credits,
+        owner: tge.instantiator.wallet.address.toString(),
+        airdrop_contract_address: tge.contracts.airdrop,
+      });
+    });
+
+    test('Bonding and Unbonding', async () => {
+      for (const vault of [
+        tge.contracts.creditsVault,
+        tge.contracts.vestingLpVault,
+        tge.contracts.lockdropVault,
+      ]) {
+        await expect(
+          cmStranger.executeContract(
+            vault,
+            JSON.stringify({
+              bond: {},
+            }),
+            [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          ),
+        ).rejects.toThrow(/Bonding is not available for this contract/);
+        await expect(
+          cmStranger.executeContract(
+            vault,
+            JSON.stringify({
+              unbond: {
+                amount: '1000',
+              },
+            }),
+          ),
+        ).rejects.toThrow(
+          /Direct unbonding is not available for this contract/,
+        );
+      }
+    });
+
+    test('Change lockdrop vault owner to stranger', async () => {
       const res = await executeLockdropVaultUpdateConfig(
         cmInstantiator,
         tge.contracts.lockdropVault,
@@ -2054,7 +2149,7 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
 
-    test('Update config by new owner', async () => {
+    test('Update lockdrop vault config by new owner', async () => {
       tge.lockdropVaultName = 'New lockdrop name';
       tge.lockdropVaultDescription = 'New lockdrop description';
 
@@ -2082,6 +2177,114 @@ describe('Neutron / TGE / Auction', () => {
         oracle_usdc_contract: tge.contracts.oracleUsdc,
         oracle_atom_contract: tge.contracts.oracleAtom,
         owner: cmStranger.wallet.address.toString(),
+      });
+    });
+
+    test('Change vesting LP vault owner to stranger', async () => {
+      const res = await executeVestingLpVaultUpdateConfig(
+        cmInstantiator,
+        tge.contracts.vestingLpVault,
+        cmStranger.wallet.address.toString(),
+        tge.contracts.vestingAtomLp,
+        tge.contracts.oracleAtom,
+        tge.contracts.vestingUsdcLp,
+        tge.contracts.oracleUsdc,
+        tge.vestingLpVaultName,
+        tge.vestingLpVaultDescription,
+      );
+      expect(res.code).toEqual(0);
+
+      expect(
+        await queryVestingLpVaultConfig(
+          neutronChain,
+          tge.contracts.vestingLpVault,
+        ),
+      ).toMatchObject({
+        name: tge.vestingLpVaultName,
+        description: tge.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
+        atom_oracle_contract: tge.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        owner: cmStranger.wallet.address.toString(),
+      });
+    });
+
+    test('Update vesting LP vault config by new owner', async () => {
+      tge.vestingLpVaultName = 'New vesting LP name';
+      tge.vestingLpVaultDescription = 'New vesting LP description';
+      const res = await executeVestingLpVaultUpdateConfig(
+        cmStranger,
+        tge.contracts.vestingLpVault,
+        cmStranger.wallet.address.toString(),
+        tge.contracts.vestingAtomLp,
+        tge.contracts.oracleAtom,
+        tge.contracts.vestingUsdcLp,
+        tge.contracts.oracleUsdc,
+        tge.vestingLpVaultName,
+        tge.vestingLpVaultDescription,
+      );
+      expect(res.code).toEqual(0);
+
+      expect(
+        await queryVestingLpVaultConfig(
+          neutronChain,
+          tge.contracts.vestingLpVault,
+        ),
+      ).toMatchObject({
+        name: tge.vestingLpVaultName,
+        description: tge.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
+        atom_oracle_contract: tge.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        owner: cmStranger.wallet.address.toString(),
+      });
+    });
+
+    test('Change credits vault owner to stranger', async () => {
+      const res = await executeCreditsVaultUpdateConfig(
+        cmInstantiator,
+        tge.contracts.creditsVault,
+        null,
+        cmStranger.wallet.address.toString(),
+        null,
+        null,
+      );
+      expect(res.code).toEqual(0);
+
+      expect(
+        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+      ).toMatchObject({
+        name: tge.creditsVaultName,
+        description: tge.creditsVaultDescription,
+        credits_contract_address: tge.contracts.credits,
+        owner: cmStranger.wallet.address.toString(),
+        airdrop_contract_address: tge.contracts.airdrop,
+      });
+    });
+
+    test('Update credits vault config by new owner', async () => {
+      tge.creditsVaultName = 'New credits name';
+      tge.creditsVaultDescription = 'New credits description';
+      const res = await executeCreditsVaultUpdateConfig(
+        cmStranger,
+        tge.contracts.creditsVault,
+        null,
+        null,
+        tge.creditsVaultName,
+        tge.creditsVaultDescription,
+      );
+      expect(res.code).toEqual(0);
+
+      expect(
+        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+      ).toMatchObject({
+        name: tge.creditsVaultName,
+        description: tge.creditsVaultDescription,
+        credits_contract_address: tge.contracts.credits,
+        owner: cmStranger.wallet.address.toString(),
+        airdrop_contract_address: tge.contracts.airdrop,
       });
     });
   });
