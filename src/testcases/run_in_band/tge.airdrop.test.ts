@@ -109,6 +109,17 @@ describe('Neutron / TGE / Airdrop', () => {
       expect(res).toBeTruthy();
       contractAddresses['TGE_AIRDROP'] = res[0]._contract_address;
     });
+    test('config query should match with instantiate params', async () => {
+      expect(
+        await neutronChain.queryContract(contractAddresses.TGE_AIRDROP, {
+          config: {},
+        }),
+      ).toMatchObject({
+        owner: neutronAccount1.wallet.address.toString(),
+        credits_address: contractAddresses.TGE_CREDITS,
+        reserve_address: reserveAddress,
+      });
+    });
     it('should set airdrop address for credits contract', async () => {
       times.creditsWhenWithdrawable = getTimestamp(50);
       const res = await neutronAccount1.executeContract(
@@ -327,7 +338,7 @@ describe('Neutron / TGE / Airdrop', () => {
       );
       expect(res).toEqual({ is_paused: true });
     });
-    it('should not claim bc of pause', async () => {
+    it('should not claim because of pause', async () => {
       const proofs = airdrop.getMerkleProof({
         address: neutronAccount1.wallet.address.toString(),
         amount: '300000',
