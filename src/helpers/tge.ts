@@ -406,11 +406,13 @@ export class Tge {
       this.contracts.lockdrop,
     );
     expect(res.code).toEqual(0);
+    // 4000100 - users
+    // 10000000 - extra to test its ignored in credits vault voting power
     res = await executeCreditsMint(
       this.instantiator,
       this.contracts.credits,
       this.neutronDenom,
-      '5000000',
+      '14000100',
     );
     expect(res.code).toEqual(0);
   }

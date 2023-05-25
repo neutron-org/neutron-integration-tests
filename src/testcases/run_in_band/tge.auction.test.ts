@@ -5,7 +5,7 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import { Asset } from '../../helpers/types';
+import { Asset, TotalPowerAtHeightResponse } from '../../helpers/types';
 import { getHeight } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
@@ -102,6 +102,10 @@ type AuctionStateResponse = {
 
 type BalanceResponse = {
   balance: string;
+};
+
+type TotalSupplyResponse = {
+  total_supply: string;
 };
 
 type VestingAccountResponse = {
@@ -240,7 +244,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeWallets[
               'airdropAuctionLockdropVesting'
             ].wallet.address.toString(),
-          amount: '1000000',
+          amount: '100',
         },
         {
           address:
@@ -307,14 +311,23 @@ describe('Neutron / TGE / Auction', () => {
         'airdropAuctionLockdrop',
         'airdropAuctionLockdropVesting',
       ]) {
+        const address = tgeWallets[v].wallet.address.toString();
+        const amount =
+          tge.airdropAccounts.find(({ address }) => {
+            if (address == tgeWallets[v].wallet.address.toString()) {
+              return true;
+            } else {
+              return false;
+            }
+          })?.amount || '0';
         const proofs = tge.airdrop.getMerkleProof({
-          address: tgeWallets[v].wallet.address.toString(),
-          amount: '1000000',
+          address: address,
+          amount: amount,
         });
         const payload = {
           claim: {
-            address: tgeWallets[v].wallet.address.toString(),
-            amount: '1000000',
+            address: address,
+            amount: amount,
             proof: proofs,
           },
         };
@@ -1809,11 +1822,42 @@ describe('Neutron / TGE / Auction', () => {
             );
           }
         });
+        it('airdrop contract should not have credits vault voting power', async () => {
+          const ctvp =
+            await neutronChain.queryContract<TotalPowerAtHeightResponse>(
+              tge.contracts.creditsVault,
+              {
+                total_power_at_height: {},
+              },
+            );
+          const airdropCNTRN =
+            await neutronChain.queryContract<BalanceResponse>(
+              tge.contracts.credits,
+              {
+                balance: {
+                  address: tge.contracts.airdrop,
+                },
+              },
+            );
+          const totalCNTRNSupply =
+            await neutronChain.queryContract<TotalSupplyResponse>(
+              tge.contracts.credits,
+              {
+                total_supply_at_height: {},
+              },
+            );
+          expect(Number(ctvp.power)).toEqual(
+            Number(totalCNTRNSupply.total_supply) -
+              Number(airdropCNTRN.balance),
+          );
+        });
       });
     });
     describe('lockdrop', () => {
       let balanceBeforeLockdrop: number;
       let balanceBeforeAirdopLockdrop: number;
+      let balanceBeforeAirdropAuctionLockdropVesting: number;
+      let AirdropAuctionLockdropVestingUserInfo: LockDropInfoResponse;
       it('query balance before claim rewards', async () => {
         balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
           tgeWallets['auctionLockdrop'].wallet.address.toString(),
@@ -1823,6 +1867,26 @@ describe('Neutron / TGE / Auction', () => {
           tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
           NEUTRON_DENOM,
         );
+        balanceBeforeAirdropAuctionLockdropVesting =
+          await neutronChain.queryDenomBalance(
+            tgeWallets[
+              'airdropAuctionLockdropVesting'
+            ].wallet.address.toString(),
+            NEUTRON_DENOM,
+          );
+
+        AirdropAuctionLockdropVestingUserInfo =
+          await neutronChain.queryContract<LockDropInfoResponse>(
+            tge.contracts.lockdrop,
+            {
+              user_info: {
+                address:
+                  tgeWallets[
+                    'airdropAuctionLockdropVesting'
+                  ].wallet.address.toString(),
+              },
+            },
+          );
       });
 
       it('should get lockdrop rewards', async () => {
@@ -1958,6 +2022,25 @@ describe('Neutron / TGE / Auction', () => {
         expect(
           claimedRewardWithAirdrop - 2 * claimedRewardNoAirdrop,
         ).toBeLessThan(100);
+      });
+      it('Correct instant airdrop amount', async () => {
+        const balanceAfterAirdropAuctionLockdropVesting =
+          await neutronChain.queryDenomBalance(
+            tgeWallets[
+              'airdropAuctionLockdropVesting'
+            ].wallet.address.toString(),
+            NEUTRON_DENOM,
+          );
+        const expectedLockdropReward = Number(
+          AirdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
+        );
+        const airdropSize = 100;
+        const feeCompensation = 3 * feeSize;
+        expect(
+          expectedLockdropReward +
+            balanceBeforeAirdropAuctionLockdropVesting +
+            airdropSize,
+        ).toEqual(feeCompensation + balanceAfterAirdropAuctionLockdropVesting);
       });
     });
   });
