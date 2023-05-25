@@ -1,4 +1,3 @@
-import MerkleTree from 'merkletreejs';
 import {
   CosmosWrapper,
   NEUTRON_DENOM,
@@ -6,39 +5,8 @@ import {
 } from '../../helpers/cosmos';
 import { NeutronContract } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import crypto from 'crypto';
+import { Airdrop, getTimestamp } from '../../helpers/tge';
 import { CodeId } from '../../types';
-
-const sha256 = (x: string): Buffer => {
-  const hash = crypto.createHash('sha256');
-  hash.update(x);
-  return hash.digest();
-};
-
-class Airdrop {
-  private tree: MerkleTree;
-
-  constructor(accounts: Array<{ address: string; amount: string }>) {
-    const leaves = accounts.map((a) => sha256(a.address + a.amount));
-    this.tree = new MerkleTree(leaves, sha256, { sort: true });
-  }
-
-  public getMerkleRoot(): string {
-    return this.tree.getHexRoot().replace('0x', '');
-  }
-
-  public getMerkleProof(account: {
-    address: string;
-    amount: string;
-  }): string[] {
-    return this.tree
-      .getHexProof(sha256(account.address + account.amount))
-      .map((v) => v.replace('0x', ''));
-  }
-}
-
-const getTimestamp = (secondsFromNow: number): number =>
-  (Date.now() / 1000 + secondsFromNow) | 0;
 
 const waitTill = (timestamp: number): Promise<void> =>
   new Promise((resolve) => {

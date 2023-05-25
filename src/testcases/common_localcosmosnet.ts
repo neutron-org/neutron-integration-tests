@@ -3,14 +3,15 @@ import { cosmosclient, rest } from '@cosmos-client/core';
 import { Wallet } from '../types';
 import {
   COSMOS_DENOM,
-  mnemonicToWallet,
-  WalletWrapper,
+  CosmosWrapper,
   IBC_ATOM_DENOM,
   IBC_USDC_DENOM,
+  mnemonicToWallet,
+  NEUTRON_DENOM,
+  WalletWrapper,
 } from '../helpers/cosmos';
 import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
-import { CosmosWrapper, NEUTRON_DENOM } from '../helpers/cosmos';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import { Coin } from '@cosmos-client/core/cjs/openapi/api';
@@ -71,6 +72,7 @@ export class TestStateLocalCosmosTestNet {
   blockWaiter2: BlockWaiter;
   wallets: Record<string, Record<string, Wallet>>;
   icq_web_host: string;
+
   async init() {
     const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
     const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
@@ -194,12 +196,8 @@ export class TestStateLocalCosmosTestNet {
         );
         break;
       } catch (e) {
-        if (e.message.includes('sequence')) {
-          await cm.chain.blockWaiter.waitBlocks(1);
-          attemptCount++;
-        } else {
-          throw e;
-        }
+        await cm.chain.blockWaiter.waitBlocks(1);
+        attemptCount++;
       }
     }
     if (!res) {
@@ -249,7 +247,6 @@ export class TestStateLocalCosmosTestNet {
       mnemonic,
       prefix,
     );
-
     return { genQaWal1: wal };
   }
 }
