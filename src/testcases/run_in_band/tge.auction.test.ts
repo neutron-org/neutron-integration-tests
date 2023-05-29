@@ -267,8 +267,6 @@ describe('Neutron / TGE / Auction', () => {
     });
     it('should deploy auction', async () => {
       tge.times.auctionInit = getTimestamp(80);
-      tge.times.auctionDepositWindow = 60;
-      tge.times.auctionWithdrawalWindow = 60;
       await tge.deployAuction();
     });
     it('should not be able to set denoms by stranger', async () => {
