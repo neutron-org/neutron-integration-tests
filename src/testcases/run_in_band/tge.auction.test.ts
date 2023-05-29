@@ -311,13 +311,9 @@ describe('Neutron / TGE / Auction', () => {
       ]) {
         const address = tgeWallets[v].wallet.address.toString();
         const amount =
-          tge.airdropAccounts.find(({ address }) => {
-            if (address == tgeWallets[v].wallet.address.toString()) {
-              return true;
-            } else {
-              return false;
-            }
-          })?.amount || '0';
+          tge.airdropAccounts.find(
+            ({ address }) => address == tgeWallets[v].wallet.address.toString(),
+          )?.amount || '0';
         const proofs = tge.airdrop.getMerkleProof({
           address: address,
           amount: amount,
