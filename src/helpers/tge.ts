@@ -435,15 +435,15 @@ export class Tge {
       'astroport_oracle_usdc',
     );
 
-    for (const [contract, denom1] of [
-      [this.contracts.oracleAtom, this.atomDenom],
-      [this.contracts.oracleUsdc, this.usdcDenom],
+    for (const [contract, denom1, denom2] of [
+      [this.contracts.oracleAtom, this.atomDenom, this.neutronDenom],
+      [this.contracts.oracleUsdc, this.usdcDenom, this.neutronDenom],
     ]) {
       const res = await executeAstroportOracleSetAssetInfos(
         this.tokenInfoManager,
         contract,
         denom1,
-        this.neutronDenom,
+        denom2,
       );
       expect(res.code).toEqual(0);
     }
