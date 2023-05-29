@@ -1170,9 +1170,6 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to lock tokens when time is up', async () => {
           await waitTill(
-            // tge.times.auctionInit +
-            // tge.times.auctionDepositWindow +
-            // tge.times.auctionWithdrawalWindow +
             tge.times.lockdropInit + tge.times.lockdropDepositDuration + 5,
           );
           await expect(
@@ -1206,9 +1203,6 @@ describe('Neutron / TGE / Auction', () => {
     describe('Init pool', () => {
       it('should init pool', async () => {
         await waitTill(
-          // tge.times.auctionInit +
-          // tge.times.auctionDepositWindow +
-          // tge.times.auctionWithdrawalWindow +
           tge.times.lockdropInit +
             tge.times.lockdropDepositDuration +
             tge.times.lockdropWithdrawalDuration +
