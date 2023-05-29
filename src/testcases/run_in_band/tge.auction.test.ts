@@ -1845,7 +1845,7 @@ describe('Neutron / TGE / Auction', () => {
       let balanceBeforeLockdrop: number;
       let balanceBeforeAirdopLockdrop: number;
       let balanceBeforeAirdropAuctionLockdropVesting: number;
-      let AirdropAuctionLockdropVestingUserInfo: LockDropInfoResponse;
+      let airdropAuctionLockdropVestingUserInfo: LockDropInfoResponse;
       it('query balance before claim rewards', async () => {
         balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
           tgeWallets['auctionLockdrop'].wallet.address.toString(),
@@ -1863,7 +1863,7 @@ describe('Neutron / TGE / Auction', () => {
             NEUTRON_DENOM,
           );
 
-        AirdropAuctionLockdropVestingUserInfo =
+        airdropAuctionLockdropVestingUserInfo =
           await neutronChain.queryContract<LockDropInfoResponse>(
             tge.contracts.lockdrop,
             {
@@ -2020,7 +2020,7 @@ describe('Neutron / TGE / Auction', () => {
             NEUTRON_DENOM,
           );
         const expectedLockdropReward = Number(
-          AirdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
+          airdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
         );
         const airdropSize = 100;
         const feeCompensation = 3 * feeSize;
