@@ -310,6 +310,40 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    test('create proposal #15, will pass', async () => {
+      for (let i = 0; i < 100; i++)
+        await neutronAccount.storeWasm(NeutronContract.RESERVE);
+      const codeids = Array.from({ length: 100 }, (_, i) => i + 1);
+      await daoMember1.submitPinCodesProposal(
+        'Proposal #15',
+        'Pin codes proposal. Will pass',
+        codeids,
+        '1000',
+      );
+    });
+
+    test('create proposal #16, will pass', async () => {
+      await daoMember1.submitParameterChangeProposal(
+        'Proposal #16',
+        'Param change proposal. This one will not pass',
+        'icahost',
+        'HostEnabled',
+        'false',
+        '1000',
+      );
+    });
+
+    test('create proposal #17, will be rejected', async () => {
+      await daoMember1.submitUpgradeProposal(
+        'Proposal #17',
+        'Param change proposal. This one will not pass',
+        'icahost',
+        10000,
+        'false',
+        '1000',
+      );
+    });
+
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         [
@@ -379,6 +413,10 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+    test('check if host is not enabled after proposal execution', async () => {
+      const host = await neutronChain.queryHostEnabled();
+      expect(host).toEqual(false);
     });
   });
 
@@ -601,6 +639,10 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
+    test('check that codes were pinned', async () => {
+      const res = await neutronChain.queryPinnedCodes();
+      expect(res.code_ids).toEqual(['1', '2']);
+    });
   });
 
   describe('vote for proposal #8 (yes, no, yes)', () => {
@@ -623,6 +665,10 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
+    test('check that codes were unpinned', async () => {
+      const res = await neutronChain.queryPinnedCodes();
+      expect(res.code_ids.length).toEqual(0);
+    });
   });
 
   describe('vote for proposal #9 (yes, no, yes)', () => {
@@ -644,11 +690,12 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
-      const contractInfo = await neutronChain.getContractInfo(
+    });
+    test('check that admin was changed', async () => {
+      const admin = await neutronChain.queryContractAdmin(
         contractAddressForAdminMigration,
       );
-      const newAdmin = contractInfo.contract_info.admin;
-      expect(newAdmin).toEqual(daoMember1.user.wallet.address.toString());
+      expect(admin).toEqual(daoMember1.user.wallet.address.toString());
     });
   });
 
@@ -671,11 +718,12 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
-      const contractInfo = await neutronChain.getContractInfo(
+    });
+    test('check that admin was changed', async () => {
+      const admin = await neutronChain.queryContractAdmin(
         contractAddressForAdminMigration,
       );
-      const newAdmin = contractInfo.contract_info.admin;
-      expect(newAdmin).toEqual('');
+      expect(admin).toEqual('');
     });
   });
 
@@ -750,6 +798,10 @@ describe('Neutron / Governance', () => {
 
   describe('execute proposal #12', () => {
     const proposalId = 12;
+    test('check that schedule exists before removing', async () => {
+      const res = await neutronChain.querySchedules();
+      expect(res.schedules.length).toEqual(1);
+    });
     test('check if proposal is passed', async () => {
       await dao.checkPassedProposal(proposalId);
     });
@@ -830,6 +882,55 @@ describe('Neutron / Governance', () => {
     });
   });
 
+  describe('vote for proposal #15 (no, yes, yes)', () => {
+    const proposalId = 15;
+    test('vote NO from wallet 1', async () => {
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2', async () => {
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3', async () => {
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('execute proposal #15', () => {
+    const proposalId = 15;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
+  describe('vote for proposal #16 with unbonded funds(no, yes, yes)', () => {
+    const proposalId = 16;
+    test('vote NO from wallet 1 with unbonded funds', async () => {
+      await daoMember1.unbondFunds('1000');
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2 with unbonded funds', async () => {
+      await daoMember2.unbondFunds('1000');
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3 with unbonded funds', async () => {
+      await daoMember3.unbondFunds('1000');
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('try to execute proposal #16', () => {
+    const proposalId = 16;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
       const res = await neutronChain.querySchedules();
@@ -846,6 +947,20 @@ describe('Neutron / Governance', () => {
       );
 
       expect(queryResult).toEqual(null);
+    });
+  });
+  describe('check that only admin can create valid proposals', () => {
+    test('submit admin proposal from non-admin addr, should fail', async () => {
+      const hostStatus = await neutronChain.queryHostEnabled();
+      expect(hostStatus).toEqual(false);
+      const res = await daoMember1.user.msgSendDirectProposal(
+        'icahost',
+        'HostEnabled',
+        'true',
+      );
+      expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
+      const afterProposalHostStatus = await neutronChain.queryHostEnabled();
+      expect(afterProposalHostStatus).toEqual(false);
     });
   });
 });

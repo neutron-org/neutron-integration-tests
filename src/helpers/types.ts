@@ -251,3 +251,19 @@ export type VestingSchedulePoint = {
   time: number;
   amount: string;
 };
+
+export type PinnedCodesResponse = {
+  code_ids: number[];
+};
+
+export type IcaHostParamsResponse = {
+  params: {
+    host_enabled: boolean;
+  };
+};
+
+export type ContractAdminResponse = {
+  contract_info: {
+    admin: string;
+  };
+};

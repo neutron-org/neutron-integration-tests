@@ -1,7 +1,7 @@
 import { cosmosclient, proto, rest } from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { cosmwasmproto } from '@cosmos-client/cosmwasm';
-import { ibc as ibcProto } from '../generated/ibc/proto';
+import { cosmos as AdminProto, ibc as ibcProto } from '../generated/ibc/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -25,8 +25,11 @@ import {
   PageRequest,
   PauseInfoResponse,
   CurrentPlanResponse,
+  PinnedCodesResponse,
+  IcaHostParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
+const adminmodule = AdminProto.adminmodule.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
 export const IBC_ATOM_DENOM = process.env.IBC_ATOM_DENOM || 'uibcatom';
@@ -81,6 +84,14 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/ibc.applications.transfer.v1.MsgTransfer',
   ibcProto.applications.transfer.v1.MsgTransfer,
+);
+cosmosclient.codec.register(
+  '/cosmos.adminmodule.adminmodule.MsgSubmitProposal',
+  adminmodule.MsgSubmitProposal,
+);
+cosmosclient.codec.register(
+  '/ibc.lightclients.tendermint.v1.ClientState',
+  ibcProto.lightclients.tendermint.v1.ClientState,
 );
 
 export class CosmosWrapper {
@@ -346,6 +357,41 @@ export class CosmosWrapper {
       throw e;
     }
   }
+
+  async queryPinnedCodes(): Promise<PinnedCodesResponse> {
+    try {
+      const req = await axios.get<PinnedCodesResponse>(
+        `${this.sdk.url}/cosmwasm/wasm/v1/codes/pinned`,
+        {},
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryHostEnabled(): Promise<boolean> {
+    try {
+      const req = await axios.get<IcaHostParamsResponse>(
+        `${this.sdk.url}/ibc/apps/interchain_accounts/host/v1/params`,
+        {},
+      );
+      return req.data.params.host_enabled;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryContractAdmin(address: string): Promise<string> {
+    const resp = await this.getContractInfo(address);
+    return resp.contract_info.admin;
+  }
 }
 
 export class WalletWrapper {
@@ -550,6 +596,37 @@ export class WalletWrapper {
       amount: [{ denom, amount }],
     });
     const res = await this.execTx(fee, [msgSend], 10, mode, sequence);
+    return res?.tx_response;
+  }
+
+  async msgSendDirectProposal(
+    subspace: string,
+    key: string,
+    value: string,
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.chain.denom, amount: '1000' }],
+    },
+    sequence: number = this.wallet.account.sequence,
+    mode: rest.tx.BroadcastTxMode = rest.tx.BroadcastTxMode.Async,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msg = new adminmodule.MsgSubmitProposal({
+      content: cosmosclient.codec.instanceToProtoAny(
+        new proto.cosmos.params.v1beta1.ParameterChangeProposal({
+          title: 'mock',
+          description: 'mock',
+          changes: [
+            new proto.cosmos.params.v1beta1.ParamChange({
+              key: key,
+              subspace: subspace,
+              value: value,
+            }),
+          ],
+        }),
+      ),
+      proposer: this.wallet.account.address,
+    });
+    const res = await this.execTx(fee, [msg], 10, mode, sequence);
     return res?.tx_response;
   }
 

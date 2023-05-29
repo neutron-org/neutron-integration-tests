@@ -168,7 +168,7 @@ describe.skip('Neutron / Lockdrop', () => {
         holderAddr.toString(),
       );
       expect(status.bonding_enabled).toEqual(false);
-      expect(status.unbondable_abount).toEqual('0');
+      expect(status.unbondable_amount).toEqual('0');
       expect(status.height).toBeGreaterThan(0);
     });
   });
