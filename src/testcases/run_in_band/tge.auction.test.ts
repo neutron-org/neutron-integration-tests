@@ -30,7 +30,10 @@ const NTRN_AMOUNT = 200000;
 const ATOM_RATE = 10000000;
 const USDC_RATE = 1000000;
 const NTRN_INCENTIVIZE_AMOUNT = 10000;
-const feeSize = 10_000;
+// fixed fee for every transaction
+const FEE_SIZE = 10_000;
+// airdrop amount to check we do pay more than airdrop amount during lockdrop reward claiming
+const TINY_AIRDROP_AMOUNT = 100;
 
 const getLpSize = (token1: number, token2: number) =>
   (Math.sqrt(token1 * token2) - MIN_LIQUDITY) | 0;
@@ -244,7 +247,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeWallets[
               'airdropAuctionLockdropVesting'
             ].wallet.address.toString(),
-          amount: '100',
+          amount: TINY_AIRDROP_AMOUNT.toString(),
         },
         {
           address:
@@ -1904,7 +1907,7 @@ describe('Neutron / TGE / Auction', () => {
           NEUTRON_DENOM,
         );
         // we need to compensait paid fees
-        expect(balanceAfter + feeSize).toBeGreaterThan(balanceBefore);
+        expect(balanceAfter + FEE_SIZE).toBeGreaterThan(balanceBefore);
 
         for (const v of [
           'airdropOnly',
@@ -1998,7 +2001,7 @@ describe('Neutron / TGE / Auction', () => {
         // we have to take into account
         // every wallet has executed 3 tx during `should get lockdrop rewards` stage
         // every tx costs 10000untrn.
-        const feeCompensation = 3 * feeSize;
+        const feeCompensation = 3 * FEE_SIZE;
         const claimedRewardWithAirdrop =
           balanceAfterAirdopLockdrop -
           balanceBeforeAirdopLockdrop +
@@ -2022,12 +2025,11 @@ describe('Neutron / TGE / Auction', () => {
         const expectedLockdropReward = Number(
           airdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
         );
-        const airdropSize = 100;
-        const feeCompensation = 3 * feeSize;
+        const feeCompensation = 3 * FEE_SIZE;
         expect(
           expectedLockdropReward +
             balanceBeforeAirdropAuctionLockdropVesting +
-            airdropSize,
+            TINY_AIRDROP_AMOUNT,
         ).toEqual(feeCompensation + balanceAfterAirdropAuctionLockdropVesting);
       });
     });
