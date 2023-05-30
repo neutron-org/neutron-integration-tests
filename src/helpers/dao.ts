@@ -29,6 +29,8 @@ import {
   updateAdminProposal,
   upgradeProposal,
 } from './proposal';
+import { ibc } from '../generated/ibc/proto';
+import { cosmosclient } from '@cosmos-client/core';
 
 export type GetSubdaoResponse = { addr: string; charter: string };
 
@@ -85,7 +87,7 @@ export type CreditsVaultConfig = {
 
 export type VaultBondingStatus = {
   bonding_enabled: string;
-  unbondable_abount: string;
+  unbondable_amount: string;
   height: number;
 };
 
@@ -554,6 +556,17 @@ export class DaoMember {
     );
   }
 
+  async unbondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+    const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
+      .vaults.neutron.address;
+    return await this.user.executeContract(
+      vaultAddress,
+      JSON.stringify({
+        unbond: { amount: amount },
+      }),
+    );
+  }
+
   /**
    * submitSingleChoiceProposal creates proposal with given message.
    */
@@ -989,7 +1002,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitUnpinCodesProposal creates proposal which unpins given code ids to wasmvm.
    */
 
   async submitUnpinCodesProposal(
@@ -1012,7 +1025,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitClientUpdateProposal creates proposal which updates client.
    */
   async submitClientUpdateProposal(
     title: string,
@@ -1036,7 +1049,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which pins given code ids to wasmvm.
+   * submitUpgradeProposal creates proposal which upgrades ibc.
    */
   async submitUpgradeProposal(
     title: string,
@@ -1044,7 +1057,6 @@ export class DaoMember {
     name: string,
     height: number,
     info: string,
-    upgradedClientState: string,
     amount: string,
   ): Promise<number> {
     const message = upgradeProposal({
@@ -1053,7 +1065,9 @@ export class DaoMember {
       name,
       height,
       info,
-      upgraded_client_state: upgradedClientState,
+      upgraded_client_state: cosmosclient.codec.instanceToProtoAny(
+        new ibc.lightclients.tendermint.v1.ClientState({}),
+      ),
     });
     return await this.submitSingleChoiceProposal(
       title,
@@ -1064,7 +1078,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   * submitUpdateAminProposal creates proposal which updates an admin of a contract.
    */
   async submitUpdateAdminProposal(
     title: string,
@@ -1088,7 +1102,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUpdateAminProposal creates proposal which pins given code ids to wasmvm.
+   * submitClearAdminProposal creates proposal which removes an admin of a contract.
    */
   async submitClearAdminProposal(
     title: string,
