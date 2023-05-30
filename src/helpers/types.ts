@@ -126,7 +126,6 @@ export const NeutronContract = {
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
-  VESTING_VAULT: 'vesting_lp_vault.wasm',
   ORACLE_HISTORY: 'astroport_oracle.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
@@ -148,7 +147,6 @@ export const NeutronContract = {
   CREDITS_VAULT: 'credits_vault.wasm',
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
-  CREDITS_VAULT: 'credits_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
 };
 

@@ -62,6 +62,18 @@ export type LockdropVaultConfig = {
   name: string;
   description: string;
   lockdrop_contract: string;
+  oracle_usdc_contract: string;
+  oracle_atom_contract: string;
+  owner: string;
+};
+
+export type VestingLpVaultConfig = {
+  name: string;
+  description: string;
+  atom_vesting_lp_contract: string;
+  atom_oracle_contract: string;
+  usdc_vesting_lp_contract: string;
+  usdc_oracle_contract: string;
   owner: string;
 };
 
