@@ -1163,6 +1163,9 @@ export const deploySubdao = async (
   const preProposeNonTimelockedCodeId = await cm.storeWasm(
     NeutronContract.DAO_PREPROPOSAL_SINGLE,
   );
+  const preProposeNonTimelockedPauseCodeId = await cm.storeWasm(
+    NeutronContract.DAO_PREPROPOSAL_SINGLE,
+  );
   const timelockCodeId = await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK);
   const votingModuleInstantiateInfo = {
     code_id: cw4VotingCodeId,
@@ -1263,6 +1266,29 @@ export const deploySubdao = async (
     msg: wrapMsg(nonTimelockedProposeInstantiateMessage),
   };
 
+  const nonTimelockedPauseProposeInstantiateMessage = {
+    threshold: { absolute_count: { threshold: '1' } },
+    max_voting_period: { height: 10 },
+    allow_revoting: false,
+    pre_propose_info: {
+      module_may_propose: {
+        info: {
+          code_id: preProposeNonTimelockedPauseCodeId,
+          label: 'neutron.subdaos.test.proposal.single_nt_pause.pre_propose',
+          msg: wrapMsg({
+            open_proposal_submission: true,
+          }),
+        },
+      },
+    },
+    close_proposal_on_execution_failure: false,
+  };
+  const nonTimelockedPauseProposalModuleInstantiateInfo = {
+    code_id: proposeCodeId,
+    label: 'neutron.subdaos.test.proposal.single_nt_pause',
+    msg: wrapMsg(nonTimelockedPauseProposeInstantiateMessage),
+  };
+
   const coreInstantiateMessage = {
     name: 'SubDAO core test 1',
     description: 'serves testing purposes',
@@ -1271,6 +1297,7 @@ export const deploySubdao = async (
       proposalModuleInstantiateInfo,
       nonTimelockedProposalModuleInstantiateInfo,
       proposal2ModuleInstantiateInfo,
+      nonTimelockedPauseProposalModuleInstantiateInfo,
     ],
     main_dao: mainDaoCoreAddress,
     security_dao: securityDaoAddr,
