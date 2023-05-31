@@ -339,6 +339,63 @@ describe('Neutron / Subdao', () => {
     });
   });
 
+  describe('Non-timelock pause proposal: Succeed execution', () => {
+    let proposalId: number;
+    test('Non-timelock pause proposal: Succeed execution', async () => {
+      let pauseInfo = await neutronChain.queryPausedInfo(
+        subDao.contracts.core.address,
+      );
+      expect(pauseInfo).toEqual({ unpaused: {} });
+      expect(pauseInfo.paused).toEqual(undefined);
+
+      proposalId = await subdaoMember1.submitPauseProposal(
+        subDao.contracts.core.address,
+        '10',
+      );
+
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
+      await subdaoMember1.executeProposal(proposalId, 'single_nt_pause');
+
+      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
+      expect(p.proposal.status).toEqual('executed');
+
+      pauseInfo = await neutronChain.queryPausedInfo(
+        subDao.contracts.core.address,
+      );
+      expect(pauseInfo).toEqual({ paused: {} });
+      expect(pauseInfo.unpaused).toEqual(undefined);
+    });
+  });
+
+  describe('Non-timelock pause pre-propose proposal: Failed execution', () => {
+    let proposalId: number;
+    test('Non-timelock pause pre-propose module: non-pause msg failed execution', async () => {
+      const newDaoName = 'dao name after non-timelock';
+
+      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
+        {
+          name: newDaoName,
+        },
+        'single_nt_pause',
+      );
+
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
+      await subdaoMember1.executeProposal(proposalId, 'single_nt_pause');
+
+      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
+      expect(p.proposal.status).toEqual('executed');
+
+      const configAfter = await neutronChain.queryContract<SubDaoConfig>(
+        subDao.contracts.core.address,
+        {
+          config: {},
+        },
+      );
+
+      expect(configAfter.name).toEqual(newDaoName);
+    });
+  });
+
   describe('Update members', () => {
     let proposalId: number;
     beforeAll(async () => {

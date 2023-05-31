@@ -925,6 +925,32 @@ export class DaoMember {
     );
   }
 
+  async submitPauseProposal(
+    contractAddr: string,
+    duration = '10',
+    customModule = 'single',
+  ): Promise<number> {
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: this.dao.contracts.core.address,
+          msg: wrapMsg({
+            pause: duration,
+          }),
+          funds: [],
+        },
+      },
+    };
+
+    return await this.submitSingleChoiceProposal(
+      'pause proposal',
+      'pauses contract',
+      [message],
+      '',
+      customModule,
+    );
+  }
+
   async submitUpdateSubDaoMultisigParticipants(
     newParticipants: string[],
   ): Promise<number> {
