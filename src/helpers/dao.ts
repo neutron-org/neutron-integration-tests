@@ -925,17 +925,47 @@ export class DaoMember {
     );
   }
 
-  async submitPauseProposal(
+  async submitTypedPauseProposal(
     contractAddr: string,
-    duration = '10',
+    duration = 10,
     customModule = 'single',
   ): Promise<number> {
     const message = {
       wasm: {
         execute: {
-          contract_addr: this.dao.contracts.core.address,
+          contract_addr: contractAddr,
           msg: wrapMsg({
-            pause: duration,
+            pause: {
+              duration: { time: duration },
+            },
+          }),
+          funds: [],
+        },
+      },
+    };
+
+    return await this.submitSingleChoiceProposal(
+      'pause proposal',
+      'pauses contract',
+      [message],
+      '',
+      customModule,
+    );
+  }
+
+  async submitUntypedPauseProposal(
+    contractAddr: string,
+    duration = 10,
+    customModule = 'single',
+  ): Promise<number> {
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: contractAddr,
+          msg: wrapMsg({
+            pause: {
+              duration: duration ,
+            },
           }),
           funds: [],
         },
@@ -1190,7 +1220,7 @@ export const deploySubdao = async (
     NeutronContract.DAO_PREPROPOSAL_SINGLE,
   );
   const preProposeNonTimelockedPauseCodeId = await cm.storeWasm(
-    NeutronContract.DAO_PREPROPOSAL_SINGLE,
+    NeutronContract.SUBDAO_PREPROPOSE_NO_TIMELOCK,
   );
   const timelockCodeId = await cm.storeWasm(NeutronContract.SUBDAO_TIMELOCK);
   const votingModuleInstantiateInfo = {

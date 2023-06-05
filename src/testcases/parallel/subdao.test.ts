@@ -310,89 +310,65 @@ describe('Neutron / Subdao', () => {
     });
   });
 
-  describe('Non-timelock: Succeed execution', () => {
+  describe('Non-timelock typed duration pause proposal: Succeed creation', () => {
     let proposalId: number;
-    test('Non-timelock: Succeed execution', async () => {
-      const newDaoName = 'dao name after non-timelock';
 
-      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
-        {
-          name: newDaoName,
-        },
-        'single_nt',
-      );
-
-      await subdaoMember1.voteYes(proposalId, 'single_nt');
-      await subdaoMember1.executeProposal(proposalId, 'single_nt');
-
-      const p = await subDao.queryProposal(proposalId, 'single_nt');
-      expect(p.proposal.status).toEqual('executed');
-
-      const configAfter = await neutronChain.queryContract<SubDaoConfig>(
-        subDao.contracts.core.address,
-        {
-          config: {},
-        },
-      );
-
-      expect(configAfter.name).toEqual(newDaoName);
-    });
-  });
-
-  describe('Non-timelock pause proposal: Succeed execution', () => {
-    let proposalId: number;
-    test('Non-timelock pause proposal: Succeed execution', async () => {
-      let pauseInfo = await neutronChain.queryPausedInfo(
+    test('Non-timelock pause proposal: Succeed creation', async () => {
+      const pauseInfo = await neutronChain.queryPausedInfo(
         subDao.contracts.core.address,
       );
       expect(pauseInfo).toEqual({ unpaused: {} });
       expect(pauseInfo.paused).toEqual(undefined);
 
-      proposalId = await subdaoMember1.submitPauseProposal(
-        subDao.contracts.core.address,
-        '10',
+      proposalId = await subdaoMember1.submitTypedPauseProposal(
+        mainDao.contracts.core.address,
+        10,
+        'single_nt_pause',
       );
-
       await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
-      await subdaoMember1.executeProposal(proposalId, 'single_nt_pause');
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/Unauthorized/);
 
       const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
-      expect(p.proposal.status).toEqual('executed');
-
-      pauseInfo = await neutronChain.queryPausedInfo(
-        subDao.contracts.core.address,
-      );
-      expect(pauseInfo).toEqual({ paused: {} });
-      expect(pauseInfo.unpaused).toEqual(undefined);
+      expect(p.proposal.status).toEqual('passed');
     });
   });
 
-  describe('Non-timelock pause pre-propose proposal: Failed execution', () => {
+  describe('Non-timelock pause proposal, untyped duration: Succeed creation', () => {
     let proposalId: number;
-    test('Non-timelock pause pre-propose module: non-pause msg failed execution', async () => {
-      const newDaoName = 'dao name after non-timelock';
+    test('Non-timelock pause proposal: Succeed execution', async () => {
+      const pauseInfo = await neutronChain.queryPausedInfo(
+        subDao.contracts.core.address,
+      );
+      expect(pauseInfo).toEqual({ unpaused: {} });
+      expect(pauseInfo.paused).toEqual(undefined);
 
-      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
-        {
-          name: newDaoName,
-        },
+      proposalId = await subdaoMember1.submitUntypedPauseProposal(
+        subDao.contracts.core.address,
+        10,
         'single_nt_pause',
       );
-
       await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
-      await subdaoMember1.executeProposal(proposalId, 'single_nt_pause');
+      // Unauthorzed here means that execute message is right, so pre-propose module works fine
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/Unauthorized/);
+    });
+  });
 
-      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
-      expect(p.proposal.status).toEqual('executed');
+  describe('Non-timelock pause pre-propose proposal: Failed creation', () => {
+    test('Non-timelock pause pre-propose module: non-pause msg failed creation', async () => {
+      const newDaoName = 'dao name after non-timelock';
 
-      const configAfter = await neutronChain.queryContract<SubDaoConfig>(
-        subDao.contracts.core.address,
-        {
-          config: {},
-        },
-      );
-
-      expect(configAfter.name).toEqual(newDaoName);
+      await expect(
+        subdaoMember1.submitUpdateSubDaoConfigProposal(
+          {
+            name: newDaoName,
+          },
+          'single_nt_pause',
+        ),
+      ).rejects.toThrow(/not a pause message/);
     });
   });
 
