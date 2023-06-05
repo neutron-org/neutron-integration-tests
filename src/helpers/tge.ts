@@ -1,14 +1,30 @@
 import MerkleTree from 'merkletreejs';
 import crypto from 'crypto';
-import { CosmosWrapper, WalletWrapper } from './cosmos';
+import { CosmosWrapper, WalletWrapper, getEventAttribute } from './cosmos';
 import { CodeId } from '../types';
-import { NeutronContract } from './types';
+import {
+  NativeToken,
+  Token,
+  NeutronContract,
+  nativeTokenInfo,
+  vestingAccount,
+  vestingSchedule,
+  vestingSchedulePount,
+} from './types';
 import {
   CreditsVaultConfig,
   LockdropVaultConfig,
   VestingLpVaultConfig,
 } from './dao';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { msgMintDenom, msgCreateDenom } from './tokenfactory';
+
+// denom of rewards distributed by the generator contract.
+const ASTRO_DENOM = 'uibcastro';
+// total size of rewards allocated for generator contract.
+const TOTAL_GENERATOR_REWARDS = 1000000;
+// fraction of generator rewards allocated with each new block.
+const GENERATOR_REWARDS_PER_BLOCK = 500;
 
 const sha256 = (x: string): Buffer => {
   const hash = crypto.createHash('sha256');
@@ -86,6 +102,7 @@ export class Tge {
     auction: string;
     lockdrop: string;
     astroGenerator: string;
+    astroVesting: string;
     lockdropVault: string;
     oracleAtom: string;
     oracleUsdc: string;
@@ -93,6 +110,8 @@ export class Tge {
   atomDenom: string;
   usdcDenom: string;
   neutronDenom: string;
+  astroDenom: string;
+  generatorRewardsPerBlock: number;
   pairs: {
     atom_ntrn: { contract: string; liquidity: string };
     usdc_ntrn: { contract: string; liquidity: string };
@@ -137,6 +156,7 @@ export class Tge {
       auction: null,
       lockdrop: null,
       astroGenerator: null,
+      astroVesting: null,
       lockdropVault: null,
       oracleAtom: null,
       oracleUsdc: null,
@@ -144,6 +164,7 @@ export class Tge {
     this.atomDenom = atomDenom;
     this.usdcDenom = usdcDenom;
     this.neutronDenom = neutronDenom;
+    this.generatorRewardsPerBlock = GENERATOR_REWARDS_PER_BLOCK;
     this.times = {};
     this.times.airdropStart = 0;
     this.times.airdropVestingStart = 0;
@@ -177,6 +198,7 @@ export class Tge {
       'ASTRO_TOKEN',
       'ASTRO_GENERATOR',
       'ASTRO_WHITELIST',
+      'ASTRO_VESTING',
       'ASTRO_COIN_REGISTRY',
       'VESTING_LP',
       'LOCKDROP_VAULT',
@@ -252,6 +274,50 @@ export class Tge {
       this.contracts.coinRegistry,
     );
 
+    await this.createNativeAstroDenom();
+
+    this.contracts.astroVesting = await instantiateAstroVesting(
+      this.instantiator,
+      this.codeIds.ASTRO_VESTING,
+      nativeTokenInfo(this.astroDenom),
+    );
+
+    this.contracts.astroGenerator = await instantiateAstroGenerator(
+      this.instantiator,
+      this.codeIds.ASTRO_GENERATOR,
+      this.astroDenom,
+      this.contracts.astroFactory,
+      '1',
+      this.generatorRewardsPerBlock.toString(),
+      this.contracts.astroVesting,
+      this.codeIds.ASTRO_WHITELIST,
+    );
+
+    await this.instantiator.executeContract(
+      this.contracts.astroVesting,
+      JSON.stringify({
+        register_vesting_accounts: {
+          vesting_accounts: [
+            vestingAccount(this.contracts.astroGenerator, [
+              vestingSchedule(
+                vestingSchedulePount(0, TOTAL_GENERATOR_REWARDS.toString()),
+              ),
+            ]),
+          ],
+        },
+      }),
+      [{ denom: this.astroDenom, amount: TOTAL_GENERATOR_REWARDS.toString() }],
+    );
+
+    await this.instantiator.executeContract(
+      this.contracts.astroFactory,
+      JSON.stringify({
+        update_config: {
+          generator_address: this.contracts.astroGenerator,
+        },
+      }),
+    );
+
     for (const denom of [this.atomDenom, this.usdcDenom]) {
       const res = await executeFactoryCreatePair(
         this.instantiator,
@@ -276,6 +342,18 @@ export class Tge {
         liquidity: pairs[1].liquidity_token,
       },
     };
+
+    await this.instantiator.executeContract(
+      this.contracts.astroGenerator,
+      JSON.stringify({
+        setup_pools: {
+          pools: [
+            [this.pairs.atom_ntrn.liquidity, '1'],
+            [this.pairs.usdc_ntrn.liquidity, '1'],
+          ],
+        },
+      }),
+    );
 
     this.contracts.vestingAtomLp = await instantiateVestingLp(
       this.instantiator,
@@ -352,17 +430,6 @@ export class Tge {
         { duration: 1, coefficient: '0' },
         { duration: 2, coefficient: '1' },
       ],
-    );
-
-    this.contracts.astroGenerator = await instantiateAstroGenerator(
-      this.instantiator,
-      this.codeIds.ASTRO_GENERATOR,
-      this.neutronDenom,
-      this.contracts.astroFactory,
-      '1',
-      '100',
-      this.contracts.vestingAtomLp,
-      this.codeIds.ASTRO_WHITELIST,
     );
 
     let res = await executeLockdropSetTokenInfo(
@@ -473,6 +540,67 @@ export class Tge {
       this.instantiator.wallet.address.toString(),
       this.tokenInfoManager.wallet.address.toString(),
     );
+  }
+
+  async createNativeAstroDenom() {
+    const data = await msgCreateDenom(
+      this.instantiator,
+      this.instantiator.wallet.address.toString(),
+      ASTRO_DENOM,
+    );
+    this.astroDenom = getEventAttribute(
+      (data as any).events,
+      'create_denom',
+      'new_token_denom',
+    );
+    await msgMintDenom(
+      this.instantiator,
+      this.instantiator.wallet.address.toString(),
+      {
+        denom: this.astroDenom,
+        amount: TOTAL_GENERATOR_REWARDS.toString(),
+      },
+    );
+  }
+
+  /**
+   * retrieves user's ntrn and astro balances, lockdrop info and generator's vesting account
+   */
+  async generatorRewardsState(user: string): Promise<GeneratorRewardsState> {
+    const balanceNtrn = await this.chain.queryDenomBalance(
+      user,
+      this.neutronDenom,
+    );
+    const balanceAstro = await this.chain.queryDenomBalance(
+      user,
+      this.astroDenom,
+    );
+    const userInfo = await queryLockdropUserInfo(
+      this.chain,
+      this.contracts.lockdrop,
+      user,
+    );
+    const atomNtrnLpTokenBalance = await this.chain.queryContract<{
+      balance: string;
+    }>(this.pairs.atom_ntrn.liquidity, {
+      balance: {
+        address: user,
+      },
+    });
+    const usdcNtrnLpTokenBalance = await this.chain.queryContract<{
+      balance: string;
+    }>(this.pairs.usdc_ntrn.liquidity, {
+      balance: {
+        address: user,
+      },
+    });
+    return {
+      balanceNtrn,
+      balanceAstro,
+      userInfo,
+      atomNtrnLpTokenBalance: +atomNtrnLpTokenBalance.balance,
+      usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
+    };
   }
 }
 
@@ -727,6 +855,18 @@ export type LockdropUserInfoResponse = {
   total_ntrn_rewards: string;
 };
 
+export type LockdropUserInfoWithListResponse = {
+  total_ntrn_rewards: string;
+  ntrn_transferred: boolean;
+  lockup_infos: LockdropLockUpInfoSummary[];
+  lockup_positions_index: number;
+};
+
+export type LockdropLockUpInfoSummary = {
+  pool_type: string;
+  duration: number;
+};
+
 export const instantiateLockdrop = async (
   cm: WalletWrapper,
   codeId: CodeId,
@@ -914,6 +1054,43 @@ export const queryFactoryPairs = async (
   chain.queryContract<FactoryPairsResponse>(contractAddress, {
     pairs: {},
   });
+
+export const instantiateAstroVesting = async (
+  cm: WalletWrapper,
+  codeId: CodeId,
+  vestingToken: Token | NativeToken,
+  label = 'astro_vesting',
+) => {
+  const res = await cm.instantiateContract(
+    codeId,
+    JSON.stringify({
+      owner: cm.wallet.address.toString(),
+      vesting_token: vestingToken,
+    }),
+    label,
+  );
+  expect(res).toBeTruthy();
+  return res[0]._contract_address;
+};
+
+export type VestingAccountResponse = {
+  address: string;
+  info: {
+    released_amount: string;
+    schedules: {
+      end_point: { amount: string; time: number };
+      start_point: { amount: string; time: number };
+    }[];
+  };
+};
+
+type GeneratorRewardsState = {
+  balanceNtrn: number;
+  balanceAstro: number;
+  userInfo: LockdropUserInfoResponse;
+  atomNtrnLpTokenBalance: number;
+  usdcNtrnLpTokenBalance: number;
+};
 
 export const instantiateVestingLp = async (
   cm: WalletWrapper,

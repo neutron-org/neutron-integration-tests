@@ -142,6 +142,7 @@ export const NeutronContract = {
   ASTRO_TOKEN: '../contracts_thirdparty/astroport_token.wasm',
   ASTRO_GENERATOR: '../contracts_thirdparty/astroport_generator.wasm',
   ASTRO_WHITELIST: '../contracts_thirdparty/astroport_whitelist.wasm',
+  ASTRO_VESTING: '../contracts_thirdparty/astroport_vesting.wasm',
   VESTING_LP: 'vesting_lp.wasm',
   VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
   CREDITS_VAULT: 'credits_vault.wasm',

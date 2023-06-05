@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
   CosmosWrapper,
   IBC_ATOM_DENOM,
@@ -20,6 +21,7 @@ import {
   queryLockdropVaultConfig,
   queryVestingLpVaultConfig,
   Tge,
+  VestingAccountResponse,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 
@@ -109,17 +111,6 @@ type BalanceResponse = {
 
 type TotalSupplyResponse = {
   total_supply: string;
-};
-
-type VestingAccountResponse = {
-  address: string;
-  info: {
-    released_amount: string;
-    schedules: {
-      end_point: { amount: string; time: number };
-      start_point: { amount: string; time: number };
-    }[];
-  };
 };
 
 const waitTill = (timestamp: number): Promise<void> => {
@@ -1880,42 +1871,115 @@ describe('Neutron / TGE / Auction', () => {
           );
       });
 
-      it('should get lockdrop rewards', async () => {
-        await waitTill(
-          tge.times.lockdropInit +
-            tge.times.lockdropDepositDuration +
-            tge.times.lockdropWithdrawalDuration +
-            1,
-        );
-        const balanceBefore = await neutronChain.queryDenomBalance(
-          cmInstantiator.wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        const res = await cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
-          JSON.stringify({
-            claim_rewards_and_optionally_unlock: {
-              pool_type: 'USDC',
-              duration: 2,
-              withdraw_lp_stake: false,
-            },
-          }),
-        );
-        expect(res.code).toEqual(0);
-        const balanceAfter = await neutronChain.queryDenomBalance(
-          cmInstantiator.wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        // we need to compensait paid fees
-        expect(balanceAfter + FEE_SIZE).toBeGreaterThan(balanceBefore);
+      describe('lockdrop rewards', () => {
+        beforeAll(async () => {
+          await waitTill(
+            tge.times.lockdropInit +
+              tge.times.lockdropDepositDuration +
+              tge.times.lockdropWithdrawalDuration +
+              1,
+          );
+        });
+
+        it('for cmInstantiator without withdraw', async () => {
+          const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+            cmInstantiator.wallet.address.toString(),
+          );
+
+          const res = await cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'USDC',
+                duration: 2,
+                withdraw_lp_stake: false,
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+
+          const rewardsStateAfterClaim = await tge.generatorRewardsState(
+            cmInstantiator.wallet.address.toString(),
+          );
+
+          expect(
+            rewardsStateAfterClaim.balanceNtrn +
+              FEE_SIZE -
+              rewardsStateBeforeClaim.balanceNtrn,
+          ).toEqual(44); // lockdrop rewards share for the user
+
+          const expectedGeneratorRewards =
+            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+              (i) => i.pool_type == 'USDC' && i.duration == 2,
+            )!.claimable_generator_astro_debt;
+          expect(expectedGeneratorRewards).toBeGreaterThan(0);
+
+          // we expect the astro balance to increase by somewhere between user rewards amount and user
+          // rewards amount plus rewards per block amount because rewards drip each block.
+          const astroBalanceDiff =
+            rewardsStateAfterClaim.balanceAstro -
+            rewardsStateBeforeClaim.balanceAstro;
+          expect(astroBalanceDiff).toBeGreaterThanOrEqual(
+            expectedGeneratorRewards,
+          );
+          expect(astroBalanceDiff).toBeLessThan(
+            expectedGeneratorRewards + tge.generatorRewardsPerBlock,
+          );
+
+          // withdraw_lp_stake is false => no lp tokens provided
+          expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
+            rewardsStateAfterClaim.atomNtrnLpTokenBalance,
+          );
+          expect(rewardsStateBeforeClaim.usdcNtrnLpTokenBalance).toEqual(
+            rewardsStateAfterClaim.usdcNtrnLpTokenBalance,
+          );
+        });
+
+        it("unavailable for those who didn't participate", async () => {
+          for (const v of [
+            'airdropOnly',
+            'airdropAuctionVesting',
+            'auctionVesting',
+          ]) {
+            await expect(
+              tgeWallets[v].executeContract(
+                tge.contracts.lockdrop,
+                JSON.stringify({
+                  claim_rewards_and_optionally_unlock: {
+                    pool_type: 'USDC',
+                    duration: 1,
+                    withdraw_lp_stake: false,
+                  },
+                }),
+              ),
+            ).rejects.toThrowError(/LockupInfoV1 not found/);
+            await expect(
+              tgeWallets[v].executeContract(
+                tge.contracts.lockdrop,
+                JSON.stringify({
+                  claim_rewards_and_optionally_unlock: {
+                    pool_type: 'ATOM',
+                    duration: 1,
+                    withdraw_lp_stake: false,
+                  },
+                }),
+              ),
+            ).rejects.toThrowError(/LockupInfoV1 not found/);
+          }
+        });
 
         for (const v of [
-          'airdropOnly',
-          'airdropAuctionVesting',
-          'auctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
         ]) {
-          await expect(
-            tgeWallets[v].executeContract(
+          it('for ' + v + ' without withdraw', async () => {
+            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
+
+            const res = await tgeWallets[v].executeContract(
               tge.contracts.lockdrop,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
@@ -1924,69 +1988,127 @@ describe('Neutron / TGE / Auction', () => {
                   withdraw_lp_stake: false,
                 },
               }),
-            ),
-          ).rejects.toThrowError(/LockupInfoV1 not found/);
-          await expect(
-            tgeWallets[v].executeContract(
+            );
+            expect(res.code).toEqual(0);
+
+            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
+
+            // a more precise check is done later in 'should get extra untrn from unclaimed airdrop'
+            // testcase, here we simply check that the balance has increased
+            expect(
+              rewardsStateAfterClaim.balanceNtrn + FEE_SIZE,
+            ).toBeGreaterThan(rewardsStateBeforeClaim.balanceNtrn);
+
+            const expectedGeneratorRewards =
+              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'USDC' && i.duration == 1,
+              )!.claimable_generator_astro_debt;
+            expect(expectedGeneratorRewards).toBeGreaterThan(0);
+
+            // we expect the astro balance to increase by somewhere between user rewards amount and user
+            // rewards amount plus rewards per block amount because rewards amount increases each block.
+            const astroBalanceDiff =
+              rewardsStateAfterClaim.balanceAstro -
+              rewardsStateBeforeClaim.balanceAstro;
+            expect(astroBalanceDiff).toBeGreaterThanOrEqual(
+              expectedGeneratorRewards,
+            );
+            expect(astroBalanceDiff).toBeLessThan(
+              expectedGeneratorRewards + tge.generatorRewardsPerBlock,
+            );
+
+            // withdraw_lp_stake is false => no lp tokens provided
+            expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
+              rewardsStateAfterClaim.atomNtrnLpTokenBalance,
+            );
+            expect(rewardsStateBeforeClaim.usdcNtrnLpTokenBalance).toEqual(
+              rewardsStateAfterClaim.usdcNtrnLpTokenBalance,
+            );
+          });
+        }
+
+        for (const v of [
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+        ]) {
+          it('for ' + v + ' with withdraw', async () => {
+            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
+
+            let res = await tgeWallets[v].executeContract(
+              tge.contracts.lockdrop,
+              JSON.stringify({
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'USDC',
+                  duration: 1,
+                  withdraw_lp_stake: true,
+                },
+              }),
+            );
+            expect(res.code).toEqual(0);
+            res = await tgeWallets[v].executeContract(
               tge.contracts.lockdrop,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
                   pool_type: 'ATOM',
                   duration: 1,
-                  withdraw_lp_stake: false,
+                  withdraw_lp_stake: true,
                 },
               }),
-            ),
-          ).rejects.toThrowError(/LockupInfoV1 not found/);
-        }
+            );
+            expect(res.code).toEqual(0);
 
-        for (const v of [
-          'airdropAuctionLockdrop',
-          'airdropAuctionLockdropVesting',
-          'auctionLockdrop',
-          'auctionLockdropVesting',
-        ]) {
-          const res = await tgeWallets[v].executeContract(
-            tge.contracts.lockdrop,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'USDC',
-                duration: 1,
-                withdraw_lp_stake: false,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
-        }
+            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
 
-        for (const v of [
-          'airdropAuctionLockdrop',
-          'airdropAuctionLockdropVesting',
-          'auctionLockdrop',
-          'auctionLockdropVesting',
-        ]) {
-          let res = await tgeWallets[v].executeContract(
-            tge.contracts.lockdrop,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'USDC',
-                duration: 1,
-                withdraw_lp_stake: true,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
-          res = await tgeWallets[v].executeContract(
-            tge.contracts.lockdrop,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'ATOM',
-                duration: 1,
-                withdraw_lp_stake: true,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
+            expect(rewardsStateAfterClaim.balanceNtrn + 2 * FEE_SIZE).toEqual(
+              rewardsStateBeforeClaim.balanceNtrn,
+            ); // ntrn rewards were sent at the previous claim, so no ntrn income is expected
+
+            // withdraw_lp_stake is true => expect lp tokens to be unlocked and returned to the user
+            const usdcNtrnLockedLp =
+              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'USDC' && i.duration == 1,
+              )!.lp_units_locked;
+            expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
+              rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
+            );
+            const atomNtrnLockedLp =
+              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'ATOM' && i.duration == 1,
+              )!.lp_units_locked;
+            expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
+              rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
+            );
+
+            // claimed from both pools above, so expected rewards amount is a sum of both
+            const expectedGeneratorRewards =
+              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'USDC' && i.duration == 1,
+              )!.claimable_generator_astro_debt +
+              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'ATOM' && i.duration == 1,
+              )!.claimable_generator_astro_debt;
+            expect(expectedGeneratorRewards).toBeGreaterThan(0);
+
+            // we expect the astro balance to increase by somewhere between user rewards amount and user
+            // rewards amount plus 2*rewards per block amount because rewards amount increases each block.
+            const astroBalanceDiff =
+              rewardsStateAfterClaim.balanceAstro -
+              rewardsStateBeforeClaim.balanceAstro;
+            expect(astroBalanceDiff).toBeGreaterThanOrEqual(
+              expectedGeneratorRewards,
+            );
+            expect(astroBalanceDiff).toBeLessThan(
+              expectedGeneratorRewards + 2 * tge.generatorRewardsPerBlock,
+            );
+          });
         }
       });
       it('should get extra untrn from unclaimed airdrop', async () => {
