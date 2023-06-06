@@ -9,7 +9,7 @@ import {
   nativeTokenInfo,
   vestingAccount,
   vestingSchedule,
-  vestingSchedulePount,
+  vestingSchedulePoint,
 } from './types';
 import {
   CreditsVaultConfig,
@@ -300,7 +300,7 @@ export class Tge {
           vesting_accounts: [
             vestingAccount(this.contracts.astroGenerator, [
               vestingSchedule(
-                vestingSchedulePount(0, TOTAL_GENERATOR_REWARDS.toString()),
+                vestingSchedulePoint(0, TOTAL_GENERATOR_REWARDS.toString()),
               ),
             ]),
           ],

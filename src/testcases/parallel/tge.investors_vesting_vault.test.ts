@@ -8,7 +8,7 @@ import {
   NeutronContract,
   vestingAccount,
   vestingSchedule,
-  vestingSchedulePount,
+  vestingSchedulePoint,
 } from '../../helpers/types';
 import { getHeight } from '../../helpers/wait';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
@@ -116,12 +116,12 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               vesting_accounts: [
                 vestingAccount(cmUser1.wallet.address.toString(), [
                   vestingSchedule(
-                    vestingSchedulePount(0, user1VestingAmount.toString()),
+                    vestingSchedulePoint(0, user1VestingAmount.toString()),
                   ),
                 ]),
                 vestingAccount(cmUser2.wallet.address.toString(), [
                   vestingSchedule(
-                    vestingSchedulePount(0, user2VestingAmount.toString()),
+                    vestingSchedulePoint(0, user2VestingAmount.toString()),
                   ),
                 ]),
               ],
@@ -345,7 +345,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               vesting_accounts: [
                 vestingAccount(cmUser1.wallet.address.toString(), [
                   vestingSchedule(
-                    vestingSchedulePount(0, vestingAmount.toString()),
+                    vestingSchedulePoint(0, vestingAmount.toString()),
                   ),
                 ]),
               ],
@@ -544,7 +544,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                       register_vesting_accounts: {
                         vesting_accounts: [
                           vestingAccount(cmUser1.wallet.address.toString(), [
-                            vestingSchedule(vestingSchedulePount(0, '1000')),
+                            vestingSchedule(vestingSchedulePoint(0, '1000')),
                           ]),
                         ],
                       },
@@ -563,7 +563,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                 register_vesting_accounts: {
                   vesting_accounts: [
                     vestingAccount(cmUser2.wallet.address.toString(), [
-                      vestingSchedule(vestingSchedulePount(0, '1000')),
+                      vestingSchedule(vestingSchedulePoint(0, '1000')),
                     ]),
                   ],
                 },

@@ -206,7 +206,7 @@ export const vestingSchedule = (
   end_point: endPoint,
 });
 
-export const vestingSchedulePount = (
+export const vestingSchedulePoint = (
   time: number,
   amount: string,
 ): VestingSchedulePoint => ({
