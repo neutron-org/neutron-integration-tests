@@ -1926,7 +1926,7 @@ describe('Neutron / TGE / Auction', () => {
             expectedGeneratorRewards + tge.generatorRewardsPerBlock,
           );
 
-          // withdraw_lp_stake is false => no lp tokens provided
+          // withdraw_lp_stake is false => no lp tokens returned
           expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
             rewardsStateAfterClaim.atomNtrnLpTokenBalance,
           );
@@ -2019,7 +2019,7 @@ describe('Neutron / TGE / Auction', () => {
               expectedGeneratorRewards + tge.generatorRewardsPerBlock,
             );
 
-            // withdraw_lp_stake is false => no lp tokens provided
+            // withdraw_lp_stake is false => no lp tokens returned
             expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
               rewardsStateAfterClaim.atomNtrnLpTokenBalance,
             );

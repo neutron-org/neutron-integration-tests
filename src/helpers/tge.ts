@@ -564,7 +564,7 @@ export class Tge {
   }
 
   /**
-   * retrieves user's ntrn and astro balances, lockdrop info and generator's vesting account
+   * retrieves user's ntrn and astro balances, lockdrop info and user's LP token balances.
    */
   async generatorRewardsState(user: string): Promise<GeneratorRewardsState> {
     const balanceNtrn = await this.chain.queryDenomBalance(
@@ -853,18 +853,6 @@ export type LockdropUserInfoResponse = {
   lockup_positions_index: number;
   ntrn_transferred: boolean;
   total_ntrn_rewards: string;
-};
-
-export type LockdropUserInfoWithListResponse = {
-  total_ntrn_rewards: string;
-  ntrn_transferred: boolean;
-  lockup_infos: LockdropLockUpInfoSummary[];
-  lockup_positions_index: number;
-};
-
-export type LockdropLockUpInfoSummary = {
-  pool_type: string;
-  duration: number;
 };
 
 export const instantiateLockdrop = async (
