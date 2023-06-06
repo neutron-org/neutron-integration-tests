@@ -964,7 +964,7 @@ export class DaoMember {
           contract_addr: contractAddr,
           msg: wrapMsg({
             pause: {
-              duration: duration ,
+              duration: duration,
             },
           }),
           funds: [],
