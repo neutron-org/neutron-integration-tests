@@ -2076,6 +2076,7 @@ describe('Neutron / TGE / Auction', () => {
               +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'USDC' && i.duration == 1,
               )!.lp_units_locked;
+            expect(usdcNtrnLockedLp).toBeGreaterThan(0);
             expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
               rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
             );
@@ -2083,6 +2084,7 @@ describe('Neutron / TGE / Auction', () => {
               +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'ATOM' && i.duration == 1,
               )!.lp_units_locked;
+            expect(atomNtrnLockedLp).toBeGreaterThan(0);
             expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
               rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
             );
