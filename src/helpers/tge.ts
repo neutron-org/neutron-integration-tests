@@ -19,8 +19,8 @@ import {
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { msgMintDenom, msgCreateDenom } from './tokenfactory';
 
-// denom of rewards distributed by the generator contract.
-const ASTRO_DENOM = 'uibcastro';
+// subdenom of rewards asset distributed by the generator contract.
+const ASTRO_SUBDENOM = 'uastro';
 // total size of rewards allocated for generator contract.
 const TOTAL_GENERATOR_REWARDS = 1000000;
 // fraction of generator rewards allocated with each new block.
@@ -546,7 +546,7 @@ export class Tge {
     const data = await msgCreateDenom(
       this.instantiator,
       this.instantiator.wallet.address.toString(),
-      ASTRO_DENOM,
+      ASTRO_SUBDENOM,
     );
     this.astroDenom = getEventAttribute(
       (data as any).events,
