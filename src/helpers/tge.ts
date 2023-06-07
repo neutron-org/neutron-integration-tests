@@ -22,7 +22,7 @@ import { msgMintDenom, msgCreateDenom } from './tokenfactory';
 // subdenom of rewards asset distributed by the generator contract.
 const ASTRO_SUBDENOM = 'uastro';
 // total size of rewards allocated for generator contract.
-const TOTAL_GENERATOR_REWARDS = 1000000;
+const GENERATOR_REWARDS_TOTAL = 1000000;
 // fraction of generator rewards allocated with each new block.
 const GENERATOR_REWARDS_PER_BLOCK = 500;
 
@@ -111,6 +111,7 @@ export class Tge {
   usdcDenom: string;
   neutronDenom: string;
   astroDenom: string;
+  generatorRewardsTotal: number;
   generatorRewardsPerBlock: number;
   pairs: {
     atom_ntrn: { contract: string; liquidity: string };
@@ -164,6 +165,7 @@ export class Tge {
     this.atomDenom = atomDenom;
     this.usdcDenom = usdcDenom;
     this.neutronDenom = neutronDenom;
+    this.generatorRewardsTotal = GENERATOR_REWARDS_TOTAL;
     this.generatorRewardsPerBlock = GENERATOR_REWARDS_PER_BLOCK;
     this.times = {};
     this.times.airdropStart = 0;
@@ -300,13 +302,18 @@ export class Tge {
           vesting_accounts: [
             vestingAccount(this.contracts.astroGenerator, [
               vestingSchedule(
-                vestingSchedulePoint(0, TOTAL_GENERATOR_REWARDS.toString()),
+                vestingSchedulePoint(0, this.generatorRewardsTotal.toString()),
               ),
             ]),
           ],
         },
       }),
-      [{ denom: this.astroDenom, amount: TOTAL_GENERATOR_REWARDS.toString() }],
+      [
+        {
+          denom: this.astroDenom,
+          amount: this.generatorRewardsTotal.toString(),
+        },
+      ],
     );
 
     await this.instantiator.executeContract(
@@ -558,7 +565,7 @@ export class Tge {
       this.instantiator.wallet.address.toString(),
       {
         denom: this.astroDenom,
-        amount: TOTAL_GENERATOR_REWARDS.toString(),
+        amount: this.generatorRewardsTotal.toString(),
       },
     );
   }
