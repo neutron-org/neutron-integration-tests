@@ -28,7 +28,7 @@ export const msgMintDenom = async (
   creator: string,
   amount: ICoin,
 ): Promise<InlineResponse20075TxResponse> => {
-  const msgCreateDenom = new osmosis.tokenfactory.v1beta1.MsgMint({
+  const msgMint = new osmosis.tokenfactory.v1beta1.MsgMint({
     sender: creator,
     amount,
   });
@@ -37,7 +37,7 @@ export const msgMintDenom = async (
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
-    [msgCreateDenom],
+    [msgMint],
     10,
   );
 
