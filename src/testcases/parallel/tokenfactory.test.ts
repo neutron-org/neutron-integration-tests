@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import {
   CosmosWrapper,
@@ -8,29 +7,13 @@ import {
 } from '../../helpers/cosmos';
 import axios from 'axios';
 import { Wallet } from '../../types';
-import { cosmosclient } from '@cosmos-client/core';
-import { cosmos, osmosis } from '../../generated/proto';
-import Long from 'long';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { NeutronContract } from '../../helpers/types';
-import ICoin = cosmos.base.v1beta1.ICoin;
-
-cosmosclient.codec.register(
-  '/osmosis.tokenfactory.v1beta1.MsgCreateDenom',
-  osmosis.tokenfactory.v1beta1.MsgCreateDenom,
-);
-cosmosclient.codec.register(
-  '/osmosis.tokenfactory.v1beta1.MsgMint',
-  osmosis.tokenfactory.v1beta1.MsgMint,
-);
-cosmosclient.codec.register(
-  '/osmosis.tokenfactory.v1beta1.MsgBurn',
-  osmosis.tokenfactory.v1beta1.MsgBurn,
-);
-cosmosclient.codec.register(
-  '/osmosis.tokenfactory.v1beta1.MsgChangeAdmin',
-  osmosis.tokenfactory.v1beta1.MsgChangeAdmin,
-);
+import {
+  msgBurn,
+  msgChangeAdmin,
+  msgCreateDenom,
+  msgMintDenom,
+} from '../../helpers/tokenfactory';
 
 interface DenomsFromCreator {
   readonly denoms: readonly string[];
@@ -374,95 +357,4 @@ const getAuthorityMetadata = async (
   );
 
   return res.data;
-};
-
-const msgMintDenom = async (
-  cmNeutron: WalletWrapper,
-  creator: string,
-  amount: ICoin,
-): Promise<InlineResponse20075TxResponse> => {
-  const msgCreateDenom = new osmosis.tokenfactory.v1beta1.MsgMint({
-    sender: creator,
-    amount,
-  });
-  const res = await cmNeutron.execTx(
-    {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
-    },
-    [msgCreateDenom],
-    10,
-  );
-
-  return res.tx_response!;
-};
-
-const msgCreateDenom = async (
-  cmNeutron: WalletWrapper,
-  creator: string,
-  subdenom: string,
-): Promise<InlineResponse20075TxResponse> => {
-  const msgCreateDenom = new osmosis.tokenfactory.v1beta1.MsgCreateDenom({
-    sender: creator,
-    subdenom,
-  });
-  const res = await cmNeutron.execTx(
-    {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
-    },
-    [msgCreateDenom],
-    10,
-  );
-
-  return res.tx_response!;
-};
-
-const msgBurn = async (
-  cmNeutron: WalletWrapper,
-  creator: string,
-  denom: string,
-  amountToBurn: string,
-): Promise<InlineResponse20075TxResponse> => {
-  const msgBurn = new osmosis.tokenfactory.v1beta1.MsgBurn({
-    sender: creator,
-    amount: {
-      denom: denom,
-      amount: amountToBurn,
-    },
-  });
-  const res = await cmNeutron.execTx(
-    {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
-    },
-    [msgBurn],
-    10,
-  );
-
-  return res.tx_response!;
-};
-
-// Create MsgChangeAdmin message
-const msgChangeAdmin = async (
-  cmNeutron: WalletWrapper,
-  creator: string,
-  denom: string,
-  newAdmin: string,
-): Promise<InlineResponse20075TxResponse> => {
-  const msgChangeAdmin = new osmosis.tokenfactory.v1beta1.MsgChangeAdmin({
-    sender: creator,
-    denom,
-    newAdmin,
-  });
-  const res = await cmNeutron.execTx(
-    {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
-    },
-    [msgChangeAdmin],
-    10,
-  );
-
-  return res.tx_response!;
 };

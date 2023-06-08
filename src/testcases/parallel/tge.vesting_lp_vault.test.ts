@@ -12,7 +12,7 @@ import {
   nativeTokenInfo,
   vestingAccount,
   vestingSchedule,
-  vestingSchedulePount,
+  vestingSchedulePoint,
   NativeToken,
   Token,
 } from '../../helpers/types';
@@ -344,7 +344,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                     vesting_accounts: [
                       vestingAccount(cmUser1.wallet.address.toString(), [
                         vestingSchedule(
-                          vestingSchedulePount(
+                          vestingSchedulePoint(
                             0,
                             user1AtomVestingAmount.toString(),
                           ),
@@ -352,7 +352,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                       ]),
                       vestingAccount(cmUser2.wallet.address.toString(), [
                         vestingSchedule(
-                          vestingSchedulePount(
+                          vestingSchedulePoint(
                             0,
                             user2AtomVestingAmount.toString(),
                           ),
@@ -380,7 +380,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                     vesting_accounts: [
                       vestingAccount(cmUser1.wallet.address.toString(), [
                         vestingSchedule(
-                          vestingSchedulePount(
+                          vestingSchedulePoint(
                             0,
                             user1UsdcVestingAmount.toString(),
                           ),
@@ -388,7 +388,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                       ]),
                       vestingAccount(cmUser2.wallet.address.toString(), [
                         vestingSchedule(
-                          vestingSchedulePount(
+                          vestingSchedulePoint(
                             0,
                             user2UsdcVestingAmount.toString(),
                           ),
@@ -1011,7 +1011,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                       register_vesting_accounts: {
                         vesting_accounts: [
                           vestingAccount(cmUser1.wallet.address.toString(), [
-                            vestingSchedule(vestingSchedulePount(0, '1000')),
+                            vestingSchedule(vestingSchedulePoint(0, '1000')),
                           ]),
                         ],
                       },
@@ -1030,7 +1030,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 register_vesting_accounts: {
                   vesting_accounts: [
                     vestingAccount(cmUser2.wallet.address.toString(), [
-                      vestingSchedule(vestingSchedulePount(0, '1000')),
+                      vestingSchedule(vestingSchedulePoint(0, '1000')),
                     ]),
                   ],
                 },
