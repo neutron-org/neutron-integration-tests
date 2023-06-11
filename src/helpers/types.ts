@@ -136,6 +136,7 @@ export const NeutronContract = {
   TGE_LOCKDROP: 'neutron_lockdrop.wasm',
   TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
   ASTRO_PAIR: '../contracts_thirdparty/astroport_pair.wasm',
+  ASTRO_PAIR_CI: '../contracts_thirdparty/astroport_pair_concentrated.wasm',
   ASTRO_COIN_REGISTRY:
     '../contracts_thirdparty/astroport_native_coin_registry.wasm',
   ASTRO_FACTORY: '../contracts_thirdparty/astroport_factory.wasm',

@@ -165,7 +165,7 @@ export class Tge {
     this.airdropAccounts = [];
   }
 
-  async deployPreAuction() {
+  async deployPreAuction(needCl = false) {
     for (const contract of [
       'TGE_CREDITS',
       'TGE_AUCTION',
@@ -173,6 +173,7 @@ export class Tge {
       'TGE_AIRDROP',
       'TGE_PRICE_FEED_MOCK',
       'ASTRO_PAIR',
+      'ASTRO_PAIR_CI',
       'ASTRO_FACTORY',
       'ASTRO_TOKEN',
       'ASTRO_GENERATOR',
@@ -247,7 +248,9 @@ export class Tge {
     this.contracts.astroFactory = await instantiateAstroFactory(
       this.instantiator,
       this.codeIds.ASTRO_FACTORY,
-      this.codeIds.ASTRO_PAIR,
+      needCl
+        ? { xyk: this.codeIds.ASTRO_PAIR, cl: this.codeIds.ASTRO_PAIR_CI }
+        : this.codeIds.ASTRO_PAIR,
       this.codeIds.ASTRO_TOKEN,
       this.contracts.coinRegistry,
     );
@@ -260,6 +263,16 @@ export class Tge {
         this.neutronDenom,
       );
       expect(res.code).toEqual(0);
+      if (needCl) {
+        const res = await executeFactoryCreatePair(
+          this.instantiator,
+          this.contracts.astroFactory,
+          denom,
+          this.neutronDenom,
+          'cl',
+        );
+        expect(res.code).toEqual(0);
+      }
     }
 
     const pairs = (
@@ -836,31 +849,44 @@ export const instantiateCoinRegistry = async (
 export const instantiateAstroFactory = async (
   cm: WalletWrapper,
   codeId: CodeId,
-  astroPairCodeId: CodeId,
+  astroPairCodeId: CodeId | Record<string, CodeId>,
   astroTokenCodeId: CodeId,
   coinRegistryAddress: string,
   label = 'astro_factory',
 ) => {
+  const config = {
+    pair_configs:
+      typeof astroPairCodeId === 'number'
+        ? [
+            {
+              code_id: astroPairCodeId,
+              pair_type: {
+                xyk: {},
+              },
+              total_fee_bps: 0,
+              maker_fee_bps: 0,
+              is_disabled: false,
+              is_generator_disabled: false,
+            },
+          ]
+        : Object.entries(astroPairCodeId).map(([pairType, codeId]) => ({
+            code_id: codeId,
+            pair_type: {
+              ...(pairType === 'xyk' ? { xyk: {} } : { custom: pairType }),
+            },
+            total_fee_bps: 0,
+            maker_fee_bps: 0,
+            is_disabled: false,
+            is_generator_disabled: false,
+          })),
+    token_code_id: astroTokenCodeId,
+    owner: cm.wallet.address.toString(),
+    whitelist_code_id: 0,
+    coin_registry_address: coinRegistryAddress,
+  };
   const res = await cm.instantiateContract(
     codeId,
-    JSON.stringify({
-      pair_configs: [
-        {
-          code_id: astroPairCodeId,
-          pair_type: {
-            xyk: {},
-          },
-          total_fee_bps: 0,
-          maker_fee_bps: 0,
-          is_disabled: false,
-          is_generator_disabled: false,
-        },
-      ],
-      token_code_id: astroTokenCodeId,
-      owner: cm.wallet.address.toString(),
-      whitelist_code_id: 0,
-      coin_registry_address: coinRegistryAddress,
-    }),
+    JSON.stringify(config),
     label,
   );
   expect(res).toBeTruthy();
@@ -872,29 +898,29 @@ export const executeFactoryCreatePair = async (
   contractAddress: string,
   denom1: string,
   denom2: string,
-) =>
-  cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      create_pair: {
-        pair_type: {
-          xyk: {},
-        },
-        asset_infos: [
-          {
-            native_token: {
-              denom: denom1,
-            },
-          },
-          {
-            native_token: {
-              denom: denom2,
-            },
-          },
-        ],
+  type = 'xyk',
+) => {
+  const config = {
+    create_pair: {
+      pair_type: {
+        [type]: {},
       },
-    }),
-  );
+      asset_infos: [
+        {
+          native_token: {
+            denom: denom1,
+          },
+        },
+        {
+          native_token: {
+            denom: denom2,
+          },
+        },
+      ],
+    },
+  };
+  return cm.executeContract(contractAddress, JSON.stringify(config));
+};
 
 export type PairInfo = {
   asset_infos: Record<'native_token' | 'token', { denom: string }>[];
