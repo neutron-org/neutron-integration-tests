@@ -96,6 +96,7 @@ export class Tge {
     priceFeed: string;
     coinRegistry: string;
     astroFactory: string;
+    astroFactoryCL: string;
     vestingAtomLp: string;
     vestingUsdcLp: string;
     vestingLpVault: string;
@@ -188,15 +189,16 @@ export class Tge {
     this.airdropAccounts = [];
   }
 
-  async deployPreAuction(needCl = false) {
+  async deployPreAuction() {
     for (const contract of [
       'TGE_CREDITS',
       'TGE_AUCTION',
       'TGE_LOCKDROP',
+      'TGE_LOCKDROP_V2',
       'TGE_AIRDROP',
       'TGE_PRICE_FEED_MOCK',
       'ASTRO_PAIR',
-      'ASTRO_PAIR_CI',
+      'ASTRO_PAIR_CL',
       'ASTRO_FACTORY',
       'ASTRO_TOKEN',
       'ASTRO_GENERATOR',
@@ -272,9 +274,10 @@ export class Tge {
     this.contracts.astroFactory = await instantiateAstroFactory(
       this.instantiator,
       this.codeIds.ASTRO_FACTORY,
-      needCl
-        ? { xyk: this.codeIds.ASTRO_PAIR, cl: this.codeIds.ASTRO_PAIR_CI }
-        : this.codeIds.ASTRO_PAIR,
+      {
+        xyk: this.codeIds.ASTRO_PAIR,
+        concentrated: this.codeIds.ASTRO_PAIR_CL,
+      },
       this.codeIds.ASTRO_TOKEN,
       this.contracts.coinRegistry,
     );
@@ -336,16 +339,6 @@ export class Tge {
         this.neutronDenom,
       );
       expect(res.code).toEqual(0);
-      if (needCl) {
-        const res = await executeFactoryCreatePair(
-          this.instantiator,
-          this.contracts.astroFactory,
-          denom,
-          this.neutronDenom,
-          'cl',
-        );
-        expect(res.code).toEqual(0);
-      }
     }
 
     const pairs = (
@@ -1028,17 +1021,43 @@ export const instantiateAstroFactory = async (
   return res[0]._contract_address;
 };
 
+export const executeDeregisterPair = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  denom1: string,
+  denom2: string,
+) => {
+  const config = {
+    deregister: {
+      asset_infos: [
+        {
+          native_token: {
+            denom: denom1,
+          },
+        },
+        {
+          native_token: {
+            denom: denom2,
+          },
+        },
+      ],
+    },
+  };
+  return cm.executeContract(contractAddress, JSON.stringify(config));
+};
+
 export const executeFactoryCreatePair = async (
   cm: WalletWrapper,
   contractAddress: string,
   denom1: string,
   denom2: string,
   type = 'xyk',
+  initParams = '',
 ) => {
   const config = {
     create_pair: {
       pair_type: {
-        [type]: {},
+        ...(type === 'xyk' ? { [type]: {} } : { custom: type }),
       },
       asset_infos: [
         {
@@ -1052,6 +1071,7 @@ export const executeFactoryCreatePair = async (
           },
         },
       ],
+      ...(initParams ? { init_params: initParams } : {}),
     },
   };
   return cm.executeContract(contractAddress, JSON.stringify(config));
