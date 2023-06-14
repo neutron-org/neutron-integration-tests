@@ -498,14 +498,14 @@ const deployXykPair = async (
   contractAddresses: Record<string, string>,
   assetInfos: NativeToken[],
 ): Promise<PairInfo> => {
-  let createMsg = {
+  const createMsg = {
     create_pair: {
       pair_type: { xyk: {} },
       asset_infos: assetInfos,
     },
   };
 
-  let execRes = await instantiator.executeContract(
+  const execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
@@ -529,7 +529,7 @@ const deployClPair = async (
   assetInfos: NativeToken[],
   initPriceScale: number,
 ): Promise<PairInfo> => {
-  let poolInitParams: ConcentratedPoolParams = {
+  const poolInitParams: ConcentratedPoolParams = {
     amp: '40',
     gamma: '0.000145',
     mid_fee: '0.0026',
@@ -542,7 +542,7 @@ const deployClPair = async (
     track_asset_balances: false,
   };
 
-  let createMsg = {
+  const createMsg = {
     create_pair: {
       pair_type: { custom: 'concentrated' },
       asset_infos: assetInfos,
@@ -552,7 +552,7 @@ const deployClPair = async (
     },
   };
 
-  let execRes = await instantiator.executeContract(
+  const execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );
@@ -574,13 +574,13 @@ const deregisterPair = async (
   contractAddresses: Record<string, string>,
   assetInfos: NativeToken[],
 ) => {
-  let createMsg = {
+  const createMsg = {
     deregister: {
       asset_infos: assetInfos,
     },
   };
 
-  let execRes = await instantiator.executeContract(
+  const execRes = await instantiator.executeContract(
     contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
     JSON.stringify(createMsg),
   );

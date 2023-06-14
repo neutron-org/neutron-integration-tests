@@ -842,9 +842,7 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Array<
-  Record<(typeof attributes)[number], string> | Record<string, never>
-> => {
+): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
