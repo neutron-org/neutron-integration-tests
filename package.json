@@ -26,6 +26,7 @@
     "test:tge:vesting_lp_vault": "jest -b src/testcases/parallel/tge.vesting_lp_vault",
     "test:tge:credits_vault": "jest -b src/testcases/parallel/tge.credits_vault",
     "test:tge:investors_vesting_vault": "jest -b src/testcases/parallel/tge.investors_vesting_vault",
+    "test:xyk_to_cl_migration": "jest -b src/testcases/parallel/xyk_to_cl_migration",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix"

@@ -136,6 +136,8 @@ export const NeutronContract = {
   TGE_LOCKDROP: 'neutron_lockdrop.wasm',
   TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
   ASTRO_PAIR: '../contracts_thirdparty/astroport_pair.wasm',
+  ASTRO_PAIR_CONCENTRATED:
+    '../contracts_thirdparty/astroport_pair_concentrated.wasm',
   ASTRO_COIN_REGISTRY:
     '../contracts_thirdparty/astroport_native_coin_registry.wasm',
   ASTRO_FACTORY: '../contracts_thirdparty/astroport_factory.wasm',
@@ -149,6 +151,9 @@ export const NeutronContract = {
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+
+  // current live versions of contracts to perform migrations on
+  RESERVE_CURRENT: '../contracts_migrate/neutron_reserve.wasm',
 };
 
 export type MultiChoiceOption = {

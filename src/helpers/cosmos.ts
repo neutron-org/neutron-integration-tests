@@ -542,6 +542,33 @@ export class WalletWrapper {
     ]);
   }
 
+  async migrateContract(
+    contract: string,
+    codeId: number,
+    msg: string,
+  ): Promise<InlineResponse20075TxResponse> {
+    const msgMigrate = new cosmwasmproto.cosmwasm.wasm.v1.MsgMigrateContract({
+      sender: this.wallet.address.toString(),
+      contract: contract,
+      code_id: codeId,
+      msg: Buffer.from(msg),
+    });
+
+    const res = await this.execTx(
+      {
+        amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
+        gas_limit: Long.fromString('600000000'),
+      },
+      [msgMigrate],
+    );
+    if (res.tx_response.code !== 0) {
+      throw new Error(
+        `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,
+      );
+    }
+    return res?.tx_response;
+  }
+
   async executeContract(
     contract: string,
     msg: string,
@@ -815,7 +842,9 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
+): Array<
+  Record<(typeof attributes)[number], string> | Record<string, never>
+> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
