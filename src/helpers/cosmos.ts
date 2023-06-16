@@ -225,6 +225,17 @@ export class CosmosWrapper {
     return parseInt(balance?.amount ?? '0', 10);
   }
 
+  async queryCw20Balance(lpTokenAddr: string, holder: string): Promise<number> {
+    const balanceResp = await this.queryContract<{
+      balance: string;
+    }>(lpTokenAddr, {
+      balance: {
+        address: holder,
+      },
+    });
+    return +balanceResp.balance;
+  }
+
   async queryDenomTrace(ibcDenom: string): Promise<DenomTraceResponse> {
     const data = axios.get<{ denom_trace: DenomTraceResponse }>(
       `${this.sdk.url}/ibc/apps/transfer/v1/denom_traces/${ibcDenom}`,
@@ -842,7 +853,9 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
+): Array<
+  Record<(typeof attributes)[number], string> | Record<string, never>
+> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [
