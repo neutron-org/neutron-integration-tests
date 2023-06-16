@@ -43,22 +43,39 @@ describe('Neutron / Migration from xyk to CL pools', () => {
   let contractAddresses: Record<string, string> = {};
   let codeIds: Record<string, number>;
   let cmInstantiator: WalletWrapper;
-  let testNtrnDenom: string;
-  let testAtomDenom: string;
-  let testUsdcDenom: string;
+  let cmStranger: WalletWrapper;
+  let ntrnDenom: string;
+  let atomDenom: string;
+  let usdcDenom: string;
 
+  // initial prices
   const atomNtrnPriceRate = 50; // 1 ATOM = 50 NTRN
-  const atomUsdcPriceRate = 5; // 1 USDC = 5 NTRN
+  const usdcNtrnPriceRate = 5; // 1 USDC = 5 NTRN
+  // amounts of assets to be minted
+  const ntrnMintAmount = 50_000_000_000_000;
+  const atomMintAmount = ntrnMintAmount / atomNtrnPriceRate;
+  const usdcMintAmount = ntrnMintAmount / usdcNtrnPriceRate;
+  const keepToProvideRatio = 0.005; // keep 0.5% of provided assets for future swap (price change)
+  // amounts of assets to be kept out of the pools
+  const ntrnKeptAmount = Math.floor(ntrnMintAmount * keepToProvideRatio);
+  const atomKeptAmount = Math.floor(atomMintAmount * keepToProvideRatio);
+  const usdcKeptAmount = Math.floor(usdcMintAmount * keepToProvideRatio);
   // amounts of assets to be provided to pools
-  const testNtrnProvideAmount = 50_000_000_000_000;
-  const testAtomProvideAmount = testNtrnProvideAmount / atomNtrnPriceRate;
-  const testUsdcProvideAmount = testNtrnProvideAmount / atomUsdcPriceRate;
+  const ntrnProvideAmount = ntrnMintAmount - ntrnKeptAmount;
+  const atomProvideAmount = atomMintAmount - atomKeptAmount;
+  const usdcProvideAmount = usdcMintAmount - usdcKeptAmount;
+
+  console.log('ntrn provide to keep:', ntrnProvideAmount, ntrnKeptAmount);
+  console.log('atom provide to keep:', atomProvideAmount, atomKeptAmount);
+  console.log('usdc provide to keep:', usdcProvideAmount, usdcKeptAmount);
 
   let ntrnAtomTotalLpTokens: number;
   let ntrnUsdcTotalLpTokens: number;
 
   // shares of LP tokens to be distributed across contracts to migrate as pre-migration balances
-  const reserveLpTokensShare = 1 / 5;
+  const reserveLpTokensFraction = 1 / 5;
+  let reserveNtrnAtomShare: number;
+  let reserveNtrnUsdcShare: number;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -72,34 +89,38 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
+    cmStranger = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronFour.genQaWal1,
+    );
   });
 
   describe('prepare env to migration', () => {
     test('deploy contracts, allocate funds', async () => {
-      const deployResp = await deployContracts(neutronChain, cmInstantiator);
+      const deployResp = await deployContracts(cmInstantiator);
       contractAddresses = deployResp.contractAddresses;
       codeIds = deployResp.codeIds;
 
       // create clones of main assets with huge total supply
-      testNtrnDenom = await createNativeDenom(
+      ntrnDenom = await createNativeDenom(
         cmInstantiator,
         TEST_NTRN_SUBDENOM,
-        testNtrnProvideAmount * 2,
+        ntrnMintAmount * 2,
       );
-      testAtomDenom = await createNativeDenom(
+      atomDenom = await createNativeDenom(
         cmInstantiator,
         TEST_ATOM_SUBDENOM,
-        testAtomProvideAmount,
+        atomMintAmount,
       );
-      testUsdcDenom = await createNativeDenom(
+      usdcDenom = await createNativeDenom(
         cmInstantiator,
         TEST_USDC_SUBDENOM,
-        testUsdcProvideAmount,
+        usdcMintAmount,
       );
       await storeTokensPrecision(cmInstantiator, contractAddresses, [
-        [testNtrnDenom, 6],
-        [testAtomDenom, 6],
-        [testUsdcDenom, 6],
+        [ntrnDenom, 6],
+        [atomDenom, 6],
+        [usdcDenom, 6],
       ]);
       console.log(
         'cmInstantiator balances:',
@@ -116,7 +137,7 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           neutronChain,
           cmInstantiator,
           contractAddresses,
-          [nativeTokenInfo(testNtrnDenom), nativeTokenInfo(testAtomDenom)],
+          [nativeTokenInfo(ntrnDenom), nativeTokenInfo(atomDenom)],
         );
         contractAddresses[NTRN_ATOM_XYK_PAIR_CONTRACT_KEY] =
           ntrnAtomXykPairInfo.contract_addr;
@@ -128,20 +149,20 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           JSON.stringify({
             provide_liquidity: {
               assets: [
-                nativeToken(testAtomDenom, testAtomProvideAmount.toString()),
-                nativeToken(testNtrnDenom, testNtrnProvideAmount.toString()),
+                nativeToken(atomDenom, atomProvideAmount.toString()),
+                nativeToken(ntrnDenom, ntrnProvideAmount.toString()),
               ],
               slippage_tolerance: '0.5',
             },
           }),
           [
             {
-              denom: testAtomDenom,
-              amount: testAtomProvideAmount.toString(),
+              denom: atomDenom,
+              amount: atomProvideAmount.toString(),
             },
             {
-              denom: testNtrnDenom,
-              amount: testNtrnProvideAmount.toString(),
+              denom: ntrnDenom,
+              amount: ntrnProvideAmount.toString(),
             },
           ],
         );
@@ -153,7 +174,7 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           neutronChain,
           cmInstantiator,
           contractAddresses,
-          [nativeTokenInfo(testNtrnDenom), nativeTokenInfo(testUsdcDenom)],
+          [nativeTokenInfo(ntrnDenom), nativeTokenInfo(usdcDenom)],
         );
         contractAddresses[NTRN_USDC_XYK_PAIR_CONTRACT_KEY] =
           ntrnUsdcXykPairInfo.contract_addr;
@@ -165,20 +186,20 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           JSON.stringify({
             provide_liquidity: {
               assets: [
-                nativeToken(testUsdcDenom, testUsdcProvideAmount.toString()),
-                nativeToken(testNtrnDenom, testNtrnProvideAmount.toString()),
+                nativeToken(usdcDenom, usdcProvideAmount.toString()),
+                nativeToken(ntrnDenom, ntrnProvideAmount.toString()),
               ],
               slippage_tolerance: '0.5',
             },
           }),
           [
             {
-              denom: testUsdcDenom,
-              amount: testUsdcProvideAmount.toString(),
+              denom: usdcDenom,
+              amount: usdcProvideAmount.toString(),
             },
             {
-              denom: testNtrnDenom,
-              amount: testNtrnProvideAmount.toString(),
+              denom: ntrnDenom,
+              amount: ntrnProvideAmount.toString(),
             },
           ],
         );
@@ -186,31 +207,32 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       });
 
       test('query LP token balances', async () => {
-        const ntrnAtomLpBalance = await neutronChain.queryContract<{
-          balance: string;
-        }>(contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY], {
-          balance: {
-            address: cmInstantiator.wallet.address.toString(),
-          },
-        });
-        ntrnAtomTotalLpTokens = +ntrnAtomLpBalance.balance;
+        const ntrnAtomLpBalance = await neutronChain.queryCw20Balance(
+          contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY],
+          cmInstantiator.wallet.address.toString(),
+        );
+        ntrnAtomTotalLpTokens = ntrnAtomLpBalance;
         expect(ntrnAtomTotalLpTokens).toBeGreaterThan(0);
 
-        const ntrnUsdcLpBalance = await neutronChain.queryContract<{
-          balance: string;
-        }>(contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY], {
-          balance: {
-            address: cmInstantiator.wallet.address.toString(),
-          },
-        });
-        ntrnUsdcTotalLpTokens = +ntrnUsdcLpBalance.balance;
+        const ntrnUsdcLpBalance = await neutronChain.queryCw20Balance(
+          contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY],
+          cmInstantiator.wallet.address.toString(),
+        );
+        ntrnUsdcTotalLpTokens = ntrnUsdcLpBalance;
         expect(ntrnUsdcTotalLpTokens).toBeGreaterThan(0);
+
+        reserveNtrnAtomShare = Math.floor(
+          ntrnAtomTotalLpTokens * reserveLpTokensFraction,
+        );
+        reserveNtrnUsdcShare = Math.floor(
+          ntrnUsdcTotalLpTokens * reserveLpTokensFraction,
+        );
       });
 
       describe('distribute funds across contracts', () => {
         test('fund reserve contract', async () => {
           const reserveNtrnAtomLpTokenShare = Math.floor(
-            ntrnAtomTotalLpTokens * reserveLpTokensShare,
+            ntrnAtomTotalLpTokens * reserveLpTokensFraction,
           );
           let res = await cmInstantiator.executeContract(
             contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY],
@@ -222,19 +244,14 @@ describe('Neutron / Migration from xyk to CL pools', () => {
             }),
           );
           expect(res.code).toBe(0);
-          const reserveNtrnAtomLpBalance = await neutronChain.queryContract<{
-            balance: string;
-          }>(contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY], {
-            balance: {
-              address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-            },
-          });
-          expect(+reserveNtrnAtomLpBalance.balance).toEqual(
-            reserveNtrnAtomLpTokenShare,
+          const reserveNtrnAtomLpBalance = await neutronChain.queryCw20Balance(
+            contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY],
+            contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
           );
+          expect(reserveNtrnAtomLpBalance).toEqual(reserveNtrnAtomLpTokenShare);
 
           const reserveNtrnUsdcLpTokenShare = Math.floor(
-            ntrnUsdcTotalLpTokens * reserveLpTokensShare,
+            ntrnUsdcTotalLpTokens * reserveLpTokensFraction,
           );
           res = await cmInstantiator.executeContract(
             contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY],
@@ -246,16 +263,11 @@ describe('Neutron / Migration from xyk to CL pools', () => {
             }),
           );
           expect(res.code).toBe(0);
-          const reserveNtrnUsdcLpBalance = await neutronChain.queryContract<{
-            balance: string;
-          }>(contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY], {
-            balance: {
-              address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-            },
-          });
-          expect(+reserveNtrnUsdcLpBalance.balance).toEqual(
-            reserveNtrnUsdcLpTokenShare,
+          const reserveNtrnUsdcLpBalance = await neutronChain.queryCw20Balance(
+            contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY],
+            contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
           );
+          expect(reserveNtrnUsdcLpBalance).toEqual(reserveNtrnUsdcLpTokenShare);
         });
       });
     });
@@ -263,12 +275,12 @@ describe('Neutron / Migration from xyk to CL pools', () => {
     describe('replace xyk with CL pools', () => {
       test('deregister xyk pairs', async () => {
         await deregisterPair(cmInstantiator, contractAddresses, [
-          nativeTokenInfo(testNtrnDenom),
-          nativeTokenInfo(testAtomDenom),
+          nativeTokenInfo(ntrnDenom),
+          nativeTokenInfo(atomDenom),
         ]);
         await deregisterPair(cmInstantiator, contractAddresses, [
-          nativeTokenInfo(testNtrnDenom),
-          nativeTokenInfo(testUsdcDenom),
+          nativeTokenInfo(ntrnDenom),
+          nativeTokenInfo(usdcDenom),
         ]);
       });
 
@@ -277,7 +289,7 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           neutronChain,
           cmInstantiator,
           contractAddresses,
-          [nativeTokenInfo(testAtomDenom), nativeTokenInfo(testNtrnDenom)],
+          [nativeTokenInfo(atomDenom), nativeTokenInfo(ntrnDenom)],
           atomNtrnPriceRate,
         );
         contractAddresses[NTRN_ATOM_CL_PAIR_CONTRACT_KEY] =
@@ -289,8 +301,8 @@ describe('Neutron / Migration from xyk to CL pools', () => {
           neutronChain,
           cmInstantiator,
           contractAddresses,
-          [nativeTokenInfo(testUsdcDenom), nativeTokenInfo(testNtrnDenom)],
-          atomUsdcPriceRate,
+          [nativeTokenInfo(usdcDenom), nativeTokenInfo(ntrnDenom)],
+          usdcNtrnPriceRate,
         );
         contractAddresses[NTRN_USDC_CL_PAIR_CONTRACT_KEY] =
           ntrnUsdcClPairInfo.contract_addr;
@@ -308,64 +320,298 @@ describe('Neutron / Migration from xyk to CL pools', () => {
         contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
         codeIds[RESERVE_NEW_CONTRACT_KEY],
         JSON.stringify({
-          ntrn_denom: testNtrnDenom,
-          atom_denom: testAtomDenom,
-          ntrn_atom_xyk_pair_address:
+          max_slippage: '0.05', // 5%
+          ntrn_denom: ntrnDenom,
+          atom_denom: atomDenom,
+          ntrn_atom_xyk_pair:
             contractAddresses[NTRN_ATOM_XYK_PAIR_CONTRACT_KEY],
-          ntrn_atom_cl_pair_address:
-            contractAddresses[NTRN_ATOM_CL_PAIR_CONTRACT_KEY],
-          usdc_denom: testUsdcDenom,
-          ntrn_usdc_xyk_pair_address:
+          ntrn_atom_cl_pair: contractAddresses[NTRN_ATOM_CL_PAIR_CONTRACT_KEY],
+          usdc_denom: usdcDenom,
+          ntrn_usdc_xyk_pair:
             contractAddresses[NTRN_USDC_XYK_PAIR_CONTRACT_KEY],
-          ntrn_usdc_cl_pair_address:
-            contractAddresses[NTRN_USDC_CL_PAIR_CONTRACT_KEY],
+          ntrn_usdc_cl_pair: contractAddresses[NTRN_USDC_CL_PAIR_CONTRACT_KEY],
         }),
       );
       expect(res.code).toBe(0);
     });
-    test('check reserve contract NTRN/ATOM LP balances', async () => {
-      const ntrnAtomXykLpBalance = await neutronChain.queryContract<{
-        balance: string;
-      }>(contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY], {
-        balance: {
-          address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-        },
-      });
-      expect(+ntrnAtomXykLpBalance.balance).toEqual(0);
 
-      const ntrnAtomClLpBalance = await neutronChain.queryContract<{
-        balance: string;
-      }>(contractAddresses[NTRN_ATOM_CL_LP_TOKEN_CONTRACT_KEY], {
-        balance: {
-          address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-        },
-      });
-      expect(+ntrnAtomClLpBalance.balance).toBeGreaterThan(0);
+    test('unable to migrate with a greater slippage than allowed', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              slippage_tolerance: '0.06', // 6% > 5%
+            },
+          }),
+        ),
+      ).rejects.toThrow(
+        /Provided slippage tolerance 0.06 is more than the max allowed/,
+      );
     });
-    test('check reserve contract NTRN/USDC LP balances', async () => {
-      const ntrnUsdcXykLpBalance = await neutronChain.queryContract<{
-        balance: string;
-      }>(contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY], {
-        balance: {
-          address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-        },
-      });
-      expect(+ntrnUsdcXykLpBalance.balance).toEqual(0);
 
-      const ntrnUsdcClLpBalance = await neutronChain.queryContract<{
-        balance: string;
-      }>(contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY], {
-        balance: {
-          address: contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
-        },
+    test('partial precise migration', async () => {
+      const balancesBefore = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      const migrationAmount = Math.floor(
+        Math.min(reserveNtrnAtomShare, reserveNtrnUsdcShare) / 4,
+      );
+
+      const res = await cmInstantiator.executeContract(
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+        JSON.stringify({
+          migrate_from_xyk_to_cl: {
+            slippage_tolerance: '0.001', // 0.1%
+            ntrn_atom_amount: migrationAmount.toString(),
+            ntrn_usdc_amount: migrationAmount.toString(),
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+
+      const balancesAfter = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      expect(balancesAfter.ntrn_atom_xyk).toEqual(
+        balancesBefore.ntrn_atom_xyk - migrationAmount,
+      );
+      expect(balancesAfter.ntrn_usdc_xyk).toEqual(
+        balancesBefore.ntrn_usdc_xyk - migrationAmount,
+      );
+      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.ntrn_atom_cl,
+      );
+      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.ntrn_usdc_cl,
+      );
+    });
+
+    describe('migration on price change', () => {
+      test('move ntrn price up in both XYK pools', async () => {
+        let res = await cmInstantiator.executeContract(
+          contractAddresses[NTRN_ATOM_XYK_PAIR_CONTRACT_KEY],
+          JSON.stringify({
+            swap: {
+              offer_asset: nativeToken(atomDenom, atomKeptAmount.toString()),
+              max_spread: '0.5', // 50% — we don't care about swap slippage
+            },
+          }),
+          [
+            {
+              denom: atomDenom,
+              amount: atomKeptAmount.toString(),
+            },
+          ],
+        );
+        expect(res.code).toBe(0);
+
+        res = await cmInstantiator.executeContract(
+          contractAddresses[NTRN_USDC_XYK_PAIR_CONTRACT_KEY],
+          JSON.stringify({
+            swap: {
+              offer_asset: nativeToken(usdcDenom, usdcKeptAmount.toString()),
+              max_spread: '0.5', // 50% — we don't care about swap slippage
+            },
+          }),
+          [
+            {
+              denom: usdcDenom,
+              amount: usdcKeptAmount.toString(),
+            },
+          ],
+        );
+        expect(res.code).toBe(0);
       });
-      expect(+ntrnUsdcClLpBalance.balance).toBeGreaterThan(0);
+      test('unable to migrate with a too low slippage tolerance', async () => {
+        const migrationAmount = Math.floor(
+          Math.min(reserveNtrnAtomShare, reserveNtrnUsdcShare) / 10,
+        );
+        await expect(
+          cmInstantiator.executeContract(
+            contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+            JSON.stringify({
+              migrate_from_xyk_to_cl: {
+                slippage_tolerance: '0.001', // 0.1% shouldn't be enough now
+                ntrn_atom_amount: migrationAmount.toString(),
+                ntrn_usdc_amount: migrationAmount.toString(),
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Operation exceeds max spread limit/);
+      });
+      test('migrate with a bigger slippage tolerance', async () => {
+        const migrationAmount = Math.floor(
+          Math.min(reserveNtrnAtomShare, reserveNtrnUsdcShare) / 10,
+        );
+        const res = await cmInstantiator.executeContract(
+          contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              slippage_tolerance: '0.05', // 5%
+              ntrn_atom_amount: migrationAmount.toString(),
+              ntrn_usdc_amount: migrationAmount.toString(),
+            },
+          }),
+        );
+        expect(res.code).toBe(0);
+      });
+    });
+
+    test('partial migration called by a stranger', async () => {
+      const balancesBefore = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      const migrationAmount = Math.floor(
+        Math.min(reserveNtrnAtomShare, reserveNtrnUsdcShare) / 4,
+      );
+
+      const res = await cmStranger.executeContract(
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+        JSON.stringify({
+          migrate_from_xyk_to_cl: {
+            slippage_tolerance: '0.05',
+            ntrn_atom_amount: migrationAmount.toString(),
+            ntrn_usdc_amount: migrationAmount.toString(),
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+
+      const balancesAfter = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      expect(balancesAfter.ntrn_atom_xyk).toEqual(
+        balancesBefore.ntrn_atom_xyk - migrationAmount,
+      );
+      expect(balancesAfter.ntrn_usdc_xyk).toEqual(
+        balancesBefore.ntrn_usdc_xyk - migrationAmount,
+      );
+      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.ntrn_atom_cl,
+      );
+      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.ntrn_usdc_cl,
+      );
+    });
+
+    test('unable to migrate more tokens than available', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              ntrn_atom_amount: reserveNtrnAtomShare.toString(),
+              ntrn_usdc_amount: reserveNtrnUsdcShare.toString(),
+            },
+          }),
+        ),
+      ).rejects.toThrow(
+        /Amount to be migrated is greater that the max available amount/,
+      );
+    });
+
+    test('full migration for one of the pairs', async () => {
+      const balancesBefore = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      const migrationAmount = Math.floor(
+        Math.min(reserveNtrnAtomShare, reserveNtrnUsdcShare) / 4,
+      );
+
+      const res = await cmInstantiator.executeContract(
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+        JSON.stringify({
+          migrate_from_xyk_to_cl: {
+            slippage_tolerance: '0.05',
+            // ntrn_atom_amount is undefined => all liquidity is expected to be migrated
+            ntrn_usdc_amount: migrationAmount.toString(),
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+
+      const balancesAfter = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      expect(balancesAfter.ntrn_atom_xyk).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_xyk).toEqual(
+        balancesBefore.ntrn_usdc_xyk - migrationAmount,
+      );
+      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.ntrn_atom_cl,
+      );
+      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.ntrn_usdc_cl,
+      );
+    });
+
+    test('full migration of another pair', async () => {
+      const balancesBefore = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+
+      const res = await cmInstantiator.executeContract(
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+        JSON.stringify({
+          migrate_from_xyk_to_cl: {
+            slippage_tolerance: '0.05',
+            // amounts are not defined => all liquidity is expected to be migrated
+          },
+        }),
+      );
+      expect(res.code).toBe(0);
+
+      const balancesAfter = await queryReserveLpTokenBalances(
+        neutronChain,
+        contractAddresses,
+      );
+      expect(balancesAfter.ntrn_atom_xyk).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_xyk).toEqual(0);
+      expect(balancesAfter.ntrn_atom_cl).toEqual(balancesBefore.ntrn_atom_cl); // was fully migrated on prev step
+      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.ntrn_usdc_cl,
+      );
+    });
+
+    test('check reserve contract NTRN/ATOM LP balances', async () => {
+      const ntrnAtomXykLpBalance = await neutronChain.queryCw20Balance(
+        contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY],
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+      );
+      expect(ntrnAtomXykLpBalance).toEqual(0);
+
+      const ntrnAtomClLpBalance = await neutronChain.queryCw20Balance(
+        contractAddresses[NTRN_ATOM_CL_LP_TOKEN_CONTRACT_KEY],
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+      );
+      expect(ntrnAtomClLpBalance).toBeGreaterThan(0);
+    });
+
+    test('check reserve contract NTRN/USDC LP balances', async () => {
+      const ntrnUsdcXykLpBalance = await neutronChain.queryCw20Balance(
+        contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY],
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+      );
+      expect(ntrnUsdcXykLpBalance).toEqual(0);
+
+      const ntrnUsdcClLpBalance = await neutronChain.queryCw20Balance(
+        contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY],
+        contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+      );
+      expect(ntrnUsdcClLpBalance).toBeGreaterThan(0);
     });
   });
 });
 
 const deployContracts = async (
-  chain: CosmosWrapper,
   instantiator: WalletWrapper,
 ): Promise<{
   contractAddresses: Record<string, string>;
@@ -609,6 +855,34 @@ const createNativeDenom = async (
   return denom;
 };
 
+const queryReserveLpTokenBalances = async (
+  chain: CosmosWrapper,
+  contractAddresses: Record<string, string>,
+): Promise<LpTokenBalances> => {
+  const ntrnAtomXykLpBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_ATOM_XYK_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+  );
+  const ntrnUsdcXykLpBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_USDC_XYK_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+  );
+  const ntrnAtomClLpBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_ATOM_CL_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+  );
+  const ntrnUsdcClLpBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
+  );
+  return {
+    ntrn_atom_xyk: ntrnAtomXykLpBalance,
+    ntrn_usdc_xyk: ntrnUsdcXykLpBalance,
+    ntrn_atom_cl: ntrnAtomClLpBalance,
+    ntrn_usdc_cl: ntrnUsdcClLpBalance,
+  };
+};
+
 type PairInfo = {
   asset_infos: NativeToken[];
   contract_addr: string;
@@ -627,4 +901,11 @@ type ConcentratedPoolParams = {
   price_scale: string;
   ma_half_time: number;
   track_asset_balances: boolean;
+};
+
+type LpTokenBalances = {
+  ntrn_atom_xyk: number;
+  ntrn_usdc_xyk: number;
+  ntrn_atom_cl: number;
+  ntrn_usdc_cl: number;
 };
