@@ -20,6 +20,7 @@ import {
   addSubdaoProposal,
   clearAdminProposal,
   clientUpdateProposal,
+  manyParamsChangeProposal,
   paramChangeProposal,
   ParamChangeProposalInfo,
   pinCodesProposal,
@@ -688,6 +689,36 @@ export class DaoMember {
       subspace,
       key,
       value,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
+  }
+
+  /**
+   * submitParameterChangeProposal creates parameter change proposal.
+   */
+  async submitManyParameterChangeProposal(
+    title: string,
+    description: string,
+    params: {
+      subspace: string;
+      key: string;
+      value: string;
+    }[],
+    deposit: string,
+  ): Promise<number> {
+    const message = manyParamsChangeProposal({
+      title,
+      description,
+      paramChanges: params.map((p) => ({
+        subspace: p.subspace,
+        key: p.key,
+        value: p.value,
+      })),
     });
     return await this.submitSingleChoiceProposal(
       title,

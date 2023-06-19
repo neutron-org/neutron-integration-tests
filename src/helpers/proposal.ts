@@ -9,6 +9,16 @@ export type ParamChangeProposalInfo = {
   value: string;
 };
 
+export type ManyParamChangeProposalInfo = {
+  title: string;
+  description: string;
+  paramChanges: {
+    subspace: string;
+    key: string;
+    value: string;
+  }[];
+};
+
 export type PinCodesInfo = {
   title: string;
   description: string;
@@ -123,6 +133,28 @@ export type MultipleChoiceVotes = {
 export type MultipleChoiceOptionType = 'none' | 'standard';
 
 export const paramChangeProposal = (info: ParamChangeProposalInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        param_change_proposal: {
+          title: info.title,
+          description: info.description,
+          param_changes: [
+            {
+              subspace: info.subspace,
+              key: info.key,
+              value: info.value,
+            },
+          ],
+        },
+      },
+    },
+  },
+});
+
+export const manyParamsChangeProposal = (
+  info: ManyParamChangeProposalInfo,
+): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {

@@ -344,6 +344,41 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    const pChange = (subspace: string, key: string, value: string) => ({
+      subspace,
+      key,
+      value,
+    });
+
+    test('create proposal #18, will pass', async () => {
+      await daoMember1.submitManyParameterChangeProposal(
+        'Proposal #18',
+        'Many params change proposal. This one will pass',
+        [
+          // TODO: change to use params array instead of proposals array
+          pChange('ccvconsumer', 'Enabled', 'true'), // is enabled in genesis?
+          pChange('ccvconsumer', 'BlocksPerDistributionTransmission', '2000'), // 1000 default
+          pChange(
+            'ccvconsumer',
+            'DistributionTransmissionChannel',
+            'channel-555',
+          ), // '' default
+          pChange(
+            'ccvconsumer',
+            'ProviderFeePoolAddrStr',
+            'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
+          ), // '' default
+          pChange('ccvconsumer', 'CcvTimeoutPeriod', '1000000'), // 2419200000000000 default
+          pChange('ccvconsumer', 'TransferTimeoutPeriod', '5000000'), // 3600000000000 default
+          pChange('ccvconsumer', 'ConsumerRedistributionFraction', '0.5'), // '0.75' default
+          pChange('ccvconsumer', 'HistoricalEntries', '1000'), // 10000 default
+          pChange('ccvconsumer', 'UnbondingPeriod', '100000000'), // 1728000000000000 default
+          pChange('ccvconsumer', 'SoftOptOutThreshold', '0.1'), // 0.05 default
+        ],
+        '1000',
+      );
+    });
+
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         [
@@ -931,6 +966,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
+  // FIXME: no vote & execute of proposal #17
+
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
       const res = await neutronChain.querySchedules();
@@ -962,6 +999,36 @@ describe('Neutron / Governance', () => {
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
       expect(afterProposalHostStatus).toEqual(false);
     });
+  });
+
+  describe('vote for proposal #18 with unbonded funds(no, yes, yes)', () => {
+    const proposalId = 18;
+    test('vote NO from wallet 1 with unbonded funds', async () => {
+      await daoMember1.unbondFunds('1000');
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2 with unbonded funds', async () => {
+      await daoMember2.unbondFunds('1000');
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3 with unbonded funds', async () => {
+      await daoMember3.unbondFunds('1000');
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('try to execute proposal #18', () => {
+    const proposalId = 18;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+    });
+  });
+
+  describe('check that params are changed', () => {
+    test('check that params changed to the correct ones', async () => {});
   });
 });
 
