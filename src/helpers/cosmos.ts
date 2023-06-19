@@ -27,6 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
+  CcvParamsResponse,
 } from './types';
 import { getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -391,6 +392,21 @@ export class CosmosWrapper {
   async queryContractAdmin(address: string): Promise<string> {
     const resp = await this.getContractInfo(address);
     return resp.contract_info.admin;
+  }
+
+  async queryCCVParams(): Promise<CcvParamsResponse> {
+    try {
+      const req = await axios.get<CcvParamsResponse>(
+        `${this.sdk.url}/interchain_security/ccv/consumer/params`,
+        {},
+      );
+      return req.data;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
   }
 }
 
@@ -815,7 +831,9 @@ export const getEventAttributesFromTx = (
   data: TxResponseType['data'],
   event: string,
   attributes: string[],
-): Array<Record<typeof attributes[number], string> | Record<string, never>> => {
+): Array<
+  Record<(typeof attributes)[number], string> | Record<string, never>
+> => {
   const events =
     (
       JSON.parse(data?.tx_response.raw_log) as [

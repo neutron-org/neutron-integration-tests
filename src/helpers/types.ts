@@ -266,3 +266,18 @@ export type ContractAdminResponse = {
     admin: string;
   };
 };
+
+export type CcvParamsResponse = {
+  params: {
+    enabled: boolean;
+    blocks_per_distribution_transmission: number;
+    distribution_transmission_channel: string;
+    provider_fee_pool_addr_str: string;
+    ccv_timeout_period: string;
+    transfer_timeout_period: string;
+    consumer_redistribution_fraction: string;
+    historical_entries: number;
+    unbonding_period: string;
+    soft_opt_out_threshold: string;
+  };
+};

@@ -161,13 +161,7 @@ export const manyParamsChangeProposal = (
         param_change_proposal: {
           title: info.title,
           description: info.description,
-          param_changes: [
-            {
-              subspace: info.subspace,
-              key: info.key,
-              value: info.value,
-            },
-          ],
+          param_changes: info.paramChanges,
         },
       },
     },

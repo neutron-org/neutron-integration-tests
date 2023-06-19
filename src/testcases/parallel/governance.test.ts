@@ -355,25 +355,24 @@ describe('Neutron / Governance', () => {
         'Proposal #18',
         'Many params change proposal. This one will pass',
         [
-          // TODO: change to use params array instead of proposals array
-          pChange('ccvconsumer', 'Enabled', 'true'), // is enabled in genesis?
-          pChange('ccvconsumer', 'BlocksPerDistributionTransmission', '2000'), // 1000 default
+          pChange('ccvconsumer', 'Enabled', 'false'), // is enabled in genesis?
+          pChange('ccvconsumer', 'BlocksPerDistributionTransmission', '"2000"'), // 1000 default
           pChange(
             'ccvconsumer',
             'DistributionTransmissionChannel',
-            'channel-555',
+            '"channel-555"',
           ), // '' default
           pChange(
             'ccvconsumer',
             'ProviderFeePoolAddrStr',
-            'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
+            '"neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh"',
           ), // '' default
-          pChange('ccvconsumer', 'CcvTimeoutPeriod', '1000000'), // 2419200000000000 default
-          pChange('ccvconsumer', 'TransferTimeoutPeriod', '5000000'), // 3600000000000 default
-          pChange('ccvconsumer', 'ConsumerRedistributionFraction', '0.5'), // '0.75' default
-          pChange('ccvconsumer', 'HistoricalEntries', '1000'), // 10000 default
-          pChange('ccvconsumer', 'UnbondingPeriod', '100000000'), // 1728000000000000 default
-          pChange('ccvconsumer', 'SoftOptOutThreshold', '0.1'), // 0.05 default
+          pChange('ccvconsumer', 'CcvTimeoutPeriod', '"4838400000000000"'),
+          pChange('ccvconsumer', 'TransferTimeoutPeriod', '"7200000000000"'),
+          pChange('ccvconsumer', 'ConsumerRedistributionFraction', '"0.5"'),
+          pChange('ccvconsumer', 'HistoricalEntries', '"1000"'),
+          pChange('ccvconsumer', 'UnbondingPeriod', '"3456000000000000"'),
+          pChange('ccvconsumer', 'SoftOptOutThreshold', '"0.1"'),
         ],
         '1000',
       );
@@ -943,15 +942,15 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #16 with unbonded funds(no, yes, yes)', () => {
     const proposalId = 16;
     test('vote NO from wallet 1 with unbonded funds', async () => {
-      await daoMember1.unbondFunds('1000');
+      // await daoMember1.unbondFunds('1000');
       await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2 with unbonded funds', async () => {
-      await daoMember2.unbondFunds('1000');
+      // await daoMember2.unbondFunds('1000');
       await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3 with unbonded funds', async () => {
-      await daoMember3.unbondFunds('1000');
+      // await daoMember3.unbondFunds('1000');
       await daoMember3.voteYes(proposalId);
     });
   });
@@ -1004,16 +1003,31 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #18 with unbonded funds(no, yes, yes)', () => {
     const proposalId = 18;
     test('vote NO from wallet 1 with unbonded funds', async () => {
-      await daoMember1.unbondFunds('1000');
       await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2 with unbonded funds', async () => {
-      await daoMember2.unbondFunds('1000');
       await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3 with unbonded funds', async () => {
-      await daoMember3.unbondFunds('1000');
       await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('check ccv params before executing proposal', () => {
+    test('check params are changed', async () => {
+      const params = (await neutronChain.queryCCVParams()).params;
+      expect(params).toEqual({
+        enabled: true,
+        blocks_per_distribution_transmission: '1000',
+        distribution_transmission_channel: '',
+        provider_fee_pool_addr_str: '',
+        ccv_timeout_period: '2419200s',
+        transfer_timeout_period: '3600s',
+        consumer_redistribution_fraction: '0.75',
+        historical_entries: '10000',
+        unbonding_period: '1728000s',
+        soft_opt_out_threshold: '0.05',
+      });
     });
   });
 
@@ -1027,8 +1041,23 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('check that params are changed', () => {
-    test('check that params changed to the correct ones', async () => {});
+  describe('check that proposal can change ccv params', () => {
+    test('check params are changed', async () => {
+      const params = (await neutronChain.queryCCVParams()).params;
+      expect(params).toEqual({
+        enabled: false,
+        blocks_per_distribution_transmission: '2000',
+        distribution_transmission_channel: 'channel-555',
+        provider_fee_pool_addr_str:
+          'neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh',
+        ccv_timeout_period: '4838400s',
+        transfer_timeout_period: '7200s',
+        consumer_redistribution_fraction: '0.5',
+        historical_entries: '1000',
+        unbonding_period: '3456000s',
+        soft_opt_out_threshold: '0.1',
+      });
+    });
   });
 });
 
