@@ -16,6 +16,7 @@ import {
   Tge,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import Long from 'long';
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 1000000;
@@ -1656,7 +1657,6 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
   });
   describe('Migration lockdrop to V2', () => {
     it('should unregister old pairs', async () => {
-      console.log(tge.pairs);
       {
         const res = await executeDeregisterPair(
           tge.instantiator,
@@ -1741,10 +1741,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           liquidity: pairs[1].liquidity_token,
         },
       };
-      console.log(tge.pairs);
     });
     it('should migrate to V2', async () => {
-      console.log(tge.contracts);
       const res = await cmInstantiator.migrateContract(
         tge.contracts.lockdrop,
         tge.codeIds.TGE_LOCKDROP_V2,
@@ -1754,6 +1752,107 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         },
       );
       expect(res.code).toEqual(0);
+    });
+    it('should not allow to query user lockup at height', async () => {
+      await expect(
+        cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
+          query_user_lockup_total_at_height: {
+            pool_type: 'ATOM',
+            user_address: cmInstantiator.wallet.address,
+            height: 1,
+          },
+        }),
+      ).rejects.toThrowError(/Contract is in migration state/);
+    });
+    it('should not allow to query total lockup at height', async () => {
+      await expect(
+        cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
+          query_lockup_total_at_height: {
+            pool_type: 'ATOM',
+            height: 1,
+          },
+        }),
+      ).rejects.toThrowError(/Contract is in migration state/);
+    });
+    it('should not allow to execute claim', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            claim_rewards_and_optionally_unlock: {
+              pool_type: 'USDC',
+              duration: 1,
+              withdraw_lp_stake: false,
+            },
+          }),
+        ),
+      ).rejects.toThrowError(/Contract is in migration state/);
+    });
+    it('should not allow to migrate users', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate: {
+              migrate_users: {},
+            },
+          }),
+        ),
+      ).rejects.toThrowError(/Migration is not in MigrateUsers state/);
+    });
+    it('should migrate liquidity', async () => {
+      await cmInstantiator.executeContract(
+        tge.contracts.lockdrop,
+        JSON.stringify({
+          migrate: {
+            migrate_liquidity: {
+              slippage_tolerance: '0.05',
+            },
+          },
+        }),
+        [],
+        {
+          gas_limit: Long.fromString('8000000'),
+          amount: [{ denom: tge.chain.denom, amount: '20000' }],
+        },
+      );
+    });
+    it('should migrate users', async () => {
+      await cmInstantiator.executeContract(
+        tge.contracts.lockdrop,
+        JSON.stringify({
+          migrate: {
+            migrate_users: {},
+          },
+        }),
+        [],
+        {
+          gas_limit: Long.fromString('8000000'),
+          amount: [{ denom: tge.chain.denom, amount: '20000' }],
+        },
+      );
+    });
+    it('should finish migrate users', async () => {
+      await cmInstantiator.executeContract(
+        tge.contracts.lockdrop,
+        JSON.stringify({
+          migrate: {
+            migrate_users: {},
+          },
+        }),
+      );
+    });
+    it('should allow to query total lockup at height', async () => {
+      const res = await cmInstantiator.chain.queryContract(
+        tge.contracts.lockdrop,
+        {
+          query_lockup_total_at_height: {
+            pool_type: 'ATOM',
+            height: 1,
+          },
+        },
+      );
+      expect(res).toEqual('0');
     });
   });
 });
