@@ -942,15 +942,15 @@ describe('Neutron / Governance', () => {
   describe('vote for proposal #16 with unbonded funds(no, yes, yes)', () => {
     const proposalId = 16;
     test('vote NO from wallet 1 with unbonded funds', async () => {
-      // await daoMember1.unbondFunds('1000');
+      await daoMember1.unbondFunds('1000');
       await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2 with unbonded funds', async () => {
-      // await daoMember2.unbondFunds('1000');
+      await daoMember2.unbondFunds('1000');
       await daoMember2.voteYes(proposalId);
     });
     test('vote YES from wallet 3 with unbonded funds', async () => {
-      // await daoMember3.unbondFunds('1000');
+      await daoMember3.unbondFunds('1000');
       await daoMember3.voteYes(proposalId);
     });
   });
