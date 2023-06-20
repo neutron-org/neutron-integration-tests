@@ -1532,13 +1532,6 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       );
       expect(res).toEqual('0');
     });
-    it('rewards', async () => {
-      const rewardsStateAfterClaim = await tge.generatorRewardsState(
-        cmInstantiator.wallet.address.toString(),
-      );
-
-      console.log(rewardsStateBeforeClaim, rewardsStateAfterClaim);
-    });
   });
   describe('lockdrop rewards', () => {
     let balanceBeforeLockdrop: number;
@@ -1614,10 +1607,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             rewardsStateBeforeClaim.balanceNtrn,
         ).toEqual(195900); // lockdrop rewards share for the user
 
-        const expectedGeneratorRewards =
-          +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-            (i) => i.pool_type == 'USDC' && i.duration == 1,
-          )!.claimable_generator_astro_debt;
+        const expectedGeneratorRewards = +(
+          (
+            rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+              (i) => i.pool_type == 'USDC' && i.duration == 1,
+            ) || {}
+          ).claimable_generator_astro_debt || '0'
+        );
         expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
         // we expect the astro balance to increase by somewhere between user rewards amount and user
