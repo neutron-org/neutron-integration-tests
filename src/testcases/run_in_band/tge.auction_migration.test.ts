@@ -1328,12 +1328,6 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
     });
   });
   describe('Migration lockdrop to V2', () => {
-    let rewardsStateBeforeClaim;
-    beforeAll(async () => {
-      rewardsStateBeforeClaim = await tge.generatorRewardsState(
-        cmInstantiator.wallet.address.toString(),
-      );
-    });
     it('should unregister old pairs', async () => {
       {
         const res = await executeDeregisterPair(
@@ -1703,10 +1697,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             rewardsStateBeforeClaim.balanceNtrn,
           );
 
-          const expectedGeneratorRewards =
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'USDC' && i.duration == 1,
-            )!.claimable_generator_astro_debt;
+          const expectedGeneratorRewards = +(
+            (
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'USDC' && i.duration == 1,
+              ) || {}
+            ).claimable_generator_astro_debt || '0'
+          );
           expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
           // we expect the astro balance to increase by somewhere between user rewards amount and user
@@ -1774,18 +1771,24 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           ); // ntrn rewards were sent at the previous claim, so no ntrn income is expected
 
           // withdraw_lp_stake is true => expect lp tokens to be unlocked and returned to the user
-          const usdcNtrnLockedLp =
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'USDC' && i.duration == 1,
-            )!.lp_units_locked;
+          const usdcNtrnLockedLp = +(
+            (
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'USDC' && i.duration == 1,
+              ) || {}
+            ).lp_units_locked || '0'
+          );
           expect(usdcNtrnLockedLp).toBeGreaterThan(0);
           expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
             rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
           );
-          const atomNtrnLockedLp =
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'ATOM' && i.duration == 1,
-            )!.lp_units_locked;
+          const atomNtrnLockedLp = +(
+            (
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                (i) => i.pool_type == 'ATOM' && i.duration == 1,
+              ) || {}
+            ).lp_units_locked || '0'
+          );
           expect(atomNtrnLockedLp).toBeGreaterThan(0);
           expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
             rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
@@ -1793,12 +1796,20 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
           // claimed from both pools above, so expected rewards amount is a sum of both
           const expectedGeneratorRewards =
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'USDC' && i.duration == 1,
-            )!.claimable_generator_astro_debt +
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'ATOM' && i.duration == 1,
-            )!.claimable_generator_astro_debt;
+            +(
+              (
+                rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                  (i) => i.pool_type == 'USDC' && i.duration == 1,
+                ) || {}
+              ).claimable_generator_astro_debt || '0'
+            ) +
+            +(
+              (
+                rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                  (i) => i.pool_type == 'ATOM' && i.duration == 1,
+                ) || {}
+              ).claimable_generator_astro_debt || '0'
+            );
           expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
           // we expect the astro balance to increase by somewhere between user rewards amount and user
