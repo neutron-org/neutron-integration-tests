@@ -207,6 +207,7 @@ export class Tge {
       'ASTRO_COIN_REGISTRY',
       'VESTING_LP',
       'LOCKDROP_VAULT',
+      'LOCKDROP_VAULT_V2',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
       'ORACLE_HISTORY',
