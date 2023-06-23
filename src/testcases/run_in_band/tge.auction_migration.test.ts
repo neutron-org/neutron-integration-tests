@@ -1465,7 +1465,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         cmInstantiator.executeContract(
           tge.contracts.lockdrop,
           JSON.stringify({
-            migrate: {
+            migrate_from_xyk_to_cl: {
               migrate_users: {},
             },
           }),
@@ -1476,7 +1476,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       await cmInstantiator.executeContract(
         tge.contracts.lockdrop,
         JSON.stringify({
-          migrate: {
+          migrate_from_xyk_to_cl: {
             migrate_liquidity: {
               slippage_tolerance: '0.05',
             },
@@ -1493,7 +1493,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       await cmInstantiator.executeContract(
         tge.contracts.lockdrop,
         JSON.stringify({
-          migrate: {
+          migrate_from_xyk_to_cl: {
             migrate_users: {},
           },
         }),
@@ -1508,7 +1508,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       await cmInstantiator.executeContract(
         tge.contracts.lockdrop,
         JSON.stringify({
-          migrate: {
+          migrate_from_xyk_to_cl: {
             migrate_users: {},
           },
         }),
