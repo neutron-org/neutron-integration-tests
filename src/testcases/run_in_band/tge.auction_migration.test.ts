@@ -1421,6 +1421,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         {
           new_atom_token: tge.pairs.atom_ntrn.liquidity,
           new_usdc_token: tge.pairs.usdc_ntrn.liquidity,
+          max_slippage: '0.1',
         },
       );
       expect(res.code).toEqual(0);
