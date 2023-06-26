@@ -986,7 +986,7 @@ export class DaoMember {
     duration = 10,
     customModule = 'single',
     denom = 'untrn',
-    amount = '100'
+    amount = '100',
   ): Promise<number> {
     const message = {
       wasm: {
@@ -1207,7 +1207,7 @@ export class DaoMember {
     description: string,
     amount: string,
     name: string,
-    customModule = 'single'
+    customModule = 'single',
   ): Promise<number> {
     const message = removeSchedule(name);
     return await this.submitSingleChoiceProposal(
@@ -1215,7 +1215,7 @@ export class DaoMember {
       description,
       [message],
       amount,
-      customModule
+      customModule,
     );
   }
 
