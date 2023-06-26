@@ -981,6 +981,36 @@ export class DaoMember {
     );
   }
 
+  async submitUntypedPauseProposalWFunds(
+    contractAddr: string,
+    duration = 10,
+    customModule = 'single',
+    denom = 'untrn',
+    amount = '100'
+  ): Promise<number> {
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: contractAddr,
+          msg: wrapMsg({
+            pause: {
+              duration: duration,
+            },
+          }),
+          funds: [{ denom: denom, amount: amount }],
+        },
+      },
+    };
+
+    return await this.submitSingleChoiceProposal(
+      'pause proposal',
+      'pauses contract',
+      [message],
+      '',
+      customModule,
+    );
+  }
+
   async submitUpdateSubDaoMultisigParticipants(
     newParticipants: string[],
   ): Promise<number> {
@@ -1177,6 +1207,7 @@ export class DaoMember {
     description: string,
     amount: string,
     name: string,
+    customModule = 'single'
   ): Promise<number> {
     const message = removeSchedule(name);
     return await this.submitSingleChoiceProposal(
@@ -1184,6 +1215,7 @@ export class DaoMember {
       description,
       [message],
       amount,
+      customModule
     );
   }
 
@@ -1215,9 +1247,6 @@ export const deploySubdao = async (
   const proposeCodeId = await cm.storeWasm(NeutronContract.SUBDAO_PROPOSAL);
   const preProposeTimelockedCodeId = await cm.storeWasm(
     NeutronContract.SUBDAO_PREPROPOSE,
-  );
-  const preProposeNonTimelockedCodeId = await cm.storeWasm(
-    NeutronContract.DAO_PREPROPOSAL_SINGLE,
   );
   const preProposeNonTimelockedPauseCodeId = await cm.storeWasm(
     NeutronContract.SUBDAO_PREPROPOSE_NO_TIMELOCK,
@@ -1299,29 +1328,6 @@ export const deploySubdao = async (
     msg: wrapMsg(propose2InstantiateMessage),
   };
 
-  const nonTimelockedProposeInstantiateMessage = {
-    threshold: { absolute_count: { threshold: '1' } },
-    max_voting_period: { height: 10 },
-    allow_revoting: false,
-    pre_propose_info: {
-      module_may_propose: {
-        info: {
-          code_id: preProposeNonTimelockedCodeId,
-          label: 'neutron.subdaos.test.proposal.single_nt.pre_propose',
-          msg: wrapMsg({
-            open_proposal_submission: true,
-          }),
-        },
-      },
-    },
-    close_proposal_on_execution_failure: false,
-  };
-  const nonTimelockedProposalModuleInstantiateInfo = {
-    code_id: proposeCodeId,
-    label: 'neutron.subdaos.test.proposal.single_nt',
-    msg: wrapMsg(nonTimelockedProposeInstantiateMessage),
-  };
-
   const nonTimelockedPauseProposeInstantiateMessage = {
     threshold: { absolute_count: { threshold: '1' } },
     max_voting_period: { height: 10 },
@@ -1351,7 +1357,6 @@ export const deploySubdao = async (
     vote_module_instantiate_info: votingModuleInstantiateInfo,
     proposal_modules_instantiate_info: [
       proposalModuleInstantiateInfo,
-      nonTimelockedProposalModuleInstantiateInfo,
       proposal2ModuleInstantiateInfo,
       nonTimelockedPauseProposalModuleInstantiateInfo,
     ],

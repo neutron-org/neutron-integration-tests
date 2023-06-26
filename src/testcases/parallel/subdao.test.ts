@@ -368,7 +368,42 @@ describe('Neutron / Subdao', () => {
           },
           'single_nt_pause',
         ),
-      ).rejects.toThrow(/not a pause message/);
+      ).rejects.toThrow(/Proposal is malformed/);
+    });
+  });
+
+  describe('Non-timelock schedule proposal: Succeed creation', () => {
+    let proposalId: number;
+
+    test('Non-timelock schedule proposal: Succeed creation', async () => {
+      proposalId = await subdaoMember1.submitRemoveSchedule(
+        'Proposal #12',
+        '',
+        '1000',
+        'proposal11',
+        'single_nt_pause',
+      );
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
+
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/only admin or security dao can remove schedule/);
+
+      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
+      expect(p.proposal.status).toEqual('passed');
+    });
+  });
+
+  describe('Non-timelock pause proposal w funds attached: Failed creation', () => {
+    test('Non-timelock pause proposal w funds attached : failed creation', async () => {
+      await expect(
+        subdaoMember1.submitUntypedPauseProposalWFunds(
+          mainDao.contracts.core.address,
+          10,
+          'single_nt_pause',
+          NEUTRON_DENOM,
+        ),
+      ).rejects.toThrow(/Proposal is malformed/);
     });
   });
 
