@@ -1473,6 +1473,25 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         ),
       ).rejects.toThrowError(/Migration is not in MigrateUsers state/);
     });
+    it('should not migrate liquidity with over-limit slippage', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              migrate_liquidity: {
+                slippage_tolerance: '0.2',
+              },
+            },
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('8000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        ),
+      ).rejects.toThrowError(/Slippage tolerance is too high/);
+    });
     it('should migrate liquidity', async () => {
       await cmInstantiator.executeContract(
         tge.contracts.lockdrop,
@@ -1490,12 +1509,50 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         },
       );
     });
+    it('should not migrate users with limit 0', async () => {
+      await expect(
+        cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              migrate_users: {
+                limit: 0,
+              },
+            },
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('8000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        ),
+      ).rejects.toThrowError(/Limit cannot be zero/);
+    });
     it('should migrate users', async () => {
       await cmInstantiator.executeContract(
         tge.contracts.lockdrop,
         JSON.stringify({
           migrate_from_xyk_to_cl: {
-            migrate_users: {},
+            migrate_users: {
+              limit: 1,
+            },
+          },
+        }),
+        [],
+        {
+          gas_limit: Long.fromString('8000000'),
+          amount: [{ denom: tge.chain.denom, amount: '20000' }],
+        },
+      );
+    });
+    it('should migrate users', async () => {
+      await cmInstantiator.executeContract(
+        tge.contracts.lockdrop,
+        JSON.stringify({
+          migrate_from_xyk_to_cl: {
+            migrate_users: {
+              limit: 10,
+            },
           },
         }),
         [],
