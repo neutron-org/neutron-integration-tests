@@ -17,6 +17,7 @@ import {
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
+import _ from 'lodash';
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 1000000;
@@ -1328,6 +1329,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
     });
   });
   describe('Migration lockdrop to V2', () => {
+    let oldPairs;
     it('should unregister old pairs', async () => {
       {
         const res = await executeDeregisterPair(
@@ -1403,6 +1405,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         await queryFactoryPairs(tge.chain, tge.contracts.astroFactory)
       ).pairs;
       expect(pairs).toHaveLength(2);
+      oldPairs = _.cloneDeep(tge.pairs);
       tge.pairs = {
         atom_ntrn: {
           contract: pairs[0].contract_addr,
@@ -1413,6 +1416,26 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           liquidity: pairs[1].liquidity_token,
         },
       };
+    });
+    it('should have zero liquidity on CL pools', async () => {
+      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+        tge.pairs.usdc_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(usdcBalance.balance).toEqual('0');
+      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+        tge.pairs.atom_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(atomBalance.balance).toEqual('0');
     });
     it('should migrate to V2', async () => {
       const res = await cmInstantiator.migrateContract(
@@ -1583,6 +1606,46 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         },
       );
       expect(res).toEqual('0');
+    });
+    it('should have non-zero liquidity on CL pools', async () => {
+      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+        tge.pairs.usdc_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(usdcBalance.balance).not.toEqual('0');
+      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+        tge.pairs.atom_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(atomBalance.balance).not.toEqual('0');
+    });
+    it('should have zero liquidity on XYK pools', async () => {
+      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+        oldPairs.usdc_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(usdcBalance.balance).toEqual('0');
+      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+        oldPairs.atom_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.astroGenerator,
+          },
+        },
+      );
+      expect(atomBalance.balance).toEqual('0');
     });
   });
   describe('lockdrop rewards', () => {
