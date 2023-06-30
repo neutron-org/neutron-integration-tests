@@ -118,6 +118,10 @@ export class Tge {
     atom_ntrn: { contract: string; liquidity: string };
     usdc_ntrn: { contract: string; liquidity: string };
   };
+  old_pairs: {
+    atom_ntrn: { contract: string; liquidity: string };
+    usdc_ntrn: { contract: string; liquidity: string };
+  };
   times: Record<string, number>;
   lockdropVaultName: string;
   lockdropVaultDescription: string;
@@ -206,6 +210,7 @@ export class Tge {
       'ASTRO_VESTING',
       'ASTRO_COIN_REGISTRY',
       'VESTING_LP',
+      'VESTING_LP_V2',
       'LOCKDROP_VAULT',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
@@ -615,7 +620,48 @@ export class Tge {
       usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
     };
   }
+
+  /**
+   * retrieves user's ntrn and astro balances, lockdrop info and user's LP token balances.
+   */
+  async generatorRewardsStateOld(user: string): Promise<GeneratorRewardsState> {
+    const balanceNtrn = await this.chain.queryDenomBalance(
+      user,
+      this.neutronDenom,
+    );
+    const balanceAstro = await this.chain.queryDenomBalance(
+      user,
+      this.astroDenom,
+    );
+    const userInfo = await queryLockdropUserInfo(
+      this.chain,
+      this.contracts.lockdrop,
+      user,
+    );
+    const atomNtrnLpTokenBalance = await this.chain.queryContract<{
+      balance: string;
+    }>(this.old_pairs.atom_ntrn.liquidity, {
+      balance: {
+        address: user,
+      },
+    });
+    const usdcNtrnLpTokenBalance = await this.chain.queryContract<{
+      balance: string;
+    }>(this.old_pairs.usdc_ntrn.liquidity, {
+      balance: {
+        address: user,
+      },
+    });
+    return {
+      balanceNtrn,
+      balanceAstro,
+      userInfo,
+      atomNtrnLpTokenBalance: +atomNtrnLpTokenBalance.balance,
+      usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
+    };
+  }
 }
+
 
 export const instantiateAuction = async (
   cm: WalletWrapper,
@@ -914,6 +960,17 @@ export const queryLockdropUserInfo = async (
     user_info: { address: userAddress },
   });
 
+export const queryRewardInfo = async (
+  chain: CosmosWrapper,
+  contractAddress: string,
+  token: string,
+) =>
+  chain.queryContract<RewardInfoResponse>(contractAddress, {
+    reward_info: {
+      lp_token: token,
+    },
+  });
+
 export const executeLockdropUpdateConfig = async (
   cm: WalletWrapper,
   contractAddress: string,
@@ -1096,6 +1153,10 @@ export type PairInfo = {
   contract_addr: string;
   liquidity_token: string;
   pair_type: Record<string, object>;
+};
+
+export type RewardInfoResponse = {
+  base_reward_token: string
 };
 
 export type FactoryPairsResponse = {

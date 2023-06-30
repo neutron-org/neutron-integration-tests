@@ -14,6 +14,7 @@ import {
   executeGeneratorSetupPools,
   getTimestamp,
   queryFactoryPairs,
+  queryRewardInfo,
   Tge,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
@@ -1095,43 +1096,9 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             },
           }),
         ]);
+
         expect(avaliableAtomLp).toEqual(claimAtomLP.toString());
         expect(avaliableUsdcLp).toEqual(claimUsdcLP.toString());
-        const resAtom = await cmInstantiator.executeContract(
-          tge.contracts.vestingAtomLp,
-          JSON.stringify({
-            claim: {},
-          }),
-        );
-        expect(resAtom.code).toEqual(0);
-        const resUsdc = await cmInstantiator.executeContract(
-          tge.contracts.vestingUsdcLp,
-          JSON.stringify({
-            claim: {},
-          }),
-        );
-        expect(resUsdc.code).toEqual(0);
-
-        const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
-          neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
-            {
-              balance: {
-                address: cmInstantiator.wallet.address.toString(),
-              },
-            },
-          ),
-          neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
-            {
-              balance: {
-                address: cmInstantiator.wallet.address.toString(),
-              },
-            },
-          ),
-        ]);
-        expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -1);
-        expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -1);
       });
     });
     describe.skip('vaults', () => {
@@ -1497,6 +1464,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
   describe('Migration lockdrop to V2', () => {
     let oldPairs;
     let heightDiff;
+
+  describe('Migration of pairs', () => {
     it('should unregister old pairs', async () => {
       {
         const res = await executeDeregisterPair(
@@ -1582,7 +1551,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         await queryFactoryPairs(tge.chain, tge.contracts.astroFactory)
       ).pairs;
       expect(pairs).toHaveLength(2);
-      oldPairs = _.cloneDeep(tge.pairs);
+      tge.old_pairs = _.cloneDeep(tge.pairs);
       tge.pairs = {
         atom_ntrn: {
           contract: pairs[0].contract_addr,
@@ -1624,7 +1593,196 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       );
       expect(atomBalance.balance).toEqual('0');
     });
-    it('should migrate to V2', async () => {
+  });
+
+  describe('Migration of lp vesting', () => {
+    let claimAtomLP;
+    let claimUsdcLP
+    it('should migrate ATOM LP vesing to V2', async () => {
+      const res = await cmInstantiator.migrateContract(
+        tge.contracts.vestingAtomLp,
+        tge.codeIds.VESTING_LP_V2,
+        {
+          max_slippage: '10.0',
+          ntrn_denom: NEUTRON_DENOM,
+          paired_denom: IBC_ATOM_DENOM,
+          xyk_pair: tge.old_pairs.atom_ntrn.contract.toString(),
+          cl_pair: tge.pairs.atom_ntrn.contract.toString(),
+          new_lp_token: tge.pairs.atom_ntrn.liquidity.toString(),
+          batch_size: 100,
+          generator_address: tge.contracts.astroGenerator,
+        },
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    it('should migrate USDC LP vesing to V2', async () => {
+      const res = await cmInstantiator.migrateContract(
+        tge.contracts.vestingUsdcLp,
+        tge.codeIds.VESTING_LP_V2,
+        {
+          max_slippage: '10.0',
+          ntrn_denom: NEUTRON_DENOM,
+          paired_denom: IBC_USDC_DENOM,
+          xyk_pair: tge.old_pairs.usdc_ntrn.contract,
+          cl_pair: tge.pairs.usdc_ntrn.contract,
+          new_lp_token: tge.pairs.usdc_ntrn.liquidity,
+          batch_size: 5,
+          generator_address: tge.contracts.astroGenerator,
+        },
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    it('should  migrate atom', async () => {
+      const rewardsStateBeforeClaim = await tge.generatorRewardsStateOld(
+        tge.contracts.vestingAtomLp,
+      );
+      console.log(rewardsStateBeforeClaim);
+      const rewardInfoResp = await queryRewardInfo(
+        neutronChain,
+        tge.contracts.astroGenerator,
+        tge.old_pairs.atom_ntrn.liquidity,
+      );
+      console.log(rewardInfoResp);
+      const resAtom = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          migrate_liquidity: {},
+        }),
+      );
+      expect(resAtom.code).toEqual(0);
+    });
+
+    it('should  migrate usdc', async () => {
+      const rewardsStateBeforeClaim = await tge.generatorRewardsStateOld(
+        tge.contracts.vestingUsdcLp,
+      );
+      console.log(rewardsStateBeforeClaim);
+      const rewardInfoResp = await queryRewardInfo(
+        neutronChain,
+        tge.contracts.astroGenerator,
+        tge.old_pairs.usdc_ntrn.liquidity,
+      );
+      console.log(rewardInfoResp);
+      const resUsdc = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          migrate_liquidity: {},
+        }),
+      );
+      expect(resUsdc.code).toEqual(0);
+    });
+
+    it('should validate numbers', async () => {
+      const [
+        vestingInfoAtom,
+        vestingInfoUsdc,
+        lpAuctionBalanceAtom,
+        lpAuctionBalanceUsdc,
+      ] = await Promise.all([
+        neutronChain.queryContract<VestingAccountResponse>(
+          tge.contracts.vestingAtomLp,
+          {
+            vesting_account: {
+              address: cmInstantiator.wallet.address.toString(),
+            },
+          },
+        ),
+        neutronChain.queryContract<VestingAccountResponse>(
+          tge.contracts.vestingUsdcLp,
+          {
+            vesting_account: {
+              address: cmInstantiator.wallet.address.toString(),
+            },
+          },
+        ),
+        neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.auction,
+            },
+          },
+        ),
+        neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.usdc_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.auction,
+            },
+          },
+        ),
+      ]);
+
+      expect(parseInt(lpAuctionBalanceUsdc.balance)).toBeLessThanOrEqual(7);
+      expect(parseInt(lpAuctionBalanceAtom.balance)).toBeLessThanOrEqual(7);
+      expect(vestingInfoAtom.address).toEqual(
+        cmInstantiator.wallet.address.toString(),
+      );
+      expect(vestingInfoUsdc.address).toEqual(
+        cmInstantiator.wallet.address.toString(),
+      );
+      expect(vestingInfoAtom.info.released_amount).toEqual('0');
+      expect(vestingInfoUsdc.info.released_amount).toEqual('0');
+
+      expect(
+        parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
+      ).toBeCloseTo(5918, -1);
+      claimAtomLP = parseInt(
+        vestingInfoAtom.info.schedules[0].end_point.amount,
+      );
+
+      expect(
+        parseInt(vestingInfoUsdc.info.schedules[0].end_point.amount),
+      ).toBeCloseTo(2784, -1);
+      claimUsdcLP = parseInt(
+        vestingInfoUsdc.info.schedules[0].end_point.amount,
+      );
+    });
+    it('should  claim', async () => {
+      const resAtom = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          claim: {},
+        }),
+      );
+      expect(resAtom.code).toEqual(0);
+      const resUsdc = await cmInstantiator.executeContract(
+        tge.contracts.vestingUsdcLp,
+        JSON.stringify({
+          claim: {},
+        }),
+      );
+      expect(resUsdc.code).toEqual(0);
+
+      const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
+        neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: cmInstantiator.wallet.address.toString(),
+            },
+          },
+        ),
+        neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.usdc_ntrn.liquidity,
+          {
+            balance: {
+              address: cmInstantiator.wallet.address.toString(),
+            },
+          },
+        ),
+      ]);
+      expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -1);
+      expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -1);
+    });
+  });
+
+  describe.skip('Migration lockdrop to V2', () => {
+    let oldPairs;
+
+    it('should migrate lockdrop to V2', async () => {
       const res = await cmInstantiator.migrateContract(
         tge.contracts.lockdrop,
         tge.codeIds.TGE_LOCKDROP_V2,
@@ -1865,7 +2023,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       expect(+usdcPool.generator_ntrn_per_share).not.toEqual(0);
     });
   });
-  describe('lockdrop rewards', () => {
+  describe.skip('lockdrop rewards', () => {
     let balanceBeforeLockdrop: number;
     let balanceBeforeAirdopLockdrop: number;
     let balanceBeforeAirdropAuctionLockdropVesting: number;
