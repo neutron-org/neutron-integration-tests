@@ -1077,6 +1077,20 @@ export const executeFactoryCreatePair = async (
   return cm.executeContract(contractAddress, JSON.stringify(config));
 };
 
+export const executeGeneratorSetupPools = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  pools: string[],
+  allocPoint: string,
+) => {
+  const config = {
+    setup_pools: {
+      pools: pools.map((p) => [p, allocPoint]),
+    },
+  };
+  return cm.executeContract(contractAddress, JSON.stringify(config));
+};
+
 export type PairInfo = {
   asset_infos: Record<'native_token' | 'token', { denom: string }>[];
   contract_addr: string;
