@@ -1597,84 +1597,22 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
   describe('Migration of lp vesting', () => {
     let claimAtomLP;
-    let claimUsdcLP
-    it('should migrate ATOM LP vesing to V2', async () => {
-      const res = await cmInstantiator.migrateContract(
-        tge.contracts.vestingAtomLp,
-        tge.codeIds.VESTING_LP_V2,
-        {
-          max_slippage: '10.0',
-          ntrn_denom: NEUTRON_DENOM,
-          paired_denom: IBC_ATOM_DENOM,
-          xyk_pair: tge.old_pairs.atom_ntrn.contract.toString(),
-          cl_pair: tge.pairs.atom_ntrn.contract.toString(),
-          new_lp_token: tge.pairs.atom_ntrn.liquidity.toString(),
-          batch_size: 100,
-          generator_address: tge.contracts.astroGenerator,
-        },
-      );
-      expect(res.code).toEqual(0);
+    let claimUsdcLP;
+    let votingPowerBefore: number[];
+
+    it('should save voting power before migraion', async () => {
+      for (const v of [
+        'airdropOnly',
+        'airdropAuctionVesting',
+        'airdropAuctionLockdrop',
+        'airdropAuctionLockdropVesting',
+      ]) {
+        const member = new DaoMember(tgeWallets[v], dao);
+        votingPowerBefore.push((await member.queryVotingPower()).power);
+      }
     });
 
-    it('should migrate USDC LP vesing to V2', async () => {
-      const res = await cmInstantiator.migrateContract(
-        tge.contracts.vestingUsdcLp,
-        tge.codeIds.VESTING_LP_V2,
-        {
-          max_slippage: '10.0',
-          ntrn_denom: NEUTRON_DENOM,
-          paired_denom: IBC_USDC_DENOM,
-          xyk_pair: tge.old_pairs.usdc_ntrn.contract,
-          cl_pair: tge.pairs.usdc_ntrn.contract,
-          new_lp_token: tge.pairs.usdc_ntrn.liquidity,
-          batch_size: 5,
-          generator_address: tge.contracts.astroGenerator,
-        },
-      );
-      expect(res.code).toEqual(0);
-    });
-
-    it('should  migrate atom', async () => {
-      const rewardsStateBeforeClaim = await tge.generatorRewardsStateOld(
-        tge.contracts.vestingAtomLp,
-      );
-      console.log(rewardsStateBeforeClaim);
-      const rewardInfoResp = await queryRewardInfo(
-        neutronChain,
-        tge.contracts.astroGenerator,
-        tge.old_pairs.atom_ntrn.liquidity,
-      );
-      console.log(rewardInfoResp);
-      const resAtom = await cmInstantiator.executeContract(
-        tge.contracts.vestingAtomLp,
-        JSON.stringify({
-          migrate_liquidity: {},
-        }),
-      );
-      expect(resAtom.code).toEqual(0);
-    });
-
-    it('should  migrate usdc', async () => {
-      const rewardsStateBeforeClaim = await tge.generatorRewardsStateOld(
-        tge.contracts.vestingUsdcLp,
-      );
-      console.log(rewardsStateBeforeClaim);
-      const rewardInfoResp = await queryRewardInfo(
-        neutronChain,
-        tge.contracts.astroGenerator,
-        tge.old_pairs.usdc_ntrn.liquidity,
-      );
-      console.log(rewardInfoResp);
-      const resUsdc = await cmInstantiator.executeContract(
-        tge.contracts.vestingAtomLp,
-        JSON.stringify({
-          migrate_liquidity: {},
-        }),
-      );
-      expect(resUsdc.code).toEqual(0);
-    });
-
-    it('should validate numbers', async () => {
+    it('should validate numbers & save claim amount before migration', async () => {
       const [
         vestingInfoAtom,
         vestingInfoUsdc,
@@ -1740,6 +1678,89 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         vestingInfoUsdc.info.schedules[0].end_point.amount,
       );
     });
+
+    it('should migrate LP vesing vault to V2', async () => {
+      const res = await cmInstantiator.migrateContract(
+        tge.contracts.vestingLpVault,
+        tge.codeIds.VESTING_LP_VAULT_V2,
+        {
+          atom_cl_pool_contract: tge.pairs.atom_ntrn.contract.toString(),
+          usdc_cl_pool_contract: tge.pairs.usdc_ntrn.contract.toString(),
+        },
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    it('should migrate ATOM LP vesing to V2', async () => {
+      const res = await cmInstantiator.migrateContract(
+        tge.contracts.vestingAtomLp,
+        tge.codeIds.VESTING_LP_V2,
+        {
+          max_slippage: '10.0',
+          ntrn_denom: NEUTRON_DENOM,
+          paired_denom: IBC_ATOM_DENOM,
+          xyk_pair: tge.old_pairs.atom_ntrn.contract.toString(),
+          cl_pair: tge.pairs.atom_ntrn.contract.toString(),
+          new_lp_token: tge.pairs.atom_ntrn.liquidity.toString(),
+          batch_size: 100,
+        },
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    it('should migrate USDC LP vesing to V2', async () => {
+      const res = await cmInstantiator.migrateContract(
+        tge.contracts.vestingUsdcLp,
+        tge.codeIds.VESTING_LP_V2,
+        {
+          max_slippage: '10.0',
+          ntrn_denom: NEUTRON_DENOM,
+          paired_denom: IBC_USDC_DENOM,
+          xyk_pair: tge.old_pairs.usdc_ntrn.contract,
+          cl_pair: tge.pairs.usdc_ntrn.contract,
+          new_lp_token: tge.pairs.usdc_ntrn.liquidity,
+          batch_size: 5,
+        },
+      );
+      expect(res.code).toEqual(0);
+    });
+
+    it('should  migrate atom', async () => {
+      const resAtom = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          migrate_liquidity: {},
+        }),
+      );
+      expect(resAtom.code).toEqual(0);
+    });
+
+    it('should  migrate usdc', async () => {
+      const resUsdc = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          migrate_liquidity: {},
+        }),
+      );
+      expect(resUsdc.code).toEqual(0);
+    });
+
+    it('should compare voting power after migraion', async () => {
+      let i = 0;
+      for (const v of [
+        'airdropOnly',
+        'airdropAuctionVesting',
+        'airdropAuctionLockdrop',
+        'airdropAuctionLockdropVesting',
+      ]) {
+        const member = new DaoMember(tgeWallets[v], dao);
+        expect((await member.queryVotingPower()).power | 0).toEqual(
+          votingPowerBefore[i],
+        );
+        i++;
+      }
+    });
+
     it('should  claim', async () => {
       const resAtom = await cmInstantiator.executeContract(
         tge.contracts.vestingAtomLp,

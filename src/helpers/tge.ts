@@ -214,6 +214,7 @@ export class Tge {
       'LOCKDROP_VAULT',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
+      'VESTING_LP_VAULT_V2',
       'ORACLE_HISTORY',
     ]) {
       const codeId = await this.instantiator.storeWasm(
@@ -661,7 +662,6 @@ export class Tge {
     };
   }
 }
-
 
 export const instantiateAuction = async (
   cm: WalletWrapper,
@@ -1156,7 +1156,7 @@ export type PairInfo = {
 };
 
 export type RewardInfoResponse = {
-  base_reward_token: string
+  base_reward_token: string;
 };
 
 export type FactoryPairsResponse = {
