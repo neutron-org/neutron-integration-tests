@@ -8,7 +8,7 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import { AcknowledgementResult, NeutronContract } from '../../helpers/types';
+import { AcknowledgementResult, NeutronContract, AckFailuresResponse } from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
@@ -686,14 +686,12 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('check stored failures and acks', async () => {
-        // wait a bit more to be sure failures have been recorded to the blockchain
-        await neutronChain.blockWaiter.waitBlocks(10);
-
-        const acks = await getAcks(neutronChain, contractAddress);
-        // no acks at all because all sudo handling cases resulted in an error
-        expect(acks).toEqual([]);
-
-        const failures = await neutronChain.queryAckFailures(contractAddress);
+        const failures = await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 4,
+          100,
+        );  
         // 3 ack failures, 1 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           {
@@ -729,6 +727,10 @@ describe('Neutron / Interchain TXs', () => {
             ack_type: 'timeout',
           },
         ]);
+
+        const acks = await getAcks(neutronChain, contractAddress);
+        // no acks at all because all sudo handling cases resulted in an error
+        expect(acks).toEqual([]);
       });
     });
   });
