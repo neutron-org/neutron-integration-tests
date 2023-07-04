@@ -212,6 +212,7 @@ export class Tge {
       'VESTING_LP',
       'VESTING_LP_V2',
       'LOCKDROP_VAULT',
+      'LOCKDROP_VAULT_V2',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
       'VESTING_LP_VAULT_V2',
