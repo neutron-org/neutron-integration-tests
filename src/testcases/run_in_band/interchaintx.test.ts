@@ -563,16 +563,17 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(0);
-      });
 
-      test('ack failure during sudo submsg', async () => {
-        // Restore sudo handler to state
+        // Restore sudo handler's normal state
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
+      });
+
+      test('ack failure during sudo submsg', async () => {
         // Mock sudo handler to fail on submsg
         await neutronAccount.executeContract(
           contractAddress,
@@ -599,16 +600,17 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(0);
-      });
 
-      test('ack failure during sudo submsg reply', async () => {
-        // Restore sudo handler to state
+        // Restore sudo handler's normal state
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
+      });
+
+      test('ack failure during sudo submsg reply', async () => {
         // Mock sudo handler to fail on submsg reply
         await neutronAccount.executeContract(
           contractAddress,
@@ -635,16 +637,17 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(0);
-      });
 
-      test('timeout failure during sudo', async () => {
-        // Restore sudo handler to state
+        // Restore sudo handler's normal state
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
+      });
+
+      test('timeout failure during sudo', async () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
@@ -672,6 +675,14 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
       });
 
       test('check stored failures and acks', async () => {
