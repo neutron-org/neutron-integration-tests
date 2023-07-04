@@ -8,7 +8,11 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import { AcknowledgementResult, NeutronContract, AckFailuresResponse } from '../../helpers/types';
+import {
+  AcknowledgementResult,
+  NeutronContract,
+  AckFailuresResponse,
+} from '../../helpers/types';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
@@ -691,7 +695,7 @@ describe('Neutron / Interchain TXs', () => {
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 4,
           100,
-        );  
+        );
         // 3 ack failures, 1 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           {
