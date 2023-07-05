@@ -10,6 +10,7 @@ import {
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
+  VotingPowerAtHeightResponse,
 } from './types';
 import {
   CreditsVaultConfig,
@@ -622,6 +623,19 @@ export class Tge {
       usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
     };
   }
+  /**
+   * retrieves user's voting power from lp vault.
+   */
+  async lpVotingPower(user: string): Promise<VotingPowerAtHeightResponse> {
+    return await this.chain.queryContract<VotingPowerAtHeightResponse>(
+      this.contracts.vestingLpVault,
+      {
+        voting_power_at_height: {
+          address: user,
+        },
+      },
+    );
+  }
 
   /**
    * retrieves user's ntrn and astro balances, lockdrop info and user's LP token balances.
@@ -959,17 +973,6 @@ export const queryLockdropUserInfo = async (
 ) =>
   chain.queryContract<LockdropUserInfoResponse>(contractAddress, {
     user_info: { address: userAddress },
-  });
-
-export const queryRewardInfo = async (
-  chain: CosmosWrapper,
-  contractAddress: string,
-  token: string,
-) =>
-  chain.queryContract<RewardInfoResponse>(contractAddress, {
-    reward_info: {
-      lp_token: token,
-    },
   });
 
 export const executeLockdropUpdateConfig = async (
