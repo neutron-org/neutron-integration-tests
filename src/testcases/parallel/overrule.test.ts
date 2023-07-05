@@ -10,7 +10,7 @@ import {
   deploySubdao,
 } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -174,7 +174,7 @@ async function voteAgainstOverrule(
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<InlineResponse20075TxResponse> {
+): Promise<BroadcastTx200ResponseTxResponse> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,

@@ -16,7 +16,7 @@ import {
   LockdropVaultConfig,
   VestingLpVaultConfig,
 } from './dao';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { msgMintDenom, msgCreateDenom } from './tokenfactory';
 
 // subdenom of rewards asset distributed by the generator contract.
@@ -1212,7 +1212,7 @@ export const executeLockdropVaultUpdateConfig = async (
   oracleAtomContract: string | null,
   name: string | null,
   description: string | null,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   cm.executeContract(
     contractAddress,
     JSON.stringify({

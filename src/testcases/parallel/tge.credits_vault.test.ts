@@ -8,7 +8,7 @@ import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { Wallet } from '../../types';
 import { CreditsVaultConfig } from '../../helpers/dao';
 import { NeutronContract } from '../../helpers/types';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { getHeight } from '../../helpers/wait';
 
 describe('Neutron / Credits Vault', () => {
@@ -333,7 +333,7 @@ const updateCreditsContractConfig = async (
   airdropAddress: string,
   lockdropAddress: string,
   whenWithdrawable: number,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -383,7 +383,7 @@ const mintTokens = async (
   wallet: WalletWrapper,
   creditsContractAddress: string,
   amount: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -402,7 +402,7 @@ const sendTokens = async (
   creditsContractAddress: string,
   recipient: string,
   amount: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -420,7 +420,7 @@ const updateVaultConfig = async (
   name: string,
   description: string,
   owner?: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     vaultContract,
     JSON.stringify({

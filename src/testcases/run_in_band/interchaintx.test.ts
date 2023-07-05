@@ -1,5 +1,5 @@
 import 'jest-extended';
-import { cosmosclient, rest } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
   COSMOS_DENOM,
@@ -201,7 +201,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
-            rest.staking.delegatorDelegations(
+            cosmosclient.rest.staking.delegatorDelegations(
               gaiaChain.sdk as CosmosSDK,
               icaAddress1 as unknown as AccAddress,
             ),
@@ -219,7 +219,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await rest.staking.delegatorDelegations(
+        const res2 = await cosmosclient.rest.staking.delegatorDelegations(
           gaiaChain.sdk as CosmosSDK,
           icaAddress2 as unknown as AccAddress,
         );
@@ -511,7 +511,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
-        const res = await rest.staking.delegatorDelegations(
+        const res = await cosmosclient.rest.staking.delegatorDelegations(
           gaiaChain.sdk as CosmosSDK,
           icaAddress1 as unknown as AccAddress,
         );

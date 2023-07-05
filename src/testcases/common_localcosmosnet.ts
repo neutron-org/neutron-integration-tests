@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { cosmosclient, rest } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 import { Wallet } from '../types';
 import {
   COSMOS_DENOM,
@@ -14,7 +14,8 @@ import { BlockWaiter } from '../helpers/wait';
 import { generateMnemonic } from 'bip39';
 import Long from 'long';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { Coin } from '@cosmos-client/core/cjs/openapi/api';
+import { cosmos } from '@cosmos-client/core/cjs/proto';
+import ICoin = cosmos.base.v1beta1.ICoin;
 
 const config = require('../config.json');
 
@@ -192,10 +193,11 @@ export class TestStateLocalCosmosTestNet {
           { amount, denom },
           fee,
           sequence,
-          rest.tx.BroadcastTxMode.Block,
+          cosmosclient.rest.tx.BroadcastTxMode.Async,
         );
         break;
       } catch (e) {
+        console.log(e);
         await cm.chain.blockWaiter.waitBlocks(1);
         attemptCount++;
       }
@@ -211,7 +213,7 @@ export class TestStateLocalCosmosTestNet {
     blockWaiter: BlockWaiter,
     wallet: Wallet,
     denom: string,
-    balances: Coin[] = [],
+    balances: ICoin[] = [],
   ) {
     if (balances.length === 0) {
       balances = [

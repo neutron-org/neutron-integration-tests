@@ -6,7 +6,7 @@ import {
   WalletWrapper,
   wrapMsg,
 } from './cosmos';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { getWithAttempts } from './wait';
 import {
   MultiChoiceOption,
@@ -30,7 +30,7 @@ import {
   upgradeProposal,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
-import { cosmosclient } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 
 export type GetSubdaoResponse = { addr: string; charter: string };
 
@@ -509,7 +509,7 @@ export class DaoMember {
   async voteYes(
     proposalId: number,
     customModule = 'single',
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
@@ -522,7 +522,7 @@ export class DaoMember {
   async voteNo(
     proposalId: number,
     customModule = 'single',
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
@@ -535,7 +535,7 @@ export class DaoMember {
   async voteForOption(
     proposalId: number,
     optionId: number,
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals.multiple.address,
       JSON.stringify({
@@ -544,7 +544,7 @@ export class DaoMember {
     );
   }
 
-  async bondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+  async bondFunds(amount: string): Promise<BroadcastTx200ResponseTxResponse> {
     const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
       .vaults.neutron.address;
     return await this.user.executeContract(
@@ -556,7 +556,7 @@ export class DaoMember {
     );
   }
 
-  async unbondFunds(amount: string): Promise<InlineResponse20075TxResponse> {
+  async unbondFunds(amount: string): Promise<BroadcastTx200ResponseTxResponse> {
     const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
       .vaults.neutron.address;
     return await this.user.executeContract(
@@ -614,7 +614,7 @@ export class DaoMember {
   async executeProposal(
     proposalId: number,
     customModule = 'single',
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
@@ -853,7 +853,7 @@ export class DaoMember {
   async executeTimelockedProposal(
     proposalId: number,
     customModule = 'single',
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     return this.user.executeContract(
       this.dao.contracts.proposals[customModule].pre_propose.timelock.address,
       JSON.stringify({
@@ -867,7 +867,7 @@ export class DaoMember {
   async overruleTimelockedProposal(
     timelockAddress: string,
     proposalId: number,
-  ): Promise<InlineResponse20075TxResponse> {
+  ): Promise<BroadcastTx200ResponseTxResponse> {
     const overruleProposalId = await this.dao.getOverruleProposalId(
       timelockAddress,
       proposalId,

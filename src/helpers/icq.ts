@@ -2,7 +2,7 @@ import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import axios, { AxiosResponse } from 'axios';
 import { CosmosWrapper, WalletWrapper } from './cosmos';
 import { getWithAttempts } from './wait';
-import { rest } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 
 /**
  * getRegisteredQuery queries the contract for a registered query details registered by the given
@@ -150,7 +150,7 @@ export const registerTransfersQuery = async (
     }),
   );
   expect(res.code).toEqual(0);
-  const tx = await rest.tx.getTx(
+  const tx = await cosmosclient.rest.tx.getTx(
     cm.chain.sdk as CosmosSDK,
     res.txhash as string,
   );

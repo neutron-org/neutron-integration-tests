@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { cosmosclient } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 import { cosmos, osmosis } from '../generated/proto';
 import ICoin = cosmos.base.v1beta1.ICoin;
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { WalletWrapper } from '../helpers/cosmos';
 import Long from 'long';
 
@@ -27,7 +27,7 @@ export const msgMintDenom = async (
   cmNeutron: WalletWrapper,
   creator: string,
   amount: ICoin,
-): Promise<InlineResponse20075TxResponse> => {
+): Promise<BroadcastTx200ResponseTxResponse> => {
   const msgMint = new osmosis.tokenfactory.v1beta1.MsgMint({
     sender: creator,
     amount,
@@ -48,7 +48,7 @@ export const msgCreateDenom = async (
   cmNeutron: WalletWrapper,
   creator: string,
   subdenom: string,
-): Promise<InlineResponse20075TxResponse> => {
+): Promise<BroadcastTx200ResponseTxResponse> => {
   const msgCreateDenom = new osmosis.tokenfactory.v1beta1.MsgCreateDenom({
     sender: creator,
     subdenom,
@@ -70,7 +70,7 @@ export const msgBurn = async (
   creator: string,
   denom: string,
   amountToBurn: string,
-): Promise<InlineResponse20075TxResponse> => {
+): Promise<BroadcastTx200ResponseTxResponse> => {
   const msgBurn = new osmosis.tokenfactory.v1beta1.MsgBurn({
     sender: creator,
     amount: {
@@ -96,7 +96,7 @@ export const msgChangeAdmin = async (
   creator: string,
   denom: string,
   newAdmin: string,
-): Promise<InlineResponse20075TxResponse> => {
+): Promise<BroadcastTx200ResponseTxResponse> => {
   const msgChangeAdmin = new osmosis.tokenfactory.v1beta1.MsgChangeAdmin({
     sender: creator,
     denom,

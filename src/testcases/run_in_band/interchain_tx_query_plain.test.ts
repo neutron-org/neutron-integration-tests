@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   WalletWrapper,
 } from '../../helpers/cosmos';
-import { proto } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import Long from 'long';
 import {
@@ -409,14 +409,14 @@ describe('Neutron / Interchain TX Query', () => {
           amount: [{ denom: gaiaChain.denom, amount: '1000' }],
         },
         [
-          new proto.cosmos.bank.v1beta1.MsgSend({
+          new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
             from_address: gaiaAccount.wallet.address.toString(),
             to_address: watchedAddr1,
             amount: [
               { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
             ],
           }),
-          new proto.cosmos.bank.v1beta1.MsgSend({
+          new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
             from_address: gaiaAccount.wallet.address.toString(),
             to_address: watchedAddr2,
             amount: [

@@ -951,14 +951,17 @@ describe('Neutron / Governance', () => {
   });
   describe('check that only admin can create valid proposals', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
+      console.log('1');
       const hostStatus = await neutronChain.queryHostEnabled();
       expect(hostStatus).toEqual(false);
+      console.log('2');
       const res = await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
         'true',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
+      console.log('3');
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
       expect(afterProposalHostStatus).toEqual(false);
     });

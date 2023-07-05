@@ -1,4 +1,4 @@
-import { rest, websocket } from '@cosmos-client/core';
+import cosmosclient from '@cosmos-client/core';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 global.WebSocket = require('ws');
@@ -9,7 +9,7 @@ export const wait = async (seconds: number) =>
   });
 
 export const getHeight = async (sdk: CosmosSDK) => {
-  const block = await rest.tendermint.getLatestBlock(sdk);
+  const block = await cosmosclient.rest.tendermint.getLatestBlock(sdk);
   return +block.data.block.header.height;
 };
 
@@ -29,14 +29,14 @@ export class BlockWaiter {
         }
         reject(new Error('waitBlocks: timeout'));
       }, timeout);
-      ws = websocket.connect(this.url);
+      ws = cosmosclient.websocket.connect(this.url);
       ws.next({
         id: '1',
         jsonrpc: '2.0',
         method: 'subscribe',
         params: ["tm.event='NewBlock'"],
       });
-      ws.subscribe((res: websocket.ResponseSchema) => {
+      ws.subscribe((res: cosmosclient.websocket.ResponseSchema) => {
         if (Object.entries(res.result).length !== 0) {
           n--;
           if (n == 0) {
