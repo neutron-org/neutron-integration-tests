@@ -206,6 +206,7 @@ export class Tge {
       'ASTRO_PAIR_CL',
       'ASTRO_FACTORY',
       'ASTRO_TOKEN',
+      'ASTRO_XASTRO_TOKEN',
       'ASTRO_GENERATOR',
       'ASTRO_WHITELIST',
       'ASTRO_VESTING',
@@ -286,7 +287,7 @@ export class Tge {
         xyk: this.codeIds.ASTRO_PAIR,
         concentrated: this.codeIds.ASTRO_PAIR_CL,
       },
-      this.codeIds.ASTRO_TOKEN,
+      this.codeIds.ASTRO_XASTRO_TOKEN,
       this.contracts.coinRegistry,
     );
 
