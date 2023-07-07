@@ -185,6 +185,7 @@ export class CosmosWrapper {
     if (!(account instanceof proto.cosmos.auth.v1beta1.BaseAccount)) {
       throw new Error("can't get account");
     }
+    proto.cosmos.auth.v1beta1.BaseAccount.encode
 
     return account.sequence;
   }
