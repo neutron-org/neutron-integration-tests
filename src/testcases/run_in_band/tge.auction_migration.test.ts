@@ -12,9 +12,11 @@ import {
   executeDeregisterPair,
   executeFactoryCreatePair,
   executeGeneratorSetupPools,
-  getTimestamp,
+  getTimestamp, queryAvialableAmount,
+  queryUnclaimmedAmountAtHeight,
   queryFactoryPairs,
-  Tge,
+  queryTotalUnclaimedAmountAtHeight,
+  Tge, queryNtrnCLBalanceAtHeight,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
@@ -1504,7 +1506,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               min_price_scale_delta: '0.000146',
               price_scale: '1',
               ma_half_time: 600,
-              track_asset_balances: null,
+              track_asset_balances: true,
             }),
           ).toString('base64'),
         );
@@ -1528,7 +1530,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               min_price_scale_delta: '0.000146',
               price_scale: '1',
               ma_half_time: 600,
-              track_asset_balances: null,
+              track_asset_balances: true,
             }),
           ).toString('base64'),
         );
@@ -1611,7 +1613,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         const vp = await tge.lpVotingPower(
           tgeWallets[v].wallet.address.toString(),
         );
-        votingPowerBefore[v] = vp.power;
+        votingPowerBefore[v] = +vp.power;
       }
     });
 
@@ -1762,6 +1764,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         }),
       );
       expect(resAtom.code).toEqual(0);
+      resAtom = await cmInstantiator.executeContract(
+        tge.contracts.vestingAtomLp,
+        JSON.stringify({
+          migrate_liquidity: {},
+        }),
+      );
+      expect(resAtom.code).toEqual(0);
       await expect(
         cmInstantiator.executeContract(
           tge.contracts.vestingAtomLp,
@@ -1808,9 +1817,45 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       ]) {
         const vp = await tge.lpVotingPower(
           tgeWallets[v].wallet.address.toString(),
+          500,
         );
-        expect(vp.power).toBeCloseTo(votingPowerBefore[v], -1);
+        expect(+vp.power).toBeCloseTo(votingPowerBefore[v], -1);
       }
+    });
+    it('check queries', async () => {
+      const total = await queryTotalUnclaimedAmountAtHeight(
+        cmInstantiator.chain,
+        tge.contracts.vestingAtomLp,
+        500,
+      );
+      const lpBalance = await tge.chain.queryContract<BalanceResponse>(
+        tge.pairs.atom_ntrn.liquidity,
+        {
+          balance: {
+            address: tge.contracts.vestingAtomLp,
+          },
+        },
+      );
+
+      const ntrnAmount = await queryNtrnCLBalanceAtHeight(
+        cmInstantiator.chain,
+        tge.pairs.atom_ntrn.contract,
+        '500',
+      );
+      const claimableAmount = await queryUnclaimmedAmountAtHeight(
+        cmInstantiator.chain,
+        tge.contracts.vestingAtomLp,
+        500,
+        cmInstantiator.wallet.address.toString(),
+      );
+      const available = await queryAvialableAmount(
+        cmInstantiator.chain,
+        tge.contracts.vestingAtomLp,
+        cmInstantiator.wallet.address.toString(),
+      );
+      expect(total).toBe(lpBalance.balance);
+      expect(+ntrnAmount).toBeGreaterThan(0);
+      expect(claimableAmount).toBe(available);
     });
 
     it('should  claim', async () => {
@@ -1847,6 +1892,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           },
         ),
       ]);
+
       // actual diff is smth about 0.2% (converting old lp to new)
       expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -2);
       expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -2);

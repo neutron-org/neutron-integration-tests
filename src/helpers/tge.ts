@@ -627,12 +627,16 @@ export class Tge {
   /**
    * retrieves user's voting power from lp vault.
    */
-  async lpVotingPower(user: string): Promise<VotingPowerAtHeightResponse> {
+  async lpVotingPower(
+    user: string,
+    height: number,
+  ): Promise<VotingPowerAtHeightResponse> {
     return await this.chain.queryContract<VotingPowerAtHeightResponse>(
       this.contracts.vestingLpVault,
       {
         voting_power_at_height: {
           address: user,
+          // height: height,
         },
       },
     );
@@ -1174,6 +1178,65 @@ export const queryFactoryPairs = async (
 ) =>
   chain.queryContract<FactoryPairsResponse>(contractAddress, {
     pairs: {},
+  });
+
+export const queryTotalUnclaimedAmountAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: number,
+) =>
+  chain.queryContract<string>(address, {
+    historical_extension: {
+      msg: {
+        unclaimed_total_amount_at_height: {
+          height: height,
+        },
+      },
+    },
+  });
+
+export const queryNtrnCLBalanceAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: string,
+) =>
+  chain.queryContract<string>(address, {
+    asset_balance_at: {
+      asset_info: {
+        native_token: {
+          denom: 'untrn',
+        },
+      },
+      block_height: height,
+    },
+  });
+
+export const queryUnclaimmedAmountAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: number,
+  user: string,
+) =>
+  chain.queryContract<string>(address, {
+    historical_extension: {
+      msg: {
+        unclaimed_amount_at_height: {
+          address: user,
+          height: height,
+        },
+      },
+    },
+  });
+
+export const queryAvialableAmount = async (
+  chain: CosmosWrapper,
+  address: string,
+  user: string,
+) =>
+  chain.queryContract<string>(address, {
+    available_amount: {
+      address: user,
+    },
   });
 
 export const instantiateAstroVesting = async (
