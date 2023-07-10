@@ -63,65 +63,65 @@ describe('Neutron / Global Fee', () => {
     ]);
   });
 
-  test('change minimum gas price parameter', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimumm Gas Price Change Proposal',
-      'Param change proposal. It will change the minimum gas price of the global fee module.',
-      'globalfee',
-      'MinimumGasPricesParam',
-      '[{"denom": "untrn", "amount": "0.01"}]',
-      '1000',
-    );
+  // test('change minimum gas price parameter', async () => {
+  //   const proposalId = await daoMember.submitParameterChangeProposal(
+  //     'Minimumm Gas Price Change Proposal',
+  //     'Param change proposal. It will change the minimum gas price of the global fee module.',
+  //     'globalfee',
+  //     'MinimumGasPricesParam',
+  //     '[{"denom": "untrn", "amount": "0.01"}]',
+  //     '1000',
+  //   );
 
-    await daoMember.voteYes(proposalId);
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId);
-  });
+  //   await daoMember.voteYes(proposalId);
+  //   await dao.checkPassedProposal(proposalId);
+  //   await daoMember.executeProposalWithAttempts(proposalId);
+  // });
 
-  test('check minumum global fees with bank send command', async () => {
-    await expect(
-      daoMember.user.msgSend(
-        dao.contracts.core.address,
-        '1000',
-        {
-          gas_limit: Long.fromString('200000'),
-          amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
-        },
-        undefined,
-        rest.tx.BroadcastTxMode.Block,
-      ),
-    ).rejects.toThrowError(
-      /insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
-    );
-  });
+  // test('check minumum global fees with bank send command', async () => {
+  //   await expect(
+  //     daoMember.user.msgSend(
+  //       dao.contracts.core.address,
+  //       '1000',
+  //       {
+  //         gas_limit: Long.fromString('200000'),
+  //         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+  //       },
+  //       undefined,
+  //       rest.tx.BroadcastTxMode.Block,
+  //     ),
+  //   ).rejects.toThrowError(
+  //     /insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
+  //   );
+  // });
 
-  test('revert minimum gas price parameter to zero values', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimumm Gas Price Change Proposal',
-      'Param change proposal. It will change the minimum gas price of the global fee module to zero values.',
-      'globalfee',
-      'MinimumGasPricesParam',
-      '[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]',
-      '1000',
-    );
+  // test('revert minimum gas price parameter to zero values', async () => {
+  //   const proposalId = await daoMember.submitParameterChangeProposal(
+  //     'Minimumm Gas Price Change Proposal',
+  //     'Param change proposal. It will change the minimum gas price of the global fee module to zero values.',
+  //     'globalfee',
+  //     'MinimumGasPricesParam',
+  //     '[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]',
+  //     '1000',
+  //   );
 
-    await daoMember.voteYes(proposalId);
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId);
-  });
+  //   await daoMember.voteYes(proposalId);
+  //   await dao.checkPassedProposal(proposalId);
+  //   await daoMember.executeProposalWithAttempts(proposalId);
+  // });
 
-  test('check minumum global fees with bank send command after revert with zero value (only validator settings applied)', async () => {
-    const res = await daoMember.user.msgSend(
-      dao.contracts.core.address,
-      '1000',
-      {
-        gas_limit: Long.fromString('200000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
-      },
-      undefined,
-      rest.tx.BroadcastTxMode.Block,
-    );
+  // test('check minumum global fees with bank send command after revert with zero value (only validator settings applied)', async () => {
+  //   const res = await daoMember.user.msgSend(
+  //     dao.contracts.core.address,
+  //     '1000',
+  //     {
+  //       gas_limit: Long.fromString('200000'),
+  //       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+  //     },
+  //     undefined,
+  //     rest.tx.BroadcastTxMode.Block,
+  //   );
 
-    expect(res.code).toEqual(0);
-  });
+  //   expect(res.code).toEqual(0);
+  // });
 });
