@@ -574,7 +574,7 @@ export class WalletWrapper {
     const res = await this.execTx(
       {
         gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: this.chain.denom, amount: '100000' }],
+        amount: [{ denom: this.chain.denom, amount: '10000' }],
       },
       [msgExecute],
     );
