@@ -562,6 +562,10 @@ export class WalletWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.chain.denom, amount: '10000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     const sender = this.wallet.address.toString();
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
@@ -571,13 +575,7 @@ export class WalletWrapper {
       funds,
     });
 
-    const res = await this.execTx(
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: this.chain.denom, amount: '10000' }],
-      },
-      [msgExecute],
-    );
+    const res = await this.execTx(fee, [msgExecute]);
     if (res.tx_response.code !== 0) {
       throw new Error(
         `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,

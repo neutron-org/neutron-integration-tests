@@ -31,6 +31,7 @@ import {
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
 import { cosmosclient } from '@cosmos-client/core';
+import Long from 'long';
 
 export type GetSubdaoResponse = { addr: string; charter: string };
 
@@ -509,10 +510,16 @@ export class DaoMember {
   async voteYes(
     proposalId: number,
     customModule = 'single',
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'yes' } }),
+      [],
+      fee,
     );
   }
 
@@ -522,10 +529,16 @@ export class DaoMember {
   async voteNo(
     proposalId: number,
     customModule = 'single',
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ vote: { proposal_id: proposalId, vote: 'no' } }),
+      [],
+      fee,
     );
   }
 
@@ -576,6 +589,10 @@ export class DaoMember {
     msgs: any[],
     deposit = '',
     customModule = 'single',
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
   ): Promise<number> {
     let depositFunds = [];
     if (deposit !== '') {
@@ -595,6 +612,7 @@ export class DaoMember {
         },
       }),
       depositFunds,
+      fee,
     );
 
     const attribute = getEventAttribute(
@@ -614,15 +632,27 @@ export class DaoMember {
   async executeProposal(
     proposalId: number,
     customModule = 'single',
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     return await this.user.executeContract(
       this.dao.contracts.proposals[customModule].address,
       JSON.stringify({ execute: { proposal_id: proposalId } }),
+      [],
+      fee,
     );
   }
 
-  async executeProposalWithAttempts(proposalId: number) {
-    await this.executeProposal(proposalId);
+  async executeProposalWithAttempts(
+    proposalId: number,
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
+  ) {
+    await this.executeProposal(proposalId, 'single', fee);
     await getWithAttempts(
       this.user.chain.blockWaiter,
       async () => await this.dao.queryProposal(proposalId),
@@ -681,6 +711,10 @@ export class DaoMember {
     key: string,
     value: string,
     deposit: string,
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.user.chain.denom, amount: '10000' }],
+    },
   ): Promise<number> {
     const message = paramChangeProposal({
       title,
@@ -694,6 +728,8 @@ export class DaoMember {
       description,
       [message],
       deposit,
+      'single',
+      fee,
     );
   }
 
