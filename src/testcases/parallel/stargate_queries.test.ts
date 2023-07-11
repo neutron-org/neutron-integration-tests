@@ -99,164 +99,171 @@ describe('Neutron / Simple', () => {
   }
 
   describe('Stargate queries', () => {
-    test('stargate query bank balance should work', async () => {
-      const first = await querySmart({
-        bank_balance: {
-          address: neutronAccount.wallet.address.toString(),
-          denom: NEUTRON_DENOM,
-        },
-      });
-      const res = JSON.parse(first);
+    test('bank balance should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          bank_balance: {
+            address: neutronAccount.wallet.address.toString(),
+            denom: NEUTRON_DENOM,
+          },
+        }),
+      );
       expect(res.balance.denom).toBe('untrn');
       expect(+res.balance.amount).toBeGreaterThan(1000000);
     });
 
-    test('stargate query bank denom metadata should work', async () => {
-      const first = await querySmart({
-        bank_denom_metadata: { denom: newTokenDenom },
-      });
-      const res = JSON.parse(first);
+    test('bank denom metadata should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          bank_denom_metadata: { denom: newTokenDenom },
+        }),
+      );
       expect(res.metadatas[0].denom_units[0].denom).toBe(newTokenDenom);
     });
 
-    test('stargate query bank params should work', async () => {
-      const first = await querySmart({ bank_params: {} });
-      const res = JSON.parse(first);
+    test('bank params should work', async () => {
+      const res = JSON.parse(await querySmart({ bank_params: {} }));
       expect(res.params.default_send_enabled).toBe(true);
     });
 
-    test('stargate query bank supply of should work', async () => {
-      const first = await querySmart({
-        bank_supply_of: { denom: NEUTRON_DENOM },
-      });
-      const res = JSON.parse(first);
+    test('bank supply of should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          bank_supply_of: { denom: NEUTRON_DENOM },
+        }),
+      );
       expect(res.amount.denom).toBe('untrn');
       expect(+res.amount.amount).toBeGreaterThan(1000000);
     });
 
-    test('stargate query auth account should work', async () => {
-      const first = await querySmart({
-        auth_account: {
-          address: neutronAccount.wallet.address.toString(),
-        },
-      });
-      const res = JSON.parse(first);
+    test('auth account should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          auth_account: {
+            address: neutronAccount.wallet.address.toString(),
+          },
+        }),
+      );
       expect(res.account.address).toBe(
         neutronAccount.wallet.address.toString(),
       );
     });
 
-    test('stargate query transfer denom trace should work', async () => {
-      const first = await querySmart({
-        transfer_denom_trace: {
-          hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-        },
-      });
-      const res = JSON.parse(first);
+    test('transfer denom trace should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          transfer_denom_trace: {
+            hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+          },
+        }),
+      );
       expect(res.denom_trace.path).toBe('transfer/channel-0');
       expect(res.denom_trace.base_denom).toBe('uatom');
     });
 
-    test('stargate query ibc client state should work', async () => {
-      const first = await querySmart({
-        ibc_client_state: {
-          client_id: '07-tendermint-1',
-        },
-      });
-      const res = JSON.parse(first);
+    test('ibc client state should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          ibc_client_state: {
+            client_id: '07-tendermint-1',
+          },
+        }),
+      );
       expect(res.client_state['@type']).toBe(
         '/ibc.lightclients.tendermint.v1.ClientState',
       );
       expect(res.client_state.chain_id).toBe('test-2');
     });
 
-    test('stargate query ibc consensus state should work', async () => {
-      const first = await querySmart({
-        ibc_consensus_state: {
-          client_id: '07-tendermint-1',
-          revision_number: 0,
-          revision_height: 0,
-          latest_height: true,
-        },
-      });
-      const res = JSON.parse(first);
+    test('ibc consensus state should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          ibc_consensus_state: {
+            client_id: '07-tendermint-1',
+            revision_number: 0,
+            revision_height: 0,
+            latest_height: true,
+          },
+        }),
+      );
       expect(res.consensus_state['@type']).toBe(
         '/ibc.lightclients.tendermint.v1.ConsensusState',
       );
       expect(+res.proof_height.revision_height).toBeGreaterThan(0);
     });
 
-    test('stargate query ibc connection should work', async () => {
-      const first = await querySmart({
-        ibc_connection: {
-          connection_id: 'connection-0',
-        },
-      });
-      const res = JSON.parse(first);
+    test('ibc connection should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          ibc_connection: {
+            connection_id: 'connection-0',
+          },
+        }),
+      );
       expect(res.connection.client_id).toBe('07-tendermint-1');
       expect(+res.proof_height.revision_height).toBeGreaterThan(0);
     });
 
-    test('stargate query tokenfactory params should work', async () => {
-      const first = await querySmart({ tokenfactory_params: {} });
-      const res = JSON.parse(first);
+    test('tokenfactory params should work', async () => {
+      const res = JSON.parse(await querySmart({ tokenfactory_params: {} }));
       expect(res.params.denom_creation_fee[0].denom).toBe('untrn');
       expect(res.params.denom_creation_fee[0].amount).toBe('1000000');
     });
 
-    test('stargate query tokenfactory denom authority metadata should work', async () => {
-      const first = await querySmart({
+    test('tokenfactory denom authority metadata should work', async () => {
+      const res = await querySmart({
         tokenfactory_denom_authority_metadata: {
           denom: newTokenDenom,
         },
       });
-      expect(first).toBe(`{"authority_metadata":{"Admin":""}}`);
+      expect(res).toBe(`{"authority_metadata":{"Admin":""}}`);
     });
 
-    test('stargate query denoms from creator should work', async () => {
-      const first = await querySmart({
+    test('denoms from creator should work', async () => {
+      const res = await querySmart({
         tokenfactory_denoms_from_creator: {
           creator: neutronAccount.wallet.address.toString(),
         },
       });
-      expect(first).toBe(`{"denoms":["${newTokenDenom}"]}`);
+      expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);
     });
 
-    test('stargate query contractmanager address failures should work', async () => {
-      const first = await querySmart({
-        contractmanager_address_failures: {
-          address: neutronAccount.wallet.address.toString(),
-        },
-      });
-      const res = JSON.parse(first);
+    test('contractmanager address failures should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          contractmanager_address_failures: {
+            address: neutronAccount.wallet.address.toString(),
+          },
+        }),
+      );
       expect(res.failures).toEqual([]);
     });
 
-    test('stargate query contractmanager failures should work', async () => {
-      const first = await querySmart({
-        contractmanager_failures: {
-          address: neutronAccount.wallet.address.toString(),
-        },
-      });
-      const res = JSON.parse(first);
+    test('contractmanager failures should work', async () => {
+      const res = JSON.parse(
+        await querySmart({
+          contractmanager_failures: {
+            address: neutronAccount.wallet.address.toString(),
+          },
+        }),
+      );
       expect(res.failures).toEqual([]);
     });
 
-    test('stargate query interchaintx params should work', async () => {
-      const first = await querySmart({ interchaintx_params: {} });
-      const res = JSON.parse(first);
+    test('interchaintx params should work', async () => {
+      const res = JSON.parse(await querySmart({ interchaintx_params: {} }));
       expect(+res.params.msg_submit_tx_max_messages).toBeGreaterThan(0);
     });
 
-    test('stargate query interchainqueries params should work', async () => {
-      const first = await querySmart({ interchainqueries_params: {} });
-      const res = JSON.parse(first);
+    test('interchainqueries params should work', async () => {
+      const res = JSON.parse(
+        await querySmart({ interchainqueries_params: {} }),
+      );
       expect(+res.params.query_submit_timeout).toBeGreaterThan(0);
     });
 
-    test('stargate query feeburner params should work', async () => {
-      const first = await querySmart({ feeburner_params: {} });
-      const res = JSON.parse(first);
+    test('feeburner params should work', async () => {
+      const res = JSON.parse(await querySmart({ feeburner_params: {} }));
       expect(res.params.neutron_denom).toBe('untrn');
     });
   });
