@@ -627,59 +627,31 @@ export class Tge {
   /**
    * retrieves user's voting power from lp vault.
    */
-  async lpVotingPower(
-    user: string,
-    height: number,
-  ): Promise<VotingPowerAtHeightResponse> {
+  async lpVotingPower(user: string): Promise<VotingPowerAtHeightResponse> {
     return await this.chain.queryContract<VotingPowerAtHeightResponse>(
       this.contracts.vestingLpVault,
       {
         voting_power_at_height: {
           address: user,
-          // height: height,
         },
       },
     );
   }
 
   /**
-   * retrieves user's ntrn and astro balances, lockdrop info and user's LP token balances.
+   * retrieves user's voting power from lockdrop vault.
    */
-  async generatorRewardsStateOld(user: string): Promise<GeneratorRewardsState> {
-    const balanceNtrn = await this.chain.queryDenomBalance(
-      user,
-      this.neutronDenom,
-    );
-    const balanceAstro = await this.chain.queryDenomBalance(
-      user,
-      this.astroDenom,
-    );
-    const userInfo = await queryLockdropUserInfo(
-      this.chain,
-      this.contracts.lockdrop,
-      user,
-    );
-    const atomNtrnLpTokenBalance = await this.chain.queryContract<{
-      balance: string;
-    }>(this.old_pairs.atom_ntrn.liquidity, {
-      balance: {
-        address: user,
+  async lockdropVotingPower(
+    user: string,
+  ): Promise<VotingPowerAtHeightResponse> {
+    return await this.chain.queryContract<VotingPowerAtHeightResponse>(
+      this.contracts.lockdropVault,
+      {
+        voting_power_at_height: {
+          address: user,
+        },
       },
-    });
-    const usdcNtrnLpTokenBalance = await this.chain.queryContract<{
-      balance: string;
-    }>(this.old_pairs.usdc_ntrn.liquidity, {
-      balance: {
-        address: user,
-      },
-    });
-    return {
-      balanceNtrn,
-      balanceAstro,
-      userInfo,
-      atomNtrnLpTokenBalance: +atomNtrnLpTokenBalance.balance,
-      usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
-    };
+    );
   }
 }
 

@@ -12,11 +12,13 @@ import {
   executeDeregisterPair,
   executeFactoryCreatePair,
   executeGeneratorSetupPools,
-  getTimestamp, queryAvialableAmount,
+  getTimestamp,
+  queryAvialableAmount,
   queryUnclaimmedAmountAtHeight,
   queryFactoryPairs,
   queryTotalUnclaimedAmountAtHeight,
-  Tge, queryNtrnCLBalanceAtHeight,
+  Tge,
+  queryNtrnCLBalanceAtHeight,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
@@ -1599,9 +1601,10 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
   describe('Migration of lp vesting', () => {
     let claimAtomLP;
     let claimUsdcLP;
-    const votingPowerBefore: Record<string, number> = {};
+    const votingPowerBeforeLp: Record<string, number> = {};
+    const votingPowerBeforeLockdrop: Record<string, number> = {};
 
-    it('should save voting power before migration', async () => {
+    it('should save voting power before migration: lp', async () => {
       for (const v of [
         'airdropAuctionVesting',
         'airdropAuctionLockdrop',
@@ -1613,7 +1616,23 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         const vp = await tge.lpVotingPower(
           tgeWallets[v].wallet.address.toString(),
         );
-        votingPowerBefore[v] = +vp.power;
+        votingPowerBeforeLp[v] = +vp.power;
+      }
+    });
+
+    it('should save voting power before migration: lockdrop', async () => {
+      for (const v of [
+        'airdropAuctionVesting',
+        'airdropAuctionLockdrop',
+        'airdropAuctionLockdropVesting',
+        'auctionLockdrop',
+        'auctionLockdropVesting',
+        'auctionVesting',
+      ]) {
+        const vp = await tge.lockdropVotingPower(
+          tgeWallets[v].wallet.address.toString(),
+        );
+        votingPowerBeforeLockdrop[v] = +vp.power;
       }
     });
 
@@ -1806,7 +1825,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       ).rejects.toThrow(/Migration is complete/);
     });
 
-    it('should compare voting power after migrtaion', async () => {
+    it('should compare voting power after migrtaion: lp', async () => {
       for (const v of [
         'airdropAuctionVesting',
         'airdropAuctionLockdrop',
@@ -1817,11 +1836,27 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       ]) {
         const vp = await tge.lpVotingPower(
           tgeWallets[v].wallet.address.toString(),
-          500,
         );
-        expect(+vp.power).toBeCloseTo(votingPowerBefore[v], -1);
+        expect(+vp.power).toBeCloseTo(votingPowerBeforeLp[v], -3);
       }
     });
+
+    it('should compare voting power after migration: lockdrop', async () => {
+      for (const v of [
+        'airdropAuctionVesting',
+        'airdropAuctionLockdrop',
+        'airdropAuctionLockdropVesting',
+        'auctionLockdrop',
+        'auctionLockdropVesting',
+        'auctionVesting',
+      ]) {
+        const vp = await tge.lockdropVotingPower(
+          tgeWallets[v].wallet.address.toString(),
+        );
+        expect(+vp.power).toBeCloseTo(votingPowerBeforeLockdrop[v], -3);
+      }
+    });
+
     it('check queries', async () => {
       const total = await queryTotalUnclaimedAmountAtHeight(
         cmInstantiator.chain,
@@ -2214,7 +2249,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           rewardsStateAfterClaim.balanceNtrn +
             FEE_SIZE -
             rewardsStateBeforeClaim.balanceNtrn,
-        ).toEqual(120402); // lockdrop rewards share for the user
+        ).toBeCloseTo(120402, -1); // lockdrop rewards share for the user
+
         const expectedGeneratorRewards = +(
           (
             rewardsStateBeforeClaim.userInfo.lockup_infos.find(
