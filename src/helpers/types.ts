@@ -1,3 +1,5 @@
+import { cosmos } from '@cosmos-client/core/cjs/proto';
+
 export type AcknowledgementResult =
   | { success: string[] }
   | { error: string[] }
@@ -261,6 +263,10 @@ export type IcaHostParamsResponse = {
   params: {
     host_enabled: boolean;
   };
+};
+
+export type GlobalFeeMinGasPrices = {
+  minimum_gas_prices: cosmos.base.v1beta1.ICoin[];
 };
 
 export type ContractAdminResponse = {

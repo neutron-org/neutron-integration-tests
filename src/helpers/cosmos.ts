@@ -27,6 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
+  GlobalFeeMinGasPrices,
 } from './types';
 import { getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -388,6 +389,21 @@ export class CosmosWrapper {
     }
   }
 
+  async queryMinGasPrices(): Promise<ICoin[]> {
+    try {
+      const req = await axios.get<GlobalFeeMinGasPrices>(
+        `${this.sdk.url}/gaia/globalfee/v1beta1/minimum_gas_prices`,
+        {},
+      );
+      return req.data.minimum_gas_prices;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
   async queryContractAdmin(address: string): Promise<string> {
     const resp = await this.getContractInfo(address);
     return resp.contract_info.admin;
@@ -546,6 +562,10 @@ export class WalletWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
+    fee = {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: this.chain.denom, amount: '10000' }],
+    },
   ): Promise<InlineResponse20075TxResponse> {
     const sender = this.wallet.address.toString();
     const msgExecute = new cosmwasmproto.cosmwasm.wasm.v1.MsgExecuteContract({
@@ -555,13 +575,7 @@ export class WalletWrapper {
       funds,
     });
 
-    const res = await this.execTx(
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: this.chain.denom, amount: '10000' }],
-      },
-      [msgExecute],
-    );
+    const res = await this.execTx(fee, [msgExecute]);
     if (res.tx_response.code !== 0) {
       throw new Error(
         `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,
