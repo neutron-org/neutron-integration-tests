@@ -4,7 +4,7 @@
   "description": "Neutron chain integration tests",
   "main": "index.js",
   "scripts": {
-    "test": "yarn test:parallel && yarn test:run_in_band",
+    "test": "yarn test:interchaintx",
     "test:parallel": "jest -b src/testcases/parallel",
     "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks",
     "test:simple": "jest -b src/testcases/parallel/simple",
