@@ -660,6 +660,8 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
+        await neutronChain.blockWaiter.waitBlocks(10);
+
         // Testing timeout failure
         await neutronAccount.executeContract(
           contractAddress,
