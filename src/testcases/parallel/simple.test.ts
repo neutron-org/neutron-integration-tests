@@ -25,7 +25,6 @@ describe('Neutron / Simple', () => {
   let gaiaAccount: WalletWrapper;
   let gaiaAccount2: WalletWrapper;
   let contractAddress: string;
-  let receiverContractAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
