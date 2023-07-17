@@ -674,7 +674,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.blockWaiter.waitBlocks(60);
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
