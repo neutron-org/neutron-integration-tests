@@ -38,7 +38,7 @@ services:
       - neutron-testing
 
   hermes:
-    image: hermes:1.3.0-a285c01
+    image: hermes:1.5.1
     depends_on:
       - "neutron-node"
       - "gaia-node"
