@@ -637,7 +637,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
-        await neutronChain.blockWaiter.waitBlocks(10);
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 1,
+          100,
+        );
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
@@ -674,7 +680,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
-        await neutronChain.blockWaiter.waitBlocks(10);
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 2,
+          100,
+        );
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
@@ -711,7 +723,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
-        await neutronChain.blockWaiter.waitBlocks(10);
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 3,
+          100,
+        );
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
@@ -749,7 +767,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
-        await neutronChain.blockWaiter.waitBlocks(20);
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 4,
+          100,
+        );
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
@@ -765,12 +789,7 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('check stored failures and acks', async () => {
-        const failures = await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
-          async () => neutronChain.queryAckFailures(contractAddress),
-          async (data) => data.failures.length == 4,
-          100,
-        );
+        const failures = await neutronChain.queryAckFailures(contractAddress);
         // 3 ack failures, 1 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           {
