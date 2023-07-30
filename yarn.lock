@@ -4615,6 +4615,15 @@ negotiator@0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
+"neutronjs@file:../neutronjs":
+  version "0.0.1"
+  dependencies:
+    "@cosmos-client/core" "0.45.13"
+    "@cosmos-client/cosmwasm" "^0.20.1"
+    "@cosmos-client/ibc" "^1.2.1"
+    axios "^0.27.2"
+    merkletreejs "^0.3.9"
+
 node-addon-api@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/node-addon-api/-/node-addon-api-2.0.2.tgz#432cfa82962ce494b132e9d72a15b29f71ff5d32"

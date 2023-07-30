@@ -17,7 +17,7 @@ import {
   VestingLpVaultConfig,
 } from './dao';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { msgMintDenom, msgCreateDenom } from './tokenfactory';
+import { tokenfactory } from 'neutronjs';
 
 // subdenom of rewards asset distributed by the generator contract.
 const ASTRO_SUBDENOM = 'uastro';
@@ -550,7 +550,7 @@ export class Tge {
   }
 
   async createNativeAstroDenom() {
-    const data = await msgCreateDenom(
+    const data = await tokenfactory.msgCreateDenom(
       this.instantiator,
       this.instantiator.wallet.address.toString(),
       ASTRO_SUBDENOM,
@@ -560,7 +560,7 @@ export class Tge {
       'create_denom',
       'new_token_denom',
     );
-    await msgMintDenom(
+    await tokenfactory.msgMintDenom(
       this.instantiator,
       this.instantiator.wallet.address.toString(),
       {

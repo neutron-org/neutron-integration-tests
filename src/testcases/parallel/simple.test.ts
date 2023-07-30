@@ -1,54 +1,50 @@
 import Long from 'long';
 import {
+  cosmosWrapper,
   COSMOS_DENOM,
-  CosmosWrapper,
-  getIBCDenom,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import {
-  AckFailuresResponse,
-  NeutronContract,
-  PageRequest,
-} from '../../helpers/types';
+  TestStateLocalCosmosTestNet,
+  types,
+  wait,
+} from 'neutronjs';
 
-import { getHeight, getWithAttempts } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
+const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
-  let gaiaAccount2: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount2: cosmosWrapper.WalletWrapper;
   let contractAddress: string;
   let receiverContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
-    gaiaAccount2 = new WalletWrapper(
+    gaiaAccount2 = new cosmosWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmosTwo.genQaWal1,
     );
@@ -66,9 +62,11 @@ describe('Neutron / Simple', () => {
   });
 
   describe('Contracts', () => {
-    let codeId: CodeId;
+    let codeId: types.CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.IBC_TRANSFER);
+      codeId = await neutronAccount.storeWasm(
+        types.NeutronContract.IBC_TRANSFER,
+      );
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
@@ -84,7 +82,7 @@ describe('Neutron / Simple', () => {
   describe('Staking', () => {
     test('store and instantiate mgs receiver contract', async () => {
       const codeId = await neutronAccount.storeWasm(
-        NeutronContract.MSG_RECEIVER,
+        types.NeutronContract.MSG_RECEIVER,
       );
       expect(codeId).toBeGreaterThan(0);
 
@@ -361,7 +359,11 @@ describe('Neutron / Simple', () => {
     describe('Fee in wrong denom', () => {
       const portName = 'transfer';
       const channelName = 'channel-0';
-      const uatomIBCDenom = getIBCDenom(portName, channelName, 'uatom');
+      const uatomIBCDenom = cosmosWrapper.getIBCDenom(
+        portName,
+        channelName,
+        'uatom',
+      );
       expect(uatomIBCDenom).toEqual(
         'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
       );
@@ -497,7 +499,7 @@ describe('Neutron / Simple', () => {
         current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
         hermes checks height on remote chain and Timeout error occurs.
         */
-        const currentHeight = await getHeight(gaiaChain.sdk);
+        const currentHeight = await wait.getHeight(gaiaChain.sdk);
         await gaiaChain.blockWaiter.waitBlocks(15);
 
         await neutronAccount.executeContract(
@@ -513,12 +515,13 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
-          async () => neutronChain.queryAckFailures(contractAddress),
-          // Wait until there 4 failure in the list
-          async (data) => data.failures.length == 4,
-        );
+        const failuresAfterCall =
+          await wait.getWithAttempts<types.AckFailuresResponse>(
+            neutronChain.blockWaiter,
+            async () => neutronChain.queryAckFailures(contractAddress),
+            // Wait until there 4 failure in the list
+            async (data) => data.failures.length == 4,
+          );
 
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
@@ -554,7 +557,7 @@ describe('Neutron / Simple', () => {
     });
     describe('Failures limit test', () => {
       test("failures with small limit doesn't return an error", async () => {
-        const pagination: PageRequest = {
+        const pagination: types.PageRequest = {
           'pagination.limit': '1',
           'pagination.offset': '0',
         };
@@ -565,7 +568,7 @@ describe('Neutron / Simple', () => {
         expect(failures.failures.length).toEqual(1);
       });
       test('failures with big limit returns an error', async () => {
-        const pagination: PageRequest = {
+        const pagination: types.PageRequest = {
           'pagination.limit': '10000',
           'pagination.offset': '0',
         };

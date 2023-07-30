@@ -51,6 +51,7 @@
     "lodash": "^4.17.21",
     "long": "^5.2.1",
     "merkletreejs": "^0.3.9",
+    "neutronjs": "file:../neutronjs",
     "yesno": "^0.4.0"
   },
   "devDependencies": {
