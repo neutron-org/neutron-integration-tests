@@ -8,6 +8,7 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   tge,
+  tokenfactory,
   types,
   wait,
 } from 'neutronjs';
@@ -136,6 +137,7 @@ describe('Neutron / TGE / Auction', () => {
 
   beforeAll(async () => {
     cosmosWrapper.registerCodecs();
+    tokenfactory.registerCodecs();
 
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
@@ -244,6 +246,7 @@ describe('Neutron / TGE / Auction', () => {
       tgeMain.times.airdropVestingStart = tge.getTimestamp(300);
       await tgeMain.deployPreAuction();
     });
+
     it('should not be able to set token info by stranger', async () => {
       await expect(
         tge.executeVestingLpSetVestingToken(

@@ -638,7 +638,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 1,
@@ -681,7 +681,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 2,
@@ -724,7 +724,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 3,
@@ -768,7 +768,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 4,
