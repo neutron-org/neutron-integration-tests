@@ -310,11 +310,11 @@ export const getSubDaoContracts = async (
 export const getTreasuryContract = async (
   cm: CosmosWrapper,
 ): Promise<string> => {
-  const url = `${cm.sdk.url}/cosmos/params/v1beta1/params?subspace=feeburner&key=TreasuryAddress`;
+  const url = `${cm.sdk.url}/neutron/feeburner/params`;
   const resp = await axios.get<{
-    param: { value: string };
+    params: { treasury_address: string };
   }>(url);
-  return JSON.parse(resp.data.param.value);
+  return resp.data.params.treasury_address;
 };
 
 export class Dao {

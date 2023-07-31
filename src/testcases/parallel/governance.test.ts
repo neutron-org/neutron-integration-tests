@@ -4,7 +4,7 @@ import {
   WalletWrapper,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
+import { getHeight, getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 
@@ -172,6 +172,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #4, will pass', async () => {
+      console.log(await getHeight(neutronChain.sdk));
       await daoMember1.submitSoftwareUpgradeProposal(
         'Proposal #4',
         'Software upgrade proposal. Will pass',

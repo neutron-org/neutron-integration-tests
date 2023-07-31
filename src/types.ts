@@ -3,13 +3,13 @@ import bech32 from 'bech32';
 
 export class Wallet {
   address: cosmosclient.AccAddress | cosmosclient.ValAddress;
-  account: cosmosclient.proto.cosmos.auth.v1beta1.BaseAccount | null;
+  account: cosmosclient.proto.cosmos.auth.v1beta1.BaseAccount;
   pubKey: cosmosclient.PubKey;
   privKey: cosmosclient.PrivKey;
   addrPrefix: string;
   constructor(
     address: cosmosclient.AccAddress | cosmosclient.ValAddress,
-    account: cosmosclient.proto.cosmos.auth.v1beta1.BaseAccount | null,
+    account: cosmosclient.proto.cosmos.auth.v1beta1.BaseAccount,
     pubKey: cosmosclient.PubKey,
     privKey: cosmosclient.PrivKey,
     addrPrefix: string,

@@ -2,6 +2,7 @@ import cosmosclient from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import cosmwasmclient from '@cosmos-client/cosmwasm';
 import { cosmos as AdminProto, ibc as ibcProto } from '../generated/ibc/proto';
+import { pob } from '../generated/pob/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -91,6 +92,10 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/ibc.lightclients.tendermint.v1.ClientState',
   ibcProto.lightclients.tendermint.v1.ClientState,
+);
+cosmosclient.codec.register(
+  '/pob.builder.v1.MsgAuctionBid',
+  pob.builder.v1.MsgAuctionBid,
 );
 
 export class CosmosWrapper {
@@ -410,23 +415,19 @@ export class WalletWrapper {
     );
   }
 
-  /**
-   * execTx broadcasts messages and returns the transaction result.
-   */
-  async execTx<T>(
+  buildTx<T>(
     fee: cosmosclient.proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
-    numAttempts = 10,
-    mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
-      .BroadcastTxMode.Sync,
     sequence: number = this.wallet.account.sequence,
-  ): Promise<CosmosTxV1beta1GetTxResponse> {
+  ): cosmosclient.TxBuilder {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
       protoMsgs.push(cosmosclient.codec.instanceToProtoAny(msg));
     });
     const txBody = new cosmosclient.proto.cosmos.tx.v1beta1.TxBody({
       messages: protoMsgs,
+      // TODO: set dynamic value?
+      timeout_height: 1_000_000_000,
     });
     const authInfo = new cosmosclient.proto.cosmos.tx.v1beta1.AuthInfo({
       signer_infos: [
@@ -452,9 +453,21 @@ export class WalletWrapper {
       this.wallet.account.account_number,
     );
     txBuilder.addSignature(this.wallet.privKey.sign(signDocBytes));
+    return txBuilder;
+  }
+
+  async broadcastTx(
+    txBuilder: cosmosclient.TxBuilder,
+    mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
+      .BroadcastTxMode.Sync,
+  ): Promise<string> {
     if (DEBUG_SUBMIT_TX) {
       console.log('\n\n\nStart broadcasting tx: ----------------------');
-      console.log(JSON.stringify(txBuilder.toProtoJSON()));
+      try {
+        console.log(JSON.stringify(txBuilder.toProtoJSON()));
+      } catch (error) {
+        console.log('failed to serrialize tx');
+      }
     }
     const res = await cosmosclient.rest.tx.broadcastTx(
       this.chain.sdk as CosmosSDK,
@@ -468,9 +481,29 @@ export class WalletWrapper {
       console.log('async response code: ', code);
     }
     if (code !== 0) {
+      if (DEBUG_SUBMIT_TX) {
+        console.log(`broadcast error: ${res.data?.tx_response.raw_log}`);
+      }
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
+    this.wallet.account.sequence++;
+    return txhash;
+  }
+
+  /**
+   * execTx broadcasts messages and returns the transaction result.
+   */
+  async execTx<T>(
+    fee: cosmosclient.proto.cosmos.tx.v1beta1.IFee,
+    msgs: T[],
+    numAttempts = 10,
+    mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
+      .BroadcastTxMode.Sync,
+    sequence: number = this.wallet.account.sequence,
+  ): Promise<CosmosTxV1beta1GetTxResponse> {
+    const txBuilder = this.buildTx(fee, msgs, sequence);
+    const txhash = await this.broadcastTx(txBuilder, mode);
     if (DEBUG_SUBMIT_TX) {
       console.log('tx hash: ', txhash);
     }
@@ -485,7 +518,6 @@ export class WalletWrapper {
           return null;
         });
       if (data != null) {
-        this.wallet.account.sequence++;
         if (DEBUG_SUBMIT_TX) {
           const code = +data.data?.tx_response.code;
           console.log('response code: ', code);
@@ -648,6 +680,27 @@ export class WalletWrapper {
         }),
       ),
       proposer: this.wallet.account.address,
+    });
+    const res = await this.execTx(fee, [msg], 10, mode, sequence);
+    return res?.tx_response;
+  }
+
+  async msgSendAuction(
+    bidder: string,
+    bid: ICoin,
+    transactions: Uint8Array[],
+    fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: this.chain.denom, amount: '1000' }],
+    },
+    sequence: number = this.wallet.account.sequence,
+    mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
+      .BroadcastTxMode.Sync,
+  ): Promise<BroadcastTx200ResponseTxResponse> {
+    const msg = new pob.builder.v1.MsgAuctionBid({
+      bidder: bidder,
+      bid: bid,
+      transactions: transactions,
     });
     const res = await this.execTx(fee, [msg], 10, mode, sequence);
     return res?.tx_response;
