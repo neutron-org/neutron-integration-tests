@@ -67,7 +67,7 @@ const wait = async (seconds) =>
     setTimeout(() => r(true), 1000 * seconds);
   });
 
-const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
+const wait.getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
   let error = null;
   let data = null;
   const delay = DELAY_BETWEEN_TRIES;
@@ -82,7 +82,7 @@ const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
       error = e;
     }
     console.log(`${numAttempts * delay} seconds left`);
-    await wait(delay);
+    await wait.wait(delay);
   }
   throw error != null
     ? error
@@ -238,7 +238,7 @@ const getChecksumsTxt = async (repo_name, commit_hash, ci_token, timeout) => {
     const attempts_number = timeout / DELAY_BETWEEN_TRIES;
     try {
       return (
-        await getWithAttempts(
+        await wait.getWithAttempts(
           async () => axios.get(url),
           async (response) => response.status === 200,
           attempts_number,

@@ -1,47 +1,53 @@
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
 import { rest } from '@cosmos-client/core';
+import {
+  cosmosWrapper,
+  dao,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  wait,
+} from 'neutronjs';
+
+const config = require('../../config.json');
 
 describe('Neutron / Global Fee', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let daoMember: DaoMember;
-  let dao: Dao;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let daoMember: dao.DaoMember;
+  let daoMain: dao.Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    dao = new Dao(neutronChain, daoContracts);
-    daoMember = new DaoMember(neutronAccount, dao);
+    const daoContracts = await dao.getDaoContracts(
+      neutronChain,
+      daoCoreAddress,
+    );
+    daoMain = new dao.Dao(neutronChain, daoContracts);
+    daoMember = new dao.DaoMember(neutronAccount, daoMain);
     await daoMember.bondFunds('1000');
-    await getWithAttempts(
+    await wait.getWithAttempts(
       neutronChain.blockWaiter,
       async () =>
-        await dao.queryVotingPower(daoMember.user.wallet.address.toString()),
+        await daoMain.queryVotingPower(
+          daoMember.user.wallet.address.toString(),
+        ),
       async (response) => response.power == 1000,
       20,
     );
 
-    await daoMember.user.msgSend(dao.contracts.core.address, '1000', {
+    await daoMember.user.msgSend(daoMain.contracts.core.address, '1000', {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
     });
@@ -74,14 +80,14 @@ describe('Neutron / Global Fee', () => {
     );
 
     await daoMember.voteYes(proposalId);
-    await dao.checkPassedProposal(proposalId);
+    await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId);
   });
 
   test('check minumum global fees with bank send command', async () => {
     await expect(
       daoMember.user.msgSend(
-        dao.contracts.core.address,
+        daoMain.contracts.core.address,
         '1000',
         {
           gas_limit: Long.fromString('200000'),
@@ -113,7 +119,7 @@ describe('Neutron / Global Fee', () => {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
-    await dao.checkPassedProposal(proposalId);
+    await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
@@ -122,7 +128,7 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command after revert with zero value (only validator settings applied)', async () => {
     const res = await daoMember.user.msgSend(
-      dao.contracts.core.address,
+      daoMain.contracts.core.address,
       '1000',
       {
         gas_limit: Long.fromString('200000'),

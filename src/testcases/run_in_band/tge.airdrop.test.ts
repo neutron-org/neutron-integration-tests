@@ -1,12 +1,12 @@
 import {
-  CosmosWrapper,
+  cosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { Airdrop, getTimestamp } from '../../helpers/tge';
-import { CodeId } from '../../types';
+  TestStateLocalCosmosTestNet,
+  tge,
+  types,
+} from 'neutronjs';
+
+const config = require('../../config.json');
 
 const waitTill = (timestamp: number): Promise<void> =>
   new Promise((resolve) => {
@@ -18,31 +18,30 @@ const waitTill = (timestamp: number): Promise<void> =>
 
 describe('Neutron / TGE / Airdrop', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount1: WalletWrapper;
-  let neutronAccount2: WalletWrapper;
-  let neutronAccount3: WalletWrapper;
-  const codeIds: Record<string, CodeId> = {};
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount1: cosmosWrapper.WalletWrapper;
+  let neutronAccount2: cosmosWrapper.WalletWrapper;
+  const codeIds: Record<string, types.CodeId> = {};
   const contractAddresses: Record<string, string> = {};
-  let airdrop: InstanceType<typeof Airdrop>;
+  let airdrop: InstanceType<typeof tge.Airdrop>;
   const times: Record<string, number> = {};
   let reserveAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
@@ -68,14 +67,14 @@ describe('Neutron / TGE / Airdrop', () => {
         amount: '100000',
       },
     ];
-    airdrop = new Airdrop(accounts);
+    airdrop = new tge.Airdrop(accounts);
   });
 
   describe('Deploy', () => {
     it('should store contracts', async () => {
       for (const contract of ['TGE_CREDITS', 'TGE_AIRDROP']) {
         const codeId = await neutronAccount1.storeWasm(
-          NeutronContract[contract],
+          types.NeutronContract[contract],
         );
         expect(codeId).toBeGreaterThan(0);
         codeIds[contract] = codeId;

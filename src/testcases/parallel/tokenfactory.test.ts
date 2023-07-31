@@ -1,12 +1,11 @@
 import axios from 'axios';
 import {
   cosmosWrapper,
+  NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   tokenfactory,
   types,
 } from 'neutronjs';
-import { NEUTRON_DENOM } from 'neutronjs/dist/helpers/cosmos';
-import { NeutronContract } from 'neutronjs/dist/helpers/types';
 
 const config = require('../../config.json');
 
@@ -54,7 +53,7 @@ describe('Neutron / Tokenfactory', () => {
         'test1',
       );
 
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -82,7 +81,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -113,7 +112,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -156,7 +155,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -203,7 +202,7 @@ describe('Neutron / Tokenfactory', () => {
 
     test('setup contract', async () => {
       const codeId = await neutronAccount.storeWasm(
-        NeutronContract.TOKENFACTORY,
+        types.NeutronContract.TOKENFACTORY,
       );
       expect(codeId).toBeGreaterThan(0);
 

@@ -1,29 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 import {
-  CosmosWrapper,
+  cosmosWrapper,
+  dao,
   IBC_ATOM_DENOM,
   IBC_USDC_DENOM,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { Asset, TotalPowerAtHeightResponse } from '../../helpers/types';
-import { getHeight } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import {
-  executeAuctionSetTokenInfo,
-  executeCreditsVaultUpdateConfig,
-  executeLockdropSetTokenInfo,
-  executeLockdropVaultUpdateConfig,
-  executeVestingLpSetVestingToken,
-  executeVestingLpVaultUpdateConfig,
-  getTimestamp,
-  queryCreditsVaultConfig,
-  queryLockdropVaultConfig,
-  queryVestingLpVaultConfig,
-  Tge,
-  VestingAccountResponse,
-} from '../../helpers/tge';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+  TestStateLocalCosmosTestNet,
+  tge,
+  wait,
+} from 'neutronjs';
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 10000;
@@ -126,12 +112,12 @@ const waitTill = (timestamp: number): Promise<void> => {
 
 describe('Neutron / TGE / Auction', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let tge: Tge;
-  let neutronChain: CosmosWrapper;
-  let cmInstantiator: WalletWrapper;
-  let cmTokenManager: WalletWrapper;
-  let cmStranger: WalletWrapper;
-  const tgeWallets: Record<string, WalletWrapper> = {};
+  let tgeMain: tge.Tge;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let cmInstantiator: cosmosWrapper.WalletWrapper;
+  let cmTokenManager: cosmosWrapper.WalletWrapper;
+  let cmStranger: cosmosWrapper.WalletWrapper;
+  const tgeWallets: Record<string, cosmosWrapper.WalletWrapper> = {};
   let reserveAddress: string;
   let atomBalance = 0;
   let usdcBalance = 0;
@@ -142,38 +128,41 @@ describe('Neutron / TGE / Auction', () => {
   let atomLpLocked = 0;
   let usdcLpLocked = 0;
   let tgeEndHeight = 0;
-  let daoMember1: DaoMember;
-  let dao: Dao;
+  let daoMember1: dao.DaoMember;
+  let daoMain: dao.Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    cmInstantiator = new WalletWrapper(
+    cmInstantiator = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    cmTokenManager = new WalletWrapper(
+    cmTokenManager = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
-    cmStranger = new WalletWrapper(
+    cmStranger = new cosmosWrapper.WalletWrapper(
       neutronChain,
 
       testState.wallets.qaNeutronFive.genQaWal1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    dao = new Dao(neutronChain, daoContracts);
-    daoMember1 = new DaoMember(cmInstantiator, dao);
+    const daoContracts = await dao.getDaoContracts(
+      neutronChain,
+      daoCoreAddress,
+    );
+    daoMain = new dao.Dao(neutronChain, daoContracts);
+    daoMember1 = new dao.DaoMember(cmInstantiator, daoMain);
     await daoMember1.bondFunds('1000');
-    tge = new Tge(
+    tgeMain = new tge.Tge(
       neutronChain,
       cmInstantiator,
       cmTokenManager,
@@ -192,7 +181,7 @@ describe('Neutron / TGE / Auction', () => {
       'auctionLockdrop',
       'auctionLockdropVesting',
     ]) {
-      tgeWallets[v] = new WalletWrapper(
+      tgeWallets[v] = new cosmosWrapper.WalletWrapper(
         neutronChain,
         (
           await testState.createQaWallet(
@@ -223,7 +212,7 @@ describe('Neutron / TGE / Auction', () => {
 
   describe('Deploy', () => {
     it('should deploy contracts for auction', async () => {
-      tge.airdropAccounts = [
+      tgeMain.airdropAccounts = [
         {
           address:
             tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
@@ -246,50 +235,50 @@ describe('Neutron / TGE / Auction', () => {
           amount: '1000000',
         },
       ];
-      tge.times.airdropStart = getTimestamp(0);
-      tge.times.airdropVestingStart = getTimestamp(300);
-      await tge.deployPreAuction();
+      tgeMain.times.airdropStart = getTimestamp(0);
+      tgeMain.times.airdropVestingStart = getTimestamp(300);
+      await tgeMain.deployPreAuction();
     });
     it('should not be able to set token info by stranger', async () => {
       await expect(
-        executeVestingLpSetVestingToken(
+        tge.executeVestingLpSetVestingToken(
           cmStranger,
-          tge.contracts.vestingAtomLp,
-          tge.pairs.usdc_ntrn.liquidity,
+          tgeMain.contracts.vestingAtomLp,
+          tgeMain.pairs.usdc_ntrn.liquidity,
         ),
       ).rejects.toThrowError(/Unauthorized/);
     });
     it('should deploy auction', async () => {
-      tge.times.auctionInit = getTimestamp(80);
-      await tge.deployAuction();
+      tgeMain.times.auctionInit = getTimestamp(80);
+      await tgeMain.deployAuction();
     });
     it('should not be able to set denoms by stranger', async () => {
       await expect(
-        executeAuctionSetTokenInfo(
+        tge.executeAuctionSetTokenInfo(
           cmStranger,
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           IBC_ATOM_DENOM,
           IBC_USDC_DENOM,
         ),
       ).rejects.toThrowError(/Only owner and denom_manager can update denoms/);
     });
     it('should deploy lockdrop and lockdrop vault', async () => {
-      tge.times.lockdropInit =
-        tge.times.auctionInit +
-        tge.times.auctionDepositWindow +
-        tge.times.auctionWithdrawalWindow +
+      tgeMain.times.lockdropInit =
+        tgeMain.times.auctionInit +
+        tgeMain.times.auctionDepositWindow +
+        tgeMain.times.auctionWithdrawalWindow +
         5;
-      await tge.deployLockdrop();
-      await tge.deployLockdropVault();
+      await tgeMain.deployLockdrop();
+      await tgeMain.deployLockdropVault();
     });
     it('should not be able to set token info by stranger', async () => {
       await expect(
-        executeLockdropSetTokenInfo(
+        tge.executeLockdropSetTokenInfo(
           cmStranger,
-          tge.contracts.lockdrop,
-          tge.pairs.atom_ntrn.liquidity,
-          tge.pairs.usdc_ntrn.liquidity,
-          tge.contracts.astroGenerator,
+          tgeMain.contracts.lockdrop,
+          tgeMain.pairs.atom_ntrn.liquidity,
+          tgeMain.pairs.usdc_ntrn.liquidity,
+          tgeMain.contracts.astroGenerator,
         ),
       ).rejects.toThrowError(/Unauthorized/);
     });
@@ -305,10 +294,10 @@ describe('Neutron / TGE / Auction', () => {
       ]) {
         const address = tgeWallets[v].wallet.address.toString();
         const amount =
-          tge.airdropAccounts.find(
+          tgeMain.airdropAccounts.find(
             ({ address }) => address == tgeWallets[v].wallet.address.toString(),
           )?.amount || '0';
-        const proofs = tge.airdrop.getMerkleProof({
+        const proofs = tgeMain.airdrop.getMerkleProof({
           address: address,
           amount: amount,
         });
@@ -320,7 +309,7 @@ describe('Neutron / TGE / Auction', () => {
           },
         };
         const res = await tgeWallets[v].executeContract(
-          tge.contracts.airdrop,
+          tgeMain.contracts.airdrop,
           JSON.stringify(payload),
         );
         expect(res.code).toEqual(0);
@@ -333,7 +322,7 @@ describe('Neutron / TGE / Auction', () => {
       it('should not allow deposit before init', async () => {
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               deposit: {},
             }),
@@ -347,13 +336,13 @@ describe('Neutron / TGE / Auction', () => {
         ).rejects.toThrow(/Deposit window closed/);
       });
       it('should allow deposit ATOM', async () => {
-        await waitTill(tge.times.auctionInit + 3);
+        await waitTill(tgeMain.times.auctionInit + 3);
         const atomBalanceBefore = await neutronChain.queryDenomBalance(
           cmInstantiator.wallet.address.toString(),
           IBC_ATOM_DENOM,
         );
         const res = await cmInstantiator.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             deposit: {},
           }),
@@ -366,7 +355,7 @@ describe('Neutron / TGE / Auction', () => {
         );
         expect(res.code).toEqual(0);
         const info = await neutronChain.queryContract<UserInfoResponse>(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           {
             user_info: {
               address: cmInstantiator.wallet.address.toString(),
@@ -392,7 +381,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               deposit: {},
             }),
@@ -413,7 +402,7 @@ describe('Neutron / TGE / Auction', () => {
           IBC_USDC_DENOM,
         );
         const res = await cmInstantiator.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             deposit: {},
           }),
@@ -426,7 +415,7 @@ describe('Neutron / TGE / Auction', () => {
         );
         expect(res.code).toEqual(0);
         const info = await neutronChain.queryContract<UserInfoResponse>(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           {
             user_info: {
               address: cmInstantiator.wallet.address.toString(),
@@ -452,7 +441,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               deposit: {},
             }),
@@ -477,7 +466,7 @@ describe('Neutron / TGE / Auction', () => {
           IBC_USDC_DENOM,
         );
         const res = await cmInstantiator.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             withdraw: {
               amount_usdc: '5000',
@@ -487,7 +476,7 @@ describe('Neutron / TGE / Auction', () => {
         );
         expect(res.code).toEqual(0);
         const info = await neutronChain.queryContract<UserInfoResponse>(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           {
             user_info: {
               address: cmInstantiator.wallet.address.toString(),
@@ -518,7 +507,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw: {
                 amount_usdc: (USDC_DEPOSIT_AMOUNT / 2).toString(),
@@ -535,11 +524,11 @@ describe('Neutron / TGE / Auction', () => {
     describe('Phase 2', () => {
       it('should not allow deposit when deposit window is closed', async () => {
         await waitTill(
-          tge.times.auctionInit + tge.times.auctionDepositWindow + 5,
+          tgeMain.times.auctionInit + tgeMain.times.auctionDepositWindow + 5,
         );
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               deposit: {},
             }),
@@ -555,7 +544,7 @@ describe('Neutron / TGE / Auction', () => {
       it('should not be able to withdraw mode than 50% of current deposit', async () => {
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw: {
                 amount_usdc: '5000',
@@ -577,7 +566,7 @@ describe('Neutron / TGE / Auction', () => {
           IBC_USDC_DENOM,
         );
         const res = await cmInstantiator.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             withdraw: {
               amount_usdc: '1000',
@@ -589,7 +578,7 @@ describe('Neutron / TGE / Auction', () => {
         atomBalance -= 1000;
         usdcBalance -= 1000;
         const info = await neutronChain.queryContract<UserInfoResponse>(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           {
             user_info: {
               address: cmInstantiator.wallet.address.toString(),
@@ -613,7 +602,7 @@ describe('Neutron / TGE / Auction', () => {
       it('should not allow to withdraw more than once', async () => {
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw: {
                 amount_usdc: '1000',
@@ -628,7 +617,7 @@ describe('Neutron / TGE / Auction', () => {
       describe('intentivizing lockdrop', () => {
         it('should incentivize lockdrop', async () => {
           const res = await cmInstantiator.executeContract(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             JSON.stringify({
               increase_ntrn_incentives: {},
             }),
@@ -644,7 +633,7 @@ describe('Neutron / TGE / Auction', () => {
       });
       describe('set_pool_size', () => {
         it('transfer some ATOM directly to auction contract to try affect pool', async () => {
-          await cmInstantiator.msgSend(tge.contracts.auction, {
+          await cmInstantiator.msgSend(tgeMain.contracts.auction, {
             amount: '100000000',
             denom: IBC_ATOM_DENOM,
           });
@@ -652,7 +641,7 @@ describe('Neutron / TGE / Auction', () => {
         it('should not be able to set pool size before withdrawal_window is closed', async () => {
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 set_pool_size: {},
               }),
@@ -661,14 +650,14 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to set pool size bc of wrong price feed data', async () => {
           await waitTill(
-            tge.times.auctionInit +
-              tge.times.auctionDepositWindow +
-              tge.times.auctionWithdrawalWindow +
+            tgeMain.times.auctionInit +
+              tgeMain.times.auctionDepositWindow +
+              tgeMain.times.auctionWithdrawalWindow +
               5,
           );
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 set_pool_size: {},
               }),
@@ -678,7 +667,7 @@ describe('Neutron / TGE / Auction', () => {
         it('should not be able to set pool size (no NTRN)', async () => {
           const time = (Date.now() / 1000) | 0;
           const r1 = await cmInstantiator.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'ATOM',
@@ -692,7 +681,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(r1.code).toEqual(0);
           const r2 = await cmInstantiator.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'USDT',
@@ -707,7 +696,7 @@ describe('Neutron / TGE / Auction', () => {
           expect(r2.code).toEqual(0);
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 set_pool_size: {},
               }),
@@ -715,12 +704,12 @@ describe('Neutron / TGE / Auction', () => {
           ).rejects.toThrow(/Not enough NTRN in the contract/);
         });
         it('should not be able to set pool size when price feed data is set but too old', async () => {
-          await cmInstantiator.msgSend(tge.contracts.auction, {
+          await cmInstantiator.msgSend(tgeMain.contracts.auction, {
             amount: NTRN_AMOUNT.toString(),
           });
           const time = (Date.now() / 1000 - 10000) | 0;
           const r1 = await cmInstantiator.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'ATOM',
@@ -734,7 +723,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(r1.code).toEqual(0);
           const r2 = await cmInstantiator.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'USDT',
@@ -750,7 +739,7 @@ describe('Neutron / TGE / Auction', () => {
 
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 set_pool_size: {},
               }),
@@ -760,7 +749,7 @@ describe('Neutron / TGE / Auction', () => {
         it('should be able to set pool size', async () => {
           const time = (Date.now() / 1000) | 0;
           const r1 = await cmTokenManager.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'ATOM',
@@ -774,7 +763,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(r1.code).toEqual(0);
           const r2 = await cmTokenManager.executeContract(
-            tge.contracts.priceFeed,
+            tgeMain.contracts.priceFeed,
             JSON.stringify({
               set_rate: {
                 symbol: 'USDT',
@@ -789,14 +778,14 @@ describe('Neutron / TGE / Auction', () => {
           expect(r2.code).toEqual(0);
 
           const res = await cmTokenManager.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               set_pool_size: {},
             }),
           );
           expect(res.code).toEqual(0);
           const state = await neutronChain.queryContract<AuctionStateResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               state: {},
             },
@@ -830,7 +819,7 @@ describe('Neutron / TGE / Auction', () => {
         it('should not be able to set pool size twice', async () => {
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 set_pool_size: {},
               }),
@@ -841,7 +830,7 @@ describe('Neutron / TGE / Auction', () => {
       describe('lock_lp', () => {
         it('should be able to lock ATOM LP tokens', async () => {
           const res = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               lock_lp: {
                 amount: '77',
@@ -851,7 +840,7 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -862,7 +851,7 @@ describe('Neutron / TGE / Auction', () => {
           expect(parseInt(userInfo.atom_lp_locked)).toEqual(77);
           atomLpLocked += 77;
           const info = await neutronChain.queryContract<LockDropInfoResponse>(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -882,7 +871,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               {
                 user_info: {
                   address: tgeWallets[v].wallet.address.toString(),
@@ -890,7 +879,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             );
             const res2 = await tgeWallets[v].executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 lock_lp: {
                   amount: userInfo.atom_lp_amount,
@@ -905,7 +894,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should be able to lock USDC LP tokens', async () => {
           const res = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               lock_lp: {
                 amount: '50',
@@ -915,7 +904,7 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           const res2 = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               lock_lp: {
                 amount: '50',
@@ -925,7 +914,7 @@ describe('Neutron / TGE / Auction', () => {
             }),
           );
           const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -937,7 +926,7 @@ describe('Neutron / TGE / Auction', () => {
           usdcLpLocked += 100;
           expect(parseInt(userInfo.usdc_lp_locked)).toEqual(100);
           const info = await neutronChain.queryContract<LockDropInfoResponse>(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -961,7 +950,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               {
                 user_info: {
                   address: tgeWallets[v].wallet.address.toString(),
@@ -969,7 +958,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             );
             const res2 = await tgeWallets[v].executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 lock_lp: {
                   amount: userInfo.usdc_lp_amount,
@@ -984,7 +973,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to lock ATOM LP tokens more than have', async () => {
           const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -993,7 +982,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 lock_lp: {
                   amount: userInfo.atom_lp_amount,
@@ -1006,7 +995,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to lock USDC LP tokens more than have', async () => {
           const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1015,7 +1004,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 lock_lp: {
                   amount: userInfo.usdc_lp_amount,
@@ -1028,7 +1017,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should be able to withdraw ATOM LP tokens', async () => {
           const res = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw_lp: {
                 asset: 'ATOM',
@@ -1039,7 +1028,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(res.code).toEqual(0);
           const info = await neutronChain.queryContract<LockDropInfoResponse>(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1052,7 +1041,7 @@ describe('Neutron / TGE / Auction', () => {
             pool_type: 'ATOM',
           });
           const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1067,7 +1056,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               {
                 user_info: {
                   address: tgeWallets[v].wallet.address.toString(),
@@ -1075,7 +1064,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             );
             const res2 = await tgeWallets[v].executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 withdraw_lp: {
                   amount: Math.round(
@@ -1092,7 +1081,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should be able to withdraw USDC LP tokens', async () => {
           let res = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw_lp: {
                 asset: 'USDC',
@@ -1103,7 +1092,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(res.code).toEqual(0);
           res = await cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               withdraw_lp: {
                 asset: 'USDC',
@@ -1115,7 +1104,7 @@ describe('Neutron / TGE / Auction', () => {
           expect(res.code).toEqual(0);
           usdcLpLocked -= 10;
           const info = await neutronChain.queryContract<LockDropInfoResponse>(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             {
               user_info: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1139,7 +1128,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               {
                 user_info: {
                   address: tgeWallets[v].wallet.address.toString(),
@@ -1147,7 +1136,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             );
             const res2 = await tgeWallets[v].executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 withdraw_lp: {
                   amount: Math.round(
@@ -1164,11 +1153,13 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to lock tokens when time is up', async () => {
           await waitTill(
-            tge.times.lockdropInit + tge.times.lockdropDepositDuration + 5,
+            tgeMain.times.lockdropInit +
+              tgeMain.times.lockdropDepositDuration +
+              5,
           );
           await expect(
             cmInstantiator.executeContract(
-              tge.contracts.auction,
+              tgeMain.contracts.auction,
               JSON.stringify({
                 lock_lp: {
                   amount: '100',
@@ -1182,11 +1173,11 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should set generator to lockdrop', async () => {
         const res = await cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
+          tgeMain.contracts.lockdrop,
           JSON.stringify({
             update_config: {
               new_config: {
-                generator_address: tge.contracts.astroGenerator,
+                generator_address: tgeMain.contracts.astroGenerator,
               },
             },
           }),
@@ -1197,13 +1188,13 @@ describe('Neutron / TGE / Auction', () => {
     describe('Init pool', () => {
       it('should init pool', async () => {
         await waitTill(
-          tge.times.lockdropInit +
-            tge.times.lockdropDepositDuration +
-            tge.times.lockdropWithdrawalDuration +
+          tgeMain.times.lockdropInit +
+            tgeMain.times.lockdropDepositDuration +
+            tgeMain.times.lockdropWithdrawalDuration +
             5,
         );
         const res = await cmInstantiator.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             init_pool: {},
           }),
@@ -1223,25 +1214,25 @@ describe('Neutron / TGE / Auction', () => {
           generatorLPBalanceUsdcNtrn,
         ] = await Promise.all([
           neutronChain.queryContract<AuctionStateResponse>(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             {
               state: {},
             },
           ),
           neutronChain.queryContract<PoolInfoResponse>(
-            tge.pairs.atom_ntrn.contract,
+            tgeMain.pairs.atom_ntrn.contract,
             {
               pool: {},
             },
           ),
           neutronChain.queryContract<PoolInfoResponse>(
-            tge.pairs.usdc_ntrn.contract,
+            tgeMain.pairs.usdc_ntrn.contract,
             {
               pool: {},
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
                 address: reserveAddress,
@@ -1249,7 +1240,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
                 address: reserveAddress,
@@ -1257,50 +1248,50 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.auction,
+                address: tgeMain.contracts.auction,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.auction,
+                address: tgeMain.contracts.auction,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.lockdrop,
+                address: tgeMain.contracts.lockdrop,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.lockdrop,
+                address: tgeMain.contracts.lockdrop,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.astroGenerator,
+                address: tgeMain.contracts.astroGenerator,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.astroGenerator,
+                address: tgeMain.contracts.astroGenerator,
               },
             },
           ),
@@ -1380,9 +1371,9 @@ describe('Neutron / TGE / Auction', () => {
         );
       });
       it('update oracles', async () => {
-        tgeEndHeight = await getHeight(neutronChain.sdk);
+        tgeEndHeight = await wait.getHeight(neutronChain.sdk);
         let res = await cmInstantiator.executeContract(
-          tge.contracts.oracleAtom,
+          tgeMain.contracts.oracleAtom,
           JSON.stringify({
             update: {},
           }),
@@ -1390,7 +1381,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(res.code).toEqual(0);
 
         res = await cmInstantiator.executeContract(
-          tge.contracts.oracleUsdc,
+          tgeMain.contracts.oracleUsdc,
           JSON.stringify({
             update: {},
           }),
@@ -1399,14 +1390,14 @@ describe('Neutron / TGE / Auction', () => {
 
         testState.blockWaiter1.waitBlocks(3);
         res = await cmInstantiator.executeContract(
-          tge.contracts.oracleAtom,
+          tgeMain.contracts.oracleAtom,
           JSON.stringify({
             update: {},
           }),
         );
         expect(res.code).toEqual(0);
         res = await cmInstantiator.executeContract(
-          tge.contracts.oracleUsdc,
+          tgeMain.contracts.oracleUsdc,
           JSON.stringify({
             update: {},
           }),
@@ -1416,7 +1407,7 @@ describe('Neutron / TGE / Auction', () => {
       it('should not be able to init pool twice', async () => {
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               init_pool: {},
             }),
@@ -1429,25 +1420,25 @@ describe('Neutron / TGE / Auction', () => {
       let claimUsdcLP: number;
       it('should vest LP (permissionless)', async () => {
         let res = await cmStranger.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             migrate_to_vesting: {},
           }),
         );
         expect(res.code).toEqual(0);
         res = await tgeWallets.airdropOnly.executeContract(
-          tge.contracts.auction,
+          tgeMain.contracts.auction,
           JSON.stringify({
             migrate_to_vesting: {},
           }),
         );
         expect(res.code).toEqual(0);
-        tge.times.vestTimestamp = Date.now();
+        tgeMain.times.vestTimestamp = Date.now();
       });
       it('should not vest LP all 7 users have been migrated', async () => {
         await expect(
           cmInstantiator.executeContract(
-            tge.contracts.auction,
+            tgeMain.contracts.auction,
             JSON.stringify({
               migrate_to_vesting: {},
             }),
@@ -1461,16 +1452,16 @@ describe('Neutron / TGE / Auction', () => {
           lpAuctionBalanceAtom,
           lpAuctionBalanceUsdc,
         ] = await Promise.all([
-          neutronChain.queryContract<VestingAccountResponse>(
-            tge.contracts.vestingAtomLp,
+          neutronChain.queryContract<tge.VestingAccountResponse>(
+            tgeMain.contracts.vestingAtomLp,
             {
               vesting_account: {
                 address: cmInstantiator.wallet.address.toString(),
               },
             },
           ),
-          neutronChain.queryContract<VestingAccountResponse>(
-            tge.contracts.vestingUsdcLp,
+          neutronChain.queryContract<tge.VestingAccountResponse>(
+            tgeMain.contracts.vestingUsdcLp,
             {
               vesting_account: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1478,18 +1469,18 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.auction,
+                address: tgeMain.contracts.auction,
               },
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
-                address: tge.contracts.auction,
+                address: tgeMain.contracts.auction,
               },
             },
           ),
@@ -1522,17 +1513,17 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should be able to claim lpATOM_NTRN vesting after vesting period', async () => {
         await waitTill(
-          tge.times.vestTimestamp / 1000 +
-            tge.times.auctionVestingLpDuration +
+          tgeMain.times.vestTimestamp / 1000 +
+            tgeMain.times.auctionVestingLpDuration +
             10,
         );
         const [avaliableAtomLp, avaliableUsdcLp] = await Promise.all([
-          neutronChain.queryContract<string>(tge.contracts.vestingAtomLp, {
+          neutronChain.queryContract<string>(tgeMain.contracts.vestingAtomLp, {
             available_amount: {
               address: cmInstantiator.wallet.address.toString(),
             },
           }),
-          neutronChain.queryContract<string>(tge.contracts.vestingUsdcLp, {
+          neutronChain.queryContract<string>(tgeMain.contracts.vestingUsdcLp, {
             available_amount: {
               address: cmInstantiator.wallet.address.toString(),
             },
@@ -1541,14 +1532,14 @@ describe('Neutron / TGE / Auction', () => {
         expect(avaliableAtomLp).toEqual(claimAtomLP.toString());
         expect(avaliableUsdcLp).toEqual(claimUsdcLP.toString());
         const resAtom = await cmInstantiator.executeContract(
-          tge.contracts.vestingAtomLp,
+          tgeMain.contracts.vestingAtomLp,
           JSON.stringify({
             claim: {},
           }),
         );
         expect(resAtom.code).toEqual(0);
         const resUsdc = await cmInstantiator.executeContract(
-          tge.contracts.vestingUsdcLp,
+          tgeMain.contracts.vestingUsdcLp,
           JSON.stringify({
             claim: {},
           }),
@@ -1557,7 +1548,7 @@ describe('Neutron / TGE / Auction', () => {
 
         const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
+            tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1565,7 +1556,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           ),
           neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
+            tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
                 address: cmInstantiator.wallet.address.toString(),
@@ -1581,7 +1572,7 @@ describe('Neutron / TGE / Auction', () => {
       describe('basic checks', () => {
         it('oracle works', async () => {
           const rateNtrnAtom = await neutronChain.queryContract<TwapAtHeight>(
-            tge.contracts.oracleAtom,
+            tgeMain.contracts.oracleAtom,
             {
               t_w_a_p_at_height: {
                 token: { native_token: { denom: NEUTRON_DENOM } },
@@ -1590,7 +1581,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           const rateAtomNtrn = await neutronChain.queryContract<TwapAtHeight>(
-            tge.contracts.oracleAtom,
+            tgeMain.contracts.oracleAtom,
             {
               t_w_a_p_at_height: {
                 token: { native_token: { denom: IBC_ATOM_DENOM } },
@@ -1605,7 +1596,7 @@ describe('Neutron / TGE / Auction', () => {
             ),
           ).toBeLessThan(0.03);
           const rateNtrnUsdc = await neutronChain.queryContract<TwapAtHeight>(
-            tge.contracts.oracleUsdc,
+            tgeMain.contracts.oracleUsdc,
             {
               t_w_a_p_at_height: {
                 token: { native_token: { denom: NEUTRON_DENOM } },
@@ -1614,7 +1605,7 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           const rateUsdcNtrn = await neutronChain.queryContract<TwapAtHeight>(
-            tge.contracts.oracleUsdc,
+            tgeMain.contracts.oracleUsdc,
             {
               t_w_a_p_at_height: {
                 token: { native_token: { denom: IBC_USDC_DENOM } },
@@ -1641,7 +1632,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
         });
@@ -1658,7 +1649,7 @@ describe('Neutron / TGE / Auction', () => {
                   execute: {
                     contract_addr: dao.contracts.voting.address,
                     msg: Buffer.from(
-                      `{"add_voting_vault": {"new_voting_vault_contract":"${tge.contracts.lockdropVault}"}}`,
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.lockdropVault}"}}`,
                     ).toString('base64'),
                     funds: [],
                   },
@@ -1678,7 +1669,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               0,
             );
@@ -1688,7 +1679,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionVesting',
             'auctionVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
         });
@@ -1704,7 +1695,7 @@ describe('Neutron / TGE / Auction', () => {
                   execute: {
                     contract_addr: dao.contracts.voting.address,
                     msg: Buffer.from(
-                      `{"add_voting_vault": {"new_voting_vault_contract":"${tge.contracts.vestingLpVault}"}}`,
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.vestingLpVault}"}}`,
                     ).toString('base64'),
                     funds: [],
                   },
@@ -1726,7 +1717,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             vp[v] = (await member.queryVotingPower()).power | 0;
             if ((await dao.queryProposal(propID)).proposal.status == 'open') {
               await member.voteYes(propID);
@@ -1742,7 +1733,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionVesting',
             'auctionLockdropVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1760,7 +1751,7 @@ describe('Neutron / TGE / Auction', () => {
                   execute: {
                     contract_addr: dao.contracts.voting.address,
                     msg: Buffer.from(
-                      `{"add_voting_vault": {"new_voting_vault_contract":"${tge.contracts.creditsVault}"}}`,
+                      `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.creditsVault}"}}`,
                     ).toString('base64'),
                     funds: [],
                   },
@@ -1782,7 +1773,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
             'auctionVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             vp[v] = (await member.queryVotingPower()).power | 0;
             if ((await dao.queryProposal(propID)).proposal.status == 'open') {
               await member.voteYes(propID);
@@ -1798,7 +1789,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdrop',
             'airdropAuctionLockdropVesting',
           ]) {
-            const member = new DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], dao);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1807,23 +1798,23 @@ describe('Neutron / TGE / Auction', () => {
         it('airdrop contract should not have credits vault voting power', async () => {
           const ctvp =
             await neutronChain.queryContract<TotalPowerAtHeightResponse>(
-              tge.contracts.creditsVault,
+              tgeMain.contracts.creditsVault,
               {
                 total_power_at_height: {},
               },
             );
           const airdropCNTRN =
             await neutronChain.queryContract<BalanceResponse>(
-              tge.contracts.credits,
+              tgeMain.contracts.credits,
               {
                 balance: {
-                  address: tge.contracts.airdrop,
+                  address: tgeMain.contracts.airdrop,
                 },
               },
             );
           const totalCNTRNSupply =
             await neutronChain.queryContract<TotalSupplyResponse>(
-              tge.contracts.credits,
+              tgeMain.contracts.credits,
               {
                 total_supply_at_height: {},
               },
@@ -1859,7 +1850,7 @@ describe('Neutron / TGE / Auction', () => {
 
         airdropAuctionLockdropVestingUserInfo =
           await neutronChain.queryContract<LockDropInfoResponse>(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             {
               user_info: {
                 address:
@@ -1874,20 +1865,20 @@ describe('Neutron / TGE / Auction', () => {
       describe('lockdrop rewards', () => {
         beforeAll(async () => {
           await waitTill(
-            tge.times.lockdropInit +
-              tge.times.lockdropDepositDuration +
-              tge.times.lockdropWithdrawalDuration +
+            tgeMain.times.lockdropInit +
+              tgeMain.times.lockdropDepositDuration +
+              tgeMain.times.lockdropWithdrawalDuration +
               1,
           );
         });
 
         it('for cmInstantiator without withdraw', async () => {
-          const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+          const rewardsStateBeforeClaim = await tgeMain.generatorRewardsState(
             cmInstantiator.wallet.address.toString(),
           );
 
           const res = await cmInstantiator.executeContract(
-            tge.contracts.lockdrop,
+            tgeMain.contracts.lockdrop,
             JSON.stringify({
               claim_rewards_and_optionally_unlock: {
                 pool_type: 'USDC',
@@ -1898,7 +1889,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(res.code).toEqual(0);
 
-          const rewardsStateAfterClaim = await tge.generatorRewardsState(
+          const rewardsStateAfterClaim = await tgeMain.generatorRewardsState(
             cmInstantiator.wallet.address.toString(),
           );
 
@@ -1923,7 +1914,7 @@ describe('Neutron / TGE / Auction', () => {
             expectedGeneratorRewards,
           );
           expect(astroBalanceDiff).toBeLessThan(
-            expectedGeneratorRewards + tge.generatorRewardsPerBlock,
+            expectedGeneratorRewards + tgeMain.generatorRewardsPerBlock,
           );
 
           // withdraw_lp_stake is false => no lp tokens returned
@@ -1943,7 +1934,7 @@ describe('Neutron / TGE / Auction', () => {
           ]) {
             await expect(
               tgeWallets[v].executeContract(
-                tge.contracts.lockdrop,
+                tgeMain.contracts.lockdrop,
                 JSON.stringify({
                   claim_rewards_and_optionally_unlock: {
                     pool_type: 'USDC',
@@ -1955,7 +1946,7 @@ describe('Neutron / TGE / Auction', () => {
             ).rejects.toThrowError(/LockupInfoV1 not found/);
             await expect(
               tgeWallets[v].executeContract(
-                tge.contracts.lockdrop,
+                tgeMain.contracts.lockdrop,
                 JSON.stringify({
                   claim_rewards_and_optionally_unlock: {
                     pool_type: 'ATOM',
@@ -1975,12 +1966,12 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
         ]) {
           it('for ' + v + ' without withdraw', async () => {
-            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+            const rewardsStateBeforeClaim = await tgeMain.generatorRewardsState(
               tgeWallets[v].wallet.address.toString(),
             );
 
             const res = await tgeWallets[v].executeContract(
-              tge.contracts.lockdrop,
+              tgeMain.contracts.lockdrop,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
                   pool_type: 'USDC',
@@ -1991,7 +1982,7 @@ describe('Neutron / TGE / Auction', () => {
             );
             expect(res.code).toEqual(0);
 
-            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+            const rewardsStateAfterClaim = await tgeMain.generatorRewardsState(
               tgeWallets[v].wallet.address.toString(),
             );
 
@@ -2016,7 +2007,7 @@ describe('Neutron / TGE / Auction', () => {
               expectedGeneratorRewards,
             );
             expect(astroBalanceDiff).toBeLessThan(
-              expectedGeneratorRewards + tge.generatorRewardsPerBlock,
+              expectedGeneratorRewards + tgeMain.generatorRewardsPerBlock,
             );
 
             // withdraw_lp_stake is false => no lp tokens returned
@@ -2036,12 +2027,12 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
         ]) {
           it('for ' + v + ' with withdraw', async () => {
-            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+            const rewardsStateBeforeClaim = await tgeMain.generatorRewardsState(
               tgeWallets[v].wallet.address.toString(),
             );
 
             let res = await tgeWallets[v].executeContract(
-              tge.contracts.lockdrop,
+              tgeMain.contracts.lockdrop,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
                   pool_type: 'USDC',
@@ -2052,7 +2043,7 @@ describe('Neutron / TGE / Auction', () => {
             );
             expect(res.code).toEqual(0);
             res = await tgeWallets[v].executeContract(
-              tge.contracts.lockdrop,
+              tgeMain.contracts.lockdrop,
               JSON.stringify({
                 claim_rewards_and_optionally_unlock: {
                   pool_type: 'ATOM',
@@ -2063,7 +2054,7 @@ describe('Neutron / TGE / Auction', () => {
             );
             expect(res.code).toEqual(0);
 
-            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+            const rewardsStateAfterClaim = await tgeMain.generatorRewardsState(
               tgeWallets[v].wallet.address.toString(),
             );
 
@@ -2108,7 +2099,7 @@ describe('Neutron / TGE / Auction', () => {
               expectedGeneratorRewards,
             );
             expect(astroBalanceDiff).toBeLessThan(
-              expectedGeneratorRewards + 2 * tge.generatorRewardsPerBlock,
+              expectedGeneratorRewards + 2 * tgeMain.generatorRewardsPerBlock,
             );
           });
         }
@@ -2164,14 +2155,14 @@ describe('Neutron / TGE / Auction', () => {
       expect(
         await queryLockdropVaultConfig(
           neutronChain,
-          tge.contracts.lockdropVault,
+          tgeMain.contracts.lockdropVault,
         ),
       ).toMatchObject({
-        name: tge.lockdropVaultName,
-        description: tge.lockdropVaultDescription,
-        lockdrop_contract: tge.contracts.lockdrop,
-        oracle_usdc_contract: tge.contracts.oracleUsdc,
-        oracle_atom_contract: tge.contracts.oracleAtom,
+        name: tgeMain.lockdropVaultName,
+        description: tgeMain.lockdropVaultDescription,
+        lockdrop_contract: tgeMain.contracts.lockdrop,
+        oracle_usdc_contract: tgeMain.contracts.oracleUsdc,
+        oracle_atom_contract: tgeMain.contracts.oracleAtom,
         owner: cmInstantiator.wallet.address.toString(),
       });
     });
@@ -2180,28 +2171,31 @@ describe('Neutron / TGE / Auction', () => {
       expect(
         await queryVestingLpVaultConfig(
           neutronChain,
-          tge.contracts.vestingLpVault,
+          tgeMain.contracts.vestingLpVault,
         ),
       ).toMatchObject({
-        name: tge.vestingLpVaultName,
-        description: tge.vestingLpVaultDescription,
-        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
-        atom_oracle_contract: tge.contracts.oracleAtom,
-        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
-        usdc_oracle_contract: tge.contracts.oracleUsdc,
-        owner: tge.instantiator.wallet.address.toString(),
+        name: tgeMain.vestingLpVaultName,
+        description: tgeMain.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tgeMain.contracts.vestingAtomLp,
+        atom_oracle_contract: tgeMain.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tgeMain.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tgeMain.contracts.oracleUsdc,
+        owner: tgeMain.instantiator.wallet.address.toString(),
       });
     });
 
     test('Get credits vault config', async () => {
       expect(
-        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+        await queryCreditsVaultConfig(
+          neutronChain,
+          tgeMain.contracts.creditsVault,
+        ),
       ).toMatchObject({
-        name: tge.creditsVaultName,
-        description: tge.creditsVaultDescription,
-        credits_contract_address: tge.contracts.credits,
-        owner: tge.instantiator.wallet.address.toString(),
-        airdrop_contract_address: tge.contracts.airdrop,
+        name: tgeMain.creditsVaultName,
+        description: tgeMain.creditsVaultDescription,
+        credits_contract_address: tgeMain.contracts.credits,
+        owner: tgeMain.instantiator.wallet.address.toString(),
+        airdrop_contract_address: tgeMain.contracts.airdrop,
       });
     });
 
@@ -2209,11 +2203,11 @@ describe('Neutron / TGE / Auction', () => {
       await expect(
         executeLockdropVaultUpdateConfig(
           cmStranger,
-          tge.contracts.lockdropVault,
+          tgeMain.contracts.lockdropVault,
           cmStranger.wallet.address.toString(),
-          tge.contracts.lockdrop,
-          tge.contracts.oracleUsdc,
-          tge.contracts.oracleAtom,
+          tgeMain.contracts.lockdrop,
+          tgeMain.contracts.oracleUsdc,
+          tgeMain.contracts.oracleAtom,
           'name',
           'description',
         ),
@@ -2222,14 +2216,14 @@ describe('Neutron / TGE / Auction', () => {
       expect(
         await queryLockdropVaultConfig(
           neutronChain,
-          tge.contracts.lockdropVault,
+          tgeMain.contracts.lockdropVault,
         ),
       ).toMatchObject({
-        name: tge.lockdropVaultName,
-        description: tge.lockdropVaultDescription,
-        lockdrop_contract: tge.contracts.lockdrop,
-        oracle_usdc_contract: tge.contracts.oracleUsdc,
-        oracle_atom_contract: tge.contracts.oracleAtom,
+        name: tgeMain.lockdropVaultName,
+        description: tgeMain.lockdropVaultDescription,
+        lockdrop_contract: tgeMain.contracts.lockdrop,
+        oracle_usdc_contract: tgeMain.contracts.oracleUsdc,
+        oracle_atom_contract: tgeMain.contracts.oracleAtom,
         owner: cmInstantiator.wallet.address.toString(),
       });
     });
@@ -2238,12 +2232,12 @@ describe('Neutron / TGE / Auction', () => {
       await expect(
         executeVestingLpVaultUpdateConfig(
           cmStranger,
-          tge.contracts.vestingLpVault,
+          tgeMain.contracts.vestingLpVault,
           cmStranger.wallet.address.toString(),
-          tge.contracts.vestingUsdcLp,
-          tge.contracts.oracleUsdc,
-          tge.contracts.vestingAtomLp,
-          tge.contracts.oracleAtom,
+          tgeMain.contracts.vestingUsdcLp,
+          tgeMain.contracts.oracleUsdc,
+          tgeMain.contracts.vestingAtomLp,
+          tgeMain.contracts.oracleAtom,
           'name',
           'description',
         ),
@@ -2252,16 +2246,16 @@ describe('Neutron / TGE / Auction', () => {
       expect(
         await queryVestingLpVaultConfig(
           neutronChain,
-          tge.contracts.vestingLpVault,
+          tgeMain.contracts.vestingLpVault,
         ),
       ).toMatchObject({
-        name: tge.vestingLpVaultName,
-        description: tge.vestingLpVaultDescription,
-        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
-        atom_oracle_contract: tge.contracts.oracleAtom,
-        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
-        usdc_oracle_contract: tge.contracts.oracleUsdc,
-        owner: tge.instantiator.wallet.address.toString(),
+        name: tgeMain.vestingLpVaultName,
+        description: tgeMain.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tgeMain.contracts.vestingAtomLp,
+        atom_oracle_contract: tgeMain.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tgeMain.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tgeMain.contracts.oracleUsdc,
+        owner: tgeMain.instantiator.wallet.address.toString(),
       });
     });
 
@@ -2269,8 +2263,8 @@ describe('Neutron / TGE / Auction', () => {
       await expect(
         executeCreditsVaultUpdateConfig(
           cmStranger,
-          tge.contracts.creditsVault,
-          tge.contracts.auction,
+          tgeMain.contracts.creditsVault,
+          tgeMain.contracts.auction,
           cmStranger.wallet.address.toString(),
           'name',
           'description',
@@ -2278,21 +2272,24 @@ describe('Neutron / TGE / Auction', () => {
       ).rejects.toThrow(/Unauthorized/);
 
       expect(
-        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+        await queryCreditsVaultConfig(
+          neutronChain,
+          tgeMain.contracts.creditsVault,
+        ),
       ).toMatchObject({
-        name: tge.creditsVaultName,
-        description: tge.creditsVaultDescription,
-        credits_contract_address: tge.contracts.credits,
-        owner: tge.instantiator.wallet.address.toString(),
-        airdrop_contract_address: tge.contracts.airdrop,
+        name: tgeMain.creditsVaultName,
+        description: tgeMain.creditsVaultDescription,
+        credits_contract_address: tgeMain.contracts.credits,
+        owner: tgeMain.instantiator.wallet.address.toString(),
+        airdrop_contract_address: tgeMain.contracts.airdrop,
       });
     });
 
     test('Bonding and Unbonding', async () => {
       for (const vault of [
-        tge.contracts.creditsVault,
-        tge.contracts.vestingLpVault,
-        tge.contracts.lockdropVault,
+        tgeMain.contracts.creditsVault,
+        tgeMain.contracts.vestingLpVault,
+        tgeMain.contracts.lockdropVault,
       ]) {
         await expect(
           cmStranger.executeContract(
@@ -2321,58 +2318,58 @@ describe('Neutron / TGE / Auction', () => {
     test('Change lockdrop vault owner to stranger', async () => {
       const res = await executeLockdropVaultUpdateConfig(
         cmInstantiator,
-        tge.contracts.lockdropVault,
+        tgeMain.contracts.lockdropVault,
         cmStranger.wallet.address.toString(),
-        tge.contracts.lockdrop,
-        tge.contracts.oracleUsdc,
-        tge.contracts.oracleAtom,
-        tge.lockdropVaultName,
-        tge.lockdropVaultDescription,
+        tgeMain.contracts.lockdrop,
+        tgeMain.contracts.oracleUsdc,
+        tgeMain.contracts.oracleAtom,
+        tgeMain.lockdropVaultName,
+        tgeMain.lockdropVaultDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
         await queryLockdropVaultConfig(
           neutronChain,
-          tge.contracts.lockdropVault,
+          tgeMain.contracts.lockdropVault,
         ),
       ).toMatchObject({
-        name: tge.lockdropVaultName,
-        description: tge.lockdropVaultDescription,
-        lockdrop_contract: tge.contracts.lockdrop,
-        oracle_usdc_contract: tge.contracts.oracleUsdc,
-        oracle_atom_contract: tge.contracts.oracleAtom,
+        name: tgeMain.lockdropVaultName,
+        description: tgeMain.lockdropVaultDescription,
+        lockdrop_contract: tgeMain.contracts.lockdrop,
+        oracle_usdc_contract: tgeMain.contracts.oracleUsdc,
+        oracle_atom_contract: tgeMain.contracts.oracleAtom,
         owner: cmStranger.wallet.address.toString(),
       });
     });
 
     test('Update lockdrop vault config by new owner', async () => {
-      tge.lockdropVaultName = 'New lockdrop name';
-      tge.lockdropVaultDescription = 'New lockdrop description';
+      tgeMain.lockdropVaultName = 'New lockdrop name';
+      tgeMain.lockdropVaultDescription = 'New lockdrop description';
 
       const res = await executeLockdropVaultUpdateConfig(
         cmStranger,
-        tge.contracts.lockdropVault,
+        tgeMain.contracts.lockdropVault,
         cmStranger.wallet.address.toString(),
-        tge.contracts.lockdrop,
-        tge.contracts.oracleUsdc,
-        tge.contracts.oracleAtom,
-        tge.lockdropVaultName,
-        tge.lockdropVaultDescription,
+        tgeMain.contracts.lockdrop,
+        tgeMain.contracts.oracleUsdc,
+        tgeMain.contracts.oracleAtom,
+        tgeMain.lockdropVaultName,
+        tgeMain.lockdropVaultDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
         await queryLockdropVaultConfig(
           neutronChain,
-          tge.contracts.lockdropVault,
+          tgeMain.contracts.lockdropVault,
         ),
       ).toMatchObject({
-        name: tge.lockdropVaultName,
-        description: tge.lockdropVaultDescription,
-        lockdrop_contract: tge.contracts.lockdrop,
-        oracle_usdc_contract: tge.contracts.oracleUsdc,
-        oracle_atom_contract: tge.contracts.oracleAtom,
+        name: tgeMain.lockdropVaultName,
+        description: tgeMain.lockdropVaultDescription,
+        lockdrop_contract: tgeMain.contracts.lockdrop,
+        oracle_usdc_contract: tgeMain.contracts.oracleUsdc,
+        oracle_atom_contract: tgeMain.contracts.oracleAtom,
         owner: cmStranger.wallet.address.toString(),
       });
     });
@@ -2380,61 +2377,61 @@ describe('Neutron / TGE / Auction', () => {
     test('Change vesting LP vault owner to stranger', async () => {
       const res = await executeVestingLpVaultUpdateConfig(
         cmInstantiator,
-        tge.contracts.vestingLpVault,
+        tgeMain.contracts.vestingLpVault,
         cmStranger.wallet.address.toString(),
-        tge.contracts.vestingAtomLp,
-        tge.contracts.oracleAtom,
-        tge.contracts.vestingUsdcLp,
-        tge.contracts.oracleUsdc,
-        tge.vestingLpVaultName,
-        tge.vestingLpVaultDescription,
+        tgeMain.contracts.vestingAtomLp,
+        tgeMain.contracts.oracleAtom,
+        tgeMain.contracts.vestingUsdcLp,
+        tgeMain.contracts.oracleUsdc,
+        tgeMain.vestingLpVaultName,
+        tgeMain.vestingLpVaultDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
         await queryVestingLpVaultConfig(
           neutronChain,
-          tge.contracts.vestingLpVault,
+          tgeMain.contracts.vestingLpVault,
         ),
       ).toMatchObject({
-        name: tge.vestingLpVaultName,
-        description: tge.vestingLpVaultDescription,
-        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
-        atom_oracle_contract: tge.contracts.oracleAtom,
-        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
-        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        name: tgeMain.vestingLpVaultName,
+        description: tgeMain.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tgeMain.contracts.vestingAtomLp,
+        atom_oracle_contract: tgeMain.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tgeMain.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tgeMain.contracts.oracleUsdc,
         owner: cmStranger.wallet.address.toString(),
       });
     });
 
     test('Update vesting LP vault config by new owner', async () => {
-      tge.vestingLpVaultName = 'New vesting LP name';
-      tge.vestingLpVaultDescription = 'New vesting LP description';
+      tgeMain.vestingLpVaultName = 'New vesting LP name';
+      tgeMain.vestingLpVaultDescription = 'New vesting LP description';
       const res = await executeVestingLpVaultUpdateConfig(
         cmStranger,
-        tge.contracts.vestingLpVault,
+        tgeMain.contracts.vestingLpVault,
         cmStranger.wallet.address.toString(),
-        tge.contracts.vestingAtomLp,
-        tge.contracts.oracleAtom,
-        tge.contracts.vestingUsdcLp,
-        tge.contracts.oracleUsdc,
-        tge.vestingLpVaultName,
-        tge.vestingLpVaultDescription,
+        tgeMain.contracts.vestingAtomLp,
+        tgeMain.contracts.oracleAtom,
+        tgeMain.contracts.vestingUsdcLp,
+        tgeMain.contracts.oracleUsdc,
+        tgeMain.vestingLpVaultName,
+        tgeMain.vestingLpVaultDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
         await queryVestingLpVaultConfig(
           neutronChain,
-          tge.contracts.vestingLpVault,
+          tgeMain.contracts.vestingLpVault,
         ),
       ).toMatchObject({
-        name: tge.vestingLpVaultName,
-        description: tge.vestingLpVaultDescription,
-        atom_vesting_lp_contract: tge.contracts.vestingAtomLp,
-        atom_oracle_contract: tge.contracts.oracleAtom,
-        usdc_vesting_lp_contract: tge.contracts.vestingUsdcLp,
-        usdc_oracle_contract: tge.contracts.oracleUsdc,
+        name: tgeMain.vestingLpVaultName,
+        description: tgeMain.vestingLpVaultDescription,
+        atom_vesting_lp_contract: tgeMain.contracts.vestingAtomLp,
+        atom_oracle_contract: tgeMain.contracts.oracleAtom,
+        usdc_vesting_lp_contract: tgeMain.contracts.vestingUsdcLp,
+        usdc_oracle_contract: tgeMain.contracts.oracleUsdc,
         owner: cmStranger.wallet.address.toString(),
       });
     });
@@ -2442,7 +2439,7 @@ describe('Neutron / TGE / Auction', () => {
     test('Change credits vault owner to stranger', async () => {
       const res = await executeCreditsVaultUpdateConfig(
         cmInstantiator,
-        tge.contracts.creditsVault,
+        tgeMain.contracts.creditsVault,
         null,
         cmStranger.wallet.address.toString(),
         null,
@@ -2451,37 +2448,43 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+        await queryCreditsVaultConfig(
+          neutronChain,
+          tgeMain.contracts.creditsVault,
+        ),
       ).toMatchObject({
-        name: tge.creditsVaultName,
-        description: tge.creditsVaultDescription,
-        credits_contract_address: tge.contracts.credits,
+        name: tgeMain.creditsVaultName,
+        description: tgeMain.creditsVaultDescription,
+        credits_contract_address: tgeMain.contracts.credits,
         owner: cmStranger.wallet.address.toString(),
-        airdrop_contract_address: tge.contracts.airdrop,
+        airdrop_contract_address: tgeMain.contracts.airdrop,
       });
     });
 
     test('Update credits vault config by new owner', async () => {
-      tge.creditsVaultName = 'New credits name';
-      tge.creditsVaultDescription = 'New credits description';
+      tgeMain.creditsVaultName = 'New credits name';
+      tgeMain.creditsVaultDescription = 'New credits description';
       const res = await executeCreditsVaultUpdateConfig(
         cmStranger,
-        tge.contracts.creditsVault,
+        tgeMain.contracts.creditsVault,
         null,
         null,
-        tge.creditsVaultName,
-        tge.creditsVaultDescription,
+        tgeMain.creditsVaultName,
+        tgeMain.creditsVaultDescription,
       );
       expect(res.code).toEqual(0);
 
       expect(
-        await queryCreditsVaultConfig(neutronChain, tge.contracts.creditsVault),
+        await queryCreditsVaultConfig(
+          neutronChain,
+          tgeMain.contracts.creditsVault,
+        ),
       ).toMatchObject({
-        name: tge.creditsVaultName,
-        description: tge.creditsVaultDescription,
-        credits_contract_address: tge.contracts.credits,
+        name: tgeMain.creditsVaultName,
+        description: tgeMain.creditsVaultDescription,
+        credits_contract_address: tgeMain.contracts.credits,
         owner: cmStranger.wallet.address.toString(),
-        airdrop_contract_address: tge.contracts.airdrop,
+        airdrop_contract_address: tgeMain.contracts.airdrop,
       });
     });
   });

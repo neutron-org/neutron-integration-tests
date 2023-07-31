@@ -1,7 +1,7 @@
 import { cosmosclient, proto } from '@cosmos-client/core';
 import bech32 from 'bech32';
 
-export class Wallet {
+export class cosmosWrapper.Wallet {
   address: cosmosclient.AccAddress | cosmosclient.ValAddress;
   account: proto.cosmos.auth.v1beta1.BaseAccount | null;
   pubKey: cosmosclient.PubKey;

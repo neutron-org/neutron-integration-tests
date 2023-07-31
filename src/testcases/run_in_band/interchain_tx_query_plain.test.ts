@@ -1,56 +1,53 @@
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
 import { proto } from '@cosmos-client/core';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import Long from 'long';
 import {
-  getRegisteredQuery,
-  queryRecipientTxs,
-  queryTransfersNumber,
-  registerTransfersQuery,
-  waitForTransfersAmount,
-} from '../../helpers/icq';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+  cosmosWrapper,
+  COSMOS_DENOM,
+  icq,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  types,
+} from 'neutronjs';
+
+const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
+      gaiaChain,
+      testState.wallets.cosmos.demo2,
+    );
   });
 
   describe('deploy contract', () => {
-    let codeId: CodeId;
+    let codeId: types.CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
-        NeutronContract.INTERCHAIN_QUERIES,
+        types.NeutronContract.INTERCHAIN_QUERIES,
       );
       expect(codeId).toBeGreaterThan(0);
     });
@@ -80,7 +77,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
-      await registerTransfersQuery(
+      await icq.registerTransfersQuery(
         neutronAccount,
         contractAddress,
         connectionId,
@@ -90,7 +87,11 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 1);
+      const query = await icq.getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        1,
+      );
       expect(query.registered_query.id).toEqual(1);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -119,13 +120,13 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query1UpdatePeriod * 2,
       );
-      const deposits = await queryRecipientTxs(
+      const deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr1,
@@ -157,14 +158,14 @@ describe('Neutron / Interchain TX Query', () => {
       await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
-      let deposits = await queryRecipientTxs(
+      let deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         differentAddr,
       );
       expect(deposits.transfers).toEqual([]);
       // the watched address receivings are not changed
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr1,
@@ -190,7 +191,7 @@ describe('Neutron / Interchain TX Query', () => {
       await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the watched address receivings are not changed
-      const deposits = await queryRecipientTxs(
+      const deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr1,
@@ -212,7 +213,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('register the second transfers query', async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
-      await registerTransfersQuery(
+      await icq.registerTransfersQuery(
         neutronAccount,
         contractAddress,
         connectionId,
@@ -222,7 +223,11 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 2);
+      const query = await icq.getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        2,
+      );
       expect(query.registered_query.id).toEqual(2);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -243,13 +248,13 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query2UpdatePeriod * 2,
       );
-      const deposits = await queryRecipientTxs(
+      const deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr2,
@@ -273,7 +278,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
-      await registerTransfersQuery(
+      await icq.registerTransfersQuery(
         neutronAccount,
         contractAddress,
         connectionId,
@@ -283,7 +288,11 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 3);
+      const query = await icq.getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        3,
+      );
       expect(query.registered_query.id).toEqual(3);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -311,7 +320,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
-      let deposits = await queryRecipientTxs(
+      let deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr3,
@@ -319,13 +328,13 @@ describe('Neutron / Interchain TX Query', () => {
       // update time hasn't come yet despite the fact the sent funds are already on the account
       expect(deposits.transfers).toEqual([]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr3,
@@ -349,7 +358,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       // initiate query before relayer has any chance to submit query data
-      const depositsPromise = queryRecipientTxs(
+      const depositsPromise = icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr3,
@@ -369,13 +378,13 @@ describe('Neutron / Interchain TX Query', () => {
         },
       ]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr3,
@@ -445,13 +454,13 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check transfers handled', async () => {
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         Math.max(...[query1UpdatePeriod, query2UpdatePeriod]) * 2,
       );
-      let deposits = await queryRecipientTxs(
+      let deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr1,
@@ -470,7 +479,7 @@ describe('Neutron / Interchain TX Query', () => {
           amount: amountToAddrFirst2.toString(),
         },
       ]);
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr2,
@@ -489,7 +498,7 @@ describe('Neutron / Interchain TX Query', () => {
           amount: amountToAddrSecond2.toString(),
         },
       ]);
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr3,
@@ -536,14 +545,14 @@ describe('Neutron / Interchain TX Query', () => {
     test('register transfers queries', async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '2000000');
-      await registerTransfersQuery(
+      await icq.registerTransfersQuery(
         neutronAccount,
         contractAddress,
         connectionId,
         query4UpdatePeriod,
         watchedAddr4,
       );
-      await registerTransfersQuery(
+      await icq.registerTransfersQuery(
         neutronAccount,
         contractAddress,
         connectionId,
@@ -570,7 +579,11 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check registered transfers query', async () => {
-      let query = await getRegisteredQuery(neutronChain, contractAddress, 4);
+      let query = await icq.getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        4,
+      );
       expect(query.registered_query.id).toEqual(4);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -583,7 +596,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.registered_query.connection_id).toEqual(connectionId);
       expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
 
-      query = await getRegisteredQuery(neutronChain, contractAddress, 5);
+      query = await icq.getRegisteredQuery(neutronChain, contractAddress, 5);
       expect(query.registered_query.id).toEqual(5);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -612,14 +625,14 @@ describe('Neutron / Interchain TX Query', () => {
         { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers - 1,
         query4UpdatePeriod * 2,
       );
       // make sure the query4 result is submitted before the query5 one
-      let deposits = await queryRecipientTxs(
+      let deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr4,
@@ -632,20 +645,20 @@ describe('Neutron / Interchain TX Query', () => {
           amount: addr4ExpectedBalance.toString(),
         },
       ]);
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr5,
       );
       expect(deposits.transfers).toEqual([]);
 
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query5UpdatePeriod * 2,
       );
-      deposits = await queryRecipientTxs(
+      deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr5,
@@ -669,7 +682,7 @@ describe('Neutron / Interchain TX Query', () => {
     let transfersAmountBeforeSending: number;
     test('send amount that is more than contract allows', async () => {
       // contract tracks total amount of transfers to addresses it watches.
-      const transfers = await queryTransfersNumber(
+      const transfers = await icq.queryTransfersNumber(
         neutronChain,
         contractAddress,
       );
@@ -694,7 +707,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check that transfer has not been recorded', async () => {
       await neutronChain.blockWaiter.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
-      const deposits = await queryRecipientTxs(
+      const deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         watchedAddr4,
@@ -710,7 +723,7 @@ describe('Neutron / Interchain TX Query', () => {
       // contract handles only transfers not greater than 20000, otherwise it ends callback with an
       // error. on the error result, the transfers amount previously increased in the sudo func is
       // expected to be reverted.
-      const transfers = await queryTransfersNumber(
+      const transfers = await icq.queryTransfersNumber(
         neutronChain,
         contractAddress,
       );
@@ -734,7 +747,11 @@ describe('Neutron / Interchain TX Query', () => {
       expect(res.code).toEqual(0);
     });
     it('seems registered transfers query is updated', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 3);
+      const query = await icq.getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        3,
+      );
       expect(query.registered_query.id).toEqual(3);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -752,13 +769,13 @@ describe('Neutron / Interchain TX Query', () => {
       const res = await gaiaAccount.msgSend(newWatchedAddr5, '10000');
       expect(res.code).toEqual(0);
       expectedIncomingTransfers++;
-      await waitForTransfersAmount(
+      await icq.waitForTransfersAmount(
         neutronChain,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
-      const deposits = await queryRecipientTxs(
+      const deposits = await icq.queryRecipientTxs(
         neutronChain,
         contractAddress,
         newWatchedAddr5,

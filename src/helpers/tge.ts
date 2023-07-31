@@ -61,8 +61,8 @@ export const getTimestamp = (secondsFromNow: number): number =>
  * This class is designed to make TGE deployment easy.
  * Current flow of using this class:
  *
- * let tge: Tge;
- * tge = new Tge(
+ * let tge: tge.Tge;
+ * tge = new tge.Tge(
  *   neutronChain,
  *   walletWrapperInstantiator,
  *   walletwrapperTokenManager,
@@ -83,7 +83,7 @@ export const getTimestamp = (secondsFromNow: number): number =>
  * await tge.deployLockdropVault();
  *
  */
-export class Tge {
+export class tge.Tge {
   chain: CosmosWrapper;
   instantiator: WalletWrapper;
   tokenInfoManager: WalletWrapper;
@@ -439,7 +439,7 @@ export class Tge {
       ],
     );
 
-    let res = await executeLockdropSetTokenInfo(
+    let res = await tge.executeLockdropSetTokenInfo(
       this.tokenInfoManager,
       this.contracts.lockdrop,
       this.pairs.atom_ntrn.liquidity,

@@ -1,64 +1,60 @@
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import {
-  Dao,
-  DaoMember,
-  deployNeutronDao,
-  deploySubdao,
-} from '../../helpers/dao';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import {
+  cosmosWrapper,
+  dao,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+} from 'neutronjs';
+
+const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount1: WalletWrapper;
-  let neutronAccount2: WalletWrapper;
-  let subdaoMember1: DaoMember;
-  let mainDaoMember1: DaoMember;
-  let mainDaoMember2: DaoMember;
-  let subDao: Dao;
-  let mainDao: Dao;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount1: cosmosWrapper.WalletWrapper;
+  let neutronAccount2: cosmosWrapper.WalletWrapper;
+  let subdaoMember1: dao.DaoMember;
+  let mainDaoMember1: dao.DaoMember;
+  let mainDaoMember2: dao.DaoMember;
+  let subDao: dao.Dao;
+  let mainDao: dao.Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
 
-    const daoContracts = await deployNeutronDao(neutronAccount1);
+    const daoContracts = await dao.deployNeutronDao(neutronAccount1);
     if (!daoContracts || !daoContracts.core || !daoContracts.proposals) {
       throw new Error('Failed to deploy dao');
     }
-    mainDao = new Dao(neutronChain, daoContracts);
-    mainDaoMember1 = new DaoMember(neutronAccount1, mainDao);
+    mainDao = new dao.Dao(neutronChain, daoContracts);
+    mainDaoMember1 = new dao.DaoMember(neutronAccount1, mainDao);
     await mainDaoMember1.bondFunds('2000');
 
-    mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
+    mainDaoMember2 = new dao.DaoMember(neutronAccount2, mainDao);
     await mainDaoMember2.bondFunds('1000');
 
-    subDao = await deploySubdao(
+    subDao = await dao.deploySubdao(
       neutronAccount1,
       daoContracts.core.address,
       daoContracts.proposals.overrule?.pre_propose?.address || '',
       neutronAccount1.wallet.address.toString(),
     );
 
-    subdaoMember1 = new DaoMember(neutronAccount1, subDao);
+    subdaoMember1 = new dao.DaoMember(neutronAccount1, subDao);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
@@ -169,9 +165,9 @@ describe('Neutron / Subdao', () => {
   });
 });
 
-// this function isn't in the DaoMember class since it makes no sense in general but in a very specific test
+// this function isn't in the dao.DaoMember class since it makes no sense in general but in a very specific test
 async function voteAgainstOverrule(
-  member: DaoMember,
+  member: dao.DaoMember,
   timelockAddress: string,
   proposalId: number,
 ): Promise<InlineResponse20075TxResponse> {
