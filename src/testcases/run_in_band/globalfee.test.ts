@@ -18,6 +18,8 @@ describe('Neutron / Global Fee', () => {
   let daoMain: dao.Dao;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

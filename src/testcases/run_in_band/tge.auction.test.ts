@@ -8,6 +8,7 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   tge,
+  types,
   wait,
 } from 'neutronjs';
 
@@ -26,7 +27,7 @@ const TINY_AIRDROP_AMOUNT = 100;
 const getLpSize = (token1: number, token2: number) =>
   (Math.sqrt(token1 * token2) - MIN_LIQUDITY) | 0;
 
-type TwapAtHeight = [Asset, string][];
+type TwapAtHeight = [types.Asset, string][];
 
 type UserInfoResponse = {
   usdc_deposited: string;
@@ -110,6 +111,8 @@ const waitTill = (timestamp: number): Promise<void> => {
   });
 };
 
+const config = require('../../config.json');
+
 describe('Neutron / TGE / Auction', () => {
   let testState: TestStateLocalCosmosTestNet;
   let tgeMain: tge.Tge;
@@ -132,6 +135,8 @@ describe('Neutron / TGE / Auction', () => {
   let daoMain: dao.Dao;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
@@ -235,8 +240,8 @@ describe('Neutron / TGE / Auction', () => {
           amount: '1000000',
         },
       ];
-      tgeMain.times.airdropStart = getTimestamp(0);
-      tgeMain.times.airdropVestingStart = getTimestamp(300);
+      tgeMain.times.airdropStart = tge.getTimestamp(0);
+      tgeMain.times.airdropVestingStart = tge.getTimestamp(300);
       await tgeMain.deployPreAuction();
     });
     it('should not be able to set token info by stranger', async () => {
@@ -249,7 +254,7 @@ describe('Neutron / TGE / Auction', () => {
       ).rejects.toThrowError(/Unauthorized/);
     });
     it('should deploy auction', async () => {
-      tgeMain.times.auctionInit = getTimestamp(80);
+      tgeMain.times.auctionInit = tge.getTimestamp(80);
       await tgeMain.deployAuction();
     });
     it('should not be able to set denoms by stranger', async () => {
@@ -1638,7 +1643,7 @@ describe('Neutron / TGE / Auction', () => {
         });
 
         it('add lockdrop vault to the registry', async () => {
-          let tvp = await dao.queryTotalVotingPower();
+          let tvp = await daoMain.queryTotalVotingPower();
           expect(tvp.power | 0).toBe(1000);
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #1',
@@ -1647,7 +1652,7 @@ describe('Neutron / TGE / Auction', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: dao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.lockdropVault}"}}`,
                     ).toString('base64'),
@@ -1660,7 +1665,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           await daoMember1.voteYes(propID);
           await daoMember1.executeProposal(propID);
-          tvp = await dao.queryTotalVotingPower();
+          tvp = await daoMain.queryTotalVotingPower();
           expect(tvp.power | 0).toBeGreaterThan(1000);
           // lockdrop participants get voting power
           for (const v of [
@@ -1669,7 +1674,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               0,
             );
@@ -1679,13 +1684,13 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionVesting',
             'auctionVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
         });
 
         it('add vesting vault to the registry', async () => {
-          const tvp = await dao.queryTotalVotingPower();
+          const tvp = await daoMain.queryTotalVotingPower();
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #2',
             'add VESTING_LP_VAULT',
@@ -1693,7 +1698,7 @@ describe('Neutron / TGE / Auction', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: dao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.vestingLpVault}"}}`,
                     ).toString('base64'),
@@ -1705,7 +1710,7 @@ describe('Neutron / TGE / Auction', () => {
             '1000',
           );
           await daoMember1.voteYes(propID);
-          const prop = await dao.queryProposal(propID);
+          const prop = await daoMain.queryProposal(propID);
           // we connected new voting vault(vesting voting vault), now its not enough
           // daoMember1 voting power to pass proposal
           // lockdrop participant should vote
@@ -1717,14 +1722,16 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
-            if ((await dao.queryProposal(propID)).proposal.status == 'open') {
+            if (
+              (await daoMain.queryProposal(propID)).proposal.status == 'open'
+            ) {
               await member.voteYes(propID);
             }
           }
           await daoMember1.executeProposal(propID);
-          const tvpNew = await dao.queryTotalVotingPower();
+          const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // vesting participants get(increase) the voting power
           for (const v of [
@@ -1733,7 +1740,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionVesting',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1741,7 +1748,7 @@ describe('Neutron / TGE / Auction', () => {
         });
 
         it('add credits vault to the registry', async () => {
-          const tvp = await dao.queryTotalVotingPower();
+          const tvp = await daoMain.queryTotalVotingPower();
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #3',
             'add CREDITS_VAULT',
@@ -1749,7 +1756,7 @@ describe('Neutron / TGE / Auction', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: dao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.creditsVault}"}}`,
                     ).toString('base64'),
@@ -1761,7 +1768,7 @@ describe('Neutron / TGE / Auction', () => {
             '1000',
           );
           await daoMember1.voteYes(propID);
-          const prop = await dao.queryProposal(propID);
+          const prop = await daoMain.queryProposal(propID);
           // lockdrop and vesting participants should vote
           expect(prop.proposal).toMatchObject({ status: 'open' });
           const vp: Record<string, number> = {};
@@ -1773,14 +1780,16 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdropVesting',
             'auctionVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
-            if ((await dao.queryProposal(propID)).proposal.status == 'open') {
+            if (
+              (await daoMain.queryProposal(propID)).proposal.status == 'open'
+            ) {
               await member.voteYes(propID);
             }
           }
           await daoMember1.executeProposal(propID);
-          const tvpNew = await dao.queryTotalVotingPower();
+          const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // airdrop participants get(increase) the voting power
           for (const v of [
@@ -1789,7 +1798,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdrop',
             'airdropAuctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], dao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1797,7 +1806,7 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('airdrop contract should not have credits vault voting power', async () => {
           const ctvp =
-            await neutronChain.queryContract<TotalPowerAtHeightResponse>(
+            await neutronChain.queryContract<types.TotalPowerAtHeightResponse>(
               tgeMain.contracts.creditsVault,
               {
                 total_power_at_height: {},
@@ -2153,7 +2162,7 @@ describe('Neutron / TGE / Auction', () => {
   describe('Vaults', () => {
     test('Get lockdrop vault config', async () => {
       expect(
-        await queryLockdropVaultConfig(
+        await tge.queryLockdropVaultConfig(
           neutronChain,
           tgeMain.contracts.lockdropVault,
         ),
@@ -2169,7 +2178,7 @@ describe('Neutron / TGE / Auction', () => {
 
     test('Get vesting LP vault config', async () => {
       expect(
-        await queryVestingLpVaultConfig(
+        await tge.queryVestingLpVaultConfig(
           neutronChain,
           tgeMain.contracts.vestingLpVault,
         ),
@@ -2186,7 +2195,7 @@ describe('Neutron / TGE / Auction', () => {
 
     test('Get credits vault config', async () => {
       expect(
-        await queryCreditsVaultConfig(
+        await tge.queryCreditsVaultConfig(
           neutronChain,
           tgeMain.contracts.creditsVault,
         ),
@@ -2201,7 +2210,7 @@ describe('Neutron / TGE / Auction', () => {
 
     test('Update lockdrop vault config: permission denied', async () => {
       await expect(
-        executeLockdropVaultUpdateConfig(
+        tge.executeLockdropVaultUpdateConfig(
           cmStranger,
           tgeMain.contracts.lockdropVault,
           cmStranger.wallet.address.toString(),
@@ -2214,7 +2223,7 @@ describe('Neutron / TGE / Auction', () => {
       ).rejects.toThrow(/Unauthorized/);
 
       expect(
-        await queryLockdropVaultConfig(
+        await tge.queryLockdropVaultConfig(
           neutronChain,
           tgeMain.contracts.lockdropVault,
         ),
@@ -2230,7 +2239,7 @@ describe('Neutron / TGE / Auction', () => {
 
     test('Update vesting LP vault config: permission denied', async () => {
       await expect(
-        executeVestingLpVaultUpdateConfig(
+        tge.executeVestingLpVaultUpdateConfig(
           cmStranger,
           tgeMain.contracts.vestingLpVault,
           cmStranger.wallet.address.toString(),
@@ -2244,7 +2253,7 @@ describe('Neutron / TGE / Auction', () => {
       ).rejects.toThrow(/Unauthorized/);
 
       expect(
-        await queryVestingLpVaultConfig(
+        await tge.queryVestingLpVaultConfig(
           neutronChain,
           tgeMain.contracts.vestingLpVault,
         ),
@@ -2261,7 +2270,7 @@ describe('Neutron / TGE / Auction', () => {
 
     test('Update credits vault config: permission denied', async () => {
       await expect(
-        executeCreditsVaultUpdateConfig(
+        tge.executeCreditsVaultUpdateConfig(
           cmStranger,
           tgeMain.contracts.creditsVault,
           tgeMain.contracts.auction,
@@ -2272,7 +2281,7 @@ describe('Neutron / TGE / Auction', () => {
       ).rejects.toThrow(/Unauthorized/);
 
       expect(
-        await queryCreditsVaultConfig(
+        await tge.queryCreditsVaultConfig(
           neutronChain,
           tgeMain.contracts.creditsVault,
         ),
@@ -2316,7 +2325,7 @@ describe('Neutron / TGE / Auction', () => {
     });
 
     test('Change lockdrop vault owner to stranger', async () => {
-      const res = await executeLockdropVaultUpdateConfig(
+      const res = await tge.executeLockdropVaultUpdateConfig(
         cmInstantiator,
         tgeMain.contracts.lockdropVault,
         cmStranger.wallet.address.toString(),
@@ -2329,7 +2338,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryLockdropVaultConfig(
+        await tge.queryLockdropVaultConfig(
           neutronChain,
           tgeMain.contracts.lockdropVault,
         ),
@@ -2347,7 +2356,7 @@ describe('Neutron / TGE / Auction', () => {
       tgeMain.lockdropVaultName = 'New lockdrop name';
       tgeMain.lockdropVaultDescription = 'New lockdrop description';
 
-      const res = await executeLockdropVaultUpdateConfig(
+      const res = await tge.executeLockdropVaultUpdateConfig(
         cmStranger,
         tgeMain.contracts.lockdropVault,
         cmStranger.wallet.address.toString(),
@@ -2360,7 +2369,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryLockdropVaultConfig(
+        await tge.queryLockdropVaultConfig(
           neutronChain,
           tgeMain.contracts.lockdropVault,
         ),
@@ -2375,7 +2384,7 @@ describe('Neutron / TGE / Auction', () => {
     });
 
     test('Change vesting LP vault owner to stranger', async () => {
-      const res = await executeVestingLpVaultUpdateConfig(
+      const res = await tge.executeVestingLpVaultUpdateConfig(
         cmInstantiator,
         tgeMain.contracts.vestingLpVault,
         cmStranger.wallet.address.toString(),
@@ -2389,7 +2398,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryVestingLpVaultConfig(
+        await tge.queryVestingLpVaultConfig(
           neutronChain,
           tgeMain.contracts.vestingLpVault,
         ),
@@ -2407,7 +2416,7 @@ describe('Neutron / TGE / Auction', () => {
     test('Update vesting LP vault config by new owner', async () => {
       tgeMain.vestingLpVaultName = 'New vesting LP name';
       tgeMain.vestingLpVaultDescription = 'New vesting LP description';
-      const res = await executeVestingLpVaultUpdateConfig(
+      const res = await tge.executeVestingLpVaultUpdateConfig(
         cmStranger,
         tgeMain.contracts.vestingLpVault,
         cmStranger.wallet.address.toString(),
@@ -2421,7 +2430,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryVestingLpVaultConfig(
+        await tge.queryVestingLpVaultConfig(
           neutronChain,
           tgeMain.contracts.vestingLpVault,
         ),
@@ -2437,7 +2446,7 @@ describe('Neutron / TGE / Auction', () => {
     });
 
     test('Change credits vault owner to stranger', async () => {
-      const res = await executeCreditsVaultUpdateConfig(
+      const res = await tge.executeCreditsVaultUpdateConfig(
         cmInstantiator,
         tgeMain.contracts.creditsVault,
         null,
@@ -2448,7 +2457,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryCreditsVaultConfig(
+        await tge.queryCreditsVaultConfig(
           neutronChain,
           tgeMain.contracts.creditsVault,
         ),
@@ -2464,7 +2473,7 @@ describe('Neutron / TGE / Auction', () => {
     test('Update credits vault config by new owner', async () => {
       tgeMain.creditsVaultName = 'New credits name';
       tgeMain.creditsVaultDescription = 'New credits description';
-      const res = await executeCreditsVaultUpdateConfig(
+      const res = await tge.executeCreditsVaultUpdateConfig(
         cmStranger,
         tgeMain.contracts.creditsVault,
         null,
@@ -2475,7 +2484,7 @@ describe('Neutron / TGE / Auction', () => {
       expect(res.code).toEqual(0);
 
       expect(
-        await queryCreditsVaultConfig(
+        await tge.queryCreditsVaultConfig(
           neutronChain,
           tgeMain.contracts.creditsVault,
         ),

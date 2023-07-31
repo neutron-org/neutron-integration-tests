@@ -20,6 +20,8 @@ describe('Neutron / Subdao', () => {
   let mainDao: dao.Dao;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

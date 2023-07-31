@@ -20,6 +20,8 @@ describe('Neutron / IBC hooks', () => {
     'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

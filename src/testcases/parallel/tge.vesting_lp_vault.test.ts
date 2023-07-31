@@ -39,6 +39,8 @@ describe('Neutron / TGE / Vesting LP vault', () => {
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

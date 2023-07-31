@@ -1,4 +1,12 @@
 import Long from 'long';
+import {
+  cosmosWrapper,
+  COSMOS_DENOM,
+  dao,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  wait,
+} from 'neutronjs';
 
 const config = require('../../config.json');
 describe('Neutron / Tokenomics', () => {
@@ -10,6 +18,8 @@ describe('Neutron / Tokenomics', () => {
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
@@ -31,7 +41,7 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.genQaWal1,
     );
 
-    treasuryContractAddress = await getTreasuryContract(neutronChain);
+    treasuryContractAddress = await dao.getTreasuryContract(neutronChain);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -39,7 +49,7 @@ describe('Neutron / Tokenomics', () => {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let burnedBefore: TotalBurnedNeutronsAmountResponse;
+    let burnedBefore: cosmosWrapper.TotalBurnedNeutronsAmountResponse;
 
     test('Read total burned neutrons amount', async () => {
       burnedBefore = await neutronChain.queryTotalBurnedNeutronsAmount();
@@ -67,7 +77,7 @@ describe('Neutron / Tokenomics', () => {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let totalSupplyBefore: TotalSupplyByDenomResponse;
+    let totalSupplyBefore: cosmosWrapper.TotalSupplyByDenomResponse;
 
     test('Read total supply', async () => {
       totalSupplyBefore = await neutronChain.queryTotalSupplyByDenom(

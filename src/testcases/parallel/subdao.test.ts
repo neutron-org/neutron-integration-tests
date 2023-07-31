@@ -30,6 +30,8 @@ describe('Neutron / Subdao', () => {
   let mainDao: dao.Dao;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     demo1Wallet = testState.wallets.qaNeutron.genQaWal1;

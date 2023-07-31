@@ -26,6 +26,8 @@ describe('Neutron / Credits Vault', () => {
   let lockdropAddr: AccAddress | ValAddress;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     daoWallet = testState.wallets.qaNeutron.genQaWal1;

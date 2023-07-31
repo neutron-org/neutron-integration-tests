@@ -28,6 +28,8 @@ describe('Neutron / TGE / Airdrop', () => {
   let reserveAddress: string;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
@@ -101,8 +103,8 @@ describe('Neutron / TGE / Airdrop', () => {
       contractAddresses['TGE_CREDITS'] = res[0]._contract_address;
     });
     it('should instantiate airdrop contract', async () => {
-      times.airdropStart = getTimestamp(30);
-      times.airdropVestingStart = getTimestamp(40);
+      times.airdropStart = tge.getTimestamp(30);
+      times.airdropVestingStart = tge.getTimestamp(40);
       times.vestingDuration = 25;
       const initParams = {
         credits_address: contractAddresses['TGE_CREDITS'],
@@ -134,7 +136,7 @@ describe('Neutron / TGE / Airdrop', () => {
       });
     });
     it('should set airdrop address for credits contract', async () => {
-      times.creditsWhenWithdrawable = getTimestamp(50);
+      times.creditsWhenWithdrawable = tge.getTimestamp(50);
       const res = await neutronAccount1.executeContract(
         contractAddresses['TGE_CREDITS'],
         JSON.stringify({

@@ -28,6 +28,8 @@ describe('Neutron / Interchain TXs', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

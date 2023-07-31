@@ -29,6 +29,8 @@ describe('Neutron / Treasury', () => {
   let holder1Addr: AccAddress | ValAddress;
   let holder2Addr: AccAddress | ValAddress;
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

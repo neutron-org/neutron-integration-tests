@@ -1,3 +1,11 @@
+import {
+  cosmosWrapper,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  types,
+  wait,
+} from 'neutronjs';
+
 const getTimestamp = (secondsFromNow: number): number =>
   (Date.now() / 1000 + secondsFromNow) | 0;
 
@@ -16,6 +24,8 @@ describe('Neutron / TGE / Credits', () => {
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     airdropAddress =

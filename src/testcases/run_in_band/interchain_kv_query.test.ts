@@ -239,6 +239,8 @@ describe('Neutron / Interchain KV Query', () => {
   const config = require('../../config.json');
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
