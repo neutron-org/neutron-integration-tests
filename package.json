@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:pob",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:globalfee && yarn test:pob",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
     "test:interchain_kv_query": "jest -b src/testcases/run_in_band/interchain_kv_query",
@@ -20,6 +20,7 @@
     "test:tge:credits": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/tge.credits",
     "test:tokenomics": "jest -b src/testcases/run_in_band/tokenomics",
     "test:dao": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/parallel/dao_assert",
+    "test:globalfee": "jest -b src/testcases/run_in_band/globalfee",
     "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "test:overrule": "jest -b src/testcases/parallel/overrule",

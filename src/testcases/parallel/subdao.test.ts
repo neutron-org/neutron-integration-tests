@@ -310,32 +310,100 @@ describe('Neutron / Subdao', () => {
     });
   });
 
-  describe('Non-timelock: Succeed execution', () => {
+  describe('Non-timelock typed duration pause proposal: Succeed creation', () => {
     let proposalId: number;
-    test('Non-timelock: Succeed execution', async () => {
+
+    test('Non-timelock pause proposal: Succeed creation', async () => {
+      const pauseInfo = await neutronChain.queryPausedInfo(
+        subDao.contracts.core.address,
+      );
+      expect(pauseInfo).toEqual({ unpaused: {} });
+      expect(pauseInfo.paused).toEqual(undefined);
+
+      proposalId = await subdaoMember1.submitTypedPauseProposal(
+        mainDao.contracts.core.address,
+        10,
+        'single_nt_pause',
+      );
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/Unauthorized/);
+
+      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
+      expect(p.proposal.status).toEqual('passed');
+    });
+  });
+
+  describe('Non-timelock pause proposal, untyped duration: Succeed creation', () => {
+    let proposalId: number;
+    test('Non-timelock pause proposal: Succeed execution', async () => {
+      const pauseInfo = await neutronChain.queryPausedInfo(
+        subDao.contracts.core.address,
+      );
+      expect(pauseInfo).toEqual({ unpaused: {} });
+      expect(pauseInfo.paused).toEqual(undefined);
+
+      proposalId = await subdaoMember1.submitUntypedPauseProposal(
+        subDao.contracts.core.address,
+        10,
+        'single_nt_pause',
+      );
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
+      // Unauthorzed here means that execute message is right, so pre-propose module works fine
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/Unauthorized/);
+    });
+  });
+
+  describe('Non-timelock pause pre-propose proposal: Failed creation', () => {
+    test('Non-timelock pause pre-propose module: non-pause msg failed creation', async () => {
       const newDaoName = 'dao name after non-timelock';
 
-      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
-        {
-          name: newDaoName,
-        },
-        'single_nt',
+      await expect(
+        subdaoMember1.submitUpdateSubDaoConfigProposal(
+          {
+            name: newDaoName,
+          },
+          'single_nt_pause',
+        ),
+      ).rejects.toThrow(/Proposal is malformed/);
+    });
+  });
+
+  describe('Non-timelock schedule proposal: Succeed creation', () => {
+    let proposalId: number;
+
+    test('Non-timelock schedule proposal: Succeed creation', async () => {
+      proposalId = await subdaoMember1.submitRemoveSchedule(
+        'Proposal #12',
+        '',
+        '1000',
+        'proposal11',
+        'single_nt_pause',
       );
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
 
-      await subdaoMember1.voteYes(proposalId, 'single_nt');
-      await subdaoMember1.executeProposal(proposalId, 'single_nt');
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause'),
+      ).rejects.toThrow(/only admin or security dao can remove schedule/);
 
-      const p = await subDao.queryProposal(proposalId, 'single_nt');
-      expect(p.proposal.status).toEqual('executed');
+      const p = await subDao.queryProposal(proposalId, 'single_nt_pause');
+      expect(p.proposal.status).toEqual('passed');
+    });
+  });
 
-      const configAfter = await neutronChain.queryContract<SubDaoConfig>(
-        subDao.contracts.core.address,
-        {
-          config: {},
-        },
-      );
-
-      expect(configAfter.name).toEqual(newDaoName);
+  describe('Non-timelock pause proposal w funds attached: Failed creation', () => {
+    test('Non-timelock pause proposal w funds attached : failed creation', async () => {
+      await expect(
+        subdaoMember1.submitUntypedPauseProposalWFunds(
+          mainDao.contracts.core.address,
+          10,
+          'single_nt_pause',
+          NEUTRON_DENOM,
+        ),
+      ).rejects.toThrow(/Proposal is malformed/);
     });
   });
 
