@@ -53,7 +53,7 @@ describe('Neutron / Tokenfactory', () => {
         'test1',
       );
 
-      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -81,7 +81,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -112,7 +112,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -155,7 +155,7 @@ describe('Neutron / Tokenfactory', () => {
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.cosmosWrapper.getEventAttribute(
+      const newTokenDenom = cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
