@@ -1,4 +1,4 @@
-import { env } from 'neutronjs';
+import { env } from '@neutron-org/neutronjs';
 
 export default async () => {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';

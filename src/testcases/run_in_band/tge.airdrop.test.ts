@@ -4,7 +4,7 @@ import {
   TestStateLocalCosmosTestNet,
   tge,
   types,
-} from 'neutronjs';
+} from '@neutron-org/neutronjs';
 
 const config = require('../../config.json');
 

@@ -12,7 +12,7 @@ import {
   TestStateLocalCosmosTestNet,
   types,
   wait,
-} from 'neutronjs';
+} from '@neutron-org/neutronjs';
 
 const getKvCallbackStatus = (
   cm: cosmosWrapper.CosmosWrapper,

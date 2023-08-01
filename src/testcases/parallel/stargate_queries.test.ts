@@ -1,47 +1,47 @@
-import Long from 'long';
 import {
-  CosmosWrapper,
+  cosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
-  WalletWrapper,
-  getEventAttribute,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { msgCreateDenom } from '../../helpers/tokenfactory';
+  TestStateLocalCosmosTestNet,
+  tokenfactory,
+  types,
+} from '@neutron-org/neutronjs';
+import Long from 'long';
 
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
-
+const config = require('../../config.json');
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
   let contractAddress: string;
 
-  let gaiaChain: CosmosWrapper;
-  let gaiaAccount: WalletWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
 
   let newTokenDenom: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+    tokenfactory.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
 
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
@@ -65,12 +65,12 @@ describe('Neutron / Simple', () => {
     test('create denom, mint', async () => {
       const denom = `teststargate`;
 
-      const data = await msgCreateDenom(
+      const data = await tokenfactory.msgCreateDenom(
         neutronAccount,
         neutronAccount.wallet.address.toString(),
         denom,
       );
-      newTokenDenom = getEventAttribute(
+      newTokenDenom = cosmosWrapper.getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -79,9 +79,11 @@ describe('Neutron / Simple', () => {
   });
 
   describe('Contract instantiation', () => {
-    let codeId: CodeId;
+    let codeId: types.CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.STARGATE_QUERIER);
+      codeId = await neutronAccount.storeWasm(
+        types.NeutronContract.STARGATE_QUERIER,
+      );
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {

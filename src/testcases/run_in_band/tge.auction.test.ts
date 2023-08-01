@@ -11,7 +11,7 @@ import {
   tokenfactory,
   types,
   wait,
-} from 'neutronjs';
+} from '@neutron-org/neutronjs';
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 10000;
