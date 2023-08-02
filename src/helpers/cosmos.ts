@@ -65,6 +65,12 @@ export type TotalBurnedNeutronsAmountResponse = {
   };
 };
 
+type GlobalfeeParams = {
+  minimum_gas_prices: ICoin[];
+  bypass_min_fee_msg_types: string[];
+  max_total_bypass_min_fee_msg_gas_usage: string;
+};
+
 cosmosclient.codec.register(
   '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
@@ -390,19 +396,12 @@ export class CosmosWrapper {
     }
   }
 
-  async queryMinGasPrices(): Promise<ICoin[]> {
-    try {
-      const req = await axios.get<GlobalFeeMinGasPrices>(
-        `${this.sdk.url}/gaia/globalfee/v1beta1/minimum_gas_prices`,
-        {},
-      );
-      return req.data.minimum_gas_prices;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
+  async queryGlobalfeeParams(): Promise<GlobalfeeParams> {
+    const req = await axios.get(
+      `${this.sdk.url}/gaia/globalfee/v1beta1/params`,
+    );
+
+    return req.data.params;
   }
 
   async queryContractAdmin(address: string): Promise<string> {

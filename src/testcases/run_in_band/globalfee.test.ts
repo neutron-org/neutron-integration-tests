@@ -26,10 +26,10 @@ describe('Neutron / Global Fee', () => {
     );
     neutronAccount = new WalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.neutron.demo1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
+    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress); // breaks here!
     dao = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, dao);
     await daoMember.bondFunds('1000');
@@ -51,8 +51,9 @@ describe('Neutron / Global Fee', () => {
     await daoMember.unbondFunds('1000');
   });
 
-  test('check minumum global fees before proposal execution', async () => {
-    const minGasPrices = await neutronChain.queryMinGasPrices();
+  test('check minumum global fees param before proposal execution', async () => {
+    const params = await neutronChain.queryGlobalfeeParams();
+    const minGasPrices = params.minimum_gas_prices;
     expect(minGasPrices).toEqual([
       {
         denom:
@@ -63,9 +64,11 @@ describe('Neutron / Global Fee', () => {
     ]);
   });
 
+  // TODO: check other params
+
   test('change minimum gas price parameter', async () => {
     const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimumm Gas Price Change Proposal',
+      'Minimum Gas Price Change Proposal',
       'Param change proposal. It will change the minimum gas price of the global fee module.',
       'globalfee',
       'MinimumGasPricesParam',
@@ -79,25 +82,21 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check minumum global fees with bank send command', async () => {
+    const fee = {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+    };
+    neutronChain.blockWaiter.waitBlocks(2);
     await expect(
-      daoMember.user.msgSend(
-        dao.contracts.core.address,
-        '1000',
-        {
-          gas_limit: Long.fromString('200000'),
-          amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
-        },
-        undefined,
-        cosmosclient.rest.tx.BroadcastTxMode.Block,
-      ),
+      neutronAccount.msgSend(dao.contracts.core.address, '1000', fee),
     ).rejects.toThrowError(
-      /insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
+      /Insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
     );
   });
 
   test('revert minimum gas price parameter to zero values', async () => {
     const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimumm Gas Price Change Proposal',
+      'Minimum Gas Price Change Proposal',
       'Param change proposal. It will change the minimum gas price of the global fee module to zero values.',
       'globalfee',
       'MinimumGasPricesParam',
@@ -121,16 +120,16 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check minumum global fees with bank send command after revert with zero value (only validator settings applied)', async () => {
-    const res = await daoMember.user.msgSend(
+    const res = await neutronAccount.msgSend(
       dao.contracts.core.address,
       '1000',
       {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       },
-      undefined,
-      cosmosclient.rest.tx.BroadcastTxMode.Block,
     );
+
+    neutronChain.blockWaiter.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
