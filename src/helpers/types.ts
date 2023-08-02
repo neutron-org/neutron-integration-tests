@@ -110,6 +110,7 @@ export type PauseInfoResponse = {
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   MSG_RECEIVER: 'msg_receiver.wasm',
+  STARGATE_QUERIER: 'stargate_querier.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
