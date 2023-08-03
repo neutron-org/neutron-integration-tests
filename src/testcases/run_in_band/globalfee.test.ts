@@ -50,10 +50,9 @@ describe('Neutron / Global Fee', () => {
     await daoMember.unbondFunds('1000');
   });
 
-  test('check minumum global fees param before proposal execution', async () => {
+  test('check globalfee params before proposal execution', async () => {
     const params = await neutronChain.queryGlobalfeeParams();
-    const minGasPrices = params.minimum_gas_prices;
-    expect(minGasPrices).toEqual([
+    expect(params.minimum_gas_prices).toEqual([
       {
         denom:
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
@@ -61,6 +60,12 @@ describe('Neutron / Global Fee', () => {
       },
       { denom: 'untrn', amount: '0.000000000000000000' },
     ]);
+    expect(params.bypass_min_fee_msg_types).toEqual([
+      '/ibc.core.channel.v1.Msg/RecvPacket',
+      '/ibc.core.channel.v1.Msg/Acknowledgement',
+      '/ibc.core.client.v1.Msg/UpdateClient',
+    ]);
+    expect(params.max_total_bypass_min_fee_msg_gas_usage).toEqual('1000000');
   });
 
   test('change minimum gas price parameter', async () => {
@@ -76,6 +81,13 @@ describe('Neutron / Global Fee', () => {
     await daoMember.voteYes(proposalId);
     await dao.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId);
+  });
+
+  test('check globalfee minimum param changed', async () => {
+    const params = await neutronChain.queryGlobalfeeParams();
+    expect(params.minimum_gas_prices).toEqual([
+      { denom: 'untrn', amount: '0.010000000000000000' },
+    ]);
   });
 
   test('check minumum global fees with bank send command', async () => {
@@ -112,6 +124,13 @@ describe('Neutron / Global Fee', () => {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
+  });
+
+  test('check globalfee params after setting bypass_min_fee_msg_types', async () => {
+    const params = await neutronChain.queryGlobalfeeParams();
+    expect(params.bypass_min_fee_msg_types).toEqual([
+      '/cosmos.bank.v1beta1.MsgSend',
+    ]);
   });
 
   test('check that MsgSend passes check for allowed messages - now works with only validator fees', async () => {
@@ -152,6 +171,11 @@ describe('Neutron / Global Fee', () => {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
+  });
+
+  test('check globalfee params after setting max_total_bypass_min_fee_msg_gas_usage', async () => {
+    const params = await neutronChain.queryGlobalfeeParams();
+    expect(params.max_total_bypass_min_fee_msg_gas_usage).toEqual('50');
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {
