@@ -28,7 +28,7 @@ describe('Neutron / Global Fee', () => {
       testState.wallets.neutron.demo1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress); // breaks here!
+    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, dao);
     await daoMember.bondFunds('1000');
@@ -79,7 +79,6 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check minumum global fees with bank send command', async () => {
-    neutronChain.blockWaiter.waitBlocks(2);
     await expect(
       neutronAccount.msgSend(dao.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
@@ -156,13 +155,12 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {
-    const fee = {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
-    };
     neutronChain.blockWaiter.waitBlocks(2);
     await expect(
-      neutronAccount.msgSend(dao.contracts.core.address, '1000', fee),
+      neutronAccount.msgSend(dao.contracts.core.address, '1000', {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+      }),
     ).rejects.toThrowError(
       /Insufficient fees; bypass-min-fee-msg-types with gas consumption 200000 exceeds the maximum allowed gas value of 50.: insufficient fee/,
     );
