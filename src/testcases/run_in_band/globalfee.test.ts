@@ -7,7 +7,6 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
-import cosmosclient from '@cosmos-client/core';
 
 describe('Neutron / Global Fee', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -64,8 +63,6 @@ describe('Neutron / Global Fee', () => {
     ]);
   });
 
-  // TODO: check other params
-
   test('change minimum gas price parameter', async () => {
     const proposalId = await daoMember.submitParameterChangeProposal(
       'Minimum Gas Price Change Proposal',
@@ -82,6 +79,83 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check minumum global fees with bank send command', async () => {
+    neutronChain.blockWaiter.waitBlocks(2);
+    await expect(
+      neutronAccount.msgSend(dao.contracts.core.address, '1000', {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+      }),
+    ).rejects.toThrowError(
+      /Insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
+    );
+  });
+
+  test('set bypass_min_fee_msg_types to allow bypass for MsgSend', async () => {
+    const proposalId = await daoMember.submitParameterChangeProposal(
+      'Bypass Msg Types Change Proposal',
+      'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
+      'globalfee',
+      'BypassMinFeeMsgTypes',
+      '["/cosmos.bank.v1beta1.MsgSend"]',
+      '1000',
+      {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+      },
+    );
+
+    await daoMember.voteYes(proposalId, 'single', {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+    await dao.checkPassedProposal(proposalId);
+    await daoMember.executeProposalWithAttempts(proposalId, {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+  });
+
+  test('check that MsgSend passes check for allowed messages - now works with only validator fees', async () => {
+    const res = await neutronAccount.msgSend(
+      dao.contracts.core.address,
+      '1000',
+      {
+        gas_limit: Long.fromString('200000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+      },
+    );
+
+    neutronChain.blockWaiter.waitBlocks(2);
+
+    expect(res.code).toEqual(0);
+  });
+
+  test('set max_total_bypass_min_fee_msg_gas_usage to very low value', async () => {
+    const proposalId = await daoMember.submitParameterChangeProposal(
+      'Bypass Msg Types Change Proposal',
+      'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
+      'globalfee',
+      'MaxTotalBypassMinFeeMsgGasUsage',
+      '"50"', // very low value to fail tx without fees
+      '1000',
+      {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+      },
+    );
+
+    await daoMember.voteYes(proposalId, 'single', {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+    await dao.checkPassedProposal(proposalId);
+    await daoMember.executeProposalWithAttempts(proposalId, {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+  });
+
+  test('check that MsgSend does not work without minimal fees now', async () => {
     const fee = {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
@@ -90,7 +164,7 @@ describe('Neutron / Global Fee', () => {
     await expect(
       neutronAccount.msgSend(dao.contracts.core.address, '1000', fee),
     ).rejects.toThrowError(
-      /Insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
+      /Insufficient fees; bypass-min-fee-msg-types with gas consumption 200000 exceeds the maximum allowed gas value of 50.: insufficient fee/,
     );
   });
 
@@ -119,7 +193,7 @@ describe('Neutron / Global Fee', () => {
     });
   });
 
-  test('check minumum global fees with bank send command after revert with zero value (only validator settings applied)', async () => {
+  test('check minumum global fees with bank send command after revert with zero value (only validator min fee settings applied)', async () => {
     const res = await neutronAccount.msgSend(
       dao.contracts.core.address,
       '1000',
