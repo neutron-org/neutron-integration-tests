@@ -50,6 +50,39 @@ describe('Neutron / Global Fee', () => {
     await daoMember.unbondFunds('1000');
   });
 
+  let counter = 1;
+
+  const executeParamChange = async (
+    daoMember: DaoMember,
+    kind: string,
+    value: string,
+  ) => {
+    const proposalId = await daoMember.submitParameterChangeProposal(
+      'Change Proposal - ' + kind + ' #' + counter,
+      'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
+      'globalfee',
+      kind,
+      value,
+      '1000',
+      {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+      },
+    );
+
+    await daoMember.voteYes(proposalId, 'single', {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+    await dao.checkPassedProposal(proposalId);
+    await daoMember.executeProposalWithAttempts(proposalId, {
+      gas_limit: Long.fromString('4000000'),
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
+
+    counter++;
+  };
+
   test('check globalfee params before proposal execution', async () => {
     const params = await neutronChain.queryGlobalfeeParams();
     expect(params.minimum_gas_prices).toEqual([
@@ -69,18 +102,11 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('change minimum gas price parameter', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimum Gas Price Change Proposal',
-      'Param change proposal. It will change the minimum gas price of the global fee module.',
-      'globalfee',
+    await executeParamChange(
+      daoMember,
       'MinimumGasPricesParam',
       '[{"denom": "untrn", "amount": "0.01"}]',
-      '1000',
     );
-
-    await daoMember.voteYes(proposalId);
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId);
   });
 
   test('check globalfee minimum param changed', async () => {
@@ -102,28 +128,11 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('set bypass_min_fee_msg_types to allow bypass for MsgSend', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Bypass Msg Types Change Proposal',
-      'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
-      'globalfee',
+    await executeParamChange(
+      daoMember,
       'BypassMinFeeMsgTypes',
       '["/cosmos.bank.v1beta1.MsgSend"]',
-      '1000',
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-      },
     );
-
-    await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
   });
 
   test('check globalfee params after setting bypass_min_fee_msg_types', async () => {
@@ -149,28 +158,11 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('set max_total_bypass_min_fee_msg_gas_usage to very low value', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Bypass Msg Types Change Proposal',
-      'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
-      'globalfee',
+    await executeParamChange(
+      daoMember,
       'MaxTotalBypassMinFeeMsgGasUsage',
-      '"50"', // very low value to fail tx without fees
-      '1000',
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-      },
+      '"50"',
     );
-
-    await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
   });
 
   test('check globalfee params after setting max_total_bypass_min_fee_msg_gas_usage', async () => {
@@ -191,28 +183,19 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('revert minimum gas price parameter to zero values', async () => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
-      'Minimum Gas Price Change Proposal',
-      'Param change proposal. It will change the minimum gas price of the global fee module to zero values.',
-      'globalfee',
+    await executeParamChange(
+      daoMember,
       'MinimumGasPricesParam',
       '[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]',
-      '1000',
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-      },
     );
+  });
 
-    await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
-    await dao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
+  test('revert bypass_min_fee_msg_types to defaults', async () => {
+    await executeParamChange(
+      daoMember,
+      'BypassMinFeeMsgTypes',
+      '["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]',
+    );
   });
 
   test('check minumum global fees with bank send command after revert with zero value (only validator min fee settings applied)', async () => {
