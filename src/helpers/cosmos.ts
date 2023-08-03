@@ -27,7 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
-  GlobalFeeMinGasPrices,
+  GlobalfeeParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -63,12 +63,6 @@ export type TotalBurnedNeutronsAmountResponse = {
   total_burned_neutrons_amount: {
     coin: ICoin;
   };
-};
-
-type GlobalfeeParams = {
-  minimum_gas_prices: ICoin[];
-  bypass_min_fee_msg_types: string[];
-  max_total_bypass_min_fee_msg_gas_usage: string;
 };
 
 cosmosclient.codec.register(
@@ -396,7 +390,7 @@ export class CosmosWrapper {
     }
   }
 
-  async queryGlobalfeeParams(): Promise<GlobalfeeParams> {
+  async queryGlobalfeeParams(): Promise<GlobalfeeParamsResponse> {
     const req = await axios.get(
       `${this.sdk.url}/gaia/globalfee/v1beta1/params`,
     );
