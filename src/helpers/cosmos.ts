@@ -27,6 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
+  GlobalFeeMinGasPrices,
 } from './types';
 import { getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -388,6 +389,21 @@ export class CosmosWrapper {
     }
   }
 
+  async queryMinGasPrices(): Promise<ICoin[]> {
+    try {
+      const req = await axios.get<GlobalFeeMinGasPrices>(
+        `${this.sdk.url}/gaia/globalfee/v1beta1/minimum_gas_prices`,
+        {},
+      );
+      return req.data.minimum_gas_prices;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
   async queryContractAdmin(address: string): Promise<string> {
     const resp = await this.getContractInfo(address);
     return resp.contract_info.admin;
@@ -573,7 +589,7 @@ export class WalletWrapper {
     contract: string,
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
-    fee: proto.cosmos.tx.v1beta1.IFee = {
+    fee = {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: this.chain.denom, amount: '10000' }],
     },
