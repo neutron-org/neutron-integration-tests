@@ -60,6 +60,8 @@ describe('Neutron / Subdao', () => {
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
 
+    await neutronChain.blockWaiter.waitBlocks(2);
+
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
   });
