@@ -93,7 +93,8 @@ port = 3001
 id = 'test-1'
 rpc_addr = 'http://neutron-node:26657'
 grpc_addr = 'http://neutron-node:9090'
-websocket_addr = 'ws://neutron-node:26657/websocket'
+event_source = { mode = 'push', url = 'ws://neutron-node:26657/websocket', batch_delay = '200ms' }
+ccv_consumer_chain = true
 rpc_timeout = '10s'
 account_prefix = 'neutron'
 key_name = 'testkey_1'
@@ -101,13 +102,12 @@ store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 3000000
 gas_price = { price = 0.0025, denom = 'untrn' }
-gas_multiplier = 1.1
+gas_multiplier = 1.5
 max_msg_num = 30
 max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '14days'
-unbonding_period = '20days'
 trust_threshold = { numerator = '1', denominator = '3' }
 address_type = { derivation = 'cosmos' }
 
@@ -115,7 +115,7 @@ address_type = { derivation = 'cosmos' }
 id = 'test-2'
 rpc_addr = 'http://gaia-node:26657'
 grpc_addr = 'http://gaia-node:9090'
-websocket_addr = 'ws://gaia-node:26657/websocket'
+event_source = { mode = 'push', url = 'ws://gaia-node:26657/websocket', batch_delay = '200ms' }
 rpc_timeout = '10s'
 account_prefix = 'cosmos'
 key_name = 'testkey_2'
@@ -123,12 +123,11 @@ store_prefix = 'ibc'
 default_gas = 100000
 max_gas = 3000000
 gas_price = { price = 0.0025, denom = 'uatom' }
-gas_multiplier = 1.1
+gas_multiplier = 1.5
 max_msg_num = 30
 max_tx_size = 2097152
 clock_drift = '5s'
 max_block_time = '10s'
 trusting_period = '14days'
-unbonding_period = '21days'
 trust_threshold = { numerator = '1', denominator = '3' }
 address_type = { derivation = 'cosmos' }

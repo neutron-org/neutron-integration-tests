@@ -8,7 +8,7 @@ build-neutron:
 		cd $(APP_DIR)/neutron && $(MAKE) build-docker-image
 
 build-hermes:
-		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.3.0-a285c01 .
+		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.6.0-1c1cf029 .
 
 build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
