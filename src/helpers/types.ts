@@ -1,3 +1,5 @@
+import { cosmos } from '@cosmos-client/core/cjs/proto';
+
 export type AcknowledgementResult =
   | { success: string[] }
   | { error: string[] }
@@ -108,6 +110,7 @@ export type PauseInfoResponse = {
 export const NeutronContract = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   MSG_RECEIVER: 'msg_receiver.wasm',
+  STARGATE_QUERIER: 'stargate_querier.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
@@ -123,6 +126,8 @@ export const NeutronContract = {
   RESERVE: 'neutron_reserve.wasm',
   SUBDAO_CORE: 'cwd_subdao_core.wasm',
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
+  SUBDAO_PREPROPOSE_NO_TIMELOCK:
+    'cwd_subdao_pre_propose_single_no_timelock.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
@@ -264,6 +269,10 @@ export type IcaHostParamsResponse = {
   params: {
     host_enabled: boolean;
   };
+};
+
+export type GlobalFeeMinGasPrices = {
+  minimum_gas_prices: cosmos.base.v1beta1.ICoin[];
 };
 
 export type ContractAdminResponse = {
