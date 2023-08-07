@@ -574,7 +574,7 @@ export class WalletWrapper {
     msg: string,
     funds: proto.cosmos.base.v1beta1.ICoin[] = [],
     fee: proto.cosmos.tx.v1beta1.IFee = {
-      gas_limit: Long.fromString('4000000'),
+      gas_limit: Long.fromString('4005000'),
       amount: [{ denom: this.chain.denom, amount: '10000' }],
     },
   ): Promise<InlineResponse20075TxResponse> {
