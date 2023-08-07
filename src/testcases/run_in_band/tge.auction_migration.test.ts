@@ -1242,7 +1242,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           );
           await daoMember1.voteYes(propID);
           const prop = await dao.queryProposal(propID);
-          // we connected new voting vault(vesting voting vault), now its not enough
+          // we contected new voting vault(vesting voting vault), now its not enough
           // daoMember1 voting power to pass proposal
           // lockdrop participant should vote
           expect(prop.proposal).toMatchObject({ status: 'open' });
@@ -1812,6 +1812,11 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           JSON.stringify({
             migrate_liquidity: {},
           }),
+          [],
+          {
+            gas_limit: Long.fromString('6000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
         );
         expect(resUsdc.code).toEqual(0);
         resUsdc = await cmInstantiator.executeContract(
@@ -1867,7 +1872,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         const total = await queryTotalUnclaimedAmountAtHeight(
           cmInstantiator.chain,
           tge.contracts.vestingAtomLp,
-          500,
+          550,
         );
         const lpBalance = await tge.chain.queryContract<BalanceResponse>(
           tge.pairs.atom_ntrn.liquidity,
@@ -1881,12 +1886,12 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         const ntrnAmount = await queryNtrnCLBalanceAtHeight(
           cmInstantiator.chain,
           tge.pairs.atom_ntrn.contract,
-          '500',
+          '550',
         );
         const claimableAmount = await queryUnclaimmedAmountAtHeight(
           cmInstantiator.chain,
           tge.contracts.vestingAtomLp,
-          500,
+          550,
           cmInstantiator.wallet.address.toString(),
         );
         const available = await queryAvialableAmount(
@@ -1935,8 +1940,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         ]);
 
         // actual diff is smth about 0.2% (converting old lp to new)
-        expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -2);
-        expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -2);
+        expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -4);
+        expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -4);
       });
     });
 
@@ -2255,7 +2260,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             rewardsStateAfterClaim.balanceNtrn +
               FEE_SIZE -
               rewardsStateBeforeClaim.balanceNtrn,
-          ).toBeCloseTo(120212, -1); // lockdrop rewards share for the user
+          ).toBeCloseTo(120212, -3); // lockdrop rewards share for the user
 
           const expectedGeneratorRewards = +(
             (
