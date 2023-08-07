@@ -29,7 +29,7 @@ import {
   IcaHostParamsResponse,
   GlobalfeeParamsResponse,
 } from './types';
-import { getContractBinary } from './env';
+import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
@@ -470,6 +470,14 @@ export class WalletWrapper {
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
       .BroadcastTxMode.Sync,
   ): Promise<string> {
+    if (DEBUG_SUBMIT_TX) {
+      console.log('\n\n\nStart broadcasting tx: ----------------------');
+      try {
+        console.log(JSON.stringify(txBuilder.toProtoJSON()));
+      } catch (error) {
+        console.log('failed to serrialize tx');
+      }
+    }
     const res = await cosmosclient.rest.tx.broadcastTx(
       this.chain.sdk as CosmosSDK,
       {
@@ -478,7 +486,13 @@ export class WalletWrapper {
       },
     );
     const code = res.data?.tx_response.code;
+    if (DEBUG_SUBMIT_TX) {
+      console.log('async response code: ', code);
+    }
     if (code !== 0) {
+      if (DEBUG_SUBMIT_TX) {
+        console.log(`broadcast error: ${res.data?.tx_response.raw_log}`);
+      }
       throw new Error(`broadcast error: ${res.data?.tx_response.raw_log}`);
     }
     const txhash = res.data?.tx_response.txhash;
@@ -499,6 +513,9 @@ export class WalletWrapper {
   ): Promise<CosmosTxV1beta1GetTxResponse> {
     const txBuilder = this.buildTx(fee, msgs, sequence);
     const txhash = await this.broadcastTx(txBuilder, mode);
+    if (DEBUG_SUBMIT_TX) {
+      console.log('tx hash: ', txhash);
+    }
     let error = null;
     while (numAttempts > 0) {
       await this.chain.blockWaiter.waitBlocks(1);
@@ -510,6 +527,14 @@ export class WalletWrapper {
           return null;
         });
       if (data != null) {
+        if (DEBUG_SUBMIT_TX) {
+          const code = +data.data?.tx_response.code;
+          console.log('response code: ', code);
+          if (code > 0) {
+            console.log('\x1b[31m error log: ', data.data?.tx_response.raw_log);
+          }
+          console.log('response: ', JSON.stringify(data.data));
+        }
         return data.data;
       }
     }
