@@ -235,13 +235,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
@@ -285,13 +285,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(

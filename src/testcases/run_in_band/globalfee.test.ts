@@ -152,7 +152,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.blockWaiter.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
@@ -171,7 +171,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {
-    neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.blockWaiter.waitBlocks(2);
     await expect(
       neutronAccount.msgSend(dao.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
@@ -208,7 +208,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.blockWaiter.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
