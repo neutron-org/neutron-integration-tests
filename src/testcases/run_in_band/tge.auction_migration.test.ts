@@ -14,11 +14,11 @@ import {
   executeGeneratorSetupPools,
   getTimestamp,
   queryAvialableAmount,
-  queryUnclaimmedAmountAtHeight,
   queryFactoryPairs,
-  queryTotalUnclaimedAmountAtHeight,
-  Tge,
   queryNtrnCLBalanceAtHeight,
+  queryTotalUnclaimedAmountAtHeight,
+  queryUnclaimmedAmountAtHeight,
+  Tge,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 import Long from 'long';
@@ -1466,6 +1466,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
   });
   describe('Migration to V2', () => {
     let heightDiff;
+    const votingPowerBeforeLockdrop: Record<string, number> = {};
 
     describe('Migration of pairs', () => {
       it('should unregister old pairs', async () => {
@@ -1601,7 +1602,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       let claimAtomLP;
       let claimUsdcLP;
       const votingPowerBeforeLp: Record<string, number> = {};
-      const votingPowerBeforeLockdrop: Record<string, number> = {};
+      let totalUnclaimedAtHeightBeforeMigration: number;
+      let unclaimedHeightBeforeMigration: number;
 
       it('should save voting power before migration: lp', async () => {
         for (const v of [
@@ -1636,6 +1638,14 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       });
 
       it('should validate numbers & save claim amount before migration', async () => {
+        unclaimedHeightBeforeMigration = await getHeight(neutronChain.sdk);
+        totalUnclaimedAtHeightBeforeMigration =
+          await queryTotalUnclaimedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+          );
+
         const [
           vestingInfoAtom,
           vestingInfoUsdc,
@@ -1869,6 +1879,16 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       });
 
       it('check queries', async () => {
+        const totalUnclaimedAmountAfterMigration =
+          await queryTotalUnclaimedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+          );
+        expect(totalUnclaimedAmountAfterMigration).toEqual(
+          totalUnclaimedAtHeightBeforeMigration,
+        );
+
         const total = await queryTotalUnclaimedAmountAtHeight(
           cmInstantiator.chain,
           tge.contracts.vestingAtomLp,
@@ -1946,6 +1966,22 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
     });
 
     describe('Migration lockdrop to V2', () => {
+      let userLockUpAtHeightBeforeMigration: number;
+      let height: number;
+      it('should save user lock up at height before migration', async () => {
+        height = await getHeight(neutronChain.sdk);
+        userLockUpAtHeightBeforeMigration =
+          await cmInstantiator.chain.queryContract<number>(
+            tge.contracts.lockdrop,
+            {
+              query_user_lockup_total_at_height: {
+                pool_type: 'ATOM',
+                user_address: cmInstantiator.wallet.address,
+                height: height,
+              },
+            },
+          );
+      });
       it('should migrate lockdrop to V2', async () => {
         const res = await cmInstantiator.migrateContract(
           tge.contracts.lockdrop,
@@ -2121,6 +2157,37 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           },
         );
         expect(res).toEqual('0');
+      });
+      it('should check user lock up at height before migration and after at the same height', async () => {
+        const userLockUpAtHeightAfterMigration =
+          await cmInstantiator.chain.queryContract<number>(
+            tge.contracts.lockdrop,
+            {
+              query_user_lockup_total_at_height: {
+                pool_type: 'ATOM',
+                user_address: cmInstantiator.wallet.address,
+                height: height,
+              },
+            },
+          );
+        expect(userLockUpAtHeightAfterMigration).toEqual(
+          userLockUpAtHeightBeforeMigration,
+        );
+      });
+      it('should compare voting power after migration: lockdrop', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lockdropVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          expect(+vp.power).toBeCloseTo(votingPowerBeforeLockdrop[v], -3);
+        }
       });
       it('should have non-zero liquidity on CL pools', async () => {
         const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
