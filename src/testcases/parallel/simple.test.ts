@@ -471,9 +471,7 @@ describe('Neutron / Simple', () => {
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {
-              state: {
-                integration_tests_sudo_failure_mock: 'enabled',
-              },
+              state: 'enabled',
             },
           }),
         );
@@ -562,9 +560,7 @@ describe('Neutron / Simple', () => {
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {
-              state: {
-                integration_tests_sudo_failure_mock: 'enabled_infinite_loop',
-              },
+              state: 'enabled_infinite_loop',
             },
           }),
         );
@@ -581,13 +577,15 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
+        await neutronChain.blockWaiter.waitBlocks(30);
+
+        const res = await getWithAttempts<AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           // Wait until there 6 failures in the list
           async (data) => data.failures.length == 6,
         );
-        expect(failuresAfterCall.failures.length).toEqual(6);
+        expect(res.failures.length).toEqual(6);
       });
 
       test('failed attempt to resubmit failure', async () => {
@@ -596,9 +594,7 @@ describe('Neutron / Simple', () => {
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {
-              state: {
-                integration_tests_sudo_failure_mock: 'enabled',
-              },
+              state: 'enabled',
             },
           }),
         );
@@ -607,17 +603,19 @@ describe('Neutron / Simple', () => {
         const failuresResBefore = await neutronChain.queryAckFailures(
           contractAddress,
         );
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          JSON.stringify({
-            resubmit_failure: {
-              failure_id: failuresResBefore.failures[0].id,
-            },
-          }),
-        );
-        expect(res.code).toBe(0);
 
-        // TODO: wait?
+        await expect(
+          neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              resubmit_failure: {
+                failure_id: +failuresResBefore.failures[0].id,
+              },
+            }),
+          ),
+        ).rejects.toThrowError();
+
+        await neutronChain.blockWaiter.waitBlocks(30);
 
         // check that failures count is the same
         const failuresResAfter = await neutronChain.queryAckFailures(
@@ -640,18 +638,18 @@ describe('Neutron / Simple', () => {
           contractAddress,
         );
         const failure = failuresResBefore.failures[0];
-        const failureId = failure.id;
+        const failureId = +failure.id;
         const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             resubmit_failure: {
-              failure_id: failureId,
+              failure_id: +failureId,
             },
           }),
         );
         expect(res.code).toBe(0);
 
-        // TODO: wait?
+        await neutronChain.blockWaiter.waitBlocks(30);
 
         // check that failures count is the same
         const failuresResAfter = await neutronChain.queryAckFailures(

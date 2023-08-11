@@ -79,7 +79,7 @@ export type AckFailuresResponse = {
 // Failure represents a single contractmanager failure
 type Failure = {
   address: string;
-  id: number;
+  id: string;
   sequence_id: number;
   ack_type: string;
 };

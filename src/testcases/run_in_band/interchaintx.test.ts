@@ -832,7 +832,7 @@ describe('Neutron / Interchain TXs', () => {
           contractAddress,
           JSON.stringify({
             resubmit_failure: {
-              failure_id: failuresResBefore.failures[0].id,
+              failure_id: +failuresResBefore.failures[0].id,
             },
           }),
         );
@@ -870,7 +870,7 @@ describe('Neutron / Interchain TXs', () => {
           contractAddress,
           JSON.stringify({
             resubmit_failure: {
-              failure_id: failureId,
+              failure_id: +failureId,
             },
           }),
         );
