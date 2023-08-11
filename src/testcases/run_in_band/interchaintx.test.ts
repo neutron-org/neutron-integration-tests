@@ -545,7 +545,11 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {},
+            integration_tests_set_sudo_failure_mock: {
+              state: {
+                integration_tests_sudo_failure_mock: 'enabled',
+              },
+            },
           }),
         );
 
@@ -674,7 +678,11 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {},
+            integration_tests_set_sudo_failure_mock: {
+              state: {
+                integration_tests_sudo_failure_mock: 'enabled',
+              },
+            },
           }),
         );
 
@@ -713,8 +721,51 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
-      test('out of gas during sudo', async () => {
+      test('ack failure during sudo out of gas', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: {
+                integration_tests_sudo_failure_mock: 'enabled_infinite_loop',
+              },
+            },
+          }),
+        );
 
+        // Testing ACK failure
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+            },
+          }),
+        );
+
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 5,
+          100,
+        );
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
       });
 
       test('check stored failures and acks', async () => {
@@ -761,11 +812,82 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('failed attempt to resubmit failure', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: {
+                integration_tests_sudo_failure_mock: 'enabled',
+              },
+            },
+          }),
+        );
 
+        // Try to resubmit failure
+        const failuresResBefore = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            resubmit_failure: {
+              failure_id: failuresResBefore.failures[0].id,
+            },
+          }),
+        );
+        expect(res.code).toBe(0);
+
+        // TODO: wait?
+
+        // check that failures count is the same
+        const failuresResAfter = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        expect(failuresResAfter.failures.length).toEqual(5);
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
       });
 
       test('successful resubmit failure', async () => {
+        // Resubmit failure
+        const failuresResBefore = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        const failure = failuresResBefore.failures[0];
+        const failureId = failure.id;
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            resubmit_failure: {
+              failure_id: failureId,
+            },
+          }),
+        );
+        expect(res.code).toBe(0);
 
+        // TODO: wait?
+
+        // check that failures count is the same
+        const failuresResAfter = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        expect(failuresResAfter.failures.length).toEqual(4);
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(1);
+        expect(acks[0].sequence_id).toEqual(failure.sequence_id);
       });
     });
   });

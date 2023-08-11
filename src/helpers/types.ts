@@ -80,7 +80,7 @@ export type AckFailuresResponse = {
 type Failure = {
   address: string;
   id: number;
-  ack_id: number;
+  sequence_id: number;
   ack_type: string;
 };
 
