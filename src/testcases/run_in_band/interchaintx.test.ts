@@ -713,6 +713,10 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
+      test('out of gas during sudo', async () => {
+
+      });
+
       test('check stored failures and acks', async () => {
         const failures = await neutronChain.queryAckFailures(contractAddress);
         // 3 ack failures, 1 timeout failure, just as described in the tests above
@@ -754,6 +758,14 @@ describe('Neutron / Interchain TXs', () => {
         const acks = await getAcks(neutronChain, contractAddress);
         // no acks at all because all sudo handling cases resulted in an error
         expect(acks).toEqual([]);
+      });
+
+      test('failed attempt to resubmit failure', async () => {
+
+      });
+
+      test('successful resubmit failure', async () => {
+
       });
     });
   });
