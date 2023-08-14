@@ -768,38 +768,46 @@ describe('Neutron / Interchain TXs', () => {
         const failures = await neutronChain.queryAckFailures(contractAddress);
         // 3 ack failures, 1 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
-          {
+          expect.objectContaining({
             channel_id: 'channel-3',
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '0',
-            ack_id: '2',
+            packet: expect.objectContaining({
+              sequence: '2',
+            }),
             ack_type: 'ack',
-          },
-          {
+          }),
+          expect.objectContaining({
             channel_id: 'channel-3',
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '1',
-            ack_id: '3',
+            packet: expect.objectContaining({
+              sequence: '3',
+            }),
             ack_type: 'ack',
-          },
-          {
+          }),
+          expect.objectContaining({
             channel_id: 'channel-3',
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '2',
-            ack_id: '4',
+            packet: expect.objectContaining({
+              sequence: '4',
+            }),
             ack_type: 'ack',
-          },
-          {
+          }),
+          expect.objectContaining({
             channel_id: 'channel-3',
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '3',
-            ack_id: '5',
+            packet: expect.objectContaining({
+              sequence: '5',
+            }),
             ack_type: 'timeout',
-          },
+          }),
         ]);
 
         const acks = await getAcks(neutronChain, contractAddress);
@@ -818,19 +826,22 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
 
+        await neutronChain.blockWaiter.waitBlocks(5);
+
         // Try to resubmit failure
         const failuresResBefore = await neutronChain.queryAckFailures(
           contractAddress,
         );
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          JSON.stringify({
-            resubmit_failure: {
-              failure_id: +failuresResBefore.failures[0].id,
-            },
-          }),
-        );
-        expect(res.code).toBe(0);
+        await expect(
+          neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              resubmit_failure: {
+                failure_id: +failuresResBefore.failures[0].id,
+              },
+            }),
+          ),
+        ).rejects.toThrowError();
 
         await neutronChain.blockWaiter.waitBlocks(5);
 
@@ -882,7 +893,7 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(1);
-        expect(acks[0].sequence_id).toEqual(failure.sequence_id);
+        expect(acks[0].sequence_id).toEqual(+failure.packet.sequence);
       });
     });
   });

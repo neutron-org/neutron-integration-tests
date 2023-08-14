@@ -635,7 +635,7 @@ describe('Neutron / Simple', () => {
             integration_tests_unset_sudo_failure_mock: {},
           }),
         );
-        await neutronChain.blockWaiter.waitBlocks(2);
+        await neutronChain.blockWaiter.waitBlocks(5);
       });
 
       test('successful resubmit failure', async () => {

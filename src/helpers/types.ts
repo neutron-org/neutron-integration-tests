@@ -80,8 +80,25 @@ export type AckFailuresResponse = {
 type Failure = {
   address: string;
   id: string;
-  sequence_id: number;
+  sequence_id: string;
+  ack: {
+    result: string | null; // base64 encoded bytes
+    error: string | null; // error text
+  };
   ack_type: string;
+  packet: {
+    data: string;
+    destination_channel: string;
+    destination_port: string;
+    sequence: string;
+    source_channel: string;
+    source_port: string;
+    timeout_height: {
+      revision_height: string;
+      revision_number: string;
+    };
+    timeout_timestamp: string;
+  };
 };
 
 export type ScheduleResponse = {
