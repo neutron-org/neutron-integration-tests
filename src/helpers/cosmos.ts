@@ -27,7 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
-  GlobalFeeMinGasPrices,
+  GlobalfeeParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -390,19 +390,12 @@ export class CosmosWrapper {
     }
   }
 
-  async queryMinGasPrices(): Promise<ICoin[]> {
-    try {
-      const req = await axios.get<GlobalFeeMinGasPrices>(
-        `${this.sdk.url}/gaia/globalfee/v1beta1/minimum_gas_prices`,
-        {},
-      );
-      return req.data.minimum_gas_prices;
-    } catch (e) {
-      if (e.response?.data?.message !== undefined) {
-        throw new Error(e.response?.data?.message);
-      }
-      throw e;
-    }
+  async queryGlobalfeeParams(): Promise<GlobalfeeParamsResponse> {
+    const req = await axios.get(
+      `${this.sdk.url}/gaia/globalfee/v1beta1/params`,
+    );
+
+    return req.data.params;
   }
 
   async queryContractAdmin(address: string): Promise<string> {

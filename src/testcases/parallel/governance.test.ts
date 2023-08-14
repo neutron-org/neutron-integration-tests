@@ -4,7 +4,7 @@ import {
   WalletWrapper,
 } from '../../helpers/cosmos';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getHeight, getWithAttempts } from '../../helpers/wait';
+import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
 
@@ -172,12 +172,11 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #4, will pass', async () => {
-      console.log(await getHeight(neutronChain.sdk));
       await daoMember1.submitSoftwareUpgradeProposal(
         'Proposal #4',
         'Software upgrade proposal. Will pass',
         'Plan #1',
-        500,
+        100000,
         'Plan info',
         '1000',
       );
@@ -560,7 +559,7 @@ describe('Neutron / Governance', () => {
   describe('check state change from proposal #4 execution', () => {
     test('check if software current plan was created', async () => {
       const currentPlan = await neutronChain.queryCurrentUpgradePlan();
-      expect(currentPlan.plan?.height).toEqual('500');
+      expect(currentPlan.plan?.height).toEqual('100000');
       expect(currentPlan.plan?.name).toEqual('Plan #1');
       expect(currentPlan.plan?.info).toEqual('Plan info');
     });
