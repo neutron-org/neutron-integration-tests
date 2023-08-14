@@ -1603,6 +1603,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       let claimUsdcLP;
       const votingPowerBeforeLp: Record<string, number> = {};
       let totalUnclaimedAtHeightBeforeMigration: number;
+      let unclaimedAtHeightBeforeMigration: number;
       let unclaimedHeightBeforeMigration: number;
 
       it('should save voting power before migration: lp', async () => {
@@ -1645,6 +1646,12 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             tge.contracts.vestingAtomLp,
             unclaimedHeightBeforeMigration,
           );
+        unclaimedAtHeightBeforeMigration = await queryUnclaimmedAmountAtHeight(
+          cmInstantiator.chain,
+          tge.contracts.vestingAtomLp,
+          unclaimedHeightBeforeMigration,
+          cmInstantiator.wallet.address.toString(),
+        );
 
         const [
           vestingInfoAtom,
@@ -1885,8 +1892,18 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             tge.contracts.vestingAtomLp,
             unclaimedHeightBeforeMigration,
           );
+        const unclaimedAmountAfterMigration =
+          await queryUnclaimmedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+            cmInstantiator.wallet.address.toString(),
+          );
         expect(totalUnclaimedAmountAfterMigration).toEqual(
           totalUnclaimedAtHeightBeforeMigration,
+        );
+        expect(unclaimedAmountAfterMigration).toEqual(
+          unclaimedAtHeightBeforeMigration,
         );
 
         const total = await queryTotalUnclaimedAmountAtHeight(
