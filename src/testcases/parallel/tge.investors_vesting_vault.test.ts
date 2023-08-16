@@ -1,5 +1,6 @@
 import {
   cosmosWrapper,
+  env,
   IBC_ATOM_DENOM,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
