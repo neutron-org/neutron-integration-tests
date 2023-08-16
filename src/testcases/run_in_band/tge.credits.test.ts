@@ -4,7 +4,7 @@ import {
   TestStateLocalCosmosTestNet,
   types,
   wait,
-} from '@neutron-org/neutronjs';
+} from '@neutron-org/neutronjsplus';
 
 const getTimestamp = (secondsFromNow: number): number =>
   (Date.now() / 1000 + secondsFromNow) | 0;

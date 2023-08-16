@@ -6,7 +6,7 @@ import {
   TestStateLocalCosmosTestNet,
   types,
   wait,
-} from '@neutron-org/neutronjs';
+} from '@neutron-org/neutronjsplus';
 
 // general contract keys used across the tests
 const ASTRO_PAIR_CONTRACT_KEY = 'ASTRO_PAIR';

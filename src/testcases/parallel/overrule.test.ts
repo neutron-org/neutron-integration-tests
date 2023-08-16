@@ -4,7 +4,7 @@ import {
   dao,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
-} from '@neutron-org/neutronjs';
+} from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 

@@ -6,7 +6,7 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
-} from '@neutron-org/neutronjs';
+} from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 interface ReserveStats {

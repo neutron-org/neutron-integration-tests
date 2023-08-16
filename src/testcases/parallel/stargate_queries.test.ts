@@ -5,7 +5,7 @@ import {
   TestStateLocalCosmosTestNet,
   tokenfactory,
   types,
-} from '@neutron-org/neutronjs';
+} from '@neutron-org/neutronjsplus';
 import Long from 'long';
 
 const config = require('../../config.json');
