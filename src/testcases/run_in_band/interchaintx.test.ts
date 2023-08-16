@@ -251,7 +251,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         await waitForAck(neutronChain, contractAddress, icaId1, sequenceId);
         const qres = await getAck(
@@ -260,18 +260,18 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
 
         const ackSequenceId = sequenceId + 1;
         await waitForAck(neutronChain, contractAddress, icaId1, ackSequenceId);
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
       test('check validator state', async () => {
-        const res1 = await getWithAttempts(
+        const res1 = await wait.getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
             rest.staking.delegatorDelegations(
