@@ -2,6 +2,7 @@ import Long from 'long';
 import {
   cosmosWrapper,
   COSMOS_DENOM,
+  env,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
