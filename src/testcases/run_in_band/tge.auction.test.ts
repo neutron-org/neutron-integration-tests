@@ -10,7 +10,6 @@ import {
   tge,
   tokenfactory,
   types,
-  wait,
 } from '@neutron-org/neutronjsplus';
 
 const MIN_LIQUDITY = 1000;

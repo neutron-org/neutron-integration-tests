@@ -4,7 +4,6 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
-  wait,
 } from '@neutron-org/neutronjsplus';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
