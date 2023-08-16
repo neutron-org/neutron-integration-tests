@@ -1379,7 +1379,7 @@ describe('Neutron / TGE / Auction', () => {
         );
       });
       it('update oracles', async () => {
-        tgeEndHeight = await wait.getHeight(neutronChain.sdk);
+        tgeEndHeight = await env.getHeight(neutronChain.sdk);
         let res = await cmInstantiator.executeContract(
           tgeMain.contracts.oracleAtom,
           JSON.stringify({

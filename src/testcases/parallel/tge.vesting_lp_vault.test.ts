@@ -399,8 +399,8 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       describe('check unclaimed amounts', () => {
         let currentHeight: number;
         beforeAll(async () => {
-          await wait.wait(5);
-          currentHeight = await wait.getHeight(neutronChain.sdk);
+          await wait.waitSeconds(5);
+          currentHeight = await env.getHeight(neutronChain.sdk);
         });
         test('user1 ATOM lp contract', async () => {
           expect(
@@ -552,7 +552,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       describe('check voting power on claim', () => {
         const user1PartialClaimAtom = Math.round(user1AtomVestingAmount / 2);
         beforeAll(async () => {
-          heightBeforeClaim = await wait.getHeight(neutronChain.sdk);
+          heightBeforeClaim = await env.getHeight(neutronChain.sdk);
           await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial ATOM claim', async () => {

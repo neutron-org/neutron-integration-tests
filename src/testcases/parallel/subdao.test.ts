@@ -126,7 +126,7 @@ describe('Neutron / Subdao', () => {
 
     test('execute timelocked: execution failed', async () => {
       //wait for timelock durations
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
       await subdaoMember1.executeTimelockedProposal(proposalId);
       // TODO: check the reason of the failure
@@ -173,7 +173,7 @@ describe('Neutron / Subdao', () => {
     test('execute timelocked: success', async () => {
       await neutronAccount1.msgSend(subDao.contracts.core.address, '20000'); // fund the subdao treasury
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const balance2After = await neutronAccount2.queryDenomBalance(
         NEUTRON_DENOM,
@@ -261,7 +261,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked: success', async () => {
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId, 'single2');
 
       const timelockedProp = await subDao.getTimelockedProposal(
@@ -424,7 +424,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('update members: success', async () => {
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       const votingPowerBefore = await subdaoMember2.queryVotingPower();
       expect(votingPowerBefore.power).toEqual('0');
       const res = await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -463,7 +463,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
 
       // pause subDAO on behalf of the security DAO
-      const pauseHeight = await wait.getHeight(neutronChain.sdk); // an approximate one
+      const pauseHeight = await env.getHeight(neutronChain.sdk); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
         JSON.stringify({
@@ -514,7 +514,7 @@ describe('Neutron / Subdao', () => {
       );
       await subdaoMember1.executeProposalWithAttempts(proposalId);
 
-      await wait.wait(20); // wait until timelock duration passes
+      await wait.waitSeconds(20); // wait until timelock duration passes
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
@@ -531,7 +531,7 @@ describe('Neutron / Subdao', () => {
     test('auto unpause on pause timeout', async () => {
       // pause subDAO on behalf of the Neutron DAO
       const shortPauseDuration = 5;
-      const pauseHeight = await wait.getHeight(neutronChain.sdk); // an approximate one
+      const pauseHeight = await env.getHeight(neutronChain.sdk); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
         JSON.stringify({
@@ -807,7 +807,7 @@ describe('Neutron / Subdao', () => {
       });
       await subdaoMember1.supportAndExecuteProposal(proposalId);
 
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const configAfter = await neutronChain.queryContract<dao.SubDaoConfig>(
         subDao.contracts.core.address,
@@ -830,7 +830,7 @@ describe('Neutron / Subdao', () => {
       });
       await subdaoMember1.supportAndExecuteProposal(proposalId);
 
-      await wait.wait(20);
+      await wait.waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);

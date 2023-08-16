@@ -36,7 +36,7 @@ const watchForKvCallbackUpdates = async (
   const statusPrev = await Promise.all(
     queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
   );
-  const targetHeight = await wait.getHeight(targetCm.sdk);
+  const targetHeight = await env.getHeight(targetCm.sdk);
   await Promise.all(
     queryIds.map((i) =>
       icq.waitForICQResultWithRemoteHeight(
@@ -495,7 +495,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await wait.getHeight(gaiaChain.sdk),
+        await env.getHeight(gaiaChain.sdk),
       );
       await validateBalanceQuery(
         neutronChain,
@@ -518,7 +518,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await wait.getHeight(gaiaChain.sdk),
+        await env.getHeight(gaiaChain.sdk),
       );
       await validateBalanceQuery(
         neutronChain,
@@ -542,7 +542,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await wait.getHeight(gaiaChain.sdk),
+        await env.getHeight(gaiaChain.sdk),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         neutronChain,
@@ -779,7 +779,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await wait.getHeight(neutronChain.sdk)),
+              (await env.getHeight(neutronChain.sdk)),
           20,
         );
 

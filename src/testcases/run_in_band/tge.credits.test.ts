@@ -319,7 +319,7 @@ describe('Neutron / TGE / Credits', () => {
       ).rejects.toThrow(/Too early to claim/);
     });
     it('should return withdrawable amount', async () => {
-      await wait.wait(15);
+      await wait.waitSeconds(15);
       const res = await neutronChain.queryContract<{ amount: string }>(
         contractAddresses['TGE_CREDITS'],
         {
@@ -332,7 +332,7 @@ describe('Neutron / TGE / Credits', () => {
     });
 
     it('should be able to withdraw after vesting', async () => {
-      await wait.wait(10);
+      await wait.waitSeconds(10);
       const balanceNtrnBefore = await neutronChain.queryDenomBalance(
         neutronAccount2Address,
         NEUTRON_DENOM,

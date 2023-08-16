@@ -113,7 +113,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop always has zero voting power', async () => {
-      const currentHeight = await wait.getHeight(neutronChain.sdk);
+      const currentHeight = await env.getHeight(neutronChain.sdk);
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -128,7 +128,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop is never included in total voting power', async () => {
-      let currentHeight = await wait.getHeight(neutronChain.sdk);
+      let currentHeight = await env.getHeight(neutronChain.sdk);
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -143,7 +143,7 @@ describe('Neutron / Credits Vault', () => {
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await wait.getHeight(neutronChain.sdk);
+      currentHeight = await env.getHeight(neutronChain.sdk);
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -163,7 +163,7 @@ describe('Neutron / Credits Vault', () => {
       );
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await wait.getHeight(neutronChain.sdk);
+      currentHeight = await env.getHeight(neutronChain.sdk);
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -188,7 +188,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Query voting power at different heights', async () => {
-      const firstHeight = await wait.getHeight(neutronChain.sdk);
+      const firstHeight = await env.getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -198,7 +198,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const secondHeight = await wait.getHeight(neutronChain.sdk);
+      const secondHeight = await env.getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -208,7 +208,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const thirdHeight = await wait.getHeight(neutronChain.sdk);
+      const thirdHeight = await env.getHeight(neutronChain.sdk);
 
       expect(
         await getTotalPowerAtHeight(

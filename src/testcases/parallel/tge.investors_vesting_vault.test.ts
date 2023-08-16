@@ -137,7 +137,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       });
       test('check unclaimed amounts', async () => {
         await neutronChain.blockWaiter.waitBlocks(1);
-        const currentHeight = await wait.getHeight(neutronChain.sdk);
+        const currentHeight = await env.getHeight(neutronChain.sdk);
         expect(
           await neutronChain.queryContract<UnclaimedAmountResponse>(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -208,7 +208,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       describe('check voting power on claim', () => {
         const user1PartialClaim = Math.round(user1VestingAmount / 2);
         beforeAll(async () => {
-          heightBeforeClaim = await wait.getHeight(neutronChain.sdk);
+          heightBeforeClaim = await env.getHeight(neutronChain.sdk);
           await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial claim', async () => {
@@ -359,7 +359,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         );
         expect(execRes.code).toBe(0);
         await neutronChain.blockWaiter.waitBlocks(1);
-        const currentHeight = await wait.getHeight(neutronChain.sdk);
+        const currentHeight = await env.getHeight(neutronChain.sdk);
         expect(
           await neutronChain.queryContract<UnclaimedAmountResponse>(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -436,7 +436,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         });
         test('unclaimed amount after removal', async () => {
           await neutronChain.blockWaiter.waitBlocks(1);
-          const currentHeight = await wait.getHeight(neutronChain.sdk);
+          const currentHeight = await env.getHeight(neutronChain.sdk);
           expect(
             await neutronChain.queryContract<UnclaimedAmountResponse>(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
