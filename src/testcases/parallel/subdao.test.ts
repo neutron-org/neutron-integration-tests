@@ -4,6 +4,7 @@ import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/a
 import {
   cosmosWrapper,
   dao,
+  env,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
