@@ -6,6 +6,7 @@ import {
   cosmosWrapper,
   COSMOS_DENOM,
   dao,
+  env,
   icq,
   NEUTRON_DENOM,
   proposal,

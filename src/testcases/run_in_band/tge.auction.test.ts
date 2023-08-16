@@ -3,6 +3,7 @@
 import {
   cosmosWrapper,
   dao,
+  env,
   IBC_ATOM_DENOM,
   IBC_USDC_DENOM,
   NEUTRON_DENOM,
