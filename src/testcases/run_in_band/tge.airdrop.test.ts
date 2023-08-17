@@ -21,6 +21,7 @@ describe('Neutron / TGE / Airdrop', () => {
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
+  let neutronAccount3: WalletWrapper;
   const codeIds: Record<string, CodeId> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof Airdrop>;
@@ -44,6 +45,10 @@ describe('Neutron / TGE / Airdrop', () => {
     neutronAccount2 = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
+    );
+    neutronAccount3 = new WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronFour.genQaWal1,
     );
     const accounts = [
       {
@@ -134,6 +139,92 @@ describe('Neutron / TGE / Airdrop', () => {
         }),
       );
       expect(res.code).toEqual(0);
+    });
+
+    it('should not update reserve address by random account', async () => {
+      await expect(
+        neutronAccount3.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify({
+            update_reserve: {
+              address: neutronAccount3.wallet.address.toString(),
+            },
+          }),
+        ),
+      ).rejects.toThrow(/Unauthorized/);
+      expect(
+        await neutronChain.queryContract(contractAddresses.TGE_AIRDROP, {
+          config: {},
+        }),
+      ).toMatchObject({
+        owner: neutronAccount1.wallet.address.toString(),
+        credits_address: contractAddresses.TGE_CREDITS,
+        reserve_address: reserveAddress,
+      });
+    });
+
+    it('should update reserve address by owner account', async () => {
+      const res = await neutronAccount1.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify({
+          update_reserve: {
+            address: neutronAccount3.wallet.address.toString(),
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+      expect(
+        await neutronChain.queryContract(contractAddresses.TGE_AIRDROP, {
+          config: {},
+        }),
+      ).toMatchObject({
+        owner: neutronAccount1.wallet.address.toString(),
+        credits_address: contractAddresses.TGE_CREDITS,
+        reserve_address: neutronAccount3.wallet.address.toString(),
+      });
+    });
+
+    it('should not update reserve address by old reserve', async () => {
+      await expect(
+        neutronAccount2.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify({
+            update_reserve: {
+              address: neutronAccount2.wallet.address.toString(),
+            },
+          }),
+        ),
+      ).rejects.toThrow(/Unauthorized/);
+      expect(
+        await neutronChain.queryContract(contractAddresses.TGE_AIRDROP, {
+          config: {},
+        }),
+      ).toMatchObject({
+        owner: neutronAccount1.wallet.address.toString(),
+        credits_address: contractAddresses.TGE_CREDITS,
+        reserve_address: neutronAccount3.wallet.address.toString(),
+      });
+    });
+
+    it('should update reserve address by new reserve', async () => {
+      const res = await neutronAccount3.executeContract(
+        contractAddresses['TGE_AIRDROP'],
+        JSON.stringify({
+          update_reserve: {
+            address: neutronAccount2.wallet.address.toString(),
+          },
+        }),
+      );
+      expect(res.code).toEqual(0);
+      expect(
+        await neutronChain.queryContract(contractAddresses.TGE_AIRDROP, {
+          config: {},
+        }),
+      ).toMatchObject({
+        owner: neutronAccount1.wallet.address.toString(),
+        credits_address: contractAddresses.TGE_CREDITS,
+        reserve_address: reserveAddress,
+      });
     });
   });
 
@@ -392,7 +483,7 @@ describe('Neutron / TGE / Airdrop', () => {
     });
     it('should not be able to withdraw all before end', async () => {
       await expect(
-        neutronAccount1.executeContract(
+        neutronAccount2.executeContract(
           contractAddresses['TGE_AIRDROP'],
           JSON.stringify({
             withdraw_all: {},
@@ -403,8 +494,20 @@ describe('Neutron / TGE / Airdrop', () => {
         /withdraw_all is unavailable, it will become available at/,
       );
     });
-    it('should be able to withdraw all', async () => {
+    it('should not be able to withdraw all by non reserve address', async () => {
       await waitTill(times.airdropVestingStart + times.vestingDuration + 5);
+      await expect(
+        neutronAccount1.executeContract(
+          contractAddresses['TGE_AIRDROP'],
+          JSON.stringify({
+            withdraw_all: {},
+          }),
+          [],
+        ),
+      ).rejects.toThrow(/Unauthorized/);
+    });
+
+    it('should be able to withdraw all by reserve address', async () => {
       const availableBalanceCNTRN = await neutronChain.queryContract<{
         balance: string;
       }>(contractAddresses['TGE_CREDITS'], {
@@ -415,7 +518,7 @@ describe('Neutron / TGE / Airdrop', () => {
       const reserveBalanceNTRN = (
         await neutronChain.queryBalances(reserveAddress)
       ).balances.find((b) => b.denom === NEUTRON_DENOM)?.amount;
-      const res = await neutronAccount1.executeContract(
+      const res = await neutronAccount2.executeContract(
         contractAddresses['TGE_AIRDROP'],
         JSON.stringify({
           withdraw_all: {},
@@ -437,7 +540,8 @@ describe('Neutron / TGE / Airdrop', () => {
       expect(availableBalanceCNTRNAfter.balance).toEqual('0');
       expect(
         parseInt(reserveBalanceNTRNAfter || '0') -
-          parseInt(reserveBalanceNTRN || '0'),
+          parseInt(reserveBalanceNTRN || '0') +
+          10000, // fee compensation for execution withdraw all
       ).toEqual(parseInt(availableBalanceCNTRN.balance));
     });
   });
