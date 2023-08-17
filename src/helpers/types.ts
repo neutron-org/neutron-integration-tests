@@ -80,10 +80,11 @@ export type AckFailuresResponse = {
 type Failure = {
   address: string;
   id: string;
-  sequence_id: string;
   ack: {
-    result: string | null; // base64 encoded bytes
-    error: string | null; // error text
+    response: {
+      result: string | null; // base64 encoded bytes
+      error: string | null; // error text
+    };
   };
   ack_type: string;
   packet: {
