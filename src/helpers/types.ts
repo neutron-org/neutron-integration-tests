@@ -154,6 +154,9 @@ export const NeutronContract = {
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+
+  // current live versions of contracts to perform migrations on
+  VOTING_REGISTRY_CURRENT: '../contracts_migrate/neutron_voting_registry.wasm',
 };
 
 export type MultiChoiceOption = {
