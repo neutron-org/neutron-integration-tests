@@ -10,6 +10,7 @@ import {
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
+  VotingPowerAtHeightResponse,
 } from './types';
 import {
   CreditsVaultConfig,
@@ -118,6 +119,10 @@ export class Tge {
     atom_ntrn: { contract: string; liquidity: string };
     usdc_ntrn: { contract: string; liquidity: string };
   };
+  old_pairs: {
+    atom_ntrn: { contract: string; liquidity: string };
+    usdc_ntrn: { contract: string; liquidity: string };
+  };
   times: Record<string, number>;
   lockdropVaultName: string;
   lockdropVaultDescription: string;
@@ -201,14 +206,18 @@ export class Tge {
       'ASTRO_PAIR_CL',
       'ASTRO_FACTORY',
       'ASTRO_TOKEN',
+      'ASTRO_XASTRO_TOKEN',
       'ASTRO_GENERATOR',
       'ASTRO_WHITELIST',
       'ASTRO_VESTING',
       'ASTRO_COIN_REGISTRY',
       'VESTING_LP',
+      'VESTING_LP_V2',
       'LOCKDROP_VAULT',
+      'LOCKDROP_VAULT_V2',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
+      'VESTING_LP_VAULT_V2',
       'ORACLE_HISTORY',
     ]) {
       const codeId = await this.instantiator.storeWasm(
@@ -278,7 +287,7 @@ export class Tge {
         xyk: this.codeIds.ASTRO_PAIR,
         concentrated: this.codeIds.ASTRO_PAIR_CL,
       },
-      this.codeIds.ASTRO_TOKEN,
+      this.codeIds.ASTRO_XASTRO_TOKEN,
       this.contracts.coinRegistry,
     );
 
@@ -614,6 +623,35 @@ export class Tge {
       atomNtrnLpTokenBalance: +atomNtrnLpTokenBalance.balance,
       usdcNtrnLpTokenBalance: +usdcNtrnLpTokenBalance.balance,
     };
+  }
+  /**
+   * retrieves user's voting power from lp vault.
+   */
+  async lpVotingPower(user: string): Promise<VotingPowerAtHeightResponse> {
+    return await this.chain.queryContract<VotingPowerAtHeightResponse>(
+      this.contracts.vestingLpVault,
+      {
+        voting_power_at_height: {
+          address: user,
+        },
+      },
+    );
+  }
+
+  /**
+   * retrieves user's voting power from lockdrop vault.
+   */
+  async lockdropVotingPower(
+    user: string,
+  ): Promise<VotingPowerAtHeightResponse> {
+    return await this.chain.queryContract<VotingPowerAtHeightResponse>(
+      this.contracts.lockdropVault,
+      {
+        voting_power_at_height: {
+          address: user,
+        },
+      },
+    );
   }
 }
 
@@ -1098,6 +1136,10 @@ export type PairInfo = {
   pair_type: Record<string, object>;
 };
 
+export type RewardInfoResponse = {
+  base_reward_token: string;
+};
+
 export type FactoryPairsResponse = {
   pairs: PairInfo[];
 };
@@ -1108,6 +1150,65 @@ export const queryFactoryPairs = async (
 ) =>
   chain.queryContract<FactoryPairsResponse>(contractAddress, {
     pairs: {},
+  });
+
+export const queryTotalUnclaimedAmountAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: number,
+) =>
+  chain.queryContract<string>(address, {
+    historical_extension: {
+      msg: {
+        unclaimed_total_amount_at_height: {
+          height: height,
+        },
+      },
+    },
+  });
+
+export const queryNtrnCLBalanceAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: string,
+) =>
+  chain.queryContract<string>(address, {
+    asset_balance_at: {
+      asset_info: {
+        native_token: {
+          denom: 'untrn',
+        },
+      },
+      block_height: height,
+    },
+  });
+
+export const queryUnclaimmedAmountAtHeight = async (
+  chain: CosmosWrapper,
+  address: string,
+  height: number,
+  user: string,
+) =>
+  chain.queryContract<string>(address, {
+    historical_extension: {
+      msg: {
+        unclaimed_amount_at_height: {
+          address: user,
+          height: height,
+        },
+      },
+    },
+  });
+
+export const queryAvialableAmount = async (
+  chain: CosmosWrapper,
+  address: string,
+  user: string,
+) =>
+  chain.queryContract<string>(address, {
+    available_amount: {
+      address: user,
+    },
   });
 
 export const instantiateAstroVesting = async (

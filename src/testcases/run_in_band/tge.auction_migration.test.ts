@@ -13,7 +13,11 @@ import {
   executeFactoryCreatePair,
   executeGeneratorSetupPools,
   getTimestamp,
+  queryAvialableAmount,
   queryFactoryPairs,
+  queryNtrnCLBalanceAtHeight,
+  queryTotalUnclaimedAmountAtHeight,
+  queryUnclaimmedAmountAtHeight,
   Tge,
 } from '../../helpers/tge';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
@@ -1095,43 +1099,9 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             },
           }),
         ]);
+
         expect(avaliableAtomLp).toEqual(claimAtomLP.toString());
         expect(avaliableUsdcLp).toEqual(claimUsdcLP.toString());
-        const resAtom = await cmInstantiator.executeContract(
-          tge.contracts.vestingAtomLp,
-          JSON.stringify({
-            claim: {},
-          }),
-        );
-        expect(resAtom.code).toEqual(0);
-        const resUsdc = await cmInstantiator.executeContract(
-          tge.contracts.vestingUsdcLp,
-          JSON.stringify({
-            claim: {},
-          }),
-        );
-        expect(resUsdc.code).toEqual(0);
-
-        const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
-          neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.atom_ntrn.liquidity,
-            {
-              balance: {
-                address: cmInstantiator.wallet.address.toString(),
-              },
-            },
-          ),
-          neutronChain.queryContract<BalanceResponse>(
-            tge.pairs.usdc_ntrn.liquidity,
-            {
-              balance: {
-                address: cmInstantiator.wallet.address.toString(),
-              },
-            },
-          ),
-        ]);
-        expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -1);
-        expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -1);
       });
     });
     describe.skip('vaults', () => {
@@ -1272,7 +1242,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           );
           await daoMember1.voteYes(propID);
           const prop = await dao.queryProposal(propID);
-          // we connected new voting vault(vesting voting vault), now its not enough
+          // we contected new voting vault(vesting voting vault), now its not enough
           // daoMember1 voting power to pass proposal
           // lockdrop participant should vote
           expect(prop.proposal).toMatchObject({ status: 'open' });
@@ -1494,560 +1464,866 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       });
     });
   });
-  describe('Migration lockdrop to V2', () => {
-    let oldPairs;
+  describe('Migration to V2', () => {
     let heightDiff;
-    it('should unregister old pairs', async () => {
-      {
-        const res = await executeDeregisterPair(
-          tge.instantiator,
-          tge.contracts.astroFactory,
-          IBC_ATOM_DENOM,
-          NEUTRON_DENOM,
-        );
-        expect(res.code).toEqual(0);
-      }
-      {
-        const res = await executeDeregisterPair(
-          tge.instantiator,
-          tge.contracts.astroFactory,
-          IBC_USDC_DENOM,
-          NEUTRON_DENOM,
-        );
-        expect(res.code).toEqual(0);
-      }
-    });
-    it('should register CL pairs', async () => {
-      {
-        const res = await executeFactoryCreatePair(
-          tge.instantiator,
-          tge.contracts.astroFactory,
-          IBC_ATOM_DENOM,
-          NEUTRON_DENOM,
-          'concentrated',
-          Buffer.from(
-            JSON.stringify({
-              amp: '40',
-              gamma: '0.000145',
-              mid_fee: '0.0026',
-              out_fee: '0.0045',
-              fee_gamma: '0.00023',
-              repeg_profit_threshold: '0.000002',
-              min_price_scale_delta: '0.000146',
-              price_scale: '1',
-              ma_half_time: 600,
-              track_asset_balances: null,
-            }),
-          ).toString('base64'),
-        );
-        expect(res.code).toEqual(0);
-      }
-      {
-        const res = await executeFactoryCreatePair(
-          tge.instantiator,
-          tge.contracts.astroFactory,
-          IBC_USDC_DENOM,
-          NEUTRON_DENOM,
-          'concentrated',
-          Buffer.from(
-            JSON.stringify({
-              amp: '40',
-              gamma: '0.000145',
-              mid_fee: '0.0026',
-              out_fee: '0.0045',
-              fee_gamma: '0.00023',
-              repeg_profit_threshold: '0.000002',
-              min_price_scale_delta: '0.000146',
-              price_scale: '1',
-              ma_half_time: 600,
-              track_asset_balances: null,
-            }),
-          ).toString('base64'),
-        );
-        expect(res.code).toEqual(0);
-      }
-    });
-    it('should unsetup CL pairs for generator', async () => {
-      const res = await executeGeneratorSetupPools(
-        tge.instantiator,
-        tge.contracts.astroGenerator,
-        [tge.pairs.atom_ntrn.liquidity, tge.pairs.usdc_ntrn.liquidity],
-        '0',
-      );
-      expect(res.code).toEqual(0);
-      migrationLength = +(res.height || 0);
-    });
-    it('should set pairs data', async () => {
-      const pairs = (
-        await queryFactoryPairs(tge.chain, tge.contracts.astroFactory)
-      ).pairs;
-      expect(pairs).toHaveLength(2);
-      oldPairs = _.cloneDeep(tge.pairs);
-      tge.pairs = {
-        atom_ntrn: {
-          contract: pairs[0].contract_addr,
-          liquidity: pairs[0].liquidity_token,
-        },
-        usdc_ntrn: {
-          contract: pairs[1].contract_addr,
-          liquidity: pairs[1].liquidity_token,
-        },
-      };
-    });
-    it('should setup CL pairs for generator', async () => {
-      const res = await executeGeneratorSetupPools(
-        tge.instantiator,
-        tge.contracts.astroGenerator,
-        [tge.pairs.atom_ntrn.liquidity, tge.pairs.usdc_ntrn.liquidity],
-        '1',
-      );
-      expect(res.code).toEqual(0);
-      migrationLength = +(res.height || 0) - migrationLength;
-    });
-    it('should have zero liquidity on CL pools', async () => {
-      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
-        tge.pairs.usdc_ntrn.liquidity,
+    const votingPowerBeforeLockdrop: Record<string, number> = {};
+
+    describe('Migration of pairs', () => {
+      it('should unregister old pairs', async () => {
         {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(usdcBalance.balance).toEqual('0');
-      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
-        tge.pairs.atom_ntrn.liquidity,
+          const res = await executeDeregisterPair(
+            tge.instantiator,
+            tge.contracts.astroFactory,
+            IBC_ATOM_DENOM,
+            NEUTRON_DENOM,
+          );
+          expect(res.code).toEqual(0);
+        }
         {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(atomBalance.balance).toEqual('0');
-    });
-    it('should migrate to V2', async () => {
-      const res = await cmInstantiator.migrateContract(
-        tge.contracts.lockdrop,
-        tge.codeIds.TGE_LOCKDROP_V2,
+          const res = await executeDeregisterPair(
+            tge.instantiator,
+            tge.contracts.astroFactory,
+            IBC_USDC_DENOM,
+            NEUTRON_DENOM,
+          );
+          expect(res.code).toEqual(0);
+        }
+      });
+      it('should register CL pairs', async () => {
         {
-          new_atom_token: tge.pairs.atom_ntrn.liquidity,
-          new_usdc_token: tge.pairs.usdc_ntrn.liquidity,
-          max_slippage: '0.1',
-        },
-      );
-      expect(res.code).toEqual(0);
-      heightDiff = +(res.height || 0);
-    });
-    it('should not allow to query user lockup at height', async () => {
-      await expect(
-        cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
-          query_user_lockup_total_at_height: {
-            pool_type: 'ATOM',
-            user_address: cmInstantiator.wallet.address,
-            height: 1,
+          const res = await executeFactoryCreatePair(
+            tge.instantiator,
+            tge.contracts.astroFactory,
+            IBC_ATOM_DENOM,
+            NEUTRON_DENOM,
+            'concentrated',
+            Buffer.from(
+              JSON.stringify({
+                amp: '40',
+                gamma: '0.000145',
+                mid_fee: '0.0026',
+                out_fee: '0.0045',
+                fee_gamma: '0.00023',
+                repeg_profit_threshold: '0.000002',
+                min_price_scale_delta: '0.000146',
+                price_scale: '1',
+                ma_half_time: 600,
+                track_asset_balances: true,
+              }),
+            ).toString('base64'),
+          );
+          expect(res.code).toEqual(0);
+        }
+        {
+          const res = await executeFactoryCreatePair(
+            tge.instantiator,
+            tge.contracts.astroFactory,
+            IBC_USDC_DENOM,
+            NEUTRON_DENOM,
+            'concentrated',
+            Buffer.from(
+              JSON.stringify({
+                amp: '40',
+                gamma: '0.000145',
+                mid_fee: '0.0026',
+                out_fee: '0.0045',
+                fee_gamma: '0.00023',
+                repeg_profit_threshold: '0.000002',
+                min_price_scale_delta: '0.000146',
+                price_scale: '1',
+                ma_half_time: 600,
+                track_asset_balances: true,
+              }),
+            ).toString('base64'),
+          );
+          expect(res.code).toEqual(0);
+        }
+      });
+      it('should unsetup CL pairs for generator', async () => {
+        const res = await executeGeneratorSetupPools(
+          tge.instantiator,
+          tge.contracts.astroGenerator,
+          [tge.pairs.atom_ntrn.liquidity, tge.pairs.usdc_ntrn.liquidity],
+          '0',
+        );
+        expect(res.code).toEqual(0);
+        migrationLength = +(res.height || 0);
+      });
+      it('should set pairs data', async () => {
+        const pairs = (
+          await queryFactoryPairs(tge.chain, tge.contracts.astroFactory)
+        ).pairs;
+        expect(pairs).toHaveLength(2);
+        tge.old_pairs = _.cloneDeep(tge.pairs);
+        tge.pairs = {
+          atom_ntrn: {
+            contract: pairs[0].contract_addr,
+            liquidity: pairs[0].liquidity_token,
           },
-        }),
-      ).rejects.toThrowError(/Contract is in migration state/);
-    });
-    it('should not allow to query total lockup at height', async () => {
-      await expect(
-        cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
-          query_lockup_total_at_height: {
-            pool_type: 'ATOM',
-            height: 1,
+          usdc_ntrn: {
+            contract: pairs[1].contract_addr,
+            liquidity: pairs[1].liquidity_token,
           },
-        }),
-      ).rejects.toThrowError(/Contract is in migration state/);
+        };
+      });
+      it('should setup CL pairs for generator', async () => {
+        const res = await executeGeneratorSetupPools(
+          tge.instantiator,
+          tge.contracts.astroGenerator,
+          [tge.pairs.atom_ntrn.liquidity, tge.pairs.usdc_ntrn.liquidity],
+          '1',
+        );
+        expect(res.code).toEqual(0);
+        migrationLength = +(res.height || 0) - migrationLength;
+      });
+      it('should have zero liquidity on CL pools', async () => {
+        const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.usdc_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(usdcBalance.balance).toEqual('0');
+        const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(atomBalance.balance).toEqual('0');
+      });
     });
-    it('should not allow to execute claim', async () => {
-      await expect(
-        cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
+
+    describe('Migration of lp vesting', () => {
+      let claimAtomLP;
+      let claimUsdcLP;
+      const votingPowerBeforeLp: Record<string, number> = {};
+      let totalUnclaimedAtHeightBeforeMigration: number;
+      let unclaimedAtHeightBeforeMigration: number;
+      let unclaimedHeightBeforeMigration: number;
+
+      it('should save voting power before migration: lp', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lpVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          votingPowerBeforeLp[v] = +vp.power;
+        }
+      });
+
+      it('should save voting power before migration: lockdrop', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lockdropVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          votingPowerBeforeLockdrop[v] = +vp.power;
+        }
+      });
+
+      it('should validate numbers & save claim amount before migration', async () => {
+        unclaimedHeightBeforeMigration = await getHeight(neutronChain.sdk);
+        totalUnclaimedAtHeightBeforeMigration =
+          await queryTotalUnclaimedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+          );
+        unclaimedAtHeightBeforeMigration = await queryUnclaimmedAmountAtHeight(
+          cmInstantiator.chain,
+          tge.contracts.vestingAtomLp,
+          unclaimedHeightBeforeMigration,
+          cmInstantiator.wallet.address.toString(),
+        );
+
+        const [
+          vestingInfoAtom,
+          vestingInfoUsdc,
+          lpAuctionBalanceAtom,
+          lpAuctionBalanceUsdc,
+        ] = await Promise.all([
+          neutronChain.queryContract<VestingAccountResponse>(
+            tge.contracts.vestingAtomLp,
+            {
+              vesting_account: {
+                address: cmInstantiator.wallet.address.toString(),
+              },
+            },
+          ),
+          neutronChain.queryContract<VestingAccountResponse>(
+            tge.contracts.vestingUsdcLp,
+            {
+              vesting_account: {
+                address: cmInstantiator.wallet.address.toString(),
+              },
+            },
+          ),
+          neutronChain.queryContract<BalanceResponse>(
+            tge.pairs.atom_ntrn.liquidity,
+            {
+              balance: {
+                address: tge.contracts.auction,
+              },
+            },
+          ),
+          neutronChain.queryContract<BalanceResponse>(
+            tge.pairs.usdc_ntrn.liquidity,
+            {
+              balance: {
+                address: tge.contracts.auction,
+              },
+            },
+          ),
+        ]);
+
+        expect(parseInt(lpAuctionBalanceUsdc.balance)).toBeLessThanOrEqual(7);
+        expect(parseInt(lpAuctionBalanceAtom.balance)).toBeLessThanOrEqual(7);
+        expect(vestingInfoAtom.address).toEqual(
+          cmInstantiator.wallet.address.toString(),
+        );
+        expect(vestingInfoUsdc.address).toEqual(
+          cmInstantiator.wallet.address.toString(),
+        );
+        expect(vestingInfoAtom.info.released_amount).toEqual('0');
+        expect(vestingInfoUsdc.info.released_amount).toEqual('0');
+
+        expect(
+          parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
+        ).toBeCloseTo(89394, -1);
+        claimAtomLP = parseInt(
+          vestingInfoAtom.info.schedules[0].end_point.amount,
+        );
+
+        expect(
+          parseInt(vestingInfoUsdc.info.schedules[0].end_point.amount),
+        ).toBeCloseTo(18087, -1);
+        claimUsdcLP = parseInt(
+          vestingInfoUsdc.info.schedules[0].end_point.amount,
+        );
+      });
+
+      it('should migrate LP vesing vault to V2', async () => {
+        const res = await cmInstantiator.migrateContract(
+          tge.contracts.vestingLpVault,
+          tge.codeIds.VESTING_LP_VAULT_V2,
+          {
+            atom_cl_pool: tge.pairs.atom_ntrn.contract.toString(),
+            usdc_cl_pool: tge.pairs.usdc_ntrn.contract.toString(),
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      it('should migrate lockdrop vault to V2', async () => {
+        const res = await cmInstantiator.migrateContract(
+          tge.contracts.lockdropVault,
+          tge.codeIds.LOCKDROP_VAULT_V2,
+          {
+            atom_cl_pool_contract: tge.pairs.atom_ntrn.contract.toString(),
+            usdc_cl_pool_contract: tge.pairs.usdc_ntrn.contract.toString(),
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      it('should migrate ATOM LP vesing to V2', async () => {
+        const res = await cmInstantiator.migrateContract(
+          tge.contracts.vestingAtomLp,
+          tge.codeIds.VESTING_LP_V2,
+          {
+            max_slippage: '0.1',
+            ntrn_denom: NEUTRON_DENOM,
+            paired_denom: IBC_ATOM_DENOM,
+            xyk_pair: tge.old_pairs.atom_ntrn.contract.toString(),
+            cl_pair: tge.pairs.atom_ntrn.contract.toString(),
+            new_lp_token: tge.pairs.atom_ntrn.liquidity.toString(),
+            batch_size: 1,
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      it('should migrate USDC LP vesing to V2', async () => {
+        const res = await cmInstantiator.migrateContract(
+          tge.contracts.vestingUsdcLp,
+          tge.codeIds.VESTING_LP_V2,
+          {
+            max_slippage: '0.1',
+            ntrn_denom: NEUTRON_DENOM,
+            paired_denom: IBC_USDC_DENOM,
+            xyk_pair: tge.old_pairs.usdc_ntrn.contract,
+            cl_pair: tge.pairs.usdc_ntrn.contract,
+            new_lp_token: tge.pairs.usdc_ntrn.liquidity,
+            batch_size: 50,
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+
+      it('should  migrate atom', async () => {
+        let resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
           JSON.stringify({
-            claim_rewards_and_optionally_unlock: {
-              pool_type: 'USDC',
-              duration: 1,
-              withdraw_lp_stake: false,
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.vestingAtomLp,
+            JSON.stringify({
+              migrate_liquidity: {},
+            }),
+          ),
+        ).rejects.toThrow(/Migration is complete/);
+      });
+
+      it('should  migrate usdc', async () => {
+        let resUsdc = await cmInstantiator.executeContract(
+          tge.contracts.vestingUsdcLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('6000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        );
+        expect(resUsdc.code).toEqual(0);
+        resUsdc = await cmInstantiator.executeContract(
+          tge.contracts.vestingUsdcLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resUsdc.code).toEqual(0);
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.vestingUsdcLp,
+            JSON.stringify({
+              migrate_liquidity: {},
+            }),
+          ),
+        ).rejects.toThrow(/Migration is complete/);
+      });
+
+      it('should compare voting power after migrtaion: lp', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lpVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          expect(+vp.power).toBeCloseTo(votingPowerBeforeLp[v], -3);
+        }
+      });
+
+      it('should compare voting power after migration: lockdrop', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lockdropVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          expect(+vp.power).toBeCloseTo(votingPowerBeforeLockdrop[v], -3);
+        }
+      });
+
+      it('check queries', async () => {
+        const totalUnclaimedAmountAfterMigration =
+          await queryTotalUnclaimedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+          );
+        const unclaimedAmountAfterMigration =
+          await queryUnclaimmedAmountAtHeight(
+            cmInstantiator.chain,
+            tge.contracts.vestingAtomLp,
+            unclaimedHeightBeforeMigration,
+            cmInstantiator.wallet.address.toString(),
+          );
+        expect(totalUnclaimedAmountAfterMigration).toEqual(
+          totalUnclaimedAtHeightBeforeMigration,
+        );
+        expect(unclaimedAmountAfterMigration).toEqual(
+          unclaimedAtHeightBeforeMigration,
+        );
+
+        const total = await queryTotalUnclaimedAmountAtHeight(
+          cmInstantiator.chain,
+          tge.contracts.vestingAtomLp,
+          550,
+        );
+        const lpBalance = await tge.chain.queryContract<BalanceResponse>(
+          tge.pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.vestingAtomLp,
+            },
+          },
+        );
+
+        const ntrnAmount = await queryNtrnCLBalanceAtHeight(
+          cmInstantiator.chain,
+          tge.pairs.atom_ntrn.contract,
+          '550',
+        );
+        const claimableAmount = await queryUnclaimmedAmountAtHeight(
+          cmInstantiator.chain,
+          tge.contracts.vestingAtomLp,
+          550,
+          cmInstantiator.wallet.address.toString(),
+        );
+        const available = await queryAvialableAmount(
+          cmInstantiator.chain,
+          tge.contracts.vestingAtomLp,
+          cmInstantiator.wallet.address.toString(),
+        );
+        expect(total).toBe(lpBalance.balance);
+        expect(+ntrnAmount).toBeGreaterThan(0);
+        expect(claimableAmount).toBe(available);
+      });
+
+      it('should  claim', async () => {
+        const resAtom = await cmInstantiator.executeContract(
+          tge.contracts.vestingAtomLp,
+          JSON.stringify({
+            claim: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        const resUsdc = await cmInstantiator.executeContract(
+          tge.contracts.vestingUsdcLp,
+          JSON.stringify({
+            claim: {},
+          }),
+        );
+        expect(resUsdc.code).toEqual(0);
+
+        const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
+          neutronChain.queryContract<BalanceResponse>(
+            tge.pairs.atom_ntrn.liquidity,
+            {
+              balance: {
+                address: cmInstantiator.wallet.address.toString(),
+              },
+            },
+          ),
+          neutronChain.queryContract<BalanceResponse>(
+            tge.pairs.usdc_ntrn.liquidity,
+            {
+              balance: {
+                address: cmInstantiator.wallet.address.toString(),
+              },
+            },
+          ),
+        ]);
+
+        // actual diff is smth about 0.2% (converting old lp to new)
+        expect(parseInt(lpBalanceAtom.balance)).toBeCloseTo(claimAtomLP, -4);
+        expect(parseInt(lpBalanceUsdc.balance)).toBeCloseTo(claimUsdcLP, -4);
+      });
+    });
+
+    describe('Migration lockdrop to V2', () => {
+      let userLockUpAtHeightBeforeMigration: number;
+      let height: number;
+      it('should save user lock up at height before migration', async () => {
+        height = await getHeight(neutronChain.sdk);
+        userLockUpAtHeightBeforeMigration =
+          await cmInstantiator.chain.queryContract<number>(
+            tge.contracts.lockdrop,
+            {
+              query_user_lockup_total_at_height: {
+                pool_type: 'ATOM',
+                user_address: cmInstantiator.wallet.address,
+                height: height,
+              },
+            },
+          );
+      });
+      it('should migrate lockdrop to V2', async () => {
+        const res = await cmInstantiator.migrateContract(
+          tge.contracts.lockdrop,
+          tge.codeIds.TGE_LOCKDROP_V2,
+          {
+            new_atom_token: tge.pairs.atom_ntrn.liquidity,
+            new_usdc_token: tge.pairs.usdc_ntrn.liquidity,
+            max_slippage: '0.1',
+          },
+        );
+        expect(res.code).toEqual(0);
+        heightDiff = +(res.height || 0);
+      });
+      it('should not allow to query user lockup at height', async () => {
+        await expect(
+          cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
+            query_user_lockup_total_at_height: {
+              pool_type: 'ATOM',
+              user_address: cmInstantiator.wallet.address,
+              height: 1,
             },
           }),
-        ),
-      ).rejects.toThrowError(/Contract is in migration state/);
-    });
-    it('should not allow to migrate users', async () => {
-      await expect(
-        cmInstantiator.executeContract(
+        ).rejects.toThrowError(/Contract is in migration state/);
+      });
+      it('should not allow to query total lockup at height', async () => {
+        await expect(
+          cmInstantiator.chain.queryContract(tge.contracts.lockdrop, {
+            query_lockup_total_at_height: {
+              pool_type: 'ATOM',
+              height: 1,
+            },
+          }),
+        ).rejects.toThrowError(/Contract is in migration state/);
+      });
+      it('should not allow to execute claim', async () => {
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'USDC',
+                duration: 1,
+                withdraw_lp_stake: false,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(/Contract is in migration state/);
+      });
+      it('should not allow to migrate users', async () => {
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              migrate_from_xyk_to_cl: {
+                migrate_users: {},
+              },
+            }),
+          ),
+        ).rejects.toThrowError(/Migration is not in MigrateUsers state/);
+      });
+      it('should not migrate liquidity with over-limit slippage', async () => {
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              migrate_from_xyk_to_cl: {
+                migrate_liquidity: {
+                  slippage_tolerance: '0.2',
+                },
+              },
+            }),
+            [],
+            {
+              gas_limit: Long.fromString('8000000'),
+              amount: [{ denom: tge.chain.denom, amount: '20000' }],
+            },
+          ),
+        ).rejects.toThrowError(/Slippage tolerance is too high/);
+      });
+      it('should migrate liquidity', async () => {
+        const res = await cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              migrate_liquidity: {
+                slippage_tolerance: '0.05',
+              },
+            },
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('8000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+      it('should not migrate users with limit 0', async () => {
+        await expect(
+          cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              migrate_from_xyk_to_cl: {
+                migrate_users: {
+                  limit: 0,
+                },
+              },
+            }),
+            [],
+            {
+              gas_limit: Long.fromString('8000000'),
+              amount: [{ denom: tge.chain.denom, amount: '20000' }],
+            },
+          ),
+        ).rejects.toThrowError(/Limit cannot be zero/);
+      });
+      it('should migrate users', async () => {
+        await cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              migrate_users: {
+                limit: 1,
+              },
+            },
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('8000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        );
+      });
+      it('should migrate users', async () => {
+        const res = await cmInstantiator.executeContract(
+          tge.contracts.lockdrop,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              migrate_users: {
+                limit: 10,
+              },
+            },
+          }),
+          [],
+          {
+            gas_limit: Long.fromString('8000000'),
+            amount: [{ denom: tge.chain.denom, amount: '20000' }],
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+      it('should finish migrate users', async () => {
+        const res = await cmInstantiator.executeContract(
           tge.contracts.lockdrop,
           JSON.stringify({
             migrate_from_xyk_to_cl: {
               migrate_users: {},
             },
           }),
-        ),
-      ).rejects.toThrowError(/Migration is not in MigrateUsers state/);
-    });
-    it('should not migrate liquidity with over-limit slippage', async () => {
-      await expect(
-        cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
-          JSON.stringify({
-            migrate_from_xyk_to_cl: {
-              migrate_liquidity: {
-                slippage_tolerance: '0.2',
-              },
-            },
-          }),
-          [],
-          {
-            gas_limit: Long.fromString('8000000'),
-            amount: [{ denom: tge.chain.denom, amount: '20000' }],
-          },
-        ),
-      ).rejects.toThrowError(/Slippage tolerance is too high/);
-    });
-    it('should migrate liquidity', async () => {
-      const res = await cmInstantiator.executeContract(
-        tge.contracts.lockdrop,
-        JSON.stringify({
-          migrate_from_xyk_to_cl: {
-            migrate_liquidity: {
-              slippage_tolerance: '0.05',
-            },
-          },
-        }),
-        [],
-        {
-          gas_limit: Long.fromString('8000000'),
-          amount: [{ denom: tge.chain.denom, amount: '20000' }],
-        },
-      );
-      expect(res.code).toEqual(0);
-    });
-    it('should not migrate users with limit 0', async () => {
-      await expect(
-        cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
-          JSON.stringify({
-            migrate_from_xyk_to_cl: {
-              migrate_users: {
-                limit: 0,
-              },
-            },
-          }),
-          [],
-          {
-            gas_limit: Long.fromString('8000000'),
-            amount: [{ denom: tge.chain.denom, amount: '20000' }],
-          },
-        ),
-      ).rejects.toThrowError(/Limit cannot be zero/);
-    });
-    it('should migrate users', async () => {
-      await cmInstantiator.executeContract(
-        tge.contracts.lockdrop,
-        JSON.stringify({
-          migrate_from_xyk_to_cl: {
-            migrate_users: {
-              limit: 1,
-            },
-          },
-        }),
-        [],
-        {
-          gas_limit: Long.fromString('8000000'),
-          amount: [{ denom: tge.chain.denom, amount: '20000' }],
-        },
-      );
-    });
-    it('should migrate users', async () => {
-      const res = await cmInstantiator.executeContract(
-        tge.contracts.lockdrop,
-        JSON.stringify({
-          migrate_from_xyk_to_cl: {
-            migrate_users: {
-              limit: 10,
-            },
-          },
-        }),
-        [],
-        {
-          gas_limit: Long.fromString('8000000'),
-          amount: [{ denom: tge.chain.denom, amount: '20000' }],
-        },
-      );
-      expect(res.code).toEqual(0);
-    });
-    it('should finish migrate users', async () => {
-      const res = await cmInstantiator.executeContract(
-        tge.contracts.lockdrop,
-        JSON.stringify({
-          migrate_from_xyk_to_cl: {
-            migrate_users: {},
-          },
-        }),
-      );
-      expect(res.code).toEqual(0);
-      const height = +(res.height || 0);
-      heightDiff = height - heightDiff;
-    });
-    it('should allow to query total lockup at height', async () => {
-      const res = await cmInstantiator.chain.queryContract(
-        tge.contracts.lockdrop,
-        {
-          query_lockup_total_at_height: {
-            pool_type: 'ATOM',
-            height: 1,
-          },
-        },
-      );
-      expect(res).toEqual('0');
-    });
-    it('should have non-zero liquidity on CL pools', async () => {
-      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
-        tge.pairs.usdc_ntrn.liquidity,
-        {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(usdcBalance.balance).not.toEqual('0');
-      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
-        tge.pairs.atom_ntrn.liquidity,
-        {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(atomBalance.balance).not.toEqual('0');
-    });
-    it('should have zero liquidity on XYK pools', async () => {
-      const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
-        oldPairs.usdc_ntrn.liquidity,
-        {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(usdcBalance.balance).toEqual('0');
-      const atomBalance = await neutronChain.queryContract<BalanceResponse>(
-        oldPairs.atom_ntrn.liquidity,
-        {
-          balance: {
-            address: tge.contracts.astroGenerator,
-          },
-        },
-      );
-      expect(atomBalance.balance).toEqual('0');
-    });
-    it('query pool info', async () => {
-      const atomPool =
-        await neutronChain.queryContract<LockdropPoolInfoResponse>(
+        );
+        expect(res.code).toEqual(0);
+        const height = +(res.height || 0);
+        heightDiff = height - heightDiff;
+      });
+      it('should allow to query total lockup at height', async () => {
+        const res = await cmInstantiator.chain.queryContract(
           tge.contracts.lockdrop,
           {
-            pool: {
+            query_lockup_total_at_height: {
               pool_type: 'ATOM',
+              height: 1,
             },
           },
         );
-      expect(+atomPool.amount_in_lockups).not.toEqual(0);
-      expect(+atomPool.generator_ntrn_per_share).not.toEqual(0);
-      const usdcPool =
-        await neutronChain.queryContract<LockdropPoolInfoResponse>(
-          tge.contracts.lockdrop,
-          {
-            pool: {
-              pool_type: 'USDC',
-            },
-          },
-        );
-      expect(+usdcPool.amount_in_lockups).not.toEqual(0);
-      expect(+usdcPool.generator_ntrn_per_share).not.toEqual(0);
-    });
-  });
-  describe('lockdrop rewards', () => {
-    let balanceBeforeLockdrop: number;
-    let balanceBeforeAirdopLockdrop: number;
-    let balanceBeforeAirdropAuctionLockdropVesting: number;
-    let airdropAuctionLockdropVestingUserInfo: LockDropInfoResponse;
-    describe('before claim', () => {
-      it('query balance before claim rewards', async () => {
-        balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
-          tgeWallets['auctionLockdrop'].wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        balanceBeforeAirdopLockdrop = await neutronChain.queryDenomBalance(
-          tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        balanceBeforeAirdropAuctionLockdropVesting =
-          await neutronChain.queryDenomBalance(
-            tgeWallets[
-              'airdropAuctionLockdropVesting'
-            ].wallet.address.toString(),
-            NEUTRON_DENOM,
-          );
-
-        airdropAuctionLockdropVestingUserInfo =
-          await neutronChain.queryContract<LockDropInfoResponse>(
+        expect(res).toEqual('0');
+      });
+      it('should check user lock up at height before migration and after at the same height', async () => {
+        const userLockUpAtHeightAfterMigration =
+          await cmInstantiator.chain.queryContract<number>(
             tge.contracts.lockdrop,
             {
-              user_info: {
-                address:
-                  tgeWallets[
-                    'airdropAuctionLockdropVesting'
-                  ].wallet.address.toString(),
+              query_user_lockup_total_at_height: {
+                pool_type: 'ATOM',
+                user_address: cmInstantiator.wallet.address,
+                height: height,
               },
             },
           );
+        expect(userLockUpAtHeightAfterMigration).toEqual(
+          userLockUpAtHeightBeforeMigration,
+        );
+      });
+      it('should compare voting power after migration: lockdrop', async () => {
+        for (const v of [
+          'airdropAuctionVesting',
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+          'auctionVesting',
+        ]) {
+          const vp = await tge.lockdropVotingPower(
+            tgeWallets[v].wallet.address.toString(),
+          );
+          expect(+vp.power).toBeCloseTo(votingPowerBeforeLockdrop[v], -3);
+        }
+      });
+      it('should have non-zero liquidity on CL pools', async () => {
+        const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.usdc_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(usdcBalance.balance).not.toEqual('0');
+        const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(atomBalance.balance).not.toEqual('0');
+      });
+      it('should have zero liquidity on XYK pools', async () => {
+        const usdcBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.old_pairs.usdc_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(usdcBalance.balance).toEqual('0');
+        const atomBalance = await neutronChain.queryContract<BalanceResponse>(
+          tge.old_pairs.atom_ntrn.liquidity,
+          {
+            balance: {
+              address: tge.contracts.astroGenerator,
+            },
+          },
+        );
+        expect(atomBalance.balance).toEqual('0');
+      });
+      it('query pool info', async () => {
+        const atomPool =
+          await neutronChain.queryContract<LockdropPoolInfoResponse>(
+            tge.contracts.lockdrop,
+            {
+              pool: {
+                pool_type: 'ATOM',
+              },
+            },
+          );
+        expect(+atomPool.amount_in_lockups).not.toEqual(0);
+        expect(+atomPool.generator_ntrn_per_share).not.toEqual(0);
+        const usdcPool =
+          await neutronChain.queryContract<LockdropPoolInfoResponse>(
+            tge.contracts.lockdrop,
+            {
+              pool: {
+                pool_type: 'USDC',
+              },
+            },
+          );
+        expect(+usdcPool.amount_in_lockups).not.toEqual(0);
+        expect(+usdcPool.generator_ntrn_per_share).not.toEqual(0);
       });
     });
     describe('lockdrop rewards', () => {
-      beforeAll(async () => {
-        await waitTill(
-          tge.times.lockdropInit +
-            tge.times.lockdropDepositDuration +
-            tge.times.lockdropWithdrawalDuration +
-            1,
-        );
+      let balanceBeforeLockdrop: number;
+      let balanceBeforeAirdopLockdrop: number;
+      let balanceBeforeAirdropAuctionLockdropVesting: number;
+      let airdropAuctionLockdropVestingUserInfo: LockDropInfoResponse;
+      describe('before claim', () => {
+        it('query balance before claim rewards', async () => {
+          balanceBeforeLockdrop = await neutronChain.queryDenomBalance(
+            tgeWallets['auctionLockdrop'].wallet.address.toString(),
+            NEUTRON_DENOM,
+          );
+          balanceBeforeAirdopLockdrop = await neutronChain.queryDenomBalance(
+            tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
+            NEUTRON_DENOM,
+          );
+          balanceBeforeAirdropAuctionLockdropVesting =
+            await neutronChain.queryDenomBalance(
+              tgeWallets[
+                'airdropAuctionLockdropVesting'
+              ].wallet.address.toString(),
+              NEUTRON_DENOM,
+            );
+
+          airdropAuctionLockdropVestingUserInfo =
+            await neutronChain.queryContract<LockDropInfoResponse>(
+              tge.contracts.lockdrop,
+              {
+                user_info: {
+                  address:
+                    tgeWallets[
+                      'airdropAuctionLockdropVesting'
+                    ].wallet.address.toString(),
+                },
+              },
+            );
+        });
       });
+      describe('lockdrop rewards', () => {
+        beforeAll(async () => {
+          await waitTill(
+            tge.times.lockdropInit +
+              tge.times.lockdropDepositDuration +
+              tge.times.lockdropWithdrawalDuration +
+              1,
+          );
+        });
 
-      it('for cmInstantiator without withdraw', async () => {
-        const rewardsStateBeforeClaim = await tge.generatorRewardsState(
-          cmInstantiator.wallet.address.toString(),
-        );
-
-        const res = await cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
-          JSON.stringify({
-            claim_rewards_and_optionally_unlock: {
-              pool_type: 'USDC',
-              duration: 1,
-              withdraw_lp_stake: false,
-            },
-          }),
-        );
-        expect(res.code).toEqual(0);
-        const claimHeight = +(res.height || 0);
-
-        const rewardsStateAfterClaim = await tge.generatorRewardsState(
-          cmInstantiator.wallet.address.toString(),
-        );
-
-        expect(
-          rewardsStateAfterClaim.balanceNtrn +
-            FEE_SIZE -
-            rewardsStateBeforeClaim.balanceNtrn,
-        ).toEqual(120402); // lockdrop rewards share for the user
-        const expectedGeneratorRewards = +(
-          (
-            rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-              (i) => i.pool_type == 'USDC' && i.duration == 1,
-            ) || {}
-          ).claimable_generator_astro_debt || '0'
-        );
-        expect(expectedGeneratorRewards).toBeGreaterThan(0);
-
-        // we expect the astro balance to increase by somewhere between user rewards amount and user
-        // rewards amount plus rewards per block amount because rewards drip each block.
-        const astroBalanceDiff =
-          rewardsStateAfterClaim.balanceAstro -
-          rewardsStateBeforeClaim.balanceAstro;
-        expect(astroBalanceDiff).toBeGreaterThan(0);
-        expect(astroBalanceDiff).toBeGreaterThanOrEqual(
-          expectedGeneratorRewards,
-        );
-        expect(astroBalanceDiff).toBeLessThan(
-          expectedGeneratorRewards + tge.generatorRewardsPerBlock,
-        );
-
-        await neutronChain.blockWaiter.waitBlocks(20);
-        const pending = await neutronChain.queryContract<any>(
-          tge.contracts.astroGenerator,
-          {
-            pending_token: {
-              lp_token: tge.pairs.usdc_ntrn.liquidity,
-              user: tge.contracts.lockdrop,
-            },
-          },
-        );
-        expect(+pending.pending).toBeGreaterThan(0);
-        const resSecond = await cmInstantiator.executeContract(
-          tge.contracts.lockdrop,
-          JSON.stringify({
-            claim_rewards_and_optionally_unlock: {
-              pool_type: 'USDC',
-              duration: 1,
-              withdraw_lp_stake: false,
-            },
-          }),
-        );
-        const secondClaimHeight = +(resSecond.height || 0);
-        const { balanceAstro: newBalanceAstro } =
-          await tge.generatorRewardsState(
+        it('for cmInstantiator without withdraw', async () => {
+          const rewardsStateBeforeClaim = await tge.generatorRewardsState(
             cmInstantiator.wallet.address.toString(),
           );
-        const newAstroIncentivesPerBlock =
-          (newBalanceAstro - rewardsStateAfterClaim.balanceAstro) /
-          (secondClaimHeight - claimHeight);
-        expect(newAstroIncentivesPerBlock).toBeCloseTo(
-          astroIncentivesPerBlock,
-          1,
-        );
-        // withdraw_lp_stake is false => no lp tokens returned
-        expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
-          rewardsStateAfterClaim.atomNtrnLpTokenBalance,
-        );
-        expect(rewardsStateBeforeClaim.usdcNtrnLpTokenBalance).toEqual(
-          rewardsStateAfterClaim.usdcNtrnLpTokenBalance,
-        );
-      });
 
-      it("unavailable for those who didn't participate", async () => {
-        for (const v of [
-          'airdropOnly',
-          'airdropAuctionVesting',
-          'auctionVesting',
-        ]) {
-          await expect(
-            tgeWallets[v].executeContract(
-              tge.contracts.lockdrop,
-              JSON.stringify({
-                claim_rewards_and_optionally_unlock: {
-                  pool_type: 'USDC',
-                  duration: 1,
-                  withdraw_lp_stake: false,
-                },
-              }),
-            ),
-          ).rejects.toThrowError(/LockupInfoV1 not found/);
-          await expect(
-            tgeWallets[v].executeContract(
-              tge.contracts.lockdrop,
-              JSON.stringify({
-                claim_rewards_and_optionally_unlock: {
-                  pool_type: 'ATOM',
-                  duration: 1,
-                  withdraw_lp_stake: false,
-                },
-              }),
-            ),
-          ).rejects.toThrowError(/LockupInfoV1 not found/);
-        }
-      });
-
-      for (const v of [
-        'airdropAuctionLockdrop',
-        'airdropAuctionLockdropVesting',
-        'auctionLockdrop',
-        'auctionLockdropVesting',
-      ]) {
-        it('for ' + v + ' without withdraw', async () => {
-          const rewardsStateBeforeClaim = await tge.generatorRewardsState(
-            tgeWallets[v].wallet.address.toString(),
-          );
-
-          const res = await tgeWallets[v].executeContract(
+          const res = await cmInstantiator.executeContract(
             tge.contracts.lockdrop,
             JSON.stringify({
               claim_rewards_and_optionally_unlock: {
@@ -2058,16 +2334,17 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             }),
           );
           expect(res.code).toEqual(0);
+          const claimHeight = +(res.height || 0);
 
           const rewardsStateAfterClaim = await tge.generatorRewardsState(
-            tgeWallets[v].wallet.address.toString(),
+            cmInstantiator.wallet.address.toString(),
           );
 
-          // a more precise check is done later in 'should get extra untrn from unclaimed airdrop'
-          // testcase, here we simply check that the balance has increased
-          expect(rewardsStateAfterClaim.balanceNtrn + FEE_SIZE).toBeGreaterThan(
-            rewardsStateBeforeClaim.balanceNtrn,
-          );
+          expect(
+            rewardsStateAfterClaim.balanceNtrn +
+              FEE_SIZE -
+              rewardsStateBeforeClaim.balanceNtrn,
+          ).toBeCloseTo(120212, -3); // lockdrop rewards share for the user
 
           const expectedGeneratorRewards = +(
             (
@@ -2079,10 +2356,11 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
           // we expect the astro balance to increase by somewhere between user rewards amount and user
-          // rewards amount plus rewards per block amount because rewards amount increases each block.
+          // rewards amount plus rewards per block amount because rewards drip each block.
           const astroBalanceDiff =
             rewardsStateAfterClaim.balanceAstro -
             rewardsStateBeforeClaim.balanceAstro;
+          expect(astroBalanceDiff).toBeGreaterThan(0);
           expect(astroBalanceDiff).toBeGreaterThanOrEqual(
             expectedGeneratorRewards,
           );
@@ -2090,6 +2368,39 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             expectedGeneratorRewards + tge.generatorRewardsPerBlock,
           );
 
+          await neutronChain.blockWaiter.waitBlocks(20);
+          const pending = await neutronChain.queryContract<any>(
+            tge.contracts.astroGenerator,
+            {
+              pending_token: {
+                lp_token: tge.pairs.usdc_ntrn.liquidity,
+                user: tge.contracts.lockdrop,
+              },
+            },
+          );
+          expect(+pending.pending).toBeGreaterThan(0);
+          const resSecond = await cmInstantiator.executeContract(
+            tge.contracts.lockdrop,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'USDC',
+                duration: 1,
+                withdraw_lp_stake: false,
+              },
+            }),
+          );
+          const secondClaimHeight = +(resSecond.height || 0);
+          const { balanceAstro: newBalanceAstro } =
+            await tge.generatorRewardsState(
+              cmInstantiator.wallet.address.toString(),
+            );
+          const newAstroIncentivesPerBlock =
+            (newBalanceAstro - rewardsStateAfterClaim.balanceAstro) /
+            (secondClaimHeight - claimHeight);
+          expect(newAstroIncentivesPerBlock).toBeCloseTo(
+            astroIncentivesPerBlock,
+            1,
+          );
           // withdraw_lp_stake is false => no lp tokens returned
           expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
             rewardsStateAfterClaim.atomNtrnLpTokenBalance,
@@ -2098,149 +2409,249 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             rewardsStateAfterClaim.usdcNtrnLpTokenBalance,
           );
         });
-      }
 
-      for (const v of [
-        'airdropAuctionLockdrop',
-        'airdropAuctionLockdropVesting',
-        'auctionLockdrop',
-        'auctionLockdropVesting',
-      ]) {
-        it('for ' + v + ' with withdraw', async () => {
-          const rewardsStateBeforeClaim = await tge.generatorRewardsState(
-            tgeWallets[v].wallet.address.toString(),
-          );
+        it("unavailable for those who didn't participate", async () => {
+          for (const v of [
+            'airdropOnly',
+            'airdropAuctionVesting',
+            'auctionVesting',
+          ]) {
+            await expect(
+              tgeWallets[v].executeContract(
+                tge.contracts.lockdrop,
+                JSON.stringify({
+                  claim_rewards_and_optionally_unlock: {
+                    pool_type: 'USDC',
+                    duration: 1,
+                    withdraw_lp_stake: false,
+                  },
+                }),
+              ),
+            ).rejects.toThrowError(/LockupInfoV1 not found/);
+            await expect(
+              tgeWallets[v].executeContract(
+                tge.contracts.lockdrop,
+                JSON.stringify({
+                  claim_rewards_and_optionally_unlock: {
+                    pool_type: 'ATOM',
+                    duration: 1,
+                    withdraw_lp_stake: false,
+                  },
+                }),
+              ),
+            ).rejects.toThrowError(/LockupInfoV1 not found/);
+          }
+        });
 
-          let res = await tgeWallets[v].executeContract(
-            tge.contracts.lockdrop,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'USDC',
-                duration: 1,
-                withdraw_lp_stake: true,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
-          res = await tgeWallets[v].executeContract(
-            tge.contracts.lockdrop,
-            JSON.stringify({
-              claim_rewards_and_optionally_unlock: {
-                pool_type: 'ATOM',
-                duration: 1,
-                withdraw_lp_stake: true,
-              },
-            }),
-          );
-          expect(res.code).toEqual(0);
+        for (const v of [
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+        ]) {
+          it('for ' + v + ' without withdraw', async () => {
+            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
 
-          const rewardsStateAfterClaim = await tge.generatorRewardsState(
-            tgeWallets[v].wallet.address.toString(),
-          );
+            const res = await tgeWallets[v].executeContract(
+              tge.contracts.lockdrop,
+              JSON.stringify({
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'USDC',
+                  duration: 1,
+                  withdraw_lp_stake: false,
+                },
+              }),
+            );
+            expect(res.code).toEqual(0);
 
-          expect(rewardsStateAfterClaim.balanceNtrn + 2 * FEE_SIZE).toEqual(
-            rewardsStateBeforeClaim.balanceNtrn,
-          ); // ntrn rewards were sent at the previous claim, so no ntrn income is expected
+            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
 
-          // withdraw_lp_stake is true => expect lp tokens to be unlocked and returned to the user
-          const usdcNtrnLockedLp = +(
-            (
-              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-                (i) => i.pool_type == 'USDC' && i.duration == 1,
-              ) || {}
-            ).lp_units_locked || '0'
-          );
-          expect(usdcNtrnLockedLp).toBeGreaterThan(0);
-          expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
-            rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
-          );
-          const atomNtrnLockedLp = +(
-            (
-              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
-                (i) => i.pool_type == 'ATOM' && i.duration == 1,
-              ) || {}
-            ).lp_units_locked || '0'
-          );
-          expect(atomNtrnLockedLp).toBeGreaterThan(0);
-          expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
-            rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
-          );
+            // a more precise check is done later in 'should get extra untrn from unclaimed airdrop'
+            // testcase, here we simply check that the balance has increased
+            expect(
+              rewardsStateAfterClaim.balanceNtrn + FEE_SIZE,
+            ).toBeGreaterThan(rewardsStateBeforeClaim.balanceNtrn);
 
-          // claimed from both pools above, so expected rewards amount is a sum of both
-          const expectedGeneratorRewards =
-            +(
+            const expectedGeneratorRewards = +(
               (
                 rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                   (i) => i.pool_type == 'USDC' && i.duration == 1,
                 ) || {}
               ).claimable_generator_astro_debt || '0'
-            ) +
-            +(
+            );
+            expect(expectedGeneratorRewards).toBeGreaterThan(0);
+
+            // we expect the astro balance to increase by somewhere between user rewards amount and user
+            // rewards amount plus rewards per block amount because rewards amount increases each block.
+            const astroBalanceDiff =
+              rewardsStateAfterClaim.balanceAstro -
+              rewardsStateBeforeClaim.balanceAstro;
+            expect(astroBalanceDiff).toBeGreaterThanOrEqual(
+              expectedGeneratorRewards,
+            );
+            expect(astroBalanceDiff).toBeLessThan(
+              expectedGeneratorRewards + tge.generatorRewardsPerBlock,
+            );
+
+            // withdraw_lp_stake is false => no lp tokens returned
+            expect(rewardsStateBeforeClaim.atomNtrnLpTokenBalance).toEqual(
+              rewardsStateAfterClaim.atomNtrnLpTokenBalance,
+            );
+            expect(rewardsStateBeforeClaim.usdcNtrnLpTokenBalance).toEqual(
+              rewardsStateAfterClaim.usdcNtrnLpTokenBalance,
+            );
+          });
+        }
+
+        for (const v of [
+          'airdropAuctionLockdrop',
+          'airdropAuctionLockdropVesting',
+          'auctionLockdrop',
+          'auctionLockdropVesting',
+        ]) {
+          it('for ' + v + ' with withdraw', async () => {
+            const rewardsStateBeforeClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
+
+            let res = await tgeWallets[v].executeContract(
+              tge.contracts.lockdrop,
+              JSON.stringify({
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'USDC',
+                  duration: 1,
+                  withdraw_lp_stake: true,
+                },
+              }),
+            );
+            expect(res.code).toEqual(0);
+            res = await tgeWallets[v].executeContract(
+              tge.contracts.lockdrop,
+              JSON.stringify({
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'ATOM',
+                  duration: 1,
+                  withdraw_lp_stake: true,
+                },
+              }),
+            );
+            expect(res.code).toEqual(0);
+
+            const rewardsStateAfterClaim = await tge.generatorRewardsState(
+              tgeWallets[v].wallet.address.toString(),
+            );
+
+            expect(rewardsStateAfterClaim.balanceNtrn + 2 * FEE_SIZE).toEqual(
+              rewardsStateBeforeClaim.balanceNtrn,
+            ); // ntrn rewards were sent at the previous claim, so no ntrn income is expected
+
+            // withdraw_lp_stake is true => expect lp tokens to be unlocked and returned to the user
+            const usdcNtrnLockedLp = +(
+              (
+                rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                  (i) => i.pool_type == 'USDC' && i.duration == 1,
+                ) || {}
+              ).lp_units_locked || '0'
+            );
+            expect(usdcNtrnLockedLp).toBeGreaterThan(0);
+            expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
+              rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
+            );
+            const atomNtrnLockedLp = +(
               (
                 rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                   (i) => i.pool_type == 'ATOM' && i.duration == 1,
                 ) || {}
-              ).claimable_generator_astro_debt || '0'
+              ).lp_units_locked || '0'
             );
-          expect(expectedGeneratorRewards).toBeGreaterThan(0);
+            expect(atomNtrnLockedLp).toBeGreaterThan(0);
+            expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
+              rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
+            );
 
-          // we expect the astro balance to increase by somewhere between user rewards amount and user
-          // rewards amount plus 2*rewards per block amount because rewards amount increases each block.
-          const astroBalanceDiff =
-            rewardsStateAfterClaim.balanceAstro -
-            rewardsStateBeforeClaim.balanceAstro;
-          expect(astroBalanceDiff).toBeGreaterThanOrEqual(
-            expectedGeneratorRewards,
-          );
-          expect(astroBalanceDiff).toBeLessThan(
-            expectedGeneratorRewards + 2 * tge.generatorRewardsPerBlock,
-          );
-        });
-      }
-    });
-    describe('airdrop checks', () => {
-      it('should get extra untrn from unclaimed airdrop', async () => {
-        const balanceAfterLockdrop = await neutronChain.queryDenomBalance(
-          tgeWallets['auctionLockdrop'].wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        const balanceAfterAirdopLockdrop = await neutronChain.queryDenomBalance(
-          tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
-          NEUTRON_DENOM,
-        );
-        // we have to take into account
-        // every wallet has executed 3 tx during `should get lockdrop rewards` stage
-        // every tx costs 10000untrn.
-        const feeCompensation = 3 * FEE_SIZE;
-        const claimedRewardWithAirdrop =
-          balanceAfterAirdopLockdrop -
-          balanceBeforeAirdopLockdrop +
-          feeCompensation;
-        const claimedRewardNoAirdrop =
-          balanceAfterLockdrop - balanceBeforeLockdrop + feeCompensation;
-        // claimed rewards + airdrop should be ~2 times bigger than clear reward.
-        // 3317(reward) + 3371(3317 extra airdrop + 54 vested airdrop) vs 3317
-        expect(
-          claimedRewardWithAirdrop - 2 * claimedRewardNoAirdrop,
-        ).toBeLessThan(100);
+            // claimed from both pools above, so expected rewards amount is a sum of both
+            const expectedGeneratorRewards =
+              +(
+                (
+                  rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                    (i) => i.pool_type == 'USDC' && i.duration == 1,
+                  ) || {}
+                ).claimable_generator_astro_debt || '0'
+              ) +
+              +(
+                (
+                  rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+                    (i) => i.pool_type == 'ATOM' && i.duration == 1,
+                  ) || {}
+                ).claimable_generator_astro_debt || '0'
+              );
+            expect(expectedGeneratorRewards).toBeGreaterThan(0);
+
+            // we expect the astro balance to increase by somewhere between user rewards amount and user
+            // rewards amount plus 2*rewards per block amount because rewards amount increases each block.
+            const astroBalanceDiff =
+              rewardsStateAfterClaim.balanceAstro -
+              rewardsStateBeforeClaim.balanceAstro;
+            expect(astroBalanceDiff).toBeGreaterThanOrEqual(
+              expectedGeneratorRewards,
+            );
+            expect(astroBalanceDiff).toBeLessThan(
+              expectedGeneratorRewards + 2 * tge.generatorRewardsPerBlock,
+            );
+          });
+        }
       });
-      it('Correct instant airdrop amount', async () => {
-        const balanceAfterAirdropAuctionLockdropVesting =
-          await neutronChain.queryDenomBalance(
-            tgeWallets[
-              'airdropAuctionLockdropVesting'
-            ].wallet.address.toString(),
+      describe('airdrop checks', () => {
+        it('should get extra untrn from unclaimed airdrop', async () => {
+          const balanceAfterLockdrop = await neutronChain.queryDenomBalance(
+            tgeWallets['auctionLockdrop'].wallet.address.toString(),
             NEUTRON_DENOM,
           );
-        const expectedLockdropReward = Number(
-          airdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
-        );
-        const feeCompensation = 3 * FEE_SIZE;
-        expect(
-          expectedLockdropReward +
-            balanceBeforeAirdropAuctionLockdropVesting +
-            TINY_AIRDROP_AMOUNT,
-        ).toEqual(feeCompensation + balanceAfterAirdropAuctionLockdropVesting);
+          const balanceAfterAirdopLockdrop =
+            await neutronChain.queryDenomBalance(
+              tgeWallets['airdropAuctionLockdrop'].wallet.address.toString(),
+              NEUTRON_DENOM,
+            );
+          // we have to take into account
+          // every wallet has executed 3 tx during `should get lockdrop rewards` stage
+          // every tx costs 10000untrn.
+          const feeCompensation = 3 * FEE_SIZE;
+          const claimedRewardWithAirdrop =
+            balanceAfterAirdopLockdrop -
+            balanceBeforeAirdopLockdrop +
+            feeCompensation;
+          const claimedRewardNoAirdrop =
+            balanceAfterLockdrop - balanceBeforeLockdrop + feeCompensation;
+          // claimed rewards + airdrop should be ~2 times bigger than clear reward.
+          // 3317(reward) + 3371(3317 extra airdrop + 54 vested airdrop) vs 3317
+          expect(
+            claimedRewardWithAirdrop - 2 * claimedRewardNoAirdrop,
+          ).toBeLessThan(100);
+        });
+        it('Correct instant airdrop amount', async () => {
+          const balanceAfterAirdropAuctionLockdropVesting =
+            await neutronChain.queryDenomBalance(
+              tgeWallets[
+                'airdropAuctionLockdropVesting'
+              ].wallet.address.toString(),
+              NEUTRON_DENOM,
+            );
+          const expectedLockdropReward = Number(
+            airdropAuctionLockdropVestingUserInfo.total_ntrn_rewards,
+          );
+          const feeCompensation = 3 * FEE_SIZE;
+          expect(
+            expectedLockdropReward +
+              balanceBeforeAirdropAuctionLockdropVesting +
+              TINY_AIRDROP_AMOUNT,
+          ).toEqual(
+            feeCompensation + balanceAfterAirdropAuctionLockdropVesting,
+          );
+        });
       });
     });
   });
