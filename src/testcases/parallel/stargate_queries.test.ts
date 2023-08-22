@@ -228,28 +228,6 @@ describe('Neutron / Simple', () => {
       expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);
     });
 
-    test('contractmanager address failures should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          contractmanager_address_failures: {
-            address: neutronAccount.wallet.address.toString(),
-          },
-        }),
-      );
-      expect(res.failures).toEqual([]);
-    });
-
-    test('contractmanager failures should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          contractmanager_failures: {
-            address: neutronAccount.wallet.address.toString(),
-          },
-        }),
-      );
-      expect(res.failures).toEqual([]);
-    });
-
     test('interchaintx params should work', async () => {
       const res = JSON.parse(await querySmart({ interchaintx_params: {} }));
       expect(+res.params.msg_submit_tx_max_messages).toBeGreaterThan(0);
@@ -265,6 +243,14 @@ describe('Neutron / Simple', () => {
     test('feeburner params should work', async () => {
       const res = JSON.parse(await querySmart({ feeburner_params: {} }));
       expect(res.params.neutron_denom).toBe('untrn');
+    });
+
+    test('non whitelisted query should NOT work', async () => {
+      await expect(
+        querySmart({ feeburner_total_burned_neutrons_amount: {} }),
+      ).rejects.toThrow(
+        /Unsupported query type: '\/neutron.feeburner.Query\/TotalBurnedNeutronsAmount'/,
+      );
     });
   });
 });
