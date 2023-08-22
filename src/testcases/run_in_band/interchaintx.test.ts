@@ -545,7 +545,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {},
+            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
           }),
         );
 
@@ -669,12 +669,57 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
+      test('ack failure during sudo out of gas', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled_infinite_loop',
+            },
+          }),
+        );
+
+        // Testing ACK failure
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+            },
+          }),
+        );
+
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 4,
+          100,
+        );
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
+      });
+
       test('timeout failure during sudo', async () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {},
+            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
           }),
         );
 
@@ -696,7 +741,53 @@ describe('Neutron / Interchain TXs', () => {
         await getWithAttempts<AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
-          async (data) => data.failures.length == 4,
+          async (data) => data.failures.length == 5,
+          100,
+        );
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
+      });
+
+      test('out of gas failure during sudo timeout', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled_infinite_loop',
+            },
+          }),
+        );
+
+        // Testing timeout failure
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            delegate: {
+              interchain_account_id: icaId2,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+              timeout: 1,
+            },
+          }),
+        );
+
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 6,
           100,
         );
 
@@ -747,6 +838,22 @@ describe('Neutron / Interchain TXs', () => {
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '3',
             ack_id: '5',
+            ack_type: 'ack',
+          },
+          {
+            channel_id: 'channel-3',
+            address:
+              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            id: '4',
+            ack_id: '6',
+            ack_type: 'timeout',
+          },
+          {
+            channel_id: 'channel-2',
+            address:
+              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            id: '5',
+            ack_id: '3',
             ack_type: 'timeout',
           },
         ]);

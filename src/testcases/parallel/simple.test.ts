@@ -470,7 +470,7 @@ describe('Neutron / Simple', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {},
+            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
           }),
         );
 
@@ -552,6 +552,41 @@ describe('Neutron / Simple', () => {
         );
       });
     });
+
+    test('execute contract with sudo out of gas', async () => {
+      // Mock sudo handler to fail
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          integration_tests_set_sudo_failure_mock: {
+            state: 'enabled_infinite_loop',
+          },
+        }),
+      );
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          send: {
+            channel: 'channel-0',
+            to: gaiaAccount.wallet.address.toString(),
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        }),
+      );
+
+      await neutronChain.blockWaiter.waitBlocks(5);
+
+      const res = await getWithAttempts<AckFailuresResponse>(
+        neutronChain.blockWaiter,
+        async () => neutronChain.queryAckFailures(contractAddress),
+        // Wait until there 6 failures in the list
+        async (data) => data.failures.length == 6,
+      );
+      expect(res.failures.length).toEqual(6);
+    });
+
     describe('Failures limit test', () => {
       test("failures with small limit doesn't return an error", async () => {
         const pagination: PageRequest = {
