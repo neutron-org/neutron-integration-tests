@@ -266,5 +266,13 @@ describe('Neutron / Simple', () => {
       const res = JSON.parse(await querySmart({ feeburner_params: {} }));
       expect(res.params.neutron_denom).toBe('untrn');
     });
+
+    test('non whitelisted query should NOT work', async () => {
+      await expect(
+        querySmart({ feeburner_total_burned_neutrons_amount: {} }),
+      ).rejects.toThrow(
+        /Unsupported query type: '\/neutron.feeburner.Query\/TotalBurnedNeutronsAmount'/,
+      );
+    });
   });
 });
