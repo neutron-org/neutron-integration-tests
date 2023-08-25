@@ -1,6 +1,6 @@
 import { google } from '../generated/proto';
 import Any = google.protobuf.Any;
-import {ADMIN_MODULE_ADDRESS} from "./cosmos";
+import { ADMIN_MODULE_ADDRESS } from './cosmos';
 
 export type ParamChangeProposalInfo = {
   title: string;
