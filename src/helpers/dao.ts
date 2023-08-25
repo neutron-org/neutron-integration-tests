@@ -828,14 +828,16 @@ export class DaoMember {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
-            software_upgrade_proposal: {
-              title,
-              description,
-              plan: {
-                name,
-                height,
-                info,
-              },
+            proposal_execute_message: {
+              message: JSON.stringify({
+                '@type': '/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade',
+                authority: 'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+                plan: {
+                  name,
+                  height,
+                  info,
+                },
+              }),
             },
           },
         },
@@ -861,9 +863,11 @@ export class DaoMember {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
-            cancel_software_upgrade_proposal: {
-              title,
-              description,
+            proposal_execute_message: {
+              message: JSON.stringify({
+                '@type': '/cosmos.upgrade.v1beta1.MsgCancelUpgrade',
+                authority: 'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+              }),
             },
           },
         },
@@ -1205,13 +1209,13 @@ export class DaoMember {
   async submitUpdateAdminProposal(
     title: string,
     description: string,
+    sender: string,
     contract: string,
     newAdmin: string,
     amount: string,
   ): Promise<number> {
     const message = updateAdminProposal({
-      title,
-      description,
+      sender,
       contract,
       new_admin: newAdmin,
     });
@@ -1229,10 +1233,11 @@ export class DaoMember {
   async submitClearAdminProposal(
     title: string,
     description: string,
+    sender: string,
     contract: string,
     amount: string,
   ): Promise<number> {
-    const message = clearAdminProposal({ title, description, contract });
+    const message = clearAdminProposal({ sender, contract });
     return await this.submitSingleChoiceProposal(
       title,
       description,

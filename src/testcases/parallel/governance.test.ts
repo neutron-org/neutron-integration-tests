@@ -1,4 +1,5 @@
 import {
+  ADMIN_MODULE_ADDRESS,
   CosmosWrapper,
   NEUTRON_DENOM,
   WalletWrapper,
@@ -222,6 +223,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitUpdateAdminProposal(
         'Proposal #9',
         'Update admin proposal. Will pass',
+        ADMIN_MODULE_ADDRESS,
         contractAddressForAdminMigration,
         daoMember1.user.wallet.address.toString(),
         '1000',
@@ -232,6 +234,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitClearAdminProposal(
         'Proposal #10',
         'Clear admin proposal. Will pass',
+        ADMIN_MODULE_ADDRESS,
         contractAddressForAdminMigration,
         '1000',
       );
@@ -412,6 +415,8 @@ describe('Neutron / Governance', () => {
       await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
+      const host = await neutronChain.queryHostEnabled();
+      expect(host).toEqual(true);
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check if host is not enabled after proposal execution', async () => {
