@@ -97,7 +97,6 @@ export class Tge {
     priceFeed: string;
     coinRegistry: string;
     astroFactory: string;
-    astroFactoryCL: string;
     vestingAtomLp: string;
     vestingUsdcLp: string;
     vestingLpVault: string;
@@ -198,8 +197,8 @@ export class Tge {
     for (const contract of [
       'TGE_CREDITS',
       'TGE_AUCTION',
-      'TGE_LOCKDROP',
-      'TGE_LOCKDROP_V2',
+      'TGE_LOCKDROP_CURRENT',
+      'TGE_LOCKDROP_NEW',
       'TGE_AIRDROP',
       'TGE_PRICE_FEED_MOCK',
       'ASTRO_PAIR',
@@ -212,12 +211,11 @@ export class Tge {
       'ASTRO_VESTING',
       'ASTRO_COIN_REGISTRY',
       'VESTING_LP',
-      'VESTING_LP_V2',
+      'VESTING_LP_CURRENT',
+      'VESTING_LP_NEW',
       'LOCKDROP_VAULT',
-      'LOCKDROP_VAULT_V2',
       'CREDITS_VAULT',
       'VESTING_LP_VAULT',
-      'VESTING_LP_VAULT_V2',
       'ORACLE_HISTORY',
     ]) {
       const codeId = await this.instantiator.storeWasm(
@@ -379,13 +377,13 @@ export class Tge {
 
     this.contracts.vestingAtomLp = await instantiateVestingLp(
       this.instantiator,
-      this.codeIds.VESTING_LP,
+      this.codeIds.VESTING_LP_CURRENT,
       this.tokenInfoManager.wallet.address.toString(),
       'vesting_atom_lp',
     );
     this.contracts.vestingUsdcLp = await instantiateVestingLp(
       this.instantiator,
-      this.codeIds.VESTING_LP,
+      this.codeIds.VESTING_LP_CURRENT,
       this.tokenInfoManager.wallet.address.toString(),
       'vesting_usdc_lp',
     );
@@ -437,7 +435,7 @@ export class Tge {
   async deployLockdrop() {
     this.contracts.lockdrop = await instantiateLockdrop(
       this.instantiator,
-      this.codeIds.TGE_LOCKDROP,
+      this.codeIds.TGE_LOCKDROP_CURRENT,
       null,
       this.tokenInfoManager.wallet.address.toString(),
       this.contracts.credits,

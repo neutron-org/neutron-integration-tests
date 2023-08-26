@@ -130,8 +130,7 @@ export const NeutronContract = {
     'cwd_subdao_pre_propose_single_no_timelock.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
-  LOCKDROP_VAULT: '../contracts_thirdparty/lockdrop_vault.wasm',
-  LOCKDROP_VAULT_V2: 'lockdrop_vault.wasm',
+  LOCKDROP_VAULT: 'lockdrop_vault.wasm',
   ORACLE_HISTORY: 'astroport_oracle.wasm',
   TGE_CREDITS: 'credits.wasm',
   TGE_AIRDROP: 'cw20_merkle_airdrop.wasm',
@@ -139,8 +138,7 @@ export const NeutronContract = {
   CW4_GROUP: '../contracts_thirdparty/cw4_group.wasm',
   CW20_BASE: '../contracts_thirdparty/cw20_base.wasm',
   TGE_AUCTION: 'neutron_auction.wasm',
-  TGE_LOCKDROP: '../contracts_thirdparty/neutron_lockdrop.wasm',
-  TGE_LOCKDROP_V2: 'neutron_lockdrop.wasm',
+  TGE_LOCKDROP: 'neutron_lockdrop.wasm',
   TGE_PRICE_FEED_MOCK: 'neutron_price_feed_mock.wasm',
   ASTRO_PAIR: '../contracts_thirdparty/astroport_pair.wasm',
   ASTRO_PAIR_CL: '../contracts_thirdparty/astroport_pair_concentrated.wasm',
@@ -152,14 +150,26 @@ export const NeutronContract = {
   ASTRO_GENERATOR: '../contracts_thirdparty/astroport_generator.wasm',
   ASTRO_WHITELIST: '../contracts_thirdparty/astroport_whitelist.wasm',
   ASTRO_VESTING: '../contracts_thirdparty/astroport_vesting.wasm',
-  VESTING_LP: '../contracts_thirdparty/vesting_lp.wasm',
-  VESTING_LP_V2: 'vesting_lp.wasm',
-  VESTING_LP_VAULT: '../contracts_thirdparty/vesting_lp_vault.wasm',
-  VESTING_LP_VAULT_V2: 'vesting_lp_vault.wasm',
+  VESTING_LP: 'vesting_lp.wasm',
+  VESTING_LP_VAULT: 'vesting_lp_vault.wasm',
   CREDITS_VAULT: 'credits_vault.wasm',
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+
+  // contracts involved in migration
+  VOTING_REGISTRY_CURRENT:
+    '../contracts_migrate/current/neutron_voting_registry.wasm',
+  VOTING_REGISTRY_NEW: '../contracts_migrate/new/neutron_voting_registry.wasm',
+  TGE_LOCKDROP_CURRENT: '../contracts_migrate/current/neutron_lockdrop.wasm',
+  TGE_LOCKDROP_NEW: '../contracts_migrate/new/neutron_lockdrop.wasm',
+  VESTING_LP_CURRENT: '../contracts_migrate/current/vesting_lp.wasm',
+  VESTING_LP_NEW: '../contracts_migrate/new/vesting_lp.wasm',
+
+  LOCKDROP_VAULT_CL:
+    '../contracts_migrate/additional/lockdrop_vault_for_cl_pools.wasm',
+  VESTING_LP_VAULT_CL:
+    '../contracts_migrate/additional/vesting_lp_vault_for_cl_pools.wasm',
 };
 
 export type MultiChoiceOption = {
