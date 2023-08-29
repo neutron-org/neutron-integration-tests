@@ -129,14 +129,13 @@ describe('Neutron / Subdao', () => {
       await wait(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
       await subdaoMember1.executeTimelockedProposal(proposalId);
-      // TODO: check the reason of the failure
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const reason = await subDao.getTimelockedProposalError(proposalId);
-      expect(reason).toEqual('codespace: bank, code: 999');
+      expect(reason).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
