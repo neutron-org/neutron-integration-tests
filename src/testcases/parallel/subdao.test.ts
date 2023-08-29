@@ -134,6 +134,9 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const reason = await subDao.getTimelockedProposalError(proposalId);
+      expect(reason).toEqual('codespace: bank, code: 999');
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {

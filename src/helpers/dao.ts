@@ -454,6 +454,20 @@ export class Dao {
     );
   }
 
+  async getTimelockedProposalError(
+    proposalId: number,
+    customModule = 'single',
+  ): Promise<string> {
+    return this.chain.queryContract<string>(
+      this.contracts.proposals[customModule].pre_propose.timelock.address,
+      {
+        proposal_failed_execution_error: {
+          proposal_id: proposalId,
+        },
+      },
+    );
+  }
+
   async getSubDaoList(): Promise<string[]> {
     const res = await this.chain.queryContract<{ addr: string }[]>(
       this.contracts.core.address,
