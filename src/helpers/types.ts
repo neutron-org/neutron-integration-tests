@@ -79,9 +79,27 @@ export type AckFailuresResponse = {
 // Failure represents a single contractmanager failure
 type Failure = {
   address: string;
-  id: number;
-  ack_id: number;
+  id: string;
+  ack: {
+    response: {
+      result: string | null; // base64 encoded bytes
+      error: string | null; // error text
+    };
+  };
   ack_type: string;
+  packet: {
+    data: string;
+    destination_channel: string;
+    destination_port: string;
+    sequence: string;
+    source_channel: string;
+    source_port: string;
+    timeout_height: {
+      revision_height: string;
+      revision_number: string;
+    };
+    timeout_timestamp: string;
+  };
 };
 
 export type ScheduleResponse = {

@@ -446,7 +446,7 @@ describe('Neutron / Simple', () => {
       });
     });
 
-    describe('Not enough amount of tokens on contract to pay fee', () => {
+    describe('Failing sudo handlers', () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
@@ -470,7 +470,9 @@ describe('Neutron / Simple', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled',
+            },
           }),
         );
 
@@ -516,7 +518,7 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
-          // Wait until there 4 failure in the list
+          // Wait until there 4 failures in the list
           async (data) => data.failures.length == 4,
         );
 
@@ -551,40 +553,113 @@ describe('Neutron / Simple', () => {
           }),
         );
       });
-    });
 
-    test('execute contract with sudo out of gas', async () => {
-      // Mock sudo handler to fail
-      await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          integration_tests_set_sudo_failure_mock: {
-            state: 'enabled_infinite_loop',
-          },
-        }),
-      );
+      test('execute contract with sudo out of gas', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled_infinite_loop',
+            },
+          }),
+        );
 
-      await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          send: {
-            channel: 'channel-0',
-            to: gaiaAccount.wallet.address.toString(),
-            denom: NEUTRON_DENOM,
-            amount: '1000',
-          },
-        }),
-      );
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            send: {
+              channel: 'channel-0',
+              to: gaiaAccount.wallet.address.toString(),
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          }),
+        );
 
-      await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.blockWaiter.waitBlocks(5);
 
-      const res = await getWithAttempts<AckFailuresResponse>(
-        neutronChain.blockWaiter,
-        async () => neutronChain.queryAckFailures(contractAddress),
-        // Wait until there 6 failures in the list
-        async (data) => data.failures.length == 6,
-      );
-      expect(res.failures.length).toEqual(6);
+        const res = await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          // Wait until there 6 failures in the list
+          async (data) => data.failures.length == 6,
+        );
+        expect(res.failures.length).toEqual(6);
+      });
+
+      test('failed attempt to resubmit failure', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled',
+            },
+          }),
+        );
+
+        await neutronChain.blockWaiter.waitBlocks(2);
+
+        // Try to resubmit failure
+        const failuresResBefore = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+
+        await expect(
+          neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              resubmit_failure: {
+                failure_id: +failuresResBefore.failures[0].id,
+              },
+            }),
+          ),
+        ).rejects.toThrowError();
+
+        await neutronChain.blockWaiter.waitBlocks(5);
+
+        // check that failures count is the same
+        const failuresResAfter = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        expect(failuresResAfter.failures.length).toEqual(6);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
+        await neutronChain.blockWaiter.waitBlocks(5);
+      });
+
+      test('successful resubmit failure', async () => {
+        // Resubmit failure
+        const failuresResBefore = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        const failure = failuresResBefore.failures[0];
+        const failureId = +failure.id;
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            resubmit_failure: {
+              failure_id: +failureId,
+            },
+          }),
+        );
+        expect(res.code).toBe(0);
+
+        await neutronChain.blockWaiter.waitBlocks(5);
+
+        // check that failures count is changed
+        const failuresResAfter = await neutronChain.queryAckFailures(
+          contractAddress,
+        );
+        expect(failuresResAfter.failures.length).toEqual(5);
+      });
     });
 
     describe('Failures limit test', () => {
