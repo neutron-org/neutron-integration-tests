@@ -149,6 +149,71 @@ describe('Neutron / Subdao', () => {
         overruleTimelockedProposalMock(subdaoMember1, proposalId),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
     });
+
+    let proposalId2: number;
+    test('proposal timelock 2', async () => {
+      proposalId2 = await subdaoMember1.submitParameterChangeProposal(
+        'paramchange',
+        'paramchange',
+        'icahost',
+        'HostEnabled',
+        '123123123', // expected boolean, provided number
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId2,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId2);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: execution failed', async () => {
+      //wait for timelock durations
+      await wait(20);
+      // timelocked proposal execution failed due to invalid param value
+      await subdaoMember1.executeTimelockedProposal(proposalId2);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId2);
+      expect(timelockedProp.id).toEqual(proposalId2);
+      expect(timelockedProp.status).toEqual('execution_failed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const reason = await subDao.getTimelockedProposalError(proposalId2);
+      expect(reason).toEqual('codespace: params, code: kekw');
+    });
+
+    let proposalId3: number;
+    test('proposal timelock 2', async () => {
+      proposalId3 = await subdaoMember1.submitCancelSoftwareUpgradeProposal(
+        'cancel',
+        'cancel',
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId3,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId3);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: execution failed', async () => {
+      //wait for timelock durations
+      await wait(20);
+      // timelocked proposal execution failed due to invalid param value
+      await subdaoMember1.executeTimelockedProposal(proposalId3);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId3);
+      expect(timelockedProp.id).toEqual(proposalId3);
+      expect(timelockedProp.status).toEqual('execution_failed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const reason = await subDao.getTimelockedProposalError(proposalId3);
+      expect(reason).toEqual('codespace: upgrade, code: kekw');
+    });
   });
 
   describe('Timelock: Succeed execution', () => {
