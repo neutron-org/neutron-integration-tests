@@ -60,6 +60,20 @@ export namespace cosmos {
                  * @returns Promise
                  */
                 public submitProposal(request: cosmos.adminmodule.adminmodule.IMsgSubmitProposal): Promise<cosmos.adminmodule.adminmodule.MsgSubmitProposalResponse>;
+
+                /**
+                 * Calls SubmitProposalLegacy.
+                 * @param request MsgSubmitProposalLegacy message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgSubmitProposalLegacyResponse
+                 */
+                public submitProposalLegacy(request: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacy, callback: cosmos.adminmodule.adminmodule.Msg.SubmitProposalLegacyCallback): void;
+
+                /**
+                 * Calls SubmitProposalLegacy.
+                 * @param request MsgSubmitProposalLegacy message or plain object
+                 * @returns Promise
+                 */
+                public submitProposalLegacy(request: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacy): Promise<cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse>;
             }
 
             namespace Msg {
@@ -84,6 +98,13 @@ export namespace cosmos {
                  * @param [response] MsgSubmitProposalResponse
                  */
                 type SubmitProposalCallback = (error: (Error|null), response?: cosmos.adminmodule.adminmodule.MsgSubmitProposalResponse) => void;
+
+                /**
+                 * Callback as used by {@link cosmos.adminmodule.adminmodule.Msg#submitProposalLegacy}.
+                 * @param error Error, if any
+                 * @param [response] MsgSubmitProposalLegacyResponse
+                 */
+                type SubmitProposalLegacyCallback = (error: (Error|null), response?: cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse) => void;
             }
 
             /** Properties of a MsgDeleteAdmin. */
@@ -418,11 +439,183 @@ export namespace cosmos {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a MsgSubmitProposalLegacy. */
+            interface IMsgSubmitProposalLegacy {
+
+                /** MsgSubmitProposalLegacy content */
+                content?: (google.protobuf.IAny|null);
+
+                /** MsgSubmitProposalLegacy proposer */
+                proposer?: (string|null);
+            }
+
+            /** Represents a MsgSubmitProposalLegacy. */
+            class MsgSubmitProposalLegacy implements IMsgSubmitProposalLegacy {
+
+                /**
+                 * Constructs a new MsgSubmitProposalLegacy.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacy);
+
+                /** MsgSubmitProposalLegacy content. */
+                public content?: (google.protobuf.IAny|null);
+
+                /** MsgSubmitProposalLegacy proposer. */
+                public proposer: string;
+
+                /**
+                 * Encodes the specified MsgSubmitProposalLegacy message. Does not implicitly {@link cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy.verify|verify} messages.
+                 * @param message MsgSubmitProposalLegacy message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacy, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSubmitProposalLegacy message, length delimited. Does not implicitly {@link cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy.verify|verify} messages.
+                 * @param message MsgSubmitProposalLegacy message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacy, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSubmitProposalLegacy message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSubmitProposalLegacy
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy;
+
+                /**
+                 * Decodes a MsgSubmitProposalLegacy message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSubmitProposalLegacy
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy;
+
+                /**
+                 * Verifies a MsgSubmitProposalLegacy message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSubmitProposalLegacy message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSubmitProposalLegacy
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy;
+
+                /**
+                 * Creates a plain object from a MsgSubmitProposalLegacy message. Also converts values to other types if specified.
+                 * @param message MsgSubmitProposalLegacy
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSubmitProposalLegacy to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgSubmitProposalLegacyResponse. */
+            interface IMsgSubmitProposalLegacyResponse {
+
+                /** MsgSubmitProposalLegacyResponse proposal_id */
+                proposal_id?: (Long|null);
+            }
+
+            /** Represents a MsgSubmitProposalLegacyResponse. */
+            class MsgSubmitProposalLegacyResponse implements IMsgSubmitProposalLegacyResponse {
+
+                /**
+                 * Constructs a new MsgSubmitProposalLegacyResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacyResponse);
+
+                /** MsgSubmitProposalLegacyResponse proposal_id. */
+                public proposal_id: Long;
+
+                /**
+                 * Encodes the specified MsgSubmitProposalLegacyResponse message. Does not implicitly {@link cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse.verify|verify} messages.
+                 * @param message MsgSubmitProposalLegacyResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacyResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSubmitProposalLegacyResponse message, length delimited. Does not implicitly {@link cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse.verify|verify} messages.
+                 * @param message MsgSubmitProposalLegacyResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.adminmodule.adminmodule.IMsgSubmitProposalLegacyResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSubmitProposalLegacyResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSubmitProposalLegacyResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse;
+
+                /**
+                 * Decodes a MsgSubmitProposalLegacyResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSubmitProposalLegacyResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse;
+
+                /**
+                 * Verifies a MsgSubmitProposalLegacyResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSubmitProposalLegacyResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSubmitProposalLegacyResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse;
+
+                /**
+                 * Creates a plain object from a MsgSubmitProposalLegacyResponse message. Also converts values to other types if specified.
+                 * @param message MsgSubmitProposalLegacyResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacyResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSubmitProposalLegacyResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
             /** Properties of a MsgSubmitProposal. */
             interface IMsgSubmitProposal {
 
-                /** MsgSubmitProposal content */
-                content?: (google.protobuf.IAny|null);
+                /** MsgSubmitProposal messages */
+                messages?: (google.protobuf.IAny[]|null);
 
                 /** MsgSubmitProposal proposer */
                 proposer?: (string|null);
@@ -437,8 +630,8 @@ export namespace cosmos {
                  */
                 constructor(properties?: cosmos.adminmodule.adminmodule.IMsgSubmitProposal);
 
-                /** MsgSubmitProposal content. */
-                public content?: (google.protobuf.IAny|null);
+                /** MsgSubmitProposal messages. */
+                public messages: google.protobuf.IAny[];
 
                 /** MsgSubmitProposal proposer. */
                 public proposer: string;
@@ -628,6 +821,20 @@ export namespace cosmos {
                  * @returns Promise
                  */
                 public archivedProposals(request: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsRequest): Promise<cosmos.adminmodule.adminmodule.QueryArchivedProposalsResponse>;
+
+                /**
+                 * Calls ArchivedProposalsLegacy.
+                 * @param request QueryArchivedProposalsLegacyRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and QueryArchivedProposalsLegacyResponse
+                 */
+                public archivedProposalsLegacy(request: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyRequest, callback: cosmos.adminmodule.adminmodule.Query.ArchivedProposalsLegacyCallback): void;
+
+                /**
+                 * Calls ArchivedProposalsLegacy.
+                 * @param request QueryArchivedProposalsLegacyRequest message or plain object
+                 * @returns Promise
+                 */
+                public archivedProposalsLegacy(request: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyRequest): Promise<cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse>;
             }
 
             namespace Query {
@@ -645,6 +852,13 @@ export namespace cosmos {
                  * @param [response] QueryArchivedProposalsResponse
                  */
                 type ArchivedProposalsCallback = (error: (Error|null), response?: cosmos.adminmodule.adminmodule.QueryArchivedProposalsResponse) => void;
+
+                /**
+                 * Callback as used by {@link cosmos.adminmodule.adminmodule.Query#archivedProposalsLegacy}.
+                 * @param error Error, if any
+                 * @param [response] QueryArchivedProposalsLegacyResponse
+                 */
+                type ArchivedProposalsLegacyCallback = (error: (Error|null), response?: cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse) => void;
             }
 
             /** Properties of a QueryAdminsRequest. */
@@ -884,11 +1098,171 @@ export namespace cosmos {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a QueryArchivedProposalsLegacyRequest. */
+            interface IQueryArchivedProposalsLegacyRequest {
+            }
+
+            /** Represents a QueryArchivedProposalsLegacyRequest. */
+            class QueryArchivedProposalsLegacyRequest implements IQueryArchivedProposalsLegacyRequest {
+
+                /**
+                 * Constructs a new QueryArchivedProposalsLegacyRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyRequest);
+
+                /**
+                 * Encodes the specified QueryArchivedProposalsLegacyRequest message. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest.verify|verify} messages.
+                 * @param message QueryArchivedProposalsLegacyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryArchivedProposalsLegacyRequest message, length delimited. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest.verify|verify} messages.
+                 * @param message QueryArchivedProposalsLegacyRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryArchivedProposalsLegacyRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryArchivedProposalsLegacyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest;
+
+                /**
+                 * Decodes a QueryArchivedProposalsLegacyRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryArchivedProposalsLegacyRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest;
+
+                /**
+                 * Verifies a QueryArchivedProposalsLegacyRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryArchivedProposalsLegacyRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryArchivedProposalsLegacyRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest;
+
+                /**
+                 * Creates a plain object from a QueryArchivedProposalsLegacyRequest message. Also converts values to other types if specified.
+                 * @param message QueryArchivedProposalsLegacyRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryArchivedProposalsLegacyRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryProposalsResponse. */
+            interface IQueryProposalsResponse {
+
+                /** QueryProposalsResponse proposals */
+                proposals?: (cosmos.gov.v1.IProposal[]|null);
+            }
+
+            /** Represents a QueryProposalsResponse. */
+            class QueryProposalsResponse implements IQueryProposalsResponse {
+
+                /**
+                 * Constructs a new QueryProposalsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.adminmodule.adminmodule.IQueryProposalsResponse);
+
+                /** QueryProposalsResponse proposals. */
+                public proposals: cosmos.gov.v1.IProposal[];
+
+                /**
+                 * Encodes the specified QueryProposalsResponse message. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryProposalsResponse.verify|verify} messages.
+                 * @param message QueryProposalsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.adminmodule.adminmodule.IQueryProposalsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryProposalsResponse message, length delimited. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryProposalsResponse.verify|verify} messages.
+                 * @param message QueryProposalsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.adminmodule.adminmodule.IQueryProposalsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryProposalsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryProposalsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.adminmodule.adminmodule.QueryProposalsResponse;
+
+                /**
+                 * Decodes a QueryProposalsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryProposalsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.adminmodule.adminmodule.QueryProposalsResponse;
+
+                /**
+                 * Verifies a QueryProposalsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryProposalsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryProposalsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.adminmodule.adminmodule.QueryProposalsResponse;
+
+                /**
+                 * Creates a plain object from a QueryProposalsResponse message. Also converts values to other types if specified.
+                 * @param message QueryProposalsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.adminmodule.adminmodule.QueryProposalsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryProposalsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
             /** Properties of a QueryArchivedProposalsResponse. */
             interface IQueryArchivedProposalsResponse {
 
                 /** QueryArchivedProposalsResponse proposals */
-                proposals?: (cosmos.gov.v1beta1.IProposal[]|null);
+                proposals?: (cosmos.gov.v1.IProposal[]|null);
             }
 
             /** Represents a QueryArchivedProposalsResponse. */
@@ -901,7 +1275,7 @@ export namespace cosmos {
                 constructor(properties?: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsResponse);
 
                 /** QueryArchivedProposalsResponse proposals. */
-                public proposals: cosmos.gov.v1beta1.IProposal[];
+                public proposals: cosmos.gov.v1.IProposal[];
 
                 /**
                  * Encodes the specified QueryArchivedProposalsResponse message. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryArchivedProposalsResponse.verify|verify} messages.
@@ -962,6 +1336,89 @@ export namespace cosmos {
 
                 /**
                  * Converts this QueryArchivedProposalsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryArchivedProposalsLegacyResponse. */
+            interface IQueryArchivedProposalsLegacyResponse {
+
+                /** QueryArchivedProposalsLegacyResponse proposalsLegacy */
+                proposalsLegacy?: (cosmos.gov.v1beta1.IProposal[]|null);
+            }
+
+            /** Represents a QueryArchivedProposalsLegacyResponse. */
+            class QueryArchivedProposalsLegacyResponse implements IQueryArchivedProposalsLegacyResponse {
+
+                /**
+                 * Constructs a new QueryArchivedProposalsLegacyResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyResponse);
+
+                /** QueryArchivedProposalsLegacyResponse proposalsLegacy. */
+                public proposalsLegacy: cosmos.gov.v1beta1.IProposal[];
+
+                /**
+                 * Encodes the specified QueryArchivedProposalsLegacyResponse message. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse.verify|verify} messages.
+                 * @param message QueryArchivedProposalsLegacyResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryArchivedProposalsLegacyResponse message, length delimited. Does not implicitly {@link cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse.verify|verify} messages.
+                 * @param message QueryArchivedProposalsLegacyResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.adminmodule.adminmodule.IQueryArchivedProposalsLegacyResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryArchivedProposalsLegacyResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryArchivedProposalsLegacyResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse;
+
+                /**
+                 * Decodes a QueryArchivedProposalsLegacyResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryArchivedProposalsLegacyResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse;
+
+                /**
+                 * Verifies a QueryArchivedProposalsLegacyResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryArchivedProposalsLegacyResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryArchivedProposalsLegacyResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse;
+
+                /**
+                 * Creates a plain object from a QueryArchivedProposalsLegacyResponse message. Also converts values to other types if specified.
+                 * @param message QueryArchivedProposalsLegacyResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.adminmodule.adminmodule.QueryArchivedProposalsLegacyResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryArchivedProposalsLegacyResponse to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
@@ -1950,6 +2407,974 @@ export namespace cosmos {
                 public toJSON(): { [k: string]: any };
             }
         }
+
+        /** Namespace v1. */
+        namespace v1 {
+
+            /** VoteOption enum. */
+            enum VoteOption {
+                VOTE_OPTION_UNSPECIFIED = 0,
+                VOTE_OPTION_YES = 1,
+                VOTE_OPTION_ABSTAIN = 2,
+                VOTE_OPTION_NO = 3,
+                VOTE_OPTION_NO_WITH_VETO = 4
+            }
+
+            /** Properties of a WeightedVoteOption. */
+            interface IWeightedVoteOption {
+
+                /** WeightedVoteOption option */
+                option?: (cosmos.gov.v1.VoteOption|null);
+
+                /** WeightedVoteOption weight */
+                weight?: (string|null);
+            }
+
+            /** Represents a WeightedVoteOption. */
+            class WeightedVoteOption implements IWeightedVoteOption {
+
+                /**
+                 * Constructs a new WeightedVoteOption.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IWeightedVoteOption);
+
+                /** WeightedVoteOption option. */
+                public option: cosmos.gov.v1.VoteOption;
+
+                /** WeightedVoteOption weight. */
+                public weight: string;
+
+                /**
+                 * Encodes the specified WeightedVoteOption message. Does not implicitly {@link cosmos.gov.v1.WeightedVoteOption.verify|verify} messages.
+                 * @param message WeightedVoteOption message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IWeightedVoteOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified WeightedVoteOption message, length delimited. Does not implicitly {@link cosmos.gov.v1.WeightedVoteOption.verify|verify} messages.
+                 * @param message WeightedVoteOption message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IWeightedVoteOption, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a WeightedVoteOption message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns WeightedVoteOption
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.WeightedVoteOption;
+
+                /**
+                 * Decodes a WeightedVoteOption message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns WeightedVoteOption
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.WeightedVoteOption;
+
+                /**
+                 * Verifies a WeightedVoteOption message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a WeightedVoteOption message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns WeightedVoteOption
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.WeightedVoteOption;
+
+                /**
+                 * Creates a plain object from a WeightedVoteOption message. Also converts values to other types if specified.
+                 * @param message WeightedVoteOption
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.WeightedVoteOption, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this WeightedVoteOption to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Deposit. */
+            interface IDeposit {
+
+                /** Deposit proposal_id */
+                proposal_id?: (Long|null);
+
+                /** Deposit depositor */
+                depositor?: (string|null);
+
+                /** Deposit amount */
+                amount?: (cosmos.base.v1beta1.ICoin[]|null);
+            }
+
+            /** Represents a Deposit. */
+            class Deposit implements IDeposit {
+
+                /**
+                 * Constructs a new Deposit.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IDeposit);
+
+                /** Deposit proposal_id. */
+                public proposal_id: Long;
+
+                /** Deposit depositor. */
+                public depositor: string;
+
+                /** Deposit amount. */
+                public amount: cosmos.base.v1beta1.ICoin[];
+
+                /**
+                 * Encodes the specified Deposit message. Does not implicitly {@link cosmos.gov.v1.Deposit.verify|verify} messages.
+                 * @param message Deposit message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Deposit message, length delimited. Does not implicitly {@link cosmos.gov.v1.Deposit.verify|verify} messages.
+                 * @param message Deposit message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IDeposit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Deposit message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Deposit
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.Deposit;
+
+                /**
+                 * Decodes a Deposit message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Deposit
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.Deposit;
+
+                /**
+                 * Verifies a Deposit message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Deposit message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Deposit
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.Deposit;
+
+                /**
+                 * Creates a plain object from a Deposit message. Also converts values to other types if specified.
+                 * @param message Deposit
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.Deposit, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Deposit to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Proposal. */
+            interface IProposal {
+
+                /** Proposal id */
+                id?: (Long|null);
+
+                /** Proposal messages */
+                messages?: (google.protobuf.IAny[]|null);
+
+                /** Proposal status */
+                status?: (cosmos.gov.v1.ProposalStatus|null);
+
+                /** Proposal final_tally_result */
+                final_tally_result?: (cosmos.gov.v1.ITallyResult|null);
+
+                /** Proposal submit_time */
+                submit_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal deposit_end_time */
+                deposit_end_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal total_deposit */
+                total_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+                /** Proposal voting_start_time */
+                voting_start_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal voting_end_time */
+                voting_end_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal metadata */
+                metadata?: (string|null);
+
+                /** Proposal title */
+                title?: (string|null);
+
+                /** Proposal summary */
+                summary?: (string|null);
+
+                /** Proposal proposer */
+                proposer?: (string|null);
+            }
+
+            /** Represents a Proposal. */
+            class Proposal implements IProposal {
+
+                /**
+                 * Constructs a new Proposal.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IProposal);
+
+                /** Proposal id. */
+                public id: Long;
+
+                /** Proposal messages. */
+                public messages: google.protobuf.IAny[];
+
+                /** Proposal status. */
+                public status: cosmos.gov.v1.ProposalStatus;
+
+                /** Proposal final_tally_result. */
+                public final_tally_result?: (cosmos.gov.v1.ITallyResult|null);
+
+                /** Proposal submit_time. */
+                public submit_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal deposit_end_time. */
+                public deposit_end_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal total_deposit. */
+                public total_deposit: cosmos.base.v1beta1.ICoin[];
+
+                /** Proposal voting_start_time. */
+                public voting_start_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal voting_end_time. */
+                public voting_end_time?: (google.protobuf.ITimestamp|null);
+
+                /** Proposal metadata. */
+                public metadata: string;
+
+                /** Proposal title. */
+                public title: string;
+
+                /** Proposal summary. */
+                public summary: string;
+
+                /** Proposal proposer. */
+                public proposer: string;
+
+                /**
+                 * Encodes the specified Proposal message. Does not implicitly {@link cosmos.gov.v1.Proposal.verify|verify} messages.
+                 * @param message Proposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Proposal message, length delimited. Does not implicitly {@link cosmos.gov.v1.Proposal.verify|verify} messages.
+                 * @param message Proposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Proposal message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Proposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.Proposal;
+
+                /**
+                 * Decodes a Proposal message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Proposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.Proposal;
+
+                /**
+                 * Verifies a Proposal message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Proposal message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Proposal
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.Proposal;
+
+                /**
+                 * Creates a plain object from a Proposal message. Also converts values to other types if specified.
+                 * @param message Proposal
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.Proposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Proposal to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** ProposalStatus enum. */
+            enum ProposalStatus {
+                PROPOSAL_STATUS_UNSPECIFIED = 0,
+                PROPOSAL_STATUS_DEPOSIT_PERIOD = 1,
+                PROPOSAL_STATUS_VOTING_PERIOD = 2,
+                PROPOSAL_STATUS_PASSED = 3,
+                PROPOSAL_STATUS_REJECTED = 4,
+                PROPOSAL_STATUS_FAILED = 5
+            }
+
+            /** Properties of a TallyResult. */
+            interface ITallyResult {
+
+                /** TallyResult yes_count */
+                yes_count?: (string|null);
+
+                /** TallyResult abstain_count */
+                abstain_count?: (string|null);
+
+                /** TallyResult no_count */
+                no_count?: (string|null);
+
+                /** TallyResult no_with_veto_count */
+                no_with_veto_count?: (string|null);
+            }
+
+            /** Represents a TallyResult. */
+            class TallyResult implements ITallyResult {
+
+                /**
+                 * Constructs a new TallyResult.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.ITallyResult);
+
+                /** TallyResult yes_count. */
+                public yes_count: string;
+
+                /** TallyResult abstain_count. */
+                public abstain_count: string;
+
+                /** TallyResult no_count. */
+                public no_count: string;
+
+                /** TallyResult no_with_veto_count. */
+                public no_with_veto_count: string;
+
+                /**
+                 * Encodes the specified TallyResult message. Does not implicitly {@link cosmos.gov.v1.TallyResult.verify|verify} messages.
+                 * @param message TallyResult message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.ITallyResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TallyResult message, length delimited. Does not implicitly {@link cosmos.gov.v1.TallyResult.verify|verify} messages.
+                 * @param message TallyResult message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.ITallyResult, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TallyResult message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TallyResult
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.TallyResult;
+
+                /**
+                 * Decodes a TallyResult message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TallyResult
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.TallyResult;
+
+                /**
+                 * Verifies a TallyResult message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TallyResult message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TallyResult
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.TallyResult;
+
+                /**
+                 * Creates a plain object from a TallyResult message. Also converts values to other types if specified.
+                 * @param message TallyResult
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.TallyResult, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TallyResult to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Vote. */
+            interface IVote {
+
+                /** Vote proposal_id */
+                proposal_id?: (Long|null);
+
+                /** Vote voter */
+                voter?: (string|null);
+
+                /** Vote options */
+                options?: (cosmos.gov.v1.IWeightedVoteOption[]|null);
+
+                /** Vote metadata */
+                metadata?: (string|null);
+            }
+
+            /** Represents a Vote. */
+            class Vote implements IVote {
+
+                /**
+                 * Constructs a new Vote.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IVote);
+
+                /** Vote proposal_id. */
+                public proposal_id: Long;
+
+                /** Vote voter. */
+                public voter: string;
+
+                /** Vote options. */
+                public options: cosmos.gov.v1.IWeightedVoteOption[];
+
+                /** Vote metadata. */
+                public metadata: string;
+
+                /**
+                 * Encodes the specified Vote message. Does not implicitly {@link cosmos.gov.v1.Vote.verify|verify} messages.
+                 * @param message Vote message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IVote, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Vote message, length delimited. Does not implicitly {@link cosmos.gov.v1.Vote.verify|verify} messages.
+                 * @param message Vote message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IVote, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Vote message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Vote
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.Vote;
+
+                /**
+                 * Decodes a Vote message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Vote
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.Vote;
+
+                /**
+                 * Verifies a Vote message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Vote message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Vote
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.Vote;
+
+                /**
+                 * Creates a plain object from a Vote message. Also converts values to other types if specified.
+                 * @param message Vote
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.Vote, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Vote to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a DepositParams. */
+            interface IDepositParams {
+
+                /** DepositParams min_deposit */
+                min_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+                /** DepositParams max_deposit_period */
+                max_deposit_period?: (google.protobuf.IDuration|null);
+            }
+
+            /** Represents a DepositParams. */
+            class DepositParams implements IDepositParams {
+
+                /**
+                 * Constructs a new DepositParams.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IDepositParams);
+
+                /** DepositParams min_deposit. */
+                public min_deposit: cosmos.base.v1beta1.ICoin[];
+
+                /** DepositParams max_deposit_period. */
+                public max_deposit_period?: (google.protobuf.IDuration|null);
+
+                /**
+                 * Encodes the specified DepositParams message. Does not implicitly {@link cosmos.gov.v1.DepositParams.verify|verify} messages.
+                 * @param message DepositParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IDepositParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified DepositParams message, length delimited. Does not implicitly {@link cosmos.gov.v1.DepositParams.verify|verify} messages.
+                 * @param message DepositParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IDepositParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DepositParams message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns DepositParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.DepositParams;
+
+                /**
+                 * Decodes a DepositParams message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns DepositParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.DepositParams;
+
+                /**
+                 * Verifies a DepositParams message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a DepositParams message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns DepositParams
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.DepositParams;
+
+                /**
+                 * Creates a plain object from a DepositParams message. Also converts values to other types if specified.
+                 * @param message DepositParams
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.DepositParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this DepositParams to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a VotingParams. */
+            interface IVotingParams {
+
+                /** VotingParams voting_period */
+                voting_period?: (google.protobuf.IDuration|null);
+            }
+
+            /** Represents a VotingParams. */
+            class VotingParams implements IVotingParams {
+
+                /**
+                 * Constructs a new VotingParams.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IVotingParams);
+
+                /** VotingParams voting_period. */
+                public voting_period?: (google.protobuf.IDuration|null);
+
+                /**
+                 * Encodes the specified VotingParams message. Does not implicitly {@link cosmos.gov.v1.VotingParams.verify|verify} messages.
+                 * @param message VotingParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IVotingParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified VotingParams message, length delimited. Does not implicitly {@link cosmos.gov.v1.VotingParams.verify|verify} messages.
+                 * @param message VotingParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IVotingParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a VotingParams message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns VotingParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.VotingParams;
+
+                /**
+                 * Decodes a VotingParams message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns VotingParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.VotingParams;
+
+                /**
+                 * Verifies a VotingParams message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a VotingParams message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns VotingParams
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.VotingParams;
+
+                /**
+                 * Creates a plain object from a VotingParams message. Also converts values to other types if specified.
+                 * @param message VotingParams
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.VotingParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this VotingParams to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a TallyParams. */
+            interface ITallyParams {
+
+                /** TallyParams quorum */
+                quorum?: (string|null);
+
+                /** TallyParams threshold */
+                threshold?: (string|null);
+
+                /** TallyParams veto_threshold */
+                veto_threshold?: (string|null);
+            }
+
+            /** Represents a TallyParams. */
+            class TallyParams implements ITallyParams {
+
+                /**
+                 * Constructs a new TallyParams.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.ITallyParams);
+
+                /** TallyParams quorum. */
+                public quorum: string;
+
+                /** TallyParams threshold. */
+                public threshold: string;
+
+                /** TallyParams veto_threshold. */
+                public veto_threshold: string;
+
+                /**
+                 * Encodes the specified TallyParams message. Does not implicitly {@link cosmos.gov.v1.TallyParams.verify|verify} messages.
+                 * @param message TallyParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.ITallyParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified TallyParams message, length delimited. Does not implicitly {@link cosmos.gov.v1.TallyParams.verify|verify} messages.
+                 * @param message TallyParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.ITallyParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a TallyParams message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns TallyParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.TallyParams;
+
+                /**
+                 * Decodes a TallyParams message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns TallyParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.TallyParams;
+
+                /**
+                 * Verifies a TallyParams message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a TallyParams message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns TallyParams
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.TallyParams;
+
+                /**
+                 * Creates a plain object from a TallyParams message. Also converts values to other types if specified.
+                 * @param message TallyParams
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.TallyParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this TallyParams to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Params. */
+            interface IParams {
+
+                /** Params min_deposit */
+                min_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+                /** Params max_deposit_period */
+                max_deposit_period?: (google.protobuf.IDuration|null);
+
+                /** Params voting_period */
+                voting_period?: (google.protobuf.IDuration|null);
+
+                /** Params quorum */
+                quorum?: (string|null);
+
+                /** Params threshold */
+                threshold?: (string|null);
+
+                /** Params veto_threshold */
+                veto_threshold?: (string|null);
+
+                /** Params min_initial_deposit_ratio */
+                min_initial_deposit_ratio?: (string|null);
+
+                /** Params burn_vote_quorum */
+                burn_vote_quorum?: (boolean|null);
+
+                /** Params burn_proposal_deposit_prevote */
+                burn_proposal_deposit_prevote?: (boolean|null);
+
+                /** Params burn_vote_veto */
+                burn_vote_veto?: (boolean|null);
+            }
+
+            /** Represents a Params. */
+            class Params implements IParams {
+
+                /**
+                 * Constructs a new Params.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.gov.v1.IParams);
+
+                /** Params min_deposit. */
+                public min_deposit: cosmos.base.v1beta1.ICoin[];
+
+                /** Params max_deposit_period. */
+                public max_deposit_period?: (google.protobuf.IDuration|null);
+
+                /** Params voting_period. */
+                public voting_period?: (google.protobuf.IDuration|null);
+
+                /** Params quorum. */
+                public quorum: string;
+
+                /** Params threshold. */
+                public threshold: string;
+
+                /** Params veto_threshold. */
+                public veto_threshold: string;
+
+                /** Params min_initial_deposit_ratio. */
+                public min_initial_deposit_ratio: string;
+
+                /** Params burn_vote_quorum. */
+                public burn_vote_quorum: boolean;
+
+                /** Params burn_proposal_deposit_prevote. */
+                public burn_proposal_deposit_prevote: boolean;
+
+                /** Params burn_vote_veto. */
+                public burn_vote_veto: boolean;
+
+                /**
+                 * Encodes the specified Params message. Does not implicitly {@link cosmos.gov.v1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.gov.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link cosmos.gov.v1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.gov.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.gov.v1.Params;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.gov.v1.Params;
+
+                /**
+                 * Verifies a Params message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Params
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.gov.v1.Params;
+
+                /**
+                 * Creates a plain object from a Params message. Also converts values to other types if specified.
+                 * @param message Params
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.gov.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Params to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
     }
 
     /** Namespace base. */
@@ -2323,6 +3748,9 @@ export namespace cosmos {
 
                     /** PageRequest count_total */
                     count_total?: (boolean|null);
+
+                    /** PageRequest reverse */
+                    reverse?: (boolean|null);
                 }
 
                 /** Represents a PageRequest. */
@@ -2345,6 +3773,9 @@ export namespace cosmos {
 
                     /** PageRequest count_total. */
                     public count_total: boolean;
+
+                    /** PageRequest reverse. */
+                    public reverse: boolean;
 
                     /**
                      * Encodes the specified PageRequest message. Does not implicitly {@link cosmos.base.query.v1beta1.PageRequest.verify|verify} messages.
@@ -2522,6 +3953,9 @@ export namespace cosmos {
 
                 /** Plan info */
                 info?: (string|null);
+
+                /** Plan upgraded_client_state */
+                upgraded_client_state?: (google.protobuf.IAny|null);
             }
 
             /** Represents a Plan. */
@@ -2544,6 +3978,9 @@ export namespace cosmos {
 
                 /** Plan info. */
                 public info: string;
+
+                /** Plan upgraded_client_state. */
+                public upgraded_client_state?: (google.protobuf.IAny|null);
 
                 /**
                  * Encodes the specified Plan message. Does not implicitly {@link cosmos.upgrade.v1beta1.Plan.verify|verify} messages.
@@ -2792,6 +4229,95 @@ export namespace cosmos {
                  */
                 public toJSON(): { [k: string]: any };
             }
+
+            /** Properties of a ModuleVersion. */
+            interface IModuleVersion {
+
+                /** ModuleVersion name */
+                name?: (string|null);
+
+                /** ModuleVersion version */
+                version?: (Long|null);
+            }
+
+            /** Represents a ModuleVersion. */
+            class ModuleVersion implements IModuleVersion {
+
+                /**
+                 * Constructs a new ModuleVersion.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.upgrade.v1beta1.IModuleVersion);
+
+                /** ModuleVersion name. */
+                public name: string;
+
+                /** ModuleVersion version. */
+                public version: Long;
+
+                /**
+                 * Encodes the specified ModuleVersion message. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
+                 * @param message ModuleVersion message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ModuleVersion message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
+                 * @param message ModuleVersion message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ModuleVersion message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ModuleVersion
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Decodes a ModuleVersion message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ModuleVersion
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Verifies a ModuleVersion message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ModuleVersion message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ModuleVersion
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Creates a plain object from a ModuleVersion message. Also converts values to other types if specified.
+                 * @param message ModuleVersion
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.upgrade.v1beta1.ModuleVersion, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ModuleVersion to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
         }
     }
 
@@ -2997,6 +4523,95 @@ export namespace cosmos {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a ModuleCredential. */
+            interface IModuleCredential {
+
+                /** ModuleCredential module_name */
+                module_name?: (string|null);
+
+                /** ModuleCredential derivation_keys */
+                derivation_keys?: (Uint8Array[]|null);
+            }
+
+            /** Represents a ModuleCredential. */
+            class ModuleCredential implements IModuleCredential {
+
+                /**
+                 * Constructs a new ModuleCredential.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.auth.v1beta1.IModuleCredential);
+
+                /** ModuleCredential module_name. */
+                public module_name: string;
+
+                /** ModuleCredential derivation_keys. */
+                public derivation_keys: Uint8Array[];
+
+                /**
+                 * Encodes the specified ModuleCredential message. Does not implicitly {@link cosmos.auth.v1beta1.ModuleCredential.verify|verify} messages.
+                 * @param message ModuleCredential message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.auth.v1beta1.IModuleCredential, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ModuleCredential message, length delimited. Does not implicitly {@link cosmos.auth.v1beta1.ModuleCredential.verify|verify} messages.
+                 * @param message ModuleCredential message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.auth.v1beta1.IModuleCredential, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ModuleCredential message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ModuleCredential
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.auth.v1beta1.ModuleCredential;
+
+                /**
+                 * Decodes a ModuleCredential message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ModuleCredential
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.auth.v1beta1.ModuleCredential;
+
+                /**
+                 * Verifies a ModuleCredential message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ModuleCredential message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ModuleCredential
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.auth.v1beta1.ModuleCredential;
+
+                /**
+                 * Creates a plain object from a ModuleCredential message. Also converts values to other types if specified.
+                 * @param message ModuleCredential
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.auth.v1beta1.ModuleCredential, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ModuleCredential to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
             /** Properties of a Params. */
             interface IParams {
 
@@ -3104,6 +4719,1568 @@ export namespace cosmos {
                 public toJSON(): { [k: string]: any };
             }
         }
+    }
+
+    /** Namespace ics23. */
+    namespace ics23 {
+
+        /** Namespace v1. */
+        namespace v1 {
+
+            /** HashOp enum. */
+            enum HashOp {
+                NO_HASH = 0,
+                SHA256 = 1,
+                SHA512 = 2,
+                KECCAK = 3,
+                RIPEMD160 = 4,
+                BITCOIN = 5,
+                SHA512_256 = 6
+            }
+
+            /**
+             * LengthOp defines how to process the key and value of the LeafOp
+             * to include length information. After encoding the length with the given
+             * algorithm, the length will be prepended to the key and value bytes.
+             * (Each one with it's own encoded length)
+             */
+            enum LengthOp {
+                NO_PREFIX = 0,
+                VAR_PROTO = 1,
+                VAR_RLP = 2,
+                FIXED32_BIG = 3,
+                FIXED32_LITTLE = 4,
+                FIXED64_BIG = 5,
+                FIXED64_LITTLE = 6,
+                REQUIRE_32_BYTES = 7,
+                REQUIRE_64_BYTES = 8
+            }
+
+            /** Properties of an ExistenceProof. */
+            interface IExistenceProof {
+
+                /** ExistenceProof key */
+                key?: (Uint8Array|null);
+
+                /** ExistenceProof value */
+                value?: (Uint8Array|null);
+
+                /** ExistenceProof leaf */
+                leaf?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** ExistenceProof path */
+                path?: (cosmos.ics23.v1.IInnerOp[]|null);
+            }
+
+            /**
+             * ExistenceProof takes a key and a value and a set of steps to perform on it.
+             * The result of peforming all these steps will provide a "root hash", which can
+             * be compared to the value in a header.
+             *
+             * Since it is computationally infeasible to produce a hash collission for any of the used
+             * cryptographic hash functions, if someone can provide a series of operations to transform
+             * a given key and value into a root hash that matches some trusted root, these key and values
+             * must be in the referenced merkle tree.
+             *
+             * The only possible issue is maliablity in LeafOp, such as providing extra prefix data,
+             * which should be controlled by a spec. Eg. with lengthOp as NONE,
+             * prefix = FOO, key = BAR, value = CHOICE
+             * and
+             * prefix = F, key = OOBAR, value = CHOICE
+             * would produce the same value.
+             *
+             * With LengthOp this is tricker but not impossible. Which is why the "leafPrefixEqual" field
+             * in the ProofSpec is valuable to prevent this mutability. And why all trees should
+             * length-prefix the data before hashing it.
+             */
+            class ExistenceProof implements IExistenceProof {
+
+                /**
+                 * Constructs a new ExistenceProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IExistenceProof);
+
+                /** ExistenceProof key. */
+                public key: Uint8Array;
+
+                /** ExistenceProof value. */
+                public value: Uint8Array;
+
+                /** ExistenceProof leaf. */
+                public leaf?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** ExistenceProof path. */
+                public path: cosmos.ics23.v1.IInnerOp[];
+
+                /**
+                 * Encodes the specified ExistenceProof message. Does not implicitly {@link cosmos.ics23.v1.ExistenceProof.verify|verify} messages.
+                 * @param message ExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ExistenceProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.ExistenceProof.verify|verify} messages.
+                 * @param message ExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an ExistenceProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.ExistenceProof;
+
+                /**
+                 * Decodes an ExistenceProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.ExistenceProof;
+
+                /**
+                 * Verifies an ExistenceProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an ExistenceProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ExistenceProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.ExistenceProof;
+
+                /**
+                 * Creates a plain object from an ExistenceProof message. Also converts values to other types if specified.
+                 * @param message ExistenceProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.ExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ExistenceProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a NonExistenceProof. */
+            interface INonExistenceProof {
+
+                /** NonExistenceProof key */
+                key?: (Uint8Array|null);
+
+                /** NonExistenceProof left */
+                left?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** NonExistenceProof right */
+                right?: (cosmos.ics23.v1.IExistenceProof|null);
+            }
+
+            /** Represents a NonExistenceProof. */
+            class NonExistenceProof implements INonExistenceProof {
+
+                /**
+                 * Constructs a new NonExistenceProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.INonExistenceProof);
+
+                /** NonExistenceProof key. */
+                public key: Uint8Array;
+
+                /** NonExistenceProof left. */
+                public left?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** NonExistenceProof right. */
+                public right?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /**
+                 * Encodes the specified NonExistenceProof message. Does not implicitly {@link cosmos.ics23.v1.NonExistenceProof.verify|verify} messages.
+                 * @param message NonExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.INonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified NonExistenceProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.NonExistenceProof.verify|verify} messages.
+                 * @param message NonExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.INonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a NonExistenceProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns NonExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.NonExistenceProof;
+
+                /**
+                 * Decodes a NonExistenceProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns NonExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.NonExistenceProof;
+
+                /**
+                 * Verifies a NonExistenceProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a NonExistenceProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns NonExistenceProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.NonExistenceProof;
+
+                /**
+                 * Creates a plain object from a NonExistenceProof message. Also converts values to other types if specified.
+                 * @param message NonExistenceProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.NonExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this NonExistenceProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CommitmentProof. */
+            interface ICommitmentProof {
+
+                /** CommitmentProof exist */
+                exist?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** CommitmentProof nonexist */
+                nonexist?: (cosmos.ics23.v1.INonExistenceProof|null);
+
+                /** CommitmentProof batch */
+                batch?: (cosmos.ics23.v1.IBatchProof|null);
+
+                /** CommitmentProof compressed */
+                compressed?: (cosmos.ics23.v1.ICompressedBatchProof|null);
+            }
+
+            /** Represents a CommitmentProof. */
+            class CommitmentProof implements ICommitmentProof {
+
+                /**
+                 * Constructs a new CommitmentProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ICommitmentProof);
+
+                /** CommitmentProof exist. */
+                public exist?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** CommitmentProof nonexist. */
+                public nonexist?: (cosmos.ics23.v1.INonExistenceProof|null);
+
+                /** CommitmentProof batch. */
+                public batch?: (cosmos.ics23.v1.IBatchProof|null);
+
+                /** CommitmentProof compressed. */
+                public compressed?: (cosmos.ics23.v1.ICompressedBatchProof|null);
+
+                /** CommitmentProof proof. */
+                public proof?: ("exist"|"nonexist"|"batch"|"compressed");
+
+                /**
+                 * Encodes the specified CommitmentProof message. Does not implicitly {@link cosmos.ics23.v1.CommitmentProof.verify|verify} messages.
+                 * @param message CommitmentProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ICommitmentProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CommitmentProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.CommitmentProof.verify|verify} messages.
+                 * @param message CommitmentProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ICommitmentProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CommitmentProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CommitmentProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.CommitmentProof;
+
+                /**
+                 * Decodes a CommitmentProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CommitmentProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.CommitmentProof;
+
+                /**
+                 * Verifies a CommitmentProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CommitmentProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CommitmentProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.CommitmentProof;
+
+                /**
+                 * Creates a plain object from a CommitmentProof message. Also converts values to other types if specified.
+                 * @param message CommitmentProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.CommitmentProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CommitmentProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a LeafOp. */
+            interface ILeafOp {
+
+                /** LeafOp hash */
+                hash?: (cosmos.ics23.v1.HashOp|null);
+
+                /** LeafOp prehash_key */
+                prehash_key?: (cosmos.ics23.v1.HashOp|null);
+
+                /** LeafOp prehash_value */
+                prehash_value?: (cosmos.ics23.v1.HashOp|null);
+
+                /** LeafOp length */
+                length?: (cosmos.ics23.v1.LengthOp|null);
+
+                /** LeafOp prefix */
+                prefix?: (Uint8Array|null);
+            }
+
+            /**
+             * LeafOp represents the raw key-value data we wish to prove, and
+             * must be flexible to represent the internal transformation from
+             * the original key-value pairs into the basis hash, for many existing
+             * merkle trees.
+             *
+             * key and value are passed in. So that the signature of this operation is:
+             * leafOp(key, value) -> output
+             *
+             * To process this, first prehash the keys and values if needed (ANY means no hash in this case):
+             * hkey = prehashKey(key)
+             * hvalue = prehashValue(value)
+             *
+             * Then combine the bytes, and hash it
+             * output = hash(prefix || length(hkey) || hkey || length(hvalue) || hvalue)
+             */
+            class LeafOp implements ILeafOp {
+
+                /**
+                 * Constructs a new LeafOp.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ILeafOp);
+
+                /** LeafOp hash. */
+                public hash: cosmos.ics23.v1.HashOp;
+
+                /** LeafOp prehash_key. */
+                public prehash_key: cosmos.ics23.v1.HashOp;
+
+                /** LeafOp prehash_value. */
+                public prehash_value: cosmos.ics23.v1.HashOp;
+
+                /** LeafOp length. */
+                public length: cosmos.ics23.v1.LengthOp;
+
+                /** LeafOp prefix. */
+                public prefix: Uint8Array;
+
+                /**
+                 * Encodes the specified LeafOp message. Does not implicitly {@link cosmos.ics23.v1.LeafOp.verify|verify} messages.
+                 * @param message LeafOp message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ILeafOp, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified LeafOp message, length delimited. Does not implicitly {@link cosmos.ics23.v1.LeafOp.verify|verify} messages.
+                 * @param message LeafOp message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ILeafOp, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a LeafOp message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns LeafOp
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.LeafOp;
+
+                /**
+                 * Decodes a LeafOp message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns LeafOp
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.LeafOp;
+
+                /**
+                 * Verifies a LeafOp message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a LeafOp message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns LeafOp
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.LeafOp;
+
+                /**
+                 * Creates a plain object from a LeafOp message. Also converts values to other types if specified.
+                 * @param message LeafOp
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.LeafOp, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this LeafOp to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an InnerOp. */
+            interface IInnerOp {
+
+                /** InnerOp hash */
+                hash?: (cosmos.ics23.v1.HashOp|null);
+
+                /** InnerOp prefix */
+                prefix?: (Uint8Array|null);
+
+                /** InnerOp suffix */
+                suffix?: (Uint8Array|null);
+            }
+
+            /**
+             * InnerOp represents a merkle-proof step that is not a leaf.
+             * It represents concatenating two children and hashing them to provide the next result.
+             *
+             * The result of the previous step is passed in, so the signature of this op is:
+             * innerOp(child) -> output
+             *
+             * The result of applying InnerOp should be:
+             * output = op.hash(op.prefix || child || op.suffix)
+             *
+             * where the || operator is concatenation of binary data,
+             * and child is the result of hashing all the tree below this step.
+             *
+             * Any special data, like prepending child with the length, or prepending the entire operation with
+             * some value to differentiate from leaf nodes, should be included in prefix and suffix.
+             * If either of prefix or suffix is empty, we just treat it as an empty string
+             */
+            class InnerOp implements IInnerOp {
+
+                /**
+                 * Constructs a new InnerOp.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IInnerOp);
+
+                /** InnerOp hash. */
+                public hash: cosmos.ics23.v1.HashOp;
+
+                /** InnerOp prefix. */
+                public prefix: Uint8Array;
+
+                /** InnerOp suffix. */
+                public suffix: Uint8Array;
+
+                /**
+                 * Encodes the specified InnerOp message. Does not implicitly {@link cosmos.ics23.v1.InnerOp.verify|verify} messages.
+                 * @param message InnerOp message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IInnerOp, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified InnerOp message, length delimited. Does not implicitly {@link cosmos.ics23.v1.InnerOp.verify|verify} messages.
+                 * @param message InnerOp message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IInnerOp, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an InnerOp message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns InnerOp
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.InnerOp;
+
+                /**
+                 * Decodes an InnerOp message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns InnerOp
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.InnerOp;
+
+                /**
+                 * Verifies an InnerOp message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an InnerOp message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns InnerOp
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.InnerOp;
+
+                /**
+                 * Creates a plain object from an InnerOp message. Also converts values to other types if specified.
+                 * @param message InnerOp
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.InnerOp, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this InnerOp to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a ProofSpec. */
+            interface IProofSpec {
+
+                /** ProofSpec leaf_spec */
+                leaf_spec?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** ProofSpec inner_spec */
+                inner_spec?: (cosmos.ics23.v1.IInnerSpec|null);
+
+                /** ProofSpec max_depth */
+                max_depth?: (number|null);
+
+                /** ProofSpec min_depth */
+                min_depth?: (number|null);
+            }
+
+            /**
+             * ProofSpec defines what the expected parameters are for a given proof type.
+             * This can be stored in the client and used to validate any incoming proofs.
+             *
+             * verify(ProofSpec, Proof) -> Proof | Error
+             *
+             * As demonstrated in tests, if we don't fix the algorithm used to calculate the
+             * LeafHash for a given tree, there are many possible key-value pairs that can
+             * generate a given hash (by interpretting the preimage differently).
+             * We need this for proper security, requires client knows a priori what
+             * tree format server uses. But not in code, rather a configuration object.
+             */
+            class ProofSpec implements IProofSpec {
+
+                /**
+                 * Constructs a new ProofSpec.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IProofSpec);
+
+                /** ProofSpec leaf_spec. */
+                public leaf_spec?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** ProofSpec inner_spec. */
+                public inner_spec?: (cosmos.ics23.v1.IInnerSpec|null);
+
+                /** ProofSpec max_depth. */
+                public max_depth: number;
+
+                /** ProofSpec min_depth. */
+                public min_depth: number;
+
+                /**
+                 * Encodes the specified ProofSpec message. Does not implicitly {@link cosmos.ics23.v1.ProofSpec.verify|verify} messages.
+                 * @param message ProofSpec message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IProofSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ProofSpec message, length delimited. Does not implicitly {@link cosmos.ics23.v1.ProofSpec.verify|verify} messages.
+                 * @param message ProofSpec message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IProofSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ProofSpec message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ProofSpec
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.ProofSpec;
+
+                /**
+                 * Decodes a ProofSpec message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ProofSpec
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.ProofSpec;
+
+                /**
+                 * Verifies a ProofSpec message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ProofSpec message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ProofSpec
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.ProofSpec;
+
+                /**
+                 * Creates a plain object from a ProofSpec message. Also converts values to other types if specified.
+                 * @param message ProofSpec
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.ProofSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ProofSpec to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an InnerSpec. */
+            interface IInnerSpec {
+
+                /** InnerSpec child_order */
+                child_order?: (number[]|null);
+
+                /** InnerSpec child_size */
+                child_size?: (number|null);
+
+                /** InnerSpec min_prefix_length */
+                min_prefix_length?: (number|null);
+
+                /** InnerSpec max_prefix_length */
+                max_prefix_length?: (number|null);
+
+                /** InnerSpec empty_child */
+                empty_child?: (Uint8Array|null);
+
+                /** InnerSpec hash */
+                hash?: (cosmos.ics23.v1.HashOp|null);
+            }
+
+            /** Represents an InnerSpec. */
+            class InnerSpec implements IInnerSpec {
+
+                /**
+                 * Constructs a new InnerSpec.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IInnerSpec);
+
+                /** InnerSpec child_order. */
+                public child_order: number[];
+
+                /** InnerSpec child_size. */
+                public child_size: number;
+
+                /** InnerSpec min_prefix_length. */
+                public min_prefix_length: number;
+
+                /** InnerSpec max_prefix_length. */
+                public max_prefix_length: number;
+
+                /** InnerSpec empty_child. */
+                public empty_child: Uint8Array;
+
+                /** InnerSpec hash. */
+                public hash: cosmos.ics23.v1.HashOp;
+
+                /**
+                 * Encodes the specified InnerSpec message. Does not implicitly {@link cosmos.ics23.v1.InnerSpec.verify|verify} messages.
+                 * @param message InnerSpec message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IInnerSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified InnerSpec message, length delimited. Does not implicitly {@link cosmos.ics23.v1.InnerSpec.verify|verify} messages.
+                 * @param message InnerSpec message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IInnerSpec, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an InnerSpec message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns InnerSpec
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.InnerSpec;
+
+                /**
+                 * Decodes an InnerSpec message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns InnerSpec
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.InnerSpec;
+
+                /**
+                 * Verifies an InnerSpec message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an InnerSpec message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns InnerSpec
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.InnerSpec;
+
+                /**
+                 * Creates a plain object from an InnerSpec message. Also converts values to other types if specified.
+                 * @param message InnerSpec
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.InnerSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this InnerSpec to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a BatchProof. */
+            interface IBatchProof {
+
+                /** BatchProof entries */
+                entries?: (cosmos.ics23.v1.IBatchEntry[]|null);
+            }
+
+            /** Represents a BatchProof. */
+            class BatchProof implements IBatchProof {
+
+                /**
+                 * Constructs a new BatchProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IBatchProof);
+
+                /** BatchProof entries. */
+                public entries: cosmos.ics23.v1.IBatchEntry[];
+
+                /**
+                 * Encodes the specified BatchProof message. Does not implicitly {@link cosmos.ics23.v1.BatchProof.verify|verify} messages.
+                 * @param message BatchProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.BatchProof.verify|verify} messages.
+                 * @param message BatchProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.BatchProof;
+
+                /**
+                 * Decodes a BatchProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.BatchProof;
+
+                /**
+                 * Verifies a BatchProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.BatchProof;
+
+                /**
+                 * Creates a plain object from a BatchProof message. Also converts values to other types if specified.
+                 * @param message BatchProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.BatchProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a BatchEntry. */
+            interface IBatchEntry {
+
+                /** BatchEntry exist */
+                exist?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** BatchEntry nonexist */
+                nonexist?: (cosmos.ics23.v1.INonExistenceProof|null);
+            }
+
+            /** Represents a BatchEntry. */
+            class BatchEntry implements IBatchEntry {
+
+                /**
+                 * Constructs a new BatchEntry.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.IBatchEntry);
+
+                /** BatchEntry exist. */
+                public exist?: (cosmos.ics23.v1.IExistenceProof|null);
+
+                /** BatchEntry nonexist. */
+                public nonexist?: (cosmos.ics23.v1.INonExistenceProof|null);
+
+                /** BatchEntry proof. */
+                public proof?: ("exist"|"nonexist");
+
+                /**
+                 * Encodes the specified BatchEntry message. Does not implicitly {@link cosmos.ics23.v1.BatchEntry.verify|verify} messages.
+                 * @param message BatchEntry message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.IBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified BatchEntry message, length delimited. Does not implicitly {@link cosmos.ics23.v1.BatchEntry.verify|verify} messages.
+                 * @param message BatchEntry message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.IBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BatchEntry message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns BatchEntry
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.BatchEntry;
+
+                /**
+                 * Decodes a BatchEntry message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns BatchEntry
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.BatchEntry;
+
+                /**
+                 * Verifies a BatchEntry message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a BatchEntry message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns BatchEntry
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.BatchEntry;
+
+                /**
+                 * Creates a plain object from a BatchEntry message. Also converts values to other types if specified.
+                 * @param message BatchEntry
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.BatchEntry, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this BatchEntry to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CompressedBatchProof. */
+            interface ICompressedBatchProof {
+
+                /** CompressedBatchProof entries */
+                entries?: (cosmos.ics23.v1.ICompressedBatchEntry[]|null);
+
+                /** CompressedBatchProof lookup_inners */
+                lookup_inners?: (cosmos.ics23.v1.IInnerOp[]|null);
+            }
+
+            /** Represents a CompressedBatchProof. */
+            class CompressedBatchProof implements ICompressedBatchProof {
+
+                /**
+                 * Constructs a new CompressedBatchProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ICompressedBatchProof);
+
+                /** CompressedBatchProof entries. */
+                public entries: cosmos.ics23.v1.ICompressedBatchEntry[];
+
+                /** CompressedBatchProof lookup_inners. */
+                public lookup_inners: cosmos.ics23.v1.IInnerOp[];
+
+                /**
+                 * Encodes the specified CompressedBatchProof message. Does not implicitly {@link cosmos.ics23.v1.CompressedBatchProof.verify|verify} messages.
+                 * @param message CompressedBatchProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ICompressedBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CompressedBatchProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.CompressedBatchProof.verify|verify} messages.
+                 * @param message CompressedBatchProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ICompressedBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CompressedBatchProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CompressedBatchProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.CompressedBatchProof;
+
+                /**
+                 * Decodes a CompressedBatchProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CompressedBatchProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.CompressedBatchProof;
+
+                /**
+                 * Verifies a CompressedBatchProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CompressedBatchProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CompressedBatchProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.CompressedBatchProof;
+
+                /**
+                 * Creates a plain object from a CompressedBatchProof message. Also converts values to other types if specified.
+                 * @param message CompressedBatchProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.CompressedBatchProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CompressedBatchProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CompressedBatchEntry. */
+            interface ICompressedBatchEntry {
+
+                /** CompressedBatchEntry exist */
+                exist?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+
+                /** CompressedBatchEntry nonexist */
+                nonexist?: (cosmos.ics23.v1.ICompressedNonExistenceProof|null);
+            }
+
+            /** Represents a CompressedBatchEntry. */
+            class CompressedBatchEntry implements ICompressedBatchEntry {
+
+                /**
+                 * Constructs a new CompressedBatchEntry.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ICompressedBatchEntry);
+
+                /** CompressedBatchEntry exist. */
+                public exist?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+
+                /** CompressedBatchEntry nonexist. */
+                public nonexist?: (cosmos.ics23.v1.ICompressedNonExistenceProof|null);
+
+                /** CompressedBatchEntry proof. */
+                public proof?: ("exist"|"nonexist");
+
+                /**
+                 * Encodes the specified CompressedBatchEntry message. Does not implicitly {@link cosmos.ics23.v1.CompressedBatchEntry.verify|verify} messages.
+                 * @param message CompressedBatchEntry message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ICompressedBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CompressedBatchEntry message, length delimited. Does not implicitly {@link cosmos.ics23.v1.CompressedBatchEntry.verify|verify} messages.
+                 * @param message CompressedBatchEntry message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ICompressedBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CompressedBatchEntry message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CompressedBatchEntry
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.CompressedBatchEntry;
+
+                /**
+                 * Decodes a CompressedBatchEntry message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CompressedBatchEntry
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.CompressedBatchEntry;
+
+                /**
+                 * Verifies a CompressedBatchEntry message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CompressedBatchEntry message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CompressedBatchEntry
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.CompressedBatchEntry;
+
+                /**
+                 * Creates a plain object from a CompressedBatchEntry message. Also converts values to other types if specified.
+                 * @param message CompressedBatchEntry
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.CompressedBatchEntry, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CompressedBatchEntry to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CompressedExistenceProof. */
+            interface ICompressedExistenceProof {
+
+                /** CompressedExistenceProof key */
+                key?: (Uint8Array|null);
+
+                /** CompressedExistenceProof value */
+                value?: (Uint8Array|null);
+
+                /** CompressedExistenceProof leaf */
+                leaf?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** CompressedExistenceProof path */
+                path?: (number[]|null);
+            }
+
+            /** Represents a CompressedExistenceProof. */
+            class CompressedExistenceProof implements ICompressedExistenceProof {
+
+                /**
+                 * Constructs a new CompressedExistenceProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ICompressedExistenceProof);
+
+                /** CompressedExistenceProof key. */
+                public key: Uint8Array;
+
+                /** CompressedExistenceProof value. */
+                public value: Uint8Array;
+
+                /** CompressedExistenceProof leaf. */
+                public leaf?: (cosmos.ics23.v1.ILeafOp|null);
+
+                /** CompressedExistenceProof path. */
+                public path: number[];
+
+                /**
+                 * Encodes the specified CompressedExistenceProof message. Does not implicitly {@link cosmos.ics23.v1.CompressedExistenceProof.verify|verify} messages.
+                 * @param message CompressedExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ICompressedExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CompressedExistenceProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.CompressedExistenceProof.verify|verify} messages.
+                 * @param message CompressedExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ICompressedExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CompressedExistenceProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CompressedExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.CompressedExistenceProof;
+
+                /**
+                 * Decodes a CompressedExistenceProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CompressedExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.CompressedExistenceProof;
+
+                /**
+                 * Verifies a CompressedExistenceProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CompressedExistenceProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CompressedExistenceProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.CompressedExistenceProof;
+
+                /**
+                 * Creates a plain object from a CompressedExistenceProof message. Also converts values to other types if specified.
+                 * @param message CompressedExistenceProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.CompressedExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CompressedExistenceProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CompressedNonExistenceProof. */
+            interface ICompressedNonExistenceProof {
+
+                /** CompressedNonExistenceProof key */
+                key?: (Uint8Array|null);
+
+                /** CompressedNonExistenceProof left */
+                left?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+
+                /** CompressedNonExistenceProof right */
+                right?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+            }
+
+            /** Represents a CompressedNonExistenceProof. */
+            class CompressedNonExistenceProof implements ICompressedNonExistenceProof {
+
+                /**
+                 * Constructs a new CompressedNonExistenceProof.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.ics23.v1.ICompressedNonExistenceProof);
+
+                /** CompressedNonExistenceProof key. */
+                public key: Uint8Array;
+
+                /** CompressedNonExistenceProof left. */
+                public left?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+
+                /** CompressedNonExistenceProof right. */
+                public right?: (cosmos.ics23.v1.ICompressedExistenceProof|null);
+
+                /**
+                 * Encodes the specified CompressedNonExistenceProof message. Does not implicitly {@link cosmos.ics23.v1.CompressedNonExistenceProof.verify|verify} messages.
+                 * @param message CompressedNonExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.ics23.v1.ICompressedNonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CompressedNonExistenceProof message, length delimited. Does not implicitly {@link cosmos.ics23.v1.CompressedNonExistenceProof.verify|verify} messages.
+                 * @param message CompressedNonExistenceProof message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.ics23.v1.ICompressedNonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CompressedNonExistenceProof message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CompressedNonExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.ics23.v1.CompressedNonExistenceProof;
+
+                /**
+                 * Decodes a CompressedNonExistenceProof message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CompressedNonExistenceProof
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.ics23.v1.CompressedNonExistenceProof;
+
+                /**
+                 * Verifies a CompressedNonExistenceProof message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CompressedNonExistenceProof message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CompressedNonExistenceProof
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.ics23.v1.CompressedNonExistenceProof;
+
+                /**
+                 * Creates a plain object from a CompressedNonExistenceProof message. Also converts values to other types if specified.
+                 * @param message CompressedNonExistenceProof
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.ics23.v1.CompressedNonExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CompressedNonExistenceProof to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
+    }
+}
+
+/** Namespace cosmos_proto. */
+export namespace cosmos_proto {
+
+    /** Properties of an InterfaceDescriptor. */
+    interface IInterfaceDescriptor {
+
+        /** InterfaceDescriptor name */
+        name?: (string|null);
+
+        /** InterfaceDescriptor description */
+        description?: (string|null);
+    }
+
+    /** Represents an InterfaceDescriptor. */
+    class InterfaceDescriptor implements IInterfaceDescriptor {
+
+        /**
+         * Constructs a new InterfaceDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
+
+        /** InterfaceDescriptor name. */
+        public name: string;
+
+        /** InterfaceDescriptor description. */
+        public description: string;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Verifies an InterfaceDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns InterfaceDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
+         * @param message InterfaceDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this InterfaceDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** Properties of a ScalarDescriptor. */
+    interface IScalarDescriptor {
+
+        /** ScalarDescriptor name */
+        name?: (string|null);
+
+        /** ScalarDescriptor description */
+        description?: (string|null);
+
+        /** ScalarDescriptor field_type */
+        field_type?: (cosmos_proto.ScalarType[]|null);
+    }
+
+    /** Represents a ScalarDescriptor. */
+    class ScalarDescriptor implements IScalarDescriptor {
+
+        /**
+         * Constructs a new ScalarDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IScalarDescriptor);
+
+        /** ScalarDescriptor name. */
+        public name: string;
+
+        /** ScalarDescriptor description. */
+        public description: string;
+
+        /** ScalarDescriptor field_type. */
+        public field_type: cosmos_proto.ScalarType[];
+
+        /**
+         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Verifies a ScalarDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ScalarDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
+         * @param message ScalarDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ScalarDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** ScalarType enum. */
+    enum ScalarType {
+        SCALAR_TYPE_UNSPECIFIED = 0,
+        SCALAR_TYPE_STRING = 1,
+        SCALAR_TYPE_BYTES = 2
     }
 }
 
@@ -4462,6 +7639,12 @@ export namespace google {
 
             /** FileOptions .gogoproto.goproto_unkeyed_all */
             ".gogoproto.goproto_unkeyed_all"?: (boolean|null);
+
+            /** FileOptions .cosmos_proto.declare_interface */
+            ".cosmos_proto.declare_interface"?: (cosmos_proto.IInterfaceDescriptor[]|null);
+
+            /** FileOptions .cosmos_proto.declare_scalar */
+            ".cosmos_proto.declare_scalar"?: (cosmos_proto.IScalarDescriptor[]|null);
         }
 
         /** Represents a FileOptions. */
@@ -4688,11 +7871,14 @@ export namespace google {
             /** MessageOptions .gogoproto.goproto_unkeyed */
             ".gogoproto.goproto_unkeyed"?: (boolean|null);
 
-            /** MessageOptions .cosmos_proto.interface_type */
-            ".cosmos_proto.interface_type"?: (string|null);
-
             /** MessageOptions .cosmos_proto.implements_interface */
-            ".cosmos_proto.implements_interface"?: (string|null);
+            ".cosmos_proto.implements_interface"?: (string[]|null);
+
+            /** MessageOptions .amino.name */
+            ".amino.name"?: (string|null);
+
+            /** MessageOptions .amino.message_encoding */
+            ".amino.message_encoding"?: (string|null);
         }
 
         /** Represents a MessageOptions. */
@@ -4848,6 +8034,18 @@ export namespace google {
 
             /** FieldOptions .cosmos_proto.accepts_interface */
             ".cosmos_proto.accepts_interface"?: (string|null);
+
+            /** FieldOptions .cosmos_proto.scalar */
+            ".cosmos_proto.scalar"?: (string|null);
+
+            /** FieldOptions .amino.encoding */
+            ".amino.encoding"?: (string|null);
+
+            /** FieldOptions .amino.field_name */
+            ".amino.field_name"?: (string|null);
+
+            /** FieldOptions .amino.dont_omitempty */
+            ".amino.dont_omitempty"?: (boolean|null);
         }
 
         /** Represents a FieldOptions. */
@@ -10397,6 +13595,431 @@ export namespace ibc {
                 /** Namespace v1. */
                 namespace v1 {
 
+                    /** Represents a Msg */
+                    class Msg extends $protobuf.rpc.Service {
+
+                        /**
+                         * Constructs a new Msg service.
+                         * @param rpcImpl RPC implementation
+                         * @param [requestDelimited=false] Whether requests are length-delimited
+                         * @param [responseDelimited=false] Whether responses are length-delimited
+                         */
+                        constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                        /**
+                         * Calls RegisterInterchainAccount.
+                         * @param request MsgRegisterInterchainAccount message or plain object
+                         * @param callback Node-style callback called with the error, if any, and MsgRegisterInterchainAccountResponse
+                         */
+                        public registerInterchainAccount(request: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccount, callback: ibc.applications.interchain_accounts.controller.v1.Msg.RegisterInterchainAccountCallback): void;
+
+                        /**
+                         * Calls RegisterInterchainAccount.
+                         * @param request MsgRegisterInterchainAccount message or plain object
+                         * @returns Promise
+                         */
+                        public registerInterchainAccount(request: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccount): Promise<ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse>;
+
+                        /**
+                         * Calls SendTx.
+                         * @param request MsgSendTx message or plain object
+                         * @param callback Node-style callback called with the error, if any, and MsgSendTxResponse
+                         */
+                        public sendTx(request: ibc.applications.interchain_accounts.controller.v1.IMsgSendTx, callback: ibc.applications.interchain_accounts.controller.v1.Msg.SendTxCallback): void;
+
+                        /**
+                         * Calls SendTx.
+                         * @param request MsgSendTx message or plain object
+                         * @returns Promise
+                         */
+                        public sendTx(request: ibc.applications.interchain_accounts.controller.v1.IMsgSendTx): Promise<ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse>;
+                    }
+
+                    namespace Msg {
+
+                        /**
+                         * Callback as used by {@link ibc.applications.interchain_accounts.controller.v1.Msg#registerInterchainAccount}.
+                         * @param error Error, if any
+                         * @param [response] MsgRegisterInterchainAccountResponse
+                         */
+                        type RegisterInterchainAccountCallback = (error: (Error|null), response?: ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse) => void;
+
+                        /**
+                         * Callback as used by {@link ibc.applications.interchain_accounts.controller.v1.Msg#sendTx}.
+                         * @param error Error, if any
+                         * @param [response] MsgSendTxResponse
+                         */
+                        type SendTxCallback = (error: (Error|null), response?: ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse) => void;
+                    }
+
+                    /** Properties of a MsgRegisterInterchainAccount. */
+                    interface IMsgRegisterInterchainAccount {
+
+                        /** MsgRegisterInterchainAccount owner */
+                        owner?: (string|null);
+
+                        /** MsgRegisterInterchainAccount connection_id */
+                        connection_id?: (string|null);
+
+                        /** MsgRegisterInterchainAccount version */
+                        version?: (string|null);
+                    }
+
+                    /** Represents a MsgRegisterInterchainAccount. */
+                    class MsgRegisterInterchainAccount implements IMsgRegisterInterchainAccount {
+
+                        /**
+                         * Constructs a new MsgRegisterInterchainAccount.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccount);
+
+                        /** MsgRegisterInterchainAccount owner. */
+                        public owner: string;
+
+                        /** MsgRegisterInterchainAccount connection_id. */
+                        public connection_id: string;
+
+                        /** MsgRegisterInterchainAccount version. */
+                        public version: string;
+
+                        /**
+                         * Encodes the specified MsgRegisterInterchainAccount message. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount.verify|verify} messages.
+                         * @param message MsgRegisterInterchainAccount message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MsgRegisterInterchainAccount message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount.verify|verify} messages.
+                         * @param message MsgRegisterInterchainAccount message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MsgRegisterInterchainAccount
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount;
+
+                        /**
+                         * Decodes a MsgRegisterInterchainAccount message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MsgRegisterInterchainAccount
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount;
+
+                        /**
+                         * Verifies a MsgRegisterInterchainAccount message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MsgRegisterInterchainAccount message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MsgRegisterInterchainAccount
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount;
+
+                        /**
+                         * Creates a plain object from a MsgRegisterInterchainAccount message. Also converts values to other types if specified.
+                         * @param message MsgRegisterInterchainAccount
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MsgRegisterInterchainAccount to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a MsgRegisterInterchainAccountResponse. */
+                    interface IMsgRegisterInterchainAccountResponse {
+
+                        /** MsgRegisterInterchainAccountResponse channel_id */
+                        channel_id?: (string|null);
+
+                        /** MsgRegisterInterchainAccountResponse port_id */
+                        port_id?: (string|null);
+                    }
+
+                    /** Represents a MsgRegisterInterchainAccountResponse. */
+                    class MsgRegisterInterchainAccountResponse implements IMsgRegisterInterchainAccountResponse {
+
+                        /**
+                         * Constructs a new MsgRegisterInterchainAccountResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccountResponse);
+
+                        /** MsgRegisterInterchainAccountResponse channel_id. */
+                        public channel_id: string;
+
+                        /** MsgRegisterInterchainAccountResponse port_id. */
+                        public port_id: string;
+
+                        /**
+                         * Encodes the specified MsgRegisterInterchainAccountResponse message. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
+                         * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MsgRegisterInterchainAccountResponse message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse.verify|verify} messages.
+                         * @param message MsgRegisterInterchainAccountResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.controller.v1.IMsgRegisterInterchainAccountResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MsgRegisterInterchainAccountResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse;
+
+                        /**
+                         * Decodes a MsgRegisterInterchainAccountResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MsgRegisterInterchainAccountResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse;
+
+                        /**
+                         * Verifies a MsgRegisterInterchainAccountResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MsgRegisterInterchainAccountResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MsgRegisterInterchainAccountResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse;
+
+                        /**
+                         * Creates a plain object from a MsgRegisterInterchainAccountResponse message. Also converts values to other types if specified.
+                         * @param message MsgRegisterInterchainAccountResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.controller.v1.MsgRegisterInterchainAccountResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MsgRegisterInterchainAccountResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a MsgSendTx. */
+                    interface IMsgSendTx {
+
+                        /** MsgSendTx owner */
+                        owner?: (string|null);
+
+                        /** MsgSendTx connection_id */
+                        connection_id?: (string|null);
+
+                        /** MsgSendTx packet_data */
+                        packet_data?: (ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData|null);
+
+                        /** MsgSendTx relative_timeout */
+                        relative_timeout?: (Long|null);
+                    }
+
+                    /** Represents a MsgSendTx. */
+                    class MsgSendTx implements IMsgSendTx {
+
+                        /**
+                         * Constructs a new MsgSendTx.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.controller.v1.IMsgSendTx);
+
+                        /** MsgSendTx owner. */
+                        public owner: string;
+
+                        /** MsgSendTx connection_id. */
+                        public connection_id: string;
+
+                        /** MsgSendTx packet_data. */
+                        public packet_data?: (ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData|null);
+
+                        /** MsgSendTx relative_timeout. */
+                        public relative_timeout: Long;
+
+                        /**
+                         * Encodes the specified MsgSendTx message. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgSendTx.verify|verify} messages.
+                         * @param message MsgSendTx message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.controller.v1.IMsgSendTx, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MsgSendTx message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgSendTx.verify|verify} messages.
+                         * @param message MsgSendTx message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.controller.v1.IMsgSendTx, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MsgSendTx message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MsgSendTx
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.controller.v1.MsgSendTx;
+
+                        /**
+                         * Decodes a MsgSendTx message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MsgSendTx
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.controller.v1.MsgSendTx;
+
+                        /**
+                         * Verifies a MsgSendTx message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MsgSendTx message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MsgSendTx
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.controller.v1.MsgSendTx;
+
+                        /**
+                         * Creates a plain object from a MsgSendTx message. Also converts values to other types if specified.
+                         * @param message MsgSendTx
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.controller.v1.MsgSendTx, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MsgSendTx to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a MsgSendTxResponse. */
+                    interface IMsgSendTxResponse {
+
+                        /** MsgSendTxResponse sequence */
+                        sequence?: (Long|null);
+                    }
+
+                    /** Represents a MsgSendTxResponse. */
+                    class MsgSendTxResponse implements IMsgSendTxResponse {
+
+                        /**
+                         * Constructs a new MsgSendTxResponse.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.controller.v1.IMsgSendTxResponse);
+
+                        /** MsgSendTxResponse sequence. */
+                        public sequence: Long;
+
+                        /**
+                         * Encodes the specified MsgSendTxResponse message. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse.verify|verify} messages.
+                         * @param message MsgSendTxResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.controller.v1.IMsgSendTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified MsgSendTxResponse message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse.verify|verify} messages.
+                         * @param message MsgSendTxResponse message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.controller.v1.IMsgSendTxResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a MsgSendTxResponse message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns MsgSendTxResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse;
+
+                        /**
+                         * Decodes a MsgSendTxResponse message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns MsgSendTxResponse
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse;
+
+                        /**
+                         * Verifies a MsgSendTxResponse message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a MsgSendTxResponse message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns MsgSendTxResponse
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse;
+
+                        /**
+                         * Creates a plain object from a MsgSendTxResponse message. Also converts values to other types if specified.
+                         * @param message MsgSendTxResponse
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.controller.v1.MsgSendTxResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this MsgSendTxResponse to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
                     /** Represents a Query */
                     class Query extends $protobuf.rpc.Service {
 
@@ -10871,6 +14494,891 @@ export namespace ibc {
                 }
             }
 
+            /** Namespace v1. */
+            namespace v1 {
+
+                /** Type enum. */
+                enum Type {
+                    TYPE_UNSPECIFIED = 0,
+                    TYPE_EXECUTE_TX = 1
+                }
+
+                /** Properties of an InterchainAccountPacketData. */
+                interface IInterchainAccountPacketData {
+
+                    /** InterchainAccountPacketData type */
+                    type?: (ibc.applications.interchain_accounts.v1.Type|null);
+
+                    /** InterchainAccountPacketData data */
+                    data?: (Uint8Array|null);
+
+                    /** InterchainAccountPacketData memo */
+                    memo?: (string|null);
+                }
+
+                /** Represents an InterchainAccountPacketData. */
+                class InterchainAccountPacketData implements IInterchainAccountPacketData {
+
+                    /**
+                     * Constructs a new InterchainAccountPacketData.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData);
+
+                    /** InterchainAccountPacketData type. */
+                    public type: ibc.applications.interchain_accounts.v1.Type;
+
+                    /** InterchainAccountPacketData data. */
+                    public data: Uint8Array;
+
+                    /** InterchainAccountPacketData memo. */
+                    public memo: string;
+
+                    /**
+                     * Encodes the specified InterchainAccountPacketData message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccountPacketData.verify|verify} messages.
+                     * @param message InterchainAccountPacketData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified InterchainAccountPacketData message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccountPacketData.verify|verify} messages.
+                     * @param message InterchainAccountPacketData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an InterchainAccountPacketData message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns InterchainAccountPacketData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
+
+                    /**
+                     * Decodes an InterchainAccountPacketData message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns InterchainAccountPacketData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
+
+                    /**
+                     * Verifies an InterchainAccountPacketData message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an InterchainAccountPacketData message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns InterchainAccountPacketData
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
+
+                    /**
+                     * Creates a plain object from an InterchainAccountPacketData message. Also converts values to other types if specified.
+                     * @param message InterchainAccountPacketData
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.interchain_accounts.v1.InterchainAccountPacketData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this InterchainAccountPacketData to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a CosmosTx. */
+                interface ICosmosTx {
+
+                    /** CosmosTx messages */
+                    messages?: (google.protobuf.IAny[]|null);
+                }
+
+                /** Represents a CosmosTx. */
+                class CosmosTx implements ICosmosTx {
+
+                    /**
+                     * Constructs a new CosmosTx.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.interchain_accounts.v1.ICosmosTx);
+
+                    /** CosmosTx messages. */
+                    public messages: google.protobuf.IAny[];
+
+                    /**
+                     * Encodes the specified CosmosTx message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.CosmosTx.verify|verify} messages.
+                     * @param message CosmosTx message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.interchain_accounts.v1.ICosmosTx, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified CosmosTx message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.CosmosTx.verify|verify} messages.
+                     * @param message CosmosTx message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.ICosmosTx, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a CosmosTx message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns CosmosTx
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.CosmosTx;
+
+                    /**
+                     * Decodes a CosmosTx message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns CosmosTx
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.CosmosTx;
+
+                    /**
+                     * Verifies a CosmosTx message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a CosmosTx message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns CosmosTx
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.CosmosTx;
+
+                    /**
+                     * Creates a plain object from a CosmosTx message. Also converts values to other types if specified.
+                     * @param message CosmosTx
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.interchain_accounts.v1.CosmosTx, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this CosmosTx to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an InterchainAccount. */
+                interface IInterchainAccount {
+
+                    /** InterchainAccount base_account */
+                    base_account?: (cosmos.auth.v1beta1.IBaseAccount|null);
+
+                    /** InterchainAccount account_owner */
+                    account_owner?: (string|null);
+                }
+
+                /** Represents an InterchainAccount. */
+                class InterchainAccount implements IInterchainAccount {
+
+                    /**
+                     * Constructs a new InterchainAccount.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.interchain_accounts.v1.IInterchainAccount);
+
+                    /** InterchainAccount base_account. */
+                    public base_account?: (cosmos.auth.v1beta1.IBaseAccount|null);
+
+                    /** InterchainAccount account_owner. */
+                    public account_owner: string;
+
+                    /**
+                     * Encodes the specified InterchainAccount message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccount.verify|verify} messages.
+                     * @param message InterchainAccount message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.interchain_accounts.v1.IInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified InterchainAccount message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccount.verify|verify} messages.
+                     * @param message InterchainAccount message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an InterchainAccount message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns InterchainAccount
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.InterchainAccount;
+
+                    /**
+                     * Decodes an InterchainAccount message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns InterchainAccount
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.InterchainAccount;
+
+                    /**
+                     * Verifies an InterchainAccount message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an InterchainAccount message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns InterchainAccount
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.InterchainAccount;
+
+                    /**
+                     * Creates a plain object from an InterchainAccount message. Also converts values to other types if specified.
+                     * @param message InterchainAccount
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.interchain_accounts.v1.InterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this InterchainAccount to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Metadata. */
+                interface IMetadata {
+
+                    /** Metadata version */
+                    version?: (string|null);
+
+                    /** Metadata controller_connection_id */
+                    controller_connection_id?: (string|null);
+
+                    /** Metadata host_connection_id */
+                    host_connection_id?: (string|null);
+
+                    /** Metadata address */
+                    address?: (string|null);
+
+                    /** Metadata encoding */
+                    encoding?: (string|null);
+
+                    /** Metadata tx_type */
+                    tx_type?: (string|null);
+                }
+
+                /** Represents a Metadata. */
+                class Metadata implements IMetadata {
+
+                    /**
+                     * Constructs a new Metadata.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.interchain_accounts.v1.IMetadata);
+
+                    /** Metadata version. */
+                    public version: string;
+
+                    /** Metadata controller_connection_id. */
+                    public controller_connection_id: string;
+
+                    /** Metadata host_connection_id. */
+                    public host_connection_id: string;
+
+                    /** Metadata address. */
+                    public address: string;
+
+                    /** Metadata encoding. */
+                    public encoding: string;
+
+                    /** Metadata tx_type. */
+                    public tx_type: string;
+
+                    /**
+                     * Encodes the specified Metadata message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.Metadata.verify|verify} messages.
+                     * @param message Metadata message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.interchain_accounts.v1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Metadata message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.Metadata.verify|verify} messages.
+                     * @param message Metadata message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Metadata message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Metadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.Metadata;
+
+                    /**
+                     * Decodes a Metadata message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Metadata
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.Metadata;
+
+                    /**
+                     * Verifies a Metadata message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Metadata message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Metadata
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.Metadata;
+
+                    /**
+                     * Creates a plain object from a Metadata message. Also converts values to other types if specified.
+                     * @param message Metadata
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.interchain_accounts.v1.Metadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Metadata to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
+
+            /** Namespace genesis. */
+            namespace genesis {
+
+                /** Namespace v1. */
+                namespace v1 {
+
+                    /** Properties of a GenesisState. */
+                    interface IGenesisState {
+
+                        /** GenesisState controller_genesis_state */
+                        controller_genesis_state?: (ibc.applications.interchain_accounts.genesis.v1.IControllerGenesisState|null);
+
+                        /** GenesisState host_genesis_state */
+                        host_genesis_state?: (ibc.applications.interchain_accounts.genesis.v1.IHostGenesisState|null);
+                    }
+
+                    /** Represents a GenesisState. */
+                    class GenesisState implements IGenesisState {
+
+                        /**
+                         * Constructs a new GenesisState.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.genesis.v1.IGenesisState);
+
+                        /** GenesisState controller_genesis_state. */
+                        public controller_genesis_state?: (ibc.applications.interchain_accounts.genesis.v1.IControllerGenesisState|null);
+
+                        /** GenesisState host_genesis_state. */
+                        public host_genesis_state?: (ibc.applications.interchain_accounts.genesis.v1.IHostGenesisState|null);
+
+                        /**
+                         * Encodes the specified GenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.GenesisState.verify|verify} messages.
+                         * @param message GenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.genesis.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.GenesisState.verify|verify} messages.
+                         * @param message GenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.genesis.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a GenesisState message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns GenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.genesis.v1.GenesisState;
+
+                        /**
+                         * Decodes a GenesisState message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns GenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.genesis.v1.GenesisState;
+
+                        /**
+                         * Verifies a GenesisState message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns GenesisState
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.genesis.v1.GenesisState;
+
+                        /**
+                         * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
+                         * @param message GenesisState
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.genesis.v1.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this GenesisState to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a ControllerGenesisState. */
+                    interface IControllerGenesisState {
+
+                        /** ControllerGenesisState active_channels */
+                        active_channels?: (ibc.applications.interchain_accounts.genesis.v1.IActiveChannel[]|null);
+
+                        /** ControllerGenesisState interchain_accounts */
+                        interchain_accounts?: (ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount[]|null);
+
+                        /** ControllerGenesisState ports */
+                        ports?: (string[]|null);
+
+                        /** ControllerGenesisState params */
+                        params?: (ibc.applications.interchain_accounts.controller.v1.IParams|null);
+                    }
+
+                    /** Represents a ControllerGenesisState. */
+                    class ControllerGenesisState implements IControllerGenesisState {
+
+                        /**
+                         * Constructs a new ControllerGenesisState.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.genesis.v1.IControllerGenesisState);
+
+                        /** ControllerGenesisState active_channels. */
+                        public active_channels: ibc.applications.interchain_accounts.genesis.v1.IActiveChannel[];
+
+                        /** ControllerGenesisState interchain_accounts. */
+                        public interchain_accounts: ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount[];
+
+                        /** ControllerGenesisState ports. */
+                        public ports: string[];
+
+                        /** ControllerGenesisState params. */
+                        public params?: (ibc.applications.interchain_accounts.controller.v1.IParams|null);
+
+                        /**
+                         * Encodes the specified ControllerGenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState.verify|verify} messages.
+                         * @param message ControllerGenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.genesis.v1.IControllerGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ControllerGenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState.verify|verify} messages.
+                         * @param message ControllerGenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.genesis.v1.IControllerGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a ControllerGenesisState message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ControllerGenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState;
+
+                        /**
+                         * Decodes a ControllerGenesisState message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ControllerGenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState;
+
+                        /**
+                         * Verifies a ControllerGenesisState message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a ControllerGenesisState message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ControllerGenesisState
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState;
+
+                        /**
+                         * Creates a plain object from a ControllerGenesisState message. Also converts values to other types if specified.
+                         * @param message ControllerGenesisState
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.genesis.v1.ControllerGenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ControllerGenesisState to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a HostGenesisState. */
+                    interface IHostGenesisState {
+
+                        /** HostGenesisState active_channels */
+                        active_channels?: (ibc.applications.interchain_accounts.genesis.v1.IActiveChannel[]|null);
+
+                        /** HostGenesisState interchain_accounts */
+                        interchain_accounts?: (ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount[]|null);
+
+                        /** HostGenesisState port */
+                        port?: (string|null);
+
+                        /** HostGenesisState params */
+                        params?: (ibc.applications.interchain_accounts.host.v1.IParams|null);
+                    }
+
+                    /** Represents a HostGenesisState. */
+                    class HostGenesisState implements IHostGenesisState {
+
+                        /**
+                         * Constructs a new HostGenesisState.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.genesis.v1.IHostGenesisState);
+
+                        /** HostGenesisState active_channels. */
+                        public active_channels: ibc.applications.interchain_accounts.genesis.v1.IActiveChannel[];
+
+                        /** HostGenesisState interchain_accounts. */
+                        public interchain_accounts: ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount[];
+
+                        /** HostGenesisState port. */
+                        public port: string;
+
+                        /** HostGenesisState params. */
+                        public params?: (ibc.applications.interchain_accounts.host.v1.IParams|null);
+
+                        /**
+                         * Encodes the specified HostGenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.HostGenesisState.verify|verify} messages.
+                         * @param message HostGenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.genesis.v1.IHostGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified HostGenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.HostGenesisState.verify|verify} messages.
+                         * @param message HostGenesisState message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.genesis.v1.IHostGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a HostGenesisState message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns HostGenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.genesis.v1.HostGenesisState;
+
+                        /**
+                         * Decodes a HostGenesisState message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns HostGenesisState
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.genesis.v1.HostGenesisState;
+
+                        /**
+                         * Verifies a HostGenesisState message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a HostGenesisState message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns HostGenesisState
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.genesis.v1.HostGenesisState;
+
+                        /**
+                         * Creates a plain object from a HostGenesisState message. Also converts values to other types if specified.
+                         * @param message HostGenesisState
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.genesis.v1.HostGenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this HostGenesisState to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of an ActiveChannel. */
+                    interface IActiveChannel {
+
+                        /** ActiveChannel connection_id */
+                        connection_id?: (string|null);
+
+                        /** ActiveChannel port_id */
+                        port_id?: (string|null);
+
+                        /** ActiveChannel channel_id */
+                        channel_id?: (string|null);
+
+                        /** ActiveChannel is_middleware_enabled */
+                        is_middleware_enabled?: (boolean|null);
+                    }
+
+                    /** Represents an ActiveChannel. */
+                    class ActiveChannel implements IActiveChannel {
+
+                        /**
+                         * Constructs a new ActiveChannel.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.genesis.v1.IActiveChannel);
+
+                        /** ActiveChannel connection_id. */
+                        public connection_id: string;
+
+                        /** ActiveChannel port_id. */
+                        public port_id: string;
+
+                        /** ActiveChannel channel_id. */
+                        public channel_id: string;
+
+                        /** ActiveChannel is_middleware_enabled. */
+                        public is_middleware_enabled: boolean;
+
+                        /**
+                         * Encodes the specified ActiveChannel message. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.ActiveChannel.verify|verify} messages.
+                         * @param message ActiveChannel message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.genesis.v1.IActiveChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified ActiveChannel message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.ActiveChannel.verify|verify} messages.
+                         * @param message ActiveChannel message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.genesis.v1.IActiveChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes an ActiveChannel message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns ActiveChannel
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.genesis.v1.ActiveChannel;
+
+                        /**
+                         * Decodes an ActiveChannel message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns ActiveChannel
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.genesis.v1.ActiveChannel;
+
+                        /**
+                         * Verifies an ActiveChannel message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates an ActiveChannel message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns ActiveChannel
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.genesis.v1.ActiveChannel;
+
+                        /**
+                         * Creates a plain object from an ActiveChannel message. Also converts values to other types if specified.
+                         * @param message ActiveChannel
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.genesis.v1.ActiveChannel, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this ActiveChannel to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+
+                    /** Properties of a RegisteredInterchainAccount. */
+                    interface IRegisteredInterchainAccount {
+
+                        /** RegisteredInterchainAccount connection_id */
+                        connection_id?: (string|null);
+
+                        /** RegisteredInterchainAccount port_id */
+                        port_id?: (string|null);
+
+                        /** RegisteredInterchainAccount account_address */
+                        account_address?: (string|null);
+                    }
+
+                    /** Represents a RegisteredInterchainAccount. */
+                    class RegisteredInterchainAccount implements IRegisteredInterchainAccount {
+
+                        /**
+                         * Constructs a new RegisteredInterchainAccount.
+                         * @param [properties] Properties to set
+                         */
+                        constructor(properties?: ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount);
+
+                        /** RegisteredInterchainAccount connection_id. */
+                        public connection_id: string;
+
+                        /** RegisteredInterchainAccount port_id. */
+                        public port_id: string;
+
+                        /** RegisteredInterchainAccount account_address. */
+                        public account_address: string;
+
+                        /**
+                         * Encodes the specified RegisteredInterchainAccount message. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount.verify|verify} messages.
+                         * @param message RegisteredInterchainAccount message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encode(message: ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Encodes the specified RegisteredInterchainAccount message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount.verify|verify} messages.
+                         * @param message RegisteredInterchainAccount message or plain object to encode
+                         * @param [writer] Writer to encode to
+                         * @returns Writer
+                         */
+                        public static encodeDelimited(message: ibc.applications.interchain_accounts.genesis.v1.IRegisteredInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                        /**
+                         * Decodes a RegisteredInterchainAccount message from the specified reader or buffer.
+                         * @param reader Reader or buffer to decode from
+                         * @param [length] Message length if known beforehand
+                         * @returns RegisteredInterchainAccount
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount;
+
+                        /**
+                         * Decodes a RegisteredInterchainAccount message from the specified reader or buffer, length delimited.
+                         * @param reader Reader or buffer to decode from
+                         * @returns RegisteredInterchainAccount
+                         * @throws {Error} If the payload is not a reader or valid buffer
+                         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                         */
+                        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount;
+
+                        /**
+                         * Verifies a RegisteredInterchainAccount message.
+                         * @param message Plain object to verify
+                         * @returns `null` if valid, otherwise the reason why it is not
+                         */
+                        public static verify(message: { [k: string]: any }): (string|null);
+
+                        /**
+                         * Creates a RegisteredInterchainAccount message from a plain object. Also converts values to their respective internal types.
+                         * @param object Plain object
+                         * @returns RegisteredInterchainAccount
+                         */
+                        public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount;
+
+                        /**
+                         * Creates a plain object from a RegisteredInterchainAccount message. Also converts values to other types if specified.
+                         * @param message RegisteredInterchainAccount
+                         * @param [options] Conversion options
+                         * @returns Plain object
+                         */
+                        public static toObject(message: ibc.applications.interchain_accounts.genesis.v1.RegisteredInterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                        /**
+                         * Converts this RegisteredInterchainAccount to JSON.
+                         * @returns JSON object
+                         */
+                        public toJSON(): { [k: string]: any };
+                    }
+                }
+            }
+
             /** Namespace host. */
             namespace host {
 
@@ -11161,877 +15669,6 @@ export namespace ibc {
                          */
                         public toJSON(): { [k: string]: any };
                     }
-                }
-            }
-
-            /** Namespace v1. */
-            namespace v1 {
-
-                /** Properties of an InterchainAccount. */
-                interface IInterchainAccount {
-
-                    /** InterchainAccount base_account */
-                    base_account?: (cosmos.auth.v1beta1.IBaseAccount|null);
-
-                    /** InterchainAccount account_owner */
-                    account_owner?: (string|null);
-                }
-
-                /** Represents an InterchainAccount. */
-                class InterchainAccount implements IInterchainAccount {
-
-                    /**
-                     * Constructs a new InterchainAccount.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IInterchainAccount);
-
-                    /** InterchainAccount base_account. */
-                    public base_account?: (cosmos.auth.v1beta1.IBaseAccount|null);
-
-                    /** InterchainAccount account_owner. */
-                    public account_owner: string;
-
-                    /**
-                     * Encodes the specified InterchainAccount message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccount.verify|verify} messages.
-                     * @param message InterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified InterchainAccount message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccount.verify|verify} messages.
-                     * @param message InterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an InterchainAccount message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns InterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.InterchainAccount;
-
-                    /**
-                     * Decodes an InterchainAccount message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns InterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.InterchainAccount;
-
-                    /**
-                     * Verifies an InterchainAccount message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an InterchainAccount message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns InterchainAccount
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.InterchainAccount;
-
-                    /**
-                     * Creates a plain object from an InterchainAccount message. Also converts values to other types if specified.
-                     * @param message InterchainAccount
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.InterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this InterchainAccount to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Type enum. */
-                enum Type {
-                    TYPE_UNSPECIFIED = 0,
-                    TYPE_EXECUTE_TX = 1
-                }
-
-                /** Properties of an InterchainAccountPacketData. */
-                interface IInterchainAccountPacketData {
-
-                    /** InterchainAccountPacketData type */
-                    type?: (ibc.applications.interchain_accounts.v1.Type|null);
-
-                    /** InterchainAccountPacketData data */
-                    data?: (Uint8Array|null);
-
-                    /** InterchainAccountPacketData memo */
-                    memo?: (string|null);
-                }
-
-                /** Represents an InterchainAccountPacketData. */
-                class InterchainAccountPacketData implements IInterchainAccountPacketData {
-
-                    /**
-                     * Constructs a new InterchainAccountPacketData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData);
-
-                    /** InterchainAccountPacketData type. */
-                    public type: ibc.applications.interchain_accounts.v1.Type;
-
-                    /** InterchainAccountPacketData data. */
-                    public data: Uint8Array;
-
-                    /** InterchainAccountPacketData memo. */
-                    public memo: string;
-
-                    /**
-                     * Encodes the specified InterchainAccountPacketData message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccountPacketData.verify|verify} messages.
-                     * @param message InterchainAccountPacketData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified InterchainAccountPacketData message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.InterchainAccountPacketData.verify|verify} messages.
-                     * @param message InterchainAccountPacketData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IInterchainAccountPacketData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an InterchainAccountPacketData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns InterchainAccountPacketData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
-
-                    /**
-                     * Decodes an InterchainAccountPacketData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns InterchainAccountPacketData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
-
-                    /**
-                     * Verifies an InterchainAccountPacketData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an InterchainAccountPacketData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns InterchainAccountPacketData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.InterchainAccountPacketData;
-
-                    /**
-                     * Creates a plain object from an InterchainAccountPacketData message. Also converts values to other types if specified.
-                     * @param message InterchainAccountPacketData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.InterchainAccountPacketData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this InterchainAccountPacketData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a CosmosTx. */
-                interface ICosmosTx {
-
-                    /** CosmosTx messages */
-                    messages?: (google.protobuf.IAny[]|null);
-                }
-
-                /** Represents a CosmosTx. */
-                class CosmosTx implements ICosmosTx {
-
-                    /**
-                     * Constructs a new CosmosTx.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.ICosmosTx);
-
-                    /** CosmosTx messages. */
-                    public messages: google.protobuf.IAny[];
-
-                    /**
-                     * Encodes the specified CosmosTx message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.CosmosTx.verify|verify} messages.
-                     * @param message CosmosTx message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.ICosmosTx, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified CosmosTx message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.CosmosTx.verify|verify} messages.
-                     * @param message CosmosTx message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.ICosmosTx, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a CosmosTx message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns CosmosTx
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.CosmosTx;
-
-                    /**
-                     * Decodes a CosmosTx message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns CosmosTx
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.CosmosTx;
-
-                    /**
-                     * Verifies a CosmosTx message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a CosmosTx message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns CosmosTx
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.CosmosTx;
-
-                    /**
-                     * Creates a plain object from a CosmosTx message. Also converts values to other types if specified.
-                     * @param message CosmosTx
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.CosmosTx, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this CosmosTx to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a Metadata. */
-                interface IMetadata {
-
-                    /** Metadata version */
-                    version?: (string|null);
-
-                    /** Metadata controller_connection_id */
-                    controller_connection_id?: (string|null);
-
-                    /** Metadata host_connection_id */
-                    host_connection_id?: (string|null);
-
-                    /** Metadata address */
-                    address?: (string|null);
-
-                    /** Metadata encoding */
-                    encoding?: (string|null);
-
-                    /** Metadata tx_type */
-                    tx_type?: (string|null);
-                }
-
-                /** Represents a Metadata. */
-                class Metadata implements IMetadata {
-
-                    /**
-                     * Constructs a new Metadata.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IMetadata);
-
-                    /** Metadata version. */
-                    public version: string;
-
-                    /** Metadata controller_connection_id. */
-                    public controller_connection_id: string;
-
-                    /** Metadata host_connection_id. */
-                    public host_connection_id: string;
-
-                    /** Metadata address. */
-                    public address: string;
-
-                    /** Metadata encoding. */
-                    public encoding: string;
-
-                    /** Metadata tx_type. */
-                    public tx_type: string;
-
-                    /**
-                     * Encodes the specified Metadata message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.Metadata.verify|verify} messages.
-                     * @param message Metadata message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Metadata message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.Metadata.verify|verify} messages.
-                     * @param message Metadata message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a Metadata message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Metadata
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.Metadata;
-
-                    /**
-                     * Decodes a Metadata message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Metadata
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.Metadata;
-
-                    /**
-                     * Verifies a Metadata message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a Metadata message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Metadata
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.Metadata;
-
-                    /**
-                     * Creates a plain object from a Metadata message. Also converts values to other types if specified.
-                     * @param message Metadata
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.Metadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Metadata to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a GenesisState. */
-                interface IGenesisState {
-
-                    /** GenesisState controller_genesis_state */
-                    controller_genesis_state?: (ibc.applications.interchain_accounts.v1.IControllerGenesisState|null);
-
-                    /** GenesisState host_genesis_state */
-                    host_genesis_state?: (ibc.applications.interchain_accounts.v1.IHostGenesisState|null);
-                }
-
-                /** Represents a GenesisState. */
-                class GenesisState implements IGenesisState {
-
-                    /**
-                     * Constructs a new GenesisState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IGenesisState);
-
-                    /** GenesisState controller_genesis_state. */
-                    public controller_genesis_state?: (ibc.applications.interchain_accounts.v1.IControllerGenesisState|null);
-
-                    /** GenesisState host_genesis_state. */
-                    public host_genesis_state?: (ibc.applications.interchain_accounts.v1.IHostGenesisState|null);
-
-                    /**
-                     * Encodes the specified GenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.GenesisState.verify|verify} messages.
-                     * @param message GenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.GenesisState.verify|verify} messages.
-                     * @param message GenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a GenesisState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns GenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.GenesisState;
-
-                    /**
-                     * Decodes a GenesisState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns GenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.GenesisState;
-
-                    /**
-                     * Verifies a GenesisState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns GenesisState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.GenesisState;
-
-                    /**
-                     * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
-                     * @param message GenesisState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this GenesisState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ControllerGenesisState. */
-                interface IControllerGenesisState {
-
-                    /** ControllerGenesisState active_channels */
-                    active_channels?: (ibc.applications.interchain_accounts.v1.IActiveChannel[]|null);
-
-                    /** ControllerGenesisState interchain_accounts */
-                    interchain_accounts?: (ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount[]|null);
-
-                    /** ControllerGenesisState ports */
-                    ports?: (string[]|null);
-
-                    /** ControllerGenesisState params */
-                    params?: (ibc.applications.interchain_accounts.controller.v1.IParams|null);
-                }
-
-                /** Represents a ControllerGenesisState. */
-                class ControllerGenesisState implements IControllerGenesisState {
-
-                    /**
-                     * Constructs a new ControllerGenesisState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IControllerGenesisState);
-
-                    /** ControllerGenesisState active_channels. */
-                    public active_channels: ibc.applications.interchain_accounts.v1.IActiveChannel[];
-
-                    /** ControllerGenesisState interchain_accounts. */
-                    public interchain_accounts: ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount[];
-
-                    /** ControllerGenesisState ports. */
-                    public ports: string[];
-
-                    /** ControllerGenesisState params. */
-                    public params?: (ibc.applications.interchain_accounts.controller.v1.IParams|null);
-
-                    /**
-                     * Encodes the specified ControllerGenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.ControllerGenesisState.verify|verify} messages.
-                     * @param message ControllerGenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IControllerGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ControllerGenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.ControllerGenesisState.verify|verify} messages.
-                     * @param message ControllerGenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IControllerGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ControllerGenesisState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ControllerGenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.ControllerGenesisState;
-
-                    /**
-                     * Decodes a ControllerGenesisState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ControllerGenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.ControllerGenesisState;
-
-                    /**
-                     * Verifies a ControllerGenesisState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ControllerGenesisState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ControllerGenesisState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.ControllerGenesisState;
-
-                    /**
-                     * Creates a plain object from a ControllerGenesisState message. Also converts values to other types if specified.
-                     * @param message ControllerGenesisState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.ControllerGenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ControllerGenesisState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a HostGenesisState. */
-                interface IHostGenesisState {
-
-                    /** HostGenesisState active_channels */
-                    active_channels?: (ibc.applications.interchain_accounts.v1.IActiveChannel[]|null);
-
-                    /** HostGenesisState interchain_accounts */
-                    interchain_accounts?: (ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount[]|null);
-
-                    /** HostGenesisState port */
-                    port?: (string|null);
-
-                    /** HostGenesisState params */
-                    params?: (ibc.applications.interchain_accounts.host.v1.IParams|null);
-                }
-
-                /** Represents a HostGenesisState. */
-                class HostGenesisState implements IHostGenesisState {
-
-                    /**
-                     * Constructs a new HostGenesisState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IHostGenesisState);
-
-                    /** HostGenesisState active_channels. */
-                    public active_channels: ibc.applications.interchain_accounts.v1.IActiveChannel[];
-
-                    /** HostGenesisState interchain_accounts. */
-                    public interchain_accounts: ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount[];
-
-                    /** HostGenesisState port. */
-                    public port: string;
-
-                    /** HostGenesisState params. */
-                    public params?: (ibc.applications.interchain_accounts.host.v1.IParams|null);
-
-                    /**
-                     * Encodes the specified HostGenesisState message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.HostGenesisState.verify|verify} messages.
-                     * @param message HostGenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IHostGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified HostGenesisState message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.HostGenesisState.verify|verify} messages.
-                     * @param message HostGenesisState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IHostGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a HostGenesisState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns HostGenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.HostGenesisState;
-
-                    /**
-                     * Decodes a HostGenesisState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns HostGenesisState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.HostGenesisState;
-
-                    /**
-                     * Verifies a HostGenesisState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a HostGenesisState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns HostGenesisState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.HostGenesisState;
-
-                    /**
-                     * Creates a plain object from a HostGenesisState message. Also converts values to other types if specified.
-                     * @param message HostGenesisState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.HostGenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this HostGenesisState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of an ActiveChannel. */
-                interface IActiveChannel {
-
-                    /** ActiveChannel connection_id */
-                    connection_id?: (string|null);
-
-                    /** ActiveChannel port_id */
-                    port_id?: (string|null);
-
-                    /** ActiveChannel channel_id */
-                    channel_id?: (string|null);
-                }
-
-                /** Represents an ActiveChannel. */
-                class ActiveChannel implements IActiveChannel {
-
-                    /**
-                     * Constructs a new ActiveChannel.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IActiveChannel);
-
-                    /** ActiveChannel connection_id. */
-                    public connection_id: string;
-
-                    /** ActiveChannel port_id. */
-                    public port_id: string;
-
-                    /** ActiveChannel channel_id. */
-                    public channel_id: string;
-
-                    /**
-                     * Encodes the specified ActiveChannel message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.ActiveChannel.verify|verify} messages.
-                     * @param message ActiveChannel message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IActiveChannel, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ActiveChannel message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.ActiveChannel.verify|verify} messages.
-                     * @param message ActiveChannel message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IActiveChannel, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an ActiveChannel message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ActiveChannel
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.ActiveChannel;
-
-                    /**
-                     * Decodes an ActiveChannel message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ActiveChannel
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.ActiveChannel;
-
-                    /**
-                     * Verifies an ActiveChannel message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an ActiveChannel message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ActiveChannel
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.ActiveChannel;
-
-                    /**
-                     * Creates a plain object from an ActiveChannel message. Also converts values to other types if specified.
-                     * @param message ActiveChannel
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.ActiveChannel, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ActiveChannel to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a RegisteredInterchainAccount. */
-                interface IRegisteredInterchainAccount {
-
-                    /** RegisteredInterchainAccount connection_id */
-                    connection_id?: (string|null);
-
-                    /** RegisteredInterchainAccount port_id */
-                    port_id?: (string|null);
-
-                    /** RegisteredInterchainAccount account_address */
-                    account_address?: (string|null);
-                }
-
-                /** Represents a RegisteredInterchainAccount. */
-                class RegisteredInterchainAccount implements IRegisteredInterchainAccount {
-
-                    /**
-                     * Constructs a new RegisteredInterchainAccount.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount);
-
-                    /** RegisteredInterchainAccount connection_id. */
-                    public connection_id: string;
-
-                    /** RegisteredInterchainAccount port_id. */
-                    public port_id: string;
-
-                    /** RegisteredInterchainAccount account_address. */
-                    public account_address: string;
-
-                    /**
-                     * Encodes the specified RegisteredInterchainAccount message. Does not implicitly {@link ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount.verify|verify} messages.
-                     * @param message RegisteredInterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified RegisteredInterchainAccount message, length delimited. Does not implicitly {@link ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount.verify|verify} messages.
-                     * @param message RegisteredInterchainAccount message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.interchain_accounts.v1.IRegisteredInterchainAccount, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a RegisteredInterchainAccount message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns RegisteredInterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount;
-
-                    /**
-                     * Decodes a RegisteredInterchainAccount message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns RegisteredInterchainAccount
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount;
-
-                    /**
-                     * Verifies a RegisteredInterchainAccount message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a RegisteredInterchainAccount message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns RegisteredInterchainAccount
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount;
-
-                    /**
-                     * Creates a plain object from a RegisteredInterchainAccount message. Also converts values to other types if specified.
-                     * @param message RegisteredInterchainAccount
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.interchain_accounts.v1.RegisteredInterchainAccount, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this RegisteredInterchainAccount to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
                 }
             }
         }
@@ -12544,6 +16181,20 @@ export namespace ibc {
                      * @returns Promise
                      */
                     public escrowAddress(request: ibc.applications.transfer.v1.IQueryEscrowAddressRequest): Promise<ibc.applications.transfer.v1.QueryEscrowAddressResponse>;
+
+                    /**
+                     * Calls TotalEscrowForDenom.
+                     * @param request QueryTotalEscrowForDenomRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryTotalEscrowForDenomResponse
+                     */
+                    public totalEscrowForDenom(request: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomRequest, callback: ibc.applications.transfer.v1.Query.TotalEscrowForDenomCallback): void;
+
+                    /**
+                     * Calls TotalEscrowForDenom.
+                     * @param request QueryTotalEscrowForDenomRequest message or plain object
+                     * @returns Promise
+                     */
+                    public totalEscrowForDenom(request: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomRequest): Promise<ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse>;
                 }
 
                 namespace Query {
@@ -12582,6 +16233,13 @@ export namespace ibc {
                      * @param [response] QueryEscrowAddressResponse
                      */
                     type EscrowAddressCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryEscrowAddressResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#totalEscrowForDenom}.
+                     * @param error Error, if any
+                     * @param [response] QueryTotalEscrowForDenomResponse
+                     */
+                    type TotalEscrowForDenomCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse) => void;
                 }
 
                 /** Properties of a QueryDenomTraceRequest. */
@@ -13420,6 +17078,356 @@ export namespace ibc {
                     public toJSON(): { [k: string]: any };
                 }
 
+                /** Properties of a QueryTotalEscrowForDenomRequest. */
+                interface IQueryTotalEscrowForDenomRequest {
+
+                    /** QueryTotalEscrowForDenomRequest denom */
+                    denom?: (string|null);
+                }
+
+                /** Represents a QueryTotalEscrowForDenomRequest. */
+                class QueryTotalEscrowForDenomRequest implements IQueryTotalEscrowForDenomRequest {
+
+                    /**
+                     * Constructs a new QueryTotalEscrowForDenomRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomRequest);
+
+                    /** QueryTotalEscrowForDenomRequest denom. */
+                    public denom: string;
+
+                    /**
+                     * Encodes the specified QueryTotalEscrowForDenomRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest.verify|verify} messages.
+                     * @param message QueryTotalEscrowForDenomRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryTotalEscrowForDenomRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest.verify|verify} messages.
+                     * @param message QueryTotalEscrowForDenomRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryTotalEscrowForDenomRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryTotalEscrowForDenomRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest;
+
+                    /**
+                     * Decodes a QueryTotalEscrowForDenomRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryTotalEscrowForDenomRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest;
+
+                    /**
+                     * Verifies a QueryTotalEscrowForDenomRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryTotalEscrowForDenomRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryTotalEscrowForDenomRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest;
+
+                    /**
+                     * Creates a plain object from a QueryTotalEscrowForDenomRequest message. Also converts values to other types if specified.
+                     * @param message QueryTotalEscrowForDenomRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryTotalEscrowForDenomRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryTotalEscrowForDenomRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryTotalEscrowForDenomResponse. */
+                interface IQueryTotalEscrowForDenomResponse {
+
+                    /** QueryTotalEscrowForDenomResponse amount */
+                    amount?: (cosmos.base.v1beta1.ICoin|null);
+                }
+
+                /** Represents a QueryTotalEscrowForDenomResponse. */
+                class QueryTotalEscrowForDenomResponse implements IQueryTotalEscrowForDenomResponse {
+
+                    /**
+                     * Constructs a new QueryTotalEscrowForDenomResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomResponse);
+
+                    /** QueryTotalEscrowForDenomResponse amount. */
+                    public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                    /**
+                     * Encodes the specified QueryTotalEscrowForDenomResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse.verify|verify} messages.
+                     * @param message QueryTotalEscrowForDenomResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryTotalEscrowForDenomResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse.verify|verify} messages.
+                     * @param message QueryTotalEscrowForDenomResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryTotalEscrowForDenomResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryTotalEscrowForDenomResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryTotalEscrowForDenomResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse;
+
+                    /**
+                     * Decodes a QueryTotalEscrowForDenomResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryTotalEscrowForDenomResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse;
+
+                    /**
+                     * Verifies a QueryTotalEscrowForDenomResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryTotalEscrowForDenomResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryTotalEscrowForDenomResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse;
+
+                    /**
+                     * Creates a plain object from a QueryTotalEscrowForDenomResponse message. Also converts values to other types if specified.
+                     * @param message QueryTotalEscrowForDenomResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryTotalEscrowForDenomResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryTotalEscrowForDenomResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an Allocation. */
+                interface IAllocation {
+
+                    /** Allocation source_port */
+                    source_port?: (string|null);
+
+                    /** Allocation source_channel */
+                    source_channel?: (string|null);
+
+                    /** Allocation spend_limit */
+                    spend_limit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+                    /** Allocation allow_list */
+                    allow_list?: (string[]|null);
+                }
+
+                /** Represents an Allocation. */
+                class Allocation implements IAllocation {
+
+                    /**
+                     * Constructs a new Allocation.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IAllocation);
+
+                    /** Allocation source_port. */
+                    public source_port: string;
+
+                    /** Allocation source_channel. */
+                    public source_channel: string;
+
+                    /** Allocation spend_limit. */
+                    public spend_limit: cosmos.base.v1beta1.ICoin[];
+
+                    /** Allocation allow_list. */
+                    public allow_list: string[];
+
+                    /**
+                     * Encodes the specified Allocation message. Does not implicitly {@link ibc.applications.transfer.v1.Allocation.verify|verify} messages.
+                     * @param message Allocation message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IAllocation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Allocation message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.Allocation.verify|verify} messages.
+                     * @param message Allocation message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IAllocation, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an Allocation message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Allocation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.Allocation;
+
+                    /**
+                     * Decodes an Allocation message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Allocation
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.Allocation;
+
+                    /**
+                     * Verifies an Allocation message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an Allocation message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Allocation
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.Allocation;
+
+                    /**
+                     * Creates a plain object from an Allocation message. Also converts values to other types if specified.
+                     * @param message Allocation
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.Allocation, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Allocation to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a TransferAuthorization. */
+                interface ITransferAuthorization {
+
+                    /** TransferAuthorization allocations */
+                    allocations?: (ibc.applications.transfer.v1.IAllocation[]|null);
+                }
+
+                /** Represents a TransferAuthorization. */
+                class TransferAuthorization implements ITransferAuthorization {
+
+                    /**
+                     * Constructs a new TransferAuthorization.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.ITransferAuthorization);
+
+                    /** TransferAuthorization allocations. */
+                    public allocations: ibc.applications.transfer.v1.IAllocation[];
+
+                    /**
+                     * Encodes the specified TransferAuthorization message. Does not implicitly {@link ibc.applications.transfer.v1.TransferAuthorization.verify|verify} messages.
+                     * @param message TransferAuthorization message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.ITransferAuthorization, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified TransferAuthorization message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.TransferAuthorization.verify|verify} messages.
+                     * @param message TransferAuthorization message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.ITransferAuthorization, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a TransferAuthorization message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns TransferAuthorization
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.TransferAuthorization;
+
+                    /**
+                     * Decodes a TransferAuthorization message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns TransferAuthorization
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.TransferAuthorization;
+
+                    /**
+                     * Verifies a TransferAuthorization message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a TransferAuthorization message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns TransferAuthorization
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.TransferAuthorization;
+
+                    /**
+                     * Creates a plain object from a TransferAuthorization message. Also converts values to other types if specified.
+                     * @param message TransferAuthorization
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.TransferAuthorization, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this TransferAuthorization to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
                 /** Properties of a GenesisState. */
                 interface IGenesisState {
 
@@ -13431,6 +17439,9 @@ export namespace ibc {
 
                     /** GenesisState params */
                     params?: (ibc.applications.transfer.v1.IParams|null);
+
+                    /** GenesisState total_escrowed */
+                    total_escrowed?: (cosmos.base.v1beta1.ICoin[]|null);
                 }
 
                 /** Represents a GenesisState. */
@@ -13450,6 +17461,9 @@ export namespace ibc {
 
                     /** GenesisState params. */
                     public params?: (ibc.applications.transfer.v1.IParams|null);
+
+                    /** GenesisState total_escrowed. */
+                    public total_escrowed: cosmos.base.v1beta1.ICoin[];
 
                     /**
                      * Encodes the specified GenesisState message. Does not implicitly {@link ibc.applications.transfer.v1.GenesisState.verify|verify} messages.
@@ -14922,6 +18936,9 @@ export namespace ibc {
 
                     /** MsgChannelOpenTryResponse version */
                     version?: (string|null);
+
+                    /** MsgChannelOpenTryResponse channel_id */
+                    channel_id?: (string|null);
                 }
 
                 /** Represents a MsgChannelOpenTryResponse. */
@@ -14935,6 +18952,9 @@ export namespace ibc {
 
                     /** MsgChannelOpenTryResponse version. */
                     public version: string;
+
+                    /** MsgChannelOpenTryResponse channel_id. */
+                    public channel_id: string;
 
                     /**
                      * Encodes the specified MsgChannelOpenTryResponse message. Does not implicitly {@link ibc.core.channel.v1.MsgChannelOpenTryResponse.verify|verify} messages.
@@ -20370,8 +24390,8 @@ export namespace ibc {
                     /** MsgUpdateClient client_id */
                     client_id?: (string|null);
 
-                    /** MsgUpdateClient header */
-                    header?: (google.protobuf.IAny|null);
+                    /** MsgUpdateClient client_message */
+                    client_message?: (google.protobuf.IAny|null);
 
                     /** MsgUpdateClient signer */
                     signer?: (string|null);
@@ -20389,8 +24409,8 @@ export namespace ibc {
                     /** MsgUpdateClient client_id. */
                     public client_id: string;
 
-                    /** MsgUpdateClient header. */
-                    public header?: (google.protobuf.IAny|null);
+                    /** MsgUpdateClient client_message. */
+                    public client_message?: (google.protobuf.IAny|null);
 
                     /** MsgUpdateClient signer. */
                     public signer: string;
@@ -23202,7 +27222,7 @@ export namespace ibc {
                 interface IMerkleProof {
 
                     /** MerkleProof proofs */
-                    proofs?: (ics23.ICommitmentProof[]|null);
+                    proofs?: (cosmos.ics23.v1.ICommitmentProof[]|null);
                 }
 
                 /** Represents a MerkleProof. */
@@ -23215,7 +27235,7 @@ export namespace ibc {
                     constructor(properties?: ibc.core.commitment.v1.IMerkleProof);
 
                     /** MerkleProof proofs. */
-                    public proofs: ics23.ICommitmentProof[];
+                    public proofs: cosmos.ics23.v1.ICommitmentProof[];
 
                     /**
                      * Encodes the specified MerkleProof message. Does not implicitly {@link ibc.core.commitment.v1.MerkleProof.verify|verify} messages.
@@ -23610,6 +27630,9 @@ export namespace ibc {
 
                     /** MsgConnectionOpenTry signer */
                     signer?: (string|null);
+
+                    /** MsgConnectionOpenTry host_consensus_state_proof */
+                    host_consensus_state_proof?: (Uint8Array|null);
                 }
 
                 /** Represents a MsgConnectionOpenTry. */
@@ -23656,6 +27679,9 @@ export namespace ibc {
 
                     /** MsgConnectionOpenTry signer. */
                     public signer: string;
+
+                    /** MsgConnectionOpenTry host_consensus_state_proof. */
+                    public host_consensus_state_proof: Uint8Array;
 
                     /**
                      * Encodes the specified MsgConnectionOpenTry message. Does not implicitly {@link ibc.core.connection.v1.MsgConnectionOpenTry.verify|verify} messages.
@@ -23830,6 +27856,9 @@ export namespace ibc {
 
                     /** MsgConnectionOpenAck signer */
                     signer?: (string|null);
+
+                    /** MsgConnectionOpenAck host_consensus_state_proof */
+                    host_consensus_state_proof?: (Uint8Array|null);
                 }
 
                 /** Represents a MsgConnectionOpenAck. */
@@ -23870,6 +27899,9 @@ export namespace ibc {
 
                     /** MsgConnectionOpenAck signer. */
                     public signer: string;
+
+                    /** MsgConnectionOpenAck host_consensus_state_proof. */
+                    public host_consensus_state_proof: Uint8Array;
 
                     /**
                      * Encodes the specified MsgConnectionOpenAck message. Does not implicitly {@link ibc.core.connection.v1.MsgConnectionOpenAck.verify|verify} messages.
@@ -24937,6 +28969,20 @@ export namespace ibc {
                      * @returns Promise
                      */
                     public connectionConsensusState(request: ibc.core.connection.v1.IQueryConnectionConsensusStateRequest): Promise<ibc.core.connection.v1.QueryConnectionConsensusStateResponse>;
+
+                    /**
+                     * Calls ConnectionParams.
+                     * @param request QueryConnectionParamsRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryConnectionParamsResponse
+                     */
+                    public connectionParams(request: ibc.core.connection.v1.IQueryConnectionParamsRequest, callback: ibc.core.connection.v1.Query.ConnectionParamsCallback): void;
+
+                    /**
+                     * Calls ConnectionParams.
+                     * @param request QueryConnectionParamsRequest message or plain object
+                     * @returns Promise
+                     */
+                    public connectionParams(request: ibc.core.connection.v1.IQueryConnectionParamsRequest): Promise<ibc.core.connection.v1.QueryConnectionParamsResponse>;
                 }
 
                 namespace Query {
@@ -24975,6 +29021,13 @@ export namespace ibc {
                      * @param [response] QueryConnectionConsensusStateResponse
                      */
                     type ConnectionConsensusStateCallback = (error: (Error|null), response?: ibc.core.connection.v1.QueryConnectionConsensusStateResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.core.connection.v1.Query#connectionParams}.
+                     * @param error Error, if any
+                     * @param [response] QueryConnectionParamsResponse
+                     */
+                    type ConnectionParamsCallback = (error: (Error|null), response?: ibc.core.connection.v1.QueryConnectionParamsResponse) => void;
                 }
 
                 /** Properties of a QueryConnectionRequest. */
@@ -25885,6 +29938,166 @@ export namespace ibc {
                     public toJSON(): { [k: string]: any };
                 }
 
+                /** Properties of a QueryConnectionParamsRequest. */
+                interface IQueryConnectionParamsRequest {
+                }
+
+                /** Represents a QueryConnectionParamsRequest. */
+                class QueryConnectionParamsRequest implements IQueryConnectionParamsRequest {
+
+                    /**
+                     * Constructs a new QueryConnectionParamsRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.connection.v1.IQueryConnectionParamsRequest);
+
+                    /**
+                     * Encodes the specified QueryConnectionParamsRequest message. Does not implicitly {@link ibc.core.connection.v1.QueryConnectionParamsRequest.verify|verify} messages.
+                     * @param message QueryConnectionParamsRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.connection.v1.IQueryConnectionParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryConnectionParamsRequest message, length delimited. Does not implicitly {@link ibc.core.connection.v1.QueryConnectionParamsRequest.verify|verify} messages.
+                     * @param message QueryConnectionParamsRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.connection.v1.IQueryConnectionParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryConnectionParamsRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryConnectionParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.connection.v1.QueryConnectionParamsRequest;
+
+                    /**
+                     * Decodes a QueryConnectionParamsRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryConnectionParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.connection.v1.QueryConnectionParamsRequest;
+
+                    /**
+                     * Verifies a QueryConnectionParamsRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryConnectionParamsRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryConnectionParamsRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.connection.v1.QueryConnectionParamsRequest;
+
+                    /**
+                     * Creates a plain object from a QueryConnectionParamsRequest message. Also converts values to other types if specified.
+                     * @param message QueryConnectionParamsRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.connection.v1.QueryConnectionParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryConnectionParamsRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryConnectionParamsResponse. */
+                interface IQueryConnectionParamsResponse {
+
+                    /** QueryConnectionParamsResponse params */
+                    params?: (ibc.core.connection.v1.IParams|null);
+                }
+
+                /** Represents a QueryConnectionParamsResponse. */
+                class QueryConnectionParamsResponse implements IQueryConnectionParamsResponse {
+
+                    /**
+                     * Constructs a new QueryConnectionParamsResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.connection.v1.IQueryConnectionParamsResponse);
+
+                    /** QueryConnectionParamsResponse params. */
+                    public params?: (ibc.core.connection.v1.IParams|null);
+
+                    /**
+                     * Encodes the specified QueryConnectionParamsResponse message. Does not implicitly {@link ibc.core.connection.v1.QueryConnectionParamsResponse.verify|verify} messages.
+                     * @param message QueryConnectionParamsResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.connection.v1.IQueryConnectionParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryConnectionParamsResponse message, length delimited. Does not implicitly {@link ibc.core.connection.v1.QueryConnectionParamsResponse.verify|verify} messages.
+                     * @param message QueryConnectionParamsResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.connection.v1.IQueryConnectionParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryConnectionParamsResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryConnectionParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.connection.v1.QueryConnectionParamsResponse;
+
+                    /**
+                     * Decodes a QueryConnectionParamsResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryConnectionParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.connection.v1.QueryConnectionParamsResponse;
+
+                    /**
+                     * Verifies a QueryConnectionParamsResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryConnectionParamsResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryConnectionParamsResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.connection.v1.QueryConnectionParamsResponse;
+
+                    /**
+                     * Creates a plain object from a QueryConnectionParamsResponse message. Also converts values to other types if specified.
+                     * @param message QueryConnectionParamsResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.connection.v1.QueryConnectionParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryConnectionParamsResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
                 /** Properties of a GenesisState. */
                 interface IGenesisState {
 
@@ -26098,17 +30311,14 @@ export namespace ibc {
         /** Namespace localhost. */
         namespace localhost {
 
-            /** Namespace v1. */
-            namespace v1 {
+            /** Namespace v2. */
+            namespace v2 {
 
                 /** Properties of a ClientState. */
                 interface IClientState {
 
-                    /** ClientState chain_id */
-                    chain_id?: (string|null);
-
-                    /** ClientState height */
-                    height?: (ibc.core.client.v1.IHeight|null);
+                    /** ClientState latest_height */
+                    latest_height?: (ibc.core.client.v1.IHeight|null);
                 }
 
                 /** Represents a ClientState. */
@@ -26118,29 +30328,26 @@ export namespace ibc {
                      * Constructs a new ClientState.
                      * @param [properties] Properties to set
                      */
-                    constructor(properties?: ibc.lightclients.localhost.v1.IClientState);
+                    constructor(properties?: ibc.lightclients.localhost.v2.IClientState);
 
-                    /** ClientState chain_id. */
-                    public chain_id: string;
-
-                    /** ClientState height. */
-                    public height?: (ibc.core.client.v1.IHeight|null);
+                    /** ClientState latest_height. */
+                    public latest_height?: (ibc.core.client.v1.IHeight|null);
 
                     /**
-                     * Encodes the specified ClientState message. Does not implicitly {@link ibc.lightclients.localhost.v1.ClientState.verify|verify} messages.
+                     * Encodes the specified ClientState message. Does not implicitly {@link ibc.lightclients.localhost.v2.ClientState.verify|verify} messages.
                      * @param message ClientState message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encode(message: ibc.lightclients.localhost.v1.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encode(message: ibc.lightclients.localhost.v2.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
-                     * Encodes the specified ClientState message, length delimited. Does not implicitly {@link ibc.lightclients.localhost.v1.ClientState.verify|verify} messages.
+                     * Encodes the specified ClientState message, length delimited. Does not implicitly {@link ibc.lightclients.localhost.v2.ClientState.verify|verify} messages.
                      * @param message ClientState message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encodeDelimited(message: ibc.lightclients.localhost.v1.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encodeDelimited(message: ibc.lightclients.localhost.v2.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
                      * Decodes a ClientState message from the specified reader or buffer.
@@ -26150,7 +30357,7 @@ export namespace ibc {
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.localhost.v1.ClientState;
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.localhost.v2.ClientState;
 
                     /**
                      * Decodes a ClientState message from the specified reader or buffer, length delimited.
@@ -26159,7 +30366,7 @@ export namespace ibc {
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.localhost.v1.ClientState;
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.localhost.v2.ClientState;
 
                     /**
                      * Verifies a ClientState message.
@@ -26173,7 +30380,7 @@ export namespace ibc {
                      * @param object Plain object
                      * @returns ClientState
                      */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.localhost.v1.ClientState;
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.localhost.v2.ClientState;
 
                     /**
                      * Creates a plain object from a ClientState message. Also converts values to other types if specified.
@@ -26181,7 +30388,7 @@ export namespace ibc {
                      * @param [options] Conversion options
                      * @returns Plain object
                      */
-                    public static toObject(message: ibc.lightclients.localhost.v1.ClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                    public static toObject(message: ibc.lightclients.localhost.v2.ClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                     /**
                      * Converts this ClientState to JSON.
@@ -26194,1520 +30401,6 @@ export namespace ibc {
 
         /** Namespace solomachine. */
         namespace solomachine {
-
-            /** Namespace v1. */
-            namespace v1 {
-
-                /** Properties of a ClientState. */
-                interface IClientState {
-
-                    /** ClientState sequence */
-                    sequence?: (Long|null);
-
-                    /** ClientState frozen_sequence */
-                    frozen_sequence?: (Long|null);
-
-                    /** ClientState consensus_state */
-                    consensus_state?: (ibc.lightclients.solomachine.v1.IConsensusState|null);
-
-                    /** ClientState allow_update_after_proposal */
-                    allow_update_after_proposal?: (boolean|null);
-                }
-
-                /** Represents a ClientState. */
-                class ClientState implements IClientState {
-
-                    /**
-                     * Constructs a new ClientState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IClientState);
-
-                    /** ClientState sequence. */
-                    public sequence: Long;
-
-                    /** ClientState frozen_sequence. */
-                    public frozen_sequence: Long;
-
-                    /** ClientState consensus_state. */
-                    public consensus_state?: (ibc.lightclients.solomachine.v1.IConsensusState|null);
-
-                    /** ClientState allow_update_after_proposal. */
-                    public allow_update_after_proposal: boolean;
-
-                    /**
-                     * Encodes the specified ClientState message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ClientState.verify|verify} messages.
-                     * @param message ClientState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ClientState message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ClientState.verify|verify} messages.
-                     * @param message ClientState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ClientState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ClientState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ClientState;
-
-                    /**
-                     * Decodes a ClientState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ClientState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ClientState;
-
-                    /**
-                     * Verifies a ClientState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ClientState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ClientState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ClientState;
-
-                    /**
-                     * Creates a plain object from a ClientState message. Also converts values to other types if specified.
-                     * @param message ClientState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ClientState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ConsensusState. */
-                interface IConsensusState {
-
-                    /** ConsensusState public_key */
-                    public_key?: (google.protobuf.IAny|null);
-
-                    /** ConsensusState diversifier */
-                    diversifier?: (string|null);
-
-                    /** ConsensusState timestamp */
-                    timestamp?: (Long|null);
-                }
-
-                /** Represents a ConsensusState. */
-                class ConsensusState implements IConsensusState {
-
-                    /**
-                     * Constructs a new ConsensusState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IConsensusState);
-
-                    /** ConsensusState public_key. */
-                    public public_key?: (google.protobuf.IAny|null);
-
-                    /** ConsensusState diversifier. */
-                    public diversifier: string;
-
-                    /** ConsensusState timestamp. */
-                    public timestamp: Long;
-
-                    /**
-                     * Encodes the specified ConsensusState message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConsensusState.verify|verify} messages.
-                     * @param message ConsensusState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IConsensusState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ConsensusState message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConsensusState.verify|verify} messages.
-                     * @param message ConsensusState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IConsensusState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ConsensusState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ConsensusState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ConsensusState;
-
-                    /**
-                     * Decodes a ConsensusState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ConsensusState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ConsensusState;
-
-                    /**
-                     * Verifies a ConsensusState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ConsensusState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ConsensusState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ConsensusState;
-
-                    /**
-                     * Creates a plain object from a ConsensusState message. Also converts values to other types if specified.
-                     * @param message ConsensusState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ConsensusState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ConsensusState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a Header. */
-                interface IHeader {
-
-                    /** Header sequence */
-                    sequence?: (Long|null);
-
-                    /** Header timestamp */
-                    timestamp?: (Long|null);
-
-                    /** Header signature */
-                    signature?: (Uint8Array|null);
-
-                    /** Header new_public_key */
-                    new_public_key?: (google.protobuf.IAny|null);
-
-                    /** Header new_diversifier */
-                    new_diversifier?: (string|null);
-                }
-
-                /** Represents a Header. */
-                class Header implements IHeader {
-
-                    /**
-                     * Constructs a new Header.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IHeader);
-
-                    /** Header sequence. */
-                    public sequence: Long;
-
-                    /** Header timestamp. */
-                    public timestamp: Long;
-
-                    /** Header signature. */
-                    public signature: Uint8Array;
-
-                    /** Header new_public_key. */
-                    public new_public_key?: (google.protobuf.IAny|null);
-
-                    /** Header new_diversifier. */
-                    public new_diversifier: string;
-
-                    /**
-                     * Encodes the specified Header message. Does not implicitly {@link ibc.lightclients.solomachine.v1.Header.verify|verify} messages.
-                     * @param message Header message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IHeader, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Header message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.Header.verify|verify} messages.
-                     * @param message Header message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IHeader, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a Header message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Header
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.Header;
-
-                    /**
-                     * Decodes a Header message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Header
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.Header;
-
-                    /**
-                     * Verifies a Header message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a Header message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Header
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.Header;
-
-                    /**
-                     * Creates a plain object from a Header message. Also converts values to other types if specified.
-                     * @param message Header
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.Header, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Header to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a Misbehaviour. */
-                interface IMisbehaviour {
-
-                    /** Misbehaviour client_id */
-                    client_id?: (string|null);
-
-                    /** Misbehaviour sequence */
-                    sequence?: (Long|null);
-
-                    /** Misbehaviour signature_one */
-                    signature_one?: (ibc.lightclients.solomachine.v1.ISignatureAndData|null);
-
-                    /** Misbehaviour signature_two */
-                    signature_two?: (ibc.lightclients.solomachine.v1.ISignatureAndData|null);
-                }
-
-                /** Represents a Misbehaviour. */
-                class Misbehaviour implements IMisbehaviour {
-
-                    /**
-                     * Constructs a new Misbehaviour.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IMisbehaviour);
-
-                    /** Misbehaviour client_id. */
-                    public client_id: string;
-
-                    /** Misbehaviour sequence. */
-                    public sequence: Long;
-
-                    /** Misbehaviour signature_one. */
-                    public signature_one?: (ibc.lightclients.solomachine.v1.ISignatureAndData|null);
-
-                    /** Misbehaviour signature_two. */
-                    public signature_two?: (ibc.lightclients.solomachine.v1.ISignatureAndData|null);
-
-                    /**
-                     * Encodes the specified Misbehaviour message. Does not implicitly {@link ibc.lightclients.solomachine.v1.Misbehaviour.verify|verify} messages.
-                     * @param message Misbehaviour message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IMisbehaviour, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Misbehaviour message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.Misbehaviour.verify|verify} messages.
-                     * @param message Misbehaviour message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IMisbehaviour, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a Misbehaviour message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Misbehaviour
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.Misbehaviour;
-
-                    /**
-                     * Decodes a Misbehaviour message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Misbehaviour
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.Misbehaviour;
-
-                    /**
-                     * Verifies a Misbehaviour message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a Misbehaviour message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Misbehaviour
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.Misbehaviour;
-
-                    /**
-                     * Creates a plain object from a Misbehaviour message. Also converts values to other types if specified.
-                     * @param message Misbehaviour
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.Misbehaviour, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Misbehaviour to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a SignatureAndData. */
-                interface ISignatureAndData {
-
-                    /** SignatureAndData signature */
-                    signature?: (Uint8Array|null);
-
-                    /** SignatureAndData data_type */
-                    data_type?: (ibc.lightclients.solomachine.v1.DataType|null);
-
-                    /** SignatureAndData data */
-                    data?: (Uint8Array|null);
-
-                    /** SignatureAndData timestamp */
-                    timestamp?: (Long|null);
-                }
-
-                /** Represents a SignatureAndData. */
-                class SignatureAndData implements ISignatureAndData {
-
-                    /**
-                     * Constructs a new SignatureAndData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.ISignatureAndData);
-
-                    /** SignatureAndData signature. */
-                    public signature: Uint8Array;
-
-                    /** SignatureAndData data_type. */
-                    public data_type: ibc.lightclients.solomachine.v1.DataType;
-
-                    /** SignatureAndData data. */
-                    public data: Uint8Array;
-
-                    /** SignatureAndData timestamp. */
-                    public timestamp: Long;
-
-                    /**
-                     * Encodes the specified SignatureAndData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.SignatureAndData.verify|verify} messages.
-                     * @param message SignatureAndData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.ISignatureAndData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified SignatureAndData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.SignatureAndData.verify|verify} messages.
-                     * @param message SignatureAndData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.ISignatureAndData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a SignatureAndData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns SignatureAndData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.SignatureAndData;
-
-                    /**
-                     * Decodes a SignatureAndData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns SignatureAndData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.SignatureAndData;
-
-                    /**
-                     * Verifies a SignatureAndData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a SignatureAndData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns SignatureAndData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.SignatureAndData;
-
-                    /**
-                     * Creates a plain object from a SignatureAndData message. Also converts values to other types if specified.
-                     * @param message SignatureAndData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.SignatureAndData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this SignatureAndData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a TimestampedSignatureData. */
-                interface ITimestampedSignatureData {
-
-                    /** TimestampedSignatureData signature_data */
-                    signature_data?: (Uint8Array|null);
-
-                    /** TimestampedSignatureData timestamp */
-                    timestamp?: (Long|null);
-                }
-
-                /** Represents a TimestampedSignatureData. */
-                class TimestampedSignatureData implements ITimestampedSignatureData {
-
-                    /**
-                     * Constructs a new TimestampedSignatureData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.ITimestampedSignatureData);
-
-                    /** TimestampedSignatureData signature_data. */
-                    public signature_data: Uint8Array;
-
-                    /** TimestampedSignatureData timestamp. */
-                    public timestamp: Long;
-
-                    /**
-                     * Encodes the specified TimestampedSignatureData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.TimestampedSignatureData.verify|verify} messages.
-                     * @param message TimestampedSignatureData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.ITimestampedSignatureData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified TimestampedSignatureData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.TimestampedSignatureData.verify|verify} messages.
-                     * @param message TimestampedSignatureData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.ITimestampedSignatureData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a TimestampedSignatureData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns TimestampedSignatureData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.TimestampedSignatureData;
-
-                    /**
-                     * Decodes a TimestampedSignatureData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns TimestampedSignatureData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.TimestampedSignatureData;
-
-                    /**
-                     * Verifies a TimestampedSignatureData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a TimestampedSignatureData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns TimestampedSignatureData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.TimestampedSignatureData;
-
-                    /**
-                     * Creates a plain object from a TimestampedSignatureData message. Also converts values to other types if specified.
-                     * @param message TimestampedSignatureData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.TimestampedSignatureData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this TimestampedSignatureData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a SignBytes. */
-                interface ISignBytes {
-
-                    /** SignBytes sequence */
-                    sequence?: (Long|null);
-
-                    /** SignBytes timestamp */
-                    timestamp?: (Long|null);
-
-                    /** SignBytes diversifier */
-                    diversifier?: (string|null);
-
-                    /** SignBytes data_type */
-                    data_type?: (ibc.lightclients.solomachine.v1.DataType|null);
-
-                    /** SignBytes data */
-                    data?: (Uint8Array|null);
-                }
-
-                /** Represents a SignBytes. */
-                class SignBytes implements ISignBytes {
-
-                    /**
-                     * Constructs a new SignBytes.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.ISignBytes);
-
-                    /** SignBytes sequence. */
-                    public sequence: Long;
-
-                    /** SignBytes timestamp. */
-                    public timestamp: Long;
-
-                    /** SignBytes diversifier. */
-                    public diversifier: string;
-
-                    /** SignBytes data_type. */
-                    public data_type: ibc.lightclients.solomachine.v1.DataType;
-
-                    /** SignBytes data. */
-                    public data: Uint8Array;
-
-                    /**
-                     * Encodes the specified SignBytes message. Does not implicitly {@link ibc.lightclients.solomachine.v1.SignBytes.verify|verify} messages.
-                     * @param message SignBytes message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.ISignBytes, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified SignBytes message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.SignBytes.verify|verify} messages.
-                     * @param message SignBytes message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.ISignBytes, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a SignBytes message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns SignBytes
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.SignBytes;
-
-                    /**
-                     * Decodes a SignBytes message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns SignBytes
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.SignBytes;
-
-                    /**
-                     * Verifies a SignBytes message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a SignBytes message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns SignBytes
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.SignBytes;
-
-                    /**
-                     * Creates a plain object from a SignBytes message. Also converts values to other types if specified.
-                     * @param message SignBytes
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.SignBytes, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this SignBytes to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** DataType enum. */
-                enum DataType {
-                    DATA_TYPE_UNINITIALIZED_UNSPECIFIED = 0,
-                    DATA_TYPE_CLIENT_STATE = 1,
-                    DATA_TYPE_CONSENSUS_STATE = 2,
-                    DATA_TYPE_CONNECTION_STATE = 3,
-                    DATA_TYPE_CHANNEL_STATE = 4,
-                    DATA_TYPE_PACKET_COMMITMENT = 5,
-                    DATA_TYPE_PACKET_ACKNOWLEDGEMENT = 6,
-                    DATA_TYPE_PACKET_RECEIPT_ABSENCE = 7,
-                    DATA_TYPE_NEXT_SEQUENCE_RECV = 8,
-                    DATA_TYPE_HEADER = 9
-                }
-
-                /** Properties of a HeaderData. */
-                interface IHeaderData {
-
-                    /** HeaderData new_pub_key */
-                    new_pub_key?: (google.protobuf.IAny|null);
-
-                    /** HeaderData new_diversifier */
-                    new_diversifier?: (string|null);
-                }
-
-                /** Represents a HeaderData. */
-                class HeaderData implements IHeaderData {
-
-                    /**
-                     * Constructs a new HeaderData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IHeaderData);
-
-                    /** HeaderData new_pub_key. */
-                    public new_pub_key?: (google.protobuf.IAny|null);
-
-                    /** HeaderData new_diversifier. */
-                    public new_diversifier: string;
-
-                    /**
-                     * Encodes the specified HeaderData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.HeaderData.verify|verify} messages.
-                     * @param message HeaderData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IHeaderData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified HeaderData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.HeaderData.verify|verify} messages.
-                     * @param message HeaderData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IHeaderData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a HeaderData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns HeaderData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.HeaderData;
-
-                    /**
-                     * Decodes a HeaderData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns HeaderData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.HeaderData;
-
-                    /**
-                     * Verifies a HeaderData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a HeaderData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns HeaderData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.HeaderData;
-
-                    /**
-                     * Creates a plain object from a HeaderData message. Also converts values to other types if specified.
-                     * @param message HeaderData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.HeaderData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this HeaderData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ClientStateData. */
-                interface IClientStateData {
-
-                    /** ClientStateData path */
-                    path?: (Uint8Array|null);
-
-                    /** ClientStateData client_state */
-                    client_state?: (google.protobuf.IAny|null);
-                }
-
-                /** Represents a ClientStateData. */
-                class ClientStateData implements IClientStateData {
-
-                    /**
-                     * Constructs a new ClientStateData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IClientStateData);
-
-                    /** ClientStateData path. */
-                    public path: Uint8Array;
-
-                    /** ClientStateData client_state. */
-                    public client_state?: (google.protobuf.IAny|null);
-
-                    /**
-                     * Encodes the specified ClientStateData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ClientStateData.verify|verify} messages.
-                     * @param message ClientStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IClientStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ClientStateData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ClientStateData.verify|verify} messages.
-                     * @param message ClientStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IClientStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ClientStateData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ClientStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ClientStateData;
-
-                    /**
-                     * Decodes a ClientStateData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ClientStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ClientStateData;
-
-                    /**
-                     * Verifies a ClientStateData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ClientStateData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ClientStateData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ClientStateData;
-
-                    /**
-                     * Creates a plain object from a ClientStateData message. Also converts values to other types if specified.
-                     * @param message ClientStateData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ClientStateData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ClientStateData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ConsensusStateData. */
-                interface IConsensusStateData {
-
-                    /** ConsensusStateData path */
-                    path?: (Uint8Array|null);
-
-                    /** ConsensusStateData consensus_state */
-                    consensus_state?: (google.protobuf.IAny|null);
-                }
-
-                /** Represents a ConsensusStateData. */
-                class ConsensusStateData implements IConsensusStateData {
-
-                    /**
-                     * Constructs a new ConsensusStateData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IConsensusStateData);
-
-                    /** ConsensusStateData path. */
-                    public path: Uint8Array;
-
-                    /** ConsensusStateData consensus_state. */
-                    public consensus_state?: (google.protobuf.IAny|null);
-
-                    /**
-                     * Encodes the specified ConsensusStateData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConsensusStateData.verify|verify} messages.
-                     * @param message ConsensusStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IConsensusStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ConsensusStateData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConsensusStateData.verify|verify} messages.
-                     * @param message ConsensusStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IConsensusStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ConsensusStateData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ConsensusStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ConsensusStateData;
-
-                    /**
-                     * Decodes a ConsensusStateData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ConsensusStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ConsensusStateData;
-
-                    /**
-                     * Verifies a ConsensusStateData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ConsensusStateData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ConsensusStateData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ConsensusStateData;
-
-                    /**
-                     * Creates a plain object from a ConsensusStateData message. Also converts values to other types if specified.
-                     * @param message ConsensusStateData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ConsensusStateData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ConsensusStateData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ConnectionStateData. */
-                interface IConnectionStateData {
-
-                    /** ConnectionStateData path */
-                    path?: (Uint8Array|null);
-
-                    /** ConnectionStateData connection */
-                    connection?: (ibc.core.connection.v1.IConnectionEnd|null);
-                }
-
-                /** Represents a ConnectionStateData. */
-                class ConnectionStateData implements IConnectionStateData {
-
-                    /**
-                     * Constructs a new ConnectionStateData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IConnectionStateData);
-
-                    /** ConnectionStateData path. */
-                    public path: Uint8Array;
-
-                    /** ConnectionStateData connection. */
-                    public connection?: (ibc.core.connection.v1.IConnectionEnd|null);
-
-                    /**
-                     * Encodes the specified ConnectionStateData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConnectionStateData.verify|verify} messages.
-                     * @param message ConnectionStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IConnectionStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ConnectionStateData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ConnectionStateData.verify|verify} messages.
-                     * @param message ConnectionStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IConnectionStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ConnectionStateData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ConnectionStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ConnectionStateData;
-
-                    /**
-                     * Decodes a ConnectionStateData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ConnectionStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ConnectionStateData;
-
-                    /**
-                     * Verifies a ConnectionStateData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ConnectionStateData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ConnectionStateData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ConnectionStateData;
-
-                    /**
-                     * Creates a plain object from a ConnectionStateData message. Also converts values to other types if specified.
-                     * @param message ConnectionStateData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ConnectionStateData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ConnectionStateData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ChannelStateData. */
-                interface IChannelStateData {
-
-                    /** ChannelStateData path */
-                    path?: (Uint8Array|null);
-
-                    /** ChannelStateData channel */
-                    channel?: (ibc.core.channel.v1.IChannel|null);
-                }
-
-                /** Represents a ChannelStateData. */
-                class ChannelStateData implements IChannelStateData {
-
-                    /**
-                     * Constructs a new ChannelStateData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IChannelStateData);
-
-                    /** ChannelStateData path. */
-                    public path: Uint8Array;
-
-                    /** ChannelStateData channel. */
-                    public channel?: (ibc.core.channel.v1.IChannel|null);
-
-                    /**
-                     * Encodes the specified ChannelStateData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.ChannelStateData.verify|verify} messages.
-                     * @param message ChannelStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IChannelStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ChannelStateData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.ChannelStateData.verify|verify} messages.
-                     * @param message ChannelStateData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IChannelStateData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ChannelStateData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ChannelStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.ChannelStateData;
-
-                    /**
-                     * Decodes a ChannelStateData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ChannelStateData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.ChannelStateData;
-
-                    /**
-                     * Verifies a ChannelStateData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ChannelStateData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ChannelStateData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.ChannelStateData;
-
-                    /**
-                     * Creates a plain object from a ChannelStateData message. Also converts values to other types if specified.
-                     * @param message ChannelStateData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.ChannelStateData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ChannelStateData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a PacketCommitmentData. */
-                interface IPacketCommitmentData {
-
-                    /** PacketCommitmentData path */
-                    path?: (Uint8Array|null);
-
-                    /** PacketCommitmentData commitment */
-                    commitment?: (Uint8Array|null);
-                }
-
-                /** Represents a PacketCommitmentData. */
-                class PacketCommitmentData implements IPacketCommitmentData {
-
-                    /**
-                     * Constructs a new PacketCommitmentData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IPacketCommitmentData);
-
-                    /** PacketCommitmentData path. */
-                    public path: Uint8Array;
-
-                    /** PacketCommitmentData commitment. */
-                    public commitment: Uint8Array;
-
-                    /**
-                     * Encodes the specified PacketCommitmentData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketCommitmentData.verify|verify} messages.
-                     * @param message PacketCommitmentData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IPacketCommitmentData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified PacketCommitmentData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketCommitmentData.verify|verify} messages.
-                     * @param message PacketCommitmentData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IPacketCommitmentData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a PacketCommitmentData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns PacketCommitmentData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.PacketCommitmentData;
-
-                    /**
-                     * Decodes a PacketCommitmentData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns PacketCommitmentData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.PacketCommitmentData;
-
-                    /**
-                     * Verifies a PacketCommitmentData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a PacketCommitmentData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns PacketCommitmentData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.PacketCommitmentData;
-
-                    /**
-                     * Creates a plain object from a PacketCommitmentData message. Also converts values to other types if specified.
-                     * @param message PacketCommitmentData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.PacketCommitmentData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this PacketCommitmentData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a PacketAcknowledgementData. */
-                interface IPacketAcknowledgementData {
-
-                    /** PacketAcknowledgementData path */
-                    path?: (Uint8Array|null);
-
-                    /** PacketAcknowledgementData acknowledgement */
-                    acknowledgement?: (Uint8Array|null);
-                }
-
-                /** Represents a PacketAcknowledgementData. */
-                class PacketAcknowledgementData implements IPacketAcknowledgementData {
-
-                    /**
-                     * Constructs a new PacketAcknowledgementData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IPacketAcknowledgementData);
-
-                    /** PacketAcknowledgementData path. */
-                    public path: Uint8Array;
-
-                    /** PacketAcknowledgementData acknowledgement. */
-                    public acknowledgement: Uint8Array;
-
-                    /**
-                     * Encodes the specified PacketAcknowledgementData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketAcknowledgementData.verify|verify} messages.
-                     * @param message PacketAcknowledgementData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IPacketAcknowledgementData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified PacketAcknowledgementData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketAcknowledgementData.verify|verify} messages.
-                     * @param message PacketAcknowledgementData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IPacketAcknowledgementData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a PacketAcknowledgementData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns PacketAcknowledgementData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.PacketAcknowledgementData;
-
-                    /**
-                     * Decodes a PacketAcknowledgementData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns PacketAcknowledgementData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.PacketAcknowledgementData;
-
-                    /**
-                     * Verifies a PacketAcknowledgementData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a PacketAcknowledgementData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns PacketAcknowledgementData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.PacketAcknowledgementData;
-
-                    /**
-                     * Creates a plain object from a PacketAcknowledgementData message. Also converts values to other types if specified.
-                     * @param message PacketAcknowledgementData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.PacketAcknowledgementData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this PacketAcknowledgementData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a PacketReceiptAbsenceData. */
-                interface IPacketReceiptAbsenceData {
-
-                    /** PacketReceiptAbsenceData path */
-                    path?: (Uint8Array|null);
-                }
-
-                /** Represents a PacketReceiptAbsenceData. */
-                class PacketReceiptAbsenceData implements IPacketReceiptAbsenceData {
-
-                    /**
-                     * Constructs a new PacketReceiptAbsenceData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.IPacketReceiptAbsenceData);
-
-                    /** PacketReceiptAbsenceData path. */
-                    public path: Uint8Array;
-
-                    /**
-                     * Encodes the specified PacketReceiptAbsenceData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData.verify|verify} messages.
-                     * @param message PacketReceiptAbsenceData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.IPacketReceiptAbsenceData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified PacketReceiptAbsenceData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData.verify|verify} messages.
-                     * @param message PacketReceiptAbsenceData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.IPacketReceiptAbsenceData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a PacketReceiptAbsenceData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns PacketReceiptAbsenceData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData;
-
-                    /**
-                     * Decodes a PacketReceiptAbsenceData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns PacketReceiptAbsenceData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData;
-
-                    /**
-                     * Verifies a PacketReceiptAbsenceData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a PacketReceiptAbsenceData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns PacketReceiptAbsenceData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData;
-
-                    /**
-                     * Creates a plain object from a PacketReceiptAbsenceData message. Also converts values to other types if specified.
-                     * @param message PacketReceiptAbsenceData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.PacketReceiptAbsenceData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this PacketReceiptAbsenceData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a NextSequenceRecvData. */
-                interface INextSequenceRecvData {
-
-                    /** NextSequenceRecvData path */
-                    path?: (Uint8Array|null);
-
-                    /** NextSequenceRecvData next_seq_recv */
-                    next_seq_recv?: (Long|null);
-                }
-
-                /** Represents a NextSequenceRecvData. */
-                class NextSequenceRecvData implements INextSequenceRecvData {
-
-                    /**
-                     * Constructs a new NextSequenceRecvData.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.lightclients.solomachine.v1.INextSequenceRecvData);
-
-                    /** NextSequenceRecvData path. */
-                    public path: Uint8Array;
-
-                    /** NextSequenceRecvData next_seq_recv. */
-                    public next_seq_recv: Long;
-
-                    /**
-                     * Encodes the specified NextSequenceRecvData message. Does not implicitly {@link ibc.lightclients.solomachine.v1.NextSequenceRecvData.verify|verify} messages.
-                     * @param message NextSequenceRecvData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.lightclients.solomachine.v1.INextSequenceRecvData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified NextSequenceRecvData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v1.NextSequenceRecvData.verify|verify} messages.
-                     * @param message NextSequenceRecvData message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.lightclients.solomachine.v1.INextSequenceRecvData, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a NextSequenceRecvData message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns NextSequenceRecvData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v1.NextSequenceRecvData;
-
-                    /**
-                     * Decodes a NextSequenceRecvData message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns NextSequenceRecvData
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v1.NextSequenceRecvData;
-
-                    /**
-                     * Verifies a NextSequenceRecvData message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a NextSequenceRecvData message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns NextSequenceRecvData
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v1.NextSequenceRecvData;
-
-                    /**
-                     * Creates a plain object from a NextSequenceRecvData message. Also converts values to other types if specified.
-                     * @param message NextSequenceRecvData
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.lightclients.solomachine.v1.NextSequenceRecvData, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this NextSequenceRecvData to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-            }
 
             /** Namespace v2. */
             namespace v2 {
@@ -29222,6 +31915,782 @@ export namespace ibc {
                     public toJSON(): { [k: string]: any };
                 }
             }
+
+            /** Namespace v3. */
+            namespace v3 {
+
+                /** Properties of a ClientState. */
+                interface IClientState {
+
+                    /** ClientState sequence */
+                    sequence?: (Long|null);
+
+                    /** ClientState is_frozen */
+                    is_frozen?: (boolean|null);
+
+                    /** ClientState consensus_state */
+                    consensus_state?: (ibc.lightclients.solomachine.v3.IConsensusState|null);
+                }
+
+                /** Represents a ClientState. */
+                class ClientState implements IClientState {
+
+                    /**
+                     * Constructs a new ClientState.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.IClientState);
+
+                    /** ClientState sequence. */
+                    public sequence: Long;
+
+                    /** ClientState is_frozen. */
+                    public is_frozen: boolean;
+
+                    /** ClientState consensus_state. */
+                    public consensus_state?: (ibc.lightclients.solomachine.v3.IConsensusState|null);
+
+                    /**
+                     * Encodes the specified ClientState message. Does not implicitly {@link ibc.lightclients.solomachine.v3.ClientState.verify|verify} messages.
+                     * @param message ClientState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ClientState message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.ClientState.verify|verify} messages.
+                     * @param message ClientState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.IClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ClientState message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ClientState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.ClientState;
+
+                    /**
+                     * Decodes a ClientState message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ClientState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.ClientState;
+
+                    /**
+                     * Verifies a ClientState message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ClientState message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ClientState
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.ClientState;
+
+                    /**
+                     * Creates a plain object from a ClientState message. Also converts values to other types if specified.
+                     * @param message ClientState
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.ClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ClientState to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a ConsensusState. */
+                interface IConsensusState {
+
+                    /** ConsensusState public_key */
+                    public_key?: (google.protobuf.IAny|null);
+
+                    /** ConsensusState diversifier */
+                    diversifier?: (string|null);
+
+                    /** ConsensusState timestamp */
+                    timestamp?: (Long|null);
+                }
+
+                /** Represents a ConsensusState. */
+                class ConsensusState implements IConsensusState {
+
+                    /**
+                     * Constructs a new ConsensusState.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.IConsensusState);
+
+                    /** ConsensusState public_key. */
+                    public public_key?: (google.protobuf.IAny|null);
+
+                    /** ConsensusState diversifier. */
+                    public diversifier: string;
+
+                    /** ConsensusState timestamp. */
+                    public timestamp: Long;
+
+                    /**
+                     * Encodes the specified ConsensusState message. Does not implicitly {@link ibc.lightclients.solomachine.v3.ConsensusState.verify|verify} messages.
+                     * @param message ConsensusState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.IConsensusState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ConsensusState message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.ConsensusState.verify|verify} messages.
+                     * @param message ConsensusState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.IConsensusState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ConsensusState message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ConsensusState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.ConsensusState;
+
+                    /**
+                     * Decodes a ConsensusState message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ConsensusState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.ConsensusState;
+
+                    /**
+                     * Verifies a ConsensusState message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ConsensusState message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ConsensusState
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.ConsensusState;
+
+                    /**
+                     * Creates a plain object from a ConsensusState message. Also converts values to other types if specified.
+                     * @param message ConsensusState
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.ConsensusState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ConsensusState to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Header. */
+                interface IHeader {
+
+                    /** Header timestamp */
+                    timestamp?: (Long|null);
+
+                    /** Header signature */
+                    signature?: (Uint8Array|null);
+
+                    /** Header new_public_key */
+                    new_public_key?: (google.protobuf.IAny|null);
+
+                    /** Header new_diversifier */
+                    new_diversifier?: (string|null);
+                }
+
+                /** Represents a Header. */
+                class Header implements IHeader {
+
+                    /**
+                     * Constructs a new Header.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.IHeader);
+
+                    /** Header timestamp. */
+                    public timestamp: Long;
+
+                    /** Header signature. */
+                    public signature: Uint8Array;
+
+                    /** Header new_public_key. */
+                    public new_public_key?: (google.protobuf.IAny|null);
+
+                    /** Header new_diversifier. */
+                    public new_diversifier: string;
+
+                    /**
+                     * Encodes the specified Header message. Does not implicitly {@link ibc.lightclients.solomachine.v3.Header.verify|verify} messages.
+                     * @param message Header message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.IHeader, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Header message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.Header.verify|verify} messages.
+                     * @param message Header message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.IHeader, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Header message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Header
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.Header;
+
+                    /**
+                     * Decodes a Header message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Header
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.Header;
+
+                    /**
+                     * Verifies a Header message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Header message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Header
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.Header;
+
+                    /**
+                     * Creates a plain object from a Header message. Also converts values to other types if specified.
+                     * @param message Header
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.Header, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Header to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Misbehaviour. */
+                interface IMisbehaviour {
+
+                    /** Misbehaviour sequence */
+                    sequence?: (Long|null);
+
+                    /** Misbehaviour signature_one */
+                    signature_one?: (ibc.lightclients.solomachine.v3.ISignatureAndData|null);
+
+                    /** Misbehaviour signature_two */
+                    signature_two?: (ibc.lightclients.solomachine.v3.ISignatureAndData|null);
+                }
+
+                /** Represents a Misbehaviour. */
+                class Misbehaviour implements IMisbehaviour {
+
+                    /**
+                     * Constructs a new Misbehaviour.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.IMisbehaviour);
+
+                    /** Misbehaviour sequence. */
+                    public sequence: Long;
+
+                    /** Misbehaviour signature_one. */
+                    public signature_one?: (ibc.lightclients.solomachine.v3.ISignatureAndData|null);
+
+                    /** Misbehaviour signature_two. */
+                    public signature_two?: (ibc.lightclients.solomachine.v3.ISignatureAndData|null);
+
+                    /**
+                     * Encodes the specified Misbehaviour message. Does not implicitly {@link ibc.lightclients.solomachine.v3.Misbehaviour.verify|verify} messages.
+                     * @param message Misbehaviour message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.IMisbehaviour, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Misbehaviour message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.Misbehaviour.verify|verify} messages.
+                     * @param message Misbehaviour message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.IMisbehaviour, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Misbehaviour message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Misbehaviour
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.Misbehaviour;
+
+                    /**
+                     * Decodes a Misbehaviour message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Misbehaviour
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.Misbehaviour;
+
+                    /**
+                     * Verifies a Misbehaviour message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Misbehaviour message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Misbehaviour
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.Misbehaviour;
+
+                    /**
+                     * Creates a plain object from a Misbehaviour message. Also converts values to other types if specified.
+                     * @param message Misbehaviour
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.Misbehaviour, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Misbehaviour to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a SignatureAndData. */
+                interface ISignatureAndData {
+
+                    /** SignatureAndData signature */
+                    signature?: (Uint8Array|null);
+
+                    /** SignatureAndData path */
+                    path?: (Uint8Array|null);
+
+                    /** SignatureAndData data */
+                    data?: (Uint8Array|null);
+
+                    /** SignatureAndData timestamp */
+                    timestamp?: (Long|null);
+                }
+
+                /** Represents a SignatureAndData. */
+                class SignatureAndData implements ISignatureAndData {
+
+                    /**
+                     * Constructs a new SignatureAndData.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.ISignatureAndData);
+
+                    /** SignatureAndData signature. */
+                    public signature: Uint8Array;
+
+                    /** SignatureAndData path. */
+                    public path: Uint8Array;
+
+                    /** SignatureAndData data. */
+                    public data: Uint8Array;
+
+                    /** SignatureAndData timestamp. */
+                    public timestamp: Long;
+
+                    /**
+                     * Encodes the specified SignatureAndData message. Does not implicitly {@link ibc.lightclients.solomachine.v3.SignatureAndData.verify|verify} messages.
+                     * @param message SignatureAndData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.ISignatureAndData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified SignatureAndData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.SignatureAndData.verify|verify} messages.
+                     * @param message SignatureAndData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.ISignatureAndData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a SignatureAndData message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns SignatureAndData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.SignatureAndData;
+
+                    /**
+                     * Decodes a SignatureAndData message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns SignatureAndData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.SignatureAndData;
+
+                    /**
+                     * Verifies a SignatureAndData message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a SignatureAndData message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns SignatureAndData
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.SignatureAndData;
+
+                    /**
+                     * Creates a plain object from a SignatureAndData message. Also converts values to other types if specified.
+                     * @param message SignatureAndData
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.SignatureAndData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this SignatureAndData to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a TimestampedSignatureData. */
+                interface ITimestampedSignatureData {
+
+                    /** TimestampedSignatureData signature_data */
+                    signature_data?: (Uint8Array|null);
+
+                    /** TimestampedSignatureData timestamp */
+                    timestamp?: (Long|null);
+                }
+
+                /** Represents a TimestampedSignatureData. */
+                class TimestampedSignatureData implements ITimestampedSignatureData {
+
+                    /**
+                     * Constructs a new TimestampedSignatureData.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.ITimestampedSignatureData);
+
+                    /** TimestampedSignatureData signature_data. */
+                    public signature_data: Uint8Array;
+
+                    /** TimestampedSignatureData timestamp. */
+                    public timestamp: Long;
+
+                    /**
+                     * Encodes the specified TimestampedSignatureData message. Does not implicitly {@link ibc.lightclients.solomachine.v3.TimestampedSignatureData.verify|verify} messages.
+                     * @param message TimestampedSignatureData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.ITimestampedSignatureData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified TimestampedSignatureData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.TimestampedSignatureData.verify|verify} messages.
+                     * @param message TimestampedSignatureData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.ITimestampedSignatureData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a TimestampedSignatureData message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns TimestampedSignatureData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.TimestampedSignatureData;
+
+                    /**
+                     * Decodes a TimestampedSignatureData message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns TimestampedSignatureData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.TimestampedSignatureData;
+
+                    /**
+                     * Verifies a TimestampedSignatureData message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a TimestampedSignatureData message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns TimestampedSignatureData
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.TimestampedSignatureData;
+
+                    /**
+                     * Creates a plain object from a TimestampedSignatureData message. Also converts values to other types if specified.
+                     * @param message TimestampedSignatureData
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.TimestampedSignatureData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this TimestampedSignatureData to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a SignBytes. */
+                interface ISignBytes {
+
+                    /** SignBytes sequence */
+                    sequence?: (Long|null);
+
+                    /** SignBytes timestamp */
+                    timestamp?: (Long|null);
+
+                    /** SignBytes diversifier */
+                    diversifier?: (string|null);
+
+                    /** SignBytes path */
+                    path?: (Uint8Array|null);
+
+                    /** SignBytes data */
+                    data?: (Uint8Array|null);
+                }
+
+                /** Represents a SignBytes. */
+                class SignBytes implements ISignBytes {
+
+                    /**
+                     * Constructs a new SignBytes.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.ISignBytes);
+
+                    /** SignBytes sequence. */
+                    public sequence: Long;
+
+                    /** SignBytes timestamp. */
+                    public timestamp: Long;
+
+                    /** SignBytes diversifier. */
+                    public diversifier: string;
+
+                    /** SignBytes path. */
+                    public path: Uint8Array;
+
+                    /** SignBytes data. */
+                    public data: Uint8Array;
+
+                    /**
+                     * Encodes the specified SignBytes message. Does not implicitly {@link ibc.lightclients.solomachine.v3.SignBytes.verify|verify} messages.
+                     * @param message SignBytes message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.ISignBytes, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified SignBytes message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.SignBytes.verify|verify} messages.
+                     * @param message SignBytes message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.ISignBytes, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a SignBytes message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns SignBytes
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.SignBytes;
+
+                    /**
+                     * Decodes a SignBytes message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns SignBytes
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.SignBytes;
+
+                    /**
+                     * Verifies a SignBytes message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a SignBytes message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns SignBytes
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.SignBytes;
+
+                    /**
+                     * Creates a plain object from a SignBytes message. Also converts values to other types if specified.
+                     * @param message SignBytes
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.SignBytes, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this SignBytes to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a HeaderData. */
+                interface IHeaderData {
+
+                    /** HeaderData new_pub_key */
+                    new_pub_key?: (google.protobuf.IAny|null);
+
+                    /** HeaderData new_diversifier */
+                    new_diversifier?: (string|null);
+                }
+
+                /** Represents a HeaderData. */
+                class HeaderData implements IHeaderData {
+
+                    /**
+                     * Constructs a new HeaderData.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.lightclients.solomachine.v3.IHeaderData);
+
+                    /** HeaderData new_pub_key. */
+                    public new_pub_key?: (google.protobuf.IAny|null);
+
+                    /** HeaderData new_diversifier. */
+                    public new_diversifier: string;
+
+                    /**
+                     * Encodes the specified HeaderData message. Does not implicitly {@link ibc.lightclients.solomachine.v3.HeaderData.verify|verify} messages.
+                     * @param message HeaderData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.lightclients.solomachine.v3.IHeaderData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified HeaderData message, length delimited. Does not implicitly {@link ibc.lightclients.solomachine.v3.HeaderData.verify|verify} messages.
+                     * @param message HeaderData message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.lightclients.solomachine.v3.IHeaderData, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a HeaderData message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns HeaderData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.lightclients.solomachine.v3.HeaderData;
+
+                    /**
+                     * Decodes a HeaderData message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns HeaderData
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.lightclients.solomachine.v3.HeaderData;
+
+                    /**
+                     * Verifies a HeaderData message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a HeaderData message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns HeaderData
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.lightclients.solomachine.v3.HeaderData;
+
+                    /**
+                     * Creates a plain object from a HeaderData message. Also converts values to other types if specified.
+                     * @param message HeaderData
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.lightclients.solomachine.v3.HeaderData, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this HeaderData to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
         }
 
         /** Namespace tendermint. */
@@ -29255,7 +32724,7 @@ export namespace ibc {
                     latest_height?: (ibc.core.client.v1.IHeight|null);
 
                     /** ClientState proof_specs */
-                    proof_specs?: (ics23.IProofSpec[]|null);
+                    proof_specs?: (cosmos.ics23.v1.IProofSpec[]|null);
 
                     /** ClientState upgrade_path */
                     upgrade_path?: (string[]|null);
@@ -29298,7 +32767,7 @@ export namespace ibc {
                     public latest_height?: (ibc.core.client.v1.IHeight|null);
 
                     /** ClientState proof_specs. */
-                    public proof_specs: ics23.IProofSpec[];
+                    public proof_specs: cosmos.ics23.v1.IProofSpec[];
 
                     /** ClientState upgrade_path. */
                     public upgrade_path: string[];
@@ -29754,1368 +33223,6 @@ export namespace ibc {
                 }
             }
         }
-    }
-}
-
-/** Namespace ics23. */
-export namespace ics23 {
-
-    /** HashOp enum. */
-    enum HashOp {
-        NO_HASH = 0,
-        SHA256 = 1,
-        SHA512 = 2,
-        KECCAK = 3,
-        RIPEMD160 = 4,
-        BITCOIN = 5
-    }
-
-    /**
-     * LengthOp defines how to process the key and value of the LeafOp
-     * to include length information. After encoding the length with the given
-     * algorithm, the length will be prepended to the key and value bytes.
-     * (Each one with it's own encoded length)
-     */
-    enum LengthOp {
-        NO_PREFIX = 0,
-        VAR_PROTO = 1,
-        VAR_RLP = 2,
-        FIXED32_BIG = 3,
-        FIXED32_LITTLE = 4,
-        FIXED64_BIG = 5,
-        FIXED64_LITTLE = 6,
-        REQUIRE_32_BYTES = 7,
-        REQUIRE_64_BYTES = 8
-    }
-
-    /** Properties of an ExistenceProof. */
-    interface IExistenceProof {
-
-        /** ExistenceProof key */
-        key?: (Uint8Array|null);
-
-        /** ExistenceProof value */
-        value?: (Uint8Array|null);
-
-        /** ExistenceProof leaf */
-        leaf?: (ics23.ILeafOp|null);
-
-        /** ExistenceProof path */
-        path?: (ics23.IInnerOp[]|null);
-    }
-
-    /**
-     * ExistenceProof takes a key and a value and a set of steps to perform on it.
-     * The result of peforming all these steps will provide a "root hash", which can
-     * be compared to the value in a header.
-     *
-     * Since it is computationally infeasible to produce a hash collission for any of the used
-     * cryptographic hash functions, if someone can provide a series of operations to transform
-     * a given key and value into a root hash that matches some trusted root, these key and values
-     * must be in the referenced merkle tree.
-     *
-     * The only possible issue is maliablity in LeafOp, such as providing extra prefix data,
-     * which should be controlled by a spec. Eg. with lengthOp as NONE,
-     * prefix = FOO, key = BAR, value = CHOICE
-     * and
-     * prefix = F, key = OOBAR, value = CHOICE
-     * would produce the same value.
-     *
-     * With LengthOp this is tricker but not impossible. Which is why the "leafPrefixEqual" field
-     * in the ProofSpec is valuable to prevent this mutability. And why all trees should
-     * length-prefix the data before hashing it.
-     */
-    class ExistenceProof implements IExistenceProof {
-
-        /**
-         * Constructs a new ExistenceProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IExistenceProof);
-
-        /** ExistenceProof key. */
-        public key: Uint8Array;
-
-        /** ExistenceProof value. */
-        public value: Uint8Array;
-
-        /** ExistenceProof leaf. */
-        public leaf?: (ics23.ILeafOp|null);
-
-        /** ExistenceProof path. */
-        public path: ics23.IInnerOp[];
-
-        /**
-         * Encodes the specified ExistenceProof message. Does not implicitly {@link ics23.ExistenceProof.verify|verify} messages.
-         * @param message ExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ExistenceProof message, length delimited. Does not implicitly {@link ics23.ExistenceProof.verify|verify} messages.
-         * @param message ExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an ExistenceProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.ExistenceProof;
-
-        /**
-         * Decodes an ExistenceProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.ExistenceProof;
-
-        /**
-         * Verifies an ExistenceProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an ExistenceProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ExistenceProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.ExistenceProof;
-
-        /**
-         * Creates a plain object from an ExistenceProof message. Also converts values to other types if specified.
-         * @param message ExistenceProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.ExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ExistenceProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a NonExistenceProof. */
-    interface INonExistenceProof {
-
-        /** NonExistenceProof key */
-        key?: (Uint8Array|null);
-
-        /** NonExistenceProof left */
-        left?: (ics23.IExistenceProof|null);
-
-        /** NonExistenceProof right */
-        right?: (ics23.IExistenceProof|null);
-    }
-
-    /** Represents a NonExistenceProof. */
-    class NonExistenceProof implements INonExistenceProof {
-
-        /**
-         * Constructs a new NonExistenceProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.INonExistenceProof);
-
-        /** NonExistenceProof key. */
-        public key: Uint8Array;
-
-        /** NonExistenceProof left. */
-        public left?: (ics23.IExistenceProof|null);
-
-        /** NonExistenceProof right. */
-        public right?: (ics23.IExistenceProof|null);
-
-        /**
-         * Encodes the specified NonExistenceProof message. Does not implicitly {@link ics23.NonExistenceProof.verify|verify} messages.
-         * @param message NonExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.INonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified NonExistenceProof message, length delimited. Does not implicitly {@link ics23.NonExistenceProof.verify|verify} messages.
-         * @param message NonExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.INonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a NonExistenceProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns NonExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.NonExistenceProof;
-
-        /**
-         * Decodes a NonExistenceProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns NonExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.NonExistenceProof;
-
-        /**
-         * Verifies a NonExistenceProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a NonExistenceProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns NonExistenceProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.NonExistenceProof;
-
-        /**
-         * Creates a plain object from a NonExistenceProof message. Also converts values to other types if specified.
-         * @param message NonExistenceProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.NonExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this NonExistenceProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a CommitmentProof. */
-    interface ICommitmentProof {
-
-        /** CommitmentProof exist */
-        exist?: (ics23.IExistenceProof|null);
-
-        /** CommitmentProof nonexist */
-        nonexist?: (ics23.INonExistenceProof|null);
-
-        /** CommitmentProof batch */
-        batch?: (ics23.IBatchProof|null);
-
-        /** CommitmentProof compressed */
-        compressed?: (ics23.ICompressedBatchProof|null);
-    }
-
-    /** Represents a CommitmentProof. */
-    class CommitmentProof implements ICommitmentProof {
-
-        /**
-         * Constructs a new CommitmentProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ICommitmentProof);
-
-        /** CommitmentProof exist. */
-        public exist?: (ics23.IExistenceProof|null);
-
-        /** CommitmentProof nonexist. */
-        public nonexist?: (ics23.INonExistenceProof|null);
-
-        /** CommitmentProof batch. */
-        public batch?: (ics23.IBatchProof|null);
-
-        /** CommitmentProof compressed. */
-        public compressed?: (ics23.ICompressedBatchProof|null);
-
-        /** CommitmentProof proof. */
-        public proof?: ("exist"|"nonexist"|"batch"|"compressed");
-
-        /**
-         * Encodes the specified CommitmentProof message. Does not implicitly {@link ics23.CommitmentProof.verify|verify} messages.
-         * @param message CommitmentProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ICommitmentProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CommitmentProof message, length delimited. Does not implicitly {@link ics23.CommitmentProof.verify|verify} messages.
-         * @param message CommitmentProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ICommitmentProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CommitmentProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CommitmentProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.CommitmentProof;
-
-        /**
-         * Decodes a CommitmentProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CommitmentProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.CommitmentProof;
-
-        /**
-         * Verifies a CommitmentProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CommitmentProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CommitmentProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.CommitmentProof;
-
-        /**
-         * Creates a plain object from a CommitmentProof message. Also converts values to other types if specified.
-         * @param message CommitmentProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.CommitmentProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CommitmentProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a LeafOp. */
-    interface ILeafOp {
-
-        /** LeafOp hash */
-        hash?: (ics23.HashOp|null);
-
-        /** LeafOp prehash_key */
-        prehash_key?: (ics23.HashOp|null);
-
-        /** LeafOp prehash_value */
-        prehash_value?: (ics23.HashOp|null);
-
-        /** LeafOp length */
-        length?: (ics23.LengthOp|null);
-
-        /** LeafOp prefix */
-        prefix?: (Uint8Array|null);
-    }
-
-    /**
-     * LeafOp represents the raw key-value data we wish to prove, and
-     * must be flexible to represent the internal transformation from
-     * the original key-value pairs into the basis hash, for many existing
-     * merkle trees.
-     *
-     * key and value are passed in. So that the signature of this operation is:
-     * leafOp(key, value) -> output
-     *
-     * To process this, first prehash the keys and values if needed (ANY means no hash in this case):
-     * hkey = prehashKey(key)
-     * hvalue = prehashValue(value)
-     *
-     * Then combine the bytes, and hash it
-     * output = hash(prefix || length(hkey) || hkey || length(hvalue) || hvalue)
-     */
-    class LeafOp implements ILeafOp {
-
-        /**
-         * Constructs a new LeafOp.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ILeafOp);
-
-        /** LeafOp hash. */
-        public hash: ics23.HashOp;
-
-        /** LeafOp prehash_key. */
-        public prehash_key: ics23.HashOp;
-
-        /** LeafOp prehash_value. */
-        public prehash_value: ics23.HashOp;
-
-        /** LeafOp length. */
-        public length: ics23.LengthOp;
-
-        /** LeafOp prefix. */
-        public prefix: Uint8Array;
-
-        /**
-         * Encodes the specified LeafOp message. Does not implicitly {@link ics23.LeafOp.verify|verify} messages.
-         * @param message LeafOp message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ILeafOp, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified LeafOp message, length delimited. Does not implicitly {@link ics23.LeafOp.verify|verify} messages.
-         * @param message LeafOp message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ILeafOp, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a LeafOp message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns LeafOp
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.LeafOp;
-
-        /**
-         * Decodes a LeafOp message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns LeafOp
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.LeafOp;
-
-        /**
-         * Verifies a LeafOp message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a LeafOp message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns LeafOp
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.LeafOp;
-
-        /**
-         * Creates a plain object from a LeafOp message. Also converts values to other types if specified.
-         * @param message LeafOp
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.LeafOp, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this LeafOp to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of an InnerOp. */
-    interface IInnerOp {
-
-        /** InnerOp hash */
-        hash?: (ics23.HashOp|null);
-
-        /** InnerOp prefix */
-        prefix?: (Uint8Array|null);
-
-        /** InnerOp suffix */
-        suffix?: (Uint8Array|null);
-    }
-
-    /**
-     * InnerOp represents a merkle-proof step that is not a leaf.
-     * It represents concatenating two children and hashing them to provide the next result.
-     *
-     * The result of the previous step is passed in, so the signature of this op is:
-     * innerOp(child) -> output
-     *
-     * The result of applying InnerOp should be:
-     * output = op.hash(op.prefix || child || op.suffix)
-     *
-     * where the || operator is concatenation of binary data,
-     * and child is the result of hashing all the tree below this step.
-     *
-     * Any special data, like prepending child with the length, or prepending the entire operation with
-     * some value to differentiate from leaf nodes, should be included in prefix and suffix.
-     * If either of prefix or suffix is empty, we just treat it as an empty string
-     */
-    class InnerOp implements IInnerOp {
-
-        /**
-         * Constructs a new InnerOp.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IInnerOp);
-
-        /** InnerOp hash. */
-        public hash: ics23.HashOp;
-
-        /** InnerOp prefix. */
-        public prefix: Uint8Array;
-
-        /** InnerOp suffix. */
-        public suffix: Uint8Array;
-
-        /**
-         * Encodes the specified InnerOp message. Does not implicitly {@link ics23.InnerOp.verify|verify} messages.
-         * @param message InnerOp message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IInnerOp, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified InnerOp message, length delimited. Does not implicitly {@link ics23.InnerOp.verify|verify} messages.
-         * @param message InnerOp message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IInnerOp, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an InnerOp message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns InnerOp
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.InnerOp;
-
-        /**
-         * Decodes an InnerOp message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns InnerOp
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.InnerOp;
-
-        /**
-         * Verifies an InnerOp message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an InnerOp message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns InnerOp
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.InnerOp;
-
-        /**
-         * Creates a plain object from an InnerOp message. Also converts values to other types if specified.
-         * @param message InnerOp
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.InnerOp, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this InnerOp to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a ProofSpec. */
-    interface IProofSpec {
-
-        /** ProofSpec leaf_spec */
-        leaf_spec?: (ics23.ILeafOp|null);
-
-        /** ProofSpec inner_spec */
-        inner_spec?: (ics23.IInnerSpec|null);
-
-        /** ProofSpec max_depth */
-        max_depth?: (number|null);
-
-        /** ProofSpec min_depth */
-        min_depth?: (number|null);
-    }
-
-    /**
-     * ProofSpec defines what the expected parameters are for a given proof type.
-     * This can be stored in the client and used to validate any incoming proofs.
-     *
-     * verify(ProofSpec, Proof) -> Proof | Error
-     *
-     * As demonstrated in tests, if we don't fix the algorithm used to calculate the
-     * LeafHash for a given tree, there are many possible key-value pairs that can
-     * generate a given hash (by interpretting the preimage differently).
-     * We need this for proper security, requires client knows a priori what
-     * tree format server uses. But not in code, rather a configuration object.
-     */
-    class ProofSpec implements IProofSpec {
-
-        /**
-         * Constructs a new ProofSpec.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IProofSpec);
-
-        /** ProofSpec leaf_spec. */
-        public leaf_spec?: (ics23.ILeafOp|null);
-
-        /** ProofSpec inner_spec. */
-        public inner_spec?: (ics23.IInnerSpec|null);
-
-        /** ProofSpec max_depth. */
-        public max_depth: number;
-
-        /** ProofSpec min_depth. */
-        public min_depth: number;
-
-        /**
-         * Encodes the specified ProofSpec message. Does not implicitly {@link ics23.ProofSpec.verify|verify} messages.
-         * @param message ProofSpec message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IProofSpec, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ProofSpec message, length delimited. Does not implicitly {@link ics23.ProofSpec.verify|verify} messages.
-         * @param message ProofSpec message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IProofSpec, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a ProofSpec message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ProofSpec
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.ProofSpec;
-
-        /**
-         * Decodes a ProofSpec message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ProofSpec
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.ProofSpec;
-
-        /**
-         * Verifies a ProofSpec message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a ProofSpec message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ProofSpec
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.ProofSpec;
-
-        /**
-         * Creates a plain object from a ProofSpec message. Also converts values to other types if specified.
-         * @param message ProofSpec
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.ProofSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ProofSpec to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of an InnerSpec. */
-    interface IInnerSpec {
-
-        /** InnerSpec child_order */
-        child_order?: (number[]|null);
-
-        /** InnerSpec child_size */
-        child_size?: (number|null);
-
-        /** InnerSpec min_prefix_length */
-        min_prefix_length?: (number|null);
-
-        /** InnerSpec max_prefix_length */
-        max_prefix_length?: (number|null);
-
-        /** InnerSpec empty_child */
-        empty_child?: (Uint8Array|null);
-
-        /** InnerSpec hash */
-        hash?: (ics23.HashOp|null);
-    }
-
-    /** Represents an InnerSpec. */
-    class InnerSpec implements IInnerSpec {
-
-        /**
-         * Constructs a new InnerSpec.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IInnerSpec);
-
-        /** InnerSpec child_order. */
-        public child_order: number[];
-
-        /** InnerSpec child_size. */
-        public child_size: number;
-
-        /** InnerSpec min_prefix_length. */
-        public min_prefix_length: number;
-
-        /** InnerSpec max_prefix_length. */
-        public max_prefix_length: number;
-
-        /** InnerSpec empty_child. */
-        public empty_child: Uint8Array;
-
-        /** InnerSpec hash. */
-        public hash: ics23.HashOp;
-
-        /**
-         * Encodes the specified InnerSpec message. Does not implicitly {@link ics23.InnerSpec.verify|verify} messages.
-         * @param message InnerSpec message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IInnerSpec, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified InnerSpec message, length delimited. Does not implicitly {@link ics23.InnerSpec.verify|verify} messages.
-         * @param message InnerSpec message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IInnerSpec, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an InnerSpec message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns InnerSpec
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.InnerSpec;
-
-        /**
-         * Decodes an InnerSpec message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns InnerSpec
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.InnerSpec;
-
-        /**
-         * Verifies an InnerSpec message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an InnerSpec message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns InnerSpec
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.InnerSpec;
-
-        /**
-         * Creates a plain object from an InnerSpec message. Also converts values to other types if specified.
-         * @param message InnerSpec
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.InnerSpec, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this InnerSpec to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a BatchProof. */
-    interface IBatchProof {
-
-        /** BatchProof entries */
-        entries?: (ics23.IBatchEntry[]|null);
-    }
-
-    /** Represents a BatchProof. */
-    class BatchProof implements IBatchProof {
-
-        /**
-         * Constructs a new BatchProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IBatchProof);
-
-        /** BatchProof entries. */
-        public entries: ics23.IBatchEntry[];
-
-        /**
-         * Encodes the specified BatchProof message. Does not implicitly {@link ics23.BatchProof.verify|verify} messages.
-         * @param message BatchProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified BatchProof message, length delimited. Does not implicitly {@link ics23.BatchProof.verify|verify} messages.
-         * @param message BatchProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a BatchProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns BatchProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.BatchProof;
-
-        /**
-         * Decodes a BatchProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns BatchProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.BatchProof;
-
-        /**
-         * Verifies a BatchProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a BatchProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns BatchProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.BatchProof;
-
-        /**
-         * Creates a plain object from a BatchProof message. Also converts values to other types if specified.
-         * @param message BatchProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.BatchProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this BatchProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a BatchEntry. */
-    interface IBatchEntry {
-
-        /** BatchEntry exist */
-        exist?: (ics23.IExistenceProof|null);
-
-        /** BatchEntry nonexist */
-        nonexist?: (ics23.INonExistenceProof|null);
-    }
-
-    /** Represents a BatchEntry. */
-    class BatchEntry implements IBatchEntry {
-
-        /**
-         * Constructs a new BatchEntry.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.IBatchEntry);
-
-        /** BatchEntry exist. */
-        public exist?: (ics23.IExistenceProof|null);
-
-        /** BatchEntry nonexist. */
-        public nonexist?: (ics23.INonExistenceProof|null);
-
-        /** BatchEntry proof. */
-        public proof?: ("exist"|"nonexist");
-
-        /**
-         * Encodes the specified BatchEntry message. Does not implicitly {@link ics23.BatchEntry.verify|verify} messages.
-         * @param message BatchEntry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.IBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified BatchEntry message, length delimited. Does not implicitly {@link ics23.BatchEntry.verify|verify} messages.
-         * @param message BatchEntry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.IBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a BatchEntry message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns BatchEntry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.BatchEntry;
-
-        /**
-         * Decodes a BatchEntry message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns BatchEntry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.BatchEntry;
-
-        /**
-         * Verifies a BatchEntry message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a BatchEntry message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns BatchEntry
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.BatchEntry;
-
-        /**
-         * Creates a plain object from a BatchEntry message. Also converts values to other types if specified.
-         * @param message BatchEntry
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.BatchEntry, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this BatchEntry to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a CompressedBatchProof. */
-    interface ICompressedBatchProof {
-
-        /** CompressedBatchProof entries */
-        entries?: (ics23.ICompressedBatchEntry[]|null);
-
-        /** CompressedBatchProof lookup_inners */
-        lookup_inners?: (ics23.IInnerOp[]|null);
-    }
-
-    /** Represents a CompressedBatchProof. */
-    class CompressedBatchProof implements ICompressedBatchProof {
-
-        /**
-         * Constructs a new CompressedBatchProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ICompressedBatchProof);
-
-        /** CompressedBatchProof entries. */
-        public entries: ics23.ICompressedBatchEntry[];
-
-        /** CompressedBatchProof lookup_inners. */
-        public lookup_inners: ics23.IInnerOp[];
-
-        /**
-         * Encodes the specified CompressedBatchProof message. Does not implicitly {@link ics23.CompressedBatchProof.verify|verify} messages.
-         * @param message CompressedBatchProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ICompressedBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CompressedBatchProof message, length delimited. Does not implicitly {@link ics23.CompressedBatchProof.verify|verify} messages.
-         * @param message CompressedBatchProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ICompressedBatchProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CompressedBatchProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CompressedBatchProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.CompressedBatchProof;
-
-        /**
-         * Decodes a CompressedBatchProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CompressedBatchProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.CompressedBatchProof;
-
-        /**
-         * Verifies a CompressedBatchProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CompressedBatchProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CompressedBatchProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.CompressedBatchProof;
-
-        /**
-         * Creates a plain object from a CompressedBatchProof message. Also converts values to other types if specified.
-         * @param message CompressedBatchProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.CompressedBatchProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CompressedBatchProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a CompressedBatchEntry. */
-    interface ICompressedBatchEntry {
-
-        /** CompressedBatchEntry exist */
-        exist?: (ics23.ICompressedExistenceProof|null);
-
-        /** CompressedBatchEntry nonexist */
-        nonexist?: (ics23.ICompressedNonExistenceProof|null);
-    }
-
-    /** Represents a CompressedBatchEntry. */
-    class CompressedBatchEntry implements ICompressedBatchEntry {
-
-        /**
-         * Constructs a new CompressedBatchEntry.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ICompressedBatchEntry);
-
-        /** CompressedBatchEntry exist. */
-        public exist?: (ics23.ICompressedExistenceProof|null);
-
-        /** CompressedBatchEntry nonexist. */
-        public nonexist?: (ics23.ICompressedNonExistenceProof|null);
-
-        /** CompressedBatchEntry proof. */
-        public proof?: ("exist"|"nonexist");
-
-        /**
-         * Encodes the specified CompressedBatchEntry message. Does not implicitly {@link ics23.CompressedBatchEntry.verify|verify} messages.
-         * @param message CompressedBatchEntry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ICompressedBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CompressedBatchEntry message, length delimited. Does not implicitly {@link ics23.CompressedBatchEntry.verify|verify} messages.
-         * @param message CompressedBatchEntry message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ICompressedBatchEntry, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CompressedBatchEntry message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CompressedBatchEntry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.CompressedBatchEntry;
-
-        /**
-         * Decodes a CompressedBatchEntry message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CompressedBatchEntry
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.CompressedBatchEntry;
-
-        /**
-         * Verifies a CompressedBatchEntry message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CompressedBatchEntry message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CompressedBatchEntry
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.CompressedBatchEntry;
-
-        /**
-         * Creates a plain object from a CompressedBatchEntry message. Also converts values to other types if specified.
-         * @param message CompressedBatchEntry
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.CompressedBatchEntry, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CompressedBatchEntry to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a CompressedExistenceProof. */
-    interface ICompressedExistenceProof {
-
-        /** CompressedExistenceProof key */
-        key?: (Uint8Array|null);
-
-        /** CompressedExistenceProof value */
-        value?: (Uint8Array|null);
-
-        /** CompressedExistenceProof leaf */
-        leaf?: (ics23.ILeafOp|null);
-
-        /** CompressedExistenceProof path */
-        path?: (number[]|null);
-    }
-
-    /** Represents a CompressedExistenceProof. */
-    class CompressedExistenceProof implements ICompressedExistenceProof {
-
-        /**
-         * Constructs a new CompressedExistenceProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ICompressedExistenceProof);
-
-        /** CompressedExistenceProof key. */
-        public key: Uint8Array;
-
-        /** CompressedExistenceProof value. */
-        public value: Uint8Array;
-
-        /** CompressedExistenceProof leaf. */
-        public leaf?: (ics23.ILeafOp|null);
-
-        /** CompressedExistenceProof path. */
-        public path: number[];
-
-        /**
-         * Encodes the specified CompressedExistenceProof message. Does not implicitly {@link ics23.CompressedExistenceProof.verify|verify} messages.
-         * @param message CompressedExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ICompressedExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CompressedExistenceProof message, length delimited. Does not implicitly {@link ics23.CompressedExistenceProof.verify|verify} messages.
-         * @param message CompressedExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ICompressedExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CompressedExistenceProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CompressedExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.CompressedExistenceProof;
-
-        /**
-         * Decodes a CompressedExistenceProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CompressedExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.CompressedExistenceProof;
-
-        /**
-         * Verifies a CompressedExistenceProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CompressedExistenceProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CompressedExistenceProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.CompressedExistenceProof;
-
-        /**
-         * Creates a plain object from a CompressedExistenceProof message. Also converts values to other types if specified.
-         * @param message CompressedExistenceProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.CompressedExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CompressedExistenceProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a CompressedNonExistenceProof. */
-    interface ICompressedNonExistenceProof {
-
-        /** CompressedNonExistenceProof key */
-        key?: (Uint8Array|null);
-
-        /** CompressedNonExistenceProof left */
-        left?: (ics23.ICompressedExistenceProof|null);
-
-        /** CompressedNonExistenceProof right */
-        right?: (ics23.ICompressedExistenceProof|null);
-    }
-
-    /** Represents a CompressedNonExistenceProof. */
-    class CompressedNonExistenceProof implements ICompressedNonExistenceProof {
-
-        /**
-         * Constructs a new CompressedNonExistenceProof.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: ics23.ICompressedNonExistenceProof);
-
-        /** CompressedNonExistenceProof key. */
-        public key: Uint8Array;
-
-        /** CompressedNonExistenceProof left. */
-        public left?: (ics23.ICompressedExistenceProof|null);
-
-        /** CompressedNonExistenceProof right. */
-        public right?: (ics23.ICompressedExistenceProof|null);
-
-        /**
-         * Encodes the specified CompressedNonExistenceProof message. Does not implicitly {@link ics23.CompressedNonExistenceProof.verify|verify} messages.
-         * @param message CompressedNonExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: ics23.ICompressedNonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified CompressedNonExistenceProof message, length delimited. Does not implicitly {@link ics23.CompressedNonExistenceProof.verify|verify} messages.
-         * @param message CompressedNonExistenceProof message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: ics23.ICompressedNonExistenceProof, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a CompressedNonExistenceProof message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns CompressedNonExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ics23.CompressedNonExistenceProof;
-
-        /**
-         * Decodes a CompressedNonExistenceProof message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns CompressedNonExistenceProof
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ics23.CompressedNonExistenceProof;
-
-        /**
-         * Verifies a CompressedNonExistenceProof message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a CompressedNonExistenceProof message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns CompressedNonExistenceProof
-         */
-        public static fromObject(object: { [k: string]: any }): ics23.CompressedNonExistenceProof;
-
-        /**
-         * Creates a plain object from a CompressedNonExistenceProof message. Also converts values to other types if specified.
-         * @param message CompressedNonExistenceProof
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: ics23.CompressedNonExistenceProof, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this CompressedNonExistenceProof to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
     }
 }
 
@@ -33502,103 +35609,6 @@ export namespace tendermint {
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
-        }
-    }
-
-    /** Namespace libs. */
-    namespace libs {
-
-        /** Namespace bits. */
-        namespace bits {
-
-            /** Properties of a BitArray. */
-            interface IBitArray {
-
-                /** BitArray bits */
-                bits?: (Long|null);
-
-                /** BitArray elems */
-                elems?: (Long[]|null);
-            }
-
-            /** Represents a BitArray. */
-            class BitArray implements IBitArray {
-
-                /**
-                 * Constructs a new BitArray.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: tendermint.libs.bits.IBitArray);
-
-                /** BitArray bits. */
-                public bits: Long;
-
-                /** BitArray elems. */
-                public elems: Long[];
-
-                /**
-                 * Encodes the specified BitArray message. Does not implicitly {@link tendermint.libs.bits.BitArray.verify|verify} messages.
-                 * @param message BitArray message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: tendermint.libs.bits.IBitArray, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified BitArray message, length delimited. Does not implicitly {@link tendermint.libs.bits.BitArray.verify|verify} messages.
-                 * @param message BitArray message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: tendermint.libs.bits.IBitArray, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a BitArray message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns BitArray
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): tendermint.libs.bits.BitArray;
-
-                /**
-                 * Decodes a BitArray message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns BitArray
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): tendermint.libs.bits.BitArray;
-
-                /**
-                 * Verifies a BitArray message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a BitArray message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns BitArray
-                 */
-                public static fromObject(object: { [k: string]: any }): tendermint.libs.bits.BitArray;
-
-                /**
-                 * Creates a plain object from a BitArray message. Also converts values to other types if specified.
-                 * @param message BitArray
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: tendermint.libs.bits.BitArray, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this BitArray to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
         }
     }
 }
