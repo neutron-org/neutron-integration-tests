@@ -11,6 +11,7 @@ import { getWithAttempts } from './wait';
 import {
   MultiChoiceOption,
   NeutronContract,
+  ProposalFailedExecutionErrorResponse,
   SingleChoiceProposal,
   TotalPowerAtHeightResponse,
   VotingPowerAtHeightResponse,
@@ -454,11 +455,11 @@ export class Dao {
     );
   }
 
-  async getTimelockedProposalError(
+  async getTimelockedProposalErrors(
     proposalId: number,
     customModule = 'single',
-  ): Promise<string> {
-    return this.chain.queryContract<string>(
+  ): Promise<ProposalFailedExecutionErrorResponse> {
+    return this.chain.queryContract<ProposalFailedExecutionErrorResponse>(
       this.contracts.proposals[customModule].pre_propose.timelock.address,
       {
         proposal_failed_execution_error: {

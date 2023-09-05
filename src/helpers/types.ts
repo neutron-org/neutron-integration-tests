@@ -277,3 +277,10 @@ export type ContractAdminResponse = {
     admin: string;
   };
 };
+
+export type ProposalFailedExecutionErrorResponse = {
+  errors: {
+    height: number;
+    error: string;
+  }[];
+};

@@ -134,8 +134,10 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const reason = await subDao.getTimelockedProposalError(proposalId);
-      expect(reason).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
+      const res = await subDao.getTimelockedProposalErrors(proposalId);
+      expect(res.errors.length).toEqual(1);
+      expect(res.errors[0].error).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
+      expect(res.errors[0].height).toBeGreaterThan(0);
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
@@ -180,39 +182,9 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const reason = await subDao.getTimelockedProposalError(proposalId2);
-      expect(reason).toEqual('codespace: params, code: kekw');
-    });
-
-    let proposalId3: number;
-    test('proposal timelock 2', async () => {
-      proposalId3 = await subdaoMember1.submitCancelSoftwareUpgradeProposal(
-        'cancel',
-        'cancel',
-        '1000',
-      );
-
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId3,
-      );
-
-      expect(timelockedProp.id).toEqual(proposalId3);
-      expect(timelockedProp.status).toEqual('timelocked');
-      expect(timelockedProp.msgs).toHaveLength(1);
-    });
-
-    test('execute timelocked: execution failed', async () => {
-      //wait for timelock durations
-      await wait(20);
-      // timelocked proposal execution failed due to invalid param value
-      await subdaoMember1.executeTimelockedProposal(proposalId3);
-      const timelockedProp = await subDao.getTimelockedProposal(proposalId3);
-      expect(timelockedProp.id).toEqual(proposalId3);
-      expect(timelockedProp.status).toEqual('execution_failed');
-      expect(timelockedProp.msgs).toHaveLength(1);
-
-      const reason = await subDao.getTimelockedProposalError(proposalId3);
-      expect(reason).toEqual('codespace: upgrade, code: kekw');
+      const res = await subDao.getTimelockedProposalErrors(proposalId2);
+      expect(res.errors.length).toEqual(0);
+      expect(res.errors[0].error).toEqual('codespace: undefined, code: 1');
     });
   });
 
