@@ -93,6 +93,10 @@ cosmosclient.codec.register(
   adminmodule.MsgSubmitProposal,
 );
 cosmosclient.codec.register(
+  '/cosmos.adminmodule.adminmodule.MsgSubmitProposalLegacy',
+  adminmodule.MsgSubmitProposalLegacy,
+);
+cosmosclient.codec.register(
   '/ibc.lightclients.tendermint.v1.ClientState',
   ibcProto.lightclients.tendermint.v1.ClientState,
 );
@@ -674,7 +678,7 @@ export class WalletWrapper {
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
       .BroadcastTxMode.Sync,
   ): Promise<BroadcastTx200ResponseTxResponse> {
-    const msg = new adminmodule.MsgSubmitProposal({
+    const msg = new adminmodule.MsgSubmitProposalLegacy({
       content: cosmosclient.codec.instanceToProtoAny(
         new cosmosclient.proto.cosmos.params.v1beta1.ParameterChangeProposal({
           title: 'mock',

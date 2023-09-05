@@ -157,6 +157,25 @@ export const pinCodesProposal = (info: PinCodesInfo): any => ({
   },
 });
 
+export const pinCodesCustomAutrhorityProposal = (
+  info: PinCodesInfo,
+  authority: string,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgPinCodes',
+            authority: authority,
+            code_ids: info.codes_ids,
+          }),
+        },
+      },
+    },
+  },
+});
+
 export const unpinCodesProposal = (info: PinCodesInfo): any => ({
   custom: {
     submit_admin_proposal: {
