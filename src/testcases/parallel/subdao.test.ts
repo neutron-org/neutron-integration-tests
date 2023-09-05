@@ -183,8 +183,16 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const res = await subDao.getTimelockedProposalErrors(proposalId2);
-      expect(res.errors.length).toEqual(0);
+      expect(res.errors.length).toEqual(1);
       expect(res.errors[0].error).toEqual('codespace: undefined, code: 1');
+
+      // try execute second time
+      await subdaoMember1.executeTimelockedProposal(proposalId2);
+      await neutronChain.blockWaiter.waitBlocks(2);
+
+      // should add new error here
+      const res2 = await subDao.getTimelockedProposalErrors(proposalId2);
+      expect(res2.errors.length).toEqual(2);
     });
   });
 
