@@ -392,22 +392,34 @@ export class Dao {
     );
   }
 
-  async queryTotalVotingPower(): Promise<TotalPowerAtHeightResponse> {
+  async queryTotalVotingPower(
+    height?: number,
+  ): Promise<TotalPowerAtHeightResponse> {
     return await this.chain.queryContract<TotalPowerAtHeightResponse>(
       this.contracts.core.address,
       {
-        total_power_at_height: {},
+        total_power_at_height:
+          typeof height === 'undefined' ? {} : { height: height },
       },
     );
   }
 
-  async queryVotingPower(addr: string): Promise<VotingPowerAtHeightResponse> {
+  async queryVotingPower(
+    addr: string,
+    height?: number,
+  ): Promise<VotingPowerAtHeightResponse> {
     return await this.chain.queryContract<VotingPowerAtHeightResponse>(
       this.contracts.core.address,
       {
-        voting_power_at_height: {
-          address: addr,
-        },
+        voting_power_at_height:
+          typeof height === 'undefined'
+            ? {
+                address: addr,
+              }
+            : {
+                address: addr,
+                height: height,
+              },
       },
     );
   }
