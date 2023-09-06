@@ -609,6 +609,34 @@ export class WalletWrapper {
     ]);
   }
 
+  async migrateContract(
+    contract: string,
+    codeId: number,
+    msg: string | Record<string, unknown>,
+  ): Promise<BroadcastTx200ResponseTxResponse> {
+    const sender = this.wallet.address.toString();
+    const msgMigrate =
+      new cosmwasmclient.proto.cosmwasm.wasm.v1.MsgMigrateContract({
+        sender,
+        contract,
+        code_id: codeId + '',
+        msg: Buffer.from(typeof msg === 'string' ? msg : JSON.stringify(msg)),
+      });
+    const res = await this.execTx(
+      {
+        gas_limit: Long.fromString('5000000'),
+        amount: [{ denom: this.chain.denom, amount: '20000' }],
+      },
+      [msgMigrate],
+    );
+    if (res.tx_response.code !== 0) {
+      throw new Error(
+        `${res.tx_response.raw_log}\nFailed tx hash: ${res.tx_response.txhash}`,
+      );
+    }
+    return res?.tx_response;
+  }
+
   async executeContract(
     contract: string,
     msg: string,
