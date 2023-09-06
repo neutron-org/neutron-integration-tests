@@ -1031,7 +1031,6 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      console.log('IMPORTANT' + rawLog);
       expect(rawLog.includes('sdk.Msg is not whitelisted'));
     });
   });
