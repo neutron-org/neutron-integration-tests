@@ -13,7 +13,7 @@ import {
   msgBurn,
   msgChangeAdmin,
   msgCreateDenom,
-  msgMintDenom,
+  msgMintDenom, msgSetBeforeSendHook,
 } from '../../helpers/tokenfactory';
 
 interface DenomsFromCreator {
@@ -22,6 +22,10 @@ interface DenomsFromCreator {
 
 interface AuthorityMetadata {
   readonly authority_metadata: { readonly Admin: string };
+}
+
+interface BerforeSendHook {
+  readonly before_send_hook: { readonly CosmwasmAddress: string };
 }
 
 describe('Neutron / Tokenfactory', () => {
@@ -118,6 +122,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       console.log(newTokenDenom);
+      console.log(neutronChain.sdk.url);
 
       const authorityMetadataBefore = await getAuthorityMetadata(
         neutronChain.sdk.url,
@@ -125,27 +130,27 @@ describe('Neutron / Tokenfactory', () => {
       );
       console.log(authorityMetadataBefore);
 
-      // expect(authorityMetadataBefore.authority_metadata).toEqual({
-      //   Admin: ownerWallet.address.toString(),
-      // });
-      //
-      // const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
-      //
-      // await msgChangeAdmin(
-      //   neutronAccount,
-      //   ownerWallet.address.toString(),
-      //   newTokenDenom,
-      //   newAdmin,
-      // );
-      //
-      // const authorityMetadataAfter = await getAuthorityMetadata(
-      //   neutronChain.sdk.url,
-      //   newTokenDenom,
-      // );
-      //
-      // expect(authorityMetadataAfter.authority_metadata).toEqual({
-      //   Admin: newAdmin,
-      // });
+      expect(authorityMetadataBefore.authority_metadata).toEqual({
+        Admin: ownerWallet.address.toString(),
+      });
+
+      const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
+
+      await msgChangeAdmin(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        newTokenDenom,
+        newAdmin,
+      );
+
+      const authorityMetadataAfter = await getAuthorityMetadata(
+        neutronChain.sdk.url,
+        newTokenDenom,
+      );
+
+      expect(authorityMetadataAfter.authority_metadata).toEqual({
+        Admin: newAdmin,
+      });
     });
 
     // Test denom creation, mint some coins and burn some of them
@@ -162,7 +167,6 @@ describe('Neutron / Tokenfactory', () => {
         'create_denom',
         'new_token_denom',
       );
-      console.log(newTokenDenom);
       await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
         denom: newTokenDenom,
         amount: '10000',
@@ -189,6 +193,36 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceAfter).toEqual(9900);
     });
+  });
+
+  test('create denom, set before', async () => {
+    const denom = `test5`;
+
+    const data = await msgCreateDenom(
+      neutronAccount,
+      ownerWallet.address.toString(),
+      denom,
+    );
+    const newTokenDenom = getEventAttribute(
+      (data as any).events,
+      'create_denom',
+      'new_token_denom',
+    );
+    await msgSetBeforeSendHook(
+      neutronAccount,
+      ownerWallet.address.toString(),
+      newTokenDenom,
+      ownerWallet.address.toString(),
+    );
+
+    const hookAfter = await getBeforeSendHook(
+      neutronChain.sdk.url,
+      newTokenDenom,
+    );
+
+    expect(hookAfter.before_send_hook.CosmwasmAddress).toEqual(
+      ownerWallet.address.toString,
+    );
   });
 
   describe('wasmbindings', () => {
@@ -357,6 +391,17 @@ const getAuthorityMetadata = async (
 ): Promise<AuthorityMetadata> => {
   const res = await axios.get<AuthorityMetadata>(
     `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/authority_metadata`,
+  );
+
+  return res.data;
+};
+
+const getBeforeSendHook = async (
+  sdkUrl: string,
+  denom: string,
+): Promise<BerforeSendHook> => {
+  const res = await axios.get<BerforeSendHook>(
+    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/before_send_hook`,
   );
 
   return res.data;

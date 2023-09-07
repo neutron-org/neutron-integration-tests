@@ -118,3 +118,26 @@ export const msgChangeAdmin = async (
 
   return res.tx_response!;
 };
+
+export const msgSetBeforeSendHook = async (
+  cmNeutron: WalletWrapper,
+  creator: string,
+  denom: string,
+  cosmwasmAddress: string,
+): Promise<BroadcastTx200ResponseTxResponse> => {
+  const msgMint = new osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook({
+    sender: creator,
+    denom,
+    cosmwasm_address: cosmwasmAddress,
+  });
+  const res = await cmNeutron.execTx(
+    {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
+    },
+    [msgMint],
+    10,
+  );
+
+  return res.tx_response!;
+};
