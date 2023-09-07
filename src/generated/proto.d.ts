@@ -5,6 +5,392 @@ export namespace neutron {
     /** Namespace contractmanager. */
     namespace contractmanager {
 
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+             */
+            public updateParams(request: neutron.contractmanager.IMsgUpdateParams, callback: neutron.contractmanager.Msg.UpdateParamsCallback): void;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @returns Promise
+             */
+            public updateParams(request: neutron.contractmanager.IMsgUpdateParams): Promise<neutron.contractmanager.MsgUpdateParamsResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.contractmanager.Msg#updateParams}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateParamsResponse
+             */
+            type UpdateParamsCallback = (error: (Error|null), response?: neutron.contractmanager.MsgUpdateParamsResponse) => void;
+        }
+
+        /** Properties of a MsgUpdateParams. */
+        interface IMsgUpdateParams {
+
+            /** MsgUpdateParams authority */
+            authority?: (string|null);
+
+            /** MsgUpdateParams params */
+            params?: (neutron.contractmanager.IParams|null);
+        }
+
+        /** Represents a MsgUpdateParams. */
+        class MsgUpdateParams implements IMsgUpdateParams {
+
+            /**
+             * Constructs a new MsgUpdateParams.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IMsgUpdateParams);
+
+            /** MsgUpdateParams authority. */
+            public authority: string;
+
+            /** MsgUpdateParams params. */
+            public params?: (neutron.contractmanager.IParams|null);
+
+            /**
+             * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.contractmanager.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.contractmanager.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.MsgUpdateParams;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.MsgUpdateParams;
+
+            /**
+             * Verifies a MsgUpdateParams message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParams
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.MsgUpdateParams;
+
+            /**
+             * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+             * @param message MsgUpdateParams
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParams to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateParamsResponse. */
+        interface IMsgUpdateParamsResponse {
+        }
+
+        /** Represents a MsgUpdateParamsResponse. */
+        class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+            /**
+             * Constructs a new MsgUpdateParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IMsgUpdateParamsResponse);
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.contractmanager.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.contractmanager.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.MsgUpdateParamsResponse;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.MsgUpdateParamsResponse;
+
+            /**
+             * Verifies a MsgUpdateParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.MsgUpdateParamsResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IParams);
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Failure. */
+        interface IFailure {
+
+            /** Failure address */
+            address?: (string|null);
+
+            /** Failure id */
+            id?: (Long|null);
+
+            /** Failure ack_type */
+            ack_type?: (string|null);
+
+            /** Failure packet */
+            packet?: (ibc.core.channel.v1.IPacket|null);
+
+            /** Failure ack */
+            ack?: (ibc.core.channel.v1.IAcknowledgement|null);
+        }
+
+        /** Represents a Failure. */
+        class Failure implements IFailure {
+
+            /**
+             * Constructs a new Failure.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.contractmanager.IFailure);
+
+            /** Failure address. */
+            public address: string;
+
+            /** Failure id. */
+            public id: Long;
+
+            /** Failure ack_type. */
+            public ack_type: string;
+
+            /** Failure packet. */
+            public packet?: (ibc.core.channel.v1.IPacket|null);
+
+            /** Failure ack. */
+            public ack?: (ibc.core.channel.v1.IAcknowledgement|null);
+
+            /**
+             * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
+             * @param message Failure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Failure message, length delimited. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
+             * @param message Failure message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Failure message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Failure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Failure;
+
+            /**
+             * Decodes a Failure message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Failure
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Failure;
+
+            /**
+             * Verifies a Failure message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Failure message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Failure
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Failure;
+
+            /**
+             * Creates a plain object from a Failure message. Also converts values to other types if specified.
+             * @param message Failure
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.contractmanager.Failure, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Failure to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
         /** Represents a Query */
         class Query extends $protobuf.rpc.Service {
 
@@ -421,190 +807,6 @@ export namespace neutron {
             public toJSON(): { [k: string]: any };
         }
 
-        /** Properties of a Params. */
-        interface IParams {
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.contractmanager.IParams);
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.contractmanager.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.contractmanager.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.contractmanager.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of a Failure. */
-        interface IFailure {
-
-            /** Failure channel_id */
-            channel_id?: (string|null);
-
-            /** Failure address */
-            address?: (string|null);
-
-            /** Failure id */
-            id?: (Long|null);
-
-            /** Failure ack_id */
-            ack_id?: (Long|null);
-
-            /** Failure ack_type */
-            ack_type?: (string|null);
-        }
-
-        /** Represents a Failure. */
-        class Failure implements IFailure {
-
-            /**
-             * Constructs a new Failure.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.contractmanager.IFailure);
-
-            /** Failure channel_id. */
-            public channel_id: string;
-
-            /** Failure address. */
-            public address: string;
-
-            /** Failure id. */
-            public id: Long;
-
-            /** Failure ack_id. */
-            public ack_id: Long;
-
-            /** Failure ack_type. */
-            public ack_type: string;
-
-            /**
-             * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
-             * @param message Failure message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Failure message, length delimited. Does not implicitly {@link neutron.contractmanager.Failure.verify|verify} messages.
-             * @param message Failure message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.contractmanager.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Failure message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Failure
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.Failure;
-
-            /**
-             * Decodes a Failure message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Failure
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.Failure;
-
-            /**
-             * Verifies a Failure message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Failure message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Failure
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.contractmanager.Failure;
-
-            /**
-             * Creates a plain object from a Failure message. Also converts values to other types if specified.
-             * @param message Failure
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.contractmanager.Failure, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Failure to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
         /** Properties of a GenesisState. */
         interface IGenesisState {
 
@@ -693,6 +895,117 @@ export namespace neutron {
              */
             public toJSON(): { [k: string]: any };
         }
+
+        /** Namespace v1. */
+        namespace v1 {
+
+            /** Properties of a Failure. */
+            interface IFailure {
+
+                /** Failure channel_id */
+                channel_id?: (string|null);
+
+                /** Failure address */
+                address?: (string|null);
+
+                /** Failure id */
+                id?: (Long|null);
+
+                /** Failure ack_id */
+                ack_id?: (Long|null);
+
+                /** Failure ack_type */
+                ack_type?: (string|null);
+            }
+
+            /** Represents a Failure. */
+            class Failure implements IFailure {
+
+                /**
+                 * Constructs a new Failure.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: neutron.contractmanager.v1.IFailure);
+
+                /** Failure channel_id. */
+                public channel_id: string;
+
+                /** Failure address. */
+                public address: string;
+
+                /** Failure id. */
+                public id: Long;
+
+                /** Failure ack_id. */
+                public ack_id: Long;
+
+                /** Failure ack_type. */
+                public ack_type: string;
+
+                /**
+                 * Encodes the specified Failure message. Does not implicitly {@link neutron.contractmanager.v1.Failure.verify|verify} messages.
+                 * @param message Failure message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: neutron.contractmanager.v1.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Failure message, length delimited. Does not implicitly {@link neutron.contractmanager.v1.Failure.verify|verify} messages.
+                 * @param message Failure message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: neutron.contractmanager.v1.IFailure, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Failure message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Failure
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.contractmanager.v1.Failure;
+
+                /**
+                 * Decodes a Failure message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Failure
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.contractmanager.v1.Failure;
+
+                /**
+                 * Verifies a Failure message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Failure message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Failure
+                 */
+                public static fromObject(object: { [k: string]: any }): neutron.contractmanager.v1.Failure;
+
+                /**
+                 * Creates a plain object from a Failure message. Also converts values to other types if specified.
+                 * @param message Failure
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: neutron.contractmanager.v1.Failure, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Failure to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
     }
 
     /** Namespace cron. */
@@ -708,6 +1021,285 @@ export namespace neutron {
              * @param [responseDelimited=false] Whether responses are length-delimited
              */
             constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+             */
+            public updateParams(request: neutron.cron.IMsgUpdateParams, callback: neutron.cron.Msg.UpdateParamsCallback): void;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @returns Promise
+             */
+            public updateParams(request: neutron.cron.IMsgUpdateParams): Promise<neutron.cron.MsgUpdateParamsResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.cron.Msg#updateParams}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateParamsResponse
+             */
+            type UpdateParamsCallback = (error: (Error|null), response?: neutron.cron.MsgUpdateParamsResponse) => void;
+        }
+
+        /** Properties of a MsgUpdateParams. */
+        interface IMsgUpdateParams {
+
+            /** MsgUpdateParams authority */
+            authority?: (string|null);
+
+            /** MsgUpdateParams params */
+            params?: (neutron.cron.IParams|null);
+        }
+
+        /** Represents a MsgUpdateParams. */
+        class MsgUpdateParams implements IMsgUpdateParams {
+
+            /**
+             * Constructs a new MsgUpdateParams.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IMsgUpdateParams);
+
+            /** MsgUpdateParams authority. */
+            public authority: string;
+
+            /** MsgUpdateParams params. */
+            public params?: (neutron.cron.IParams|null);
+
+            /**
+             * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.cron.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.cron.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.MsgUpdateParams;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.MsgUpdateParams;
+
+            /**
+             * Verifies a MsgUpdateParams message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParams
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.MsgUpdateParams;
+
+            /**
+             * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+             * @param message MsgUpdateParams
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParams to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateParamsResponse. */
+        interface IMsgUpdateParamsResponse {
+        }
+
+        /** Represents a MsgUpdateParamsResponse. */
+        class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+            /**
+             * Constructs a new MsgUpdateParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IMsgUpdateParamsResponse);
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.cron.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.cron.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.MsgUpdateParamsResponse;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.MsgUpdateParamsResponse;
+
+            /**
+             * Verifies a MsgUpdateParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.MsgUpdateParamsResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params security_address */
+            security_address?: (string|null);
+
+            /** Params limit */
+            limit?: (Long|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.cron.IParams);
+
+            /** Params security_address. */
+            public security_address: string;
+
+            /** Params limit. */
+            public limit: Long;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.cron.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.cron.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
         }
 
         /** Properties of a Schedule. */
@@ -1559,95 +2151,6 @@ export namespace neutron {
             public toJSON(): { [k: string]: any };
         }
 
-        /** Properties of a Params. */
-        interface IParams {
-
-            /** Params security_address */
-            security_address?: (string|null);
-
-            /** Params limit */
-            limit?: (Long|null);
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.cron.IParams);
-
-            /** Params security_address. */
-            public security_address: string;
-
-            /** Params limit. */
-            public limit: Long;
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.cron.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.cron.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.cron.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.cron.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.cron.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.cron.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
         /** Properties of a GenesisState. */
         interface IGenesisState {
 
@@ -1740,6 +2243,303 @@ export namespace neutron {
 
     /** Namespace feeburner. */
     namespace feeburner {
+
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+             */
+            public updateParams(request: neutron.feeburner.IMsgUpdateParams, callback: neutron.feeburner.Msg.UpdateParamsCallback): void;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @returns Promise
+             */
+            public updateParams(request: neutron.feeburner.IMsgUpdateParams): Promise<neutron.feeburner.MsgUpdateParamsResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.feeburner.Msg#updateParams}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateParamsResponse
+             */
+            type UpdateParamsCallback = (error: (Error|null), response?: neutron.feeburner.MsgUpdateParamsResponse) => void;
+        }
+
+        /** Properties of a MsgUpdateParams. */
+        interface IMsgUpdateParams {
+
+            /** MsgUpdateParams authority */
+            authority?: (string|null);
+
+            /** MsgUpdateParams params */
+            params?: (neutron.feeburner.IParams|null);
+        }
+
+        /** Represents a MsgUpdateParams. */
+        class MsgUpdateParams implements IMsgUpdateParams {
+
+            /**
+             * Constructs a new MsgUpdateParams.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IMsgUpdateParams);
+
+            /** MsgUpdateParams authority. */
+            public authority: string;
+
+            /** MsgUpdateParams params. */
+            public params?: (neutron.feeburner.IParams|null);
+
+            /**
+             * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.feeburner.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.feeburner.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.MsgUpdateParams;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.MsgUpdateParams;
+
+            /**
+             * Verifies a MsgUpdateParams message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParams
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.MsgUpdateParams;
+
+            /**
+             * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+             * @param message MsgUpdateParams
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParams to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateParamsResponse. */
+        interface IMsgUpdateParamsResponse {
+        }
+
+        /** Represents a MsgUpdateParamsResponse. */
+        class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+            /**
+             * Constructs a new MsgUpdateParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IMsgUpdateParamsResponse);
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.feeburner.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.feeburner.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.MsgUpdateParamsResponse;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.MsgUpdateParamsResponse;
+
+            /**
+             * Verifies a MsgUpdateParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.MsgUpdateParamsResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params neutron_denom */
+            neutron_denom?: (string|null);
+
+            /** Params reserve_address */
+            reserve_address?: (string|null);
+
+            /** Params treasury_address */
+            treasury_address?: (string|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feeburner.IParams);
+
+            /** Params neutron_denom. */
+            public neutron_denom: string;
+
+            /** Params reserve_address. */
+            public reserve_address: string;
+
+            /** Params treasury_address. */
+            public treasury_address: string;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feeburner.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feeburner.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
 
         /** Represents a Query */
         class Query extends $protobuf.rpc.Service {
@@ -2118,95 +2918,6 @@ export namespace neutron {
             public toJSON(): { [k: string]: any };
         }
 
-        /** Properties of a Params. */
-        interface IParams {
-
-            /** Params neutron_denom */
-            neutron_denom?: (string|null);
-
-            /** Params reserve_address */
-            reserve_address?: (string|null);
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.feeburner.IParams);
-
-            /** Params neutron_denom. */
-            public neutron_denom: string;
-
-            /** Params reserve_address. */
-            public reserve_address: string;
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feeburner.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.feeburner.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feeburner.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feeburner.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.feeburner.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.feeburner.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
         /** Properties of a TotalBurnedNeutronsAmount. */
         interface ITotalBurnedNeutronsAmount {
 
@@ -2382,6 +3093,481 @@ export namespace neutron {
 
     /** Namespace feerefunder. */
     namespace feerefunder {
+
+        /** Represents a Msg */
+        class Msg extends $protobuf.rpc.Service {
+
+            /**
+             * Constructs a new Msg service.
+             * @param rpcImpl RPC implementation
+             * @param [requestDelimited=false] Whether requests are length-delimited
+             * @param [responseDelimited=false] Whether responses are length-delimited
+             */
+            constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+             */
+            public updateParams(request: neutron.feerefunder.IMsgUpdateParams, callback: neutron.feerefunder.Msg.UpdateParamsCallback): void;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @returns Promise
+             */
+            public updateParams(request: neutron.feerefunder.IMsgUpdateParams): Promise<neutron.feerefunder.MsgUpdateParamsResponse>;
+        }
+
+        namespace Msg {
+
+            /**
+             * Callback as used by {@link neutron.feerefunder.Msg#updateParams}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateParamsResponse
+             */
+            type UpdateParamsCallback = (error: (Error|null), response?: neutron.feerefunder.MsgUpdateParamsResponse) => void;
+        }
+
+        /** Properties of a MsgUpdateParams. */
+        interface IMsgUpdateParams {
+
+            /** MsgUpdateParams authority */
+            authority?: (string|null);
+
+            /** MsgUpdateParams params */
+            params?: (neutron.feerefunder.IParams|null);
+        }
+
+        /** Represents a MsgUpdateParams. */
+        class MsgUpdateParams implements IMsgUpdateParams {
+
+            /**
+             * Constructs a new MsgUpdateParams.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IMsgUpdateParams);
+
+            /** MsgUpdateParams authority. */
+            public authority: string;
+
+            /** MsgUpdateParams params. */
+            public params?: (neutron.feerefunder.IParams|null);
+
+            /**
+             * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.feerefunder.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.feerefunder.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.MsgUpdateParams;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.MsgUpdateParams;
+
+            /**
+             * Verifies a MsgUpdateParams message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParams
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.MsgUpdateParams;
+
+            /**
+             * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+             * @param message MsgUpdateParams
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParams to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateParamsResponse. */
+        interface IMsgUpdateParamsResponse {
+        }
+
+        /** Represents a MsgUpdateParamsResponse. */
+        class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+            /**
+             * Constructs a new MsgUpdateParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IMsgUpdateParamsResponse);
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.feerefunder.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.feerefunder.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.MsgUpdateParamsResponse;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.MsgUpdateParamsResponse;
+
+            /**
+             * Verifies a MsgUpdateParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.MsgUpdateParamsResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params min_fee */
+            min_fee?: (neutron.feerefunder.IFee|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IParams);
+
+            /** Params min_fee. */
+            public min_fee?: (neutron.feerefunder.IFee|null);
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Fee. */
+        interface IFee {
+
+            /** Fee recv_fee */
+            recv_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Fee ack_fee */
+            ack_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Fee timeout_fee */
+            timeout_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+        }
+
+        /** Represents a Fee. */
+        class Fee implements IFee {
+
+            /**
+             * Constructs a new Fee.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IFee);
+
+            /** Fee recv_fee. */
+            public recv_fee: cosmos.base.v1beta1.ICoin[];
+
+            /** Fee ack_fee. */
+            public ack_fee: cosmos.base.v1beta1.ICoin[];
+
+            /** Fee timeout_fee. */
+            public timeout_fee: cosmos.base.v1beta1.ICoin[];
+
+            /**
+             * Encodes the specified Fee message. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
+             * @param message Fee message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Fee message, length delimited. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
+             * @param message Fee message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Fee message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Fee
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Fee;
+
+            /**
+             * Decodes a Fee message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Fee
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Fee;
+
+            /**
+             * Verifies a Fee message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Fee message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Fee
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Fee;
+
+            /**
+             * Creates a plain object from a Fee message. Also converts values to other types if specified.
+             * @param message Fee
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.Fee, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Fee to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a PacketID. */
+        interface IPacketID {
+
+            /** PacketID channel_id */
+            channel_id?: (string|null);
+
+            /** PacketID port_id */
+            port_id?: (string|null);
+
+            /** PacketID sequence */
+            sequence?: (Long|null);
+        }
+
+        /** Represents a PacketID. */
+        class PacketID implements IPacketID {
+
+            /**
+             * Constructs a new PacketID.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.feerefunder.IPacketID);
+
+            /** PacketID channel_id. */
+            public channel_id: string;
+
+            /** PacketID port_id. */
+            public port_id: string;
+
+            /** PacketID sequence. */
+            public sequence: Long;
+
+            /**
+             * Encodes the specified PacketID message. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
+             * @param message PacketID message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified PacketID message, length delimited. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
+             * @param message PacketID message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a PacketID message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns PacketID
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.PacketID;
+
+            /**
+             * Decodes a PacketID message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns PacketID
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.PacketID;
+
+            /**
+             * Verifies a PacketID message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a PacketID message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns PacketID
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.PacketID;
+
+            /**
+             * Creates a plain object from a PacketID message. Also converts values to other types if specified.
+             * @param message PacketID
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.feerefunder.PacketID, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this PacketID to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
 
         /** Represents a Query */
         class Query extends $protobuf.rpc.Service {
@@ -2778,279 +3964,6 @@ export namespace neutron {
             public toJSON(): { [k: string]: any };
         }
 
-        /** Properties of a Params. */
-        interface IParams {
-
-            /** Params min_fee */
-            min_fee?: (neutron.feerefunder.IFee|null);
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.feerefunder.IParams);
-
-            /** Params min_fee. */
-            public min_fee?: (neutron.feerefunder.IFee|null);
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.feerefunder.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.feerefunder.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.feerefunder.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of a Fee. */
-        interface IFee {
-
-            /** Fee recv_fee */
-            recv_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-
-            /** Fee ack_fee */
-            ack_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-
-            /** Fee timeout_fee */
-            timeout_fee?: (cosmos.base.v1beta1.ICoin[]|null);
-        }
-
-        /** Represents a Fee. */
-        class Fee implements IFee {
-
-            /**
-             * Constructs a new Fee.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.feerefunder.IFee);
-
-            /** Fee recv_fee. */
-            public recv_fee: cosmos.base.v1beta1.ICoin[];
-
-            /** Fee ack_fee. */
-            public ack_fee: cosmos.base.v1beta1.ICoin[];
-
-            /** Fee timeout_fee. */
-            public timeout_fee: cosmos.base.v1beta1.ICoin[];
-
-            /**
-             * Encodes the specified Fee message. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
-             * @param message Fee message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Fee message, length delimited. Does not implicitly {@link neutron.feerefunder.Fee.verify|verify} messages.
-             * @param message Fee message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.feerefunder.IFee, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Fee message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Fee
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.Fee;
-
-            /**
-             * Decodes a Fee message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Fee
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.Fee;
-
-            /**
-             * Verifies a Fee message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Fee message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Fee
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.Fee;
-
-            /**
-             * Creates a plain object from a Fee message. Also converts values to other types if specified.
-             * @param message Fee
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.feerefunder.Fee, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Fee to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of a PacketID. */
-        interface IPacketID {
-
-            /** PacketID channel_id */
-            channel_id?: (string|null);
-
-            /** PacketID port_id */
-            port_id?: (string|null);
-
-            /** PacketID sequence */
-            sequence?: (Long|null);
-        }
-
-        /** Represents a PacketID. */
-        class PacketID implements IPacketID {
-
-            /**
-             * Constructs a new PacketID.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.feerefunder.IPacketID);
-
-            /** PacketID channel_id. */
-            public channel_id: string;
-
-            /** PacketID port_id. */
-            public port_id: string;
-
-            /** PacketID sequence. */
-            public sequence: Long;
-
-            /**
-             * Encodes the specified PacketID message. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
-             * @param message PacketID message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified PacketID message, length delimited. Does not implicitly {@link neutron.feerefunder.PacketID.verify|verify} messages.
-             * @param message PacketID message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.feerefunder.IPacketID, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a PacketID message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns PacketID
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.feerefunder.PacketID;
-
-            /**
-             * Decodes a PacketID message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns PacketID
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.feerefunder.PacketID;
-
-            /**
-             * Verifies a PacketID message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a PacketID message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns PacketID
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.feerefunder.PacketID;
-
-            /**
-             * Creates a plain object from a PacketID message. Also converts values to other types if specified.
-             * @param message PacketID
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.feerefunder.PacketID, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this PacketID to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
         /** Properties of a GenesisState. */
         interface IGenesisState {
 
@@ -3305,6 +4218,20 @@ export namespace neutron {
              * @returns Promise
              */
             public updateInterchainQuery(request: neutron.interchainqueries.IMsgUpdateInterchainQueryRequest): Promise<neutron.interchainqueries.MsgUpdateInterchainQueryResponse>;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+             */
+            public updateParams(request: neutron.interchainqueries.IMsgUpdateParams, callback: neutron.interchainqueries.Msg.UpdateParamsCallback): void;
+
+            /**
+             * Calls UpdateParams.
+             * @param request MsgUpdateParams message or plain object
+             * @returns Promise
+             */
+            public updateParams(request: neutron.interchainqueries.IMsgUpdateParams): Promise<neutron.interchainqueries.MsgUpdateParamsResponse>;
         }
 
         namespace Msg {
@@ -3336,6 +4263,13 @@ export namespace neutron {
              * @param [response] MsgUpdateInterchainQueryResponse
              */
             type UpdateInterchainQueryCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgUpdateInterchainQueryResponse) => void;
+
+            /**
+             * Callback as used by {@link neutron.interchainqueries.Msg#updateParams}.
+             * @param error Error, if any
+             * @param [response] MsgUpdateParamsResponse
+             */
+            type UpdateParamsCallback = (error: (Error|null), response?: neutron.interchainqueries.MsgUpdateParamsResponse) => void;
         }
 
         /** Properties of a MsgRegisterInterchainQuery. */
@@ -4466,6 +5400,267 @@ export namespace neutron {
             public toJSON(): { [k: string]: any };
         }
 
+        /** Properties of a MsgUpdateParams. */
+        interface IMsgUpdateParams {
+
+            /** MsgUpdateParams authority */
+            authority?: (string|null);
+
+            /** MsgUpdateParams params */
+            params?: (neutron.interchainqueries.IParams|null);
+        }
+
+        /** Represents a MsgUpdateParams. */
+        class MsgUpdateParams implements IMsgUpdateParams {
+
+            /**
+             * Constructs a new MsgUpdateParams.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgUpdateParams);
+
+            /** MsgUpdateParams authority. */
+            public authority: string;
+
+            /** MsgUpdateParams params. */
+            public params?: (neutron.interchainqueries.IParams|null);
+
+            /**
+             * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.interchainqueries.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgUpdateParams.verify|verify} messages.
+             * @param message MsgUpdateParams message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgUpdateParams;
+
+            /**
+             * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParams
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgUpdateParams;
+
+            /**
+             * Verifies a MsgUpdateParams message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParams
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgUpdateParams;
+
+            /**
+             * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+             * @param message MsgUpdateParams
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParams to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a MsgUpdateParamsResponse. */
+        interface IMsgUpdateParamsResponse {
+        }
+
+        /** Represents a MsgUpdateParamsResponse. */
+        class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+            /**
+             * Constructs a new MsgUpdateParamsResponse.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IMsgUpdateParamsResponse);
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.interchainqueries.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.interchainqueries.MsgUpdateParamsResponse.verify|verify} messages.
+             * @param message MsgUpdateParamsResponse message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.MsgUpdateParamsResponse;
+
+            /**
+             * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns MsgUpdateParamsResponse
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.MsgUpdateParamsResponse;
+
+            /**
+             * Verifies a MsgUpdateParamsResponse message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns MsgUpdateParamsResponse
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.MsgUpdateParamsResponse;
+
+            /**
+             * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+             * @param message MsgUpdateParamsResponse
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this MsgUpdateParamsResponse to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params query_submit_timeout */
+            query_submit_timeout?: (Long|null);
+
+            /** Params query_deposit */
+            query_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
+
+            /** Params tx_query_removal_limit */
+            tx_query_removal_limit?: (Long|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchainqueries.IParams);
+
+            /** Params query_submit_timeout. */
+            public query_submit_timeout: Long;
+
+            /** Params query_deposit. */
+            public query_deposit: cosmos.base.v1beta1.ICoin[];
+
+            /** Params tx_query_removal_limit. */
+            public tx_query_removal_limit: Long;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchainqueries.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
         /** Properties of a RegisteredQuery. */
         interface IRegisteredQuery {
 
@@ -4788,101 +5983,6 @@ export namespace neutron {
 
             /**
              * Converts this GenesisState to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of a Params. */
-        interface IParams {
-
-            /** Params query_submit_timeout */
-            query_submit_timeout?: (Long|null);
-
-            /** Params query_deposit */
-            query_deposit?: (cosmos.base.v1beta1.ICoin[]|null);
-
-            /** Params tx_query_removal_limit */
-            tx_query_removal_limit?: (Long|null);
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.interchainqueries.IParams);
-
-            /** Params query_submit_timeout. */
-            public query_submit_timeout: Long;
-
-            /** Params query_deposit. */
-            public query_deposit: cosmos.base.v1beta1.ICoin[];
-
-            /** Params tx_query_removal_limit. */
-            public tx_query_removal_limit: Long;
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchainqueries.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.interchainqueries.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchainqueries.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchainqueries.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.interchainqueries.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.interchainqueries.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
@@ -5990,6 +7090,20 @@ export namespace neutron {
                  * @returns Promise
                  */
                 public submitTx(request: neutron.interchaintxs.v1.IMsgSubmitTx): Promise<neutron.interchaintxs.v1.MsgSubmitTxResponse>;
+
+                /**
+                 * Calls UpdateParams.
+                 * @param request MsgUpdateParams message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+                 */
+                public updateParams(request: neutron.interchaintxs.v1.IMsgUpdateParams, callback: neutron.interchaintxs.v1.Msg.UpdateParamsCallback): void;
+
+                /**
+                 * Calls UpdateParams.
+                 * @param request MsgUpdateParams message or plain object
+                 * @returns Promise
+                 */
+                public updateParams(request: neutron.interchaintxs.v1.IMsgUpdateParams): Promise<neutron.interchaintxs.v1.MsgUpdateParamsResponse>;
             }
 
             namespace Msg {
@@ -6007,6 +7121,13 @@ export namespace neutron {
                  * @param [response] MsgSubmitTxResponse
                  */
                 type SubmitTxCallback = (error: (Error|null), response?: neutron.interchaintxs.v1.MsgSubmitTxResponse) => void;
+
+                /**
+                 * Callback as used by {@link neutron.interchaintxs.v1.Msg#updateParams}.
+                 * @param error Error, if any
+                 * @param [response] MsgUpdateParamsResponse
+                 */
+                type UpdateParamsCallback = (error: (Error|null), response?: neutron.interchaintxs.v1.MsgUpdateParamsResponse) => void;
             }
 
             /** Properties of a MsgRegisterInterchainAccount. */
@@ -6388,6 +7509,255 @@ export namespace neutron {
                  */
                 public toJSON(): { [k: string]: any };
             }
+
+            /** Properties of a MsgUpdateParams. */
+            interface IMsgUpdateParams {
+
+                /** MsgUpdateParams authority */
+                authority?: (string|null);
+
+                /** MsgUpdateParams params */
+                params?: (neutron.interchaintxs.IParams|null);
+            }
+
+            /** Represents a MsgUpdateParams. */
+            class MsgUpdateParams implements IMsgUpdateParams {
+
+                /**
+                 * Constructs a new MsgUpdateParams.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: neutron.interchaintxs.v1.IMsgUpdateParams);
+
+                /** MsgUpdateParams authority. */
+                public authority: string;
+
+                /** MsgUpdateParams params. */
+                public params?: (neutron.interchaintxs.IParams|null);
+
+                /**
+                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link neutron.interchaintxs.v1.MsgUpdateParams.verify|verify} messages.
+                 * @param message MsgUpdateParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: neutron.interchaintxs.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgUpdateParams.verify|verify} messages.
+                 * @param message MsgUpdateParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgUpdateParams message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgUpdateParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgUpdateParams;
+
+                /**
+                 * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgUpdateParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgUpdateParams;
+
+                /**
+                 * Verifies a MsgUpdateParams message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgUpdateParams
+                 */
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgUpdateParams;
+
+                /**
+                 * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+                 * @param message MsgUpdateParams
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: neutron.interchaintxs.v1.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgUpdateParams to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgUpdateParamsResponse. */
+            interface IMsgUpdateParamsResponse {
+            }
+
+            /** Represents a MsgUpdateParamsResponse. */
+            class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+                /**
+                 * Constructs a new MsgUpdateParamsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: neutron.interchaintxs.v1.IMsgUpdateParamsResponse);
+
+                /**
+                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link neutron.interchaintxs.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * @param message MsgUpdateParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: neutron.interchaintxs.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link neutron.interchaintxs.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * @param message MsgUpdateParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: neutron.interchaintxs.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgUpdateParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.v1.MsgUpdateParamsResponse;
+
+                /**
+                 * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgUpdateParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.v1.MsgUpdateParamsResponse;
+
+                /**
+                 * Verifies a MsgUpdateParamsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgUpdateParamsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.v1.MsgUpdateParamsResponse;
+
+                /**
+                 * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+                 * @param message MsgUpdateParamsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: neutron.interchaintxs.v1.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgUpdateParamsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
+
+        /** Properties of a Params. */
+        interface IParams {
+
+            /** Params msg_submit_tx_max_messages */
+            msg_submit_tx_max_messages?: (Long|null);
+        }
+
+        /** Represents a Params. */
+        class Params implements IParams {
+
+            /**
+             * Constructs a new Params.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: neutron.interchaintxs.IParams);
+
+            /** Params msg_submit_tx_max_messages. */
+            public msg_submit_tx_max_messages: Long;
+
+            /**
+             * Encodes the specified Params message. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
+             * @param message Params message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.Params;
+
+            /**
+             * Decodes a Params message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Params
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.Params;
+
+            /**
+             * Verifies a Params message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates a Params message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Params
+             */
+            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.Params;
+
+            /**
+             * Creates a plain object from a Params message. Also converts values to other types if specified.
+             * @param message Params
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: neutron.interchaintxs.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Params to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
         }
 
         /** Represents a Query */
@@ -6780,89 +8150,6 @@ export namespace neutron {
 
             /**
              * Converts this QueryInterchainAccountAddressResponse to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of a Params. */
-        interface IParams {
-
-            /** Params msg_submit_tx_max_messages */
-            msg_submit_tx_max_messages?: (Long|null);
-        }
-
-        /** Represents a Params. */
-        class Params implements IParams {
-
-            /**
-             * Constructs a new Params.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: neutron.interchaintxs.IParams);
-
-            /** Params msg_submit_tx_max_messages. */
-            public msg_submit_tx_max_messages: Long;
-
-            /**
-             * Encodes the specified Params message. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Params message, length delimited. Does not implicitly {@link neutron.interchaintxs.Params.verify|verify} messages.
-             * @param message Params message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: neutron.interchaintxs.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): neutron.interchaintxs.Params;
-
-            /**
-             * Decodes a Params message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Params
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): neutron.interchaintxs.Params;
-
-            /**
-             * Verifies a Params message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates a Params message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Params
-             */
-            public static fromObject(object: { [k: string]: any }): neutron.interchaintxs.Params;
-
-            /**
-             * Creates a plain object from a Params message. Also converts values to other types if specified.
-             * @param message Params
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: neutron.interchaintxs.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Params to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
@@ -7312,8 +8599,2951 @@ export namespace neutron {
     }
 }
 
+/** Namespace ibc. */
+export namespace ibc {
+
+    /** Namespace core. */
+    namespace core {
+
+        /** Namespace channel. */
+        namespace channel {
+
+            /** Namespace v1. */
+            namespace v1 {
+
+                /** Properties of a Channel. */
+                interface IChannel {
+
+                    /** Channel state */
+                    state?: (ibc.core.channel.v1.State|null);
+
+                    /** Channel ordering */
+                    ordering?: (ibc.core.channel.v1.Order|null);
+
+                    /** Channel counterparty */
+                    counterparty?: (ibc.core.channel.v1.ICounterparty|null);
+
+                    /** Channel connection_hops */
+                    connection_hops?: (string[]|null);
+
+                    /** Channel version */
+                    version?: (string|null);
+                }
+
+                /** Represents a Channel. */
+                class Channel implements IChannel {
+
+                    /**
+                     * Constructs a new Channel.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IChannel);
+
+                    /** Channel state. */
+                    public state: ibc.core.channel.v1.State;
+
+                    /** Channel ordering. */
+                    public ordering: ibc.core.channel.v1.Order;
+
+                    /** Channel counterparty. */
+                    public counterparty?: (ibc.core.channel.v1.ICounterparty|null);
+
+                    /** Channel connection_hops. */
+                    public connection_hops: string[];
+
+                    /** Channel version. */
+                    public version: string;
+
+                    /**
+                     * Encodes the specified Channel message. Does not implicitly {@link ibc.core.channel.v1.Channel.verify|verify} messages.
+                     * @param message Channel message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Channel message, length delimited. Does not implicitly {@link ibc.core.channel.v1.Channel.verify|verify} messages.
+                     * @param message Channel message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Channel message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Channel
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.Channel;
+
+                    /**
+                     * Decodes a Channel message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Channel
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.Channel;
+
+                    /**
+                     * Verifies a Channel message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Channel message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Channel
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.Channel;
+
+                    /**
+                     * Creates a plain object from a Channel message. Also converts values to other types if specified.
+                     * @param message Channel
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.Channel, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Channel to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an IdentifiedChannel. */
+                interface IIdentifiedChannel {
+
+                    /** IdentifiedChannel state */
+                    state?: (ibc.core.channel.v1.State|null);
+
+                    /** IdentifiedChannel ordering */
+                    ordering?: (ibc.core.channel.v1.Order|null);
+
+                    /** IdentifiedChannel counterparty */
+                    counterparty?: (ibc.core.channel.v1.ICounterparty|null);
+
+                    /** IdentifiedChannel connection_hops */
+                    connection_hops?: (string[]|null);
+
+                    /** IdentifiedChannel version */
+                    version?: (string|null);
+
+                    /** IdentifiedChannel port_id */
+                    port_id?: (string|null);
+
+                    /** IdentifiedChannel channel_id */
+                    channel_id?: (string|null);
+                }
+
+                /** Represents an IdentifiedChannel. */
+                class IdentifiedChannel implements IIdentifiedChannel {
+
+                    /**
+                     * Constructs a new IdentifiedChannel.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IIdentifiedChannel);
+
+                    /** IdentifiedChannel state. */
+                    public state: ibc.core.channel.v1.State;
+
+                    /** IdentifiedChannel ordering. */
+                    public ordering: ibc.core.channel.v1.Order;
+
+                    /** IdentifiedChannel counterparty. */
+                    public counterparty?: (ibc.core.channel.v1.ICounterparty|null);
+
+                    /** IdentifiedChannel connection_hops. */
+                    public connection_hops: string[];
+
+                    /** IdentifiedChannel version. */
+                    public version: string;
+
+                    /** IdentifiedChannel port_id. */
+                    public port_id: string;
+
+                    /** IdentifiedChannel channel_id. */
+                    public channel_id: string;
+
+                    /**
+                     * Encodes the specified IdentifiedChannel message. Does not implicitly {@link ibc.core.channel.v1.IdentifiedChannel.verify|verify} messages.
+                     * @param message IdentifiedChannel message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IIdentifiedChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified IdentifiedChannel message, length delimited. Does not implicitly {@link ibc.core.channel.v1.IdentifiedChannel.verify|verify} messages.
+                     * @param message IdentifiedChannel message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IIdentifiedChannel, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an IdentifiedChannel message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns IdentifiedChannel
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.IdentifiedChannel;
+
+                    /**
+                     * Decodes an IdentifiedChannel message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns IdentifiedChannel
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.IdentifiedChannel;
+
+                    /**
+                     * Verifies an IdentifiedChannel message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an IdentifiedChannel message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns IdentifiedChannel
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.IdentifiedChannel;
+
+                    /**
+                     * Creates a plain object from an IdentifiedChannel message. Also converts values to other types if specified.
+                     * @param message IdentifiedChannel
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.IdentifiedChannel, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this IdentifiedChannel to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** State enum. */
+                enum State {
+                    STATE_UNINITIALIZED_UNSPECIFIED = 0,
+                    STATE_INIT = 1,
+                    STATE_TRYOPEN = 2,
+                    STATE_OPEN = 3,
+                    STATE_CLOSED = 4
+                }
+
+                /** Order enum. */
+                enum Order {
+                    ORDER_NONE_UNSPECIFIED = 0,
+                    ORDER_UNORDERED = 1,
+                    ORDER_ORDERED = 2
+                }
+
+                /** Properties of a Counterparty. */
+                interface ICounterparty {
+
+                    /** Counterparty port_id */
+                    port_id?: (string|null);
+
+                    /** Counterparty channel_id */
+                    channel_id?: (string|null);
+                }
+
+                /** Represents a Counterparty. */
+                class Counterparty implements ICounterparty {
+
+                    /**
+                     * Constructs a new Counterparty.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.ICounterparty);
+
+                    /** Counterparty port_id. */
+                    public port_id: string;
+
+                    /** Counterparty channel_id. */
+                    public channel_id: string;
+
+                    /**
+                     * Encodes the specified Counterparty message. Does not implicitly {@link ibc.core.channel.v1.Counterparty.verify|verify} messages.
+                     * @param message Counterparty message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.ICounterparty, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Counterparty message, length delimited. Does not implicitly {@link ibc.core.channel.v1.Counterparty.verify|verify} messages.
+                     * @param message Counterparty message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.ICounterparty, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Counterparty message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Counterparty
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.Counterparty;
+
+                    /**
+                     * Decodes a Counterparty message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Counterparty
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.Counterparty;
+
+                    /**
+                     * Verifies a Counterparty message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Counterparty message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Counterparty
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.Counterparty;
+
+                    /**
+                     * Creates a plain object from a Counterparty message. Also converts values to other types if specified.
+                     * @param message Counterparty
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.Counterparty, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Counterparty to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Packet. */
+                interface IPacket {
+
+                    /** Packet sequence */
+                    sequence?: (Long|null);
+
+                    /** Packet source_port */
+                    source_port?: (string|null);
+
+                    /** Packet source_channel */
+                    source_channel?: (string|null);
+
+                    /** Packet destination_port */
+                    destination_port?: (string|null);
+
+                    /** Packet destination_channel */
+                    destination_channel?: (string|null);
+
+                    /** Packet data */
+                    data?: (Uint8Array|null);
+
+                    /** Packet timeout_height */
+                    timeout_height?: (ibc.core.client.v1.IHeight|null);
+
+                    /** Packet timeout_timestamp */
+                    timeout_timestamp?: (Long|null);
+                }
+
+                /** Represents a Packet. */
+                class Packet implements IPacket {
+
+                    /**
+                     * Constructs a new Packet.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IPacket);
+
+                    /** Packet sequence. */
+                    public sequence: Long;
+
+                    /** Packet source_port. */
+                    public source_port: string;
+
+                    /** Packet source_channel. */
+                    public source_channel: string;
+
+                    /** Packet destination_port. */
+                    public destination_port: string;
+
+                    /** Packet destination_channel. */
+                    public destination_channel: string;
+
+                    /** Packet data. */
+                    public data: Uint8Array;
+
+                    /** Packet timeout_height. */
+                    public timeout_height?: (ibc.core.client.v1.IHeight|null);
+
+                    /** Packet timeout_timestamp. */
+                    public timeout_timestamp: Long;
+
+                    /**
+                     * Encodes the specified Packet message. Does not implicitly {@link ibc.core.channel.v1.Packet.verify|verify} messages.
+                     * @param message Packet message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IPacket, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Packet message, length delimited. Does not implicitly {@link ibc.core.channel.v1.Packet.verify|verify} messages.
+                     * @param message Packet message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IPacket, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Packet message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Packet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.Packet;
+
+                    /**
+                     * Decodes a Packet message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Packet
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.Packet;
+
+                    /**
+                     * Verifies a Packet message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Packet message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Packet
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.Packet;
+
+                    /**
+                     * Creates a plain object from a Packet message. Also converts values to other types if specified.
+                     * @param message Packet
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.Packet, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Packet to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a PacketState. */
+                interface IPacketState {
+
+                    /** PacketState port_id */
+                    port_id?: (string|null);
+
+                    /** PacketState channel_id */
+                    channel_id?: (string|null);
+
+                    /** PacketState sequence */
+                    sequence?: (Long|null);
+
+                    /** PacketState data */
+                    data?: (Uint8Array|null);
+                }
+
+                /** Represents a PacketState. */
+                class PacketState implements IPacketState {
+
+                    /**
+                     * Constructs a new PacketState.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IPacketState);
+
+                    /** PacketState port_id. */
+                    public port_id: string;
+
+                    /** PacketState channel_id. */
+                    public channel_id: string;
+
+                    /** PacketState sequence. */
+                    public sequence: Long;
+
+                    /** PacketState data. */
+                    public data: Uint8Array;
+
+                    /**
+                     * Encodes the specified PacketState message. Does not implicitly {@link ibc.core.channel.v1.PacketState.verify|verify} messages.
+                     * @param message PacketState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IPacketState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PacketState message, length delimited. Does not implicitly {@link ibc.core.channel.v1.PacketState.verify|verify} messages.
+                     * @param message PacketState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IPacketState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PacketState message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PacketState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.PacketState;
+
+                    /**
+                     * Decodes a PacketState message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PacketState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.PacketState;
+
+                    /**
+                     * Verifies a PacketState message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PacketState message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PacketState
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.PacketState;
+
+                    /**
+                     * Creates a plain object from a PacketState message. Also converts values to other types if specified.
+                     * @param message PacketState
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.PacketState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PacketState to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a PacketId. */
+                interface IPacketId {
+
+                    /** PacketId port_id */
+                    port_id?: (string|null);
+
+                    /** PacketId channel_id */
+                    channel_id?: (string|null);
+
+                    /** PacketId sequence */
+                    sequence?: (Long|null);
+                }
+
+                /** Represents a PacketId. */
+                class PacketId implements IPacketId {
+
+                    /**
+                     * Constructs a new PacketId.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IPacketId);
+
+                    /** PacketId port_id. */
+                    public port_id: string;
+
+                    /** PacketId channel_id. */
+                    public channel_id: string;
+
+                    /** PacketId sequence. */
+                    public sequence: Long;
+
+                    /**
+                     * Encodes the specified PacketId message. Does not implicitly {@link ibc.core.channel.v1.PacketId.verify|verify} messages.
+                     * @param message PacketId message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IPacketId, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified PacketId message, length delimited. Does not implicitly {@link ibc.core.channel.v1.PacketId.verify|verify} messages.
+                     * @param message PacketId message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IPacketId, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a PacketId message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns PacketId
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.PacketId;
+
+                    /**
+                     * Decodes a PacketId message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns PacketId
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.PacketId;
+
+                    /**
+                     * Verifies a PacketId message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a PacketId message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns PacketId
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.PacketId;
+
+                    /**
+                     * Creates a plain object from a PacketId message. Also converts values to other types if specified.
+                     * @param message PacketId
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.PacketId, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this PacketId to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an Acknowledgement. */
+                interface IAcknowledgement {
+
+                    /** Acknowledgement result */
+                    result?: (Uint8Array|null);
+
+                    /** Acknowledgement error */
+                    error?: (string|null);
+                }
+
+                /** Represents an Acknowledgement. */
+                class Acknowledgement implements IAcknowledgement {
+
+                    /**
+                     * Constructs a new Acknowledgement.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.channel.v1.IAcknowledgement);
+
+                    /** Acknowledgement result. */
+                    public result?: (Uint8Array|null);
+
+                    /** Acknowledgement error. */
+                    public error?: (string|null);
+
+                    /** Acknowledgement response. */
+                    public response?: ("result"|"error");
+
+                    /**
+                     * Encodes the specified Acknowledgement message. Does not implicitly {@link ibc.core.channel.v1.Acknowledgement.verify|verify} messages.
+                     * @param message Acknowledgement message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.channel.v1.IAcknowledgement, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Acknowledgement message, length delimited. Does not implicitly {@link ibc.core.channel.v1.Acknowledgement.verify|verify} messages.
+                     * @param message Acknowledgement message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.channel.v1.IAcknowledgement, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an Acknowledgement message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Acknowledgement
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.channel.v1.Acknowledgement;
+
+                    /**
+                     * Decodes an Acknowledgement message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Acknowledgement
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.channel.v1.Acknowledgement;
+
+                    /**
+                     * Verifies an Acknowledgement message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an Acknowledgement message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Acknowledgement
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.channel.v1.Acknowledgement;
+
+                    /**
+                     * Creates a plain object from an Acknowledgement message. Also converts values to other types if specified.
+                     * @param message Acknowledgement
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.channel.v1.Acknowledgement, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Acknowledgement to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
+        }
+
+        /** Namespace client. */
+        namespace client {
+
+            /** Namespace v1. */
+            namespace v1 {
+
+                /** Properties of an IdentifiedClientState. */
+                interface IIdentifiedClientState {
+
+                    /** IdentifiedClientState client_id */
+                    client_id?: (string|null);
+
+                    /** IdentifiedClientState client_state */
+                    client_state?: (google.protobuf.IAny|null);
+                }
+
+                /** Represents an IdentifiedClientState. */
+                class IdentifiedClientState implements IIdentifiedClientState {
+
+                    /**
+                     * Constructs a new IdentifiedClientState.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IIdentifiedClientState);
+
+                    /** IdentifiedClientState client_id. */
+                    public client_id: string;
+
+                    /** IdentifiedClientState client_state. */
+                    public client_state?: (google.protobuf.IAny|null);
+
+                    /**
+                     * Encodes the specified IdentifiedClientState message. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
+                     * @param message IdentifiedClientState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IIdentifiedClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified IdentifiedClientState message, length delimited. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
+                     * @param message IdentifiedClientState message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IIdentifiedClientState, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an IdentifiedClientState message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns IdentifiedClientState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.IdentifiedClientState;
+
+                    /**
+                     * Decodes an IdentifiedClientState message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns IdentifiedClientState
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.IdentifiedClientState;
+
+                    /**
+                     * Verifies an IdentifiedClientState message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an IdentifiedClientState message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns IdentifiedClientState
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.IdentifiedClientState;
+
+                    /**
+                     * Creates a plain object from an IdentifiedClientState message. Also converts values to other types if specified.
+                     * @param message IdentifiedClientState
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.IdentifiedClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this IdentifiedClientState to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a ConsensusStateWithHeight. */
+                interface IConsensusStateWithHeight {
+
+                    /** ConsensusStateWithHeight height */
+                    height?: (ibc.core.client.v1.IHeight|null);
+
+                    /** ConsensusStateWithHeight consensus_state */
+                    consensus_state?: (google.protobuf.IAny|null);
+                }
+
+                /** Represents a ConsensusStateWithHeight. */
+                class ConsensusStateWithHeight implements IConsensusStateWithHeight {
+
+                    /**
+                     * Constructs a new ConsensusStateWithHeight.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IConsensusStateWithHeight);
+
+                    /** ConsensusStateWithHeight height. */
+                    public height?: (ibc.core.client.v1.IHeight|null);
+
+                    /** ConsensusStateWithHeight consensus_state. */
+                    public consensus_state?: (google.protobuf.IAny|null);
+
+                    /**
+                     * Encodes the specified ConsensusStateWithHeight message. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
+                     * @param message ConsensusStateWithHeight message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IConsensusStateWithHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ConsensusStateWithHeight message, length delimited. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
+                     * @param message ConsensusStateWithHeight message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IConsensusStateWithHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ConsensusStateWithHeight message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ConsensusStateWithHeight
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ConsensusStateWithHeight;
+
+                    /**
+                     * Decodes a ConsensusStateWithHeight message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ConsensusStateWithHeight
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ConsensusStateWithHeight;
+
+                    /**
+                     * Verifies a ConsensusStateWithHeight message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ConsensusStateWithHeight message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ConsensusStateWithHeight
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ConsensusStateWithHeight;
+
+                    /**
+                     * Creates a plain object from a ConsensusStateWithHeight message. Also converts values to other types if specified.
+                     * @param message ConsensusStateWithHeight
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.ConsensusStateWithHeight, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ConsensusStateWithHeight to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a ClientConsensusStates. */
+                interface IClientConsensusStates {
+
+                    /** ClientConsensusStates client_id */
+                    client_id?: (string|null);
+
+                    /** ClientConsensusStates consensus_states */
+                    consensus_states?: (ibc.core.client.v1.IConsensusStateWithHeight[]|null);
+                }
+
+                /** Represents a ClientConsensusStates. */
+                class ClientConsensusStates implements IClientConsensusStates {
+
+                    /**
+                     * Constructs a new ClientConsensusStates.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IClientConsensusStates);
+
+                    /** ClientConsensusStates client_id. */
+                    public client_id: string;
+
+                    /** ClientConsensusStates consensus_states. */
+                    public consensus_states: ibc.core.client.v1.IConsensusStateWithHeight[];
+
+                    /**
+                     * Encodes the specified ClientConsensusStates message. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
+                     * @param message ClientConsensusStates message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IClientConsensusStates, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ClientConsensusStates message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
+                     * @param message ClientConsensusStates message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IClientConsensusStates, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ClientConsensusStates message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ClientConsensusStates
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ClientConsensusStates;
+
+                    /**
+                     * Decodes a ClientConsensusStates message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ClientConsensusStates
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ClientConsensusStates;
+
+                    /**
+                     * Verifies a ClientConsensusStates message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ClientConsensusStates message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ClientConsensusStates
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ClientConsensusStates;
+
+                    /**
+                     * Creates a plain object from a ClientConsensusStates message. Also converts values to other types if specified.
+                     * @param message ClientConsensusStates
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.ClientConsensusStates, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ClientConsensusStates to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a ClientUpdateProposal. */
+                interface IClientUpdateProposal {
+
+                    /** ClientUpdateProposal title */
+                    title?: (string|null);
+
+                    /** ClientUpdateProposal description */
+                    description?: (string|null);
+
+                    /** ClientUpdateProposal subject_client_id */
+                    subject_client_id?: (string|null);
+
+                    /** ClientUpdateProposal substitute_client_id */
+                    substitute_client_id?: (string|null);
+                }
+
+                /** Represents a ClientUpdateProposal. */
+                class ClientUpdateProposal implements IClientUpdateProposal {
+
+                    /**
+                     * Constructs a new ClientUpdateProposal.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IClientUpdateProposal);
+
+                    /** ClientUpdateProposal title. */
+                    public title: string;
+
+                    /** ClientUpdateProposal description. */
+                    public description: string;
+
+                    /** ClientUpdateProposal subject_client_id. */
+                    public subject_client_id: string;
+
+                    /** ClientUpdateProposal substitute_client_id. */
+                    public substitute_client_id: string;
+
+                    /**
+                     * Encodes the specified ClientUpdateProposal message. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
+                     * @param message ClientUpdateProposal message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IClientUpdateProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified ClientUpdateProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
+                     * @param message ClientUpdateProposal message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IClientUpdateProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a ClientUpdateProposal message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns ClientUpdateProposal
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ClientUpdateProposal;
+
+                    /**
+                     * Decodes a ClientUpdateProposal message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns ClientUpdateProposal
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ClientUpdateProposal;
+
+                    /**
+                     * Verifies a ClientUpdateProposal message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a ClientUpdateProposal message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns ClientUpdateProposal
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ClientUpdateProposal;
+
+                    /**
+                     * Creates a plain object from a ClientUpdateProposal message. Also converts values to other types if specified.
+                     * @param message ClientUpdateProposal
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.ClientUpdateProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this ClientUpdateProposal to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an UpgradeProposal. */
+                interface IUpgradeProposal {
+
+                    /** UpgradeProposal title */
+                    title?: (string|null);
+
+                    /** UpgradeProposal description */
+                    description?: (string|null);
+
+                    /** UpgradeProposal plan */
+                    plan?: (cosmos.upgrade.v1beta1.IPlan|null);
+
+                    /** UpgradeProposal upgraded_client_state */
+                    upgraded_client_state?: (google.protobuf.IAny|null);
+                }
+
+                /** Represents an UpgradeProposal. */
+                class UpgradeProposal implements IUpgradeProposal {
+
+                    /**
+                     * Constructs a new UpgradeProposal.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IUpgradeProposal);
+
+                    /** UpgradeProposal title. */
+                    public title: string;
+
+                    /** UpgradeProposal description. */
+                    public description: string;
+
+                    /** UpgradeProposal plan. */
+                    public plan?: (cosmos.upgrade.v1beta1.IPlan|null);
+
+                    /** UpgradeProposal upgraded_client_state. */
+                    public upgraded_client_state?: (google.protobuf.IAny|null);
+
+                    /**
+                     * Encodes the specified UpgradeProposal message. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
+                     * @param message UpgradeProposal message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified UpgradeProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
+                     * @param message UpgradeProposal message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an UpgradeProposal message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns UpgradeProposal
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.UpgradeProposal;
+
+                    /**
+                     * Decodes an UpgradeProposal message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns UpgradeProposal
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.UpgradeProposal;
+
+                    /**
+                     * Verifies an UpgradeProposal message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an UpgradeProposal message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns UpgradeProposal
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.UpgradeProposal;
+
+                    /**
+                     * Creates a plain object from an UpgradeProposal message. Also converts values to other types if specified.
+                     * @param message UpgradeProposal
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.UpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this UpgradeProposal to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of an Height. */
+                interface IHeight {
+
+                    /** Height revision_number */
+                    revision_number?: (Long|null);
+
+                    /** Height revision_height */
+                    revision_height?: (Long|null);
+                }
+
+                /** Represents an Height. */
+                class Height implements IHeight {
+
+                    /**
+                     * Constructs a new Height.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IHeight);
+
+                    /** Height revision_number. */
+                    public revision_number: Long;
+
+                    /** Height revision_height. */
+                    public revision_height: Long;
+
+                    /**
+                     * Encodes the specified Height message. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
+                     * @param message Height message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Height message, length delimited. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
+                     * @param message Height message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IHeight, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes an Height message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Height
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.Height;
+
+                    /**
+                     * Decodes an Height message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Height
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.Height;
+
+                    /**
+                     * Verifies an Height message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates an Height message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Height
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.Height;
+
+                    /**
+                     * Creates a plain object from an Height message. Also converts values to other types if specified.
+                     * @param message Height
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.Height, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Height to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Params. */
+                interface IParams {
+
+                    /** Params allowed_clients */
+                    allowed_clients?: (string[]|null);
+                }
+
+                /** Represents a Params. */
+                class Params implements IParams {
+
+                    /**
+                     * Constructs a new Params.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.core.client.v1.IParams);
+
+                    /** Params allowed_clients. */
+                    public allowed_clients: string[];
+
+                    /**
+                     * Encodes the specified Params message. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
+                     * @param message Params message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.core.client.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
+                     * @param message Params message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.core.client.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Params message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.Params;
+
+                    /**
+                     * Decodes a Params message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.Params;
+
+                    /**
+                     * Verifies a Params message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Params
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.Params;
+
+                    /**
+                     * Creates a plain object from a Params message. Also converts values to other types if specified.
+                     * @param message Params
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.core.client.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Params to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
+        }
+    }
+
+    /** Namespace applications. */
+    namespace applications {
+
+        /** Namespace transfer. */
+        namespace transfer {
+
+            /** Namespace v1. */
+            namespace v1 {
+
+                /** Represents a Query */
+                class Query extends $protobuf.rpc.Service {
+
+                    /**
+                     * Constructs a new Query service.
+                     * @param rpcImpl RPC implementation
+                     * @param [requestDelimited=false] Whether requests are length-delimited
+                     * @param [responseDelimited=false] Whether responses are length-delimited
+                     */
+                    constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
+
+                    /**
+                     * Calls DenomTrace.
+                     * @param request QueryDenomTraceRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryDenomTraceResponse
+                     */
+                    public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest, callback: ibc.applications.transfer.v1.Query.DenomTraceCallback): void;
+
+                    /**
+                     * Calls DenomTrace.
+                     * @param request QueryDenomTraceRequest message or plain object
+                     * @returns Promise
+                     */
+                    public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest): Promise<ibc.applications.transfer.v1.QueryDenomTraceResponse>;
+
+                    /**
+                     * Calls DenomTraces.
+                     * @param request QueryDenomTracesRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryDenomTracesResponse
+                     */
+                    public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest, callback: ibc.applications.transfer.v1.Query.DenomTracesCallback): void;
+
+                    /**
+                     * Calls DenomTraces.
+                     * @param request QueryDenomTracesRequest message or plain object
+                     * @returns Promise
+                     */
+                    public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest): Promise<ibc.applications.transfer.v1.QueryDenomTracesResponse>;
+
+                    /**
+                     * Calls Params.
+                     * @param request QueryParamsRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
+                     */
+                    public params(request: ibc.applications.transfer.v1.IQueryParamsRequest, callback: ibc.applications.transfer.v1.Query.ParamsCallback): void;
+
+                    /**
+                     * Calls Params.
+                     * @param request QueryParamsRequest message or plain object
+                     * @returns Promise
+                     */
+                    public params(request: ibc.applications.transfer.v1.IQueryParamsRequest): Promise<ibc.applications.transfer.v1.QueryParamsResponse>;
+
+                    /**
+                     * Calls DenomHash.
+                     * @param request QueryDenomHashRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryDenomHashResponse
+                     */
+                    public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest, callback: ibc.applications.transfer.v1.Query.DenomHashCallback): void;
+
+                    /**
+                     * Calls DenomHash.
+                     * @param request QueryDenomHashRequest message or plain object
+                     * @returns Promise
+                     */
+                    public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest): Promise<ibc.applications.transfer.v1.QueryDenomHashResponse>;
+
+                    /**
+                     * Calls EscrowAddress.
+                     * @param request QueryEscrowAddressRequest message or plain object
+                     * @param callback Node-style callback called with the error, if any, and QueryEscrowAddressResponse
+                     */
+                    public escrowAddress(request: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, callback: ibc.applications.transfer.v1.Query.EscrowAddressCallback): void;
+
+                    /**
+                     * Calls EscrowAddress.
+                     * @param request QueryEscrowAddressRequest message or plain object
+                     * @returns Promise
+                     */
+                    public escrowAddress(request: ibc.applications.transfer.v1.IQueryEscrowAddressRequest): Promise<ibc.applications.transfer.v1.QueryEscrowAddressResponse>;
+                }
+
+                namespace Query {
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomTrace}.
+                     * @param error Error, if any
+                     * @param [response] QueryDenomTraceResponse
+                     */
+                    type DenomTraceCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTraceResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomTraces}.
+                     * @param error Error, if any
+                     * @param [response] QueryDenomTracesResponse
+                     */
+                    type DenomTracesCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTracesResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#params}.
+                     * @param error Error, if any
+                     * @param [response] QueryParamsResponse
+                     */
+                    type ParamsCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryParamsResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomHash}.
+                     * @param error Error, if any
+                     * @param [response] QueryDenomHashResponse
+                     */
+                    type DenomHashCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomHashResponse) => void;
+
+                    /**
+                     * Callback as used by {@link ibc.applications.transfer.v1.Query#escrowAddress}.
+                     * @param error Error, if any
+                     * @param [response] QueryEscrowAddressResponse
+                     */
+                    type EscrowAddressCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryEscrowAddressResponse) => void;
+                }
+
+                /** Properties of a QueryDenomTraceRequest. */
+                interface IQueryDenomTraceRequest {
+
+                    /** QueryDenomTraceRequest hash */
+                    hash?: (string|null);
+                }
+
+                /** Represents a QueryDenomTraceRequest. */
+                class QueryDenomTraceRequest implements IQueryDenomTraceRequest {
+
+                    /**
+                     * Constructs a new QueryDenomTraceRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTraceRequest);
+
+                    /** QueryDenomTraceRequest hash. */
+                    public hash: string;
+
+                    /**
+                     * Encodes the specified QueryDenomTraceRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceRequest.verify|verify} messages.
+                     * @param message QueryDenomTraceRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTraceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomTraceRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceRequest.verify|verify} messages.
+                     * @param message QueryDenomTraceRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTraceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomTraceRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomTraceRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTraceRequest;
+
+                    /**
+                     * Decodes a QueryDenomTraceRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomTraceRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTraceRequest;
+
+                    /**
+                     * Verifies a QueryDenomTraceRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomTraceRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomTraceRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTraceRequest;
+
+                    /**
+                     * Creates a plain object from a QueryDenomTraceRequest message. Also converts values to other types if specified.
+                     * @param message QueryDenomTraceRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTraceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomTraceRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryDenomTraceResponse. */
+                interface IQueryDenomTraceResponse {
+
+                    /** QueryDenomTraceResponse denom_trace */
+                    denom_trace?: (ibc.applications.transfer.v1.IDenomTrace|null);
+                }
+
+                /** Represents a QueryDenomTraceResponse. */
+                class QueryDenomTraceResponse implements IQueryDenomTraceResponse {
+
+                    /**
+                     * Constructs a new QueryDenomTraceResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTraceResponse);
+
+                    /** QueryDenomTraceResponse denom_trace. */
+                    public denom_trace?: (ibc.applications.transfer.v1.IDenomTrace|null);
+
+                    /**
+                     * Encodes the specified QueryDenomTraceResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceResponse.verify|verify} messages.
+                     * @param message QueryDenomTraceResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTraceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomTraceResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceResponse.verify|verify} messages.
+                     * @param message QueryDenomTraceResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTraceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomTraceResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomTraceResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTraceResponse;
+
+                    /**
+                     * Decodes a QueryDenomTraceResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomTraceResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTraceResponse;
+
+                    /**
+                     * Verifies a QueryDenomTraceResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomTraceResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomTraceResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTraceResponse;
+
+                    /**
+                     * Creates a plain object from a QueryDenomTraceResponse message. Also converts values to other types if specified.
+                     * @param message QueryDenomTraceResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTraceResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomTraceResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryDenomTracesRequest. */
+                interface IQueryDenomTracesRequest {
+
+                    /** QueryDenomTracesRequest pagination */
+                    pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+                }
+
+                /** Represents a QueryDenomTracesRequest. */
+                class QueryDenomTracesRequest implements IQueryDenomTracesRequest {
+
+                    /**
+                     * Constructs a new QueryDenomTracesRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTracesRequest);
+
+                    /** QueryDenomTracesRequest pagination. */
+                    public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
+
+                    /**
+                     * Encodes the specified QueryDenomTracesRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesRequest.verify|verify} messages.
+                     * @param message QueryDenomTracesRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTracesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomTracesRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesRequest.verify|verify} messages.
+                     * @param message QueryDenomTracesRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTracesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomTracesRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomTracesRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTracesRequest;
+
+                    /**
+                     * Decodes a QueryDenomTracesRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomTracesRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTracesRequest;
+
+                    /**
+                     * Verifies a QueryDenomTracesRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomTracesRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomTracesRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTracesRequest;
+
+                    /**
+                     * Creates a plain object from a QueryDenomTracesRequest message. Also converts values to other types if specified.
+                     * @param message QueryDenomTracesRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTracesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomTracesRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryDenomTracesResponse. */
+                interface IQueryDenomTracesResponse {
+
+                    /** QueryDenomTracesResponse denom_traces */
+                    denom_traces?: (ibc.applications.transfer.v1.IDenomTrace[]|null);
+
+                    /** QueryDenomTracesResponse pagination */
+                    pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+                }
+
+                /** Represents a QueryDenomTracesResponse. */
+                class QueryDenomTracesResponse implements IQueryDenomTracesResponse {
+
+                    /**
+                     * Constructs a new QueryDenomTracesResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTracesResponse);
+
+                    /** QueryDenomTracesResponse denom_traces. */
+                    public denom_traces: ibc.applications.transfer.v1.IDenomTrace[];
+
+                    /** QueryDenomTracesResponse pagination. */
+                    public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
+
+                    /**
+                     * Encodes the specified QueryDenomTracesResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesResponse.verify|verify} messages.
+                     * @param message QueryDenomTracesResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTracesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomTracesResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesResponse.verify|verify} messages.
+                     * @param message QueryDenomTracesResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTracesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomTracesResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomTracesResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTracesResponse;
+
+                    /**
+                     * Decodes a QueryDenomTracesResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomTracesResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTracesResponse;
+
+                    /**
+                     * Verifies a QueryDenomTracesResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomTracesResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomTracesResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTracesResponse;
+
+                    /**
+                     * Creates a plain object from a QueryDenomTracesResponse message. Also converts values to other types if specified.
+                     * @param message QueryDenomTracesResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTracesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomTracesResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryParamsRequest. */
+                interface IQueryParamsRequest {
+                }
+
+                /** Represents a QueryParamsRequest. */
+                class QueryParamsRequest implements IQueryParamsRequest {
+
+                    /**
+                     * Constructs a new QueryParamsRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryParamsRequest);
+
+                    /**
+                     * Encodes the specified QueryParamsRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsRequest.verify|verify} messages.
+                     * @param message QueryParamsRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsRequest.verify|verify} messages.
+                     * @param message QueryParamsRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryParamsRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryParamsRequest;
+
+                    /**
+                     * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryParamsRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryParamsRequest;
+
+                    /**
+                     * Verifies a QueryParamsRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryParamsRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryParamsRequest;
+
+                    /**
+                     * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
+                     * @param message QueryParamsRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryParamsRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryParamsResponse. */
+                interface IQueryParamsResponse {
+
+                    /** QueryParamsResponse params */
+                    params?: (ibc.applications.transfer.v1.IParams|null);
+                }
+
+                /** Represents a QueryParamsResponse. */
+                class QueryParamsResponse implements IQueryParamsResponse {
+
+                    /**
+                     * Constructs a new QueryParamsResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryParamsResponse);
+
+                    /** QueryParamsResponse params. */
+                    public params?: (ibc.applications.transfer.v1.IParams|null);
+
+                    /**
+                     * Encodes the specified QueryParamsResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsResponse.verify|verify} messages.
+                     * @param message QueryParamsResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsResponse.verify|verify} messages.
+                     * @param message QueryParamsResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryParamsResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryParamsResponse;
+
+                    /**
+                     * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryParamsResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryParamsResponse;
+
+                    /**
+                     * Verifies a QueryParamsResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryParamsResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryParamsResponse;
+
+                    /**
+                     * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
+                     * @param message QueryParamsResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryParamsResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryDenomHashRequest. */
+                interface IQueryDenomHashRequest {
+
+                    /** QueryDenomHashRequest trace */
+                    trace?: (string|null);
+                }
+
+                /** Represents a QueryDenomHashRequest. */
+                class QueryDenomHashRequest implements IQueryDenomHashRequest {
+
+                    /**
+                     * Constructs a new QueryDenomHashRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomHashRequest);
+
+                    /** QueryDenomHashRequest trace. */
+                    public trace: string;
+
+                    /**
+                     * Encodes the specified QueryDenomHashRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashRequest.verify|verify} messages.
+                     * @param message QueryDenomHashRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomHashRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomHashRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashRequest.verify|verify} messages.
+                     * @param message QueryDenomHashRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomHashRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomHashRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomHashRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomHashRequest;
+
+                    /**
+                     * Decodes a QueryDenomHashRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomHashRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomHashRequest;
+
+                    /**
+                     * Verifies a QueryDenomHashRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomHashRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomHashRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomHashRequest;
+
+                    /**
+                     * Creates a plain object from a QueryDenomHashRequest message. Also converts values to other types if specified.
+                     * @param message QueryDenomHashRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomHashRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomHashRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryDenomHashResponse. */
+                interface IQueryDenomHashResponse {
+
+                    /** QueryDenomHashResponse hash */
+                    hash?: (string|null);
+                }
+
+                /** Represents a QueryDenomHashResponse. */
+                class QueryDenomHashResponse implements IQueryDenomHashResponse {
+
+                    /**
+                     * Constructs a new QueryDenomHashResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomHashResponse);
+
+                    /** QueryDenomHashResponse hash. */
+                    public hash: string;
+
+                    /**
+                     * Encodes the specified QueryDenomHashResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashResponse.verify|verify} messages.
+                     * @param message QueryDenomHashResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomHashResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryDenomHashResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashResponse.verify|verify} messages.
+                     * @param message QueryDenomHashResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomHashResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryDenomHashResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryDenomHashResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomHashResponse;
+
+                    /**
+                     * Decodes a QueryDenomHashResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryDenomHashResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomHashResponse;
+
+                    /**
+                     * Verifies a QueryDenomHashResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryDenomHashResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryDenomHashResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomHashResponse;
+
+                    /**
+                     * Creates a plain object from a QueryDenomHashResponse message. Also converts values to other types if specified.
+                     * @param message QueryDenomHashResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomHashResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryDenomHashResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryEscrowAddressRequest. */
+                interface IQueryEscrowAddressRequest {
+
+                    /** QueryEscrowAddressRequest port_id */
+                    port_id?: (string|null);
+
+                    /** QueryEscrowAddressRequest channel_id */
+                    channel_id?: (string|null);
+                }
+
+                /** Represents a QueryEscrowAddressRequest. */
+                class QueryEscrowAddressRequest implements IQueryEscrowAddressRequest {
+
+                    /**
+                     * Constructs a new QueryEscrowAddressRequest.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryEscrowAddressRequest);
+
+                    /** QueryEscrowAddressRequest port_id. */
+                    public port_id: string;
+
+                    /** QueryEscrowAddressRequest channel_id. */
+                    public channel_id: string;
+
+                    /**
+                     * Encodes the specified QueryEscrowAddressRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressRequest.verify|verify} messages.
+                     * @param message QueryEscrowAddressRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryEscrowAddressRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressRequest.verify|verify} messages.
+                     * @param message QueryEscrowAddressRequest message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryEscrowAddressRequest message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryEscrowAddressRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
+
+                    /**
+                     * Decodes a QueryEscrowAddressRequest message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryEscrowAddressRequest
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
+
+                    /**
+                     * Verifies a QueryEscrowAddressRequest message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryEscrowAddressRequest message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryEscrowAddressRequest
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
+
+                    /**
+                     * Creates a plain object from a QueryEscrowAddressRequest message. Also converts values to other types if specified.
+                     * @param message QueryEscrowAddressRequest
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryEscrowAddressRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryEscrowAddressRequest to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a QueryEscrowAddressResponse. */
+                interface IQueryEscrowAddressResponse {
+
+                    /** QueryEscrowAddressResponse escrow_address */
+                    escrow_address?: (string|null);
+                }
+
+                /** Represents a QueryEscrowAddressResponse. */
+                class QueryEscrowAddressResponse implements IQueryEscrowAddressResponse {
+
+                    /**
+                     * Constructs a new QueryEscrowAddressResponse.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IQueryEscrowAddressResponse);
+
+                    /** QueryEscrowAddressResponse escrow_address. */
+                    public escrow_address: string;
+
+                    /**
+                     * Encodes the specified QueryEscrowAddressResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressResponse.verify|verify} messages.
+                     * @param message QueryEscrowAddressResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IQueryEscrowAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified QueryEscrowAddressResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressResponse.verify|verify} messages.
+                     * @param message QueryEscrowAddressResponse message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryEscrowAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a QueryEscrowAddressResponse message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns QueryEscrowAddressResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
+
+                    /**
+                     * Decodes a QueryEscrowAddressResponse message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns QueryEscrowAddressResponse
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
+
+                    /**
+                     * Verifies a QueryEscrowAddressResponse message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a QueryEscrowAddressResponse message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns QueryEscrowAddressResponse
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
+
+                    /**
+                     * Creates a plain object from a QueryEscrowAddressResponse message. Also converts values to other types if specified.
+                     * @param message QueryEscrowAddressResponse
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.QueryEscrowAddressResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this QueryEscrowAddressResponse to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a DenomTrace. */
+                interface IDenomTrace {
+
+                    /** DenomTrace path */
+                    path?: (string|null);
+
+                    /** DenomTrace base_denom */
+                    base_denom?: (string|null);
+                }
+
+                /** Represents a DenomTrace. */
+                class DenomTrace implements IDenomTrace {
+
+                    /**
+                     * Constructs a new DenomTrace.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IDenomTrace);
+
+                    /** DenomTrace path. */
+                    public path: string;
+
+                    /** DenomTrace base_denom. */
+                    public base_denom: string;
+
+                    /**
+                     * Encodes the specified DenomTrace message. Does not implicitly {@link ibc.applications.transfer.v1.DenomTrace.verify|verify} messages.
+                     * @param message DenomTrace message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IDenomTrace, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified DenomTrace message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.DenomTrace.verify|verify} messages.
+                     * @param message DenomTrace message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IDenomTrace, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a DenomTrace message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns DenomTrace
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.DenomTrace;
+
+                    /**
+                     * Decodes a DenomTrace message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns DenomTrace
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.DenomTrace;
+
+                    /**
+                     * Verifies a DenomTrace message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a DenomTrace message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns DenomTrace
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.DenomTrace;
+
+                    /**
+                     * Creates a plain object from a DenomTrace message. Also converts values to other types if specified.
+                     * @param message DenomTrace
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.DenomTrace, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this DenomTrace to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+
+                /** Properties of a Params. */
+                interface IParams {
+
+                    /** Params send_enabled */
+                    send_enabled?: (boolean|null);
+
+                    /** Params receive_enabled */
+                    receive_enabled?: (boolean|null);
+                }
+
+                /** Represents a Params. */
+                class Params implements IParams {
+
+                    /**
+                     * Constructs a new Params.
+                     * @param [properties] Properties to set
+                     */
+                    constructor(properties?: ibc.applications.transfer.v1.IParams);
+
+                    /** Params send_enabled. */
+                    public send_enabled: boolean;
+
+                    /** Params receive_enabled. */
+                    public receive_enabled: boolean;
+
+                    /**
+                     * Encodes the specified Params message. Does not implicitly {@link ibc.applications.transfer.v1.Params.verify|verify} messages.
+                     * @param message Params message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encode(message: ibc.applications.transfer.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.Params.verify|verify} messages.
+                     * @param message Params message or plain object to encode
+                     * @param [writer] Writer to encode to
+                     * @returns Writer
+                     */
+                    public static encodeDelimited(message: ibc.applications.transfer.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                    /**
+                     * Decodes a Params message from the specified reader or buffer.
+                     * @param reader Reader or buffer to decode from
+                     * @param [length] Message length if known beforehand
+                     * @returns Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.Params;
+
+                    /**
+                     * Decodes a Params message from the specified reader or buffer, length delimited.
+                     * @param reader Reader or buffer to decode from
+                     * @returns Params
+                     * @throws {Error} If the payload is not a reader or valid buffer
+                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                     */
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.Params;
+
+                    /**
+                     * Verifies a Params message.
+                     * @param message Plain object to verify
+                     * @returns `null` if valid, otherwise the reason why it is not
+                     */
+                    public static verify(message: { [k: string]: any }): (string|null);
+
+                    /**
+                     * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                     * @param object Plain object
+                     * @returns Params
+                     */
+                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.Params;
+
+                    /**
+                     * Creates a plain object from a Params message. Also converts values to other types if specified.
+                     * @param message Params
+                     * @param [options] Conversion options
+                     * @returns Plain object
+                     */
+                    public static toObject(message: ibc.applications.transfer.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                    /**
+                     * Converts this Params to JSON.
+                     * @returns JSON object
+                     */
+                    public toJSON(): { [k: string]: any };
+                }
+            }
+        }
+    }
+}
+
 /** Namespace cosmos. */
 export namespace cosmos {
+
+    /** Namespace upgrade. */
+    namespace upgrade {
+
+        /** Namespace v1beta1. */
+        namespace v1beta1 {
+
+            /** Properties of a Plan. */
+            interface IPlan {
+
+                /** Plan name */
+                name?: (string|null);
+
+                /** Plan time */
+                time?: (google.protobuf.ITimestamp|null);
+
+                /** Plan height */
+                height?: (Long|null);
+
+                /** Plan info */
+                info?: (string|null);
+
+                /** Plan upgraded_client_state */
+                upgraded_client_state?: (google.protobuf.IAny|null);
+            }
+
+            /** Represents a Plan. */
+            class Plan implements IPlan {
+
+                /**
+                 * Constructs a new Plan.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.upgrade.v1beta1.IPlan);
+
+                /** Plan name. */
+                public name: string;
+
+                /** Plan time. */
+                public time?: (google.protobuf.ITimestamp|null);
+
+                /** Plan height. */
+                public height: Long;
+
+                /** Plan info. */
+                public info: string;
+
+                /** Plan upgraded_client_state. */
+                public upgraded_client_state?: (google.protobuf.IAny|null);
+
+                /**
+                 * Encodes the specified Plan message. Does not implicitly {@link cosmos.upgrade.v1beta1.Plan.verify|verify} messages.
+                 * @param message Plan message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.upgrade.v1beta1.IPlan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Plan message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.Plan.verify|verify} messages.
+                 * @param message Plan message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.upgrade.v1beta1.IPlan, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Plan message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Plan
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.Plan;
+
+                /**
+                 * Decodes a Plan message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Plan
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.Plan;
+
+                /**
+                 * Verifies a Plan message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Plan message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Plan
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.Plan;
+
+                /**
+                 * Creates a plain object from a Plan message. Also converts values to other types if specified.
+                 * @param message Plan
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.upgrade.v1beta1.Plan, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Plan to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a SoftwareUpgradeProposal. */
+            interface ISoftwareUpgradeProposal {
+
+                /** SoftwareUpgradeProposal title */
+                title?: (string|null);
+
+                /** SoftwareUpgradeProposal description */
+                description?: (string|null);
+
+                /** SoftwareUpgradeProposal plan */
+                plan?: (cosmos.upgrade.v1beta1.IPlan|null);
+            }
+
+            /** Represents a SoftwareUpgradeProposal. */
+            class SoftwareUpgradeProposal implements ISoftwareUpgradeProposal {
+
+                /**
+                 * Constructs a new SoftwareUpgradeProposal.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal);
+
+                /** SoftwareUpgradeProposal title. */
+                public title: string;
+
+                /** SoftwareUpgradeProposal description. */
+                public description: string;
+
+                /** SoftwareUpgradeProposal plan. */
+                public plan?: (cosmos.upgrade.v1beta1.IPlan|null);
+
+                /**
+                 * Encodes the specified SoftwareUpgradeProposal message. Does not implicitly {@link cosmos.upgrade.v1beta1.SoftwareUpgradeProposal.verify|verify} messages.
+                 * @param message SoftwareUpgradeProposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified SoftwareUpgradeProposal message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.SoftwareUpgradeProposal.verify|verify} messages.
+                 * @param message SoftwareUpgradeProposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a SoftwareUpgradeProposal message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns SoftwareUpgradeProposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
+
+                /**
+                 * Decodes a SoftwareUpgradeProposal message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns SoftwareUpgradeProposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
+
+                /**
+                 * Verifies a SoftwareUpgradeProposal message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a SoftwareUpgradeProposal message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns SoftwareUpgradeProposal
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
+
+                /**
+                 * Creates a plain object from a SoftwareUpgradeProposal message. Also converts values to other types if specified.
+                 * @param message SoftwareUpgradeProposal
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.upgrade.v1beta1.SoftwareUpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this SoftwareUpgradeProposal to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a CancelSoftwareUpgradeProposal. */
+            interface ICancelSoftwareUpgradeProposal {
+
+                /** CancelSoftwareUpgradeProposal title */
+                title?: (string|null);
+
+                /** CancelSoftwareUpgradeProposal description */
+                description?: (string|null);
+            }
+
+            /** Represents a CancelSoftwareUpgradeProposal. */
+            class CancelSoftwareUpgradeProposal implements ICancelSoftwareUpgradeProposal {
+
+                /**
+                 * Constructs a new CancelSoftwareUpgradeProposal.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal);
+
+                /** CancelSoftwareUpgradeProposal title. */
+                public title: string;
+
+                /** CancelSoftwareUpgradeProposal description. */
+                public description: string;
+
+                /**
+                 * Encodes the specified CancelSoftwareUpgradeProposal message. Does not implicitly {@link cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal.verify|verify} messages.
+                 * @param message CancelSoftwareUpgradeProposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified CancelSoftwareUpgradeProposal message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal.verify|verify} messages.
+                 * @param message CancelSoftwareUpgradeProposal message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a CancelSoftwareUpgradeProposal message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns CancelSoftwareUpgradeProposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
+
+                /**
+                 * Decodes a CancelSoftwareUpgradeProposal message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns CancelSoftwareUpgradeProposal
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
+
+                /**
+                 * Verifies a CancelSoftwareUpgradeProposal message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a CancelSoftwareUpgradeProposal message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns CancelSoftwareUpgradeProposal
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
+
+                /**
+                 * Creates a plain object from a CancelSoftwareUpgradeProposal message. Also converts values to other types if specified.
+                 * @param message CancelSoftwareUpgradeProposal
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this CancelSoftwareUpgradeProposal to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a ModuleVersion. */
+            interface IModuleVersion {
+
+                /** ModuleVersion name */
+                name?: (string|null);
+
+                /** ModuleVersion version */
+                version?: (Long|null);
+            }
+
+            /** Represents a ModuleVersion. */
+            class ModuleVersion implements IModuleVersion {
+
+                /**
+                 * Constructs a new ModuleVersion.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.upgrade.v1beta1.IModuleVersion);
+
+                /** ModuleVersion name. */
+                public name: string;
+
+                /** ModuleVersion version. */
+                public version: Long;
+
+                /**
+                 * Encodes the specified ModuleVersion message. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
+                 * @param message ModuleVersion message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ModuleVersion message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
+                 * @param message ModuleVersion message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ModuleVersion message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ModuleVersion
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Decodes a ModuleVersion message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ModuleVersion
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Verifies a ModuleVersion message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ModuleVersion message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ModuleVersion
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.ModuleVersion;
+
+                /**
+                 * Creates a plain object from a ModuleVersion message. Also converts values to other types if specified.
+                 * @param message ModuleVersion
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.upgrade.v1beta1.ModuleVersion, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ModuleVersion to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
+    }
 
     /** Namespace base. */
     namespace base {
@@ -7871,392 +12101,860 @@ export namespace cosmos {
         }
     }
 
-    /** Namespace upgrade. */
-    namespace upgrade {
+    /** Namespace bank. */
+    namespace bank {
 
         /** Namespace v1beta1. */
         namespace v1beta1 {
 
-            /** Properties of a Plan. */
-            interface IPlan {
+            /** Properties of a Params. */
+            interface IParams {
 
-                /** Plan name */
-                name?: (string|null);
+                /** Params send_enabled */
+                send_enabled?: (cosmos.bank.v1beta1.ISendEnabled[]|null);
 
-                /** Plan time */
-                time?: (google.protobuf.ITimestamp|null);
-
-                /** Plan height */
-                height?: (Long|null);
-
-                /** Plan info */
-                info?: (string|null);
-
-                /** Plan upgraded_client_state */
-                upgraded_client_state?: (google.protobuf.IAny|null);
+                /** Params default_send_enabled */
+                default_send_enabled?: (boolean|null);
             }
 
-            /** Represents a Plan. */
-            class Plan implements IPlan {
+            /** Represents a Params. */
+            class Params implements IParams {
 
                 /**
-                 * Constructs a new Plan.
+                 * Constructs a new Params.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: cosmos.upgrade.v1beta1.IPlan);
+                constructor(properties?: cosmos.bank.v1beta1.IParams);
 
-                /** Plan name. */
-                public name: string;
+                /** Params send_enabled. */
+                public send_enabled: cosmos.bank.v1beta1.ISendEnabled[];
 
-                /** Plan time. */
-                public time?: (google.protobuf.ITimestamp|null);
-
-                /** Plan height. */
-                public height: Long;
-
-                /** Plan info. */
-                public info: string;
-
-                /** Plan upgraded_client_state. */
-                public upgraded_client_state?: (google.protobuf.IAny|null);
+                /** Params default_send_enabled. */
+                public default_send_enabled: boolean;
 
                 /**
-                 * Encodes the specified Plan message. Does not implicitly {@link cosmos.upgrade.v1beta1.Plan.verify|verify} messages.
-                 * @param message Plan message or plain object to encode
+                 * Encodes the specified Params message. Does not implicitly {@link cosmos.bank.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: cosmos.upgrade.v1beta1.IPlan, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: cosmos.bank.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified Plan message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.Plan.verify|verify} messages.
-                 * @param message Plan message or plain object to encode
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: cosmos.upgrade.v1beta1.IPlan, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: cosmos.bank.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Decodes a Plan message from the specified reader or buffer.
+                 * Decodes a Params message from the specified reader or buffer.
                  * @param reader Reader or buffer to decode from
                  * @param [length] Message length if known beforehand
-                 * @returns Plan
+                 * @returns Params
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.Plan;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.Params;
 
                 /**
-                 * Decodes a Plan message from the specified reader or buffer, length delimited.
+                 * Decodes a Params message from the specified reader or buffer, length delimited.
                  * @param reader Reader or buffer to decode from
-                 * @returns Plan
+                 * @returns Params
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.Plan;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.Params;
 
                 /**
-                 * Verifies a Plan message.
+                 * Verifies a Params message.
                  * @param message Plain object to verify
                  * @returns `null` if valid, otherwise the reason why it is not
                  */
                 public static verify(message: { [k: string]: any }): (string|null);
 
                 /**
-                 * Creates a Plan message from a plain object. Also converts values to their respective internal types.
+                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
                  * @param object Plain object
-                 * @returns Plan
+                 * @returns Params
                  */
-                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.Plan;
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.Params;
 
                 /**
-                 * Creates a plain object from a Plan message. Also converts values to other types if specified.
-                 * @param message Plan
+                 * Creates a plain object from a Params message. Also converts values to other types if specified.
+                 * @param message Params
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: cosmos.upgrade.v1beta1.Plan, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: cosmos.bank.v1beta1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
-                 * Converts this Plan to JSON.
+                 * Converts this Params to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
             }
 
-            /** Properties of a SoftwareUpgradeProposal. */
-            interface ISoftwareUpgradeProposal {
+            /** Properties of a SendEnabled. */
+            interface ISendEnabled {
 
-                /** SoftwareUpgradeProposal title */
-                title?: (string|null);
+                /** SendEnabled denom */
+                denom?: (string|null);
 
-                /** SoftwareUpgradeProposal description */
+                /** SendEnabled enabled */
+                enabled?: (boolean|null);
+            }
+
+            /** Represents a SendEnabled. */
+            class SendEnabled implements ISendEnabled {
+
+                /**
+                 * Constructs a new SendEnabled.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.bank.v1beta1.ISendEnabled);
+
+                /** SendEnabled denom. */
+                public denom: string;
+
+                /** SendEnabled enabled. */
+                public enabled: boolean;
+
+                /**
+                 * Encodes the specified SendEnabled message. Does not implicitly {@link cosmos.bank.v1beta1.SendEnabled.verify|verify} messages.
+                 * @param message SendEnabled message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.bank.v1beta1.ISendEnabled, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified SendEnabled message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.SendEnabled.verify|verify} messages.
+                 * @param message SendEnabled message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.bank.v1beta1.ISendEnabled, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a SendEnabled message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns SendEnabled
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.SendEnabled;
+
+                /**
+                 * Decodes a SendEnabled message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns SendEnabled
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.SendEnabled;
+
+                /**
+                 * Verifies a SendEnabled message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a SendEnabled message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns SendEnabled
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.SendEnabled;
+
+                /**
+                 * Creates a plain object from a SendEnabled message. Also converts values to other types if specified.
+                 * @param message SendEnabled
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.bank.v1beta1.SendEnabled, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this SendEnabled to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an Input. */
+            interface IInput {
+
+                /** Input address */
+                address?: (string|null);
+
+                /** Input coins */
+                coins?: (cosmos.base.v1beta1.ICoin[]|null);
+            }
+
+            /** Represents an Input. */
+            class Input implements IInput {
+
+                /**
+                 * Constructs a new Input.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.bank.v1beta1.IInput);
+
+                /** Input address. */
+                public address: string;
+
+                /** Input coins. */
+                public coins: cosmos.base.v1beta1.ICoin[];
+
+                /**
+                 * Encodes the specified Input message. Does not implicitly {@link cosmos.bank.v1beta1.Input.verify|verify} messages.
+                 * @param message Input message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.bank.v1beta1.IInput, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Input message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.Input.verify|verify} messages.
+                 * @param message Input message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.bank.v1beta1.IInput, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an Input message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Input
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.Input;
+
+                /**
+                 * Decodes an Input message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Input
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.Input;
+
+                /**
+                 * Verifies an Input message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an Input message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Input
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.Input;
+
+                /**
+                 * Creates a plain object from an Input message. Also converts values to other types if specified.
+                 * @param message Input
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.bank.v1beta1.Input, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Input to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of an Output. */
+            interface IOutput {
+
+                /** Output address */
+                address?: (string|null);
+
+                /** Output coins */
+                coins?: (cosmos.base.v1beta1.ICoin[]|null);
+            }
+
+            /** Represents an Output. */
+            class Output implements IOutput {
+
+                /**
+                 * Constructs a new Output.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.bank.v1beta1.IOutput);
+
+                /** Output address. */
+                public address: string;
+
+                /** Output coins. */
+                public coins: cosmos.base.v1beta1.ICoin[];
+
+                /**
+                 * Encodes the specified Output message. Does not implicitly {@link cosmos.bank.v1beta1.Output.verify|verify} messages.
+                 * @param message Output message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.bank.v1beta1.IOutput, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Output message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.Output.verify|verify} messages.
+                 * @param message Output message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.bank.v1beta1.IOutput, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an Output message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Output
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.Output;
+
+                /**
+                 * Decodes an Output message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Output
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.Output;
+
+                /**
+                 * Verifies an Output message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates an Output message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Output
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.Output;
+
+                /**
+                 * Creates a plain object from an Output message. Also converts values to other types if specified.
+                 * @param message Output
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.bank.v1beta1.Output, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Output to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Supply. */
+            interface ISupply {
+
+                /** Supply total */
+                total?: (cosmos.base.v1beta1.ICoin[]|null);
+            }
+
+            /** Represents a Supply. */
+            class Supply implements ISupply {
+
+                /**
+                 * Constructs a new Supply.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.bank.v1beta1.ISupply);
+
+                /** Supply total. */
+                public total: cosmos.base.v1beta1.ICoin[];
+
+                /**
+                 * Encodes the specified Supply message. Does not implicitly {@link cosmos.bank.v1beta1.Supply.verify|verify} messages.
+                 * @param message Supply message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.bank.v1beta1.ISupply, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Supply message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.Supply.verify|verify} messages.
+                 * @param message Supply message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.bank.v1beta1.ISupply, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Supply message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Supply
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.Supply;
+
+                /**
+                 * Decodes a Supply message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Supply
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.Supply;
+
+                /**
+                 * Verifies a Supply message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Supply message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Supply
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.Supply;
+
+                /**
+                 * Creates a plain object from a Supply message. Also converts values to other types if specified.
+                 * @param message Supply
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.bank.v1beta1.Supply, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Supply to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a DenomUnit. */
+            interface IDenomUnit {
+
+                /** DenomUnit denom */
+                denom?: (string|null);
+
+                /** DenomUnit exponent */
+                exponent?: (number|null);
+
+                /** DenomUnit aliases */
+                aliases?: (string[]|null);
+            }
+
+            /** Represents a DenomUnit. */
+            class DenomUnit implements IDenomUnit {
+
+                /**
+                 * Constructs a new DenomUnit.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: cosmos.bank.v1beta1.IDenomUnit);
+
+                /** DenomUnit denom. */
+                public denom: string;
+
+                /** DenomUnit exponent. */
+                public exponent: number;
+
+                /** DenomUnit aliases. */
+                public aliases: string[];
+
+                /**
+                 * Encodes the specified DenomUnit message. Does not implicitly {@link cosmos.bank.v1beta1.DenomUnit.verify|verify} messages.
+                 * @param message DenomUnit message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: cosmos.bank.v1beta1.IDenomUnit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified DenomUnit message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.DenomUnit.verify|verify} messages.
+                 * @param message DenomUnit message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: cosmos.bank.v1beta1.IDenomUnit, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DenomUnit message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns DenomUnit
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.DenomUnit;
+
+                /**
+                 * Decodes a DenomUnit message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns DenomUnit
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.DenomUnit;
+
+                /**
+                 * Verifies a DenomUnit message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a DenomUnit message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns DenomUnit
+                 */
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.DenomUnit;
+
+                /**
+                 * Creates a plain object from a DenomUnit message. Also converts values to other types if specified.
+                 * @param message DenomUnit
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: cosmos.bank.v1beta1.DenomUnit, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this DenomUnit to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Metadata. */
+            interface IMetadata {
+
+                /** Metadata description */
                 description?: (string|null);
 
-                /** SoftwareUpgradeProposal plan */
-                plan?: (cosmos.upgrade.v1beta1.IPlan|null);
-            }
+                /** Metadata denom_units */
+                denom_units?: (cosmos.bank.v1beta1.IDenomUnit[]|null);
 
-            /** Represents a SoftwareUpgradeProposal. */
-            class SoftwareUpgradeProposal implements ISoftwareUpgradeProposal {
+                /** Metadata base */
+                base?: (string|null);
 
-                /**
-                 * Constructs a new SoftwareUpgradeProposal.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal);
+                /** Metadata display */
+                display?: (string|null);
 
-                /** SoftwareUpgradeProposal title. */
-                public title: string;
-
-                /** SoftwareUpgradeProposal description. */
-                public description: string;
-
-                /** SoftwareUpgradeProposal plan. */
-                public plan?: (cosmos.upgrade.v1beta1.IPlan|null);
-
-                /**
-                 * Encodes the specified SoftwareUpgradeProposal message. Does not implicitly {@link cosmos.upgrade.v1beta1.SoftwareUpgradeProposal.verify|verify} messages.
-                 * @param message SoftwareUpgradeProposal message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified SoftwareUpgradeProposal message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.SoftwareUpgradeProposal.verify|verify} messages.
-                 * @param message SoftwareUpgradeProposal message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: cosmos.upgrade.v1beta1.ISoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a SoftwareUpgradeProposal message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns SoftwareUpgradeProposal
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
-
-                /**
-                 * Decodes a SoftwareUpgradeProposal message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns SoftwareUpgradeProposal
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
-
-                /**
-                 * Verifies a SoftwareUpgradeProposal message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a SoftwareUpgradeProposal message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns SoftwareUpgradeProposal
-                 */
-                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.SoftwareUpgradeProposal;
-
-                /**
-                 * Creates a plain object from a SoftwareUpgradeProposal message. Also converts values to other types if specified.
-                 * @param message SoftwareUpgradeProposal
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: cosmos.upgrade.v1beta1.SoftwareUpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this SoftwareUpgradeProposal to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a CancelSoftwareUpgradeProposal. */
-            interface ICancelSoftwareUpgradeProposal {
-
-                /** CancelSoftwareUpgradeProposal title */
-                title?: (string|null);
-
-                /** CancelSoftwareUpgradeProposal description */
-                description?: (string|null);
-            }
-
-            /** Represents a CancelSoftwareUpgradeProposal. */
-            class CancelSoftwareUpgradeProposal implements ICancelSoftwareUpgradeProposal {
-
-                /**
-                 * Constructs a new CancelSoftwareUpgradeProposal.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal);
-
-                /** CancelSoftwareUpgradeProposal title. */
-                public title: string;
-
-                /** CancelSoftwareUpgradeProposal description. */
-                public description: string;
-
-                /**
-                 * Encodes the specified CancelSoftwareUpgradeProposal message. Does not implicitly {@link cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal.verify|verify} messages.
-                 * @param message CancelSoftwareUpgradeProposal message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified CancelSoftwareUpgradeProposal message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal.verify|verify} messages.
-                 * @param message CancelSoftwareUpgradeProposal message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: cosmos.upgrade.v1beta1.ICancelSoftwareUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a CancelSoftwareUpgradeProposal message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns CancelSoftwareUpgradeProposal
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
-
-                /**
-                 * Decodes a CancelSoftwareUpgradeProposal message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns CancelSoftwareUpgradeProposal
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
-
-                /**
-                 * Verifies a CancelSoftwareUpgradeProposal message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a CancelSoftwareUpgradeProposal message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns CancelSoftwareUpgradeProposal
-                 */
-                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal;
-
-                /**
-                 * Creates a plain object from a CancelSoftwareUpgradeProposal message. Also converts values to other types if specified.
-                 * @param message CancelSoftwareUpgradeProposal
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: cosmos.upgrade.v1beta1.CancelSoftwareUpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this CancelSoftwareUpgradeProposal to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a ModuleVersion. */
-            interface IModuleVersion {
-
-                /** ModuleVersion name */
+                /** Metadata name */
                 name?: (string|null);
 
-                /** ModuleVersion version */
-                version?: (Long|null);
+                /** Metadata symbol */
+                symbol?: (string|null);
             }
 
-            /** Represents a ModuleVersion. */
-            class ModuleVersion implements IModuleVersion {
+            /** Represents a Metadata. */
+            class Metadata implements IMetadata {
 
                 /**
-                 * Constructs a new ModuleVersion.
+                 * Constructs a new Metadata.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: cosmos.upgrade.v1beta1.IModuleVersion);
+                constructor(properties?: cosmos.bank.v1beta1.IMetadata);
 
-                /** ModuleVersion name. */
+                /** Metadata description. */
+                public description: string;
+
+                /** Metadata denom_units. */
+                public denom_units: cosmos.bank.v1beta1.IDenomUnit[];
+
+                /** Metadata base. */
+                public base: string;
+
+                /** Metadata display. */
+                public display: string;
+
+                /** Metadata name. */
                 public name: string;
 
-                /** ModuleVersion version. */
-                public version: Long;
+                /** Metadata symbol. */
+                public symbol: string;
 
                 /**
-                 * Encodes the specified ModuleVersion message. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
-                 * @param message ModuleVersion message or plain object to encode
+                 * Encodes the specified Metadata message. Does not implicitly {@link cosmos.bank.v1beta1.Metadata.verify|verify} messages.
+                 * @param message Metadata message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: cosmos.bank.v1beta1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified ModuleVersion message, length delimited. Does not implicitly {@link cosmos.upgrade.v1beta1.ModuleVersion.verify|verify} messages.
-                 * @param message ModuleVersion message or plain object to encode
+                 * Encodes the specified Metadata message, length delimited. Does not implicitly {@link cosmos.bank.v1beta1.Metadata.verify|verify} messages.
+                 * @param message Metadata message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: cosmos.upgrade.v1beta1.IModuleVersion, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: cosmos.bank.v1beta1.IMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Decodes a ModuleVersion message from the specified reader or buffer.
+                 * Decodes a Metadata message from the specified reader or buffer.
                  * @param reader Reader or buffer to decode from
                  * @param [length] Message length if known beforehand
-                 * @returns ModuleVersion
+                 * @returns Metadata
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.upgrade.v1beta1.ModuleVersion;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos.bank.v1beta1.Metadata;
 
                 /**
-                 * Decodes a ModuleVersion message from the specified reader or buffer, length delimited.
+                 * Decodes a Metadata message from the specified reader or buffer, length delimited.
                  * @param reader Reader or buffer to decode from
-                 * @returns ModuleVersion
+                 * @returns Metadata
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.upgrade.v1beta1.ModuleVersion;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos.bank.v1beta1.Metadata;
 
                 /**
-                 * Verifies a ModuleVersion message.
+                 * Verifies a Metadata message.
                  * @param message Plain object to verify
                  * @returns `null` if valid, otherwise the reason why it is not
                  */
                 public static verify(message: { [k: string]: any }): (string|null);
 
                 /**
-                 * Creates a ModuleVersion message from a plain object. Also converts values to their respective internal types.
+                 * Creates a Metadata message from a plain object. Also converts values to their respective internal types.
                  * @param object Plain object
-                 * @returns ModuleVersion
+                 * @returns Metadata
                  */
-                public static fromObject(object: { [k: string]: any }): cosmos.upgrade.v1beta1.ModuleVersion;
+                public static fromObject(object: { [k: string]: any }): cosmos.bank.v1beta1.Metadata;
 
                 /**
-                 * Creates a plain object from a ModuleVersion message. Also converts values to other types if specified.
-                 * @param message ModuleVersion
+                 * Creates a plain object from a Metadata message. Also converts values to other types if specified.
+                 * @param message Metadata
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: cosmos.upgrade.v1beta1.ModuleVersion, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: cosmos.bank.v1beta1.Metadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
-                 * Converts this ModuleVersion to JSON.
+                 * Converts this Metadata to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
             }
         }
+    }
+}
+
+/** Namespace cosmos_proto. */
+export namespace cosmos_proto {
+
+    /** Properties of an InterfaceDescriptor. */
+    interface IInterfaceDescriptor {
+
+        /** InterfaceDescriptor name */
+        name?: (string|null);
+
+        /** InterfaceDescriptor description */
+        description?: (string|null);
+    }
+
+    /** Represents an InterfaceDescriptor. */
+    class InterfaceDescriptor implements IInterfaceDescriptor {
+
+        /**
+         * Constructs a new InterfaceDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
+
+        /** InterfaceDescriptor name. */
+        public name: string;
+
+        /** InterfaceDescriptor description. */
+        public description: string;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
+         * @param message InterfaceDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns InterfaceDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Verifies an InterfaceDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns InterfaceDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
+
+        /**
+         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
+         * @param message InterfaceDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this InterfaceDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** Properties of a ScalarDescriptor. */
+    interface IScalarDescriptor {
+
+        /** ScalarDescriptor name */
+        name?: (string|null);
+
+        /** ScalarDescriptor description */
+        description?: (string|null);
+
+        /** ScalarDescriptor field_type */
+        field_type?: (cosmos_proto.ScalarType[]|null);
+
+        /** ScalarDescriptor legacy_amino_encoding */
+        legacy_amino_encoding?: (string|null);
+    }
+
+    /** Represents a ScalarDescriptor. */
+    class ScalarDescriptor implements IScalarDescriptor {
+
+        /**
+         * Constructs a new ScalarDescriptor.
+         * @param [properties] Properties to set
+         */
+        constructor(properties?: cosmos_proto.IScalarDescriptor);
+
+        /** ScalarDescriptor name. */
+        public name: string;
+
+        /** ScalarDescriptor description. */
+        public description: string;
+
+        /** ScalarDescriptor field_type. */
+        public field_type: cosmos_proto.ScalarType[];
+
+        /** ScalarDescriptor legacy_amino_encoding. */
+        public legacy_amino_encoding: string;
+
+        /**
+         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
+         * @param message ScalarDescriptor message or plain object to encode
+         * @param [writer] Writer to encode to
+         * @returns Writer
+         */
+        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer.
+         * @param reader Reader or buffer to decode from
+         * @param [length] Message length if known beforehand
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
+         * @param reader Reader or buffer to decode from
+         * @returns ScalarDescriptor
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Verifies a ScalarDescriptor message.
+         * @param message Plain object to verify
+         * @returns `null` if valid, otherwise the reason why it is not
+         */
+        public static verify(message: { [k: string]: any }): (string|null);
+
+        /**
+         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
+         * @param object Plain object
+         * @returns ScalarDescriptor
+         */
+        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
+
+        /**
+         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
+         * @param message ScalarDescriptor
+         * @param [options] Conversion options
+         * @returns Plain object
+         */
+        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+        /**
+         * Converts this ScalarDescriptor to JSON.
+         * @returns JSON object
+         */
+        public toJSON(): { [k: string]: any };
+    }
+
+    /** ScalarType enum. */
+    enum ScalarType {
+        SCALAR_TYPE_UNSPECIFIED = 0,
+        SCALAR_TYPE_STRING = 1,
+        SCALAR_TYPE_BYTES = 2
     }
 }
 
@@ -18753,6 +23451,95 @@ export namespace google {
             }
         }
 
+        /** Properties of an Any. */
+        interface IAny {
+
+            /** Any type_url */
+            type_url?: (string|null);
+
+            /** Any value */
+            value?: (Uint8Array|null);
+        }
+
+        /** Represents an Any. */
+        class Any implements IAny {
+
+            /**
+             * Constructs a new Any.
+             * @param [properties] Properties to set
+             */
+            constructor(properties?: google.protobuf.IAny);
+
+            /** Any type_url. */
+            public type_url: string;
+
+            /** Any value. */
+            public value: Uint8Array;
+
+            /**
+             * Encodes the specified Any message. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Encodes the specified Any message, length delimited. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
+             * @param message Any message or plain object to encode
+             * @param [writer] Writer to encode to
+             * @returns Writer
+             */
+            public static encodeDelimited(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer.
+             * @param reader Reader or buffer to decode from
+             * @param [length] Message length if known beforehand
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.Any;
+
+            /**
+             * Decodes an Any message from the specified reader or buffer, length delimited.
+             * @param reader Reader or buffer to decode from
+             * @returns Any
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.Any;
+
+            /**
+             * Verifies an Any message.
+             * @param message Plain object to verify
+             * @returns `null` if valid, otherwise the reason why it is not
+             */
+            public static verify(message: { [k: string]: any }): (string|null);
+
+            /**
+             * Creates an Any message from a plain object. Also converts values to their respective internal types.
+             * @param object Plain object
+             * @returns Any
+             */
+            public static fromObject(object: { [k: string]: any }): google.protobuf.Any;
+
+            /**
+             * Creates a plain object from an Any message. Also converts values to other types if specified.
+             * @param message Any
+             * @param [options] Conversion options
+             * @returns Plain object
+             */
+            public static toObject(message: google.protobuf.Any, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+            /**
+             * Converts this Any to JSON.
+             * @returns JSON object
+             */
+            public toJSON(): { [k: string]: any };
+        }
+
         /** Properties of a Timestamp. */
         interface ITimestamp {
 
@@ -18926,95 +23713,6 @@ export namespace google {
 
             /**
              * Converts this Duration to JSON.
-             * @returns JSON object
-             */
-            public toJSON(): { [k: string]: any };
-        }
-
-        /** Properties of an Any. */
-        interface IAny {
-
-            /** Any type_url */
-            type_url?: (string|null);
-
-            /** Any value */
-            value?: (Uint8Array|null);
-        }
-
-        /** Represents an Any. */
-        class Any implements IAny {
-
-            /**
-             * Constructs a new Any.
-             * @param [properties] Properties to set
-             */
-            constructor(properties?: google.protobuf.IAny);
-
-            /** Any type_url. */
-            public type_url: string;
-
-            /** Any value. */
-            public value: Uint8Array;
-
-            /**
-             * Encodes the specified Any message. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
-             * @param message Any message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Encodes the specified Any message, length delimited. Does not implicitly {@link google.protobuf.Any.verify|verify} messages.
-             * @param message Any message or plain object to encode
-             * @param [writer] Writer to encode to
-             * @returns Writer
-             */
-            public static encodeDelimited(message: google.protobuf.IAny, writer?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes an Any message from the specified reader or buffer.
-             * @param reader Reader or buffer to decode from
-             * @param [length] Message length if known beforehand
-             * @returns Any
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): google.protobuf.Any;
-
-            /**
-             * Decodes an Any message from the specified reader or buffer, length delimited.
-             * @param reader Reader or buffer to decode from
-             * @returns Any
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): google.protobuf.Any;
-
-            /**
-             * Verifies an Any message.
-             * @param message Plain object to verify
-             * @returns `null` if valid, otherwise the reason why it is not
-             */
-            public static verify(message: { [k: string]: any }): (string|null);
-
-            /**
-             * Creates an Any message from a plain object. Also converts values to their respective internal types.
-             * @param object Plain object
-             * @returns Any
-             */
-            public static fromObject(object: { [k: string]: any }): google.protobuf.Any;
-
-            /**
-             * Creates a plain object from an Any message. Also converts values to other types if specified.
-             * @param message Any
-             * @param [options] Conversion options
-             * @returns Plain object
-             */
-            public static toObject(message: google.protobuf.Any, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-            /**
-             * Converts this Any to JSON.
              * @returns JSON object
              */
             public toJSON(): { [k: string]: any };
@@ -19344,2010 +24042,6 @@ export namespace google {
     }
 }
 
-/** Namespace ibc. */
-export namespace ibc {
-
-    /** Namespace core. */
-    namespace core {
-
-        /** Namespace client. */
-        namespace client {
-
-            /** Namespace v1. */
-            namespace v1 {
-
-                /** Properties of an IdentifiedClientState. */
-                interface IIdentifiedClientState {
-
-                    /** IdentifiedClientState client_id */
-                    client_id?: (string|null);
-
-                    /** IdentifiedClientState client_state */
-                    client_state?: (google.protobuf.IAny|null);
-                }
-
-                /** Represents an IdentifiedClientState. */
-                class IdentifiedClientState implements IIdentifiedClientState {
-
-                    /**
-                     * Constructs a new IdentifiedClientState.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IIdentifiedClientState);
-
-                    /** IdentifiedClientState client_id. */
-                    public client_id: string;
-
-                    /** IdentifiedClientState client_state. */
-                    public client_state?: (google.protobuf.IAny|null);
-
-                    /**
-                     * Encodes the specified IdentifiedClientState message. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
-                     * @param message IdentifiedClientState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IIdentifiedClientState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified IdentifiedClientState message, length delimited. Does not implicitly {@link ibc.core.client.v1.IdentifiedClientState.verify|verify} messages.
-                     * @param message IdentifiedClientState message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IIdentifiedClientState, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an IdentifiedClientState message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns IdentifiedClientState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.IdentifiedClientState;
-
-                    /**
-                     * Decodes an IdentifiedClientState message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns IdentifiedClientState
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.IdentifiedClientState;
-
-                    /**
-                     * Verifies an IdentifiedClientState message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an IdentifiedClientState message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns IdentifiedClientState
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.IdentifiedClientState;
-
-                    /**
-                     * Creates a plain object from an IdentifiedClientState message. Also converts values to other types if specified.
-                     * @param message IdentifiedClientState
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.IdentifiedClientState, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this IdentifiedClientState to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ConsensusStateWithHeight. */
-                interface IConsensusStateWithHeight {
-
-                    /** ConsensusStateWithHeight height */
-                    height?: (ibc.core.client.v1.IHeight|null);
-
-                    /** ConsensusStateWithHeight consensus_state */
-                    consensus_state?: (google.protobuf.IAny|null);
-                }
-
-                /** Represents a ConsensusStateWithHeight. */
-                class ConsensusStateWithHeight implements IConsensusStateWithHeight {
-
-                    /**
-                     * Constructs a new ConsensusStateWithHeight.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IConsensusStateWithHeight);
-
-                    /** ConsensusStateWithHeight height. */
-                    public height?: (ibc.core.client.v1.IHeight|null);
-
-                    /** ConsensusStateWithHeight consensus_state. */
-                    public consensus_state?: (google.protobuf.IAny|null);
-
-                    /**
-                     * Encodes the specified ConsensusStateWithHeight message. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
-                     * @param message ConsensusStateWithHeight message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IConsensusStateWithHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ConsensusStateWithHeight message, length delimited. Does not implicitly {@link ibc.core.client.v1.ConsensusStateWithHeight.verify|verify} messages.
-                     * @param message ConsensusStateWithHeight message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IConsensusStateWithHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ConsensusStateWithHeight message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ConsensusStateWithHeight
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ConsensusStateWithHeight;
-
-                    /**
-                     * Decodes a ConsensusStateWithHeight message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ConsensusStateWithHeight
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ConsensusStateWithHeight;
-
-                    /**
-                     * Verifies a ConsensusStateWithHeight message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ConsensusStateWithHeight message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ConsensusStateWithHeight
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ConsensusStateWithHeight;
-
-                    /**
-                     * Creates a plain object from a ConsensusStateWithHeight message. Also converts values to other types if specified.
-                     * @param message ConsensusStateWithHeight
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.ConsensusStateWithHeight, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ConsensusStateWithHeight to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ClientConsensusStates. */
-                interface IClientConsensusStates {
-
-                    /** ClientConsensusStates client_id */
-                    client_id?: (string|null);
-
-                    /** ClientConsensusStates consensus_states */
-                    consensus_states?: (ibc.core.client.v1.IConsensusStateWithHeight[]|null);
-                }
-
-                /** Represents a ClientConsensusStates. */
-                class ClientConsensusStates implements IClientConsensusStates {
-
-                    /**
-                     * Constructs a new ClientConsensusStates.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IClientConsensusStates);
-
-                    /** ClientConsensusStates client_id. */
-                    public client_id: string;
-
-                    /** ClientConsensusStates consensus_states. */
-                    public consensus_states: ibc.core.client.v1.IConsensusStateWithHeight[];
-
-                    /**
-                     * Encodes the specified ClientConsensusStates message. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
-                     * @param message ClientConsensusStates message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IClientConsensusStates, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ClientConsensusStates message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientConsensusStates.verify|verify} messages.
-                     * @param message ClientConsensusStates message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IClientConsensusStates, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ClientConsensusStates message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ClientConsensusStates
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ClientConsensusStates;
-
-                    /**
-                     * Decodes a ClientConsensusStates message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ClientConsensusStates
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ClientConsensusStates;
-
-                    /**
-                     * Verifies a ClientConsensusStates message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ClientConsensusStates message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ClientConsensusStates
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ClientConsensusStates;
-
-                    /**
-                     * Creates a plain object from a ClientConsensusStates message. Also converts values to other types if specified.
-                     * @param message ClientConsensusStates
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.ClientConsensusStates, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ClientConsensusStates to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a ClientUpdateProposal. */
-                interface IClientUpdateProposal {
-
-                    /** ClientUpdateProposal title */
-                    title?: (string|null);
-
-                    /** ClientUpdateProposal description */
-                    description?: (string|null);
-
-                    /** ClientUpdateProposal subject_client_id */
-                    subject_client_id?: (string|null);
-
-                    /** ClientUpdateProposal substitute_client_id */
-                    substitute_client_id?: (string|null);
-                }
-
-                /** Represents a ClientUpdateProposal. */
-                class ClientUpdateProposal implements IClientUpdateProposal {
-
-                    /**
-                     * Constructs a new ClientUpdateProposal.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IClientUpdateProposal);
-
-                    /** ClientUpdateProposal title. */
-                    public title: string;
-
-                    /** ClientUpdateProposal description. */
-                    public description: string;
-
-                    /** ClientUpdateProposal subject_client_id. */
-                    public subject_client_id: string;
-
-                    /** ClientUpdateProposal substitute_client_id. */
-                    public substitute_client_id: string;
-
-                    /**
-                     * Encodes the specified ClientUpdateProposal message. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
-                     * @param message ClientUpdateProposal message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IClientUpdateProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified ClientUpdateProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.ClientUpdateProposal.verify|verify} messages.
-                     * @param message ClientUpdateProposal message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IClientUpdateProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a ClientUpdateProposal message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns ClientUpdateProposal
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.ClientUpdateProposal;
-
-                    /**
-                     * Decodes a ClientUpdateProposal message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns ClientUpdateProposal
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.ClientUpdateProposal;
-
-                    /**
-                     * Verifies a ClientUpdateProposal message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a ClientUpdateProposal message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns ClientUpdateProposal
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.ClientUpdateProposal;
-
-                    /**
-                     * Creates a plain object from a ClientUpdateProposal message. Also converts values to other types if specified.
-                     * @param message ClientUpdateProposal
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.ClientUpdateProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this ClientUpdateProposal to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of an UpgradeProposal. */
-                interface IUpgradeProposal {
-
-                    /** UpgradeProposal title */
-                    title?: (string|null);
-
-                    /** UpgradeProposal description */
-                    description?: (string|null);
-
-                    /** UpgradeProposal plan */
-                    plan?: (cosmos.upgrade.v1beta1.IPlan|null);
-
-                    /** UpgradeProposal upgraded_client_state */
-                    upgraded_client_state?: (google.protobuf.IAny|null);
-                }
-
-                /** Represents an UpgradeProposal. */
-                class UpgradeProposal implements IUpgradeProposal {
-
-                    /**
-                     * Constructs a new UpgradeProposal.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IUpgradeProposal);
-
-                    /** UpgradeProposal title. */
-                    public title: string;
-
-                    /** UpgradeProposal description. */
-                    public description: string;
-
-                    /** UpgradeProposal plan. */
-                    public plan?: (cosmos.upgrade.v1beta1.IPlan|null);
-
-                    /** UpgradeProposal upgraded_client_state. */
-                    public upgraded_client_state?: (google.protobuf.IAny|null);
-
-                    /**
-                     * Encodes the specified UpgradeProposal message. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
-                     * @param message UpgradeProposal message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified UpgradeProposal message, length delimited. Does not implicitly {@link ibc.core.client.v1.UpgradeProposal.verify|verify} messages.
-                     * @param message UpgradeProposal message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IUpgradeProposal, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an UpgradeProposal message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns UpgradeProposal
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.UpgradeProposal;
-
-                    /**
-                     * Decodes an UpgradeProposal message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns UpgradeProposal
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.UpgradeProposal;
-
-                    /**
-                     * Verifies an UpgradeProposal message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an UpgradeProposal message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns UpgradeProposal
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.UpgradeProposal;
-
-                    /**
-                     * Creates a plain object from an UpgradeProposal message. Also converts values to other types if specified.
-                     * @param message UpgradeProposal
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.UpgradeProposal, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this UpgradeProposal to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of an Height. */
-                interface IHeight {
-
-                    /** Height revision_number */
-                    revision_number?: (Long|null);
-
-                    /** Height revision_height */
-                    revision_height?: (Long|null);
-                }
-
-                /** Represents an Height. */
-                class Height implements IHeight {
-
-                    /**
-                     * Constructs a new Height.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IHeight);
-
-                    /** Height revision_number. */
-                    public revision_number: Long;
-
-                    /** Height revision_height. */
-                    public revision_height: Long;
-
-                    /**
-                     * Encodes the specified Height message. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
-                     * @param message Height message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Height message, length delimited. Does not implicitly {@link ibc.core.client.v1.Height.verify|verify} messages.
-                     * @param message Height message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IHeight, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes an Height message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Height
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.Height;
-
-                    /**
-                     * Decodes an Height message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Height
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.Height;
-
-                    /**
-                     * Verifies an Height message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates an Height message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Height
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.Height;
-
-                    /**
-                     * Creates a plain object from an Height message. Also converts values to other types if specified.
-                     * @param message Height
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.Height, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Height to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a Params. */
-                interface IParams {
-
-                    /** Params allowed_clients */
-                    allowed_clients?: (string[]|null);
-                }
-
-                /** Represents a Params. */
-                class Params implements IParams {
-
-                    /**
-                     * Constructs a new Params.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.core.client.v1.IParams);
-
-                    /** Params allowed_clients. */
-                    public allowed_clients: string[];
-
-                    /**
-                     * Encodes the specified Params message. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
-                     * @param message Params message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.core.client.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.core.client.v1.Params.verify|verify} messages.
-                     * @param message Params message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.core.client.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a Params message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Params
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.core.client.v1.Params;
-
-                    /**
-                     * Decodes a Params message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Params
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.core.client.v1.Params;
-
-                    /**
-                     * Verifies a Params message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Params
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.core.client.v1.Params;
-
-                    /**
-                     * Creates a plain object from a Params message. Also converts values to other types if specified.
-                     * @param message Params
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.core.client.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Params to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-            }
-        }
-    }
-
-    /** Namespace applications. */
-    namespace applications {
-
-        /** Namespace transfer. */
-        namespace transfer {
-
-            /** Namespace v1. */
-            namespace v1 {
-
-                /** Represents a Query */
-                class Query extends $protobuf.rpc.Service {
-
-                    /**
-                     * Constructs a new Query service.
-                     * @param rpcImpl RPC implementation
-                     * @param [requestDelimited=false] Whether requests are length-delimited
-                     * @param [responseDelimited=false] Whether responses are length-delimited
-                     */
-                    constructor(rpcImpl: $protobuf.RPCImpl, requestDelimited?: boolean, responseDelimited?: boolean);
-
-                    /**
-                     * Calls DenomTrace.
-                     * @param request QueryDenomTraceRequest message or plain object
-                     * @param callback Node-style callback called with the error, if any, and QueryDenomTraceResponse
-                     */
-                    public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest, callback: ibc.applications.transfer.v1.Query.DenomTraceCallback): void;
-
-                    /**
-                     * Calls DenomTrace.
-                     * @param request QueryDenomTraceRequest message or plain object
-                     * @returns Promise
-                     */
-                    public denomTrace(request: ibc.applications.transfer.v1.IQueryDenomTraceRequest): Promise<ibc.applications.transfer.v1.QueryDenomTraceResponse>;
-
-                    /**
-                     * Calls DenomTraces.
-                     * @param request QueryDenomTracesRequest message or plain object
-                     * @param callback Node-style callback called with the error, if any, and QueryDenomTracesResponse
-                     */
-                    public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest, callback: ibc.applications.transfer.v1.Query.DenomTracesCallback): void;
-
-                    /**
-                     * Calls DenomTraces.
-                     * @param request QueryDenomTracesRequest message or plain object
-                     * @returns Promise
-                     */
-                    public denomTraces(request: ibc.applications.transfer.v1.IQueryDenomTracesRequest): Promise<ibc.applications.transfer.v1.QueryDenomTracesResponse>;
-
-                    /**
-                     * Calls Params.
-                     * @param request QueryParamsRequest message or plain object
-                     * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
-                     */
-                    public params(request: ibc.applications.transfer.v1.IQueryParamsRequest, callback: ibc.applications.transfer.v1.Query.ParamsCallback): void;
-
-                    /**
-                     * Calls Params.
-                     * @param request QueryParamsRequest message or plain object
-                     * @returns Promise
-                     */
-                    public params(request: ibc.applications.transfer.v1.IQueryParamsRequest): Promise<ibc.applications.transfer.v1.QueryParamsResponse>;
-
-                    /**
-                     * Calls DenomHash.
-                     * @param request QueryDenomHashRequest message or plain object
-                     * @param callback Node-style callback called with the error, if any, and QueryDenomHashResponse
-                     */
-                    public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest, callback: ibc.applications.transfer.v1.Query.DenomHashCallback): void;
-
-                    /**
-                     * Calls DenomHash.
-                     * @param request QueryDenomHashRequest message or plain object
-                     * @returns Promise
-                     */
-                    public denomHash(request: ibc.applications.transfer.v1.IQueryDenomHashRequest): Promise<ibc.applications.transfer.v1.QueryDenomHashResponse>;
-
-                    /**
-                     * Calls EscrowAddress.
-                     * @param request QueryEscrowAddressRequest message or plain object
-                     * @param callback Node-style callback called with the error, if any, and QueryEscrowAddressResponse
-                     */
-                    public escrowAddress(request: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, callback: ibc.applications.transfer.v1.Query.EscrowAddressCallback): void;
-
-                    /**
-                     * Calls EscrowAddress.
-                     * @param request QueryEscrowAddressRequest message or plain object
-                     * @returns Promise
-                     */
-                    public escrowAddress(request: ibc.applications.transfer.v1.IQueryEscrowAddressRequest): Promise<ibc.applications.transfer.v1.QueryEscrowAddressResponse>;
-                }
-
-                namespace Query {
-
-                    /**
-                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomTrace}.
-                     * @param error Error, if any
-                     * @param [response] QueryDenomTraceResponse
-                     */
-                    type DenomTraceCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTraceResponse) => void;
-
-                    /**
-                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomTraces}.
-                     * @param error Error, if any
-                     * @param [response] QueryDenomTracesResponse
-                     */
-                    type DenomTracesCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomTracesResponse) => void;
-
-                    /**
-                     * Callback as used by {@link ibc.applications.transfer.v1.Query#params}.
-                     * @param error Error, if any
-                     * @param [response] QueryParamsResponse
-                     */
-                    type ParamsCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryParamsResponse) => void;
-
-                    /**
-                     * Callback as used by {@link ibc.applications.transfer.v1.Query#denomHash}.
-                     * @param error Error, if any
-                     * @param [response] QueryDenomHashResponse
-                     */
-                    type DenomHashCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryDenomHashResponse) => void;
-
-                    /**
-                     * Callback as used by {@link ibc.applications.transfer.v1.Query#escrowAddress}.
-                     * @param error Error, if any
-                     * @param [response] QueryEscrowAddressResponse
-                     */
-                    type EscrowAddressCallback = (error: (Error|null), response?: ibc.applications.transfer.v1.QueryEscrowAddressResponse) => void;
-                }
-
-                /** Properties of a QueryDenomTraceRequest. */
-                interface IQueryDenomTraceRequest {
-
-                    /** QueryDenomTraceRequest hash */
-                    hash?: (string|null);
-                }
-
-                /** Represents a QueryDenomTraceRequest. */
-                class QueryDenomTraceRequest implements IQueryDenomTraceRequest {
-
-                    /**
-                     * Constructs a new QueryDenomTraceRequest.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTraceRequest);
-
-                    /** QueryDenomTraceRequest hash. */
-                    public hash: string;
-
-                    /**
-                     * Encodes the specified QueryDenomTraceRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceRequest.verify|verify} messages.
-                     * @param message QueryDenomTraceRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTraceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomTraceRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceRequest.verify|verify} messages.
-                     * @param message QueryDenomTraceRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTraceRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomTraceRequest message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomTraceRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTraceRequest;
-
-                    /**
-                     * Decodes a QueryDenomTraceRequest message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomTraceRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTraceRequest;
-
-                    /**
-                     * Verifies a QueryDenomTraceRequest message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomTraceRequest message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomTraceRequest
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTraceRequest;
-
-                    /**
-                     * Creates a plain object from a QueryDenomTraceRequest message. Also converts values to other types if specified.
-                     * @param message QueryDenomTraceRequest
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTraceRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomTraceRequest to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryDenomTraceResponse. */
-                interface IQueryDenomTraceResponse {
-
-                    /** QueryDenomTraceResponse denom_trace */
-                    denom_trace?: (ibc.applications.transfer.v1.IDenomTrace|null);
-                }
-
-                /** Represents a QueryDenomTraceResponse. */
-                class QueryDenomTraceResponse implements IQueryDenomTraceResponse {
-
-                    /**
-                     * Constructs a new QueryDenomTraceResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTraceResponse);
-
-                    /** QueryDenomTraceResponse denom_trace. */
-                    public denom_trace?: (ibc.applications.transfer.v1.IDenomTrace|null);
-
-                    /**
-                     * Encodes the specified QueryDenomTraceResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceResponse.verify|verify} messages.
-                     * @param message QueryDenomTraceResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTraceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomTraceResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTraceResponse.verify|verify} messages.
-                     * @param message QueryDenomTraceResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTraceResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomTraceResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomTraceResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTraceResponse;
-
-                    /**
-                     * Decodes a QueryDenomTraceResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomTraceResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTraceResponse;
-
-                    /**
-                     * Verifies a QueryDenomTraceResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomTraceResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomTraceResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTraceResponse;
-
-                    /**
-                     * Creates a plain object from a QueryDenomTraceResponse message. Also converts values to other types if specified.
-                     * @param message QueryDenomTraceResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTraceResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomTraceResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryDenomTracesRequest. */
-                interface IQueryDenomTracesRequest {
-
-                    /** QueryDenomTracesRequest pagination */
-                    pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-                }
-
-                /** Represents a QueryDenomTracesRequest. */
-                class QueryDenomTracesRequest implements IQueryDenomTracesRequest {
-
-                    /**
-                     * Constructs a new QueryDenomTracesRequest.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTracesRequest);
-
-                    /** QueryDenomTracesRequest pagination. */
-                    public pagination?: (cosmos.base.query.v1beta1.IPageRequest|null);
-
-                    /**
-                     * Encodes the specified QueryDenomTracesRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesRequest.verify|verify} messages.
-                     * @param message QueryDenomTracesRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTracesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomTracesRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesRequest.verify|verify} messages.
-                     * @param message QueryDenomTracesRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTracesRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomTracesRequest message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomTracesRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTracesRequest;
-
-                    /**
-                     * Decodes a QueryDenomTracesRequest message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomTracesRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTracesRequest;
-
-                    /**
-                     * Verifies a QueryDenomTracesRequest message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomTracesRequest message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomTracesRequest
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTracesRequest;
-
-                    /**
-                     * Creates a plain object from a QueryDenomTracesRequest message. Also converts values to other types if specified.
-                     * @param message QueryDenomTracesRequest
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTracesRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomTracesRequest to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryDenomTracesResponse. */
-                interface IQueryDenomTracesResponse {
-
-                    /** QueryDenomTracesResponse denom_traces */
-                    denom_traces?: (ibc.applications.transfer.v1.IDenomTrace[]|null);
-
-                    /** QueryDenomTracesResponse pagination */
-                    pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-                }
-
-                /** Represents a QueryDenomTracesResponse. */
-                class QueryDenomTracesResponse implements IQueryDenomTracesResponse {
-
-                    /**
-                     * Constructs a new QueryDenomTracesResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomTracesResponse);
-
-                    /** QueryDenomTracesResponse denom_traces. */
-                    public denom_traces: ibc.applications.transfer.v1.IDenomTrace[];
-
-                    /** QueryDenomTracesResponse pagination. */
-                    public pagination?: (cosmos.base.query.v1beta1.IPageResponse|null);
-
-                    /**
-                     * Encodes the specified QueryDenomTracesResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesResponse.verify|verify} messages.
-                     * @param message QueryDenomTracesResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomTracesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomTracesResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomTracesResponse.verify|verify} messages.
-                     * @param message QueryDenomTracesResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomTracesResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomTracesResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomTracesResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomTracesResponse;
-
-                    /**
-                     * Decodes a QueryDenomTracesResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomTracesResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomTracesResponse;
-
-                    /**
-                     * Verifies a QueryDenomTracesResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomTracesResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomTracesResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomTracesResponse;
-
-                    /**
-                     * Creates a plain object from a QueryDenomTracesResponse message. Also converts values to other types if specified.
-                     * @param message QueryDenomTracesResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomTracesResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomTracesResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryParamsRequest. */
-                interface IQueryParamsRequest {
-                }
-
-                /** Represents a QueryParamsRequest. */
-                class QueryParamsRequest implements IQueryParamsRequest {
-
-                    /**
-                     * Constructs a new QueryParamsRequest.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryParamsRequest);
-
-                    /**
-                     * Encodes the specified QueryParamsRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsRequest.verify|verify} messages.
-                     * @param message QueryParamsRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsRequest.verify|verify} messages.
-                     * @param message QueryParamsRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryParamsRequest message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryParamsRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryParamsRequest;
-
-                    /**
-                     * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryParamsRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryParamsRequest;
-
-                    /**
-                     * Verifies a QueryParamsRequest message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryParamsRequest
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryParamsRequest;
-
-                    /**
-                     * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
-                     * @param message QueryParamsRequest
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryParamsRequest to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryParamsResponse. */
-                interface IQueryParamsResponse {
-
-                    /** QueryParamsResponse params */
-                    params?: (ibc.applications.transfer.v1.IParams|null);
-                }
-
-                /** Represents a QueryParamsResponse. */
-                class QueryParamsResponse implements IQueryParamsResponse {
-
-                    /**
-                     * Constructs a new QueryParamsResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryParamsResponse);
-
-                    /** QueryParamsResponse params. */
-                    public params?: (ibc.applications.transfer.v1.IParams|null);
-
-                    /**
-                     * Encodes the specified QueryParamsResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsResponse.verify|verify} messages.
-                     * @param message QueryParamsResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryParamsResponse.verify|verify} messages.
-                     * @param message QueryParamsResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryParamsResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryParamsResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryParamsResponse;
-
-                    /**
-                     * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryParamsResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryParamsResponse;
-
-                    /**
-                     * Verifies a QueryParamsResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryParamsResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryParamsResponse;
-
-                    /**
-                     * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
-                     * @param message QueryParamsResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryParamsResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryDenomHashRequest. */
-                interface IQueryDenomHashRequest {
-
-                    /** QueryDenomHashRequest trace */
-                    trace?: (string|null);
-                }
-
-                /** Represents a QueryDenomHashRequest. */
-                class QueryDenomHashRequest implements IQueryDenomHashRequest {
-
-                    /**
-                     * Constructs a new QueryDenomHashRequest.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomHashRequest);
-
-                    /** QueryDenomHashRequest trace. */
-                    public trace: string;
-
-                    /**
-                     * Encodes the specified QueryDenomHashRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashRequest.verify|verify} messages.
-                     * @param message QueryDenomHashRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomHashRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomHashRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashRequest.verify|verify} messages.
-                     * @param message QueryDenomHashRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomHashRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomHashRequest message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomHashRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomHashRequest;
-
-                    /**
-                     * Decodes a QueryDenomHashRequest message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomHashRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomHashRequest;
-
-                    /**
-                     * Verifies a QueryDenomHashRequest message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomHashRequest message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomHashRequest
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomHashRequest;
-
-                    /**
-                     * Creates a plain object from a QueryDenomHashRequest message. Also converts values to other types if specified.
-                     * @param message QueryDenomHashRequest
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomHashRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomHashRequest to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryDenomHashResponse. */
-                interface IQueryDenomHashResponse {
-
-                    /** QueryDenomHashResponse hash */
-                    hash?: (string|null);
-                }
-
-                /** Represents a QueryDenomHashResponse. */
-                class QueryDenomHashResponse implements IQueryDenomHashResponse {
-
-                    /**
-                     * Constructs a new QueryDenomHashResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryDenomHashResponse);
-
-                    /** QueryDenomHashResponse hash. */
-                    public hash: string;
-
-                    /**
-                     * Encodes the specified QueryDenomHashResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashResponse.verify|verify} messages.
-                     * @param message QueryDenomHashResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryDenomHashResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryDenomHashResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryDenomHashResponse.verify|verify} messages.
-                     * @param message QueryDenomHashResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryDenomHashResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryDenomHashResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryDenomHashResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryDenomHashResponse;
-
-                    /**
-                     * Decodes a QueryDenomHashResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryDenomHashResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryDenomHashResponse;
-
-                    /**
-                     * Verifies a QueryDenomHashResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryDenomHashResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryDenomHashResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryDenomHashResponse;
-
-                    /**
-                     * Creates a plain object from a QueryDenomHashResponse message. Also converts values to other types if specified.
-                     * @param message QueryDenomHashResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryDenomHashResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryDenomHashResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryEscrowAddressRequest. */
-                interface IQueryEscrowAddressRequest {
-
-                    /** QueryEscrowAddressRequest port_id */
-                    port_id?: (string|null);
-
-                    /** QueryEscrowAddressRequest channel_id */
-                    channel_id?: (string|null);
-                }
-
-                /** Represents a QueryEscrowAddressRequest. */
-                class QueryEscrowAddressRequest implements IQueryEscrowAddressRequest {
-
-                    /**
-                     * Constructs a new QueryEscrowAddressRequest.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryEscrowAddressRequest);
-
-                    /** QueryEscrowAddressRequest port_id. */
-                    public port_id: string;
-
-                    /** QueryEscrowAddressRequest channel_id. */
-                    public channel_id: string;
-
-                    /**
-                     * Encodes the specified QueryEscrowAddressRequest message. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressRequest.verify|verify} messages.
-                     * @param message QueryEscrowAddressRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryEscrowAddressRequest message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressRequest.verify|verify} messages.
-                     * @param message QueryEscrowAddressRequest message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryEscrowAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryEscrowAddressRequest message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryEscrowAddressRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
-
-                    /**
-                     * Decodes a QueryEscrowAddressRequest message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryEscrowAddressRequest
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
-
-                    /**
-                     * Verifies a QueryEscrowAddressRequest message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryEscrowAddressRequest message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryEscrowAddressRequest
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryEscrowAddressRequest;
-
-                    /**
-                     * Creates a plain object from a QueryEscrowAddressRequest message. Also converts values to other types if specified.
-                     * @param message QueryEscrowAddressRequest
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryEscrowAddressRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryEscrowAddressRequest to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a QueryEscrowAddressResponse. */
-                interface IQueryEscrowAddressResponse {
-
-                    /** QueryEscrowAddressResponse escrow_address */
-                    escrow_address?: (string|null);
-                }
-
-                /** Represents a QueryEscrowAddressResponse. */
-                class QueryEscrowAddressResponse implements IQueryEscrowAddressResponse {
-
-                    /**
-                     * Constructs a new QueryEscrowAddressResponse.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IQueryEscrowAddressResponse);
-
-                    /** QueryEscrowAddressResponse escrow_address. */
-                    public escrow_address: string;
-
-                    /**
-                     * Encodes the specified QueryEscrowAddressResponse message. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressResponse.verify|verify} messages.
-                     * @param message QueryEscrowAddressResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IQueryEscrowAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified QueryEscrowAddressResponse message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.QueryEscrowAddressResponse.verify|verify} messages.
-                     * @param message QueryEscrowAddressResponse message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IQueryEscrowAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a QueryEscrowAddressResponse message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns QueryEscrowAddressResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
-
-                    /**
-                     * Decodes a QueryEscrowAddressResponse message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns QueryEscrowAddressResponse
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
-
-                    /**
-                     * Verifies a QueryEscrowAddressResponse message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a QueryEscrowAddressResponse message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns QueryEscrowAddressResponse
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.QueryEscrowAddressResponse;
-
-                    /**
-                     * Creates a plain object from a QueryEscrowAddressResponse message. Also converts values to other types if specified.
-                     * @param message QueryEscrowAddressResponse
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.QueryEscrowAddressResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this QueryEscrowAddressResponse to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a DenomTrace. */
-                interface IDenomTrace {
-
-                    /** DenomTrace path */
-                    path?: (string|null);
-
-                    /** DenomTrace base_denom */
-                    base_denom?: (string|null);
-                }
-
-                /** Represents a DenomTrace. */
-                class DenomTrace implements IDenomTrace {
-
-                    /**
-                     * Constructs a new DenomTrace.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IDenomTrace);
-
-                    /** DenomTrace path. */
-                    public path: string;
-
-                    /** DenomTrace base_denom. */
-                    public base_denom: string;
-
-                    /**
-                     * Encodes the specified DenomTrace message. Does not implicitly {@link ibc.applications.transfer.v1.DenomTrace.verify|verify} messages.
-                     * @param message DenomTrace message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IDenomTrace, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified DenomTrace message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.DenomTrace.verify|verify} messages.
-                     * @param message DenomTrace message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IDenomTrace, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a DenomTrace message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns DenomTrace
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.DenomTrace;
-
-                    /**
-                     * Decodes a DenomTrace message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns DenomTrace
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.DenomTrace;
-
-                    /**
-                     * Verifies a DenomTrace message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a DenomTrace message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns DenomTrace
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.DenomTrace;
-
-                    /**
-                     * Creates a plain object from a DenomTrace message. Also converts values to other types if specified.
-                     * @param message DenomTrace
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.DenomTrace, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this DenomTrace to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-
-                /** Properties of a Params. */
-                interface IParams {
-
-                    /** Params send_enabled */
-                    send_enabled?: (boolean|null);
-
-                    /** Params receive_enabled */
-                    receive_enabled?: (boolean|null);
-                }
-
-                /** Represents a Params. */
-                class Params implements IParams {
-
-                    /**
-                     * Constructs a new Params.
-                     * @param [properties] Properties to set
-                     */
-                    constructor(properties?: ibc.applications.transfer.v1.IParams);
-
-                    /** Params send_enabled. */
-                    public send_enabled: boolean;
-
-                    /** Params receive_enabled. */
-                    public receive_enabled: boolean;
-
-                    /**
-                     * Encodes the specified Params message. Does not implicitly {@link ibc.applications.transfer.v1.Params.verify|verify} messages.
-                     * @param message Params message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encode(message: ibc.applications.transfer.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Encodes the specified Params message, length delimited. Does not implicitly {@link ibc.applications.transfer.v1.Params.verify|verify} messages.
-                     * @param message Params message or plain object to encode
-                     * @param [writer] Writer to encode to
-                     * @returns Writer
-                     */
-                    public static encodeDelimited(message: ibc.applications.transfer.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                    /**
-                     * Decodes a Params message from the specified reader or buffer.
-                     * @param reader Reader or buffer to decode from
-                     * @param [length] Message length if known beforehand
-                     * @returns Params
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ibc.applications.transfer.v1.Params;
-
-                    /**
-                     * Decodes a Params message from the specified reader or buffer, length delimited.
-                     * @param reader Reader or buffer to decode from
-                     * @returns Params
-                     * @throws {Error} If the payload is not a reader or valid buffer
-                     * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                     */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ibc.applications.transfer.v1.Params;
-
-                    /**
-                     * Verifies a Params message.
-                     * @param message Plain object to verify
-                     * @returns `null` if valid, otherwise the reason why it is not
-                     */
-                    public static verify(message: { [k: string]: any }): (string|null);
-
-                    /**
-                     * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                     * @param object Plain object
-                     * @returns Params
-                     */
-                    public static fromObject(object: { [k: string]: any }): ibc.applications.transfer.v1.Params;
-
-                    /**
-                     * Creates a plain object from a Params message. Also converts values to other types if specified.
-                     * @param message Params
-                     * @param [options] Conversion options
-                     * @returns Plain object
-                     */
-                    public static toObject(message: ibc.applications.transfer.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                    /**
-                     * Converts this Params to JSON.
-                     * @returns JSON object
-                     */
-                    public toJSON(): { [k: string]: any };
-                }
-            }
-        }
-    }
-}
-
-/** Namespace cosmos_proto. */
-export namespace cosmos_proto {
-
-    /** Properties of an InterfaceDescriptor. */
-    interface IInterfaceDescriptor {
-
-        /** InterfaceDescriptor name */
-        name?: (string|null);
-
-        /** InterfaceDescriptor description */
-        description?: (string|null);
-    }
-
-    /** Represents an InterfaceDescriptor. */
-    class InterfaceDescriptor implements IInterfaceDescriptor {
-
-        /**
-         * Constructs a new InterfaceDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IInterfaceDescriptor);
-
-        /** InterfaceDescriptor name. */
-        public name: string;
-
-        /** InterfaceDescriptor description. */
-        public description: string;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified InterfaceDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.InterfaceDescriptor.verify|verify} messages.
-         * @param message InterfaceDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IInterfaceDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Decodes an InterfaceDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns InterfaceDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Verifies an InterfaceDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates an InterfaceDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns InterfaceDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.InterfaceDescriptor;
-
-        /**
-         * Creates a plain object from an InterfaceDescriptor message. Also converts values to other types if specified.
-         * @param message InterfaceDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.InterfaceDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this InterfaceDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** Properties of a ScalarDescriptor. */
-    interface IScalarDescriptor {
-
-        /** ScalarDescriptor name */
-        name?: (string|null);
-
-        /** ScalarDescriptor description */
-        description?: (string|null);
-
-        /** ScalarDescriptor field_type */
-        field_type?: (cosmos_proto.ScalarType[]|null);
-
-        /** ScalarDescriptor legacy_amino_encoding */
-        legacy_amino_encoding?: (string|null);
-    }
-
-    /** Represents a ScalarDescriptor. */
-    class ScalarDescriptor implements IScalarDescriptor {
-
-        /**
-         * Constructs a new ScalarDescriptor.
-         * @param [properties] Properties to set
-         */
-        constructor(properties?: cosmos_proto.IScalarDescriptor);
-
-        /** ScalarDescriptor name. */
-        public name: string;
-
-        /** ScalarDescriptor description. */
-        public description: string;
-
-        /** ScalarDescriptor field_type. */
-        public field_type: cosmos_proto.ScalarType[];
-
-        /** ScalarDescriptor legacy_amino_encoding. */
-        public legacy_amino_encoding: string;
-
-        /**
-         * Encodes the specified ScalarDescriptor message. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encode(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Encodes the specified ScalarDescriptor message, length delimited. Does not implicitly {@link cosmos_proto.ScalarDescriptor.verify|verify} messages.
-         * @param message ScalarDescriptor message or plain object to encode
-         * @param [writer] Writer to encode to
-         * @returns Writer
-         */
-        public static encodeDelimited(message: cosmos_proto.IScalarDescriptor, writer?: $protobuf.Writer): $protobuf.Writer;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer.
-         * @param reader Reader or buffer to decode from
-         * @param [length] Message length if known beforehand
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Decodes a ScalarDescriptor message from the specified reader or buffer, length delimited.
-         * @param reader Reader or buffer to decode from
-         * @returns ScalarDescriptor
-         * @throws {Error} If the payload is not a reader or valid buffer
-         * @throws {$protobuf.util.ProtocolError} If required fields are missing
-         */
-        public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Verifies a ScalarDescriptor message.
-         * @param message Plain object to verify
-         * @returns `null` if valid, otherwise the reason why it is not
-         */
-        public static verify(message: { [k: string]: any }): (string|null);
-
-        /**
-         * Creates a ScalarDescriptor message from a plain object. Also converts values to their respective internal types.
-         * @param object Plain object
-         * @returns ScalarDescriptor
-         */
-        public static fromObject(object: { [k: string]: any }): cosmos_proto.ScalarDescriptor;
-
-        /**
-         * Creates a plain object from a ScalarDescriptor message. Also converts values to other types if specified.
-         * @param message ScalarDescriptor
-         * @param [options] Conversion options
-         * @returns Plain object
-         */
-        public static toObject(message: cosmos_proto.ScalarDescriptor, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-        /**
-         * Converts this ScalarDescriptor to JSON.
-         * @returns JSON object
-         */
-        public toJSON(): { [k: string]: any };
-    }
-
-    /** ScalarType enum. */
-    enum ScalarType {
-        SCALAR_TYPE_UNSPECIFIED = 0,
-        SCALAR_TYPE_STRING = 1,
-        SCALAR_TYPE_BYTES = 2
-    }
-}
-
 /** Namespace osmosis. */
 export namespace osmosis {
 
@@ -21423,6 +24117,62 @@ export namespace osmosis {
                  * @returns Promise
                  */
                 public changeAdmin(request: osmosis.tokenfactory.v1beta1.IMsgChangeAdmin): Promise<osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse>;
+
+                /**
+                 * Calls SetDenomMetadata.
+                 * @param request MsgSetDenomMetadata message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgSetDenomMetadataResponse
+                 */
+                public setDenomMetadata(request: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadata, callback: osmosis.tokenfactory.v1beta1.Msg.SetDenomMetadataCallback): void;
+
+                /**
+                 * Calls SetDenomMetadata.
+                 * @param request MsgSetDenomMetadata message or plain object
+                 * @returns Promise
+                 */
+                public setDenomMetadata(request: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadata): Promise<osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse>;
+
+                /**
+                 * Calls SetBeforeSendHook.
+                 * @param request MsgSetBeforeSendHook message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgSetBeforeSendHookResponse
+                 */
+                public setBeforeSendHook(request: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHook, callback: osmosis.tokenfactory.v1beta1.Msg.SetBeforeSendHookCallback): void;
+
+                /**
+                 * Calls SetBeforeSendHook.
+                 * @param request MsgSetBeforeSendHook message or plain object
+                 * @returns Promise
+                 */
+                public setBeforeSendHook(request: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHook): Promise<osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse>;
+
+                /**
+                 * Calls ForceTransfer.
+                 * @param request MsgForceTransfer message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgForceTransferResponse
+                 */
+                public forceTransfer(request: osmosis.tokenfactory.v1beta1.IMsgForceTransfer, callback: osmosis.tokenfactory.v1beta1.Msg.ForceTransferCallback): void;
+
+                /**
+                 * Calls ForceTransfer.
+                 * @param request MsgForceTransfer message or plain object
+                 * @returns Promise
+                 */
+                public forceTransfer(request: osmosis.tokenfactory.v1beta1.IMsgForceTransfer): Promise<osmosis.tokenfactory.v1beta1.MsgForceTransferResponse>;
+
+                /**
+                 * Calls UpdateParams.
+                 * @param request MsgUpdateParams message or plain object
+                 * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+                 */
+                public updateParams(request: osmosis.tokenfactory.v1beta1.IMsgUpdateParams, callback: osmosis.tokenfactory.v1beta1.Msg.UpdateParamsCallback): void;
+
+                /**
+                 * Calls UpdateParams.
+                 * @param request MsgUpdateParams message or plain object
+                 * @returns Promise
+                 */
+                public updateParams(request: osmosis.tokenfactory.v1beta1.IMsgUpdateParams): Promise<osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse>;
             }
 
             namespace Msg {
@@ -21454,6 +24204,34 @@ export namespace osmosis {
                  * @param [response] MsgChangeAdminResponse
                  */
                 type ChangeAdminCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgChangeAdminResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#setDenomMetadata}.
+                 * @param error Error, if any
+                 * @param [response] MsgSetDenomMetadataResponse
+                 */
+                type SetDenomMetadataCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#setBeforeSendHook}.
+                 * @param error Error, if any
+                 * @param [response] MsgSetBeforeSendHookResponse
+                 */
+                type SetBeforeSendHookCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#forceTransfer}.
+                 * @param error Error, if any
+                 * @param [response] MsgForceTransferResponse
+                 */
+                type ForceTransferCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgForceTransferResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Msg#updateParams}.
+                 * @param error Error, if any
+                 * @param [response] MsgUpdateParamsResponse
+                 */
+                type UpdateParamsCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse) => void;
             }
 
             /** Properties of a MsgCreateDenom. */
@@ -21636,6 +24414,9 @@ export namespace osmosis {
 
                 /** MsgMint amount */
                 amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgMint mintToAddress */
+                mintToAddress?: (string|null);
             }
 
             /** Represents a MsgMint. */
@@ -21652,6 +24433,9 @@ export namespace osmosis {
 
                 /** MsgMint amount. */
                 public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgMint mintToAddress. */
+                public mintToAddress: string;
 
                 /**
                  * Encodes the specified MsgMint message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgMint.verify|verify} messages.
@@ -21802,6 +24586,9 @@ export namespace osmosis {
 
                 /** MsgBurn amount */
                 amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgBurn burnFromAddress */
+                burnFromAddress?: (string|null);
             }
 
             /** Represents a MsgBurn. */
@@ -21818,6 +24605,9 @@ export namespace osmosis {
 
                 /** MsgBurn amount. */
                 public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgBurn burnFromAddress. */
+                public burnFromAddress: string;
 
                 /**
                  * Encodes the specified MsgBurn message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgBurn.verify|verify} messages.
@@ -21969,8 +24759,8 @@ export namespace osmosis {
                 /** MsgChangeAdmin denom */
                 denom?: (string|null);
 
-                /** MsgChangeAdmin newAdmin */
-                newAdmin?: (string|null);
+                /** MsgChangeAdmin new_admin */
+                new_admin?: (string|null);
             }
 
             /** Represents a MsgChangeAdmin. */
@@ -21988,8 +24778,8 @@ export namespace osmosis {
                 /** MsgChangeAdmin denom. */
                 public denom: string;
 
-                /** MsgChangeAdmin newAdmin. */
-                public newAdmin: string;
+                /** MsgChangeAdmin new_admin. */
+                public new_admin: string;
 
                 /**
                  * Encodes the specified MsgChangeAdmin message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgChangeAdmin.verify|verify} messages.
@@ -22132,6 +24922,777 @@ export namespace osmosis {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a MsgSetBeforeSendHook. */
+            interface IMsgSetBeforeSendHook {
+
+                /** MsgSetBeforeSendHook sender */
+                sender?: (string|null);
+
+                /** MsgSetBeforeSendHook denom */
+                denom?: (string|null);
+
+                /** MsgSetBeforeSendHook cosmwasm_address */
+                cosmwasm_address?: (string|null);
+            }
+
+            /** Represents a MsgSetBeforeSendHook. */
+            class MsgSetBeforeSendHook implements IMsgSetBeforeSendHook {
+
+                /**
+                 * Constructs a new MsgSetBeforeSendHook.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHook);
+
+                /** MsgSetBeforeSendHook sender. */
+                public sender: string;
+
+                /** MsgSetBeforeSendHook denom. */
+                public denom: string;
+
+                /** MsgSetBeforeSendHook cosmwasm_address. */
+                public cosmwasm_address: string;
+
+                /**
+                 * Encodes the specified MsgSetBeforeSendHook message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook.verify|verify} messages.
+                 * @param message MsgSetBeforeSendHook message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHook, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSetBeforeSendHook message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook.verify|verify} messages.
+                 * @param message MsgSetBeforeSendHook message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHook, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSetBeforeSendHook message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSetBeforeSendHook
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook;
+
+                /**
+                 * Decodes a MsgSetBeforeSendHook message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSetBeforeSendHook
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook;
+
+                /**
+                 * Verifies a MsgSetBeforeSendHook message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSetBeforeSendHook message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSetBeforeSendHook
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook;
+
+                /**
+                 * Creates a plain object from a MsgSetBeforeSendHook message. Also converts values to other types if specified.
+                 * @param message MsgSetBeforeSendHook
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSetBeforeSendHook to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgSetBeforeSendHookResponse. */
+            interface IMsgSetBeforeSendHookResponse {
+            }
+
+            /** Represents a MsgSetBeforeSendHookResponse. */
+            class MsgSetBeforeSendHookResponse implements IMsgSetBeforeSendHookResponse {
+
+                /**
+                 * Constructs a new MsgSetBeforeSendHookResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHookResponse);
+
+                /**
+                 * Encodes the specified MsgSetBeforeSendHookResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse.verify|verify} messages.
+                 * @param message MsgSetBeforeSendHookResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHookResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSetBeforeSendHookResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse.verify|verify} messages.
+                 * @param message MsgSetBeforeSendHookResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgSetBeforeSendHookResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSetBeforeSendHookResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSetBeforeSendHookResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse;
+
+                /**
+                 * Decodes a MsgSetBeforeSendHookResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSetBeforeSendHookResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse;
+
+                /**
+                 * Verifies a MsgSetBeforeSendHookResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSetBeforeSendHookResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSetBeforeSendHookResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse;
+
+                /**
+                 * Creates a plain object from a MsgSetBeforeSendHookResponse message. Also converts values to other types if specified.
+                 * @param message MsgSetBeforeSendHookResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHookResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSetBeforeSendHookResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgSetDenomMetadata. */
+            interface IMsgSetDenomMetadata {
+
+                /** MsgSetDenomMetadata sender */
+                sender?: (string|null);
+
+                /** MsgSetDenomMetadata metadata */
+                metadata?: (cosmos.bank.v1beta1.IMetadata|null);
+            }
+
+            /** Represents a MsgSetDenomMetadata. */
+            class MsgSetDenomMetadata implements IMsgSetDenomMetadata {
+
+                /**
+                 * Constructs a new MsgSetDenomMetadata.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadata);
+
+                /** MsgSetDenomMetadata sender. */
+                public sender: string;
+
+                /** MsgSetDenomMetadata metadata. */
+                public metadata?: (cosmos.bank.v1beta1.IMetadata|null);
+
+                /**
+                 * Encodes the specified MsgSetDenomMetadata message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata.verify|verify} messages.
+                 * @param message MsgSetDenomMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSetDenomMetadata message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata.verify|verify} messages.
+                 * @param message MsgSetDenomMetadata message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadata, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSetDenomMetadata message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSetDenomMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata;
+
+                /**
+                 * Decodes a MsgSetDenomMetadata message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSetDenomMetadata
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata;
+
+                /**
+                 * Verifies a MsgSetDenomMetadata message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSetDenomMetadata message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSetDenomMetadata
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata;
+
+                /**
+                 * Creates a plain object from a MsgSetDenomMetadata message. Also converts values to other types if specified.
+                 * @param message MsgSetDenomMetadata
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSetDenomMetadata to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgSetDenomMetadataResponse. */
+            interface IMsgSetDenomMetadataResponse {
+            }
+
+            /** Represents a MsgSetDenomMetadataResponse. */
+            class MsgSetDenomMetadataResponse implements IMsgSetDenomMetadataResponse {
+
+                /**
+                 * Constructs a new MsgSetDenomMetadataResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadataResponse);
+
+                /**
+                 * Encodes the specified MsgSetDenomMetadataResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse.verify|verify} messages.
+                 * @param message MsgSetDenomMetadataResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadataResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgSetDenomMetadataResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse.verify|verify} messages.
+                 * @param message MsgSetDenomMetadataResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgSetDenomMetadataResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgSetDenomMetadataResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgSetDenomMetadataResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse;
+
+                /**
+                 * Decodes a MsgSetDenomMetadataResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgSetDenomMetadataResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse;
+
+                /**
+                 * Verifies a MsgSetDenomMetadataResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgSetDenomMetadataResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgSetDenomMetadataResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse;
+
+                /**
+                 * Creates a plain object from a MsgSetDenomMetadataResponse message. Also converts values to other types if specified.
+                 * @param message MsgSetDenomMetadataResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgSetDenomMetadataResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgSetDenomMetadataResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgForceTransfer. */
+            interface IMsgForceTransfer {
+
+                /** MsgForceTransfer sender */
+                sender?: (string|null);
+
+                /** MsgForceTransfer amount */
+                amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgForceTransfer transferFromAddress */
+                transferFromAddress?: (string|null);
+
+                /** MsgForceTransfer transferToAddress */
+                transferToAddress?: (string|null);
+            }
+
+            /** Represents a MsgForceTransfer. */
+            class MsgForceTransfer implements IMsgForceTransfer {
+
+                /**
+                 * Constructs a new MsgForceTransfer.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgForceTransfer);
+
+                /** MsgForceTransfer sender. */
+                public sender: string;
+
+                /** MsgForceTransfer amount. */
+                public amount?: (cosmos.base.v1beta1.ICoin|null);
+
+                /** MsgForceTransfer transferFromAddress. */
+                public transferFromAddress: string;
+
+                /** MsgForceTransfer transferToAddress. */
+                public transferToAddress: string;
+
+                /**
+                 * Encodes the specified MsgForceTransfer message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgForceTransfer.verify|verify} messages.
+                 * @param message MsgForceTransfer message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgForceTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgForceTransfer message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgForceTransfer.verify|verify} messages.
+                 * @param message MsgForceTransfer message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgForceTransfer, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgForceTransfer message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgForceTransfer
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgForceTransfer;
+
+                /**
+                 * Decodes a MsgForceTransfer message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgForceTransfer
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgForceTransfer;
+
+                /**
+                 * Verifies a MsgForceTransfer message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgForceTransfer message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgForceTransfer
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgForceTransfer;
+
+                /**
+                 * Creates a plain object from a MsgForceTransfer message. Also converts values to other types if specified.
+                 * @param message MsgForceTransfer
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgForceTransfer, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgForceTransfer to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgForceTransferResponse. */
+            interface IMsgForceTransferResponse {
+            }
+
+            /** Represents a MsgForceTransferResponse. */
+            class MsgForceTransferResponse implements IMsgForceTransferResponse {
+
+                /**
+                 * Constructs a new MsgForceTransferResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgForceTransferResponse);
+
+                /**
+                 * Encodes the specified MsgForceTransferResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgForceTransferResponse.verify|verify} messages.
+                 * @param message MsgForceTransferResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgForceTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgForceTransferResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgForceTransferResponse.verify|verify} messages.
+                 * @param message MsgForceTransferResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgForceTransferResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgForceTransferResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgForceTransferResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgForceTransferResponse;
+
+                /**
+                 * Decodes a MsgForceTransferResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgForceTransferResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgForceTransferResponse;
+
+                /**
+                 * Verifies a MsgForceTransferResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgForceTransferResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgForceTransferResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgForceTransferResponse;
+
+                /**
+                 * Creates a plain object from a MsgForceTransferResponse message. Also converts values to other types if specified.
+                 * @param message MsgForceTransferResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgForceTransferResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgForceTransferResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgUpdateParams. */
+            interface IMsgUpdateParams {
+
+                /** MsgUpdateParams authority */
+                authority?: (string|null);
+
+                /** MsgUpdateParams params */
+                params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+            }
+
+            /** Represents a MsgUpdateParams. */
+            class MsgUpdateParams implements IMsgUpdateParams {
+
+                /**
+                 * Constructs a new MsgUpdateParams.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgUpdateParams);
+
+                /** MsgUpdateParams authority. */
+                public authority: string;
+
+                /** MsgUpdateParams params. */
+                public params?: (osmosis.tokenfactory.v1beta1.IParams|null);
+
+                /**
+                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgUpdateParams.verify|verify} messages.
+                 * @param message MsgUpdateParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgUpdateParams.verify|verify} messages.
+                 * @param message MsgUpdateParams message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgUpdateParams message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgUpdateParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgUpdateParams;
+
+                /**
+                 * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgUpdateParams
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgUpdateParams;
+
+                /**
+                 * Verifies a MsgUpdateParams message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgUpdateParams
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgUpdateParams;
+
+                /**
+                 * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
+                 * @param message MsgUpdateParams
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgUpdateParams to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a MsgUpdateParamsResponse. */
+            interface IMsgUpdateParamsResponse {
+            }
+
+            /** Represents a MsgUpdateParamsResponse. */
+            class MsgUpdateParamsResponse implements IMsgUpdateParamsResponse {
+
+                /**
+                 * Constructs a new MsgUpdateParamsResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IMsgUpdateParamsResponse);
+
+                /**
+                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * @param message MsgUpdateParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * @param message MsgUpdateParamsResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns MsgUpdateParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse;
+
+                /**
+                 * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns MsgUpdateParamsResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse;
+
+                /**
+                 * Verifies a MsgUpdateParamsResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns MsgUpdateParamsResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse;
+
+                /**
+                 * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
+                 * @param message MsgUpdateParamsResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this MsgUpdateParamsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a Params. */
+            interface IParams {
+
+                /** Params denom_creation_fee */
+                denom_creation_fee?: (cosmos.base.v1beta1.ICoin[]|null);
+
+                /** Params denom_creation_gas_consume */
+                denom_creation_gas_consume?: (Long|null);
+            }
+
+            /** Represents a Params. */
+            class Params implements IParams {
+
+                /**
+                 * Constructs a new Params.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IParams);
+
+                /** Params denom_creation_fee. */
+                public denom_creation_fee: cosmos.base.v1beta1.ICoin[];
+
+                /** Params denom_creation_gas_consume. */
+                public denom_creation_gas_consume: Long;
+
+                /**
+                 * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
+                 * @param message Params message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Decodes a Params message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns Params
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Verifies a Params message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns Params
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.Params;
+
+                /**
+                 * Creates a plain object from a Params message. Also converts values to other types if specified.
+                 * @param message Params
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this Params to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
             /** Represents a Query */
             class Query extends $protobuf.rpc.Service {
 
@@ -22184,6 +25745,20 @@ export namespace osmosis {
                  * @returns Promise
                  */
                 public denomsFromCreator(request: osmosis.tokenfactory.v1beta1.IQueryDenomsFromCreatorRequest): Promise<osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse>;
+
+                /**
+                 * Calls BeforeSendHookAddress.
+                 * @param request QueryBeforeSendHookAddressRequest message or plain object
+                 * @param callback Node-style callback called with the error, if any, and QueryBeforeSendHookAddressResponse
+                 */
+                public beforeSendHookAddress(request: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressRequest, callback: osmosis.tokenfactory.v1beta1.Query.BeforeSendHookAddressCallback): void;
+
+                /**
+                 * Calls BeforeSendHookAddress.
+                 * @param request QueryBeforeSendHookAddressRequest message or plain object
+                 * @returns Promise
+                 */
+                public beforeSendHookAddress(request: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressRequest): Promise<osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse>;
             }
 
             namespace Query {
@@ -22208,6 +25783,13 @@ export namespace osmosis {
                  * @param [response] QueryDenomsFromCreatorResponse
                  */
                 type DenomsFromCreatorCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.QueryDenomsFromCreatorResponse) => void;
+
+                /**
+                 * Callback as used by {@link osmosis.tokenfactory.v1beta1.Query#beforeSendHookAddress}.
+                 * @param error Error, if any
+                 * @param [response] QueryBeforeSendHookAddressResponse
+                 */
+                type BeforeSendHookAddressCallback = (error: (Error|null), response?: osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse) => void;
             }
 
             /** Properties of a QueryParamsRequest. */
@@ -22373,11 +25955,8 @@ export namespace osmosis {
             /** Properties of a QueryDenomAuthorityMetadataRequest. */
             interface IQueryDenomAuthorityMetadataRequest {
 
-                /** QueryDenomAuthorityMetadataRequest creator */
-                creator?: (string|null);
-
-                /** QueryDenomAuthorityMetadataRequest subdenom */
-                subdenom?: (string|null);
+                /** QueryDenomAuthorityMetadataRequest denom */
+                denom?: (string|null);
             }
 
             /** Represents a QueryDenomAuthorityMetadataRequest. */
@@ -22389,11 +25968,8 @@ export namespace osmosis {
                  */
                 constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryDenomAuthorityMetadataRequest);
 
-                /** QueryDenomAuthorityMetadataRequest creator. */
-                public creator: string;
-
-                /** QueryDenomAuthorityMetadataRequest subdenom. */
-                public subdenom: string;
+                /** QueryDenomAuthorityMetadataRequest denom. */
+                public denom: string;
 
                 /**
                  * Encodes the specified QueryDenomAuthorityMetadataRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryDenomAuthorityMetadataRequest.verify|verify} messages.
@@ -22708,6 +26284,172 @@ export namespace osmosis {
                 public toJSON(): { [k: string]: any };
             }
 
+            /** Properties of a QueryBeforeSendHookAddressRequest. */
+            interface IQueryBeforeSendHookAddressRequest {
+
+                /** QueryBeforeSendHookAddressRequest denom */
+                denom?: (string|null);
+            }
+
+            /** Represents a QueryBeforeSendHookAddressRequest. */
+            class QueryBeforeSendHookAddressRequest implements IQueryBeforeSendHookAddressRequest {
+
+                /**
+                 * Constructs a new QueryBeforeSendHookAddressRequest.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressRequest);
+
+                /** QueryBeforeSendHookAddressRequest denom. */
+                public denom: string;
+
+                /**
+                 * Encodes the specified QueryBeforeSendHookAddressRequest message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest.verify|verify} messages.
+                 * @param message QueryBeforeSendHookAddressRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryBeforeSendHookAddressRequest message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest.verify|verify} messages.
+                 * @param message QueryBeforeSendHookAddressRequest message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryBeforeSendHookAddressRequest message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryBeforeSendHookAddressRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest;
+
+                /**
+                 * Decodes a QueryBeforeSendHookAddressRequest message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryBeforeSendHookAddressRequest
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest;
+
+                /**
+                 * Verifies a QueryBeforeSendHookAddressRequest message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryBeforeSendHookAddressRequest message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryBeforeSendHookAddressRequest
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest;
+
+                /**
+                 * Creates a plain object from a QueryBeforeSendHookAddressRequest message. Also converts values to other types if specified.
+                 * @param message QueryBeforeSendHookAddressRequest
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryBeforeSendHookAddressRequest to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
+            /** Properties of a QueryBeforeSendHookAddressResponse. */
+            interface IQueryBeforeSendHookAddressResponse {
+
+                /** QueryBeforeSendHookAddressResponse cosmwasm_address */
+                cosmwasm_address?: (string|null);
+            }
+
+            /** Represents a QueryBeforeSendHookAddressResponse. */
+            class QueryBeforeSendHookAddressResponse implements IQueryBeforeSendHookAddressResponse {
+
+                /**
+                 * Constructs a new QueryBeforeSendHookAddressResponse.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressResponse);
+
+                /** QueryBeforeSendHookAddressResponse cosmwasm_address. */
+                public cosmwasm_address: string;
+
+                /**
+                 * Encodes the specified QueryBeforeSendHookAddressResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse.verify|verify} messages.
+                 * @param message QueryBeforeSendHookAddressResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified QueryBeforeSendHookAddressResponse message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse.verify|verify} messages.
+                 * @param message QueryBeforeSendHookAddressResponse message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a QueryBeforeSendHookAddressResponse message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns QueryBeforeSendHookAddressResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse;
+
+                /**
+                 * Decodes a QueryBeforeSendHookAddressResponse message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns QueryBeforeSendHookAddressResponse
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse;
+
+                /**
+                 * Verifies a QueryBeforeSendHookAddressResponse message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a QueryBeforeSendHookAddressResponse message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns QueryBeforeSendHookAddressResponse
+                 */
+                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse;
+
+                /**
+                 * Creates a plain object from a QueryBeforeSendHookAddressResponse message. Also converts values to other types if specified.
+                 * @param message QueryBeforeSendHookAddressResponse
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this QueryBeforeSendHookAddressResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+
             /** Properties of a DenomAuthorityMetadata. */
             interface IDenomAuthorityMetadata {
 
@@ -22786,83 +26528,6 @@ export namespace osmosis {
 
                 /**
                  * Converts this DenomAuthorityMetadata to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-
-            /** Properties of a Params. */
-            interface IParams {
-            }
-
-            /** Represents a Params. */
-            class Params implements IParams {
-
-                /**
-                 * Constructs a new Params.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: osmosis.tokenfactory.v1beta1.IParams);
-
-                /**
-                 * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
-                 * @param message Params message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: osmosis.tokenfactory.v1beta1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): osmosis.tokenfactory.v1beta1.Params;
-
-                /**
-                 * Decodes a Params message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns Params
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): osmosis.tokenfactory.v1beta1.Params;
-
-                /**
-                 * Verifies a Params message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates a Params message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns Params
-                 */
-                public static fromObject(object: { [k: string]: any }): osmosis.tokenfactory.v1beta1.Params;
-
-                /**
-                 * Creates a plain object from a Params message. Also converts values to other types if specified.
-                 * @param message Params
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: osmosis.tokenfactory.v1beta1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this Params to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };
