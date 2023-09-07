@@ -1,4 +1,5 @@
 import {
+  ADMIN_MODULE_ADDRESS,
   CosmosWrapper,
   NEUTRON_DENOM,
   WalletWrapper,
@@ -222,6 +223,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitUpdateAdminProposal(
         'Proposal #9',
         'Update admin proposal. Will pass',
+        ADMIN_MODULE_ADDRESS,
         contractAddressForAdminMigration,
         daoMember1.user.wallet.address.toString(),
         '1000',
@@ -232,6 +234,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitClearAdminProposal(
         'Proposal #10',
         'Clear admin proposal. Will pass',
+        ADMIN_MODULE_ADDRESS,
         contractAddressForAdminMigration,
         '1000',
       );
@@ -344,6 +347,24 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    test('create proposal #18, will pass', async () => {
+      await daoMember1.submitPinCodesCustomAuthorityProposal(
+        'Proposal #18',
+        'Pin codes proposal with wrong authority. This one will pass & fail on execution',
+        [1, 2],
+        '1000',
+        daoMember1.user.wallet.address.toString(),
+      );
+    });
+
+    test('create proposal #19, will pass', async () => {
+      await daoMember1.submitBankUpdateParamsProposal(
+        'Proposal #19',
+        'Update params for bank module proposal. This one will pass & fail on execution due type is not whitelisted',
+        '1000',
+      );
+    });
+
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         [
@@ -412,6 +433,8 @@ describe('Neutron / Governance', () => {
       await dao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
+      const host = await neutronChain.queryHostEnabled();
+      expect(host).toEqual(true);
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check if host is not enabled after proposal execution', async () => {
@@ -949,19 +972,77 @@ describe('Neutron / Governance', () => {
       expect(queryResult).toEqual(null);
     });
   });
+
+  describe('vote for proposal #18 (no, yes, yes)', () => {
+    const proposalId = 18;
+    test('vote NO from wallet 1', async () => {
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2', async () => {
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3', async () => {
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('execute proposal #18', () => {
+    const proposalId = 18;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal, should fail', async () => {
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(
+        rawLog.includes(
+          'authority in incoming msg is not equal to admin module',
+        ),
+      );
+    });
+  });
+
+  describe('vote for proposal #19 (no, yes, yes)', () => {
+    const proposalId = 19;
+    test('vote NO from wallet 1', async () => {
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2', async () => {
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3', async () => {
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('execute proposal #19', () => {
+    const proposalId = 19;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal, should fail', async () => {
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes('sdk.Msg is not whitelisted'));
+    });
+  });
+
   describe('check that only admin can create valid proposals', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
-      console.log('1');
-      const hostStatus = await neutronChain.queryHostEnabled();
-      expect(hostStatus).toEqual(false);
-      console.log('2');
       const res = await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
         'true',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
-      console.log('3');
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
       expect(afterProposalHostStatus).toEqual(false);
     });
