@@ -16,6 +16,12 @@ export type PinCodesInfo = {
   codes_ids: number[];
 };
 
+
+export type UpdateParamsInterchaintxsInfo = {
+  title: string;
+  description: string;
+  msg_submit_tx_max_messages: number;
+};
 export type UpdateAdmin = {
   sender: string;
   contract: string;
@@ -185,6 +191,26 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
             '@type': '/cosmwasm.wasm.v1.MsgUnpinCodes',
             authority: ADMIN_MODULE_ADDRESS,
             code_ids: info.codes_ids,
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateInterchaintxsParamsProposal = (
+  info: UpdateParamsInterchaintxsInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmos.interchaintxs.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            pararms: {
+              msg_submit_tx_max_messages: info.msg_submit_tx_max_messages,
+            },
           }),
         },
       },

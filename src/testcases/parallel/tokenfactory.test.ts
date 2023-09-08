@@ -362,6 +362,32 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res.admin).toEqual(neutronAccount.wallet.address.toString());
     });
+    test('set_before_send_hook', async () => {
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_before_send_hook: {
+            denom,
+            cosm_wasm_addr: contractAddress
+          },
+        }),
+      );
+
+      const balance = await neutronChain.queryDenomBalance(
+        neutronAccount.wallet.address.toString(),
+        denom,
+      );
+      expect(balance).toEqual(amount);
+      const res = await neutronChain.queryContract<{ cosm_wasm_addr: string }>(
+        contractAddress,
+        {
+          before_send_hook: {
+            denom,
+          },
+        },
+      );
+      expect(res.cosm_wasm_addr).toEqual(contractAddress);
+    });
   });
 });
 

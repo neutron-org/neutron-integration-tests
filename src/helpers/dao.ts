@@ -28,7 +28,7 @@ import {
   removeSchedule,
   SendProposalInfo,
   unpinCodesProposal,
-  updateAdminProposal,
+  updateAdminProposal, updateInterchaintxsParamsProposal,
   upgradeProposal,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
@@ -1199,6 +1199,29 @@ export class DaoMember {
       title,
       description,
       codes_ids: codesIds,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUnpinCodesProposal creates proposal which unpins given code ids to wasmvm.
+   */
+
+  async submitUpdateParamsInterchaintxsProposal(
+    title: string,
+    description: string,
+    msgSubmitTxMaxMessages: number,
+    amount: string,
+  ): Promise<number> {
+    const message = updateInterchaintxsParamsProposal({
+      title,
+      description,
+      msg_submit_tx_max_messages: msgSubmitTxMaxMessages,
     });
     return await this.submitSingleChoiceProposal(
       title,
