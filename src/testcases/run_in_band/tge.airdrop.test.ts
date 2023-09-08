@@ -21,6 +21,7 @@ describe('Neutron / TGE / Airdrop', () => {
   let neutronChain: cosmosWrapper.CosmosWrapper;
   let neutronAccount1: cosmosWrapper.WalletWrapper;
   let neutronAccount2: cosmosWrapper.WalletWrapper;
+  let neutronAccount3: cosmosWrapper.WalletWrapper;
   const codeIds: Record<string, types.CodeId> = {};
   const contractAddresses: Record<string, string> = {};
   let airdrop: InstanceType<typeof tge.Airdrop>;
@@ -47,7 +48,7 @@ describe('Neutron / TGE / Airdrop', () => {
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    neutronAccount3 = new WalletWrapper(
+    neutronAccount3 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
