@@ -13,7 +13,8 @@ import {
   msgBurn,
   msgChangeAdmin,
   msgCreateDenom,
-  msgMintDenom, msgSetBeforeSendHook,
+  msgMintDenom,
+  msgSetBeforeSendHook,
 } from '../../helpers/tokenfactory';
 
 interface DenomsFromCreator {
@@ -25,7 +26,7 @@ interface AuthorityMetadata {
 }
 
 interface BerforeSendHook {
-  readonly before_send_hook: { readonly CosmwasmAddress: string };
+  readonly cosmwasm_address: string;
 }
 
 describe('Neutron / Tokenfactory', () => {
@@ -121,14 +122,10 @@ describe('Neutron / Tokenfactory', () => {
         'new_token_denom',
       );
 
-      console.log(newTokenDenom);
-      console.log(neutronChain.sdk.url);
-
       const authorityMetadataBefore = await getAuthorityMetadata(
         neutronChain.sdk.url,
         newTokenDenom,
       );
-      console.log(authorityMetadataBefore);
 
       expect(authorityMetadataBefore.authority_metadata).toEqual({
         Admin: ownerWallet.address.toString(),
@@ -220,9 +217,7 @@ describe('Neutron / Tokenfactory', () => {
       newTokenDenom,
     );
 
-    expect(hookAfter.before_send_hook.CosmwasmAddress).toEqual(
-      ownerWallet.address.toString,
-    );
+    expect(hookAfter.cosmwasm_address).toEqual(ownerWallet.address.toString());
   });
 
   describe('wasmbindings', () => {
@@ -325,6 +320,25 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res.admin).toEqual(contractAddress);
     });
+    test('set_before_send_hook', async () => {
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_before_send_hook: {
+            denom,
+            cosm_wasm_addr: contractAddress,
+          },
+        }),
+      );
+      const res = await neutronChain.queryContract<{
+        cosm_wasm_addr: string;
+      }>(contractAddress, {
+        before_send_hook: {
+          denom,
+        },
+      });
+      expect(res.cosm_wasm_addr).toEqual(contractAddress);
+    });
 
     test('change admin', async () => {
       await neutronAccount.executeContract(
@@ -361,32 +375,6 @@ describe('Neutron / Tokenfactory', () => {
         },
       );
       expect(res.admin).toEqual(neutronAccount.wallet.address.toString());
-    });
-    test('set_before_send_hook', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          set_before_send_hook: {
-            denom,
-            cosm_wasm_addr: contractAddress
-          },
-        }),
-      );
-
-      const balance = await neutronChain.queryDenomBalance(
-        neutronAccount.wallet.address.toString(),
-        denom,
-      );
-      expect(balance).toEqual(amount);
-      const res = await neutronChain.queryContract<{ cosm_wasm_addr: string }>(
-        contractAddress,
-        {
-          before_send_hook: {
-            denom,
-          },
-        },
-      );
-      expect(res.cosm_wasm_addr).toEqual(contractAddress);
     });
   });
 });

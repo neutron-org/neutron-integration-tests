@@ -16,7 +16,6 @@ export type PinCodesInfo = {
   codes_ids: number[];
 };
 
-
 export type UpdateParamsInterchaintxsInfo = {
   title: string;
   description: string;
@@ -206,7 +205,7 @@ export const updateInterchaintxsParamsProposal = (
       admin_proposal: {
         proposal_execute_message: {
           message: JSON.stringify({
-            '@type': '/cosmos.interchaintxs.MsgUpdateParams',
+            '@type': '/neutron.interchaintxs.MsgUpdateParams',
             authority: ADMIN_MODULE_ADDRESS,
             pararms: {
               msg_submit_tx_max_messages: info.msg_submit_tx_max_messages,

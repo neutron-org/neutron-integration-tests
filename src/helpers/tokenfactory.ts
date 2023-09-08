@@ -22,10 +22,10 @@ cosmosclient.codec.register(
   '/osmosis.tokenfactory.v1beta1.MsgChangeAdmin',
   osmosis.tokenfactory.v1beta1.MsgChangeAdmin,
 );
-// cosmosclient.codec.register(
-//   '/osmosis.tokenfactory.v1beta1.MsgChangeAdmin',
-//   osmosis.tokenfactory.v1beta1.MsgChangeAdmin,
-// );
+cosmosclient.codec.register(
+  '/osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook',
+  osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook,
+);
 
 export const msgMintDenom = async (
   cmNeutron: WalletWrapper,
