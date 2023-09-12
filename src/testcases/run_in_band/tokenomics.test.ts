@@ -1,47 +1,47 @@
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  TotalBurnedNeutronsAmountResponse,
-  TotalSupplyByDenomResponse,
-  WalletWrapper,
-} from '../../helpers/cosmos';
 import Long from 'long';
-import { getWithAttempts } from '../../helpers/wait';
-import { getTreasuryContract } from '../../helpers/dao';
+import {
+  cosmosWrapper,
+  COSMOS_DENOM,
+  dao,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  wait,
+} from '@neutron-org/neutronjsplus';
 
+const config = require('../../config.json');
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
 
-    treasuryContractAddress = await getTreasuryContract(neutronChain);
+    treasuryContractAddress = await dao.getTreasuryContract(neutronChain);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -49,7 +49,7 @@ describe('Neutron / Tokenomics', () => {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let burnedBefore: TotalBurnedNeutronsAmountResponse;
+    let burnedBefore: cosmosWrapper.TotalBurnedNeutronsAmountResponse;
 
     test('Read total burned neutrons amount', async () => {
       burnedBefore = await neutronChain.queryTotalBurnedNeutronsAmount();
@@ -77,7 +77,7 @@ describe('Neutron / Tokenomics', () => {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let totalSupplyBefore: TotalSupplyByDenomResponse;
+    let totalSupplyBefore: cosmosWrapper.TotalSupplyByDenomResponse;
 
     test('Read total supply', async () => {
       totalSupplyBefore = await neutronChain.queryTotalSupplyByDenom(
@@ -162,7 +162,7 @@ describe('Neutron / Tokenomics', () => {
         testState.wallets.qaNeutron.genQaWal1.address.toString(),
         { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
-      await getWithAttempts(
+      await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           neutronChain.queryBalances(

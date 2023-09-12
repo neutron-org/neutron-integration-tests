@@ -1,29 +1,25 @@
 import 'jest-extended';
 import { cosmosclient, rest } from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  getSequenceId,
-  NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import {
-  AcknowledgementResult,
-  NeutronContract,
-  AckFailuresResponse,
-} from '../../helpers/types';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
 import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { getIca } from '../../helpers/ica';
+import {
+  cosmosWrapper,
+  COSMOS_DENOM,
+  ica,
+  NEUTRON_DENOM,
+  TestStateLocalCosmosTestNet,
+  types,
+  wait,
+} from '@neutron-org/neutronjsplus';
+
+const config = require('../../config.json');
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
@@ -32,23 +28,25 @@ describe('Neutron / Interchain TXs', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
@@ -58,7 +56,9 @@ describe('Neutron / Interchain TXs', () => {
     let codeId: number;
     describe('Setup', () => {
       test('store contract', async () => {
-        codeId = await neutronAccount.storeWasm(NeutronContract.INTERCHAIN_TXS);
+        codeId = await neutronAccount.storeWasm(
+          types.NeutronContract.INTERCHAIN_TXS,
+        );
         expect(codeId).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
@@ -99,7 +99,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
       });
       test('multiple IBC accounts created', async () => {
-        const channels = await getWithAttempts(
+        const channels = await wait.getWithAttempts(
           neutronChain.blockWaiter,
           () => neutronChain.listIBCChannels(),
           // Wait until there are 3 channels:
@@ -120,7 +120,7 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('get ica address', async () => {
-        const ica1 = await getIca(
+        const ica1 = await ica.getIca(
           neutronChain,
           contractAddress,
           icaId1,
@@ -131,7 +131,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(ica1.interchain_account_address.length).toEqual(65);
         icaAddress1 = ica1.interchain_account_address;
 
-        const ica2 = await getIca(
+        const ica2 = await ica.getIca(
           neutronChain,
           contractAddress,
           icaId2,
@@ -184,7 +184,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         await waitForAck(neutronChain, contractAddress, icaId1, sequenceId);
         const qres = await getAck(
@@ -193,12 +193,12 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
       test('check validator state', async () => {
-        const res1 = await getWithAttempts(
+        const res1 = await wait.getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
             rest.staking.delegatorDelegations(
@@ -251,7 +251,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         await waitForAck(neutronChain, contractAddress, icaId1, sequenceId);
         const qres = await getAck(
@@ -260,18 +260,18 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
 
         const ackSequenceId = sequenceId + 1;
         await waitForAck(neutronChain, contractAddress, icaId1, ackSequenceId);
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
       test('check validator state', async () => {
-        const res1 = await getWithAttempts(
+        const res1 = await wait.getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
             rest.staking.delegatorDelegations(
@@ -323,7 +323,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
 
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         await waitForAck(neutronChain, contractAddress, icaId2, sequenceId);
         const qres = await getAck(
@@ -332,7 +332,7 @@ describe('Neutron / Interchain TXs', () => {
           icaId2,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           error: [
             'message',
             'ABCI code: 1: error handling packet: see events for details',
@@ -354,7 +354,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res1.code).toEqual(0);
 
-        const sequenceId1 = getSequenceId(res1.raw_log);
+        const sequenceId1 = cosmosWrapper.getSequenceId(res1.raw_log);
 
         const res2 = await neutronAccount.executeContract(
           contractAddress,
@@ -369,7 +369,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res2.code).toEqual(0);
 
-        const sequenceId2 = getSequenceId(res2.raw_log);
+        const sequenceId2 = cosmosWrapper.getSequenceId(res2.raw_log);
 
         const qres1 = await waitForAck(
           neutronChain,
@@ -377,7 +377,7 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId1,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(qres1).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
         });
 
@@ -387,7 +387,7 @@ describe('Neutron / Interchain TXs', () => {
           icaId2,
           sequenceId2,
         );
-        expect(qres2).toMatchObject<AcknowledgementResult>({
+        expect(qres2).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
@@ -407,7 +407,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
 
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         // timeout handling may be slow, hence we wait for up to 100 blocks here
         await waitForAck(
@@ -423,7 +423,7 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(qres1).toMatchObject<types.AcknowledgementResult>({
           timeout: 'message',
         });
       });
@@ -542,7 +542,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        await getWithAttempts(
+        await wait.getWithAttempts(
           neutronChain.blockWaiter,
           async () => neutronChain.listIBCChannels(),
           // Wait until there are 4 channels:
@@ -551,7 +551,7 @@ describe('Neutron / Interchain TXs', () => {
           // - one more, we are opening it right now
           async (channels) => channels.channels.length == 4,
         );
-        await getWithAttempts(
+        await wait.getWithAttempts(
           neutronChain.blockWaiter,
           () => neutronChain.listIBCChannels(),
           async (channels) =>
@@ -573,7 +573,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const sequenceId = getSequenceId(res.raw_log);
+        const sequenceId = cosmosWrapper.getSequenceId(res.raw_log);
 
         const qres = await waitForAck(
           neutronChain,
@@ -581,7 +581,7 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(qres).toMatchObject<types.AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegate'],
         });
       });
@@ -638,7 +638,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 1,
@@ -681,7 +681,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 2,
@@ -724,7 +724,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 3,
@@ -768,7 +768,7 @@ describe('Neutron / Interchain TXs', () => {
         );
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
+        await wait.getWithAttempts<types.AckFailuresResponse>(
           neutronChain.blockWaiter,
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 4,
@@ -837,7 +837,10 @@ describe('Neutron / Interchain TXs', () => {
 /**
  * cleanAckResults clears all ACK's from contract storage
  */
-const cleanAckResults = (cm: WalletWrapper, contractAddress: string) =>
+const cleanAckResults = (
+  cm: cosmosWrapper.WalletWrapper,
+  contractAddress: string,
+) =>
   cm.executeContract(
     contractAddress,
     JSON.stringify({ clean_ack_results: {} }),
@@ -847,16 +850,16 @@ const cleanAckResults = (cm: WalletWrapper, contractAddress: string) =>
  * waitForAck waits until ACK appears in contract storage
  */
 const waitForAck = (
-  cm: CosmosWrapper,
+  cm: cosmosWrapper.CosmosWrapper,
   contractAddress: string,
   icaId: string,
   sequenceId: number,
   numAttempts = 20,
 ) =>
-  getWithAttempts(
+  wait.getWithAttempts(
     cm.blockWaiter,
     () =>
-      cm.queryContract<AcknowledgementResult>(contractAddress, {
+      cm.queryContract<types.AcknowledgementResult>(contractAddress, {
         acknowledgement_result: {
           interchain_account_id: icaId,
           sequence_id: sequenceId,
@@ -867,19 +870,19 @@ const waitForAck = (
   );
 
 const getAck = (
-  cm: CosmosWrapper,
+  cm: cosmosWrapper.CosmosWrapper,
   contractAddress: string,
   icaId: string,
   sequenceId: number,
 ) =>
-  cm.queryContract<AcknowledgementResult>(contractAddress, {
+  cm.queryContract<types.AcknowledgementResult>(contractAddress, {
     acknowledgement_result: {
       interchain_account_id: icaId,
       sequence_id: sequenceId,
     },
   });
 
-const getAcks = (cm: CosmosWrapper, contractAddress: string) =>
+const getAcks = (cm: cosmosWrapper.CosmosWrapper, contractAddress: string) =>
   cm.queryContract<AcksResponse[]>(contractAddress, {
     acknowledgement_results: {},
   });

@@ -1,42 +1,47 @@
 import Long from 'long';
 import {
+  cosmosWrapper,
   COSMOS_DENOM,
-  CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+  TestStateLocalCosmosTestNet,
+  types,
+} from '@neutron-org/neutronjsplus';
+
+const config = require('../../config.json');
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let gaiaChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let gaiaAccount: cosmosWrapper.WalletWrapper;
   let contractAddress: string;
   const transferDenom =
     'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
-    gaiaChain = new CosmosWrapper(
+    gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    gaiaAccount = new cosmosWrapper.WalletWrapper(
+      gaiaChain,
+      testState.wallets.cosmos.demo2,
+    );
   });
 
   describe('Wallets', () => {
@@ -51,9 +56,11 @@ describe('Neutron / IBC hooks', () => {
   });
 
   describe('Instantiate hooks ibc transfer contract', () => {
-    let codeId: CodeId;
+    let codeId: types.CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.MSG_RECEIVER);
+      codeId = await neutronAccount.storeWasm(
+        types.NeutronContract.MSG_RECEIVER,
+      );
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
