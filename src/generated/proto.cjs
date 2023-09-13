@@ -63755,6 +63755,7 @@
                      * @interface IParams
                      * @property {Array.<cosmos.base.v1beta1.ICoin>|null} [denom_creation_fee] Params denom_creation_fee
                      * @property {Long|null} [denom_creation_gas_consume] Params denom_creation_gas_consume
+                     * @property {string|null} [fee_collector_address] Params fee_collector_address
                      */
     
                     /**
@@ -63790,6 +63791,14 @@
                     Params.prototype.denom_creation_gas_consume = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
     
                     /**
+                     * Params fee_collector_address.
+                     * @member {string} fee_collector_address
+                     * @memberof osmosis.tokenfactory.v1beta1.Params
+                     * @instance
+                     */
+                    Params.prototype.fee_collector_address = "";
+    
+                    /**
                      * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
                      * @function encode
                      * @memberof osmosis.tokenfactory.v1beta1.Params
@@ -63806,6 +63815,8 @@
                                 $root.cosmos.base.v1beta1.Coin.encode(message.denom_creation_fee[i], writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                         if (message.denom_creation_gas_consume != null && Object.hasOwnProperty.call(message, "denom_creation_gas_consume"))
                             writer.uint32(/* id 2, wireType 0 =*/16).uint64(message.denom_creation_gas_consume);
+                        if (message.fee_collector_address != null && Object.hasOwnProperty.call(message, "fee_collector_address"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.fee_collector_address);
                         return writer;
                     };
     
@@ -63847,6 +63858,9 @@
                                 break;
                             case 2:
                                 message.denom_creation_gas_consume = reader.uint64();
+                                break;
+                            case 3:
+                                message.fee_collector_address = reader.string();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -63895,6 +63909,9 @@
                         if (message.denom_creation_gas_consume != null && message.hasOwnProperty("denom_creation_gas_consume"))
                             if (!$util.isInteger(message.denom_creation_gas_consume) && !(message.denom_creation_gas_consume && $util.isInteger(message.denom_creation_gas_consume.low) && $util.isInteger(message.denom_creation_gas_consume.high)))
                                 return "denom_creation_gas_consume: integer|Long expected";
+                        if (message.fee_collector_address != null && message.hasOwnProperty("fee_collector_address"))
+                            if (!$util.isString(message.fee_collector_address))
+                                return "fee_collector_address: string expected";
                         return null;
                     };
     
@@ -63929,6 +63946,8 @@
                                 message.denom_creation_gas_consume = object.denom_creation_gas_consume;
                             else if (typeof object.denom_creation_gas_consume === "object")
                                 message.denom_creation_gas_consume = new $util.LongBits(object.denom_creation_gas_consume.low >>> 0, object.denom_creation_gas_consume.high >>> 0).toNumber(true);
+                        if (object.fee_collector_address != null)
+                            message.fee_collector_address = String(object.fee_collector_address);
                         return message;
                     };
     
@@ -63947,12 +63966,14 @@
                         var object = {};
                         if (options.arrays || options.defaults)
                             object.denom_creation_fee = [];
-                        if (options.defaults)
+                        if (options.defaults) {
                             if ($util.Long) {
                                 var long = new $util.Long(0, 0, true);
                                 object.denom_creation_gas_consume = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
                             } else
                                 object.denom_creation_gas_consume = options.longs === String ? "0" : 0;
+                            object.fee_collector_address = "";
+                        }
                         if (message.denom_creation_fee && message.denom_creation_fee.length) {
                             object.denom_creation_fee = [];
                             for (var j = 0; j < message.denom_creation_fee.length; ++j)
@@ -63963,6 +63984,8 @@
                                 object.denom_creation_gas_consume = options.longs === String ? String(message.denom_creation_gas_consume) : message.denom_creation_gas_consume;
                             else
                                 object.denom_creation_gas_consume = options.longs === String ? $util.Long.prototype.toString.call(message.denom_creation_gas_consume) : options.longs === Number ? new $util.LongBits(message.denom_creation_gas_consume.low >>> 0, message.denom_creation_gas_consume.high >>> 0).toNumber(true) : message.denom_creation_gas_consume;
+                        if (message.fee_collector_address != null && message.hasOwnProperty("fee_collector_address"))
+                            object.fee_collector_address = message.fee_collector_address;
                         return object;
                     };
     

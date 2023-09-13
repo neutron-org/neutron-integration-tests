@@ -25612,6 +25612,9 @@ export namespace osmosis {
 
                 /** Params denom_creation_gas_consume */
                 denom_creation_gas_consume?: (Long|null);
+
+                /** Params fee_collector_address */
+                fee_collector_address?: (string|null);
             }
 
             /** Represents a Params. */
@@ -25628,6 +25631,9 @@ export namespace osmosis {
 
                 /** Params denom_creation_gas_consume. */
                 public denom_creation_gas_consume: Long;
+
+                /** Params fee_collector_address. */
+                public fee_collector_address: string;
 
                 /**
                  * Encodes the specified Params message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.Params.verify|verify} messages.
