@@ -403,7 +403,7 @@ export class CosmosWrapper {
   async queryMaxTxsAllowed(): Promise<number> {
     try {
       const req = await axios.get<InterchaintxsParamsResponse>(
-        `${this.sdk.url}/neutron/interchaintxs/v1/params`,
+        `${this.sdk.url}/neutron/interchaintxs/params`,
         {},
       );
       return req.data.params.msg_submit_tx_max_messages;
