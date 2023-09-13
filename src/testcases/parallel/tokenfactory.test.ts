@@ -25,8 +25,8 @@ interface AuthorityMetadata {
   readonly authority_metadata: { readonly Admin: string };
 }
 
-interface BerforeSendHook {
-  readonly cosmwasm_address: string;
+interface BeforeSendHook {
+  readonly contract_addr: string;
 }
 
 describe('Neutron / Tokenfactory', () => {
@@ -192,7 +192,7 @@ describe('Neutron / Tokenfactory', () => {
     });
   });
 
-  test('create denom, set before', async () => {
+  test('create denom, set before send hook', async () => {
     const denom = `test5`;
 
     const data = await msgCreateDenom(
@@ -217,7 +217,7 @@ describe('Neutron / Tokenfactory', () => {
       newTokenDenom,
     );
 
-    expect(hookAfter.cosmwasm_address).toEqual(ownerWallet.address.toString());
+    expect(hookAfter.contract_addr).toEqual(ownerWallet.address.toString());
   });
 
   describe('wasmbindings', () => {
@@ -413,8 +413,8 @@ const getAuthorityMetadata = async (
 const getBeforeSendHook = async (
   sdkUrl: string,
   denom: string,
-): Promise<BerforeSendHook> => {
-  const res = await axios.get<BerforeSendHook>(
+): Promise<BeforeSendHook> => {
+  const res = await axios.get<BeforeSendHook>(
     `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/before_send_hook`,
   );
 

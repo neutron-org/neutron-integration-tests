@@ -17,8 +17,6 @@ export type PinCodesInfo = {
 };
 
 export type UpdateParamsInterchaintxsInfo = {
-  title: string;
-  description: string;
   msg_submit_tx_max_messages: number;
 };
 export type UpdateAdmin = {
@@ -205,9 +203,9 @@ export const updateInterchaintxsParamsProposal = (
       admin_proposal: {
         proposal_execute_message: {
           message: JSON.stringify({
-            '@type': '/neutron.interchaintxs.MsgUpdateParams',
+            '@type': '/neutron.interchaintxs.v1.MsgUpdateParams',
             authority: ADMIN_MODULE_ADDRESS,
-            pararms: {
+            params: {
               msg_submit_tx_max_messages: info.msg_submit_tx_max_messages,
             },
           }),

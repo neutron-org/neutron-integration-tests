@@ -27,7 +27,7 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
-  GlobalfeeParamsResponse,
+  GlobalfeeParamsResponse, InterchaintxsParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -75,7 +75,6 @@ cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   cosmosclient.proto.cosmos.params.v1beta1.ParameterChangeProposal,
 );
-
 cosmosclient.codec.register(
   '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
@@ -104,6 +103,11 @@ cosmosclient.codec.register(
   '/pob.builder.v1.MsgAuctionBid',
   pob.builder.v1.MsgAuctionBid,
 );
+cosmosclient.codec.register(
+  '/neutron.interchaintxs.v1.MsgUpdateParams',
+  neutron.interchaintxs.v1.MsgUpdateParams,
+);
+
 
 export class CosmosWrapper {
   readonly sdk: cosmosclient.CosmosSDK;
@@ -388,6 +392,21 @@ export class CosmosWrapper {
         {},
       );
       return req.data.params.host_enabled;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
+  async queryMaxTxsAllowed(): Promise<number> {
+    try {
+      const req = await axios.get<InterchaintxsParamsResponse>(
+        `${this.sdk.url}/ibc/apps/interchain_accounts/host/v1/params`,
+        {},
+      );
+      return req.data.params.msg_submit_tx_max_messages;
     } catch (e) {
       if (e.response?.data?.message !== undefined) {
         throw new Error(e.response?.data?.message);

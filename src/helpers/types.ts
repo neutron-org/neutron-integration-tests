@@ -284,6 +284,12 @@ export type IcaHostParamsResponse = {
   };
 };
 
+export type InterchaintxsParamsResponse = {
+  params: {
+    msg_submit_tx_max_messages: number;
+  };
+};
+
 export type GlobalfeeParamsResponse = {
   minimum_gas_prices: cosmos.base.v1beta1.ICoin[];
   bypass_min_fee_msg_types: string[];

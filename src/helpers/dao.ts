@@ -1209,7 +1209,7 @@ export class DaoMember {
   }
 
   /**
-   * submitUnpinCodesProposal creates proposal which unpins given code ids to wasmvm.
+   * submitUpdateParamsInterchaintxsProposal creates proposal which changes params of interchaintxs module.
    */
 
   async submitUpdateParamsInterchaintxsProposal(
@@ -1219,8 +1219,6 @@ export class DaoMember {
     amount: string,
   ): Promise<number> {
     const message = updateInterchaintxsParamsProposal({
-      title,
-      description,
       msg_submit_tx_max_messages: msgSubmitTxMaxMessages,
     });
     return await this.submitSingleChoiceProposal(
