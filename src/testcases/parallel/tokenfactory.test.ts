@@ -26,7 +26,7 @@ interface AuthorityMetadata {
 }
 
 interface BeforeSendHook {
-  readonly contract_addr: string;
+  readonly cosmwasm_address: string;
 }
 
 describe('Neutron / Tokenfactory', () => {
@@ -217,7 +217,7 @@ describe('Neutron / Tokenfactory', () => {
       newTokenDenom,
     );
 
-    expect(hookAfter.contract_addr).toEqual(ownerWallet.address.toString());
+    expect(hookAfter.cosmwasm_address).toEqual(ownerWallet.address.toString());
   });
 
   describe('wasmbindings', () => {
@@ -331,13 +331,13 @@ describe('Neutron / Tokenfactory', () => {
         }),
       );
       const res = await neutronChain.queryContract<{
-        cosm_wasm_addr: string;
+        contract_addr: string;
       }>(contractAddress, {
         before_send_hook: {
           denom,
         },
       });
-      expect(res.cosm_wasm_addr).toEqual(contractAddress);
+      expect(res.contract_addr).toEqual(contractAddress);
     });
 
     test('change admin', async () => {
