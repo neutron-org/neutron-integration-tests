@@ -27,7 +27,8 @@ import {
   CurrentPlanResponse,
   PinnedCodesResponse,
   IcaHostParamsResponse,
-  GlobalfeeParamsResponse, InterchaintxsParamsResponse,
+  GlobalfeeParamsResponse,
+  InterchaintxsParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -107,7 +108,6 @@ cosmosclient.codec.register(
   '/neutron.interchaintxs.v1.MsgUpdateParams',
   neutron.interchaintxs.v1.MsgUpdateParams,
 );
-
 
 export class CosmosWrapper {
   readonly sdk: cosmosclient.CosmosSDK;
