@@ -1065,7 +1065,7 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
       const paramAfter = await neutronChain.queryMaxTxsAllowed();
-      expect(paramAfter).toEqual(11);
+      expect(paramAfter).toEqual("11");
     });
   });
 

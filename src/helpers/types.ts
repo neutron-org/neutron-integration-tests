@@ -286,7 +286,7 @@ export type IcaHostParamsResponse = {
 
 export type InterchaintxsParamsResponse = {
   params: {
-    msg_submit_tx_max_messages: number;
+    msg_submit_tx_max_messages: string;
   };
 };
 
