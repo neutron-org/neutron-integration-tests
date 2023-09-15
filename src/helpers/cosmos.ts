@@ -400,7 +400,7 @@ export class CosmosWrapper {
     }
   }
 
-  async queryMaxTxsAllowed(): Promise<number> {
+  async queryMaxTxsAllowed(): Promise<string> {
     try {
       const req = await axios.get<InterchaintxsParamsResponse>(
         `${this.sdk.url}/neutron/interchaintxs/params`,
@@ -695,8 +695,8 @@ export class WalletWrapper {
         }
       | string,
     fee = {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.chain.denom, amount: '1000' }],
+      gas_limit: Long.fromString('300000'),
+      amount: [{ denom: this.chain.denom, amount: '1500' }],
     },
     sequence: number = this.wallet.account.sequence,
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx

@@ -17,7 +17,7 @@ export type PinCodesInfo = {
 };
 
 export type UpdateParamsInterchaintxsInfo = {
-  msg_submit_tx_max_messages: number;
+  msg_submit_tx_max_messages: string;
 };
 export type UpdateAdmin = {
   sender: string;

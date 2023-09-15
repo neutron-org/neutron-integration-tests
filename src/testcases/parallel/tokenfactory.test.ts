@@ -190,34 +190,114 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceAfter).toEqual(9900);
     });
-  });
+    test('create denom, set before send hook', async () => {
+      const codeId = await neutronAccount.storeWasm(
+        NeutronContract.BEFORE_SEND_HOOK_TEST,
+      );
+      expect(codeId).toBeGreaterThan(0);
 
-  test('create denom, set before send hook', async () => {
-    const denom = `test5`;
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'before_send_hook_test',
+      );
+      const contractAddress = res[0]._contract_address;
 
-    const data = await msgCreateDenom(
-      neutronAccount,
-      ownerWallet.address.toString(),
-      denom,
-    );
-    const newTokenDenom = getEventAttribute(
-      (data as any).events,
-      'create_denom',
-      'new_token_denom',
-    );
-    await msgSetBeforeSendHook(
-      neutronAccount,
-      ownerWallet.address.toString(),
-      newTokenDenom,
-      ownerWallet.address.toString(),
-    );
+      const denom = `test5`;
 
-    const hookAfter = await getBeforeSendHook(
-      neutronChain.sdk.url,
-      newTokenDenom,
-    );
+      const data = await msgCreateDenom(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        denom,
+      );
+      const newTokenDenom = getEventAttribute(
+        (data as any).events,
+        'create_denom',
+        'new_token_denom',
+      );
 
-    expect(hookAfter.cosmwasm_address).toEqual(ownerWallet.address.toString());
+      await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
+        denom: newTokenDenom,
+        amount: '10000',
+      });
+
+      const balanceBefore = await neutronChain.queryDenomBalance(
+        ownerWallet.address.toString(),
+        newTokenDenom,
+      );
+
+      expect(balanceBefore).toEqual(10000);
+
+      await neutronAccount.msgSend(contractAddress, {
+        amount: '666',
+        denom: newTokenDenom,
+      });
+
+      const contractBalance = await neutronChain.queryDenomBalance(
+        contractAddress,
+        newTokenDenom,
+      );
+      expect(contractBalance).toEqual(666);
+
+      let queryBlock = await neutronChain.queryContract<{
+        block: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_block_before: {},
+      });
+      console.log(queryBlock);
+
+      let queryTrack = await neutronChain.queryContract<{
+        track: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_track_before: {},
+      });
+      console.log(queryTrack);
+
+      await msgSetBeforeSendHook(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        newTokenDenom,
+        contractAddress,
+      );
+
+      const hookAfter = await getBeforeSendHook(
+        neutronChain.sdk.url,
+        newTokenDenom,
+      );
+      expect(hookAfter.cosmwasm_address).toEqual(contractAddress);
+
+      await neutronAccount.msgSend(contractAddress, {
+        amount: '1',
+        denom: newTokenDenom,
+      });
+
+      const contractBalanceAfter = await neutronChain.queryDenomBalance(
+        contractAddress,
+        newTokenDenom,
+      );
+      expect(contractBalanceAfter).toEqual(667);
+
+      const balanceAfter = await neutronChain.queryDenomBalance(
+        ownerWallet.address.toString(),
+        newTokenDenom,
+      );
+      expect(balanceAfter).toEqual(9333);
+
+      queryBlock = await neutronChain.queryContract<{
+        block: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_block_before: {},
+      });
+
+      queryTrack = await neutronChain.queryContract<{
+        track: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_track_before: {},
+      });
+
+      expect(queryTrack.track.received).toEqual(true);
+      expect(queryBlock.block.received).toEqual(true);
+    });
   });
 
   describe('wasmbindings', () => {
@@ -338,6 +418,16 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
       expect(res.contract_addr).toEqual(contractAddress);
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_before_send_hook: {
+            denom,
+            cosm_wasm_addr: '',
+          },
+        }),
+      );
     });
 
     test('change admin', async () => {
