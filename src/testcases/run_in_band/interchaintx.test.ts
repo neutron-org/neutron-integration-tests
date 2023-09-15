@@ -74,6 +74,10 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
     describe('Create ICAs and setup contract', () => {
+      test('fund contract to pay fees', async () => {
+        const res = await neutronAccount.msgSend(contractAddress, '100000');
+        expect(res.code).toEqual(0);
+      });
       test('create ICA1', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
@@ -97,6 +101,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
+      });
+      test('check contract balance', async () => {
+        const res = await neutronChain.queryBalances(contractAddress);
+        const balance = res.balances.find(
+          (b) => b.denom === neutronChain.denom,
+        )?.amount;
+        expect(balance).toEqual('98000');
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
@@ -157,10 +168,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
       });
-      test('fund contract to pay fees', async () => {
-        const res = await neutronAccount.msgSend(contractAddress, '100000');
-        expect(res.code).toEqual(0);
-      });
+
       test('add some money to ICAs', async () => {
         const res1 = await gaiaAccount.msgSend(icaAddress1.toString(), '10000');
         expect(res1.code).toEqual(0);
@@ -230,7 +238,7 @@ describe('Neutron / Interchain TXs', () => {
         const balance = res.balances.find(
           (b) => b.denom === neutronChain.denom,
         )?.amount;
-        expect(balance).toEqual('98000');
+        expect(balance).toEqual('96000');
       });
     });
 
@@ -304,7 +312,7 @@ describe('Neutron / Interchain TXs', () => {
           (b) => b.denom === neutronChain.denom,
         )?.amount;
         // two interchain txs inside (2000 * 2 = 4000)
-        expect(balance).toEqual('94000');
+        expect(balance).toEqual('92000');
       });
     });
 
@@ -881,67 +889,37 @@ describe('Neutron / Interchain TXs', () => {
 
       test('check stored failures and acks', async () => {
         const failures = await neutronChain.queryAckFailures(contractAddress);
-        // 3 ack failures, 1 timeout failure, just as described in the tests above
+        // 4 ack failures, 2 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '0',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '2',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '1',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '3',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '2',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '4',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '3',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '5',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '4',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '6',
-            }),
-            ack_type: 'timeout',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '5',
-            packet: expect.objectContaining({
-              source_channel: 'channel-2',
-              sequence: '3',
-            }),
-            ack_type: 'timeout',
           }),
         ]);
 
@@ -1028,7 +1006,10 @@ describe('Neutron / Interchain TXs', () => {
         // make sure contract's state has been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(1);
-        expect(acks[0].sequence_id).toEqual(+failure.packet.sequence);
+        expect(acks[0].sequence_id).toEqual(
+          +JSON.parse(Buffer.from(failure.sudo_payload, 'base64').toString())
+            .response.request.sequence,
+        );
       });
     });
   });
