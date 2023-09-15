@@ -173,7 +173,6 @@ export const NeutronContract = {
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
   BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
-  NO100: 'no100.wasm',
 };
 
 export type MultiChoiceOption = {
