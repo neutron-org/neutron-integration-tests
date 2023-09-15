@@ -28,7 +28,8 @@ import {
   removeSchedule,
   SendProposalInfo,
   unpinCodesProposal,
-  updateAdminProposal, updateInterchaintxsParamsProposal,
+  updateAdminProposal,
+  updateInterchaintxsParamsProposal,
   upgradeProposal,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
