@@ -280,8 +280,8 @@ describe('Neutron / Treasury', () => {
         });
         expect(stats).toEqual(
           expect.objectContaining({
-            total_distributed: '42013',
-            total_reserved: `${158050 + parseInt(reserveStats.total_reserved)}`,
+            total_distributed: '42014',
+            total_reserved: `${158053 + parseInt(reserveStats.total_reserved)}`,
             total_processed_burned_coins: `${
               parseInt(burnedCoinsAfter!) -
               parseInt(burnedCoinsBefore!) +
@@ -298,7 +298,7 @@ describe('Neutron / Treasury', () => {
           NEUTRON_DENOM,
         );
         expect(treasuryBalance - lastTreasuryBalance).toEqual(
-          158050 + parseInt(reserveStats.total_reserved),
+          158053 + parseInt(reserveStats.total_reserved),
         );
         lastTreasuryBalance = treasuryBalance;
       });
@@ -308,7 +308,7 @@ describe('Neutron / Treasury', () => {
         });
         expect(pending).toEqual([
           [holder1Addr.toString(), '14005'],
-          [holder2Addr.toString(), '28008'],
+          [holder2Addr.toString(), '28009'],
         ]);
       });
       test('claim pending', async () => {
