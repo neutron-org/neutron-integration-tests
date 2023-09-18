@@ -1,11 +1,12 @@
 import {
   NEUTRON_DENOM,
-  WalletWrapper,
-  CosmosWrapper,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { getHeight } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+  cosmosWrapper,
+  types,
+  env,
+  TestStateLocalCosmosTestNet,
+} from '@neutron-org/neutronjsplus';
+
+const config = require('../../config.json');
 
 // general contract keys used across the tests
 const VOTING_REGISTRY_CONTRACT_KEY = 'VOTING_REGISTRY';
@@ -17,9 +18,9 @@ const NEUTRON_VAULT_3_CONTRACT_KEY = 'NEUTRON_VAULT_3';
 
 describe('Neutron / Voting Registry', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let cmInstantiator: WalletWrapper;
-  let cmDaoMember: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let cmInstantiator: cosmosWrapper.WalletWrapper;
+  let cmDaoMember: cosmosWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
   let votingRegistryAddr: string;
   let vault1Addr: string;
@@ -38,18 +39,18 @@ describe('Neutron / Voting Registry', () => {
   const vault3Bonding = 5_000_000;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    cmInstantiator = new WalletWrapper(
+    cmInstantiator = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cmDaoMember = new WalletWrapper(
+    cmDaoMember = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -529,15 +530,17 @@ describe('Neutron / Voting Registry', () => {
 });
 
 const deployContracts = async (
-  chain: CosmosWrapper,
-  instantiator: WalletWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
 ): Promise<Record<string, string>> => {
   const codeIds: Record<string, number> = {};
   for (const contract of [
     VOTING_REGISTRY_CONTRACT_KEY,
     NEUTRON_VAULT_CONTRACT_KEY,
   ]) {
-    const codeId = await instantiator.storeWasm(NeutronContract[contract]);
+    const codeId = await instantiator.storeWasm(
+      types.NeutronContract[contract],
+    );
     expect(codeId).toBeGreaterThan(0);
     codeIds[contract] = codeId;
   }
@@ -576,7 +579,7 @@ const deployContracts = async (
 };
 
 const deployVotingRegistry = async (
-  instantiator: WalletWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
   vaults: string[],
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
@@ -594,7 +597,7 @@ const deployVotingRegistry = async (
 };
 
 const deployNeutronVault = async (
-  instantiator: WalletWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
   vaultKey: string,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
@@ -613,7 +616,11 @@ const deployNeutronVault = async (
   contractAddresses[vaultKey] = res[0]._contract_address;
 };
 
-const bondFunds = async (cm: WalletWrapper, vault: string, amount: string) =>
+const bondFunds = async (
+  cm: cosmosWrapper.WalletWrapper,
+  vault: string,
+  amount: string,
+) =>
   cm.executeContract(
     vault,
     JSON.stringify({
@@ -622,7 +629,11 @@ const bondFunds = async (cm: WalletWrapper, vault: string, amount: string) =>
     [{ denom: NEUTRON_DENOM, amount: amount }],
   );
 
-const unbondFunds = async (cm: WalletWrapper, vault: string, amount: string) =>
+const unbondFunds = async (
+  cm: cosmosWrapper.WalletWrapper,
+  vault: string,
+  amount: string,
+) =>
   cm.executeContract(
     vault,
     JSON.stringify({
@@ -632,7 +643,7 @@ const unbondFunds = async (cm: WalletWrapper, vault: string, amount: string) =>
   );
 
 const activateVotingVault = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
@@ -647,7 +658,7 @@ const activateVotingVault = async (
   );
 
 const deactivateVotingVault = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
@@ -662,7 +673,7 @@ const deactivateVotingVault = async (
   );
 
 const addVotingVault = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
@@ -681,13 +692,13 @@ const addVotingVault = async (
  * retrieves total voting powerdata  from the same contracts.
  */
 const getVotingPowerInfo = async (
-  chain: CosmosWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
   address: string,
   contractAddresses: Record<string, string>,
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
-    height = await getHeight(chain.sdk);
+    height = await env.getHeight(chain.sdk);
   }
   const vault1Power = getVotingPowerAtHeight(
     chain,
@@ -748,7 +759,7 @@ const getVotingPowerInfo = async (
 };
 
 const getTotalPowerAtHeight = async (
-  chain: CosmosWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
   contract: string,
   height?: number,
 ): Promise<VotingPowerResponse> =>
@@ -758,7 +769,7 @@ const getTotalPowerAtHeight = async (
   });
 
 const getVotingPowerAtHeight = async (
-  chain: CosmosWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
   contract: string,
   address: string,
   height?: number,
@@ -776,7 +787,7 @@ const getVotingPowerAtHeight = async (
   });
 
 const getVotingVaults = async (
-  chain: CosmosWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
   registry: string,
   height?: number,
 ): Promise<VotingVault[]> =>
