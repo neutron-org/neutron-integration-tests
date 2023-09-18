@@ -244,14 +244,14 @@ describe('Neutron / Tokenfactory', () => {
       }>(contractAddress, {
         sudo_result_block_before: {},
       });
-      console.log(queryBlock);
-
       let queryTrack = await neutronChain.queryContract<{
         track: { received: boolean };
       }>(contractAddress, {
         sudo_result_track_before: {},
       });
-      console.log(queryTrack);
+
+      expect(queryTrack.track.received).toEqual(false);
+      expect(queryBlock.block.received).toEqual(false);
 
       await msgSetBeforeSendHook(
         neutronAccount,
