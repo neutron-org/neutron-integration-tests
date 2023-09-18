@@ -224,7 +224,7 @@ describe('Neutron / Subdao', () => {
       await neutronChain.blockWaiter.waitBlocks(2);
     });
 
-    test('prepare subdao with closeOnProposalExecutionFailed = false', async () => {
+    test('change subdao proposal config with closeOnProposalExecutionFailed = false', async () => {
       const subdaoConfig =
         await neutronChain.queryContract<SubdaoProposalConfig>(
           subDao.contracts.proposals.single.address,
@@ -243,7 +243,7 @@ describe('Neutron / Subdao', () => {
       );
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
         proposalId,
-      ); // Q: will throw?
+      );
       expect(timelockedProp.status).toEqual('timelocked');
       //wait for timelock durations
       await wait(20);
@@ -293,7 +293,8 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const res = await subDao.getTimelockedProposalErrors(proposalId3);
-      expect(res.errors.length).toEqual(0); // do not have errors because we do not write error here
+      // do not have errors because we did not have reply
+      expect(res.errors.length).toEqual(0);
 
       await neutronAccount1.msgSend(subDao.contracts.core.address, '300000');
 
@@ -336,7 +337,6 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked: success', async () => {
-      // from here
       await neutronAccount1.msgSend(subDao.contracts.core.address, '20000'); // fund the subdao treasury
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
       await wait(20);
