@@ -5,14 +5,14 @@ rm -r ./proto-thirdparty-tmp
 rm -rf ./ibc-go
 
 git clone git@github.com:cosmos/ibc-go.git
-cd ibc-go && git checkout v4.3.0 && cd ../
+cd ibc-go && git checkout v7.2.0  &&  cd proto && buf export .  --output=../../proto-thirdparty-tmp && cd ../..
 
-git clone git@github.com:Ethernal-Tech/admin-module.git
+ git clone git@github.com:neutron-org/admin-module.git
+ cd admin-module && git checkout feat/admin-module-sdk47 && cd proto && buf export .  --output=../../proto-thirdparty-tmp && cd ../..
 
 cp -r ibc-go/proto ./proto
-cp -r ibc-go/third_party/proto ./proto-thirdparty-tmp
 mv ./proto-thirdparty-tmp/tendermint ./proto/
-cp -r ./admin-module/proto/adminmodule ./proto/
+cp -r ./admin-module/proto/cosmos ./proto/
 
 proto_dirs=$(find ./proto -path -prune -o -name '*.proto' -print0 | xargs -0 -n1 dirname | sort | uniq)
 proto_files=()

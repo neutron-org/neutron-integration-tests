@@ -1,5 +1,6 @@
 import { google } from '../generated/proto';
 import Any = google.protobuf.Any;
+import { ADMIN_MODULE_ADDRESS } from './cosmos';
 
 export type ParamChangeProposalInfo = {
   title: string;
@@ -16,15 +17,13 @@ export type PinCodesInfo = {
 };
 
 export type UpdateAdmin = {
-  title: string;
-  description: string;
+  sender: string;
   contract: string;
   new_admin: string;
 };
 
 export type ClearAdmin = {
-  title: string;
-  description: string;
+  sender: string;
   contract: string;
 };
 
@@ -146,10 +145,31 @@ export const pinCodesProposal = (info: PinCodesInfo): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        pin_codes_proposal: {
-          title: info.title,
-          description: info.description,
-          code_ids: info.codes_ids,
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgPinCodes',
+            authority: ADMIN_MODULE_ADDRESS,
+            code_ids: info.codes_ids,
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const pinCodesCustomAutrhorityProposal = (
+  info: PinCodesInfo,
+  authority: string,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgPinCodes',
+            authority: authority,
+            code_ids: info.codes_ids,
+          }),
         },
       },
     },
@@ -160,10 +180,12 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        unpin_codes_proposal: {
-          title: info.title,
-          description: info.description,
-          code_ids: info.codes_ids,
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgUnpinCodes',
+            authority: ADMIN_MODULE_ADDRESS,
+            code_ids: info.codes_ids,
+          }),
         },
       },
     },
@@ -174,11 +196,13 @@ export const updateAdminProposal = (info: UpdateAdmin): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        update_admin_proposal: {
-          title: info.title,
-          description: info.description,
-          contract: info.contract,
-          new_admin: info.new_admin,
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgUpdateAdmin',
+            sender: info.sender,
+            contract: info.contract,
+            new_admin: info.new_admin,
+          }),
         },
       },
     },
@@ -189,10 +213,12 @@ export const clearAdminProposal = (info: ClearAdmin): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
-        clear_admin_proposal: {
-          title: info.title,
-          description: info.description,
-          contract: info.contract,
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmwasm.wasm.v1.MsgClearAdmin',
+            sender: info.sender,
+            contract: info.contract,
+          }),
         },
       },
     },

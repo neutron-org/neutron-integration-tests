@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {
+  ADMIN_MODULE_ADDRESS,
   CosmosWrapper,
   createBankMessage,
   getEventAttribute,
@@ -23,6 +24,7 @@ import {
   clientUpdateProposal,
   paramChangeProposal,
   ParamChangeProposalInfo,
+  pinCodesCustomAutrhorityProposal,
   pinCodesProposal,
   removeSchedule,
   SendProposalInfo,
@@ -857,14 +859,16 @@ export class DaoMember {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
-            software_upgrade_proposal: {
-              title,
-              description,
-              plan: {
-                name,
-                height,
-                info,
-              },
+            proposal_execute_message: {
+              message: JSON.stringify({
+                '@type': '/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade',
+                authority: ADMIN_MODULE_ADDRESS,
+                plan: {
+                  name,
+                  height,
+                  info,
+                },
+              }),
             },
           },
         },
@@ -890,9 +894,41 @@ export class DaoMember {
       custom: {
         submit_admin_proposal: {
           admin_proposal: {
-            cancel_software_upgrade_proposal: {
-              title,
-              description,
+            proposal_execute_message: {
+              message: JSON.stringify({
+                '@type': '/cosmos.upgrade.v1beta1.MsgCancelUpgrade',
+                authority: 'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+              }),
+            },
+          },
+        },
+      },
+    };
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
+  }
+  /**
+   * submitCancelSoftwareUpgradeProposal creates proposal.
+   */
+  async submitBankUpdateParamsProposal(
+    title: string,
+    description: string,
+    deposit: string,
+  ): Promise<number> {
+    const message = {
+      custom: {
+        submit_admin_proposal: {
+          admin_proposal: {
+            proposal_execute_message: {
+              message: JSON.stringify({
+                '@type': '/cosmos.bank.v1beta1.MsgUpdateParams',
+                authority: ADMIN_MODULE_ADDRESS,
+                params: { default_send_enabled: false },
+              }),
             },
           },
         },
@@ -1179,6 +1215,32 @@ export class DaoMember {
   }
 
   /**
+   * submitPinCodesCustomAuthorityProposal creates proposal which pins given code ids to wasmvm.
+   */
+  async submitPinCodesCustomAuthorityProposal(
+    title: string,
+    description: string,
+    codesIds: number[],
+    amount: string,
+    authority: string,
+  ): Promise<number> {
+    const message = pinCodesCustomAutrhorityProposal(
+      {
+        title,
+        description,
+        codes_ids: codesIds,
+      },
+      authority,
+    );
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
    * submitUnpinCodesProposal creates proposal which unpins given code ids to wasmvm.
    */
 
@@ -1260,13 +1322,13 @@ export class DaoMember {
   async submitUpdateAdminProposal(
     title: string,
     description: string,
+    sender: string,
     contract: string,
     newAdmin: string,
     amount: string,
   ): Promise<number> {
     const message = updateAdminProposal({
-      title,
-      description,
+      sender,
       contract,
       new_admin: newAdmin,
     });
@@ -1284,10 +1346,11 @@ export class DaoMember {
   async submitClearAdminProposal(
     title: string,
     description: string,
+    sender: string,
     contract: string,
     amount: string,
   ): Promise<number> {
-    const message = clearAdminProposal({ title, description, contract });
+    const message = clearAdminProposal({ sender, contract });
     return await this.submitSingleChoiceProposal(
       title,
       description,
