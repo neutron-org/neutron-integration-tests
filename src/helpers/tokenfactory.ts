@@ -123,12 +123,12 @@ export const msgSetBeforeSendHook = async (
   cmNeutron: WalletWrapper,
   creator: string,
   denom: string,
-  cosmwasmAddress: string,
+  contractAddr: string,
 ): Promise<BroadcastTx200ResponseTxResponse> => {
   const msgMint = new osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook({
     sender: creator,
     denom,
-    cosmwasm_address: cosmwasmAddress,
+    contract_addr: contractAddr,
   });
   const res = await cmNeutron.execTx(
     {

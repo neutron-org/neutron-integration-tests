@@ -62290,7 +62290,7 @@
                      * @interface IMsgSetBeforeSendHook
                      * @property {string|null} [sender] MsgSetBeforeSendHook sender
                      * @property {string|null} [denom] MsgSetBeforeSendHook denom
-                     * @property {string|null} [cosmwasm_address] MsgSetBeforeSendHook cosmwasm_address
+                     * @property {string|null} [contract_addr] MsgSetBeforeSendHook contract_addr
                      */
     
                     /**
@@ -62325,12 +62325,12 @@
                     MsgSetBeforeSendHook.prototype.denom = "";
     
                     /**
-                     * MsgSetBeforeSendHook cosmwasm_address.
-                     * @member {string} cosmwasm_address
+                     * MsgSetBeforeSendHook contract_addr.
+                     * @member {string} contract_addr
                      * @memberof osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook
                      * @instance
                      */
-                    MsgSetBeforeSendHook.prototype.cosmwasm_address = "";
+                    MsgSetBeforeSendHook.prototype.contract_addr = "";
     
                     /**
                      * Encodes the specified MsgSetBeforeSendHook message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook.verify|verify} messages.
@@ -62348,8 +62348,8 @@
                             writer.uint32(/* id 1, wireType 2 =*/10).string(message.sender);
                         if (message.denom != null && Object.hasOwnProperty.call(message, "denom"))
                             writer.uint32(/* id 2, wireType 2 =*/18).string(message.denom);
-                        if (message.cosmwasm_address != null && Object.hasOwnProperty.call(message, "cosmwasm_address"))
-                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.cosmwasm_address);
+                        if (message.contract_addr != null && Object.hasOwnProperty.call(message, "contract_addr"))
+                            writer.uint32(/* id 3, wireType 2 =*/26).string(message.contract_addr);
                         return writer;
                     };
     
@@ -62391,7 +62391,7 @@
                                 message.denom = reader.string();
                                 break;
                             case 3:
-                                message.cosmwasm_address = reader.string();
+                                message.contract_addr = reader.string();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -62434,9 +62434,9 @@
                         if (message.denom != null && message.hasOwnProperty("denom"))
                             if (!$util.isString(message.denom))
                                 return "denom: string expected";
-                        if (message.cosmwasm_address != null && message.hasOwnProperty("cosmwasm_address"))
-                            if (!$util.isString(message.cosmwasm_address))
-                                return "cosmwasm_address: string expected";
+                        if (message.contract_addr != null && message.hasOwnProperty("contract_addr"))
+                            if (!$util.isString(message.contract_addr))
+                                return "contract_addr: string expected";
                         return null;
                     };
     
@@ -62456,8 +62456,8 @@
                             message.sender = String(object.sender);
                         if (object.denom != null)
                             message.denom = String(object.denom);
-                        if (object.cosmwasm_address != null)
-                            message.cosmwasm_address = String(object.cosmwasm_address);
+                        if (object.contract_addr != null)
+                            message.contract_addr = String(object.contract_addr);
                         return message;
                     };
     
@@ -62477,14 +62477,14 @@
                         if (options.defaults) {
                             object.sender = "";
                             object.denom = "";
-                            object.cosmwasm_address = "";
+                            object.contract_addr = "";
                         }
                         if (message.sender != null && message.hasOwnProperty("sender"))
                             object.sender = message.sender;
                         if (message.denom != null && message.hasOwnProperty("denom"))
                             object.denom = message.denom;
-                        if (message.cosmwasm_address != null && message.hasOwnProperty("cosmwasm_address"))
-                            object.cosmwasm_address = message.cosmwasm_address;
+                        if (message.contract_addr != null && message.hasOwnProperty("contract_addr"))
+                            object.contract_addr = message.contract_addr;
                         return object;
                     };
     
@@ -65432,7 +65432,7 @@
                      * Properties of a QueryBeforeSendHookAddressResponse.
                      * @memberof osmosis.tokenfactory.v1beta1
                      * @interface IQueryBeforeSendHookAddressResponse
-                     * @property {string|null} [cosmwasm_address] QueryBeforeSendHookAddressResponse cosmwasm_address
+                     * @property {string|null} [contract_addr] QueryBeforeSendHookAddressResponse contract_addr
                      */
     
                     /**
@@ -65451,12 +65451,12 @@
                     }
     
                     /**
-                     * QueryBeforeSendHookAddressResponse cosmwasm_address.
-                     * @member {string} cosmwasm_address
+                     * QueryBeforeSendHookAddressResponse contract_addr.
+                     * @member {string} contract_addr
                      * @memberof osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse
                      * @instance
                      */
-                    QueryBeforeSendHookAddressResponse.prototype.cosmwasm_address = "";
+                    QueryBeforeSendHookAddressResponse.prototype.contract_addr = "";
     
                     /**
                      * Encodes the specified QueryBeforeSendHookAddressResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse.verify|verify} messages.
@@ -65470,8 +65470,8 @@
                     QueryBeforeSendHookAddressResponse.encode = function encode(message, writer) {
                         if (!writer)
                             writer = $Writer.create();
-                        if (message.cosmwasm_address != null && Object.hasOwnProperty.call(message, "cosmwasm_address"))
-                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.cosmwasm_address);
+                        if (message.contract_addr != null && Object.hasOwnProperty.call(message, "contract_addr"))
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.contract_addr);
                         return writer;
                     };
     
@@ -65507,7 +65507,7 @@
                             var tag = reader.uint32();
                             switch (tag >>> 3) {
                             case 1:
-                                message.cosmwasm_address = reader.string();
+                                message.contract_addr = reader.string();
                                 break;
                             default:
                                 reader.skipType(tag & 7);
@@ -65544,9 +65544,9 @@
                     QueryBeforeSendHookAddressResponse.verify = function verify(message) {
                         if (typeof message !== "object" || message === null)
                             return "object expected";
-                        if (message.cosmwasm_address != null && message.hasOwnProperty("cosmwasm_address"))
-                            if (!$util.isString(message.cosmwasm_address))
-                                return "cosmwasm_address: string expected";
+                        if (message.contract_addr != null && message.hasOwnProperty("contract_addr"))
+                            if (!$util.isString(message.contract_addr))
+                                return "contract_addr: string expected";
                         return null;
                     };
     
@@ -65562,8 +65562,8 @@
                         if (object instanceof $root.osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse)
                             return object;
                         var message = new $root.osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse();
-                        if (object.cosmwasm_address != null)
-                            message.cosmwasm_address = String(object.cosmwasm_address);
+                        if (object.contract_addr != null)
+                            message.contract_addr = String(object.contract_addr);
                         return message;
                     };
     
@@ -65581,9 +65581,9 @@
                             options = {};
                         var object = {};
                         if (options.defaults)
-                            object.cosmwasm_address = "";
-                        if (message.cosmwasm_address != null && message.hasOwnProperty("cosmwasm_address"))
-                            object.cosmwasm_address = message.cosmwasm_address;
+                            object.contract_addr = "";
+                        if (message.contract_addr != null && message.hasOwnProperty("contract_addr"))
+                            object.contract_addr = message.contract_addr;
                         return object;
                     };
     

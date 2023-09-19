@@ -24931,8 +24931,8 @@ export namespace osmosis {
                 /** MsgSetBeforeSendHook denom */
                 denom?: (string|null);
 
-                /** MsgSetBeforeSendHook cosmwasm_address */
-                cosmwasm_address?: (string|null);
+                /** MsgSetBeforeSendHook contract_addr */
+                contract_addr?: (string|null);
             }
 
             /** Represents a MsgSetBeforeSendHook. */
@@ -24950,8 +24950,8 @@ export namespace osmosis {
                 /** MsgSetBeforeSendHook denom. */
                 public denom: string;
 
-                /** MsgSetBeforeSendHook cosmwasm_address. */
-                public cosmwasm_address: string;
+                /** MsgSetBeforeSendHook contract_addr. */
+                public contract_addr: string;
 
                 /**
                  * Encodes the specified MsgSetBeforeSendHook message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook.verify|verify} messages.
@@ -26388,8 +26388,8 @@ export namespace osmosis {
             /** Properties of a QueryBeforeSendHookAddressResponse. */
             interface IQueryBeforeSendHookAddressResponse {
 
-                /** QueryBeforeSendHookAddressResponse cosmwasm_address */
-                cosmwasm_address?: (string|null);
+                /** QueryBeforeSendHookAddressResponse contract_addr */
+                contract_addr?: (string|null);
             }
 
             /** Represents a QueryBeforeSendHookAddressResponse. */
@@ -26401,8 +26401,8 @@ export namespace osmosis {
                  */
                 constructor(properties?: osmosis.tokenfactory.v1beta1.IQueryBeforeSendHookAddressResponse);
 
-                /** QueryBeforeSendHookAddressResponse cosmwasm_address. */
-                public cosmwasm_address: string;
+                /** QueryBeforeSendHookAddressResponse contract_addr. */
+                public contract_addr: string;
 
                 /**
                  * Encodes the specified QueryBeforeSendHookAddressResponse message. Does not implicitly {@link osmosis.tokenfactory.v1beta1.QueryBeforeSendHookAddressResponse.verify|verify} messages.
