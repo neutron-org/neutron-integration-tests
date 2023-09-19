@@ -92,38 +92,38 @@ describe('Neutron / Governance', () => {
 
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('1000');
+      await daoMember1.bondFunds('1000000000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
     test('bond from wallet 2', async () => {
-      await daoMember2.bondFunds('1000');
+      await daoMember2.bondFunds('1000000000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
     test('bond from wallet 3 ', async () => {
-      await daoMember3.bondFunds('1000');
+      await daoMember3.bondFunds('1000000000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
@@ -131,7 +131,7 @@ describe('Neutron / Governance', () => {
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () => await mainDao.queryTotalVotingPower(),
-        async (response) => response.power == 3000,
+        async (response) => response.power == 3100000000,
         20,
       );
     });
