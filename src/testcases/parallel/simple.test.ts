@@ -526,24 +526,53 @@ describe('Neutron / Simple', () => {
           expect.objectContaining({
             address: contractAddress,
             id: '0',
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '1',
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '2',
-            ack_type: 'timeout',
           }),
           expect.objectContaining({
             address: contractAddress,
             id: '3',
-            ack_type: 'timeout',
           }),
         ]);
+
+        expect(
+          JSON.parse(
+            Buffer.from(
+              failuresAfterCall.failures[0].sudo_payload,
+              'base64',
+            ).toString(),
+          ),
+        ).toHaveProperty('response');
+        expect(
+          JSON.parse(
+            Buffer.from(
+              failuresAfterCall.failures[1].sudo_payload,
+              'base64',
+            ).toString(),
+          ),
+        ).toHaveProperty('response');
+        expect(
+          JSON.parse(
+            Buffer.from(
+              failuresAfterCall.failures[2].sudo_payload,
+              'base64',
+            ).toString(),
+          ),
+        ).toHaveProperty('timeout');
+        expect(
+          JSON.parse(
+            Buffer.from(
+              failuresAfterCall.failures[3].sudo_payload,
+              'base64',
+            ).toString(),
+          ),
+        ).toHaveProperty('timeout');
 
         // Restore sudo handler to state
         await neutronAccount.executeContract(
