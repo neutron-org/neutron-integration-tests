@@ -131,6 +131,7 @@ describe('Neutron / Governance', () => {
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () => await mainDao.queryTotalVotingPower(),
+        // 3x1000000000 + 100000000 from investors vault (see neutron/network/init-neutrond.sh)
         async (response) => response.power == 3100000000,
         20,
       );
