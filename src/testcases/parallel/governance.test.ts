@@ -92,38 +92,38 @@ describe('Neutron / Governance', () => {
 
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('1000000000');
+      await daoMember1.bondFunds('10000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000000000,
+        async (response) => response.power == 10000,
         20,
       );
     });
     test('bond from wallet 2', async () => {
-      await daoMember2.bondFunds('1000000000');
+      await daoMember2.bondFunds('10000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000000000,
+        async (response) => response.power == 10000,
         20,
       );
     });
     test('bond from wallet 3 ', async () => {
-      await daoMember3.bondFunds('1000000000');
+      await daoMember3.bondFunds('10000');
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
           ),
-        async (response) => response.power == 1000000000,
+        async (response) => response.power == 10000,
         20,
       );
     });
@@ -131,8 +131,8 @@ describe('Neutron / Governance', () => {
       await wait.getWithAttempts(
         neutronChain.blockWaiter,
         async () => await mainDao.queryTotalVotingPower(),
-        // 3x1000000000 + 100000000 from investors vault (see neutron/network/init-neutrond.sh)
-        async (response) => response.power == 3100000000,
+        // 3x10000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
+        async (response) => response.power == 31000,
         20,
       );
     });
