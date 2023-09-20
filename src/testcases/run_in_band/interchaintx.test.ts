@@ -794,32 +794,28 @@ describe('Neutron / Interchain TXs', () => {
         expect(failures.failures).toEqual([
           {
             channel_id: 'channel-3',
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            address: contractAddress,
             id: '0',
             ack_id: '2',
             ack_type: 'ack',
           },
           {
             channel_id: 'channel-3',
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            address: contractAddress,
             id: '1',
             ack_id: '3',
             ack_type: 'ack',
           },
           {
             channel_id: 'channel-3',
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            address: contractAddress,
             id: '2',
             ack_id: '4',
             ack_type: 'ack',
           },
           {
             channel_id: 'channel-3',
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            address: contractAddress,
             id: '3',
             ack_id: '5',
             ack_type: 'timeout',
