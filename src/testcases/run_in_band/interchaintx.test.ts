@@ -74,6 +74,10 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
     describe('Create ICAs and setup contract', () => {
+      test('fund contract to pay fees', async () => {
+        const res = await neutronAccount.msgSend(contractAddress, '100000');
+        expect(res.code).toEqual(0);
+      });
       test('create ICA1', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
@@ -97,6 +101,13 @@ describe('Neutron / Interchain TXs', () => {
           }),
         );
         expect(res.code).toEqual(0);
+      });
+      test('check contract balance', async () => {
+        const res = await neutronChain.queryBalances(contractAddress);
+        const balance = res.balances.find(
+          (b) => b.denom === neutronChain.denom,
+        )?.amount;
+        expect(balance).toEqual('98000');
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
@@ -157,10 +168,7 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res.code).toEqual(0);
       });
-      test('fund contract to pay fees', async () => {
-        const res = await neutronAccount.msgSend(contractAddress, '100000');
-        expect(res.code).toEqual(0);
-      });
+
       test('add some money to ICAs', async () => {
         const res1 = await gaiaAccount.msgSend(icaAddress1.toString(), '10000');
         expect(res1.code).toEqual(0);
@@ -230,7 +238,7 @@ describe('Neutron / Interchain TXs', () => {
         const balance = res.balances.find(
           (b) => b.denom === neutronChain.denom,
         )?.amount;
-        expect(balance).toEqual('98000');
+        expect(balance).toEqual('96000');
       });
     });
 
@@ -304,7 +312,7 @@ describe('Neutron / Interchain TXs', () => {
           (b) => b.denom === neutronChain.denom,
         )?.amount;
         // two interchain txs inside (2000 * 2 = 4000)
-        expect(balance).toEqual('94000');
+        expect(balance).toEqual('92000');
       });
     });
 
@@ -620,9 +628,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
-            integration_tests_set_sudo_failure_mock: {
-              state: 'enabled',
-            },
+            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
           }),
         );
 
@@ -746,18 +752,18 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
-      test('timeout failure during sudo', async () => {
+      test('ack failure during sudo out of gas', async () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             integration_tests_set_sudo_failure_mock: {
-              state: 'enabled',
+              state: 'enabled_infinite_loop',
             },
           }),
         );
 
-        // Testing timeout failure
+        // Testing ACK failure
         await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
@@ -766,7 +772,6 @@ describe('Neutron / Interchain TXs', () => {
               validator: testState.wallets.cosmos.val1.address.toString(),
               amount: '10',
               denom: gaiaChain.denom,
-              timeout: 1,
             },
           }),
         );
@@ -792,96 +797,129 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
-      // TODO: uncomment when LIMIT param is https://www.notion.so/hadron/Gas-Errors-Interchain-Txs-2b2f1caacdcd4981950641e0996cac27 implemented
-      // then for this test need to add limit low enough to trigger out of gas
-      // test('ack failure during sudo out of gas', async () => {
-      //   // Mock sudo handler to fail
-      //   await neutronAccount.executeContract(
-      //     contractAddress,
-      //     JSON.stringify({
-      //       integration_tests_set_sudo_failure_mock: {
-      //         state: 'enabled_infinite_loop',
-      //       },
-      //     }),
-      //   );
+      test('timeout failure during sudo', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
+          }),
+        );
 
-      //   // Testing ACK failure
-      //   await neutronAccount.executeContract(
-      //     contractAddress,
-      //     JSON.stringify({
-      //       delegate: {
-      //         interchain_account_id: icaId1,
-      //         validator: testState.wallets.cosmos.val1.address.toString(),
-      //         amount: '10',
-      //         denom: gaiaChain.denom,
-      //       },
-      //     }),
-      //   );
+        // Testing timeout failure
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+              timeout: 1,
+            },
+          }),
+        );
 
-      //   // wait until sudo is called and processed and failure is recorder
-      //   await getWithAttempts<AckFailuresResponse>(
-      //     neutronChain.blockWaiter,
-      //     async () => neutronChain.queryAckFailures(contractAddress),
-      //     async (data) => data.failures.length == 5,
-      //     100,
-      //   );
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 5,
+          100,
+        );
 
-      //   // make sure contract's state hasn't been changed
-      //   const acks = await getAcks(neutronChain, contractAddress);
-      //   expect(acks.length).toEqual(0);
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
 
-      //   // Restore sudo handler's normal state
-      //   await neutronAccount.executeContract(
-      //     contractAddress,
-      //     JSON.stringify({
-      //       integration_tests_unset_sudo_failure_mock: {},
-      //     }),
-      //   );
-      // });
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
+      });
+
+      test('out of gas failure during sudo timeout', async () => {
+        // Mock sudo handler to fail
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_set_sudo_failure_mock: {
+              state: 'enabled_infinite_loop',
+            },
+          }),
+        );
+
+        // Testing timeout failure
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            delegate: {
+              interchain_account_id: icaId2,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+              timeout: 1,
+            },
+          }),
+        );
+
+        // wait until sudo is called and processed and failure is recorder
+        await getWithAttempts<AckFailuresResponse>(
+          neutronChain.blockWaiter,
+          async () => neutronChain.queryAckFailures(contractAddress),
+          async (data) => data.failures.length == 6,
+          100,
+        );
+
+        // make sure contract's state hasn't been changed
+        const acks = await getAcks(neutronChain, contractAddress);
+        expect(acks.length).toEqual(0);
+
+        // Restore sudo handler's normal state
+        await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            integration_tests_unset_sudo_failure_mock: {},
+          }),
+        );
+      });
 
       test('check stored failures and acks', async () => {
         const failures = await neutronChain.queryAckFailures(contractAddress);
-        // 3 ack failures, 1 timeout failure, just as described in the tests above
+        // 4 ack failures, 2 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '0',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '2',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '1',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '3',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '2',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '4',
-            }),
-            ack_type: 'ack',
           }),
           expect.objectContaining({
             address:
               'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
             id: '3',
-            packet: expect.objectContaining({
-              source_channel: 'channel-3',
-              sequence: '5',
-            }),
-            ack_type: 'timeout',
+          }),
+          expect.objectContaining({
+            address:
+              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            id: '4',
+          }),
+          expect.objectContaining({
+            address:
+              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+            id: '5',
           }),
         ]);
 
@@ -924,7 +962,7 @@ describe('Neutron / Interchain TXs', () => {
         const failuresResAfter = await neutronChain.queryAckFailures(
           contractAddress,
         );
-        expect(failuresResAfter.failures.length).toEqual(4);
+        expect(failuresResAfter.failures.length).toEqual(6);
 
         // make sure contract's state hasn't been changed
         const acks = await getAcks(neutronChain, contractAddress);
@@ -963,12 +1001,15 @@ describe('Neutron / Interchain TXs', () => {
         const failuresResAfter = await neutronChain.queryAckFailures(
           contractAddress,
         );
-        expect(failuresResAfter.failures.length).toEqual(3);
+        expect(failuresResAfter.failures.length).toEqual(5);
 
         // make sure contract's state has been changed
         const acks = await getAcks(neutronChain, contractAddress);
         expect(acks.length).toEqual(1);
-        expect(acks[0].sequence_id).toEqual(+failure.packet.sequence);
+        expect(acks[0].sequence_id).toEqual(
+          +JSON.parse(Buffer.from(failure.sudo_payload, 'base64').toString())
+            .response.request.sequence,
+        );
       });
     });
   });
