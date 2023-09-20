@@ -153,6 +153,7 @@ export const NeutronContract = {
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+  BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
 };
 
 export type MultiChoiceOption = {
@@ -262,6 +263,12 @@ export type PinnedCodesResponse = {
 export type IcaHostParamsResponse = {
   params: {
     host_enabled: boolean;
+  };
+};
+
+export type InterchaintxsParamsResponse = {
+  params: {
+    msg_submit_tx_max_messages: string;
   };
 };
 

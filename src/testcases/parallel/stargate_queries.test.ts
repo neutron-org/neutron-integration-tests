@@ -206,8 +206,7 @@ describe('Neutron / Simple', () => {
 
     test('tokenfactory params should work', async () => {
       const res = JSON.parse(await querySmart({ tokenfactory_params: {} }));
-      expect(res.params.denom_creation_fee[0].denom).toBe('untrn');
-      expect(res.params.denom_creation_fee[0].amount).toBe('1000000');
+      expect(res.params.denom_creation_gas_consume).toBe('0');
     });
 
     test('tokenfactory denom authority metadata should work', async () => {

@@ -389,6 +389,15 @@ describe('Neutron / Governance', () => {
       );
     });
 
+    test('create proposal #20, will pass', async () => {
+      await daoMember1.submitUpdateParamsInterchaintxsProposal(
+        'Proposal #20',
+        'Update interchaintxs params',
+        11,
+        '1000',
+      );
+    });
+
     test('create multi-choice proposal #2, will be rejected', async () => {
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         [
@@ -1032,6 +1041,31 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes('sdk.Msg is not whitelisted'));
+    });
+  });
+
+  describe('vote for proposal #20 with unbonded funds(no, yes, yes)', () => {
+    const proposalId = 20;
+    test('vote NO from wallet 1', async () => {
+      await daoMember1.voteNo(proposalId);
+    });
+    test('vote YES from wallet 2', async () => {
+      await daoMember2.voteYes(proposalId);
+    });
+    test('vote YES from wallet 3', async () => {
+      await daoMember3.voteYes(proposalId);
+    });
+  });
+
+  describe('try to execute proposal #20', () => {
+    const proposalId = 20;
+    test('check if proposal is passed', async () => {
+      await dao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+      const paramAfter = await neutronChain.queryMaxTxsAllowed();
+      expect(paramAfter).toEqual('11');
     });
   });
 
