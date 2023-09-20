@@ -28,6 +28,7 @@ import {
   PinnedCodesResponse,
   IcaHostParamsResponse,
   GlobalfeeParamsResponse,
+  InterchaintxsParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
 const adminmodule = AdminProto.adminmodule.adminmodule;
@@ -75,7 +76,6 @@ cosmosclient.codec.register(
   '/cosmos.params.v1beta1.ParameterChangeProposal',
   cosmosclient.proto.cosmos.params.v1beta1.ParameterChangeProposal,
 );
-
 cosmosclient.codec.register(
   '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
@@ -103,6 +103,10 @@ cosmosclient.codec.register(
 cosmosclient.codec.register(
   '/pob.builder.v1.MsgAuctionBid',
   pob.builder.v1.MsgAuctionBid,
+);
+cosmosclient.codec.register(
+  '/neutron.interchaintxs.v1.MsgUpdateParams',
+  neutron.interchaintxs.v1.MsgUpdateParams,
 );
 
 export class CosmosWrapper {
@@ -396,6 +400,21 @@ export class CosmosWrapper {
     }
   }
 
+  async queryMaxTxsAllowed(): Promise<string> {
+    try {
+      const req = await axios.get<InterchaintxsParamsResponse>(
+        `${this.sdk.url}/neutron/interchaintxs/params`,
+        {},
+      );
+      return req.data.params.msg_submit_tx_max_messages;
+    } catch (e) {
+      if (e.response?.data?.message !== undefined) {
+        throw new Error(e.response?.data?.message);
+      }
+      throw e;
+    }
+  }
+
   async queryGlobalfeeParams(): Promise<GlobalfeeParamsResponse> {
     const req = await axios.get(
       `${this.sdk.url}/gaia/globalfee/v1beta1/params`,
@@ -676,8 +695,8 @@ export class WalletWrapper {
         }
       | string,
     fee = {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: this.chain.denom, amount: '1000' }],
+      gas_limit: Long.fromString('300000'),
+      amount: [{ denom: this.chain.denom, amount: '1500' }],
     },
     sequence: number = this.wallet.account.sequence,
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx

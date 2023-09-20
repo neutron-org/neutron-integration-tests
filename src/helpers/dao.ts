@@ -30,6 +30,7 @@ import {
   SendProposalInfo,
   unpinCodesProposal,
   updateAdminProposal,
+  updateInterchaintxsParamsProposal,
   upgradeProposal,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
@@ -1254,6 +1255,27 @@ export class DaoMember {
       title,
       description,
       codes_ids: codesIds,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsInterchaintxsProposal creates proposal which changes params of interchaintxs module.
+   */
+
+  async submitUpdateParamsInterchaintxsProposal(
+    title: string,
+    description: string,
+    msgSubmitTxMaxMessages: number,
+    amount: string,
+  ): Promise<number> {
+    const message = updateInterchaintxsParamsProposal({
+      msg_submit_tx_max_messages: msgSubmitTxMaxMessages,
     });
     return await this.submitSingleChoiceProposal(
       title,

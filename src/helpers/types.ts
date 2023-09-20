@@ -80,26 +80,7 @@ export type AckFailuresResponse = {
 type Failure = {
   address: string;
   id: string;
-  ack: {
-    response: {
-      result: string | null; // base64 encoded bytes
-      error: string | null; // error text
-    };
-  };
-  ack_type: string;
-  packet: {
-    data: string;
-    destination_channel: string;
-    destination_port: string;
-    sequence: string;
-    source_channel: string;
-    source_port: string;
-    timeout_height: {
-      revision_height: string;
-      revision_number: string;
-    };
-    timeout_timestamp: string;
-  };
+  sudo_payload: string; // base64 encoded json bytes
 };
 
 export type ScheduleResponse = {
@@ -172,6 +153,7 @@ export const NeutronContract = {
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+  BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
 };
 
 export type MultiChoiceOption = {
@@ -281,6 +263,12 @@ export type PinnedCodesResponse = {
 export type IcaHostParamsResponse = {
   params: {
     host_enabled: boolean;
+  };
+};
+
+export type InterchaintxsParamsResponse = {
+  params: {
+    msg_submit_tx_max_messages: string;
   };
 };
 

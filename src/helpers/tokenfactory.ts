@@ -22,6 +22,10 @@ cosmosclient.codec.register(
   '/osmosis.tokenfactory.v1beta1.MsgChangeAdmin',
   osmosis.tokenfactory.v1beta1.MsgChangeAdmin,
 );
+cosmosclient.codec.register(
+  '/osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook',
+  osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook,
+);
 
 export const msgMintDenom = async (
   cmNeutron: WalletWrapper,
@@ -55,8 +59,8 @@ export const msgCreateDenom = async (
   });
   const res = await cmNeutron.execTx(
     {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
+      gas_limit: Long.fromString('2000000'),
+      amount: [{ denom: cmNeutron.chain.denom, amount: '5000' }],
     },
     [msgCreateDenom],
     10,
@@ -77,11 +81,12 @@ export const msgBurn = async (
       denom: denom,
       amount: amountToBurn,
     },
+    burnFromAddress: creator,
   });
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
-      amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
+      amount: [{ denom: cmNeutron.chain.denom, amount: '5000' }],
     },
     [msgBurn],
     10,
@@ -100,14 +105,37 @@ export const msgChangeAdmin = async (
   const msgChangeAdmin = new osmosis.tokenfactory.v1beta1.MsgChangeAdmin({
     sender: creator,
     denom,
-    newAdmin,
+    new_admin: newAdmin,
+  });
+  const res = await cmNeutron.execTx(
+    {
+      gas_limit: Long.fromString('200000'),
+      amount: [{ denom: cmNeutron.chain.denom, amount: '5000' }],
+    },
+    [msgChangeAdmin],
+    10,
+  );
+
+  return res.tx_response!;
+};
+
+export const msgSetBeforeSendHook = async (
+  cmNeutron: WalletWrapper,
+  creator: string,
+  denom: string,
+  contractAddr: string,
+): Promise<BroadcastTx200ResponseTxResponse> => {
+  const msgMint = new osmosis.tokenfactory.v1beta1.MsgSetBeforeSendHook({
+    sender: creator,
+    denom,
+    contract_addr: contractAddr,
   });
   const res = await cmNeutron.execTx(
     {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: cmNeutron.chain.denom, amount: '1000' }],
     },
-    [msgChangeAdmin],
+    [msgMint],
     10,
   );
 
