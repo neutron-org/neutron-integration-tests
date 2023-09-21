@@ -1647,7 +1647,7 @@ describe('Neutron / TGE / Auction', () => {
 
         it('add lockdrop vault to the registry', async () => {
           let tvp = await daoMain.queryTotalVotingPower();
-          expect(tvp.power | 0).toBe(1000);
+          expect(tvp.power | 0).toBe(2000); // the bonded 1000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #1',
             'add LOCKDROP_VAULT',
@@ -1668,8 +1668,9 @@ describe('Neutron / TGE / Auction', () => {
           );
           await daoMember1.voteYes(propID);
           await daoMember1.executeProposal(propID);
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           tvp = await daoMain.queryTotalVotingPower();
-          expect(tvp.power | 0).toBeGreaterThan(1000);
+          expect(tvp.power | 0).toBeGreaterThan(2000);
           // lockdrop participants get voting power
           for (const v of [
             'airdropAuctionLockdrop',
@@ -1734,6 +1735,7 @@ describe('Neutron / TGE / Auction', () => {
             }
           }
           await daoMember1.executeProposal(propID);
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // vesting participants get(increase) the voting power
@@ -1792,6 +1794,7 @@ describe('Neutron / TGE / Auction', () => {
             }
           }
           await daoMember1.executeProposal(propID);
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // airdrop participants get(increase) the voting power
