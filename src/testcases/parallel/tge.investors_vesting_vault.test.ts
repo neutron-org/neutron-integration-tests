@@ -1,52 +1,50 @@
 import {
-  CosmosWrapper,
+  cosmosWrapper,
+  env,
   IBC_ATOM_DENOM,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import {
-  NeutronContract,
-  vestingAccount,
-  vestingSchedule,
-  vestingSchedulePoint,
-} from '../../helpers/types';
-import { getHeight } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+  TestStateLocalCosmosTestNet,
+  types,
+} from '@neutron-org/neutronjsplus';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';
 const CW20_BASE_CONTRACT_KEY = 'CW20_BASE';
 
+const config = require('../../config.json');
+
 describe('Neutron / TGE / Investors vesting vault', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let cmInstantiator: WalletWrapper;
-  let cmManager: WalletWrapper;
-  let cmUser1: WalletWrapper;
-  let cmUser2: WalletWrapper;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let cmInstantiator: cosmosWrapper.WalletWrapper;
+  let cmManager: cosmosWrapper.WalletWrapper;
+  let cmUser1: cosmosWrapper.WalletWrapper;
+  let cmUser2: cosmosWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    cmInstantiator = new WalletWrapper(
+    cmInstantiator = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cmManager = new WalletWrapper(
+    cmManager = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    cmUser1 = new WalletWrapper(
+    cmUser1 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
-    cmUser2 = new WalletWrapper(
+    cmUser2 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
@@ -114,14 +112,20 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           JSON.stringify({
             register_vesting_accounts: {
               vesting_accounts: [
-                vestingAccount(cmUser1.wallet.address.toString(), [
-                  vestingSchedule(
-                    vestingSchedulePoint(0, user1VestingAmount.toString()),
+                types.vestingAccount(cmUser1.wallet.address.toString(), [
+                  types.vestingSchedule(
+                    types.vestingSchedulePoint(
+                      0,
+                      user1VestingAmount.toString(),
+                    ),
                   ),
                 ]),
-                vestingAccount(cmUser2.wallet.address.toString(), [
-                  vestingSchedule(
-                    vestingSchedulePoint(0, user2VestingAmount.toString()),
+                types.vestingAccount(cmUser2.wallet.address.toString(), [
+                  types.vestingSchedule(
+                    types.vestingSchedulePoint(
+                      0,
+                      user2VestingAmount.toString(),
+                    ),
                   ),
                 ]),
               ],
@@ -133,7 +137,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       });
       test('check unclaimed amounts', async () => {
         await neutronChain.blockWaiter.waitBlocks(1);
-        const currentHeight = await getHeight(neutronChain.sdk);
+        const currentHeight = await env.getHeight(neutronChain.sdk);
         expect(
           await neutronChain.queryContract<UnclaimedAmountResponse>(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -204,7 +208,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       describe('check voting power on claim', () => {
         const user1PartialClaim = Math.round(user1VestingAmount / 2);
         beforeAll(async () => {
-          heightBeforeClaim = await getHeight(neutronChain.sdk);
+          heightBeforeClaim = await env.getHeight(neutronChain.sdk);
           await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial claim', async () => {
@@ -343,9 +347,9 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           JSON.stringify({
             register_vesting_accounts: {
               vesting_accounts: [
-                vestingAccount(cmUser1.wallet.address.toString(), [
-                  vestingSchedule(
-                    vestingSchedulePoint(0, vestingAmount.toString()),
+                types.vestingAccount(cmUser1.wallet.address.toString(), [
+                  types.vestingSchedule(
+                    types.vestingSchedulePoint(0, vestingAmount.toString()),
                   ),
                 ]),
               ],
@@ -355,7 +359,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         );
         expect(execRes.code).toBe(0);
         await neutronChain.blockWaiter.waitBlocks(1);
-        const currentHeight = await getHeight(neutronChain.sdk);
+        const currentHeight = await env.getHeight(neutronChain.sdk);
         expect(
           await neutronChain.queryContract<UnclaimedAmountResponse>(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -432,7 +436,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         });
         test('unclaimed amount after removal', async () => {
           await neutronChain.blockWaiter.waitBlocks(1);
-          const currentHeight = await getHeight(neutronChain.sdk);
+          const currentHeight = await env.getHeight(neutronChain.sdk);
           expect(
             await neutronChain.queryContract<UnclaimedAmountResponse>(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -515,7 +519,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         test('via send cw20 by a stranger', async () => {
           // create a random cw20 token with allocation to user1
           const codeId = await cmInstantiator.storeWasm(
-            NeutronContract[CW20_BASE_CONTRACT_KEY],
+            types.NeutronContract[CW20_BASE_CONTRACT_KEY],
           );
           expect(codeId).toBeGreaterThan(0);
           const initRes = await cmInstantiator.instantiateContract(
@@ -543,9 +547,14 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     JSON.stringify({
                       register_vesting_accounts: {
                         vesting_accounts: [
-                          vestingAccount(cmUser1.wallet.address.toString(), [
-                            vestingSchedule(vestingSchedulePoint(0, '1000')),
-                          ]),
+                          types.vestingAccount(
+                            cmUser1.wallet.address.toString(),
+                            [
+                              types.vestingSchedule(
+                                types.vestingSchedulePoint(0, '1000'),
+                              ),
+                            ],
+                          ),
                         ],
                       },
                     }),
@@ -562,8 +571,10 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               JSON.stringify({
                 register_vesting_accounts: {
                   vesting_accounts: [
-                    vestingAccount(cmUser2.wallet.address.toString(), [
-                      vestingSchedule(vestingSchedulePoint(0, '1000')),
+                    types.vestingAccount(cmUser2.wallet.address.toString(), [
+                      types.vestingSchedule(
+                        types.vestingSchedulePoint(0, '1000'),
+                      ),
                     ]),
                   ],
                 },
@@ -578,16 +589,18 @@ describe('Neutron / TGE / Investors vesting vault', () => {
 });
 
 const deployContracts = async (
-  chain: CosmosWrapper,
-  instantiator: WalletWrapper,
-  cmManager: WalletWrapper,
+  chain: cosmosWrapper.CosmosWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
+  cmManager: cosmosWrapper.WalletWrapper,
 ): Promise<Record<string, string>> => {
   const codeIds: Record<string, number> = {};
   for (const contract of [
     INVESTORS_VESTING_CONTRACT_KEY,
     INVESTORS_VESTING_VAULT_CONTRACT_KEY,
   ]) {
-    const codeId = await instantiator.storeWasm(NeutronContract[contract]);
+    const codeId = await instantiator.storeWasm(
+      types.NeutronContract[contract],
+    );
     expect(codeId).toBeGreaterThan(0);
     codeIds[contract] = codeId;
   }
@@ -609,8 +622,8 @@ const deployContracts = async (
 };
 
 const deployInvestorsVestingContract = async (
-  instantiator: WalletWrapper,
-  cmManager: WalletWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
+  cmManager: cosmosWrapper.WalletWrapper,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
@@ -628,7 +641,7 @@ const deployInvestorsVestingContract = async (
 };
 
 const setInvestorsVestingAsset = async (
-  instantiator: WalletWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
   contractAddresses: Record<string, string>,
 ) => {
   const execRes = await instantiator.executeContract(
@@ -647,7 +660,7 @@ const setInvestorsVestingAsset = async (
 };
 
 const deployInvestorsVestingVaultContract = async (
-  instantiator: WalletWrapper,
+  instantiator: cosmosWrapper.WalletWrapper,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {

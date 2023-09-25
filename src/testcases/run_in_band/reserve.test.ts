@@ -2,14 +2,13 @@
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import {
-  CosmosWrapper,
+  cosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { Wallet } from '../../types';
-import { NeutronContract } from '../../helpers/types';
+  TestStateLocalCosmosTestNet,
+  types,
+} from '@neutron-org/neutronjsplus';
 
+const config = require('../../config.json');
 interface ReserveStats {
   readonly total_distributed: string;
   readonly total_reserved: string;
@@ -18,30 +17,32 @@ interface ReserveStats {
 
 describe('Neutron / Treasury', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount1: WalletWrapper;
-  let neutronAccount2: WalletWrapper;
-  let mainDaoWallet: Wallet;
-  let securityDaoWallet: Wallet;
-  let holder1Wallet: Wallet;
-  let holder2Wallet: Wallet;
+  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount1: cosmosWrapper.WalletWrapper;
+  let neutronAccount2: cosmosWrapper.WalletWrapper;
+  let mainDaoWallet: types.Wallet;
+  let securityDaoWallet: types.Wallet;
+  let holder1Wallet: types.Wallet;
+  let holder2Wallet: types.Wallet;
   let mainDaoAddr: AccAddress | ValAddress;
   let securityDaoAddr: AccAddress | ValAddress;
   let holder1Addr: AccAddress | ValAddress;
   let holder2Addr: AccAddress | ValAddress;
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    cosmosWrapper.registerCodecs();
+
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new CosmosWrapper(
+    neutronChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo2,
     );
@@ -418,7 +419,8 @@ describe('Neutron / Treasury', () => {
     });
 
     test('distribution', async () => {
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         dsc,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -448,7 +450,8 @@ describe('Neutron / Treasury', () => {
 
     test('reserve', async () => {
       await neutronAccount1.msgSend(reserve, '10000000');
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         reserve,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -474,12 +477,94 @@ describe('Neutron / Treasury', () => {
   });
 });
 
+/**
+ * Tests a pausable contract execution control.
+ * @param testingContract is the contract the method tests;
+ * @param execAction is an executable action to be called during a pause and after unpausing
+ * as the main part of the test. Should return the execution response code;
+ * @param actionCheck is called after unpausing to make sure the executable action worked.
+ */
+
+const testExecControl = async (
+  wallet: cosmosWrapper.WalletWrapper,
+  testingContract: string,
+  execAction: () => Promise<number | undefined>,
+  actionCheck: () => Promise<void>,
+) => {
+  // check contract's pause info before pausing
+  let pauseInfo = await wallet.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // pause contract
+  let res = await wallet.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: 50,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await wallet.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // execute msgs on paused contract
+  await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+  // unpause contract
+  res = await wallet.executeContract(
+    testingContract,
+    JSON.stringify({
+      unpause: {},
+    }),
+  );
+
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after unpausing
+  pauseInfo = await wallet.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // execute msgs on unpaused contract
+  const code = await execAction();
+  expect(code).toEqual(0);
+  await actionCheck();
+
+  // pause contract again for a short period
+  const shortPauseDuration = 5;
+  res = await wallet.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: shortPauseDuration,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await wallet.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // wait and check contract's pause info after unpausing
+  await wallet.chain.blockWaiter.waitBlocks(shortPauseDuration);
+  pauseInfo = await wallet.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+};
+
 const setupDSC = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.DISTRIBUTION);
+  const codeId = await cm.storeWasm(types.NeutronContract.DISTRIBUTION);
   return (
     await cm.instantiateContract(
       codeId,
@@ -497,7 +582,7 @@ const setupDSC = async (
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
 const normalizeReserveBurnedCoins = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   reserveAddress: string,
 ): Promise<ReserveStats> => {
   // Normalize state
@@ -529,14 +614,14 @@ const normalizeReserveBurnedCoins = async (
 };
 
 const getBurnedCoinsAmount = async (
-  cm: CosmosWrapper,
+  cm: cosmosWrapper.CosmosWrapper,
 ): Promise<string | undefined | null> => {
   const totalBurnedNeutrons = await cm.queryTotalBurnedNeutronsAmount();
   return totalBurnedNeutrons.total_burned_neutrons_amount.coin.amount;
 };
 
 const setupReserve = async (
-  cm: WalletWrapper,
+  cm: cosmosWrapper.WalletWrapper,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
@@ -547,7 +632,7 @@ const setupReserve = async (
     vestingDenominator: string;
   },
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.RESERVE);
+  const codeId = await cm.storeWasm(types.NeutronContract.RESERVE);
   return (
     await cm.instantiateContract(
       codeId,

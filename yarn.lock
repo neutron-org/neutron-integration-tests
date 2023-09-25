@@ -1591,6 +1591,18 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@neutron-org/neutronjsplus@0.0.13-pcl-migration":
+  version "0.0.13-pcl-migration"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.0.13-pcl-migration.tgz#136e6a7a962385276ddf41e7580baf1e72d30433"
+  integrity sha512-e66H6l65gZ2+C42XYl0WRSPh/W9kjZW9gCzn0bxF6xxg740yP3trWDUcSTQvP/VlxoDSvoc5x1sEo4TstUN9Kw==
+  dependencies:
+    "@cosmos-client/core" "0.45.13"
+    "@cosmos-client/cosmwasm" "^0.20.1"
+    "@cosmos-client/ibc" "^1.2.1"
+    axios "^0.27.2"
+    long "^5.2.1"
+    merkletreejs "^0.3.9"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
