@@ -1512,7 +1512,9 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
                 fee_gamma: '0.00023',
                 repeg_profit_threshold: '0.000002',
                 min_price_scale_delta: '0.000146',
-                price_scale: '1',
+                price_scale: (atomBalance / ntrnAtomSize)
+                  .toPrecision(5)
+                  .toString(),
                 ma_half_time: 600,
                 track_asset_balances: true,
               }),
@@ -1536,7 +1538,9 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
                 fee_gamma: '0.00023',
                 repeg_profit_threshold: '0.000002',
                 min_price_scale_delta: '0.000146',
-                price_scale: '1',
+                price_scale: (usdcBalance / ntrnUsdcSize)
+                  .toPrecision(5)
+                  .toString(),
                 ma_half_time: 600,
                 track_asset_balances: true,
               }),
