@@ -7,8 +7,8 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   tge,
-  tokenfactory,
   types,
+  tokenfactory,
 } from '@neutron-org/neutronjsplus';
 import Long from 'long';
 import _ from 'lodash';
@@ -163,12 +163,15 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
   let usdcLpLocked = 0;
   let tgeEndHeight = 0;
   let daoMember1: dao.DaoMember;
-  let mainDao: dao.Dao;
+  let daoMain: dao.Dao;
   let astroIncentivesPerBlock = 0;
   let migrationLength;
   const bondSize = 1000;
 
   beforeAll(async () => {
+    cosmosWrapper.registerCodecs();
+    tokenfactory.registerCodecs();
+
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
@@ -196,8 +199,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       neutronChain,
       daoCoreAddress,
     );
-    mainDao = new dao.Dao(neutronChain, daoContracts);
-    daoMember1 = new dao.DaoMember(cmInstantiator, mainDao);
+    daoMain = new dao.Dao(neutronChain, daoContracts);
+    daoMember1 = new dao.DaoMember(cmInstantiator, daoMain);
     await daoMember1.bondFunds(bondSize.toString());
     tgeMain = new tge.Tge(
       neutronChain,
@@ -1163,14 +1166,14 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
         });
 
         it('add lockdrop vault to the registry', async () => {
-          let tvp = await mainDao.queryTotalVotingPower();
-          expect(tvp.power | 0).toBe(bondSize);
+          let tvp = await daoMain.queryTotalVotingPower();
+          expect(tvp.power | 0).toBe(bondSize + 1000); // the bonded amount + 1000 from investors vault (see neutron/network/init-neutrond.sh)
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #1',
             'add LOCKDROP_VAULT',
@@ -1178,7 +1181,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: mainDao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.lockdropVault}"}}`,
                     ).toString('base64'),
@@ -1192,8 +1195,9 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
           await daoMember1.voteYes(propID);
           await daoMember1.executeProposal(propID);
-          tvp = await mainDao.queryTotalVotingPower();
-          expect(tvp.power | 0).toBeGreaterThan(bondSize);
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          tvp = await daoMain.queryTotalVotingPower();
+          expect(tvp.power | 0).toBeGreaterThan(bondSize + 1000);
           // lockdrop participants get voting power
           for (const v of [
             'airdropAuctionLockdrop',
@@ -1201,7 +1205,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               0,
             );
@@ -1211,13 +1215,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'airdropAuctionVesting',
             'auctionVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
           }
         });
 
         it('add vesting vault to the registry', async () => {
-          const tvp = await mainDao.queryTotalVotingPower();
+          const tvp = await daoMain.queryTotalVotingPower();
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #2',
             'add VESTING_LP_VAULT',
@@ -1225,7 +1229,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: mainDao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.vestingLpVault}"}}`,
                     ).toString('base64'),
@@ -1237,7 +1241,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             '1000',
           );
           await daoMember1.voteYes(propID);
-          const prop = await mainDao.queryProposal(propID);
+          const prop = await daoMain.queryProposal(propID);
           // we contected new voting vault(vesting voting vault), now its not enough
           // daoMember1 voting power to pass proposal
           // lockdrop participant should vote
@@ -1249,20 +1253,21 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
             if (
-              (await mainDao.queryProposal(propID)).proposal.status == 'open'
+              (await daoMain.queryProposal(propID)).proposal.status == 'open'
             ) {
               await member.voteYes(propID);
             }
           }
           await daoMember1.executeProposal(propID);
-          const tvpNew = await mainDao.queryTotalVotingPower();
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // vesting participants get(increase) the voting power
           for (const v of ['airdropAuctionVesting', 'auctionVesting']) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1270,7 +1275,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         });
 
         it('add credits vault to the registry', async () => {
-          const tvp = await mainDao.queryTotalVotingPower();
+          const tvp = await daoMain.queryTotalVotingPower();
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #3',
             'add CREDITS_VAULT',
@@ -1278,7 +1283,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               {
                 wasm: {
                   execute: {
-                    contract_addr: mainDao.contracts.voting.address,
+                    contract_addr: daoMain.contracts.voting.address,
                     msg: Buffer.from(
                       `{"add_voting_vault": {"new_voting_vault_contract":"${tgeMain.contracts.creditsVault}"}}`,
                     ).toString('base64'),
@@ -1290,7 +1295,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             '1000',
           );
           await daoMember1.voteYes(propID);
-          const prop = await mainDao.queryProposal(propID);
+          const prop = await daoMain.queryProposal(propID);
           // lockdrop and vesting participants should vote
           expect(prop.proposal).toMatchObject({ status: 'open' });
           const vp: Record<string, number> = {};
@@ -1302,16 +1307,17 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionLockdropVesting',
             'auctionVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
             if (
-              (await mainDao.queryProposal(propID)).proposal.status == 'open'
+              (await daoMain.queryProposal(propID)).proposal.status == 'open'
             ) {
               await member.voteYes(propID);
             }
           }
           await daoMember1.executeProposal(propID);
-          const tvpNew = await mainDao.queryTotalVotingPower();
+          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // airdrop participants get(increase) the voting power
           for (const v of [
@@ -1320,7 +1326,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'airdropAuctionLockdrop',
             'airdropAuctionLockdropVesting',
           ]) {
-            const member = new dao.DaoMember(tgeWallets[v], mainDao);
+            const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
             );
@@ -1600,7 +1606,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             lockdrop_contract: tgeMain.contracts.lockdrop,
             usdc_cl_pool_contract: tgeMain.pairs.usdc_ntrn.contract,
             atom_cl_pool_contract: tgeMain.pairs.atom_ntrn.contract,
-            owner: mainDao.contracts.core.address,
+            owner: daoMain.contracts.core.address,
           }),
           'neutron.voting.vaults.lockdrop_cl',
         );
@@ -1622,7 +1628,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             atom_cl_pool_contract: tgeMain.pairs.atom_ntrn.contract,
             usdc_vesting_lp_contract: tgeMain.contracts.vestingUsdcLp,
             usdc_cl_pool_contract: tgeMain.pairs.usdc_ntrn.contract,
-            owner: mainDao.contracts.core.address,
+            owner: daoMain.contracts.core.address,
           }),
           'neutron.voting.vaults.lockdrop_cl',
         );
@@ -2054,13 +2060,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           tgeWallets['airdropAuctionLockdropVesting'].wallet.address.toString();
         heightBeforeMigration = await env.getHeight(neutronChain.sdk);
 
-        const totalVp = await mainDao.queryTotalVotingPower(
+        const totalVp = await daoMain.queryTotalVotingPower(
           heightBeforeMigration,
         );
         totalVotingPowerBeforeMigration = +totalVp.power;
         expect(totalVotingPowerBeforeMigration).toBeGreaterThan(0);
 
-        const vp = await mainDao.queryVotingPower(
+        const vp = await daoMain.queryVotingPower(
           vpComparisonMember,
           heightBeforeMigration,
         );
@@ -2079,7 +2085,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           {
             wasm: {
               migrate: {
-                contract_addr: mainDao.contracts.voting.address,
+                contract_addr: daoMain.contracts.voting.address,
                 msg: Buffer.from(JSON.stringify({})).toString('base64'),
                 new_code_id: codeId,
               },
@@ -2089,7 +2095,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           {
             wasm: {
               execute: {
-                contract_addr: mainDao.contracts.voting.address,
+                contract_addr: daoMain.contracts.voting.address,
                 msg: Buffer.from(
                   JSON.stringify({
                     add_voting_vault: {
@@ -2105,7 +2111,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           {
             wasm: {
               execute: {
-                contract_addr: mainDao.contracts.voting.address,
+                contract_addr: daoMain.contracts.voting.address,
                 msg: Buffer.from(
                   JSON.stringify({
                     add_voting_vault: {
@@ -2121,7 +2127,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           {
             wasm: {
               execute: {
-                contract_addr: mainDao.contracts.voting.address,
+                contract_addr: daoMain.contracts.voting.address,
                 msg: Buffer.from(
                   JSON.stringify({
                     deactivate_voting_vault: {
@@ -2137,7 +2143,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           {
             wasm: {
               execute: {
-                contract_addr: mainDao.contracts.voting.address,
+                contract_addr: daoMain.contracts.voting.address,
                 msg: Buffer.from(
                   JSON.stringify({
                     deactivate_voting_vault: {
@@ -2165,24 +2171,24 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           'auctionLockdropVesting',
           'auctionVesting',
         ]) {
-          const member = new dao.DaoMember(tgeWallets[v], mainDao);
+          const member = new dao.DaoMember(tgeWallets[v], daoMain);
           if (
-            (await mainDao.queryProposal(proposalId)).proposal.status == 'open'
+            (await daoMain.queryProposal(proposalId)).proposal.status == 'open'
           ) {
             await member.voteYes(proposalId);
           }
         }
-        await mainDao.checkPassedProposal(proposalId);
+        await daoMain.checkPassedProposal(proposalId);
 
         // make sure premigration config is as expected
         const configBefore =
           await neutronChain.queryContract<OldVotingRegistryConfig>(
-            mainDao.contracts.voting.address,
+            daoMain.contracts.voting.address,
             {
               config: {},
             },
           );
-        expect(configBefore.voting_vaults.length).toEqual(4);
+        expect(configBefore.voting_vaults.length).toEqual(5); // neutron, investors, lockdrop, vesting lp, credits
 
         // execute migration
         await daoMember1.executeProposalWithAttempts(proposalId);
@@ -2191,10 +2197,10 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         // make sure vaults are in the right state
         const votingVaultsAfter = await neutronChain.queryContract<
           VotingVault[]
-        >(mainDao.contracts.voting.address, {
+        >(daoMain.contracts.voting.address, {
           voting_vaults: {},
         });
-        expect(votingVaultsAfter.length).toEqual(6); // two more vaults
+        expect(votingVaultsAfter.length).toEqual(7); // two more vaults
         expect(
           votingVaultsAfter.filter(
             (v) => v.address === tgeMain.contracts.lockdropVault,
@@ -2219,7 +2225,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           votingVaultsAfter.filter(
             (v) =>
               v.address ===
-              (mainDao.contracts.voting as dao.VotingVaultsModule).vaults
+              (daoMain.contracts.voting as dao.VotingVaultsModule).vaults
                 .neutron.address,
           )[0].state,
         ).toEqual('Active'); // neutron vault must stay active
@@ -2244,18 +2250,18 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         heightDiff = +(res.height || 0);
       });
       it('should not allow to query voting power', async () => {
-        await expect(mainDao.queryTotalVotingPower()).rejects.toThrowError(
+        await expect(daoMain.queryTotalVotingPower()).rejects.toThrowError(
           /Querier contract error/,
         );
         await expect(
-          mainDao.queryVotingPower(vpComparisonMember),
+          daoMain.queryVotingPower(vpComparisonMember),
         ).rejects.toThrowError(/Querier contract error/);
 
         await expect(
-          mainDao.queryTotalVotingPower(heightBeforeMigration),
+          daoMain.queryTotalVotingPower(heightBeforeMigration),
         ).rejects.toThrowError(/Querier contract error/);
         await expect(
-          mainDao.queryVotingPower(vpComparisonMember, heightBeforeMigration),
+          daoMain.queryVotingPower(vpComparisonMember, heightBeforeMigration),
         ).rejects.toThrowError(/Querier contract error/);
       });
       it('should not allow to create a proposal', async () => {
@@ -2434,28 +2440,28 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       });
 
       it('historical voting power should remain intact', async () => {
-        const totalVp = await mainDao.queryTotalVotingPower(
+        const totalVp = await daoMain.queryTotalVotingPower(
           heightBeforeMigration,
         );
         expect(totalVotingPowerBeforeMigration).toEqual(+totalVp.power);
 
-        const vp = await mainDao.queryVotingPower(
+        const vp = await daoMain.queryVotingPower(
           vpComparisonMember,
           heightBeforeMigration,
         );
         expect(memberVotingPowerBeforeMigration).toEqual(+vp.power);
       });
       it('voting power before migration is similar to the one after migration', async () => {
-        const histTotalVp = await mainDao.queryTotalVotingPower(
+        const histTotalVp = await daoMain.queryTotalVotingPower(
           heightBeforeMigration,
         );
-        const histVp = await mainDao.queryVotingPower(
+        const histVp = await daoMain.queryVotingPower(
           vpComparisonMember,
           heightBeforeMigration,
         );
 
-        const totalVp = await mainDao.queryTotalVotingPower();
-        const vp = await mainDao.queryVotingPower(vpComparisonMember);
+        const totalVp = await daoMain.queryTotalVotingPower();
+        const vp = await daoMain.queryVotingPower(vpComparisonMember);
 
         expect(+histTotalVp.power).toBeCloseTo(+totalVp.power, -4);
         expect(+histVp.power).toBeCloseTo(+vp.power, -4);
