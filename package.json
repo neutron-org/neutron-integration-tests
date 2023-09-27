@@ -37,7 +37,7 @@
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@cosmos-client/core": "0.45.13",
-    "@cosmos-client/cosmwasm": "^0.20.1",
+    "@cosmos-client/cosmwasm": "^0.40.2",
     "@cosmos-client/ibc": "^1.2.1",
     "@neutron-org/neutronjsplus": "^0.0.9",
     "@types/lodash": "^4.14.182",
