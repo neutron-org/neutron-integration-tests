@@ -191,7 +191,6 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
     );
     cmStranger = new cosmosWrapper.WalletWrapper(
       neutronChain,
-
       testState.wallets.qaNeutronFive.genQaWal1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
@@ -2345,7 +2344,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         ).rejects.toThrowError(/Slippage tolerance is too high/);
       });
       it('should migrate liquidity', async () => {
-        const res = await cmInstantiator.executeContract(
+        const res = await cmStranger.executeContract(
           tgeMain.contracts.lockdrop,
           JSON.stringify({
             migrate_from_xyk_to_cl: {
@@ -2354,7 +2353,8 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
               },
             },
           }),
-          [],
+          // 100 000 000 max
+          [{ amount: '30000000', denom: IBC_USDC_DENOM }], // this should create a bug in an old migration version
           {
             gas_limit: Long.fromString('8000000'),
             amount: [{ denom: tgeMain.chain.denom, amount: '20000' }],
@@ -2430,6 +2430,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         const height = +(res.height || 0);
         heightDiff = height - heightDiff;
       });
+
       it('should allow to query total lockup at height', async () => {
         const res = await cmInstantiator.chain.queryContract(
           tgeMain.contracts.lockdrop,
