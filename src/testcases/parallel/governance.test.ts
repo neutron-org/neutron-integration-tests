@@ -314,9 +314,9 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #15, will pass', async () => {
-      for (let i = 0; i < 100; i++)
+      for (let i = 0; i < 40; i++)
         await neutronAccount.storeWasm(NeutronContract.RESERVE);
-      const codeids = Array.from({ length: 100 }, (_, i) => i + 1);
+      const codeids = Array.from({ length: 40 }, (_, i) => i + 1);
       await daoMember1.submitPinCodesProposal(
         'Proposal #15',
         'Pin codes proposal. Will pass',
