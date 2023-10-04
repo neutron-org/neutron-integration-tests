@@ -949,7 +949,15 @@ export class DaoMember {
   ): Promise<TimeLockSingleChoiceProposal> {
     await this.voteYes(proposalId, customModule);
     await this.executeProposal(proposalId, customModule);
-    return await this.dao.getTimelockedProposal(proposalId, customModule);
+    return await getWithAttempts(
+      this.dao.chain.blockWaiter,
+      async () =>
+        await this.dao.getTimelockedProposal(proposalId, customModule),
+      async (response) => {
+        return response.id && +response.id > 0;
+      },
+      5,
+    );
   }
 
   async executeTimelockedProposal(
@@ -1442,7 +1450,7 @@ export const deploySubdao = async (
   mainDaoCoreAddress: string,
   overrulePreProposeAddress: string,
   securityDaoAddr: string,
-  closeProposalOnExecutionFailure: boolean,
+  closeProposalOnExecutionFailure = true,
 ): Promise<Dao> => {
   const coreCodeId = await cm.storeWasm(NeutronContract.SUBDAO_CORE);
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);

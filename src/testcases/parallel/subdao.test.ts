@@ -138,10 +138,8 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const res = await subDao.getTimelockedProposalErrors(proposalId);
-      expect(res.errors.length).toEqual(1);
-      expect(res.errors[0].error).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
-      expect(res.errors[0].height).toBeGreaterThan(0);
+      const error = await subDao.getTimelockedProposalErrors(proposalId);
+      expect(error).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
@@ -194,7 +192,6 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked 2: execution failed', async () => {
-      // from here
       await neutronAccount1.msgSend(subDao.contracts.core.address, '100000'); // fund the subdao treasury
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
 
@@ -207,9 +204,8 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const res = await subDao.getTimelockedProposalErrors(proposalId2);
-      expect(res.errors.length).toEqual(1);
-      expect(res.errors[0].error).toEqual('codespace: undefined, code: 1');
+      const error = await subDao.getTimelockedProposalErrors(proposalId2);
+      expect(error).toEqual('codespace: undefined, code: 1');
 
       // check that goodMessage failed as well
       const balance2After = await neutronAccount2.queryDenomBalance(
@@ -292,9 +288,9 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const res = await subDao.getTimelockedProposalErrors(proposalId3);
-      // do not have errors because we did not have reply
-      expect(res.errors.length).toEqual(0);
+      const error = await subDao.getTimelockedProposalErrors(proposalId3);
+      // do not have an error because we did not have reply
+      expect(error).toEqual(null);
 
       await neutronAccount1.msgSend(subDao.contracts.core.address, '300000');
 

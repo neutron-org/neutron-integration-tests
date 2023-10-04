@@ -284,9 +284,4 @@ export type ContractAdminResponse = {
   };
 };
 
-export type ProposalFailedExecutionErrorResponse = {
-  errors: {
-    height: number;
-    error: string;
-  }[];
-};
+export type ProposalFailedExecutionErrorResponse = string;
