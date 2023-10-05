@@ -1,112 +1,9 @@
 import * as $protobuf from "protobufjs";
-/** Namespace pob. */
-export namespace pob {
+/** Namespace sdk. */
+export namespace sdk {
 
-    /** Namespace abci. */
-    namespace abci {
-
-        /** Namespace v1. */
-        namespace v1 {
-
-            /** Properties of an AuctionInfo. */
-            interface IAuctionInfo {
-
-                /** AuctionInfo extended_commit_info */
-                extended_commit_info?: (Uint8Array|null);
-
-                /** AuctionInfo max_tx_bytes */
-                max_tx_bytes?: (Long|null);
-
-                /** AuctionInfo num_txs */
-                num_txs?: (Long|null);
-            }
-
-            /** Represents an AuctionInfo. */
-            class AuctionInfo implements IAuctionInfo {
-
-                /**
-                 * Constructs a new AuctionInfo.
-                 * @param [properties] Properties to set
-                 */
-                constructor(properties?: pob.abci.v1.IAuctionInfo);
-
-                /** AuctionInfo extended_commit_info. */
-                public extended_commit_info: Uint8Array;
-
-                /** AuctionInfo max_tx_bytes. */
-                public max_tx_bytes: Long;
-
-                /** AuctionInfo num_txs. */
-                public num_txs: Long;
-
-                /**
-                 * Encodes the specified AuctionInfo message. Does not implicitly {@link pob.abci.v1.AuctionInfo.verify|verify} messages.
-                 * @param message AuctionInfo message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encode(message: pob.abci.v1.IAuctionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Encodes the specified AuctionInfo message, length delimited. Does not implicitly {@link pob.abci.v1.AuctionInfo.verify|verify} messages.
-                 * @param message AuctionInfo message or plain object to encode
-                 * @param [writer] Writer to encode to
-                 * @returns Writer
-                 */
-                public static encodeDelimited(message: pob.abci.v1.IAuctionInfo, writer?: $protobuf.Writer): $protobuf.Writer;
-
-                /**
-                 * Decodes an AuctionInfo message from the specified reader or buffer.
-                 * @param reader Reader or buffer to decode from
-                 * @param [length] Message length if known beforehand
-                 * @returns AuctionInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.abci.v1.AuctionInfo;
-
-                /**
-                 * Decodes an AuctionInfo message from the specified reader or buffer, length delimited.
-                 * @param reader Reader or buffer to decode from
-                 * @returns AuctionInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.abci.v1.AuctionInfo;
-
-                /**
-                 * Verifies an AuctionInfo message.
-                 * @param message Plain object to verify
-                 * @returns `null` if valid, otherwise the reason why it is not
-                 */
-                public static verify(message: { [k: string]: any }): (string|null);
-
-                /**
-                 * Creates an AuctionInfo message from a plain object. Also converts values to their respective internal types.
-                 * @param object Plain object
-                 * @returns AuctionInfo
-                 */
-                public static fromObject(object: { [k: string]: any }): pob.abci.v1.AuctionInfo;
-
-                /**
-                 * Creates a plain object from an AuctionInfo message. Also converts values to other types if specified.
-                 * @param message AuctionInfo
-                 * @param [options] Conversion options
-                 * @returns Plain object
-                 */
-                public static toObject(message: pob.abci.v1.AuctionInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
-
-                /**
-                 * Converts this AuctionInfo to JSON.
-                 * @returns JSON object
-                 */
-                public toJSON(): { [k: string]: any };
-            }
-        }
-    }
-
-    /** Namespace builder. */
-    namespace builder {
+    /** Namespace auction. */
+    namespace auction {
 
         /** Namespace module. */
         namespace module {
@@ -128,26 +25,26 @@ export namespace pob {
                      * Constructs a new Module.
                      * @param [properties] Properties to set
                      */
-                    constructor(properties?: pob.builder.module.v1.IModule);
+                    constructor(properties?: sdk.auction.module.v1.IModule);
 
                     /** Module authority. */
                     public authority: string;
 
                     /**
-                     * Encodes the specified Module message. Does not implicitly {@link pob.builder.module.v1.Module.verify|verify} messages.
+                     * Encodes the specified Module message. Does not implicitly {@link sdk.auction.module.v1.Module.verify|verify} messages.
                      * @param message Module message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encode(message: pob.builder.module.v1.IModule, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encode(message: sdk.auction.module.v1.IModule, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
-                     * Encodes the specified Module message, length delimited. Does not implicitly {@link pob.builder.module.v1.Module.verify|verify} messages.
+                     * Encodes the specified Module message, length delimited. Does not implicitly {@link sdk.auction.module.v1.Module.verify|verify} messages.
                      * @param message Module message or plain object to encode
                      * @param [writer] Writer to encode to
                      * @returns Writer
                      */
-                    public static encodeDelimited(message: pob.builder.module.v1.IModule, writer?: $protobuf.Writer): $protobuf.Writer;
+                    public static encodeDelimited(message: sdk.auction.module.v1.IModule, writer?: $protobuf.Writer): $protobuf.Writer;
 
                     /**
                      * Decodes a Module message from the specified reader or buffer.
@@ -157,7 +54,7 @@ export namespace pob {
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.module.v1.Module;
+                    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.module.v1.Module;
 
                     /**
                      * Decodes a Module message from the specified reader or buffer, length delimited.
@@ -166,7 +63,7 @@ export namespace pob {
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
-                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.module.v1.Module;
+                    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.module.v1.Module;
 
                     /**
                      * Verifies a Module message.
@@ -180,7 +77,7 @@ export namespace pob {
                      * @param object Plain object
                      * @returns Module
                      */
-                    public static fromObject(object: { [k: string]: any }): pob.builder.module.v1.Module;
+                    public static fromObject(object: { [k: string]: any }): sdk.auction.module.v1.Module;
 
                     /**
                      * Creates a plain object from a Module message. Also converts values to other types if specified.
@@ -188,7 +85,7 @@ export namespace pob {
                      * @param [options] Conversion options
                      * @returns Plain object
                      */
-                    public static toObject(message: pob.builder.module.v1.Module, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                    public static toObject(message: sdk.auction.module.v1.Module, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                     /**
                      * Converts this Module to JSON.
@@ -206,7 +103,7 @@ export namespace pob {
             interface IGenesisState {
 
                 /** GenesisState params */
-                params?: (pob.builder.v1.IParams|null);
+                params?: (sdk.auction.v1.IParams|null);
             }
 
             /** Represents a GenesisState. */
@@ -216,26 +113,26 @@ export namespace pob {
                  * Constructs a new GenesisState.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IGenesisState);
+                constructor(properties?: sdk.auction.v1.IGenesisState);
 
                 /** GenesisState params. */
-                public params?: (pob.builder.v1.IParams|null);
+                public params?: (sdk.auction.v1.IParams|null);
 
                 /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link pob.builder.v1.GenesisState.verify|verify} messages.
+                 * Encodes the specified GenesisState message. Does not implicitly {@link sdk.auction.v1.GenesisState.verify|verify} messages.
                  * @param message GenesisState message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link pob.builder.v1.GenesisState.verify|verify} messages.
+                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link sdk.auction.v1.GenesisState.verify|verify} messages.
                  * @param message GenesisState message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IGenesisState, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a GenesisState message from the specified reader or buffer.
@@ -245,7 +142,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.GenesisState;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.GenesisState;
 
                 /**
                  * Decodes a GenesisState message from the specified reader or buffer, length delimited.
@@ -254,7 +151,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.GenesisState;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.GenesisState;
 
                 /**
                  * Verifies a GenesisState message.
@@ -268,7 +165,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns GenesisState
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.GenesisState;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.GenesisState;
 
                 /**
                  * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
@@ -276,7 +173,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.GenesisState, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this GenesisState to JSON.
@@ -314,7 +211,7 @@ export namespace pob {
                  * Constructs a new Params.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IParams);
+                constructor(properties?: sdk.auction.v1.IParams);
 
                 /** Params max_bundle_size. */
                 public max_bundle_size: number;
@@ -335,20 +232,20 @@ export namespace pob {
                 public proposer_fee: string;
 
                 /**
-                 * Encodes the specified Params message. Does not implicitly {@link pob.builder.v1.Params.verify|verify} messages.
+                 * Encodes the specified Params message. Does not implicitly {@link sdk.auction.v1.Params.verify|verify} messages.
                  * @param message Params message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link pob.builder.v1.Params.verify|verify} messages.
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link sdk.auction.v1.Params.verify|verify} messages.
                  * @param message Params message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a Params message from the specified reader or buffer.
@@ -358,7 +255,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.Params;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.Params;
 
                 /**
                  * Decodes a Params message from the specified reader or buffer, length delimited.
@@ -367,7 +264,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.Params;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.Params;
 
                 /**
                  * Verifies a Params message.
@@ -381,7 +278,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns Params
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.Params;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.Params;
 
                 /**
                  * Creates a plain object from a Params message. Also converts values to other types if specified.
@@ -389,7 +286,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.Params, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this Params to JSON.
@@ -414,24 +311,24 @@ export namespace pob {
                  * @param request QueryParamsRequest message or plain object
                  * @param callback Node-style callback called with the error, if any, and QueryParamsResponse
                  */
-                public params(request: pob.builder.v1.IQueryParamsRequest, callback: pob.builder.v1.Query.ParamsCallback): void;
+                public params(request: sdk.auction.v1.IQueryParamsRequest, callback: sdk.auction.v1.Query.ParamsCallback): void;
 
                 /**
                  * Calls Params.
                  * @param request QueryParamsRequest message or plain object
                  * @returns Promise
                  */
-                public params(request: pob.builder.v1.IQueryParamsRequest): Promise<pob.builder.v1.QueryParamsResponse>;
+                public params(request: sdk.auction.v1.IQueryParamsRequest): Promise<sdk.auction.v1.QueryParamsResponse>;
             }
 
             namespace Query {
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Query#params}.
+                 * Callback as used by {@link sdk.auction.v1.Query#params}.
                  * @param error Error, if any
                  * @param [response] QueryParamsResponse
                  */
-                type ParamsCallback = (error: (Error|null), response?: pob.builder.v1.QueryParamsResponse) => void;
+                type ParamsCallback = (error: (Error|null), response?: sdk.auction.v1.QueryParamsResponse) => void;
             }
 
             /** Properties of a QueryParamsRequest. */
@@ -445,23 +342,23 @@ export namespace pob {
                  * Constructs a new QueryParamsRequest.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IQueryParamsRequest);
+                constructor(properties?: sdk.auction.v1.IQueryParamsRequest);
 
                 /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link pob.builder.v1.QueryParamsRequest.verify|verify} messages.
+                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link sdk.auction.v1.QueryParamsRequest.verify|verify} messages.
                  * @param message QueryParamsRequest message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link pob.builder.v1.QueryParamsRequest.verify|verify} messages.
+                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link sdk.auction.v1.QueryParamsRequest.verify|verify} messages.
                  * @param message QueryParamsRequest message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IQueryParamsRequest, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a QueryParamsRequest message from the specified reader or buffer.
@@ -471,7 +368,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.QueryParamsRequest;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.QueryParamsRequest;
 
                 /**
                  * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
@@ -480,7 +377,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.QueryParamsRequest;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.QueryParamsRequest;
 
                 /**
                  * Verifies a QueryParamsRequest message.
@@ -494,7 +391,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns QueryParamsRequest
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.QueryParamsRequest;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.QueryParamsRequest;
 
                 /**
                  * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
@@ -502,7 +399,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.QueryParamsRequest, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this QueryParamsRequest to JSON.
@@ -515,7 +412,7 @@ export namespace pob {
             interface IQueryParamsResponse {
 
                 /** QueryParamsResponse params */
-                params?: (pob.builder.v1.IParams|null);
+                params?: (sdk.auction.v1.IParams|null);
             }
 
             /** Represents a QueryParamsResponse. */
@@ -525,26 +422,26 @@ export namespace pob {
                  * Constructs a new QueryParamsResponse.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IQueryParamsResponse);
+                constructor(properties?: sdk.auction.v1.IQueryParamsResponse);
 
                 /** QueryParamsResponse params. */
-                public params?: (pob.builder.v1.IParams|null);
+                public params?: (sdk.auction.v1.IParams|null);
 
                 /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link pob.builder.v1.QueryParamsResponse.verify|verify} messages.
+                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link sdk.auction.v1.QueryParamsResponse.verify|verify} messages.
                  * @param message QueryParamsResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link pob.builder.v1.QueryParamsResponse.verify|verify} messages.
+                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.QueryParamsResponse.verify|verify} messages.
                  * @param message QueryParamsResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IQueryParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a QueryParamsResponse message from the specified reader or buffer.
@@ -554,7 +451,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.QueryParamsResponse;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.QueryParamsResponse;
 
                 /**
                  * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
@@ -563,7 +460,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.QueryParamsResponse;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.QueryParamsResponse;
 
                 /**
                  * Verifies a QueryParamsResponse message.
@@ -577,7 +474,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns QueryParamsResponse
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.QueryParamsResponse;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.QueryParamsResponse;
 
                 /**
                  * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
@@ -585,7 +482,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.QueryParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this QueryParamsResponse to JSON.
@@ -610,45 +507,45 @@ export namespace pob {
                  * @param request MsgAuctionBid message or plain object
                  * @param callback Node-style callback called with the error, if any, and MsgAuctionBidResponse
                  */
-                public auctionBid(request: pob.builder.v1.IMsgAuctionBid, callback: pob.builder.v1.Msg.AuctionBidCallback): void;
+                public auctionBid(request: sdk.auction.v1.IMsgAuctionBid, callback: sdk.auction.v1.Msg.AuctionBidCallback): void;
 
                 /**
                  * Calls AuctionBid.
                  * @param request MsgAuctionBid message or plain object
                  * @returns Promise
                  */
-                public auctionBid(request: pob.builder.v1.IMsgAuctionBid): Promise<pob.builder.v1.MsgAuctionBidResponse>;
+                public auctionBid(request: sdk.auction.v1.IMsgAuctionBid): Promise<sdk.auction.v1.MsgAuctionBidResponse>;
 
                 /**
                  * Calls UpdateParams.
                  * @param request MsgUpdateParams message or plain object
                  * @param callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
                  */
-                public updateParams(request: pob.builder.v1.IMsgUpdateParams, callback: pob.builder.v1.Msg.UpdateParamsCallback): void;
+                public updateParams(request: sdk.auction.v1.IMsgUpdateParams, callback: sdk.auction.v1.Msg.UpdateParamsCallback): void;
 
                 /**
                  * Calls UpdateParams.
                  * @param request MsgUpdateParams message or plain object
                  * @returns Promise
                  */
-                public updateParams(request: pob.builder.v1.IMsgUpdateParams): Promise<pob.builder.v1.MsgUpdateParamsResponse>;
+                public updateParams(request: sdk.auction.v1.IMsgUpdateParams): Promise<sdk.auction.v1.MsgUpdateParamsResponse>;
             }
 
             namespace Msg {
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Msg#auctionBid}.
+                 * Callback as used by {@link sdk.auction.v1.Msg#auctionBid}.
                  * @param error Error, if any
                  * @param [response] MsgAuctionBidResponse
                  */
-                type AuctionBidCallback = (error: (Error|null), response?: pob.builder.v1.MsgAuctionBidResponse) => void;
+                type AuctionBidCallback = (error: (Error|null), response?: sdk.auction.v1.MsgAuctionBidResponse) => void;
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Msg#updateParams}.
+                 * Callback as used by {@link sdk.auction.v1.Msg#updateParams}.
                  * @param error Error, if any
                  * @param [response] MsgUpdateParamsResponse
                  */
-                type UpdateParamsCallback = (error: (Error|null), response?: pob.builder.v1.MsgUpdateParamsResponse) => void;
+                type UpdateParamsCallback = (error: (Error|null), response?: sdk.auction.v1.MsgUpdateParamsResponse) => void;
             }
 
             /** Properties of a MsgAuctionBid. */
@@ -671,7 +568,7 @@ export namespace pob {
                  * Constructs a new MsgAuctionBid.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IMsgAuctionBid);
+                constructor(properties?: sdk.auction.v1.IMsgAuctionBid);
 
                 /** MsgAuctionBid bidder. */
                 public bidder: string;
@@ -683,20 +580,20 @@ export namespace pob {
                 public transactions: Uint8Array[];
 
                 /**
-                 * Encodes the specified MsgAuctionBid message. Does not implicitly {@link pob.builder.v1.MsgAuctionBid.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBid message. Does not implicitly {@link sdk.auction.v1.MsgAuctionBid.verify|verify} messages.
                  * @param message MsgAuctionBid message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IMsgAuctionBid, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IMsgAuctionBid, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified MsgAuctionBid message, length delimited. Does not implicitly {@link pob.builder.v1.MsgAuctionBid.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBid message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgAuctionBid.verify|verify} messages.
                  * @param message MsgAuctionBid message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IMsgAuctionBid, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IMsgAuctionBid, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a MsgAuctionBid message from the specified reader or buffer.
@@ -706,7 +603,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.MsgAuctionBid;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.MsgAuctionBid;
 
                 /**
                  * Decodes a MsgAuctionBid message from the specified reader or buffer, length delimited.
@@ -715,7 +612,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.MsgAuctionBid;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.MsgAuctionBid;
 
                 /**
                  * Verifies a MsgAuctionBid message.
@@ -729,7 +626,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns MsgAuctionBid
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.MsgAuctionBid;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.MsgAuctionBid;
 
                 /**
                  * Creates a plain object from a MsgAuctionBid message. Also converts values to other types if specified.
@@ -737,7 +634,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.MsgAuctionBid, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.MsgAuctionBid, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this MsgAuctionBid to JSON.
@@ -757,23 +654,23 @@ export namespace pob {
                  * Constructs a new MsgAuctionBidResponse.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IMsgAuctionBidResponse);
+                constructor(properties?: sdk.auction.v1.IMsgAuctionBidResponse);
 
                 /**
-                 * Encodes the specified MsgAuctionBidResponse message. Does not implicitly {@link pob.builder.v1.MsgAuctionBidResponse.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBidResponse message. Does not implicitly {@link sdk.auction.v1.MsgAuctionBidResponse.verify|verify} messages.
                  * @param message MsgAuctionBidResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IMsgAuctionBidResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IMsgAuctionBidResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified MsgAuctionBidResponse message, length delimited. Does not implicitly {@link pob.builder.v1.MsgAuctionBidResponse.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBidResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgAuctionBidResponse.verify|verify} messages.
                  * @param message MsgAuctionBidResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IMsgAuctionBidResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IMsgAuctionBidResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a MsgAuctionBidResponse message from the specified reader or buffer.
@@ -783,7 +680,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.MsgAuctionBidResponse;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.MsgAuctionBidResponse;
 
                 /**
                  * Decodes a MsgAuctionBidResponse message from the specified reader or buffer, length delimited.
@@ -792,7 +689,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.MsgAuctionBidResponse;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.MsgAuctionBidResponse;
 
                 /**
                  * Verifies a MsgAuctionBidResponse message.
@@ -806,7 +703,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns MsgAuctionBidResponse
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.MsgAuctionBidResponse;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.MsgAuctionBidResponse;
 
                 /**
                  * Creates a plain object from a MsgAuctionBidResponse message. Also converts values to other types if specified.
@@ -814,7 +711,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.MsgAuctionBidResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.MsgAuctionBidResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this MsgAuctionBidResponse to JSON.
@@ -830,7 +727,7 @@ export namespace pob {
                 authority?: (string|null);
 
                 /** MsgUpdateParams params */
-                params?: (pob.builder.v1.IParams|null);
+                params?: (sdk.auction.v1.IParams|null);
             }
 
             /** Represents a MsgUpdateParams. */
@@ -840,29 +737,29 @@ export namespace pob {
                  * Constructs a new MsgUpdateParams.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IMsgUpdateParams);
+                constructor(properties?: sdk.auction.v1.IMsgUpdateParams);
 
                 /** MsgUpdateParams authority. */
                 public authority: string;
 
                 /** MsgUpdateParams params. */
-                public params?: (pob.builder.v1.IParams|null);
+                public params?: (sdk.auction.v1.IParams|null);
 
                 /**
-                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link pob.builder.v1.MsgUpdateParams.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link sdk.auction.v1.MsgUpdateParams.verify|verify} messages.
                  * @param message MsgUpdateParams message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link pob.builder.v1.MsgUpdateParams.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgUpdateParams.verify|verify} messages.
                  * @param message MsgUpdateParams message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IMsgUpdateParams, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a MsgUpdateParams message from the specified reader or buffer.
@@ -872,7 +769,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.MsgUpdateParams;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.MsgUpdateParams;
 
                 /**
                  * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
@@ -881,7 +778,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.MsgUpdateParams;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.MsgUpdateParams;
 
                 /**
                  * Verifies a MsgUpdateParams message.
@@ -895,7 +792,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns MsgUpdateParams
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.MsgUpdateParams;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.MsgUpdateParams;
 
                 /**
                  * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
@@ -903,7 +800,7 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.MsgUpdateParams, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this MsgUpdateParams to JSON.
@@ -923,23 +820,23 @@ export namespace pob {
                  * Constructs a new MsgUpdateParamsResponse.
                  * @param [properties] Properties to set
                  */
-                constructor(properties?: pob.builder.v1.IMsgUpdateParamsResponse);
+                constructor(properties?: sdk.auction.v1.IMsgUpdateParamsResponse);
 
                 /**
-                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link pob.builder.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link sdk.auction.v1.MsgUpdateParamsResponse.verify|verify} messages.
                  * @param message MsgUpdateParamsResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encode(message: pob.builder.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encode(message: sdk.auction.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
-                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link pob.builder.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgUpdateParamsResponse.verify|verify} messages.
                  * @param message MsgUpdateParamsResponse message or plain object to encode
                  * @param [writer] Writer to encode to
                  * @returns Writer
                  */
-                public static encodeDelimited(message: pob.builder.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
+                public static encodeDelimited(message: sdk.auction.v1.IMsgUpdateParamsResponse, writer?: $protobuf.Writer): $protobuf.Writer;
 
                 /**
                  * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
@@ -949,7 +846,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): pob.builder.v1.MsgUpdateParamsResponse;
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.auction.v1.MsgUpdateParamsResponse;
 
                 /**
                  * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
@@ -958,7 +855,7 @@ export namespace pob {
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
-                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): pob.builder.v1.MsgUpdateParamsResponse;
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.auction.v1.MsgUpdateParamsResponse;
 
                 /**
                  * Verifies a MsgUpdateParamsResponse message.
@@ -972,7 +869,7 @@ export namespace pob {
                  * @param object Plain object
                  * @returns MsgUpdateParamsResponse
                  */
-                public static fromObject(object: { [k: string]: any }): pob.builder.v1.MsgUpdateParamsResponse;
+                public static fromObject(object: { [k: string]: any }): sdk.auction.v1.MsgUpdateParamsResponse;
 
                 /**
                  * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
@@ -980,10 +877,125 @@ export namespace pob {
                  * @param [options] Conversion options
                  * @returns Plain object
                  */
-                public static toObject(message: pob.builder.v1.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
+                public static toObject(message: sdk.auction.v1.MsgUpdateParamsResponse, options?: $protobuf.IConversionOptions): { [k: string]: any };
 
                 /**
                  * Converts this MsgUpdateParamsResponse to JSON.
+                 * @returns JSON object
+                 */
+                public toJSON(): { [k: string]: any };
+            }
+        }
+    }
+
+    /** Namespace proposals. */
+    namespace proposals {
+
+        /** Namespace v1. */
+        namespace v1 {
+
+            /** Properties of a ProposalInfo. */
+            interface IProposalInfo {
+
+                /** ProposalInfo txs_by_lane */
+                txs_by_lane?: ({ [k: string]: Long }|null);
+
+                /** ProposalInfo max_block_size */
+                max_block_size?: (Long|null);
+
+                /** ProposalInfo max_gas_limit */
+                max_gas_limit?: (Long|null);
+
+                /** ProposalInfo block_size */
+                block_size?: (Long|null);
+
+                /** ProposalInfo gas_limit */
+                gas_limit?: (Long|null);
+            }
+
+            /** Represents a ProposalInfo. */
+            class ProposalInfo implements IProposalInfo {
+
+                /**
+                 * Constructs a new ProposalInfo.
+                 * @param [properties] Properties to set
+                 */
+                constructor(properties?: sdk.proposals.v1.IProposalInfo);
+
+                /** ProposalInfo txs_by_lane. */
+                public txs_by_lane: { [k: string]: Long };
+
+                /** ProposalInfo max_block_size. */
+                public max_block_size: Long;
+
+                /** ProposalInfo max_gas_limit. */
+                public max_gas_limit: Long;
+
+                /** ProposalInfo block_size. */
+                public block_size: Long;
+
+                /** ProposalInfo gas_limit. */
+                public gas_limit: Long;
+
+                /**
+                 * Encodes the specified ProposalInfo message. Does not implicitly {@link sdk.proposals.v1.ProposalInfo.verify|verify} messages.
+                 * @param message ProposalInfo message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(message: sdk.proposals.v1.IProposalInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Encodes the specified ProposalInfo message, length delimited. Does not implicitly {@link sdk.proposals.v1.ProposalInfo.verify|verify} messages.
+                 * @param message ProposalInfo message or plain object to encode
+                 * @param [writer] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encodeDelimited(message: sdk.proposals.v1.IProposalInfo, writer?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a ProposalInfo message from the specified reader or buffer.
+                 * @param reader Reader or buffer to decode from
+                 * @param [length] Message length if known beforehand
+                 * @returns ProposalInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): sdk.proposals.v1.ProposalInfo;
+
+                /**
+                 * Decodes a ProposalInfo message from the specified reader or buffer, length delimited.
+                 * @param reader Reader or buffer to decode from
+                 * @returns ProposalInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): sdk.proposals.v1.ProposalInfo;
+
+                /**
+                 * Verifies a ProposalInfo message.
+                 * @param message Plain object to verify
+                 * @returns `null` if valid, otherwise the reason why it is not
+                 */
+                public static verify(message: { [k: string]: any }): (string|null);
+
+                /**
+                 * Creates a ProposalInfo message from a plain object. Also converts values to their respective internal types.
+                 * @param object Plain object
+                 * @returns ProposalInfo
+                 */
+                public static fromObject(object: { [k: string]: any }): sdk.proposals.v1.ProposalInfo;
+
+                /**
+                 * Creates a plain object from a ProposalInfo message. Also converts values to other types if specified.
+                 * @param message ProposalInfo
+                 * @param [options] Conversion options
+                 * @returns Plain object
+                 */
+                public static toObject(message: sdk.proposals.v1.ProposalInfo, options?: $protobuf.IConversionOptions): { [k: string]: any };
+
+                /**
+                 * Converts this ProposalInfo to JSON.
                  * @returns JSON object
                  */
                 public toJSON(): { [k: string]: any };

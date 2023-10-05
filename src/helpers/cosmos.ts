@@ -2,7 +2,7 @@ import cosmosclient from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import cosmwasmclient from '@cosmos-client/cosmwasm';
 import { cosmos as AdminProto, ibc as ibcProto } from '../generated/ibc/proto';
-import { pob } from '../generated/pob/proto';
+import { sdk } from '../generated/pob/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
@@ -101,8 +101,8 @@ cosmosclient.codec.register(
   ibcProto.lightclients.tendermint.v1.ClientState,
 );
 cosmosclient.codec.register(
-  '/pob.builder.v1.MsgAuctionBid',
-  pob.builder.v1.MsgAuctionBid,
+  '/sdk.auction.v1.MsgAuctionBid',
+  sdk.auction.v1.MsgAuctionBid,
 );
 cosmosclient.codec.register(
   '/neutron.interchaintxs.v1.MsgUpdateParams',
@@ -757,7 +757,7 @@ export class WalletWrapper {
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
       .BroadcastTxMode.Sync,
   ): Promise<BroadcastTx200ResponseTxResponse> {
-    const msg = new pob.builder.v1.MsgAuctionBid({
+    const msg = new sdk.auction.v1.MsgAuctionBid({
       bidder: bidder,
       bid: bid,
       transactions: transactions,

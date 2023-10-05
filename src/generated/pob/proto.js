@@ -7,310 +7,29 @@ const $Reader = $protobuf.Reader, $Writer = $protobuf.Writer, $util = $protobuf.
 // Exported root namespace
 const $root = $protobuf.roots["@skip-mev/pob"] || ($protobuf.roots["@skip-mev/pob"] = {});
 
-export const pob = $root.pob = (() => {
+export const sdk = $root.sdk = (() => {
 
     /**
-     * Namespace pob.
-     * @exports pob
+     * Namespace sdk.
+     * @exports sdk
      * @namespace
      */
-    const pob = {};
+    const sdk = {};
 
-    pob.abci = (function() {
-
-        /**
-         * Namespace abci.
-         * @memberof pob
-         * @namespace
-         */
-        const abci = {};
-
-        abci.v1 = (function() {
-
-            /**
-             * Namespace v1.
-             * @memberof pob.abci
-             * @namespace
-             */
-            const v1 = {};
-
-            v1.AuctionInfo = (function() {
-
-                /**
-                 * Properties of an AuctionInfo.
-                 * @memberof pob.abci.v1
-                 * @interface IAuctionInfo
-                 * @property {Uint8Array|null} [extended_commit_info] AuctionInfo extended_commit_info
-                 * @property {Long|null} [max_tx_bytes] AuctionInfo max_tx_bytes
-                 * @property {Long|null} [num_txs] AuctionInfo num_txs
-                 */
-
-                /**
-                 * Constructs a new AuctionInfo.
-                 * @memberof pob.abci.v1
-                 * @classdesc Represents an AuctionInfo.
-                 * @implements IAuctionInfo
-                 * @constructor
-                 * @param {pob.abci.v1.IAuctionInfo=} [properties] Properties to set
-                 */
-                function AuctionInfo(properties) {
-                    if (properties)
-                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
-                            if (properties[keys[i]] != null)
-                                this[keys[i]] = properties[keys[i]];
-                }
-
-                /**
-                 * AuctionInfo extended_commit_info.
-                 * @member {Uint8Array} extended_commit_info
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @instance
-                 */
-                AuctionInfo.prototype.extended_commit_info = $util.newBuffer([]);
-
-                /**
-                 * AuctionInfo max_tx_bytes.
-                 * @member {Long} max_tx_bytes
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @instance
-                 */
-                AuctionInfo.prototype.max_tx_bytes = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
-
-                /**
-                 * AuctionInfo num_txs.
-                 * @member {Long} num_txs
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @instance
-                 */
-                AuctionInfo.prototype.num_txs = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
-
-                /**
-                 * Encodes the specified AuctionInfo message. Does not implicitly {@link pob.abci.v1.AuctionInfo.verify|verify} messages.
-                 * @function encode
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {pob.abci.v1.IAuctionInfo} message AuctionInfo message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                AuctionInfo.encode = function encode(message, writer) {
-                    if (!writer)
-                        writer = $Writer.create();
-                    if (message.extended_commit_info != null && Object.hasOwnProperty.call(message, "extended_commit_info"))
-                        writer.uint32(/* id 1, wireType 2 =*/10).bytes(message.extended_commit_info);
-                    if (message.max_tx_bytes != null && Object.hasOwnProperty.call(message, "max_tx_bytes"))
-                        writer.uint32(/* id 2, wireType 0 =*/16).int64(message.max_tx_bytes);
-                    if (message.num_txs != null && Object.hasOwnProperty.call(message, "num_txs"))
-                        writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.num_txs);
-                    return writer;
-                };
-
-                /**
-                 * Encodes the specified AuctionInfo message, length delimited. Does not implicitly {@link pob.abci.v1.AuctionInfo.verify|verify} messages.
-                 * @function encodeDelimited
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {pob.abci.v1.IAuctionInfo} message AuctionInfo message or plain object to encode
-                 * @param {$protobuf.Writer} [writer] Writer to encode to
-                 * @returns {$protobuf.Writer} Writer
-                 */
-                AuctionInfo.encodeDelimited = function encodeDelimited(message, writer) {
-                    return this.encode(message, writer).ldelim();
-                };
-
-                /**
-                 * Decodes an AuctionInfo message from the specified reader or buffer.
-                 * @function decode
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.abci.v1.AuctionInfo} AuctionInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                AuctionInfo.decode = function decode(reader, length) {
-                    if (!(reader instanceof $Reader))
-                        reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.abci.v1.AuctionInfo();
-                    while (reader.pos < end) {
-                        let tag = reader.uint32();
-                        switch (tag >>> 3) {
-                        case 1:
-                            message.extended_commit_info = reader.bytes();
-                            break;
-                        case 2:
-                            message.max_tx_bytes = reader.int64();
-                            break;
-                        case 3:
-                            message.num_txs = reader.uint64();
-                            break;
-                        default:
-                            reader.skipType(tag & 7);
-                            break;
-                        }
-                    }
-                    return message;
-                };
-
-                /**
-                 * Decodes an AuctionInfo message from the specified reader or buffer, length delimited.
-                 * @function decodeDelimited
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.abci.v1.AuctionInfo} AuctionInfo
-                 * @throws {Error} If the payload is not a reader or valid buffer
-                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
-                 */
-                AuctionInfo.decodeDelimited = function decodeDelimited(reader) {
-                    if (!(reader instanceof $Reader))
-                        reader = new $Reader(reader);
-                    return this.decode(reader, reader.uint32());
-                };
-
-                /**
-                 * Verifies an AuctionInfo message.
-                 * @function verify
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {Object.<string,*>} message Plain object to verify
-                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
-                 */
-                AuctionInfo.verify = function verify(message) {
-                    if (typeof message !== "object" || message === null)
-                        return "object expected";
-                    if (message.extended_commit_info != null && message.hasOwnProperty("extended_commit_info"))
-                        if (!(message.extended_commit_info && typeof message.extended_commit_info.length === "number" || $util.isString(message.extended_commit_info)))
-                            return "extended_commit_info: buffer expected";
-                    if (message.max_tx_bytes != null && message.hasOwnProperty("max_tx_bytes"))
-                        if (!$util.isInteger(message.max_tx_bytes) && !(message.max_tx_bytes && $util.isInteger(message.max_tx_bytes.low) && $util.isInteger(message.max_tx_bytes.high)))
-                            return "max_tx_bytes: integer|Long expected";
-                    if (message.num_txs != null && message.hasOwnProperty("num_txs"))
-                        if (!$util.isInteger(message.num_txs) && !(message.num_txs && $util.isInteger(message.num_txs.low) && $util.isInteger(message.num_txs.high)))
-                            return "num_txs: integer|Long expected";
-                    return null;
-                };
-
-                /**
-                 * Creates an AuctionInfo message from a plain object. Also converts values to their respective internal types.
-                 * @function fromObject
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.abci.v1.AuctionInfo} AuctionInfo
-                 */
-                AuctionInfo.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.abci.v1.AuctionInfo)
-                        return object;
-                    let message = new $root.pob.abci.v1.AuctionInfo();
-                    if (object.extended_commit_info != null)
-                        if (typeof object.extended_commit_info === "string")
-                            $util.base64.decode(object.extended_commit_info, message.extended_commit_info = $util.newBuffer($util.base64.length(object.extended_commit_info)), 0);
-                        else if (object.extended_commit_info.length)
-                            message.extended_commit_info = object.extended_commit_info;
-                    if (object.max_tx_bytes != null)
-                        if ($util.Long)
-                            (message.max_tx_bytes = $util.Long.fromValue(object.max_tx_bytes)).unsigned = false;
-                        else if (typeof object.max_tx_bytes === "string")
-                            message.max_tx_bytes = parseInt(object.max_tx_bytes, 10);
-                        else if (typeof object.max_tx_bytes === "number")
-                            message.max_tx_bytes = object.max_tx_bytes;
-                        else if (typeof object.max_tx_bytes === "object")
-                            message.max_tx_bytes = new $util.LongBits(object.max_tx_bytes.low >>> 0, object.max_tx_bytes.high >>> 0).toNumber();
-                    if (object.num_txs != null)
-                        if ($util.Long)
-                            (message.num_txs = $util.Long.fromValue(object.num_txs)).unsigned = true;
-                        else if (typeof object.num_txs === "string")
-                            message.num_txs = parseInt(object.num_txs, 10);
-                        else if (typeof object.num_txs === "number")
-                            message.num_txs = object.num_txs;
-                        else if (typeof object.num_txs === "object")
-                            message.num_txs = new $util.LongBits(object.num_txs.low >>> 0, object.num_txs.high >>> 0).toNumber(true);
-                    return message;
-                };
-
-                /**
-                 * Creates a plain object from an AuctionInfo message. Also converts values to other types if specified.
-                 * @function toObject
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @static
-                 * @param {pob.abci.v1.AuctionInfo} message AuctionInfo
-                 * @param {$protobuf.IConversionOptions} [options] Conversion options
-                 * @returns {Object.<string,*>} Plain object
-                 */
-                AuctionInfo.toObject = function toObject(message, options) {
-                    if (!options)
-                        options = {};
-                    let object = {};
-                    if (options.defaults) {
-                        if (options.bytes === String)
-                            object.extended_commit_info = "";
-                        else {
-                            object.extended_commit_info = [];
-                            if (options.bytes !== Array)
-                                object.extended_commit_info = $util.newBuffer(object.extended_commit_info);
-                        }
-                        if ($util.Long) {
-                            let long = new $util.Long(0, 0, false);
-                            object.max_tx_bytes = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                        } else
-                            object.max_tx_bytes = options.longs === String ? "0" : 0;
-                        if ($util.Long) {
-                            let long = new $util.Long(0, 0, true);
-                            object.num_txs = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
-                        } else
-                            object.num_txs = options.longs === String ? "0" : 0;
-                    }
-                    if (message.extended_commit_info != null && message.hasOwnProperty("extended_commit_info"))
-                        object.extended_commit_info = options.bytes === String ? $util.base64.encode(message.extended_commit_info, 0, message.extended_commit_info.length) : options.bytes === Array ? Array.prototype.slice.call(message.extended_commit_info) : message.extended_commit_info;
-                    if (message.max_tx_bytes != null && message.hasOwnProperty("max_tx_bytes"))
-                        if (typeof message.max_tx_bytes === "number")
-                            object.max_tx_bytes = options.longs === String ? String(message.max_tx_bytes) : message.max_tx_bytes;
-                        else
-                            object.max_tx_bytes = options.longs === String ? $util.Long.prototype.toString.call(message.max_tx_bytes) : options.longs === Number ? new $util.LongBits(message.max_tx_bytes.low >>> 0, message.max_tx_bytes.high >>> 0).toNumber() : message.max_tx_bytes;
-                    if (message.num_txs != null && message.hasOwnProperty("num_txs"))
-                        if (typeof message.num_txs === "number")
-                            object.num_txs = options.longs === String ? String(message.num_txs) : message.num_txs;
-                        else
-                            object.num_txs = options.longs === String ? $util.Long.prototype.toString.call(message.num_txs) : options.longs === Number ? new $util.LongBits(message.num_txs.low >>> 0, message.num_txs.high >>> 0).toNumber(true) : message.num_txs;
-                    return object;
-                };
-
-                /**
-                 * Converts this AuctionInfo to JSON.
-                 * @function toJSON
-                 * @memberof pob.abci.v1.AuctionInfo
-                 * @instance
-                 * @returns {Object.<string,*>} JSON object
-                 */
-                AuctionInfo.prototype.toJSON = function toJSON() {
-                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
-                };
-
-                return AuctionInfo;
-            })();
-
-            return v1;
-        })();
-
-        return abci;
-    })();
-
-    pob.builder = (function() {
+    sdk.auction = (function() {
 
         /**
-         * Namespace builder.
-         * @memberof pob
+         * Namespace auction.
+         * @memberof sdk
          * @namespace
          */
-        const builder = {};
+        const auction = {};
 
-        builder.module = (function() {
+        auction.module = (function() {
 
             /**
              * Namespace module.
-             * @memberof pob.builder
+             * @memberof sdk.auction
              * @namespace
              */
             const module = {};
@@ -319,7 +38,7 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Namespace v1.
-                 * @memberof pob.builder.module
+                 * @memberof sdk.auction.module
                  * @namespace
                  */
                 const v1 = {};
@@ -328,18 +47,18 @@ export const pob = $root.pob = (() => {
 
                     /**
                      * Properties of a Module.
-                     * @memberof pob.builder.module.v1
+                     * @memberof sdk.auction.module.v1
                      * @interface IModule
                      * @property {string|null} [authority] Module authority
                      */
 
                     /**
                      * Constructs a new Module.
-                     * @memberof pob.builder.module.v1
+                     * @memberof sdk.auction.module.v1
                      * @classdesc Represents a Module.
                      * @implements IModule
                      * @constructor
-                     * @param {pob.builder.module.v1.IModule=} [properties] Properties to set
+                     * @param {sdk.auction.module.v1.IModule=} [properties] Properties to set
                      */
                     function Module(properties) {
                         if (properties)
@@ -351,17 +70,17 @@ export const pob = $root.pob = (() => {
                     /**
                      * Module authority.
                      * @member {string} authority
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @instance
                      */
                     Module.prototype.authority = "";
 
                     /**
-                     * Encodes the specified Module message. Does not implicitly {@link pob.builder.module.v1.Module.verify|verify} messages.
+                     * Encodes the specified Module message. Does not implicitly {@link sdk.auction.module.v1.Module.verify|verify} messages.
                      * @function encode
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
-                     * @param {pob.builder.module.v1.IModule} message Module message or plain object to encode
+                     * @param {sdk.auction.module.v1.IModule} message Module message or plain object to encode
                      * @param {$protobuf.Writer} [writer] Writer to encode to
                      * @returns {$protobuf.Writer} Writer
                      */
@@ -369,16 +88,16 @@ export const pob = $root.pob = (() => {
                         if (!writer)
                             writer = $Writer.create();
                         if (message.authority != null && Object.hasOwnProperty.call(message, "authority"))
-                            writer.uint32(/* id 2, wireType 2 =*/18).string(message.authority);
+                            writer.uint32(/* id 1, wireType 2 =*/10).string(message.authority);
                         return writer;
                     };
 
                     /**
-                     * Encodes the specified Module message, length delimited. Does not implicitly {@link pob.builder.module.v1.Module.verify|verify} messages.
+                     * Encodes the specified Module message, length delimited. Does not implicitly {@link sdk.auction.module.v1.Module.verify|verify} messages.
                      * @function encodeDelimited
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
-                     * @param {pob.builder.module.v1.IModule} message Module message or plain object to encode
+                     * @param {sdk.auction.module.v1.IModule} message Module message or plain object to encode
                      * @param {$protobuf.Writer} [writer] Writer to encode to
                      * @returns {$protobuf.Writer} Writer
                      */
@@ -389,22 +108,22 @@ export const pob = $root.pob = (() => {
                     /**
                      * Decodes a Module message from the specified reader or buffer.
                      * @function decode
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
                      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                      * @param {number} [length] Message length if known beforehand
-                     * @returns {pob.builder.module.v1.Module} Module
+                     * @returns {sdk.auction.module.v1.Module} Module
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
                     Module.decode = function decode(reader, length) {
                         if (!(reader instanceof $Reader))
                             reader = $Reader.create(reader);
-                        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.module.v1.Module();
+                        let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.module.v1.Module();
                         while (reader.pos < end) {
                             let tag = reader.uint32();
                             switch (tag >>> 3) {
-                            case 2:
+                            case 1:
                                 message.authority = reader.string();
                                 break;
                             default:
@@ -418,10 +137,10 @@ export const pob = $root.pob = (() => {
                     /**
                      * Decodes a Module message from the specified reader or buffer, length delimited.
                      * @function decodeDelimited
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
                      * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                     * @returns {pob.builder.module.v1.Module} Module
+                     * @returns {sdk.auction.module.v1.Module} Module
                      * @throws {Error} If the payload is not a reader or valid buffer
                      * @throws {$protobuf.util.ProtocolError} If required fields are missing
                      */
@@ -434,7 +153,7 @@ export const pob = $root.pob = (() => {
                     /**
                      * Verifies a Module message.
                      * @function verify
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
                      * @param {Object.<string,*>} message Plain object to verify
                      * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -451,15 +170,15 @@ export const pob = $root.pob = (() => {
                     /**
                      * Creates a Module message from a plain object. Also converts values to their respective internal types.
                      * @function fromObject
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
                      * @param {Object.<string,*>} object Plain object
-                     * @returns {pob.builder.module.v1.Module} Module
+                     * @returns {sdk.auction.module.v1.Module} Module
                      */
                     Module.fromObject = function fromObject(object) {
-                        if (object instanceof $root.pob.builder.module.v1.Module)
+                        if (object instanceof $root.sdk.auction.module.v1.Module)
                             return object;
-                        let message = new $root.pob.builder.module.v1.Module();
+                        let message = new $root.sdk.auction.module.v1.Module();
                         if (object.authority != null)
                             message.authority = String(object.authority);
                         return message;
@@ -468,9 +187,9 @@ export const pob = $root.pob = (() => {
                     /**
                      * Creates a plain object from a Module message. Also converts values to other types if specified.
                      * @function toObject
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @static
-                     * @param {pob.builder.module.v1.Module} message Module
+                     * @param {sdk.auction.module.v1.Module} message Module
                      * @param {$protobuf.IConversionOptions} [options] Conversion options
                      * @returns {Object.<string,*>} Plain object
                      */
@@ -488,7 +207,7 @@ export const pob = $root.pob = (() => {
                     /**
                      * Converts this Module to JSON.
                      * @function toJSON
-                     * @memberof pob.builder.module.v1.Module
+                     * @memberof sdk.auction.module.v1.Module
                      * @instance
                      * @returns {Object.<string,*>} JSON object
                      */
@@ -505,11 +224,11 @@ export const pob = $root.pob = (() => {
             return module;
         })();
 
-        builder.v1 = (function() {
+        auction.v1 = (function() {
 
             /**
              * Namespace v1.
-             * @memberof pob.builder
+             * @memberof sdk.auction
              * @namespace
              */
             const v1 = {};
@@ -518,18 +237,18 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a GenesisState.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IGenesisState
-                 * @property {pob.builder.v1.IParams|null} [params] GenesisState params
+                 * @property {sdk.auction.v1.IParams|null} [params] GenesisState params
                  */
 
                 /**
                  * Constructs a new GenesisState.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a GenesisState.
                  * @implements IGenesisState
                  * @constructor
-                 * @param {pob.builder.v1.IGenesisState=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IGenesisState=} [properties] Properties to set
                  */
                 function GenesisState(properties) {
                     if (properties)
@@ -540,18 +259,18 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * GenesisState params.
-                 * @member {pob.builder.v1.IParams|null|undefined} params
-                 * @memberof pob.builder.v1.GenesisState
+                 * @member {sdk.auction.v1.IParams|null|undefined} params
+                 * @memberof sdk.auction.v1.GenesisState
                  * @instance
                  */
                 GenesisState.prototype.params = null;
 
                 /**
-                 * Encodes the specified GenesisState message. Does not implicitly {@link pob.builder.v1.GenesisState.verify|verify} messages.
+                 * Encodes the specified GenesisState message. Does not implicitly {@link sdk.auction.v1.GenesisState.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
-                 * @param {pob.builder.v1.IGenesisState} message GenesisState message or plain object to encode
+                 * @param {sdk.auction.v1.IGenesisState} message GenesisState message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -559,16 +278,16 @@ export const pob = $root.pob = (() => {
                     if (!writer)
                         writer = $Writer.create();
                     if (message.params != null && Object.hasOwnProperty.call(message, "params"))
-                        $root.pob.builder.v1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        $root.sdk.auction.v1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
 
                 /**
-                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link pob.builder.v1.GenesisState.verify|verify} messages.
+                 * Encodes the specified GenesisState message, length delimited. Does not implicitly {@link sdk.auction.v1.GenesisState.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
-                 * @param {pob.builder.v1.IGenesisState} message GenesisState message or plain object to encode
+                 * @param {sdk.auction.v1.IGenesisState} message GenesisState message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -579,23 +298,23 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a GenesisState message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.GenesisState} GenesisState
+                 * @returns {sdk.auction.v1.GenesisState} GenesisState
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 GenesisState.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.GenesisState();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.GenesisState();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
                         case 1:
-                            message.params = $root.pob.builder.v1.Params.decode(reader, reader.uint32());
+                            message.params = $root.sdk.auction.v1.Params.decode(reader, reader.uint32());
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -608,10 +327,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a GenesisState message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.GenesisState} GenesisState
+                 * @returns {sdk.auction.v1.GenesisState} GenesisState
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -624,7 +343,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a GenesisState message.
                  * @function verify
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -633,7 +352,7 @@ export const pob = $root.pob = (() => {
                     if (typeof message !== "object" || message === null)
                         return "object expected";
                     if (message.params != null && message.hasOwnProperty("params")) {
-                        let error = $root.pob.builder.v1.Params.verify(message.params);
+                        let error = $root.sdk.auction.v1.Params.verify(message.params);
                         if (error)
                             return "params." + error;
                     }
@@ -643,19 +362,19 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a GenesisState message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.GenesisState} GenesisState
+                 * @returns {sdk.auction.v1.GenesisState} GenesisState
                  */
                 GenesisState.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.GenesisState)
+                    if (object instanceof $root.sdk.auction.v1.GenesisState)
                         return object;
-                    let message = new $root.pob.builder.v1.GenesisState();
+                    let message = new $root.sdk.auction.v1.GenesisState();
                     if (object.params != null) {
                         if (typeof object.params !== "object")
-                            throw TypeError(".pob.builder.v1.GenesisState.params: object expected");
-                        message.params = $root.pob.builder.v1.Params.fromObject(object.params);
+                            throw TypeError(".sdk.auction.v1.GenesisState.params: object expected");
+                        message.params = $root.sdk.auction.v1.Params.fromObject(object.params);
                     }
                     return message;
                 };
@@ -663,9 +382,9 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a plain object from a GenesisState message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @static
-                 * @param {pob.builder.v1.GenesisState} message GenesisState
+                 * @param {sdk.auction.v1.GenesisState} message GenesisState
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -676,14 +395,14 @@ export const pob = $root.pob = (() => {
                     if (options.defaults)
                         object.params = null;
                     if (message.params != null && message.hasOwnProperty("params"))
-                        object.params = $root.pob.builder.v1.Params.toObject(message.params, options);
+                        object.params = $root.sdk.auction.v1.Params.toObject(message.params, options);
                     return object;
                 };
 
                 /**
                  * Converts this GenesisState to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.GenesisState
+                 * @memberof sdk.auction.v1.GenesisState
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -698,7 +417,7 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a Params.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IParams
                  * @property {number|null} [max_bundle_size] Params max_bundle_size
                  * @property {Uint8Array|null} [escrow_account_address] Params escrow_account_address
@@ -710,11 +429,11 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Constructs a new Params.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a Params.
                  * @implements IParams
                  * @constructor
-                 * @param {pob.builder.v1.IParams=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IParams=} [properties] Properties to set
                  */
                 function Params(properties) {
                     if (properties)
@@ -726,7 +445,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params max_bundle_size.
                  * @member {number} max_bundle_size
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.max_bundle_size = 0;
@@ -734,7 +453,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params escrow_account_address.
                  * @member {Uint8Array} escrow_account_address
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.escrow_account_address = $util.newBuffer([]);
@@ -742,7 +461,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params reserve_fee.
                  * @member {cosmos.base.v1beta1.ICoin|null|undefined} reserve_fee
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.reserve_fee = null;
@@ -750,7 +469,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params min_bid_increment.
                  * @member {cosmos.base.v1beta1.ICoin|null|undefined} min_bid_increment
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.min_bid_increment = null;
@@ -758,7 +477,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params front_running_protection.
                  * @member {boolean} front_running_protection
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.front_running_protection = false;
@@ -766,17 +485,17 @@ export const pob = $root.pob = (() => {
                 /**
                  * Params proposer_fee.
                  * @member {string} proposer_fee
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  */
                 Params.prototype.proposer_fee = "";
 
                 /**
-                 * Encodes the specified Params message. Does not implicitly {@link pob.builder.v1.Params.verify|verify} messages.
+                 * Encodes the specified Params message. Does not implicitly {@link sdk.auction.v1.Params.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
-                 * @param {pob.builder.v1.IParams} message Params message or plain object to encode
+                 * @param {sdk.auction.v1.IParams} message Params message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -799,11 +518,11 @@ export const pob = $root.pob = (() => {
                 };
 
                 /**
-                 * Encodes the specified Params message, length delimited. Does not implicitly {@link pob.builder.v1.Params.verify|verify} messages.
+                 * Encodes the specified Params message, length delimited. Does not implicitly {@link sdk.auction.v1.Params.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
-                 * @param {pob.builder.v1.IParams} message Params message or plain object to encode
+                 * @param {sdk.auction.v1.IParams} message Params message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -814,18 +533,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a Params message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.Params} Params
+                 * @returns {sdk.auction.v1.Params} Params
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 Params.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.Params();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.Params();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -858,10 +577,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a Params message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.Params} Params
+                 * @returns {sdk.auction.v1.Params} Params
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -874,7 +593,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a Params message.
                  * @function verify
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -910,15 +629,15 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a Params message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.Params} Params
+                 * @returns {sdk.auction.v1.Params} Params
                  */
                 Params.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.Params)
+                    if (object instanceof $root.sdk.auction.v1.Params)
                         return object;
-                    let message = new $root.pob.builder.v1.Params();
+                    let message = new $root.sdk.auction.v1.Params();
                     if (object.max_bundle_size != null)
                         message.max_bundle_size = object.max_bundle_size >>> 0;
                     if (object.escrow_account_address != null)
@@ -928,12 +647,12 @@ export const pob = $root.pob = (() => {
                             message.escrow_account_address = object.escrow_account_address;
                     if (object.reserve_fee != null) {
                         if (typeof object.reserve_fee !== "object")
-                            throw TypeError(".pob.builder.v1.Params.reserve_fee: object expected");
+                            throw TypeError(".sdk.auction.v1.Params.reserve_fee: object expected");
                         message.reserve_fee = $root.cosmos.base.v1beta1.Coin.fromObject(object.reserve_fee);
                     }
                     if (object.min_bid_increment != null) {
                         if (typeof object.min_bid_increment !== "object")
-                            throw TypeError(".pob.builder.v1.Params.min_bid_increment: object expected");
+                            throw TypeError(".sdk.auction.v1.Params.min_bid_increment: object expected");
                         message.min_bid_increment = $root.cosmos.base.v1beta1.Coin.fromObject(object.min_bid_increment);
                     }
                     if (object.front_running_protection != null)
@@ -946,9 +665,9 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a plain object from a Params message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @static
-                 * @param {pob.builder.v1.Params} message Params
+                 * @param {sdk.auction.v1.Params} message Params
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -988,7 +707,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Converts this Params to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.Params
+                 * @memberof sdk.auction.v1.Params
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -1003,7 +722,7 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Constructs a new Query service.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a Query
                  * @extends $protobuf.rpc.Service
                  * @constructor
@@ -1018,35 +737,35 @@ export const pob = $root.pob = (() => {
                 (Query.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Query;
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Query#params}.
-                 * @memberof pob.builder.v1.Query
+                 * Callback as used by {@link sdk.auction.v1.Query#params}.
+                 * @memberof sdk.auction.v1.Query
                  * @typedef ParamsCallback
                  * @type {function}
                  * @param {Error|null} error Error, if any
-                 * @param {pob.builder.v1.QueryParamsResponse} [response] QueryParamsResponse
+                 * @param {sdk.auction.v1.QueryParamsResponse} [response] QueryParamsResponse
                  */
 
                 /**
                  * Calls Params.
                  * @function params
-                 * @memberof pob.builder.v1.Query
+                 * @memberof sdk.auction.v1.Query
                  * @instance
-                 * @param {pob.builder.v1.IQueryParamsRequest} request QueryParamsRequest message or plain object
-                 * @param {pob.builder.v1.Query.ParamsCallback} callback Node-style callback called with the error, if any, and QueryParamsResponse
+                 * @param {sdk.auction.v1.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                 * @param {sdk.auction.v1.Query.ParamsCallback} callback Node-style callback called with the error, if any, and QueryParamsResponse
                  * @returns {undefined}
                  * @variation 1
                  */
                 Object.defineProperty(Query.prototype.params = function params(request, callback) {
-                    return this.rpcCall(params, $root.pob.builder.v1.QueryParamsRequest, $root.pob.builder.v1.QueryParamsResponse, request, callback);
+                    return this.rpcCall(params, $root.sdk.auction.v1.QueryParamsRequest, $root.sdk.auction.v1.QueryParamsResponse, request, callback);
                 }, "name", { value: "Params" });
 
                 /**
                  * Calls Params.
                  * @function params
-                 * @memberof pob.builder.v1.Query
+                 * @memberof sdk.auction.v1.Query
                  * @instance
-                 * @param {pob.builder.v1.IQueryParamsRequest} request QueryParamsRequest message or plain object
-                 * @returns {Promise<pob.builder.v1.QueryParamsResponse>} Promise
+                 * @param {sdk.auction.v1.IQueryParamsRequest} request QueryParamsRequest message or plain object
+                 * @returns {Promise<sdk.auction.v1.QueryParamsResponse>} Promise
                  * @variation 2
                  */
 
@@ -1057,17 +776,17 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a QueryParamsRequest.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IQueryParamsRequest
                  */
 
                 /**
                  * Constructs a new QueryParamsRequest.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a QueryParamsRequest.
                  * @implements IQueryParamsRequest
                  * @constructor
-                 * @param {pob.builder.v1.IQueryParamsRequest=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IQueryParamsRequest=} [properties] Properties to set
                  */
                 function QueryParamsRequest(properties) {
                     if (properties)
@@ -1077,11 +796,11 @@ export const pob = $root.pob = (() => {
                 }
 
                 /**
-                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link pob.builder.v1.QueryParamsRequest.verify|verify} messages.
+                 * Encodes the specified QueryParamsRequest message. Does not implicitly {@link sdk.auction.v1.QueryParamsRequest.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
-                 * @param {pob.builder.v1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                 * @param {sdk.auction.v1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1092,11 +811,11 @@ export const pob = $root.pob = (() => {
                 };
 
                 /**
-                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link pob.builder.v1.QueryParamsRequest.verify|verify} messages.
+                 * Encodes the specified QueryParamsRequest message, length delimited. Does not implicitly {@link sdk.auction.v1.QueryParamsRequest.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
-                 * @param {pob.builder.v1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
+                 * @param {sdk.auction.v1.IQueryParamsRequest} message QueryParamsRequest message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1107,18 +826,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a QueryParamsRequest message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.QueryParamsRequest} QueryParamsRequest
+                 * @returns {sdk.auction.v1.QueryParamsRequest} QueryParamsRequest
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 QueryParamsRequest.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.QueryParamsRequest();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.QueryParamsRequest();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -1133,10 +852,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a QueryParamsRequest message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.QueryParamsRequest} QueryParamsRequest
+                 * @returns {sdk.auction.v1.QueryParamsRequest} QueryParamsRequest
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -1149,7 +868,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a QueryParamsRequest message.
                  * @function verify
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -1163,23 +882,23 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a QueryParamsRequest message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.QueryParamsRequest} QueryParamsRequest
+                 * @returns {sdk.auction.v1.QueryParamsRequest} QueryParamsRequest
                  */
                 QueryParamsRequest.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.QueryParamsRequest)
+                    if (object instanceof $root.sdk.auction.v1.QueryParamsRequest)
                         return object;
-                    return new $root.pob.builder.v1.QueryParamsRequest();
+                    return new $root.sdk.auction.v1.QueryParamsRequest();
                 };
 
                 /**
                  * Creates a plain object from a QueryParamsRequest message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @static
-                 * @param {pob.builder.v1.QueryParamsRequest} message QueryParamsRequest
+                 * @param {sdk.auction.v1.QueryParamsRequest} message QueryParamsRequest
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -1190,7 +909,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Converts this QueryParamsRequest to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.QueryParamsRequest
+                 * @memberof sdk.auction.v1.QueryParamsRequest
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -1205,18 +924,18 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a QueryParamsResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IQueryParamsResponse
-                 * @property {pob.builder.v1.IParams|null} [params] QueryParamsResponse params
+                 * @property {sdk.auction.v1.IParams|null} [params] QueryParamsResponse params
                  */
 
                 /**
                  * Constructs a new QueryParamsResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a QueryParamsResponse.
                  * @implements IQueryParamsResponse
                  * @constructor
-                 * @param {pob.builder.v1.IQueryParamsResponse=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IQueryParamsResponse=} [properties] Properties to set
                  */
                 function QueryParamsResponse(properties) {
                     if (properties)
@@ -1227,18 +946,18 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * QueryParamsResponse params.
-                 * @member {pob.builder.v1.IParams|null|undefined} params
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @member {sdk.auction.v1.IParams|null|undefined} params
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @instance
                  */
                 QueryParamsResponse.prototype.params = null;
 
                 /**
-                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link pob.builder.v1.QueryParamsResponse.verify|verify} messages.
+                 * Encodes the specified QueryParamsResponse message. Does not implicitly {@link sdk.auction.v1.QueryParamsResponse.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
-                 * @param {pob.builder.v1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1246,16 +965,16 @@ export const pob = $root.pob = (() => {
                     if (!writer)
                         writer = $Writer.create();
                     if (message.params != null && Object.hasOwnProperty.call(message, "params"))
-                        $root.pob.builder.v1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
+                        $root.sdk.auction.v1.Params.encode(message.params, writer.uint32(/* id 1, wireType 2 =*/10).fork()).ldelim();
                     return writer;
                 };
 
                 /**
-                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link pob.builder.v1.QueryParamsResponse.verify|verify} messages.
+                 * Encodes the specified QueryParamsResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.QueryParamsResponse.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
-                 * @param {pob.builder.v1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IQueryParamsResponse} message QueryParamsResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1266,23 +985,23 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a QueryParamsResponse message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.QueryParamsResponse} QueryParamsResponse
+                 * @returns {sdk.auction.v1.QueryParamsResponse} QueryParamsResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 QueryParamsResponse.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.QueryParamsResponse();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.QueryParamsResponse();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
                         case 1:
-                            message.params = $root.pob.builder.v1.Params.decode(reader, reader.uint32());
+                            message.params = $root.sdk.auction.v1.Params.decode(reader, reader.uint32());
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -1295,10 +1014,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a QueryParamsResponse message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.QueryParamsResponse} QueryParamsResponse
+                 * @returns {sdk.auction.v1.QueryParamsResponse} QueryParamsResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -1311,7 +1030,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a QueryParamsResponse message.
                  * @function verify
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -1320,7 +1039,7 @@ export const pob = $root.pob = (() => {
                     if (typeof message !== "object" || message === null)
                         return "object expected";
                     if (message.params != null && message.hasOwnProperty("params")) {
-                        let error = $root.pob.builder.v1.Params.verify(message.params);
+                        let error = $root.sdk.auction.v1.Params.verify(message.params);
                         if (error)
                             return "params." + error;
                     }
@@ -1330,19 +1049,19 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a QueryParamsResponse message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.QueryParamsResponse} QueryParamsResponse
+                 * @returns {sdk.auction.v1.QueryParamsResponse} QueryParamsResponse
                  */
                 QueryParamsResponse.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.QueryParamsResponse)
+                    if (object instanceof $root.sdk.auction.v1.QueryParamsResponse)
                         return object;
-                    let message = new $root.pob.builder.v1.QueryParamsResponse();
+                    let message = new $root.sdk.auction.v1.QueryParamsResponse();
                     if (object.params != null) {
                         if (typeof object.params !== "object")
-                            throw TypeError(".pob.builder.v1.QueryParamsResponse.params: object expected");
-                        message.params = $root.pob.builder.v1.Params.fromObject(object.params);
+                            throw TypeError(".sdk.auction.v1.QueryParamsResponse.params: object expected");
+                        message.params = $root.sdk.auction.v1.Params.fromObject(object.params);
                     }
                     return message;
                 };
@@ -1350,9 +1069,9 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a plain object from a QueryParamsResponse message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @static
-                 * @param {pob.builder.v1.QueryParamsResponse} message QueryParamsResponse
+                 * @param {sdk.auction.v1.QueryParamsResponse} message QueryParamsResponse
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -1363,14 +1082,14 @@ export const pob = $root.pob = (() => {
                     if (options.defaults)
                         object.params = null;
                     if (message.params != null && message.hasOwnProperty("params"))
-                        object.params = $root.pob.builder.v1.Params.toObject(message.params, options);
+                        object.params = $root.sdk.auction.v1.Params.toObject(message.params, options);
                     return object;
                 };
 
                 /**
                  * Converts this QueryParamsResponse to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.QueryParamsResponse
+                 * @memberof sdk.auction.v1.QueryParamsResponse
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -1385,7 +1104,7 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Constructs a new Msg service.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a Msg
                  * @extends $protobuf.rpc.Service
                  * @constructor
@@ -1400,68 +1119,68 @@ export const pob = $root.pob = (() => {
                 (Msg.prototype = Object.create($protobuf.rpc.Service.prototype)).constructor = Msg;
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Msg#auctionBid}.
-                 * @memberof pob.builder.v1.Msg
+                 * Callback as used by {@link sdk.auction.v1.Msg#auctionBid}.
+                 * @memberof sdk.auction.v1.Msg
                  * @typedef AuctionBidCallback
                  * @type {function}
                  * @param {Error|null} error Error, if any
-                 * @param {pob.builder.v1.MsgAuctionBidResponse} [response] MsgAuctionBidResponse
+                 * @param {sdk.auction.v1.MsgAuctionBidResponse} [response] MsgAuctionBidResponse
                  */
 
                 /**
                  * Calls AuctionBid.
                  * @function auctionBid
-                 * @memberof pob.builder.v1.Msg
+                 * @memberof sdk.auction.v1.Msg
                  * @instance
-                 * @param {pob.builder.v1.IMsgAuctionBid} request MsgAuctionBid message or plain object
-                 * @param {pob.builder.v1.Msg.AuctionBidCallback} callback Node-style callback called with the error, if any, and MsgAuctionBidResponse
+                 * @param {sdk.auction.v1.IMsgAuctionBid} request MsgAuctionBid message or plain object
+                 * @param {sdk.auction.v1.Msg.AuctionBidCallback} callback Node-style callback called with the error, if any, and MsgAuctionBidResponse
                  * @returns {undefined}
                  * @variation 1
                  */
                 Object.defineProperty(Msg.prototype.auctionBid = function auctionBid(request, callback) {
-                    return this.rpcCall(auctionBid, $root.pob.builder.v1.MsgAuctionBid, $root.pob.builder.v1.MsgAuctionBidResponse, request, callback);
+                    return this.rpcCall(auctionBid, $root.sdk.auction.v1.MsgAuctionBid, $root.sdk.auction.v1.MsgAuctionBidResponse, request, callback);
                 }, "name", { value: "AuctionBid" });
 
                 /**
                  * Calls AuctionBid.
                  * @function auctionBid
-                 * @memberof pob.builder.v1.Msg
+                 * @memberof sdk.auction.v1.Msg
                  * @instance
-                 * @param {pob.builder.v1.IMsgAuctionBid} request MsgAuctionBid message or plain object
-                 * @returns {Promise<pob.builder.v1.MsgAuctionBidResponse>} Promise
+                 * @param {sdk.auction.v1.IMsgAuctionBid} request MsgAuctionBid message or plain object
+                 * @returns {Promise<sdk.auction.v1.MsgAuctionBidResponse>} Promise
                  * @variation 2
                  */
 
                 /**
-                 * Callback as used by {@link pob.builder.v1.Msg#updateParams}.
-                 * @memberof pob.builder.v1.Msg
+                 * Callback as used by {@link sdk.auction.v1.Msg#updateParams}.
+                 * @memberof sdk.auction.v1.Msg
                  * @typedef UpdateParamsCallback
                  * @type {function}
                  * @param {Error|null} error Error, if any
-                 * @param {pob.builder.v1.MsgUpdateParamsResponse} [response] MsgUpdateParamsResponse
+                 * @param {sdk.auction.v1.MsgUpdateParamsResponse} [response] MsgUpdateParamsResponse
                  */
 
                 /**
                  * Calls UpdateParams.
                  * @function updateParams
-                 * @memberof pob.builder.v1.Msg
+                 * @memberof sdk.auction.v1.Msg
                  * @instance
-                 * @param {pob.builder.v1.IMsgUpdateParams} request MsgUpdateParams message or plain object
-                 * @param {pob.builder.v1.Msg.UpdateParamsCallback} callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
+                 * @param {sdk.auction.v1.IMsgUpdateParams} request MsgUpdateParams message or plain object
+                 * @param {sdk.auction.v1.Msg.UpdateParamsCallback} callback Node-style callback called with the error, if any, and MsgUpdateParamsResponse
                  * @returns {undefined}
                  * @variation 1
                  */
                 Object.defineProperty(Msg.prototype.updateParams = function updateParams(request, callback) {
-                    return this.rpcCall(updateParams, $root.pob.builder.v1.MsgUpdateParams, $root.pob.builder.v1.MsgUpdateParamsResponse, request, callback);
+                    return this.rpcCall(updateParams, $root.sdk.auction.v1.MsgUpdateParams, $root.sdk.auction.v1.MsgUpdateParamsResponse, request, callback);
                 }, "name", { value: "UpdateParams" });
 
                 /**
                  * Calls UpdateParams.
                  * @function updateParams
-                 * @memberof pob.builder.v1.Msg
+                 * @memberof sdk.auction.v1.Msg
                  * @instance
-                 * @param {pob.builder.v1.IMsgUpdateParams} request MsgUpdateParams message or plain object
-                 * @returns {Promise<pob.builder.v1.MsgUpdateParamsResponse>} Promise
+                 * @param {sdk.auction.v1.IMsgUpdateParams} request MsgUpdateParams message or plain object
+                 * @returns {Promise<sdk.auction.v1.MsgUpdateParamsResponse>} Promise
                  * @variation 2
                  */
 
@@ -1472,7 +1191,7 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a MsgAuctionBid.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IMsgAuctionBid
                  * @property {string|null} [bidder] MsgAuctionBid bidder
                  * @property {cosmos.base.v1beta1.ICoin|null} [bid] MsgAuctionBid bid
@@ -1481,11 +1200,11 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Constructs a new MsgAuctionBid.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a MsgAuctionBid.
                  * @implements IMsgAuctionBid
                  * @constructor
-                 * @param {pob.builder.v1.IMsgAuctionBid=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IMsgAuctionBid=} [properties] Properties to set
                  */
                 function MsgAuctionBid(properties) {
                     this.transactions = [];
@@ -1498,7 +1217,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * MsgAuctionBid bidder.
                  * @member {string} bidder
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @instance
                  */
                 MsgAuctionBid.prototype.bidder = "";
@@ -1506,7 +1225,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * MsgAuctionBid bid.
                  * @member {cosmos.base.v1beta1.ICoin|null|undefined} bid
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @instance
                  */
                 MsgAuctionBid.prototype.bid = null;
@@ -1514,17 +1233,17 @@ export const pob = $root.pob = (() => {
                 /**
                  * MsgAuctionBid transactions.
                  * @member {Array.<Uint8Array>} transactions
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @instance
                  */
                 MsgAuctionBid.prototype.transactions = $util.emptyArray;
 
                 /**
-                 * Encodes the specified MsgAuctionBid message. Does not implicitly {@link pob.builder.v1.MsgAuctionBid.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBid message. Does not implicitly {@link sdk.auction.v1.MsgAuctionBid.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
-                 * @param {pob.builder.v1.IMsgAuctionBid} message MsgAuctionBid message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgAuctionBid} message MsgAuctionBid message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1542,11 +1261,11 @@ export const pob = $root.pob = (() => {
                 };
 
                 /**
-                 * Encodes the specified MsgAuctionBid message, length delimited. Does not implicitly {@link pob.builder.v1.MsgAuctionBid.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBid message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgAuctionBid.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
-                 * @param {pob.builder.v1.IMsgAuctionBid} message MsgAuctionBid message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgAuctionBid} message MsgAuctionBid message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1557,18 +1276,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgAuctionBid message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.MsgAuctionBid} MsgAuctionBid
+                 * @returns {sdk.auction.v1.MsgAuctionBid} MsgAuctionBid
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 MsgAuctionBid.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.MsgAuctionBid();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.MsgAuctionBid();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -1594,10 +1313,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgAuctionBid message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.MsgAuctionBid} MsgAuctionBid
+                 * @returns {sdk.auction.v1.MsgAuctionBid} MsgAuctionBid
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -1610,7 +1329,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a MsgAuctionBid message.
                  * @function verify
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -1639,25 +1358,25 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a MsgAuctionBid message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.MsgAuctionBid} MsgAuctionBid
+                 * @returns {sdk.auction.v1.MsgAuctionBid} MsgAuctionBid
                  */
                 MsgAuctionBid.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.MsgAuctionBid)
+                    if (object instanceof $root.sdk.auction.v1.MsgAuctionBid)
                         return object;
-                    let message = new $root.pob.builder.v1.MsgAuctionBid();
+                    let message = new $root.sdk.auction.v1.MsgAuctionBid();
                     if (object.bidder != null)
                         message.bidder = String(object.bidder);
                     if (object.bid != null) {
                         if (typeof object.bid !== "object")
-                            throw TypeError(".pob.builder.v1.MsgAuctionBid.bid: object expected");
+                            throw TypeError(".sdk.auction.v1.MsgAuctionBid.bid: object expected");
                         message.bid = $root.cosmos.base.v1beta1.Coin.fromObject(object.bid);
                     }
                     if (object.transactions) {
                         if (!Array.isArray(object.transactions))
-                            throw TypeError(".pob.builder.v1.MsgAuctionBid.transactions: array expected");
+                            throw TypeError(".sdk.auction.v1.MsgAuctionBid.transactions: array expected");
                         message.transactions = [];
                         for (let i = 0; i < object.transactions.length; ++i)
                             if (typeof object.transactions[i] === "string")
@@ -1671,9 +1390,9 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a plain object from a MsgAuctionBid message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @static
-                 * @param {pob.builder.v1.MsgAuctionBid} message MsgAuctionBid
+                 * @param {sdk.auction.v1.MsgAuctionBid} message MsgAuctionBid
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -1702,7 +1421,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Converts this MsgAuctionBid to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.MsgAuctionBid
+                 * @memberof sdk.auction.v1.MsgAuctionBid
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -1717,17 +1436,17 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a MsgAuctionBidResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IMsgAuctionBidResponse
                  */
 
                 /**
                  * Constructs a new MsgAuctionBidResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a MsgAuctionBidResponse.
                  * @implements IMsgAuctionBidResponse
                  * @constructor
-                 * @param {pob.builder.v1.IMsgAuctionBidResponse=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IMsgAuctionBidResponse=} [properties] Properties to set
                  */
                 function MsgAuctionBidResponse(properties) {
                     if (properties)
@@ -1737,11 +1456,11 @@ export const pob = $root.pob = (() => {
                 }
 
                 /**
-                 * Encodes the specified MsgAuctionBidResponse message. Does not implicitly {@link pob.builder.v1.MsgAuctionBidResponse.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBidResponse message. Does not implicitly {@link sdk.auction.v1.MsgAuctionBidResponse.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
-                 * @param {pob.builder.v1.IMsgAuctionBidResponse} message MsgAuctionBidResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgAuctionBidResponse} message MsgAuctionBidResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1752,11 +1471,11 @@ export const pob = $root.pob = (() => {
                 };
 
                 /**
-                 * Encodes the specified MsgAuctionBidResponse message, length delimited. Does not implicitly {@link pob.builder.v1.MsgAuctionBidResponse.verify|verify} messages.
+                 * Encodes the specified MsgAuctionBidResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgAuctionBidResponse.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
-                 * @param {pob.builder.v1.IMsgAuctionBidResponse} message MsgAuctionBidResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgAuctionBidResponse} message MsgAuctionBidResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1767,18 +1486,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgAuctionBidResponse message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
+                 * @returns {sdk.auction.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 MsgAuctionBidResponse.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.MsgAuctionBidResponse();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.MsgAuctionBidResponse();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -1793,10 +1512,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgAuctionBidResponse message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
+                 * @returns {sdk.auction.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -1809,7 +1528,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a MsgAuctionBidResponse message.
                  * @function verify
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -1823,23 +1542,23 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a MsgAuctionBidResponse message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
+                 * @returns {sdk.auction.v1.MsgAuctionBidResponse} MsgAuctionBidResponse
                  */
                 MsgAuctionBidResponse.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.MsgAuctionBidResponse)
+                    if (object instanceof $root.sdk.auction.v1.MsgAuctionBidResponse)
                         return object;
-                    return new $root.pob.builder.v1.MsgAuctionBidResponse();
+                    return new $root.sdk.auction.v1.MsgAuctionBidResponse();
                 };
 
                 /**
                  * Creates a plain object from a MsgAuctionBidResponse message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @static
-                 * @param {pob.builder.v1.MsgAuctionBidResponse} message MsgAuctionBidResponse
+                 * @param {sdk.auction.v1.MsgAuctionBidResponse} message MsgAuctionBidResponse
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -1850,7 +1569,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Converts this MsgAuctionBidResponse to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.MsgAuctionBidResponse
+                 * @memberof sdk.auction.v1.MsgAuctionBidResponse
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -1865,19 +1584,19 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a MsgUpdateParams.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IMsgUpdateParams
                  * @property {string|null} [authority] MsgUpdateParams authority
-                 * @property {pob.builder.v1.IParams|null} [params] MsgUpdateParams params
+                 * @property {sdk.auction.v1.IParams|null} [params] MsgUpdateParams params
                  */
 
                 /**
                  * Constructs a new MsgUpdateParams.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a MsgUpdateParams.
                  * @implements IMsgUpdateParams
                  * @constructor
-                 * @param {pob.builder.v1.IMsgUpdateParams=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IMsgUpdateParams=} [properties] Properties to set
                  */
                 function MsgUpdateParams(properties) {
                     if (properties)
@@ -1889,25 +1608,25 @@ export const pob = $root.pob = (() => {
                 /**
                  * MsgUpdateParams authority.
                  * @member {string} authority
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @instance
                  */
                 MsgUpdateParams.prototype.authority = "";
 
                 /**
                  * MsgUpdateParams params.
-                 * @member {pob.builder.v1.IParams|null|undefined} params
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @member {sdk.auction.v1.IParams|null|undefined} params
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @instance
                  */
                 MsgUpdateParams.prototype.params = null;
 
                 /**
-                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link pob.builder.v1.MsgUpdateParams.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParams message. Does not implicitly {@link sdk.auction.v1.MsgUpdateParams.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
-                 * @param {pob.builder.v1.IMsgUpdateParams} message MsgUpdateParams message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgUpdateParams} message MsgUpdateParams message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1917,16 +1636,16 @@ export const pob = $root.pob = (() => {
                     if (message.authority != null && Object.hasOwnProperty.call(message, "authority"))
                         writer.uint32(/* id 1, wireType 2 =*/10).string(message.authority);
                     if (message.params != null && Object.hasOwnProperty.call(message, "params"))
-                        $root.pob.builder.v1.Params.encode(message.params, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
+                        $root.sdk.auction.v1.Params.encode(message.params, writer.uint32(/* id 2, wireType 2 =*/18).fork()).ldelim();
                     return writer;
                 };
 
                 /**
-                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link pob.builder.v1.MsgUpdateParams.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParams message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgUpdateParams.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
-                 * @param {pob.builder.v1.IMsgUpdateParams} message MsgUpdateParams message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgUpdateParams} message MsgUpdateParams message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -1937,18 +1656,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgUpdateParams message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.MsgUpdateParams} MsgUpdateParams
+                 * @returns {sdk.auction.v1.MsgUpdateParams} MsgUpdateParams
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 MsgUpdateParams.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.MsgUpdateParams();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.MsgUpdateParams();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -1956,7 +1675,7 @@ export const pob = $root.pob = (() => {
                             message.authority = reader.string();
                             break;
                         case 2:
-                            message.params = $root.pob.builder.v1.Params.decode(reader, reader.uint32());
+                            message.params = $root.sdk.auction.v1.Params.decode(reader, reader.uint32());
                             break;
                         default:
                             reader.skipType(tag & 7);
@@ -1969,10 +1688,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgUpdateParams message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.MsgUpdateParams} MsgUpdateParams
+                 * @returns {sdk.auction.v1.MsgUpdateParams} MsgUpdateParams
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -1985,7 +1704,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a MsgUpdateParams message.
                  * @function verify
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -1997,7 +1716,7 @@ export const pob = $root.pob = (() => {
                         if (!$util.isString(message.authority))
                             return "authority: string expected";
                     if (message.params != null && message.hasOwnProperty("params")) {
-                        let error = $root.pob.builder.v1.Params.verify(message.params);
+                        let error = $root.sdk.auction.v1.Params.verify(message.params);
                         if (error)
                             return "params." + error;
                     }
@@ -2007,21 +1726,21 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a MsgUpdateParams message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.MsgUpdateParams} MsgUpdateParams
+                 * @returns {sdk.auction.v1.MsgUpdateParams} MsgUpdateParams
                  */
                 MsgUpdateParams.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.MsgUpdateParams)
+                    if (object instanceof $root.sdk.auction.v1.MsgUpdateParams)
                         return object;
-                    let message = new $root.pob.builder.v1.MsgUpdateParams();
+                    let message = new $root.sdk.auction.v1.MsgUpdateParams();
                     if (object.authority != null)
                         message.authority = String(object.authority);
                     if (object.params != null) {
                         if (typeof object.params !== "object")
-                            throw TypeError(".pob.builder.v1.MsgUpdateParams.params: object expected");
-                        message.params = $root.pob.builder.v1.Params.fromObject(object.params);
+                            throw TypeError(".sdk.auction.v1.MsgUpdateParams.params: object expected");
+                        message.params = $root.sdk.auction.v1.Params.fromObject(object.params);
                     }
                     return message;
                 };
@@ -2029,9 +1748,9 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a plain object from a MsgUpdateParams message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @static
-                 * @param {pob.builder.v1.MsgUpdateParams} message MsgUpdateParams
+                 * @param {sdk.auction.v1.MsgUpdateParams} message MsgUpdateParams
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -2046,14 +1765,14 @@ export const pob = $root.pob = (() => {
                     if (message.authority != null && message.hasOwnProperty("authority"))
                         object.authority = message.authority;
                     if (message.params != null && message.hasOwnProperty("params"))
-                        object.params = $root.pob.builder.v1.Params.toObject(message.params, options);
+                        object.params = $root.sdk.auction.v1.Params.toObject(message.params, options);
                     return object;
                 };
 
                 /**
                  * Converts this MsgUpdateParams to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.MsgUpdateParams
+                 * @memberof sdk.auction.v1.MsgUpdateParams
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -2068,17 +1787,17 @@ export const pob = $root.pob = (() => {
 
                 /**
                  * Properties of a MsgUpdateParamsResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @interface IMsgUpdateParamsResponse
                  */
 
                 /**
                  * Constructs a new MsgUpdateParamsResponse.
-                 * @memberof pob.builder.v1
+                 * @memberof sdk.auction.v1
                  * @classdesc Represents a MsgUpdateParamsResponse.
                  * @implements IMsgUpdateParamsResponse
                  * @constructor
-                 * @param {pob.builder.v1.IMsgUpdateParamsResponse=} [properties] Properties to set
+                 * @param {sdk.auction.v1.IMsgUpdateParamsResponse=} [properties] Properties to set
                  */
                 function MsgUpdateParamsResponse(properties) {
                     if (properties)
@@ -2088,11 +1807,11 @@ export const pob = $root.pob = (() => {
                 }
 
                 /**
-                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link pob.builder.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParamsResponse message. Does not implicitly {@link sdk.auction.v1.MsgUpdateParamsResponse.verify|verify} messages.
                  * @function encode
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
-                 * @param {pob.builder.v1.IMsgUpdateParamsResponse} message MsgUpdateParamsResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgUpdateParamsResponse} message MsgUpdateParamsResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -2103,11 +1822,11 @@ export const pob = $root.pob = (() => {
                 };
 
                 /**
-                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link pob.builder.v1.MsgUpdateParamsResponse.verify|verify} messages.
+                 * Encodes the specified MsgUpdateParamsResponse message, length delimited. Does not implicitly {@link sdk.auction.v1.MsgUpdateParamsResponse.verify|verify} messages.
                  * @function encodeDelimited
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
-                 * @param {pob.builder.v1.IMsgUpdateParamsResponse} message MsgUpdateParamsResponse message or plain object to encode
+                 * @param {sdk.auction.v1.IMsgUpdateParamsResponse} message MsgUpdateParamsResponse message or plain object to encode
                  * @param {$protobuf.Writer} [writer] Writer to encode to
                  * @returns {$protobuf.Writer} Writer
                  */
@@ -2118,18 +1837,18 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer.
                  * @function decode
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
                  * @param {number} [length] Message length if known beforehand
-                 * @returns {pob.builder.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
+                 * @returns {sdk.auction.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
                 MsgUpdateParamsResponse.decode = function decode(reader, length) {
                     if (!(reader instanceof $Reader))
                         reader = $Reader.create(reader);
-                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.pob.builder.v1.MsgUpdateParamsResponse();
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.auction.v1.MsgUpdateParamsResponse();
                     while (reader.pos < end) {
                         let tag = reader.uint32();
                         switch (tag >>> 3) {
@@ -2144,10 +1863,10 @@ export const pob = $root.pob = (() => {
                 /**
                  * Decodes a MsgUpdateParamsResponse message from the specified reader or buffer, length delimited.
                  * @function decodeDelimited
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
                  * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
-                 * @returns {pob.builder.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
+                 * @returns {sdk.auction.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
                  * @throws {Error} If the payload is not a reader or valid buffer
                  * @throws {$protobuf.util.ProtocolError} If required fields are missing
                  */
@@ -2160,7 +1879,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Verifies a MsgUpdateParamsResponse message.
                  * @function verify
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
                  * @param {Object.<string,*>} message Plain object to verify
                  * @returns {string|null} `null` if valid, otherwise the reason why it is not
@@ -2174,23 +1893,23 @@ export const pob = $root.pob = (() => {
                 /**
                  * Creates a MsgUpdateParamsResponse message from a plain object. Also converts values to their respective internal types.
                  * @function fromObject
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
                  * @param {Object.<string,*>} object Plain object
-                 * @returns {pob.builder.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
+                 * @returns {sdk.auction.v1.MsgUpdateParamsResponse} MsgUpdateParamsResponse
                  */
                 MsgUpdateParamsResponse.fromObject = function fromObject(object) {
-                    if (object instanceof $root.pob.builder.v1.MsgUpdateParamsResponse)
+                    if (object instanceof $root.sdk.auction.v1.MsgUpdateParamsResponse)
                         return object;
-                    return new $root.pob.builder.v1.MsgUpdateParamsResponse();
+                    return new $root.sdk.auction.v1.MsgUpdateParamsResponse();
                 };
 
                 /**
                  * Creates a plain object from a MsgUpdateParamsResponse message. Also converts values to other types if specified.
                  * @function toObject
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @static
-                 * @param {pob.builder.v1.MsgUpdateParamsResponse} message MsgUpdateParamsResponse
+                 * @param {sdk.auction.v1.MsgUpdateParamsResponse} message MsgUpdateParamsResponse
                  * @param {$protobuf.IConversionOptions} [options] Conversion options
                  * @returns {Object.<string,*>} Plain object
                  */
@@ -2201,7 +1920,7 @@ export const pob = $root.pob = (() => {
                 /**
                  * Converts this MsgUpdateParamsResponse to JSON.
                  * @function toJSON
-                 * @memberof pob.builder.v1.MsgUpdateParamsResponse
+                 * @memberof sdk.auction.v1.MsgUpdateParamsResponse
                  * @instance
                  * @returns {Object.<string,*>} JSON object
                  */
@@ -2215,10 +1934,400 @@ export const pob = $root.pob = (() => {
             return v1;
         })();
 
-        return builder;
+        return auction;
     })();
 
-    return pob;
+    sdk.proposals = (function() {
+
+        /**
+         * Namespace proposals.
+         * @memberof sdk
+         * @namespace
+         */
+        const proposals = {};
+
+        proposals.v1 = (function() {
+
+            /**
+             * Namespace v1.
+             * @memberof sdk.proposals
+             * @namespace
+             */
+            const v1 = {};
+
+            v1.ProposalInfo = (function() {
+
+                /**
+                 * Properties of a ProposalInfo.
+                 * @memberof sdk.proposals.v1
+                 * @interface IProposalInfo
+                 * @property {Object.<string,Long>|null} [txs_by_lane] ProposalInfo txs_by_lane
+                 * @property {Long|null} [max_block_size] ProposalInfo max_block_size
+                 * @property {Long|null} [max_gas_limit] ProposalInfo max_gas_limit
+                 * @property {Long|null} [block_size] ProposalInfo block_size
+                 * @property {Long|null} [gas_limit] ProposalInfo gas_limit
+                 */
+
+                /**
+                 * Constructs a new ProposalInfo.
+                 * @memberof sdk.proposals.v1
+                 * @classdesc Represents a ProposalInfo.
+                 * @implements IProposalInfo
+                 * @constructor
+                 * @param {sdk.proposals.v1.IProposalInfo=} [properties] Properties to set
+                 */
+                function ProposalInfo(properties) {
+                    this.txs_by_lane = {};
+                    if (properties)
+                        for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                            if (properties[keys[i]] != null)
+                                this[keys[i]] = properties[keys[i]];
+                }
+
+                /**
+                 * ProposalInfo txs_by_lane.
+                 * @member {Object.<string,Long>} txs_by_lane
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 */
+                ProposalInfo.prototype.txs_by_lane = $util.emptyObject;
+
+                /**
+                 * ProposalInfo max_block_size.
+                 * @member {Long} max_block_size
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 */
+                ProposalInfo.prototype.max_block_size = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * ProposalInfo max_gas_limit.
+                 * @member {Long} max_gas_limit
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 */
+                ProposalInfo.prototype.max_gas_limit = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+                /**
+                 * ProposalInfo block_size.
+                 * @member {Long} block_size
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 */
+                ProposalInfo.prototype.block_size = $util.Long ? $util.Long.fromBits(0,0,false) : 0;
+
+                /**
+                 * ProposalInfo gas_limit.
+                 * @member {Long} gas_limit
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 */
+                ProposalInfo.prototype.gas_limit = $util.Long ? $util.Long.fromBits(0,0,true) : 0;
+
+                /**
+                 * Encodes the specified ProposalInfo message. Does not implicitly {@link sdk.proposals.v1.ProposalInfo.verify|verify} messages.
+                 * @function encode
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {sdk.proposals.v1.IProposalInfo} message ProposalInfo message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ProposalInfo.encode = function encode(message, writer) {
+                    if (!writer)
+                        writer = $Writer.create();
+                    if (message.txs_by_lane != null && Object.hasOwnProperty.call(message, "txs_by_lane"))
+                        for (let keys = Object.keys(message.txs_by_lane), i = 0; i < keys.length; ++i)
+                            writer.uint32(/* id 1, wireType 2 =*/10).fork().uint32(/* id 1, wireType 2 =*/10).string(keys[i]).uint32(/* id 2, wireType 0 =*/16).uint64(message.txs_by_lane[keys[i]]).ldelim();
+                    if (message.max_block_size != null && Object.hasOwnProperty.call(message, "max_block_size"))
+                        writer.uint32(/* id 2, wireType 0 =*/16).int64(message.max_block_size);
+                    if (message.max_gas_limit != null && Object.hasOwnProperty.call(message, "max_gas_limit"))
+                        writer.uint32(/* id 3, wireType 0 =*/24).uint64(message.max_gas_limit);
+                    if (message.block_size != null && Object.hasOwnProperty.call(message, "block_size"))
+                        writer.uint32(/* id 4, wireType 0 =*/32).int64(message.block_size);
+                    if (message.gas_limit != null && Object.hasOwnProperty.call(message, "gas_limit"))
+                        writer.uint32(/* id 5, wireType 0 =*/40).uint64(message.gas_limit);
+                    return writer;
+                };
+
+                /**
+                 * Encodes the specified ProposalInfo message, length delimited. Does not implicitly {@link sdk.proposals.v1.ProposalInfo.verify|verify} messages.
+                 * @function encodeDelimited
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {sdk.proposals.v1.IProposalInfo} message ProposalInfo message or plain object to encode
+                 * @param {$protobuf.Writer} [writer] Writer to encode to
+                 * @returns {$protobuf.Writer} Writer
+                 */
+                ProposalInfo.encodeDelimited = function encodeDelimited(message, writer) {
+                    return this.encode(message, writer).ldelim();
+                };
+
+                /**
+                 * Decodes a ProposalInfo message from the specified reader or buffer.
+                 * @function decode
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @param {number} [length] Message length if known beforehand
+                 * @returns {sdk.proposals.v1.ProposalInfo} ProposalInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ProposalInfo.decode = function decode(reader, length) {
+                    if (!(reader instanceof $Reader))
+                        reader = $Reader.create(reader);
+                    let end = length === undefined ? reader.len : reader.pos + length, message = new $root.sdk.proposals.v1.ProposalInfo(), key, value;
+                    while (reader.pos < end) {
+                        let tag = reader.uint32();
+                        switch (tag >>> 3) {
+                        case 1:
+                            if (message.txs_by_lane === $util.emptyObject)
+                                message.txs_by_lane = {};
+                            let end2 = reader.uint32() + reader.pos;
+                            key = "";
+                            value = 0;
+                            while (reader.pos < end2) {
+                                let tag2 = reader.uint32();
+                                switch (tag2 >>> 3) {
+                                case 1:
+                                    key = reader.string();
+                                    break;
+                                case 2:
+                                    value = reader.uint64();
+                                    break;
+                                default:
+                                    reader.skipType(tag2 & 7);
+                                    break;
+                                }
+                            }
+                            message.txs_by_lane[key] = value;
+                            break;
+                        case 2:
+                            message.max_block_size = reader.int64();
+                            break;
+                        case 3:
+                            message.max_gas_limit = reader.uint64();
+                            break;
+                        case 4:
+                            message.block_size = reader.int64();
+                            break;
+                        case 5:
+                            message.gas_limit = reader.uint64();
+                            break;
+                        default:
+                            reader.skipType(tag & 7);
+                            break;
+                        }
+                    }
+                    return message;
+                };
+
+                /**
+                 * Decodes a ProposalInfo message from the specified reader or buffer, length delimited.
+                 * @function decodeDelimited
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+                 * @returns {sdk.proposals.v1.ProposalInfo} ProposalInfo
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                ProposalInfo.decodeDelimited = function decodeDelimited(reader) {
+                    if (!(reader instanceof $Reader))
+                        reader = new $Reader(reader);
+                    return this.decode(reader, reader.uint32());
+                };
+
+                /**
+                 * Verifies a ProposalInfo message.
+                 * @function verify
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {Object.<string,*>} message Plain object to verify
+                 * @returns {string|null} `null` if valid, otherwise the reason why it is not
+                 */
+                ProposalInfo.verify = function verify(message) {
+                    if (typeof message !== "object" || message === null)
+                        return "object expected";
+                    if (message.txs_by_lane != null && message.hasOwnProperty("txs_by_lane")) {
+                        if (!$util.isObject(message.txs_by_lane))
+                            return "txs_by_lane: object expected";
+                        let key = Object.keys(message.txs_by_lane);
+                        for (let i = 0; i < key.length; ++i)
+                            if (!$util.isInteger(message.txs_by_lane[key[i]]) && !(message.txs_by_lane[key[i]] && $util.isInteger(message.txs_by_lane[key[i]].low) && $util.isInteger(message.txs_by_lane[key[i]].high)))
+                                return "txs_by_lane: integer|Long{k:string} expected";
+                    }
+                    if (message.max_block_size != null && message.hasOwnProperty("max_block_size"))
+                        if (!$util.isInteger(message.max_block_size) && !(message.max_block_size && $util.isInteger(message.max_block_size.low) && $util.isInteger(message.max_block_size.high)))
+                            return "max_block_size: integer|Long expected";
+                    if (message.max_gas_limit != null && message.hasOwnProperty("max_gas_limit"))
+                        if (!$util.isInteger(message.max_gas_limit) && !(message.max_gas_limit && $util.isInteger(message.max_gas_limit.low) && $util.isInteger(message.max_gas_limit.high)))
+                            return "max_gas_limit: integer|Long expected";
+                    if (message.block_size != null && message.hasOwnProperty("block_size"))
+                        if (!$util.isInteger(message.block_size) && !(message.block_size && $util.isInteger(message.block_size.low) && $util.isInteger(message.block_size.high)))
+                            return "block_size: integer|Long expected";
+                    if (message.gas_limit != null && message.hasOwnProperty("gas_limit"))
+                        if (!$util.isInteger(message.gas_limit) && !(message.gas_limit && $util.isInteger(message.gas_limit.low) && $util.isInteger(message.gas_limit.high)))
+                            return "gas_limit: integer|Long expected";
+                    return null;
+                };
+
+                /**
+                 * Creates a ProposalInfo message from a plain object. Also converts values to their respective internal types.
+                 * @function fromObject
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {Object.<string,*>} object Plain object
+                 * @returns {sdk.proposals.v1.ProposalInfo} ProposalInfo
+                 */
+                ProposalInfo.fromObject = function fromObject(object) {
+                    if (object instanceof $root.sdk.proposals.v1.ProposalInfo)
+                        return object;
+                    let message = new $root.sdk.proposals.v1.ProposalInfo();
+                    if (object.txs_by_lane) {
+                        if (typeof object.txs_by_lane !== "object")
+                            throw TypeError(".sdk.proposals.v1.ProposalInfo.txs_by_lane: object expected");
+                        message.txs_by_lane = {};
+                        for (let keys = Object.keys(object.txs_by_lane), i = 0; i < keys.length; ++i)
+                            if ($util.Long)
+                                (message.txs_by_lane[keys[i]] = $util.Long.fromValue(object.txs_by_lane[keys[i]])).unsigned = true;
+                            else if (typeof object.txs_by_lane[keys[i]] === "string")
+                                message.txs_by_lane[keys[i]] = parseInt(object.txs_by_lane[keys[i]], 10);
+                            else if (typeof object.txs_by_lane[keys[i]] === "number")
+                                message.txs_by_lane[keys[i]] = object.txs_by_lane[keys[i]];
+                            else if (typeof object.txs_by_lane[keys[i]] === "object")
+                                message.txs_by_lane[keys[i]] = new $util.LongBits(object.txs_by_lane[keys[i]].low >>> 0, object.txs_by_lane[keys[i]].high >>> 0).toNumber(true);
+                    }
+                    if (object.max_block_size != null)
+                        if ($util.Long)
+                            (message.max_block_size = $util.Long.fromValue(object.max_block_size)).unsigned = false;
+                        else if (typeof object.max_block_size === "string")
+                            message.max_block_size = parseInt(object.max_block_size, 10);
+                        else if (typeof object.max_block_size === "number")
+                            message.max_block_size = object.max_block_size;
+                        else if (typeof object.max_block_size === "object")
+                            message.max_block_size = new $util.LongBits(object.max_block_size.low >>> 0, object.max_block_size.high >>> 0).toNumber();
+                    if (object.max_gas_limit != null)
+                        if ($util.Long)
+                            (message.max_gas_limit = $util.Long.fromValue(object.max_gas_limit)).unsigned = true;
+                        else if (typeof object.max_gas_limit === "string")
+                            message.max_gas_limit = parseInt(object.max_gas_limit, 10);
+                        else if (typeof object.max_gas_limit === "number")
+                            message.max_gas_limit = object.max_gas_limit;
+                        else if (typeof object.max_gas_limit === "object")
+                            message.max_gas_limit = new $util.LongBits(object.max_gas_limit.low >>> 0, object.max_gas_limit.high >>> 0).toNumber(true);
+                    if (object.block_size != null)
+                        if ($util.Long)
+                            (message.block_size = $util.Long.fromValue(object.block_size)).unsigned = false;
+                        else if (typeof object.block_size === "string")
+                            message.block_size = parseInt(object.block_size, 10);
+                        else if (typeof object.block_size === "number")
+                            message.block_size = object.block_size;
+                        else if (typeof object.block_size === "object")
+                            message.block_size = new $util.LongBits(object.block_size.low >>> 0, object.block_size.high >>> 0).toNumber();
+                    if (object.gas_limit != null)
+                        if ($util.Long)
+                            (message.gas_limit = $util.Long.fromValue(object.gas_limit)).unsigned = true;
+                        else if (typeof object.gas_limit === "string")
+                            message.gas_limit = parseInt(object.gas_limit, 10);
+                        else if (typeof object.gas_limit === "number")
+                            message.gas_limit = object.gas_limit;
+                        else if (typeof object.gas_limit === "object")
+                            message.gas_limit = new $util.LongBits(object.gas_limit.low >>> 0, object.gas_limit.high >>> 0).toNumber(true);
+                    return message;
+                };
+
+                /**
+                 * Creates a plain object from a ProposalInfo message. Also converts values to other types if specified.
+                 * @function toObject
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @static
+                 * @param {sdk.proposals.v1.ProposalInfo} message ProposalInfo
+                 * @param {$protobuf.IConversionOptions} [options] Conversion options
+                 * @returns {Object.<string,*>} Plain object
+                 */
+                ProposalInfo.toObject = function toObject(message, options) {
+                    if (!options)
+                        options = {};
+                    let object = {};
+                    if (options.objects || options.defaults)
+                        object.txs_by_lane = {};
+                    if (options.defaults) {
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.max_block_size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.max_block_size = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, true);
+                            object.max_gas_limit = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.max_gas_limit = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, false);
+                            object.block_size = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.block_size = options.longs === String ? "0" : 0;
+                        if ($util.Long) {
+                            let long = new $util.Long(0, 0, true);
+                            object.gas_limit = options.longs === String ? long.toString() : options.longs === Number ? long.toNumber() : long;
+                        } else
+                            object.gas_limit = options.longs === String ? "0" : 0;
+                    }
+                    let keys2;
+                    if (message.txs_by_lane && (keys2 = Object.keys(message.txs_by_lane)).length) {
+                        object.txs_by_lane = {};
+                        for (let j = 0; j < keys2.length; ++j)
+                            if (typeof message.txs_by_lane[keys2[j]] === "number")
+                                object.txs_by_lane[keys2[j]] = options.longs === String ? String(message.txs_by_lane[keys2[j]]) : message.txs_by_lane[keys2[j]];
+                            else
+                                object.txs_by_lane[keys2[j]] = options.longs === String ? $util.Long.prototype.toString.call(message.txs_by_lane[keys2[j]]) : options.longs === Number ? new $util.LongBits(message.txs_by_lane[keys2[j]].low >>> 0, message.txs_by_lane[keys2[j]].high >>> 0).toNumber(true) : message.txs_by_lane[keys2[j]];
+                    }
+                    if (message.max_block_size != null && message.hasOwnProperty("max_block_size"))
+                        if (typeof message.max_block_size === "number")
+                            object.max_block_size = options.longs === String ? String(message.max_block_size) : message.max_block_size;
+                        else
+                            object.max_block_size = options.longs === String ? $util.Long.prototype.toString.call(message.max_block_size) : options.longs === Number ? new $util.LongBits(message.max_block_size.low >>> 0, message.max_block_size.high >>> 0).toNumber() : message.max_block_size;
+                    if (message.max_gas_limit != null && message.hasOwnProperty("max_gas_limit"))
+                        if (typeof message.max_gas_limit === "number")
+                            object.max_gas_limit = options.longs === String ? String(message.max_gas_limit) : message.max_gas_limit;
+                        else
+                            object.max_gas_limit = options.longs === String ? $util.Long.prototype.toString.call(message.max_gas_limit) : options.longs === Number ? new $util.LongBits(message.max_gas_limit.low >>> 0, message.max_gas_limit.high >>> 0).toNumber(true) : message.max_gas_limit;
+                    if (message.block_size != null && message.hasOwnProperty("block_size"))
+                        if (typeof message.block_size === "number")
+                            object.block_size = options.longs === String ? String(message.block_size) : message.block_size;
+                        else
+                            object.block_size = options.longs === String ? $util.Long.prototype.toString.call(message.block_size) : options.longs === Number ? new $util.LongBits(message.block_size.low >>> 0, message.block_size.high >>> 0).toNumber() : message.block_size;
+                    if (message.gas_limit != null && message.hasOwnProperty("gas_limit"))
+                        if (typeof message.gas_limit === "number")
+                            object.gas_limit = options.longs === String ? String(message.gas_limit) : message.gas_limit;
+                        else
+                            object.gas_limit = options.longs === String ? $util.Long.prototype.toString.call(message.gas_limit) : options.longs === Number ? new $util.LongBits(message.gas_limit.low >>> 0, message.gas_limit.high >>> 0).toNumber(true) : message.gas_limit;
+                    return object;
+                };
+
+                /**
+                 * Converts this ProposalInfo to JSON.
+                 * @function toJSON
+                 * @memberof sdk.proposals.v1.ProposalInfo
+                 * @instance
+                 * @returns {Object.<string,*>} JSON object
+                 */
+                ProposalInfo.prototype.toJSON = function toJSON() {
+                    return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+                };
+
+                return ProposalInfo;
+            })();
+
+            return v1;
+        })();
+
+        return proposals;
+    })();
+
+    return sdk;
 })();
 
 export const gogoproto = $root.gogoproto = (() => {
