@@ -953,9 +953,7 @@ export class DaoMember {
       this.dao.chain.blockWaiter,
       async () =>
         await this.dao.getTimelockedProposal(proposalId, customModule),
-      async (response) => {
-        return response.id && +response.id > 0;
-      },
+      async (response) => response.id && +response.id > 0,
       5,
     );
   }
