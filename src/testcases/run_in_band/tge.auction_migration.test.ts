@@ -219,6 +219,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
       'auctionVesting',
       'auctionLockdrop',
       'auctionLockdropVesting',
+      'claimVestingBeforeMigration',
     ]) {
       tgeWallets[v] = new cosmosWrapper.WalletWrapper(
         neutronChain,
@@ -273,6 +274,11 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             tgeWallets['airdropAuctionVesting'].wallet.address.toString(),
           amount: '1000000',
         },
+        {
+          address:
+            tgeWallets['claimVestingBeforeMigration'].wallet.address.toString(),
+          amount: '1000000',
+        },
       ];
       tgeMain.times.airdropStart = tge.getTimestamp(0);
       tgeMain.times.airdropVestingStart = tge.getTimestamp(300);
@@ -301,6 +307,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
         'airdropAuctionVesting',
         'airdropAuctionLockdrop',
         'airdropAuctionLockdropVesting',
+        'claimVestingBeforeMigration',
       ]) {
         const address = tgeWallets[v].wallet.address.toString();
         const amount =
@@ -386,6 +393,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           'auctionVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
+          'claimVestingBeforeMigration',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
             tgeMain.contracts.auction,
@@ -459,6 +467,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           'auctionVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
+          'claimVestingBeforeMigration',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
             tgeMain.contracts.auction,
@@ -1000,9 +1009,16 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           }),
         );
         expect(res.code).toEqual(0);
+        res = await tgeWallets.airdropOnly.executeContract(
+          tgeMain.contracts.auction,
+          JSON.stringify({
+            migrate_to_vesting: {},
+          }),
+        );
+        expect(res.code).toEqual(0);
         tgeMain.times.vestTimestamp = Date.now();
       });
-      it('should not vest LP all 7 users have been migrated', async () => {
+      it('should not vest LP all 8 users have been migrated', async () => {
         await expect(
           cmInstantiator.executeContract(
             tgeMain.contracts.auction,
@@ -1066,14 +1082,14 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
         expect(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(89394, -1);
+        ).toBeCloseTo(75706, -1);
         claimAtomLP = parseInt(
           vestingInfoAtom.info.schedules[0].end_point.amount,
         );
 
         expect(
           parseInt(vestingInfoUsdc.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(18087, -1);
+        ).toBeCloseTo(14197, -1);
         claimUsdcLP = parseInt(
           vestingInfoUsdc.info.schedules[0].end_point.amount,
         );
@@ -1164,6 +1180,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'claimVestingBeforeMigration',
           ]) {
             const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
@@ -1213,6 +1230,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'airdropOnly',
             'airdropAuctionVesting',
             'auctionVesting',
+            'claimVestingBeforeMigration',
           ]) {
             const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
@@ -1251,6 +1269,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'claimVestingBeforeMigration',
           ]) {
             const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
@@ -1265,7 +1284,11 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // vesting participants get(increase) the voting power
-          for (const v of ['airdropAuctionVesting', 'auctionVesting']) {
+          for (const v of [
+            'airdropAuctionVesting',
+            'auctionVesting',
+            'claimVestingBeforeMigration',
+          ]) {
             const member = new dao.DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
               vp[v] | 0,
@@ -1305,6 +1328,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
             'auctionVesting',
+            'claimVestingBeforeMigration',
           ]) {
             const member = new dao.DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
@@ -1400,7 +1424,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           rewardsStateAfterClaim.balanceNtrn +
             FEE_SIZE -
             rewardsStateBeforeClaim.balanceNtrn,
-        ).toEqual(120515); // lockdrop rewards share for the user
+        ).toEqual(125980); // lockdrop rewards share for the user
         const expectedGeneratorRewards = +(
           (
             rewardsStateBeforeClaim.userInfo.lockup_infos.find(
@@ -1474,6 +1498,26 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
     let vestingLpVaultForClAddr: string;
 
     describe('Migration of pairs', () => {
+      it('should claim from last wallet in map', async () => {
+        const resAtom = await tgeWallets[
+          'claimVestingBeforeMigration'
+        ].executeContract(
+          tgeMain.contracts.vestingAtomLp,
+          JSON.stringify({
+            claim: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        const resUsdc = await tgeWallets[
+          'claimVestingBeforeMigration'
+        ].executeContract(
+          tgeMain.contracts.vestingUsdcLp,
+          JSON.stringify({
+            claim: {},
+          }),
+        );
+        expect(resUsdc.code).toEqual(0);
+      });
       it('should unregister old pairs', async () => {
         {
           const res = await tge.executeDeregisterPair(
@@ -1782,19 +1826,18 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
         expect(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(89394, -1);
+        ).toBeCloseTo(75706, -1);
         claimAtomLP = parseInt(
           vestingInfoAtom.info.schedules[0].end_point.amount,
         );
 
         expect(
           parseInt(vestingInfoUsdc.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(18087, -1);
+        ).toBeCloseTo(14197, -1);
         claimUsdcLP = parseInt(
           vestingInfoUsdc.info.schedules[0].end_point.amount,
         );
       });
-
       it('should migrate ATOM LP vesing to V2', async () => {
         const res = await cmInstantiator.migrateContract(
           tgeMain.contracts.vestingAtomLp,
@@ -1831,6 +1874,13 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
 
       it('should migrate atom', async () => {
         let resAtom = await cmInstantiator.executeContract(
+          tgeMain.contracts.vestingAtomLp,
+          JSON.stringify({
+            migrate_liquidity: {},
+          }),
+        );
+        expect(resAtom.code).toEqual(0);
+        resAtom = await cmInstantiator.executeContract(
           tgeMain.contracts.vestingAtomLp,
           JSON.stringify({
             migrate_liquidity: {},
@@ -2643,7 +2693,7 @@ describe('Neutron / TGE / Auction / Lockdrop migration', () => {
           rewardsStateAfterClaim.balanceNtrn +
             FEE_SIZE -
             rewardsStateBeforeClaim.balanceNtrn,
-        ).toBeCloseTo(120212, -3); // lockdrop rewards share for the user
+        ).toBeCloseTo(125978, -3); // lockdrop rewards share for the user
 
         const expectedGeneratorRewards = +(
           (
