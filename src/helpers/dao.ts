@@ -479,7 +479,7 @@ export class Dao {
     return this.chain.queryContract<ProposalFailedExecutionErrorResponse>(
       this.contracts.proposals[customModule].pre_propose.timelock.address,
       {
-        proposal_failed_execution_error: {
+        proposal_execution_error: {
           proposal_id: proposalId,
         },
       },
