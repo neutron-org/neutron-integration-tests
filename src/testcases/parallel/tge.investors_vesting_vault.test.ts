@@ -783,6 +783,23 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         ).rejects.toThrow(/Unauthorized/);
       });
 
+      test('set vesting token not allowed more than once', async () => {
+        await expect(
+          cmManager.executeContract(
+            contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  native_token: {
+                    denom: IBC_ATOM_DENOM,
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Vesting token is already set!/);
+      });
+
       describe('remove vesting accounts is permissioned', () => {
         test('removal not allowed to a stranger', async () => {
           await expect(

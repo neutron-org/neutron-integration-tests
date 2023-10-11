@@ -978,6 +978,38 @@ describe('Neutron / TGE / Vesting LP vault', () => {
         ).rejects.toThrow(/Unauthorized/);
       });
 
+      test('set vesting token not allowed more than once', async () => {
+        await expect(
+          cmManager.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  native_token: {
+                    denom: NEUTRON_DENOM,
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Vesting token is already set!/);
+
+        await expect(
+          cmManager.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  native_token: {
+                    denom: NEUTRON_DENOM,
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Vesting token is already set!/);
+      });
+
       describe('register vesting accounts not allowed to a stranger', () => {
         test('via send cw20', async () => {
           // create a random cw20 token with allocation to user1
