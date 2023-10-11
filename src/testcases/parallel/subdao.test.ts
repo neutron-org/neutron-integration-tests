@@ -245,11 +245,22 @@ describe('Neutron / Subdao', () => {
       await wait(20);
       await subdaoMember1.executeTimelockedProposal(proposalId); // should execute no problem
 
-      neutronChain.blockWaiter.waitBlocks(2);
+      await neutronChain.blockWaiter.waitBlocks(2);
+
+      const subdaoConfigAfter =
+        await neutronChain.queryContract<SubdaoProposalConfig>(
+          subDao.contracts.proposals.single.address,
+          {
+            config: {},
+          },
+        );
+      expect(subdaoConfigAfter.close_proposal_on_execution_failure).toEqual(
+        false,
+      );
     });
 
     let proposalId3: number;
-    test('proposal timelock 3', async () => {
+    test('proposal timelock 3 with not enough funds initially to resubmit later', async () => {
       proposalId3 = await subdaoMember1.submitSendProposal('send', 'send', [
         {
           recipient: demo2Addr.toString(),
@@ -267,7 +278,7 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
     });
 
-    test('execute timelocked 3: execution failed', async () => {
+    test('execute timelocked 3: execution failed at first and then successful after funds sent', async () => {
       const subdaoConfig =
         await neutronChain.queryContract<SubdaoProposalConfig>(
           subDao.contracts.proposals.single.address,
@@ -279,10 +290,10 @@ describe('Neutron / Subdao', () => {
 
       //wait for timelock durations
       await wait(20);
-      // timelocked proposal execution failed due to invalid param value
+      // timelocked proposal execution failed due to insufficient funds
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId3),
-      ).rejects.toThrow();
+      ).rejects.toThrow(/insufficient funds/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId3);
       expect(timelockedProp.id).toEqual(proposalId3);
       expect(timelockedProp.status).toEqual('timelocked');
