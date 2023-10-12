@@ -54,6 +54,7 @@ describe('Neutron / Subdao', () => {
       daoContracts.core.address,
       daoContracts.proposals.overrule?.pre_propose?.address || '',
       neutronAccount1.wallet.address.toString(),
+      false, // do not close proposal on failure since otherwise we wont get an error exception from submsgs
     );
 
     subdaoMember1 = new dao.DaoMember(neutronAccount1, subDao);
