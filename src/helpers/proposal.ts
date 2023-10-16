@@ -19,6 +19,35 @@ export type PinCodesInfo = {
 export type UpdateParamsInterchaintxsInfo = {
   msg_submit_tx_max_messages: number;
 };
+
+export type UpdateParamsInterchainqueriesInfo = {
+  query_submit_timeout: number;
+  query_deposit: null;
+  tx_query_removal_limit: number;
+};
+
+export type UpdateParamsTokenfactoryInfo = {
+  denom_creation_fee;
+  denom_creation_gas_consume: number;
+};
+
+export type UpdateParamsFeeburnerInfo = {
+  treasury_address: string;
+};
+
+export type UpdateParamsFeerefunderInfo = {
+  fee;
+};
+
+export type UpdateParamsCronInfo = {
+  security_address: string;
+  limit: number;
+};
+
+export type UpdateParamsContractmanageInfo = {
+  sudo_call_gas_limit: string;
+};
+
 export type UpdateAdmin = {
   sender: string;
   contract: string;
@@ -207,6 +236,133 @@ export const updateInterchaintxsParamsProposal = (
             authority: ADMIN_MODULE_ADDRESS,
             params: {
               msg_submit_tx_max_messages: info.msg_submit_tx_max_messages,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateInterchainqueriesParamsProposal = (
+  info: UpdateParamsInterchainqueriesInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.interchainqueries.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              query_submit_timeout: info.query_submit_timeout,
+              query_deposit: null,
+              tx_query_removal_limit: info.tx_query_removal_limit,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateTokenfacoryParamsProposal = (
+  info: UpdateParamsTokenfactoryInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/osmosis.tokenfactory.v1beta1.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              denom_creation_fee: info.denom_creation_fee,
+              denom_creation_gas_consume: info.denom_creation_gas_consume,
+              fee_collector_address: null,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateFeeburnerParamsProposal = (
+  info: UpdateParamsFeeburnerInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.feeburner.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              treasury_address: info.treasury_address,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateFeerefunderParamsProposal = (
+  info: UpdateParamsFeerefunderInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.feerefunder.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              min_fee: {
+                recv_fee: info.fee,
+                ack_fee: info.fee,
+                timeout_fee: info.fee,
+              },
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateCronParamsProposal = (info: UpdateParamsCronInfo): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.cron.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              security_address: info.security_address,
+              limit: info.limit,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const updateContractmanagerParamsProposal = (
+  info: UpdateParamsContractmanageInfo,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.contractmanager.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              sudo_call_gas_limit: info.sudo_call_gas_limit,
             },
           }),
         },

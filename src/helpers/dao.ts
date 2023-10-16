@@ -29,7 +29,13 @@ import {
   SendProposalInfo,
   unpinCodesProposal,
   updateAdminProposal,
+  updateContractmanagerParamsProposal,
+  updateCronParamsProposal,
+  updateFeeburnerParamsProposal,
+  updateFeerefunderParamsProposal,
+  updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
+  updateTokenfacoryParamsProposal,
   upgradeProposal,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
@@ -1221,6 +1227,138 @@ export class DaoMember {
   ): Promise<number> {
     const message = updateInterchaintxsParamsProposal({
       msg_submit_tx_max_messages: msgSubmitTxMaxMessages,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsInterchainqueriesProposal creates proposal which changes params of interchaintxs module.
+   */
+
+  async submitUpdateParamsInterchainqueriesProposal(
+    title: string,
+    description: string,
+    querySubmitTimeout: number,
+    txQueryRemovalLimit: number,
+    amount: string,
+  ): Promise<number> {
+    const message = updateInterchainqueriesParamsProposal({
+      query_submit_timeout: querySubmitTimeout,
+      query_deposit: null,
+      tx_query_removal_limit: txQueryRemovalLimit,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsTokenfactoryProposal creates proposal which changes params of tokenfactory module.
+   */
+
+  async submitUpdateParamsTokenfactoryProposal(
+    title: string,
+    description: string,
+    denomCreationGasConsume: number,
+    amount: string,
+  ): Promise<number> {
+    const message = updateTokenfacoryParamsProposal({
+      denom_creation_fee: null,
+      denom_creation_gas_consume: denomCreationGasConsume,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsFeeburnerProposal creates proposal which changes some params of feeburner module.
+   */
+
+  async submitUpdateParamsFeeburnerProposal(
+    title: string,
+    description: string,
+    treasuryAddress: string,
+    amount: string,
+  ): Promise<number> {
+    const message = updateFeeburnerParamsProposal({
+      treasury_address: treasuryAddress,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsFeerefunderProposal creates proposal which changes some params of feerefunder module.
+   */
+
+  async submitUpdateParamsFeerefunderProposal(
+    title: string,
+    description: string,
+    amount: string,
+    minFee = null,
+  ): Promise<number> {
+    const message = updateFeerefunderParamsProposal({
+      fee: minFee,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsCronProposal creates proposal which changes soe params of cron module.
+   */
+
+  async submitUpdateParamsCronProposal(
+    title: string,
+    description: string,
+    securityAddress: string,
+    limit: number,
+    amount: string,
+  ): Promise<number> {
+    const message = updateCronParamsProposal({
+      security_address: securityAddress,
+      limit: limit,
+    });
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      amount,
+    );
+  }
+
+  /**
+   * submitUpdateParamsContractmanageProposal creates proposal which changes some params of contractmanager module.
+   */
+
+  async submitUpdateParamsContractmanageProposal(
+    title: string,
+    description: string,
+    sudoCallGasLimit: string,
+    amount: string,
+  ): Promise<number> {
+    const message = updateContractmanagerParamsProposal({
+      sudo_call_gas_limit: sudoCallGasLimit,
     });
     return await this.submitSingleChoiceProposal(
       title,

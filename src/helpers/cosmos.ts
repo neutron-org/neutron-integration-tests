@@ -209,6 +209,42 @@ export class CosmosWrapper {
     return req.data;
   }
 
+  async queryFeeburnerParams(): Promise<any> {
+    const req = await axios.get(`${this.sdk.url}/neutron/feeburner/params`);
+
+    return req.data;
+  }
+
+  async queryFeerefunderParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron-org/neutron/feerefunder/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryContractmanagerParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron/contractmanager/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryCronParams(): Promise<any> {
+    const req = await axios.get(`${this.sdk.url}/neutron/cron/params`);
+
+    return req.data;
+  }
+
+  async queryTokenfactoryParams(): Promise<any> {
+    const req = await axios.get(
+      `${this.sdk.url}/osmosis/tokenfactory/v1beta1/params`,
+    );
+
+    return req.data;
+  }
+
   async queryDelegations(delegatorAddr: cosmosclient.AccAddress): Promise<any> {
     const balances = await cosmosclient.rest.staking.delegatorDelegations(
       this.sdk,
