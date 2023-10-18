@@ -1591,10 +1591,10 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@neutron-org/neutronjsplus@^0.0.15":
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.0.15.tgz#0bcebb8138fc380bed1210474ec9189340ec874d"
-  integrity sha512-kF82bsu74QrXPZya7rS8/+Ziu+sht9nvjKTfKBIsExVr2U+VePA8D/CJkqx7ts4yi1D7ECATgGFCA8GJW8I4VQ==
+"@neutron-org/neutronjsplus@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.0.16.tgz#1817d978660966ea5a33858e0093f6ec9f5dde7b"
+  integrity sha512-bFswo2izpEJjGxeOJk0Hg2yOuimbCTjmvRqWbMwdye8lZcVCoTVrnZ2Lyf4b/POs7Pc43LZ7m1QktHg6INQCPQ==
   dependencies:
     "@cosmos-client/core" "0.45.13"
     "@cosmos-client/cosmwasm" "^0.20.1"
