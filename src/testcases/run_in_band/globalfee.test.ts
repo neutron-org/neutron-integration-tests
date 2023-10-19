@@ -1,5 +1,4 @@
 import Long from 'long';
-import { rest } from '@cosmos-client/core';
 import {
   cosmosWrapper,
   dao,
@@ -7,6 +6,7 @@ import {
   TestStateLocalCosmosTestNet,
   wait,
 } from '@neutron-org/neutronjsplus';
+import { rest } from '@cosmos-client/core';
 
 const config = require('../../config.json');
 

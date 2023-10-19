@@ -1,5 +1,3 @@
-import { proto } from '@cosmos-client/core';
-import Long from 'long';
 import {
   cosmosWrapper,
   COSMOS_DENOM,
@@ -8,6 +6,9 @@ import {
   TestStateLocalCosmosTestNet,
   types,
 } from '@neutron-org/neutronjsplus';
+
+import { proto } from '@cosmos-client/core';
+import Long from 'long';
 
 const config = require('../../config.json');
 

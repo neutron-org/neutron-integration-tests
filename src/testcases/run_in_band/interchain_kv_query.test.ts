@@ -1,7 +1,3 @@
-import { proto, rest } from '@cosmos-client/core';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 import {
   cosmosWrapper,
   COSMOS_DENOM,
@@ -14,6 +10,11 @@ import {
   types,
   wait,
 } from '@neutron-org/neutronjsplus';
+
+import { proto, rest } from '@cosmos-client/core';
+import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 
 const getKvCallbackStatus = (
   cm: cosmosWrapper.CosmosWrapper,

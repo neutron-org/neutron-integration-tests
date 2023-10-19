@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import {
   cosmosWrapper,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
 } from '@neutron-org/neutronjsplus';
+
+import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
+import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 
 const config = require('../../config.json');
 interface ReserveStats {
