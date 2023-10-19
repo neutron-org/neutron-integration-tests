@@ -1,7 +1,3 @@
-import 'jest-extended';
-import { cosmosclient, rest } from '@cosmos-client/core';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 import {
   cosmosWrapper,
   COSMOS_DENOM,
@@ -11,6 +7,11 @@ import {
   types,
   wait,
 } from '@neutron-org/neutronjsplus';
+
+import 'jest-extended';
+import { cosmosclient, rest } from '@cosmos-client/core';
+import { AccAddress } from '@cosmos-client/core/cjs/types';
+import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
 
 const config = require('../../config.json');
 
