@@ -12,7 +12,6 @@ import {
   getEventAttribute,
 } from '../../helpers/cosmos';
 import { msgMintDenom, msgCreateDenom } from '../../helpers/tokenfactory';
-import { getDaoContracts } from '../../helpers/dao';
 
 // subdenoms for test dedicated tokens creation.
 const TEST_NTRN_SUBDENOM = 'migrationuntrn';
