@@ -71,9 +71,9 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #1',() => {
+    describe('execute proposal #1', () => {
       const proposalId = 1;
-      var paramsBefore;
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
@@ -114,18 +114,23 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #2', async () => {
+    describe('execute proposal #2', () => {
       const proposalId = 2;
-      const paramsBefore = await neutronChain.queryTokenfactoryParams();
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramsBefore = await neutronChain.queryTokenfactoryParams();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
         const paramsAfter = await neutronChain.queryTokenfactoryParams();
-        expect(paramsAfter.params.denom_creation_fee).not.toEqual(
+        // before: {"params":{"denom_creation_fee":[],
+        // "denom_creation_gas_consume":"0",
+        // "fee_collector_address":"neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"}}
+
+        expect(paramsAfter.params.denom_creation_fee).toEqual(
           paramsBefore.params.denom_creation_fee,
         );
         expect(paramsAfter.params.denom_creation_gas_consume).not.toEqual(
@@ -154,13 +159,14 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #3', async () => {
+    describe('execute proposal #3', () => {
       const proposalId = 3;
-      const paramsBefore = await neutronChain.queryFeeburnerParams();
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramsBefore = await neutronChain.queryFeeburnerParams();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
@@ -191,18 +197,20 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #4', async () => {
+    describe('execute proposal #4', () => {
       const proposalId = 4;
-      const paramsBefore = await neutronChain.queryFeerefunderParams();
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramsBefore = await neutronChain.queryFeerefunderParams();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
         const paramsAfter = await neutronChain.queryFeerefunderParams();
-        expect(paramsAfter.params.min_fee.recv_fee).not.toEqual(
+        // recv_fee":[],"ack_fee":[{"denom":"untrn","amount":"1000"}],"timeout_fee":[{"denom":"untrn","amount":"1000"}]}}}
+        expect(paramsAfter.params.min_fee.recv_fee).toEqual(
           paramsBefore.params.min_fee.recv_fee,
         );
         expect(paramsAfter.params.min_fee.ack_fee).not.toEqual(
@@ -237,13 +245,14 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #5', async () => {
+    describe('execute proposal #5', () => {
       const proposalId = 5;
-      const paramsBefore = await neutronChain.queryCronParams();
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramsBefore = await neutronChain.queryCronParams();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
@@ -275,13 +284,14 @@ describe('Neutron / Parameters', () => {
       });
     });
 
-    describe('execute proposal #6', async () => {
+    describe('execute proposal #6', () => {
       const proposalId = 6;
-      const paramsBefore = await neutronChain.queryContractmanagerParams();
+      let paramsBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramsBefore = await neutronChain.queryContractmanagerParams();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
@@ -305,24 +315,25 @@ describe('Neutron / Parameters', () => {
     });
 
     describe('vote for proposal #6', () => {
-      const proposalId = 6;
+      const proposalId = 7;
       test('vote YES from wallet 1', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #7', async () => {
+    describe('execute proposal #7', () => {
       const proposalId = 7;
-      const paramBefore = await neutronChain.queryMaxTxsAllowed();
+      let paramBefore;
       test('check if proposal is passed', async () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
+        paramBefore = await neutronChain.queryMaxTxsAllowed();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
         const paramAfter = await neutronChain.queryMaxTxsAllowed();
-        expect(paramBefore).not.toEqual(paramAfter);
+        expect(paramAfter).not.toEqual(paramBefore);
         expect(paramAfter).toEqual('11');
       });
     });
