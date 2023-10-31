@@ -27,7 +27,7 @@ export type UpdateParamsInterchainqueriesInfo = {
 };
 
 export type UpdateParamsTokenfactoryInfo = {
-  denom_creation_fee;
+  denom_creation_fee: any;
   denom_creation_gas_consume: number;
 };
 
@@ -36,7 +36,7 @@ export type UpdateParamsFeeburnerInfo = {
 };
 
 export type UpdateParamsFeerefunderInfo = {
-  fee;
+  fee: any;
 };
 
 export type UpdateParamsCronInfo = {
