@@ -2,12 +2,12 @@ import cosmosclient from '@cosmos-client/core';
 import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
 import cosmwasmclient from '@cosmos-client/cosmwasm';
 import { cosmos as AdminProto, ibc as ibcProto } from '../generated/ibc/proto';
-import { pob } from '../generated/pob/proto';
+import { sdk } from '../generated/pob/proto';
 import { neutron } from '../generated/proto';
 import axios from 'axios';
 import { CodeId, Wallet } from '../types';
 import Long from 'long';
-import { BlockWaiter, getWithAttempts } from './wait';
+import { BlockWaiter, getHeight, getWithAttempts } from './wait';
 import {
   BroadcastTx200ResponseTxResponse,
   CosmosTxV1beta1GetTxResponse,
@@ -101,8 +101,8 @@ cosmosclient.codec.register(
   ibcProto.lightclients.tendermint.v1.ClientState,
 );
 cosmosclient.codec.register(
-  '/pob.builder.v1.MsgAuctionBid',
-  pob.builder.v1.MsgAuctionBid,
+  '/sdk.auction.v1.MsgAuctionBid',
+  sdk.auction.v1.MsgAuctionBid,
 );
 cosmosclient.codec.register(
   '/neutron.interchaintxs.v1.MsgUpdateParams',
@@ -489,6 +489,7 @@ export class WalletWrapper {
     fee: cosmosclient.proto.cosmos.tx.v1beta1.IFee,
     msgs: T[],
     sequence: number = this.wallet.account.sequence,
+    txTimeoutHeight?: number,
   ): cosmosclient.TxBuilder {
     const protoMsgs: Array<google.protobuf.IAny> = [];
     msgs.forEach((msg) => {
@@ -496,9 +497,10 @@ export class WalletWrapper {
     });
     const txBody = new cosmosclient.proto.cosmos.tx.v1beta1.TxBody({
       messages: protoMsgs,
-      // TODO: set dynamic value?
-      timeout_height: 1_000_000_000,
     });
+    if (txTimeoutHeight != undefined) {
+      txBody.timeout_height = txTimeoutHeight;
+    }
     const authInfo = new cosmosclient.proto.cosmos.tx.v1beta1.AuthInfo({
       signer_infos: [
         {
@@ -571,8 +573,9 @@ export class WalletWrapper {
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
       .BroadcastTxMode.Sync,
     sequence: number = this.wallet.account.sequence,
+    txTimeoutHeight?: number,
   ): Promise<CosmosTxV1beta1GetTxResponse> {
-    const txBuilder = this.buildTx(fee, msgs, sequence);
+    const txBuilder = this.buildTx(fee, msgs, sequence, txTimeoutHeight);
     const txhash = await this.broadcastTx(txBuilder, mode);
     if (DEBUG_SUBMIT_TX) {
       console.log('tx hash: ', txhash);
@@ -793,12 +796,20 @@ export class WalletWrapper {
     mode: cosmosclient.rest.tx.BroadcastTxMode = cosmosclient.rest.tx
       .BroadcastTxMode.Sync,
   ): Promise<BroadcastTx200ResponseTxResponse> {
-    const msg = new pob.builder.v1.MsgAuctionBid({
+    const msg = new sdk.auction.v1.MsgAuctionBid({
       bidder: bidder,
       bid: bid,
       transactions: transactions,
     });
-    const res = await this.execTx(fee, [msg], 10, mode, sequence);
+    const currentHeight = await getHeight(this.chain.sdk);
+    const res = await this.execTx(
+      fee,
+      [msg],
+      10,
+      mode,
+      sequence,
+      currentHeight + 1,
+    );
     return res?.tx_response;
   }
 

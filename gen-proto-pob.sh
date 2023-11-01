@@ -4,12 +4,12 @@ rm -r ./proto
 rm -r ./proto-thirdparty-tmp
 rm -rf ./pob
 
-git clone git@github.com:skip-mev/pob.git
+git clone git@github.com:skip-mev/block-sdk.git
 # cd ibc-go && git checkout v4.3.0 && cd ../
 
 # git clone git@github.com:Ethernal-Tech/admin-module.git
 
-cp -r pob/proto ./proto
+cp -r block-sdk/proto ./proto
 # cp -r ibc-go/third_party/proto ./proto-thirdparty-tmp
 # mv ./proto-thirdparty-tmp/tendermint ./proto/
 # cp -r ./admin-module/proto/adminmodule ./proto/
@@ -53,5 +53,5 @@ npx pbts \
 
 rm -r ./proto
 # rm -r ./proto-thirdparty-tmp
-rm -rf ./pob
+rm -rf ./block-sdk
 # rm -rf ./admin-module

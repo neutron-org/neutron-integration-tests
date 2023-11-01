@@ -7,10 +7,14 @@ import {
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import cosmosclient from '@cosmos-client/core';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
+import { getHeight } from '../../helpers/wait';
 const fee = {
   gas_limit: Long.fromString('200000'),
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
 };
+
+const TreasuryAddress =
+  'neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -35,6 +39,7 @@ describe('Neutron / IBC hooks', () => {
 
   describe('POB', () => {
     test('single pob tx', async () => {
+      await neutronChain.blockWaiter.waitBlocks(1);
       const amount = '1000000';
       const to = n1.wallet.address.toString();
       const msgSend = new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
@@ -46,9 +51,9 @@ describe('Neutron / IBC hooks', () => {
         fee,
         [msgSend],
         Number(neutronAccount.wallet.account.sequence) + 1,
+        (await getHeight(neutronChain.sdk)) + 1,
       );
       const d = Buffer.from(txBuilder.txBytes(), 'base64');
-      console.log(txBuilder.txBytes());
       await neutronAccount.msgSendAuction(
         neutronAccount.wallet.address.toString(),
         {
@@ -61,6 +66,7 @@ describe('Neutron / IBC hooks', () => {
     });
 
     test('single pob tx(zero tx fee)', async () => {
+      // zero tx only works works if no globalfee module configured
       const amount = '1000000';
       const to = n1.wallet.address.toString();
       const msgSend = new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
@@ -75,9 +81,9 @@ describe('Neutron / IBC hooks', () => {
         },
         [msgSend],
         Number(neutronAccount.wallet.account.sequence) + 1,
+        (await getHeight(neutronChain.sdk)) + 1,
       );
       const d = Buffer.from(txBuilder.txBytes(), 'base64');
-      console.log(txBuilder.txBytes());
       await neutronAccount.msgSendAuction(
         neutronAccount.wallet.address.toString(),
         {
@@ -98,15 +104,16 @@ describe('Neutron / IBC hooks', () => {
           to_address: to,
           amount: [{ denom: NEUTRON_DENOM, amount }],
         });
-      const backrunnerTxBuilder = neutronAccount.buildTx(fee, [
-        backrunnedMsgSend,
-      ]);
+      const backrunnerTxBuilder = neutronAccount.buildTx(
+        fee,
+        [backrunnedMsgSend],
+        +neutronAccount.wallet.account.sequence,
+        (await getHeight(neutronChain.sdk)) + 2,
+      );
       // wait for new block, to be sured the next txs are sent within a single block
       await neutronChain.blockWaiter.waitBlocks(1);
-      const origHash = await neutronAccount.broadcastTx(backrunnerTxBuilder);
-      console.log('orig hash: ', origHash);
+      await neutronAccount.broadcastTx(backrunnerTxBuilder);
       // tx broadcasted with origHash in Sync mode, we want to "rebroadcast it" by another user with POB
-      console.log(backrunnerTxBuilder.txBytes());
       const msgSendN1 = new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
         from_address: n1.wallet.address.toString(),
         to_address: to,
@@ -116,6 +123,7 @@ describe('Neutron / IBC hooks', () => {
         fee,
         [msgSendN1],
         Number(n1.wallet.account.sequence) + 1,
+        (await getHeight(neutronChain.sdk)) + 1,
       );
       const overriderMsgSend =
         new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
@@ -131,13 +139,17 @@ describe('Neutron / IBC hooks', () => {
         [overriderMsgSend],
         // a previous broadcast event has increased seq_number, but we want to override it
         Number(neutronAccount.wallet.account.sequence) - 1,
+        (await getHeight(neutronChain.sdk)) + 1,
       );
       const overriderTxData = Buffer.from(
         overriderTxBuilder.txBytes(),
         'base64',
       );
       const txData = Buffer.from(txBuilderN1.txBytes(), 'base64');
-
+      const balBeforeAuction = await n1.chain.queryDenomBalance(
+        TreasuryAddress,
+        'untrn',
+      );
       const res = await n1.msgSendAuction(
         n1.wallet.address.toString(),
         {
@@ -157,10 +169,13 @@ describe('Neutron / IBC hooks', () => {
             key: 'bid',
             value: `1000${NEUTRON_DENOM}`,
           },
-          { key: 'proposer_reward', value: `250${NEUTRON_DENOM}` },
         ]),
       );
-      console.log();
+      const balAfterAuction = await n1.chain.queryDenomBalance(
+        TreasuryAddress,
+        'untrn',
+      );
+      expect(balAfterAuction - balBeforeAuction).toBe(750);
       n1.wallet.account.sequence++;
     });
 
@@ -178,10 +193,8 @@ describe('Neutron / IBC hooks', () => {
       ]);
       // wait for new block, to be sured the next txs are sent within one block
       await neutronChain.blockWaiter.waitBlocks(1);
-      const origHash = await neutronAccount.broadcastTx(frontrunnedTxBuilder);
-      console.log('orig hash: ', origHash);
+      await neutronAccount.broadcastTx(frontrunnedTxBuilder);
       // tx broadcasted with origHash in Sync mode, we want to "rebroadcast it" by another user with POB
-      console.log(frontrunnedTxBuilder.txBytes());
       const maliciousMsgSend =
         new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
           from_address: n1.wallet.address.toString(),
@@ -211,7 +224,6 @@ describe('Neutron / IBC hooks', () => {
           [maliciousTxData, frontrunnedTxData],
         ),
       ).rejects.toThrow(/possible front-running or sandwich attack/);
-      console.log();
       n1.wallet.account.sequence++;
     });
   });
