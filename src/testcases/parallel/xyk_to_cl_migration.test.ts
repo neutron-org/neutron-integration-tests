@@ -25,6 +25,7 @@ const ASTRO_PAIR_CONCENTRATED_CONTRACT_KEY = 'ASTRO_PAIR_CONCENTRATED';
 const ASTRO_COIN_REGISTRY_CONTRACT_KEY = 'ASTRO_COIN_REGISTRY';
 const RESERVE_NEW_CONTRACT_KEY = 'RESERVE';
 const RESERVE_CURRENT_CONTRACT_KEY = 'RESERVE_CURRENT';
+const MAIN_DAO_KEY = 'DAO';
 const CW20_BASE_CONTRACT_KEY = 'CW20_BASE';
 
 // specific contract keys used across the tests
@@ -99,6 +100,8 @@ describe('Neutron / Migration from xyk to CL pools', () => {
     test('deploy contracts, allocate funds', async () => {
       const deployResp = await deployContracts(cmInstantiator);
       contractAddresses = deployResp.contractAddresses;
+      contractAddresses[MAIN_DAO_KEY] =
+        cmInstantiator.wallet.address.toString();
       codeIds = deployResp.codeIds;
 
       // create clones of main assets with huge total supply
@@ -381,11 +384,13 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       expect(balancesAfter.ntrn_usdc_xyk).toEqual(
         balancesBefore.ntrn_usdc_xyk - migrationAmount,
       );
-      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
-        balancesBefore.ntrn_atom_cl,
+      expect(balancesAfter.ntrn_atom_cl).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_cl).toEqual(0);
+      expect(balancesAfter.dao_ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_atom_cl,
       );
-      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
-        balancesBefore.ntrn_usdc_cl,
+      expect(balancesAfter.dao_ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_usdc_cl,
       );
     });
 
@@ -491,11 +496,13 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       expect(balancesAfter.ntrn_usdc_xyk).toEqual(
         balancesBefore.ntrn_usdc_xyk - migrationAmount,
       );
-      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
-        balancesBefore.ntrn_atom_cl,
+      expect(balancesAfter.ntrn_atom_cl).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_cl).toEqual(0);
+      expect(balancesAfter.dao_ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_atom_cl,
       );
-      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
-        balancesBefore.ntrn_usdc_cl,
+      expect(balancesAfter.dao_ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_usdc_cl,
       );
     });
 
@@ -544,11 +551,13 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       expect(balancesAfter.ntrn_usdc_xyk).toEqual(
         balancesBefore.ntrn_usdc_xyk - migrationAmount,
       );
-      expect(balancesAfter.ntrn_atom_cl).toBeGreaterThan(
-        balancesBefore.ntrn_atom_cl,
+      expect(balancesAfter.ntrn_atom_cl).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_cl).toEqual(0);
+      expect(balancesAfter.dao_ntrn_atom_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_atom_cl,
       );
-      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
-        balancesBefore.ntrn_usdc_cl,
+      expect(balancesAfter.dao_ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_usdc_cl,
       );
     });
 
@@ -575,9 +584,13 @@ describe('Neutron / Migration from xyk to CL pools', () => {
       );
       expect(balancesAfter.ntrn_atom_xyk).toEqual(0);
       expect(balancesAfter.ntrn_usdc_xyk).toEqual(0);
-      expect(balancesAfter.ntrn_atom_cl).toEqual(balancesBefore.ntrn_atom_cl); // was fully migrated on prev step
-      expect(balancesAfter.ntrn_usdc_cl).toBeGreaterThan(
-        balancesBefore.ntrn_usdc_cl,
+      expect(balancesAfter.ntrn_atom_cl).toEqual(0);
+      expect(balancesAfter.ntrn_usdc_cl).toEqual(0);
+      expect(balancesAfter.dao_ntrn_atom_cl).toEqual(
+        balancesBefore.dao_ntrn_atom_cl,
+      ); // was fully migrated on prev step
+      expect(balancesAfter.dao_ntrn_usdc_cl).toBeGreaterThan(
+        balancesBefore.dao_ntrn_usdc_cl,
       );
     });
 
@@ -592,7 +605,7 @@ describe('Neutron / Migration from xyk to CL pools', () => {
         contractAddresses[NTRN_ATOM_CL_LP_TOKEN_CONTRACT_KEY],
         contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
       );
-      expect(ntrnAtomClLpBalance).toBeGreaterThan(0);
+      expect(ntrnAtomClLpBalance).toEqual(0);
     });
 
     test('check reserve contract NTRN/USDC LP balances', async () => {
@@ -606,7 +619,7 @@ describe('Neutron / Migration from xyk to CL pools', () => {
         contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY],
         contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
       );
-      expect(ntrnUsdcClLpBalance).toBeGreaterThan(0);
+      expect(ntrnUsdcClLpBalance).toEqual(0);
     });
   });
 });
@@ -875,11 +888,21 @@ const queryReserveLpTokenBalances = async (
     contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY],
     contractAddresses[RESERVE_CURRENT_CONTRACT_KEY],
   );
+  const ntrnAtomClLpDAOBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_ATOM_CL_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[MAIN_DAO_KEY],
+  );
+  const ntrnUsdcClLpDAOBalance = await chain.queryCw20Balance(
+    contractAddresses[NTRN_USDC_CL_LP_TOKEN_CONTRACT_KEY],
+    contractAddresses[MAIN_DAO_KEY],
+  );
   return {
     ntrn_atom_xyk: ntrnAtomXykLpBalance,
     ntrn_usdc_xyk: ntrnUsdcXykLpBalance,
     ntrn_atom_cl: ntrnAtomClLpBalance,
     ntrn_usdc_cl: ntrnUsdcClLpBalance,
+    dao_ntrn_atom_cl: ntrnAtomClLpDAOBalance,
+    dao_ntrn_usdc_cl: ntrnUsdcClLpDAOBalance,
   };
 };
 
@@ -908,4 +931,6 @@ type LpTokenBalances = {
   ntrn_usdc_xyk: number;
   ntrn_atom_cl: number;
   ntrn_usdc_cl: number;
+  dao_ntrn_atom_cl: number;
+  dao_ntrn_usdc_cl: number;
 };
