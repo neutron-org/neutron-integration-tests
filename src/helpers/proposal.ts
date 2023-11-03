@@ -40,6 +40,11 @@ export type CreateGauge = {
   pricing_tick: number;
 };
 
+export type IncentivesUpdateParams = {
+  distr_epoch_identifier: string;
+  max_gauges: number;
+};
+
 export type Timestamp = {
   seconds: number;
   nanos: number;
@@ -286,6 +291,27 @@ export const CreateGaugeProposal = (info: CreateGauge): any => ({
             start_time: info.start_time,
             num_epochs_paid_over: info.num_epochs_paid_over,
             pricing_tick: info.pricing_tick,
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const IncentivesUpdateParamsProposal = (
+  info: IncentivesUpdateParams,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.incentives.MsgUpdateParams',
+            authority: ADMIN_MODULE_ADDRESS,
+            params: {
+              distr_epoch_identifier: info.distr_epoch_identifier,
+              max_gauges: info.max_gauges,
+            },
           }),
         },
       },
