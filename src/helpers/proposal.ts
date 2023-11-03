@@ -16,35 +16,39 @@ export type PinCodesInfo = {
   codes_ids: number[];
 };
 
-export type UpdateParamsInterchaintxsInfo = {
+export type ParamsInterchaintxsInfo = {
   msg_submit_tx_max_messages: number;
 };
 
-export type UpdateParamsInterchainqueriesInfo = {
+export type ParamsInterchainqueriesInfo = {
   query_submit_timeout: number;
   query_deposit: null;
   tx_query_removal_limit: number;
 };
 
-export type UpdateParamsTokenfactoryInfo = {
+export type ParamsTokenfactoryInfo = {
   denom_creation_fee: any;
   denom_creation_gas_consume: number;
 };
 
-export type UpdateParamsFeeburnerInfo = {
+export type ParamsFeeburnerInfo = {
   treasury_address: string;
 };
 
-export type UpdateParamsFeerefunderInfo = {
-  fee: any;
+export type ParamsFeerefunderInfo = {
+  min_fee: {
+    recv_fee: any;
+    ack_fee: any;
+    timeout_fee: any;
+  };
 };
 
-export type UpdateParamsCronInfo = {
+export type ParamsCronInfo = {
   security_address: string;
   limit: number;
 };
 
-export type UpdateParamsContractmanageInfo = {
+export type ParamsContractmanagerInfo = {
   sudo_call_gas_limit: string;
 };
 
@@ -225,7 +229,7 @@ export const unpinCodesProposal = (info: PinCodesInfo): any => ({
 });
 
 export const updateInterchaintxsParamsProposal = (
-  info: UpdateParamsInterchaintxsInfo,
+  info: ParamsInterchaintxsInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {
@@ -245,7 +249,7 @@ export const updateInterchaintxsParamsProposal = (
 });
 
 export const updateInterchainqueriesParamsProposal = (
-  info: UpdateParamsInterchainqueriesInfo,
+  info: ParamsInterchainqueriesInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {
@@ -267,7 +271,7 @@ export const updateInterchainqueriesParamsProposal = (
 });
 
 export const updateTokenfacoryParamsProposal = (
-  info: UpdateParamsTokenfactoryInfo,
+  info: ParamsTokenfactoryInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {
@@ -289,7 +293,7 @@ export const updateTokenfacoryParamsProposal = (
 });
 
 export const updateFeeburnerParamsProposal = (
-  info: UpdateParamsFeeburnerInfo,
+  info: ParamsFeeburnerInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {
@@ -309,7 +313,7 @@ export const updateFeeburnerParamsProposal = (
 });
 
 export const updateFeerefunderParamsProposal = (
-  info: UpdateParamsFeerefunderInfo,
+  info: ParamsFeerefunderInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {
@@ -319,11 +323,7 @@ export const updateFeerefunderParamsProposal = (
             '@type': '/neutron.feerefunder.MsgUpdateParams',
             authority: ADMIN_MODULE_ADDRESS,
             params: {
-              min_fee: {
-                recv_fee: info.fee,
-                ack_fee: info.fee,
-                timeout_fee: info.fee,
-              },
+              min_fee: info.min_fee,
             },
           }),
         },
@@ -332,7 +332,7 @@ export const updateFeerefunderParamsProposal = (
   },
 });
 
-export const updateCronParamsProposal = (info: UpdateParamsCronInfo): any => ({
+export const updateCronParamsProposal = (info: ParamsCronInfo): any => ({
   custom: {
     submit_admin_proposal: {
       admin_proposal: {
@@ -352,7 +352,7 @@ export const updateCronParamsProposal = (info: UpdateParamsCronInfo): any => ({
 });
 
 export const updateContractmanagerParamsProposal = (
-  info: UpdateParamsContractmanageInfo,
+  info: ParamsContractmanagerInfo,
 ): any => ({
   custom: {
     submit_admin_proposal: {

@@ -35,8 +35,14 @@ import {
   updateFeerefunderParamsProposal,
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
+  ParamsCronInfo,
+  ParamsFeerefunderInfo,
+  ParamsInterchainqueriesInfo,
+  ParamsInterchaintxsInfo,
+  ParamsTokenfactoryInfo,
   updateTokenfacoryParamsProposal,
   upgradeProposal,
+  ParamsFeeburnerInfo,
 } from './proposal';
 import { ibc } from '../generated/ibc/proto';
 import cosmosclient from '@cosmos-client/core';
@@ -1222,12 +1228,9 @@ export class DaoMember {
   async submitUpdateParamsInterchaintxsProposal(
     title: string,
     description: string,
-    msgSubmitTxMaxMessages: number,
+    message: ParamsInterchaintxsInfo,
     amount: string,
   ): Promise<number> {
-    const message = updateInterchaintxsParamsProposal({
-      msg_submit_tx_max_messages: msgSubmitTxMaxMessages,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -1243,15 +1246,9 @@ export class DaoMember {
   async submitUpdateParamsInterchainqueriesProposal(
     title: string,
     description: string,
-    querySubmitTimeout: number,
-    txQueryRemovalLimit: number,
+    message: ParamsInterchainqueriesInfo,
     amount: string,
   ): Promise<number> {
-    const message = updateInterchainqueriesParamsProposal({
-      query_submit_timeout: querySubmitTimeout,
-      query_deposit: null,
-      tx_query_removal_limit: txQueryRemovalLimit,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -1267,13 +1264,9 @@ export class DaoMember {
   async submitUpdateParamsTokenfactoryProposal(
     title: string,
     description: string,
-    denomCreationGasConsume: number,
+    message: ParamsTokenfactoryInfo,
     amount: string,
   ): Promise<number> {
-    const message = updateTokenfacoryParamsProposal({
-      denom_creation_fee: null,
-      denom_creation_gas_consume: denomCreationGasConsume,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -1289,12 +1282,9 @@ export class DaoMember {
   async submitUpdateParamsFeeburnerProposal(
     title: string,
     description: string,
-    treasuryAddress: string,
+    message: ParamsFeeburnerInfo,
     amount: string,
   ): Promise<number> {
-    const message = updateFeeburnerParamsProposal({
-      treasury_address: treasuryAddress,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -1311,11 +1301,10 @@ export class DaoMember {
     title: string,
     description: string,
     amount: string,
-    minFee = null,
+    message: ParamsFeerefunderInfo = {
+      min_fee: { recv_fee: null, ack_fee: null, timeout_fee: null },
+    },
   ): Promise<number> {
-    const message = updateFeerefunderParamsProposal({
-      fee: minFee,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,
@@ -1331,14 +1320,9 @@ export class DaoMember {
   async submitUpdateParamsCronProposal(
     title: string,
     description: string,
-    securityAddress: string,
-    limit: number,
+    message: ParamsCronInfo,
     amount: string,
   ): Promise<number> {
-    const message = updateCronParamsProposal({
-      security_address: securityAddress,
-      limit: limit,
-    });
     return await this.submitSingleChoiceProposal(
       title,
       description,

@@ -6,6 +6,14 @@ import {
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import {
+  updateContractmanagerParamsProposal,
+  updateCronParamsProposal,
+  updateFeeburnerParamsProposal,
+  updateInterchainqueriesParamsProposal,
+  updateInterchaintxsParamsProposal,
+  updateTokenfacoryParamsProposal,
+} from '../../helpers/proposal';
 
 describe('Neutron / Parameters', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -54,24 +62,27 @@ describe('Neutron / Parameters', () => {
   });
 
   describe('Interchain queries params proposal', () => {
-    test('create proposal #1, will pass', async () => {
+    test('create proposal', async () => {
       await daoMember1.submitUpdateParamsInterchainqueriesProposal(
         'Proposal #1',
         'Param change proposal. This one will pass',
-        30,
-        20,
+        updateInterchainqueriesParamsProposal({
+          query_submit_timeout: 30,
+          query_deposit: null,
+          tx_query_removal_limit: 20,
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #1', () => {
+    describe('vote for proposal', () => {
       const proposalId = 1;
-      test('vote NO from wallet 1', async () => {
+      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #1', () => {
+    describe('execute proposal', () => {
       const proposalId = 1;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -101,20 +112,23 @@ describe('Neutron / Parameters', () => {
     test('create proposal', async () => {
       await daoMember1.submitUpdateParamsTokenfactoryProposal(
         'Proposal #2',
-        'This one will pass',
-        100000,
+        'Tokenfactory params proposal',
+        updateTokenfacoryParamsProposal({
+          denom_creation_fee: null,
+          denom_creation_gas_consume: 100000,
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #2', () => {
+    describe('vote for proposal', () => {
       const proposalId = 2;
-      test('vote YES from wallet 1', async () => {
+      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #2', () => {
+    describe('execute proposal', () => {
       const proposalId = 2;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -126,9 +140,6 @@ describe('Neutron / Parameters', () => {
       });
       test('check if params changed after proposal execution', async () => {
         const paramsAfter = await neutronChain.queryTokenfactoryParams();
-        // before: {"params":{"denom_creation_fee":[],
-        // "denom_creation_gas_consume":"0",
-        // "fee_collector_address":"neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff"}}
 
         expect(paramsAfter.params.denom_creation_fee).toEqual(
           paramsBefore.params.denom_creation_fee,
@@ -146,20 +157,22 @@ describe('Neutron / Parameters', () => {
     test('create proposal', async () => {
       await daoMember1.submitUpdateParamsFeeburnerProposal(
         'Proposal #3',
-        'Software upgrade proposal. Will pass',
-        dao.contracts.voting.address,
+        'Feeburner params proposal',
+        updateFeeburnerParamsProposal({
+          treasury_address: dao.contracts.voting.address,
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #3', () => {
+    describe('vote for proposal', () => {
       const proposalId = 3;
       test('vote YES from wallet 1', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #3', () => {
+    describe('execute proposal', () => {
       const proposalId = 3;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -190,14 +203,14 @@ describe('Neutron / Parameters', () => {
       );
     });
 
-    describe('vote for proposal #4', () => {
+    describe('vote for proposal', () => {
       const proposalId = 4;
-      test('vote YES from wallet 1', async () => {
+      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #4', () => {
+    describe('execute proposal', () => {
       const proposalId = 4;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -209,7 +222,6 @@ describe('Neutron / Parameters', () => {
       });
       test('check if params changed after proposal execution', async () => {
         const paramsAfter = await neutronChain.queryFeerefunderParams();
-        // recv_fee":[],"ack_fee":[{"denom":"untrn","amount":"1000"}],"timeout_fee":[{"denom":"untrn","amount":"1000"}]}}}
         expect(paramsAfter.params.min_fee.recv_fee).toEqual(
           paramsBefore.params.min_fee.recv_fee,
         );
@@ -228,24 +240,26 @@ describe('Neutron / Parameters', () => {
   });
 
   describe('Cron params proposal', () => {
-    test('create proposa', async () => {
+    test('create proposal', async () => {
       await daoMember1.submitUpdateParamsCronProposal(
         'Proposal #5',
         'Cron update params proposal. Will pass',
-        dao.contracts.voting.address,
-        10,
+        updateCronParamsProposal({
+          security_address: dao.contracts.voting.address,
+          limit: 10,
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #5', () => {
+    describe('vote for proposal', () => {
       const proposalId = 5;
       test('vote YES from wallet 1', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #5', () => {
+    describe('execute proposal', () => {
       const proposalId = 5;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -268,23 +282,25 @@ describe('Neutron / Parameters', () => {
   });
 
   describe('Contractanager params proposal', () => {
-    test('create proposal #6, will pass', async () => {
+    test('create proposal', async () => {
       await daoMember1.submitUpdateParamsContractmanageProposal(
         'Proposal #6',
-        'Pin codes proposal. Will pass',
-        '1000',
+        'Contractanager params proposal',
+        updateContractmanagerParamsProposal({
+          sudo_call_gas_limit: '1000',
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #6', () => {
+    describe('vote for proposal', () => {
       const proposalId = 6;
-      test('vote YES from wallet 1', async () => {
+      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #6', () => {
+    describe('execute proposal', () => {
       const proposalId = 6;
       let paramsBefore;
       test('check if proposal is passed', async () => {
@@ -305,23 +321,25 @@ describe('Neutron / Parameters', () => {
   });
 
   describe('Interchaintxs params proposal', () => {
-    test('create proposal #7, will pass', async () => {
+    test('create proposal', async () => {
       await daoMember1.submitUpdateParamsInterchaintxsProposal(
         'Proposal #7',
         'Update interchaintxs params',
-        11,
+        updateInterchaintxsParamsProposal({
+          msg_submit_tx_max_messages: 11,
+        }),
         '1000',
       );
     });
 
-    describe('vote for proposal #6', () => {
+    describe('vote for proposal', () => {
       const proposalId = 7;
-      test('vote YES from wallet 1', async () => {
+      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
       });
     });
 
-    describe('execute proposal #7', () => {
+    describe('execute proposal', () => {
       const proposalId = 7;
       let paramBefore;
       test('check if proposal is passed', async () => {
