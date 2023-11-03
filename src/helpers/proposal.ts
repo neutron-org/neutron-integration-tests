@@ -1,6 +1,7 @@
 import { google } from '../generated/proto';
 import Any = google.protobuf.Any;
 import { ADMIN_MODULE_ADDRESS } from './cosmos';
+import { Coin } from '@cosmos-client/core/cjs/openapi/api';
 
 export type ParamChangeProposalInfo = {
   title: string;
@@ -30,11 +31,34 @@ export type ClearAdmin = {
   contract: string;
 };
 
+export type CreateGauge = {
+  is_perpetual: boolean;
+  distribute_to: GaugeQueryCondition;
+  coins: Coin[];
+  start_time: Timestamp;
+  num_epochs_paid_over: number;
+  pricing_tick: number;
+};
+
+export type Timestamp = {
+  seconds: number;
+  nanos: number;
+};
+
+export type GaugeQueryCondition = {
+  pairID: {
+    token0: string;
+    token1: string;
+  };
+  startTick: number;
+  endTick: number;
+};
+
 export type ClientUpdateInfo = {
   title: string;
   description: string;
   subject_client_id: string;
-  substitute_client_id;
+  substitute_client_id: string;
 };
 
 export type UpgradeInfo = {
@@ -241,6 +265,27 @@ export const clearAdminProposal = (info: ClearAdmin): any => ({
             '@type': '/cosmwasm.wasm.v1.MsgClearAdmin',
             sender: info.sender,
             contract: info.contract,
+          }),
+        },
+      },
+    },
+  },
+});
+
+export const CreateGaugeProposal = (info: CreateGauge): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.incentives.MsgCreateGauge',
+            owner: ADMIN_MODULE_ADDRESS,
+            is_perpetual: info.is_perpetual,
+            distribute_to: info.distribute_to,
+            coins: info.coins,
+            start_time: info.start_time,
+            num_epochs_paid_over: info.num_epochs_paid_over,
+            pricing_tick: info.pricing_tick,
           }),
         },
       },
