@@ -112,6 +112,7 @@ export const NeutronContract = {
   STARGATE_QUERIER: 'stargate_querier.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
+  INCENTIVES: 'neutron_incentives.wasm',
   REFLECT: 'reflect.wasm',
   DISTRIBUTION: 'neutron_distribution.wasm',
   DAO_CORE: 'cwd_core.wasm',
