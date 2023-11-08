@@ -31,6 +31,14 @@ import {
   InterchaintxsParamsResponse,
 } from './types';
 import { DEBUG_SUBMIT_TX, getContractBinary } from './env';
+import {
+  ParamsContractmanagerInfo,
+  ParamsCronInfo,
+  ParamsFeeburnerInfo,
+  ParamsFeerefunderInfo,
+  ParamsInterchainqueriesInfo,
+  ParamsTokenfactoryInfo,
+} from './proposal';
 const adminmodule = AdminProto.adminmodule.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
@@ -68,6 +76,28 @@ export type TotalBurnedNeutronsAmountResponse = {
   };
 };
 
+export type ParamsContractmanagerResponse = {
+  params: ParamsContractmanagerInfo;
+};
+
+export type ParamsCronResponse = {
+  params: ParamsCronInfo;
+};
+
+export type ParamsFeerefunderResponse = {
+  params: ParamsFeerefunderInfo;
+};
+
+export type ParamsFeeburnerResponse = {
+  params: ParamsFeeburnerInfo;
+};
+
+export type ParamsTokenfactoryResponse = {
+  params: ParamsTokenfactoryInfo;
+};
+export type ParamsInterchainqueriesResponse = {
+  params: ParamsInterchainqueriesInfo;
+};
 cosmosclient.codec.register(
   '/neutron.interchainqueries.MsgRemoveInterchainQueryRequest',
   neutron.interchainqueries.MsgRemoveInterchainQueryRequest,
@@ -201,9 +231,45 @@ export class CosmosWrapper {
     return account.sequence;
   }
 
-  async queryInterchainqueriesParams(): Promise<any> {
+  async queryInterchainqueriesParams(): Promise<ParamsInterchainqueriesResponse> {
     const req = await axios.get(
       `${this.sdk.url}/neutron/interchainqueries/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryFeeburnerParams(): Promise<ParamsFeeburnerResponse> {
+    const req = await axios.get(`${this.sdk.url}/neutron/feeburner/params`);
+
+    return req.data;
+  }
+
+  async queryFeerefunderParams(): Promise<ParamsFeerefunderResponse> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron-org/neutron/feerefunder/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryContractmanagerParams(): Promise<ParamsContractmanagerResponse> {
+    const req = await axios.get(
+      `${this.sdk.url}/neutron/contractmanager/params`,
+    );
+
+    return req.data;
+  }
+
+  async queryCronParams(): Promise<ParamsCronResponse> {
+    const req = await axios.get(`${this.sdk.url}/neutron/cron/params`);
+
+    return req.data;
+  }
+
+  async queryTokenfactoryParams(): Promise<ParamsTokenfactoryResponse> {
+    const req = await axios.get(
+      `${this.sdk.url}/osmosis/tokenfactory/v1beta1/params`,
     );
 
     return req.data;

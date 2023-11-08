@@ -266,6 +266,13 @@ export type IcaHostParamsResponse = {
   };
 };
 
+export type InterchainqueriesParamsResponse = {
+  params: {
+    query_submit_timeout: number;
+    tx_query_removal_limit: number;
+  };
+};
+
 export type InterchaintxsParamsResponse = {
   params: {
     msg_submit_tx_max_messages: string;

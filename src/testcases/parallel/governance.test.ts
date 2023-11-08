@@ -8,6 +8,7 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { getWithAttempts } from '../../helpers/wait';
 import { NeutronContract } from '../../helpers/types';
 import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+import { updateInterchaintxsParamsProposal } from '../../helpers/proposal';
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -393,7 +394,9 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitUpdateParamsInterchaintxsProposal(
         'Proposal #20',
         'Update interchaintxs params',
-        11,
+        updateInterchaintxsParamsProposal({
+          msg_submit_tx_max_messages: 11,
+        }),
         '1000',
       );
     });
