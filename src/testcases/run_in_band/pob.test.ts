@@ -162,7 +162,6 @@ describe('Neutron / IBC hooks', () => {
       const [{ events }] = JSON.parse(res.raw_log || '[]') as {
         events: InlineResponse20071TxResponseEvents[];
       }[];
-      console.log(JSON.stringify(events));
       const attrs = events.find((e) => e.type === 'auction_bid')?.attributes;
       expect(attrs).toEqual(
         expect.arrayContaining([
