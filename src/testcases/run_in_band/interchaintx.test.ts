@@ -75,7 +75,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     describe('Create ICAs and setup contract', () => {
       test('fund contract to pay fees', async () => {
-        const res = await neutronAccount.msgSend(contractAddress, '100000');
+        const res = await neutronAccount.msgSend(contractAddress, '1000000');
         expect(res.code).toEqual(0);
       });
       test('create ICA1', async () => {
