@@ -1040,6 +1040,7 @@ export const getEventAttributesFromTx = (
         },
       ]
     )[0].events || [];
+  console.log(JSON.stringify(events, null, 2));
   const resp = [];
   for (const e of events) {
     if (event === e.type) {
