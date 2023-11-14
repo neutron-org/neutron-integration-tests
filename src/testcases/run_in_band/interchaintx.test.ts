@@ -75,7 +75,7 @@ describe('Neutron / Interchain TXs', () => {
     });
     describe('Create ICAs and setup contract', () => {
       test('fund contract to pay fees', async () => {
-        const res = await neutronAccount.msgSend(contractAddress, '1000000');
+        const res = await neutronAccount.msgSend(contractAddress, '10000000');
         expect(res.code).toEqual(0);
       });
       test('create ICA1', async () => {
@@ -107,7 +107,7 @@ describe('Neutron / Interchain TXs', () => {
         const balance = res.balances.find(
           (b) => b.denom === neutronChain.denom,
         )?.amount;
-        expect(balance).toEqual('98000');
+        expect(balance).toEqual('8000000');
       });
       test('multiple IBC accounts created', async () => {
         const channels = await getWithAttempts(
@@ -238,7 +238,7 @@ describe('Neutron / Interchain TXs', () => {
         const balance = res.balances.find(
           (b) => b.denom === neutronChain.denom,
         )?.amount;
-        expect(balance).toEqual('96000');
+        expect(balance).toEqual('7998000');
       });
     });
 
@@ -312,7 +312,7 @@ describe('Neutron / Interchain TXs', () => {
           (b) => b.denom === neutronChain.denom,
         )?.amount;
         // two interchain txs inside (2000 * 2 = 4000)
-        expect(balance).toEqual('92000');
+        expect(balance).toEqual('7994000');
       });
     });
 
