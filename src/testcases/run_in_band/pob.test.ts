@@ -13,8 +13,8 @@ const fee = {
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
 };
 
-const TreasuryAddress =
-  'neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff';
+const ConsumerToSendToProviderAddress =
+  'neutron1ywtansy6ss0jtq8ckrcv6jzkps8yh8mfuc07z8';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -147,7 +147,7 @@ describe('Neutron / IBC hooks', () => {
       );
       const txData = Buffer.from(txBuilderN1.txBytes(), 'base64');
       const balBeforeAuction = await n1.chain.queryDenomBalance(
-        TreasuryAddress,
+        ConsumerToSendToProviderAddress,
         'untrn',
       );
       const res = await n1.msgSendAuction(
@@ -172,7 +172,7 @@ describe('Neutron / IBC hooks', () => {
         ]),
       );
       const balAfterAuction = await n1.chain.queryDenomBalance(
-        TreasuryAddress,
+        ConsumerToSendToProviderAddress,
         'untrn',
       );
       expect(balAfterAuction - balBeforeAuction).toBe(750);
