@@ -76,14 +76,19 @@ export type LimitOrderTrancheUserResponse = {
 export type LimitOrderTrancheUserAllQuery = {
   pagination?: cosmos.base.query.v1beta1.PageRequest;
 };
+export type AllLimitOrderTrancheUserResponse = {
+  limit_order_tranche_user: LimitOrderTrancheUser[];
+  pagination?: cosmos.base.query.v1beta1.PageResponse;
+};
+
 // Queries a list of LimitOrderTrancheUser items for a given address.
 export type LimitOrderTrancheUserAllByAddressQuery = {
   address: string;
   pagination?: cosmos.base.query.v1beta1.PageRequest;
 };
-export type AllLimitOrderTrancheUserResponse = {
-  limit_order_tranche_user: LimitOrderTrancheUser[];
-  pagination?: cosmos.base.query.v1beta1.PageResponse;
+export type AllUserLimitOrdersResponse = {
+  limit_orders: LimitOrderTrancheUser[];
+  pagination?: cosmos.base.query.v1beta1.PageRequest;
 };
 
 // Queries a LimitOrderTranche by index.
@@ -285,7 +290,7 @@ export type LimitOrderTranche = {
 };
 
 export type LimitOrderTrancheKey = {
-  traid_pair_id: TradePairID;
+  trade_pair_id: TradePairID;
   tick_index_taker_to_maker: number; //u64
   tranche_key: string;
 };

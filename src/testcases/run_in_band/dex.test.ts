@@ -8,10 +8,23 @@ import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { NeutronContract } from '../../helpers/types';
 import { CodeId } from '../../types';
 import {
+  AllInactiveLimitOrderTrancheResponse,
+  AllLimitOrderTrancheResponse,
   AllLimitOrderTrancheUserResponse,
+  AllPoolMetadataResponse,
+  AllPoolReservesResponse,
+  AllTickLiquidityResponse,
+  AllUserDepositsResponse,
+  AllUserLimitOrdersResponse,
+  EstimatePlaceLimitOrderResponse,
+  InactiveLimitOrderTrancheResponse,
+  LimitOrderTrancheResponse,
   LimitOrderTrancheUserResponse,
   LimitOrderType,
   ParamsResponse,
+  PoolMetadataResponse,
+  PoolReservesResponse,
+  PoolResponse,
 } from '../../helpers/dex';
 
 describe('Neutron / IBC hooks', () => {
@@ -19,7 +32,8 @@ describe('Neutron / IBC hooks', () => {
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let contractAddress: string;
-  let trancheKey: string;
+  let trancheKeyToWithdraw: string;
+  let trancheKeyToQuery: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -187,7 +201,7 @@ describe('Neutron / IBC hooks', () => {
         expect(res.code).toEqual(0);
       });
       test('JUST_IN_TIME', async () => {
-        const res = await neutronAccount.executeContract(
+        let res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             place_limit_order: {
@@ -201,7 +215,26 @@ describe('Neutron / IBC hooks', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        trancheKey = getEventAttributesFromTx(
+        trancheKeyToWithdraw = getEventAttributesFromTx(
+          { tx_response: res },
+          'TickUpdate',
+          ['TrancheKey'],
+        )[0]['TrancheKey'];
+        res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            place_limit_order: {
+              receiver: contractAddress,
+              token_in: 'untrn',
+              token_out: 'uibcusdc',
+              tick_index_in_to_out: 2,
+              amount_in: '10',
+              order_type: LimitOrderType.JustInTime,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+        trancheKeyToQuery = getEventAttributesFromTx(
           { tx_response: res },
           'TickUpdate',
           ['TrancheKey'],
@@ -266,13 +299,13 @@ describe('Neutron / IBC hooks', () => {
       });
     });
     describe('Withdraw filled lo', () => {
-      console.log(trancheKey);
+      console.log(trancheKeyToWithdraw);
       test('Withdraw', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             withdraw_filled_limit_order: {
-              tranche_key: trancheKey,
+              tranche_key: trancheKeyToWithdraw,
             },
           }),
         );
@@ -280,14 +313,14 @@ describe('Neutron / IBC hooks', () => {
       });
     });
     describe('cancel lo', () => {
-      console.log(trancheKey);
+      console.log(trancheKeyToWithdraw);
       test('cancel failed', async () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
             JSON.stringify({
               cancel_limit_order: {
-                tranche_key: trancheKey,
+                tranche_key: trancheKeyToWithdraw,
               },
             }),
           ),
@@ -332,7 +365,7 @@ describe('Neutron / IBC hooks', () => {
           {
             limit_order_tranche_user: {
               address: contractAddress,
-              tranche_key: trancheKey,
+              tranche_key: trancheKeyToWithdraw,
             },
           },
         );
@@ -350,7 +383,7 @@ describe('Neutron / IBC hooks', () => {
     });
     test('LimitOrderTrancheUserAllByAddressQuery', async () => {
       const res =
-        await neutronAccount.chain.queryContract<AllLimitOrderTrancheUserResponse>(
+        await neutronAccount.chain.queryContract<AllUserLimitOrdersResponse>(
           contractAddress,
           {
             limit_order_tranche_user_all_by_address: {
@@ -358,125 +391,164 @@ describe('Neutron / IBC hooks', () => {
             },
           },
         );
-      expect(res.limit_order_tranche_user).toBeGreaterThan(0);
+      expect(res.limit_orders.length).toBeGreaterThan(0);
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('LimitOrderTrancheQuery', async () => {
+      const res =
+        await neutronAccount.chain.queryContract<LimitOrderTrancheResponse>(
+          contractAddress,
+          {
+            limit_order_tranche: {
+              pair_id: 'untrn<>uibcusdc',
+              tick_index: -2,
+              token_in: 'untrn',
+              tranche_key: trancheKeyToQuery,
+            },
+          },
+        );
+      expect(res.limit_order_tranche).toBeDefined();
+    });
+    test('invalid LimitOrderTrancheQuery', async () => {
+      await expect(
+        neutronAccount.chain.queryContract<LimitOrderTrancheResponse>(
+          contractAddress,
+          {
+            limit_order_tranche: {
+              pair_id: 'untrn<>notadenom',
+              tick_index: 1,
+              token_in: 'untrn',
+              tranche_key: trancheKeyToWithdraw,
+            },
+          },
+        ),
+      ).rejects.toThrowError();
+    });
+    test('AllLimitOrderTranche', async () => {
+      // const res =
+      await neutronAccount.chain.queryContract<AllLimitOrderTrancheResponse>(
         contractAddress,
         {
-          params: {},
+          limit_order_tranche_all: {
+            pair_id: 'untrn<>uibcusdc',
+            token_in: 'untrn',
+          },
+        },
+      );
+      // TODO: add tranche for tests
+      // expect(res.limit_order_tranche.length).toBeGreaterThan(0);
+    });
+    test('AllUserDeposits', async () => {
+      await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
+        contractAddress,
+        {
+          user_deposit_all: { address: contractAddress },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('AllTickLiquidity', async () => {
+      await neutronAccount.chain.queryContract<AllTickLiquidityResponse>(
         contractAddress,
         {
-          params: {},
+          tick_liquidity_all: {
+            pair_id: 'untrn<>uibcusdc',
+            token_in: 'untrn',
+          },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('InactiveLimitOrderTranche', async () => {
+      await neutronAccount.chain.queryContract<InactiveLimitOrderTrancheResponse>(
         contractAddress,
         {
-          params: {},
+          inactive_limit_order_tranche: {
+            pair_id: 'untrn<>uibcusdc',
+            tick_index: -2,
+            token_in: 'untrn',
+            tranche_key: trancheKeyToQuery,
+          },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('AllInactiveLimitOrderTranche', async () => {
+      await neutronAccount.chain.queryContract<AllInactiveLimitOrderTrancheResponse>(
         contractAddress,
         {
-          params: {},
+          inactive_limit_order_tranche_all: {},
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('AllPoolReserves', async () => {
+      await neutronAccount.chain.queryContract<AllPoolReservesResponse>(
         contractAddress,
         {
-          params: {},
+          pool_reserves_all: {
+            pair_id: 'untrn<>uibcusdc',
+            token_in: 'untrn',
+          },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('PoolReserves', async () => {
+      await neutronAccount.chain.queryContract<PoolReservesResponse>(
         contractAddress,
         {
-          params: {},
+          pool_reserves: {
+            pair_id: 'untrn<>uibcusdc',
+            tick_index: -2,
+            token_in: 'untrn',
+            fee: 1,
+          },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test.skip('EstimateMultiHopSwap', async () => {
+      // TODO
+      // await neutronAccount.chain.queryContract<EstimateMultiHopSwapResponse>(
+      //   contractAddress,
+      //   {
+      //     params: {},
+      //   },
+      // );
+    });
+    test('EstimatePlaceLimitOrder', async () => {
+      await neutronAccount.chain.queryContract<EstimatePlaceLimitOrderResponse>(
         contractAddress,
         {
-          params: {},
+          estimate_place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            expiration_time: 1,
+            order_type: LimitOrderType.GoodTilTime,
+          },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('Pool', async () => {
+      await neutronAccount.chain.queryContract<PoolResponse>(contractAddress, {
+        pool: { pair_id: 'untrn<>uibcusdc', tick_index: -2 },
+      });
+    });
+    test('PoolByID', async () => {
+      await neutronAccount.chain.queryContract<PoolResponse>(contractAddress, {
+        pool_by_id: { id: 0 },
+      });
+    });
+    test('PoolMetadata', async () => {
+      await neutronAccount.chain.queryContract<PoolMetadataResponse>(
         contractAddress,
         {
-          params: {},
+          pool_metadata: { id: 0 },
         },
       );
     });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
+    test('AllPoolMetadata', async () => {
+      await neutronAccount.chain.queryContract<AllPoolMetadataResponse>(
         contractAddress,
         {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
-    });
-    test('Params', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
+          pool_metadata_all: {},
         },
       );
     });
