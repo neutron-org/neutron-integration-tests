@@ -399,7 +399,7 @@ describe('Neutron / IBC hooks', () => {
           contractAddress,
           {
             limit_order_tranche: {
-              pair_id: 'untrn<>uibcusdc',
+              pair_id: 'uibcusdc<>untrn',
               tick_index: -2,
               token_in: 'untrn',
               tranche_key: trancheKeyToQuery,
@@ -429,7 +429,7 @@ describe('Neutron / IBC hooks', () => {
         contractAddress,
         {
           limit_order_tranche_all: {
-            pair_id: 'untrn<>uibcusdc',
+            pair_id: 'uibcusdc<>untrn',
             token_in: 'untrn',
           },
         },
@@ -446,22 +446,24 @@ describe('Neutron / IBC hooks', () => {
       );
     });
     test('AllTickLiquidity', async () => {
-      await neutronAccount.chain.queryContract<AllTickLiquidityResponse>(
-        contractAddress,
-        {
-          tick_liquidity_all: {
-            pair_id: 'untrn<>uibcusdc',
-            token_in: 'untrn',
+      const res =
+        await neutronAccount.chain.queryContract<AllTickLiquidityResponse>(
+          contractAddress,
+          {
+            tick_liquidity_all: {
+              pair_id: 'uibcusdc<>untrn',
+              token_in: 'untrn',
+            },
           },
-        },
-      );
+        );
+      expect(res.tick_liquidity.length).toBeGreaterThan(0);
     });
     test('InactiveLimitOrderTranche', async () => {
       await neutronAccount.chain.queryContract<InactiveLimitOrderTrancheResponse>(
         contractAddress,
         {
           inactive_limit_order_tranche: {
-            pair_id: 'untrn<>uibcusdc',
+            pair_id: 'uibcusdc<>untrn',
             tick_index: -2,
             token_in: 'untrn',
             tranche_key: trancheKeyToQuery,
@@ -470,33 +472,37 @@ describe('Neutron / IBC hooks', () => {
       );
     });
     test('AllInactiveLimitOrderTranche', async () => {
-      await neutronAccount.chain.queryContract<AllInactiveLimitOrderTrancheResponse>(
-        contractAddress,
-        {
-          inactive_limit_order_tranche_all: {},
-        },
-      );
+      const res =
+        await neutronAccount.chain.queryContract<AllInactiveLimitOrderTrancheResponse>(
+          contractAddress,
+          {
+            inactive_limit_order_tranche_all: {},
+          },
+        );
+      expect(res.inactive_limit_order_tranche.length).toBeGreaterThan(0);
     });
     test('AllPoolReserves', async () => {
-      await neutronAccount.chain.queryContract<AllPoolReservesResponse>(
-        contractAddress,
-        {
-          pool_reserves_all: {
-            pair_id: 'untrn<>uibcusdc',
-            token_in: 'untrn',
+      const res =
+        await neutronAccount.chain.queryContract<AllPoolReservesResponse>(
+          contractAddress,
+          {
+            pool_reserves_all: {
+              pair_id: 'uibcusdc<>untrn',
+              token_in: 'untrn',
+            },
           },
-        },
-      );
+        );
+      expect(res.pool_reserves.length).toBeGreaterThan(0);
     });
     test('PoolReserves', async () => {
       await neutronAccount.chain.queryContract<PoolReservesResponse>(
         contractAddress,
         {
           pool_reserves: {
-            pair_id: 'untrn<>uibcusdc',
-            tick_index: -2,
+            pair_id: 'uibcusdc<>untrn',
+            tick_index: -1,
             token_in: 'untrn',
-            fee: 1,
+            fee: 0,
           },
         },
       );
@@ -515,12 +521,13 @@ describe('Neutron / IBC hooks', () => {
         contractAddress,
         {
           estimate_place_limit_order: {
+            creator: contractAddress,
             receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
             tick_index_in_to_out: 1,
             amount_in: '10',
-            expiration_time: 1,
+            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
             order_type: LimitOrderType.GoodTilTime,
           },
         },
@@ -528,12 +535,12 @@ describe('Neutron / IBC hooks', () => {
     });
     test('Pool', async () => {
       await neutronAccount.chain.queryContract<PoolResponse>(contractAddress, {
-        pool: { pair_id: 'untrn<>uibcusdc', tick_index: -2 },
+        pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
       });
     });
     test('PoolByID', async () => {
       await neutronAccount.chain.queryContract<PoolResponse>(contractAddress, {
-        pool_by_id: { id: 0 },
+        pool_by_id: { pool_id: 0 },
       });
     });
     test('PoolMetadata', async () => {
@@ -545,12 +552,14 @@ describe('Neutron / IBC hooks', () => {
       );
     });
     test('AllPoolMetadata', async () => {
-      await neutronAccount.chain.queryContract<AllPoolMetadataResponse>(
-        contractAddress,
-        {
-          pool_metadata_all: {},
-        },
-      );
+      const res =
+        await neutronAccount.chain.queryContract<AllPoolMetadataResponse>(
+          contractAddress,
+          {
+            pool_metadata_all: {},
+          },
+        );
+      expect(res.pool_metadata.length).toBeGreaterThan(0);
     });
   });
 });
