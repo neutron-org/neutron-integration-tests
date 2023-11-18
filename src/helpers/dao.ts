@@ -890,9 +890,9 @@ export class DaoMember {
     );
   }
   /**
-   * submitCancelSoftwareUpgradeProposal creates proposal.
+   * submitBankSendProposal creates proposal.
    */
-  async submitBankUpdateParamsProposal(
+  async submitBankSendProposal(
     title: string,
     description: string,
     deposit: string,
@@ -903,9 +903,10 @@ export class DaoMember {
           admin_proposal: {
             proposal_execute_message: {
               message: JSON.stringify({
-                '@type': '/cosmos.bank.v1beta1.MsgUpdateParams',
-                authority: ADMIN_MODULE_ADDRESS,
-                params: { default_send_enabled: false },
+                '@type': '/cosmos.bank.v1beta1.MsgSend',
+                from_address: ADMIN_MODULE_ADDRESS,
+                to_address: ADMIN_MODULE_ADDRESS,
+                amount: [],
               }),
             },
           },

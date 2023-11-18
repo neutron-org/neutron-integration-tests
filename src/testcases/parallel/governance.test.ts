@@ -359,9 +359,9 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #19, will pass', async () => {
-      await daoMember1.submitBankUpdateParamsProposal(
+      await daoMember1.submitBankSendProposal(
         'Proposal #19',
-        'Update params for bank module proposal. This one will pass & fail on execution due type is not whitelisted',
+        'Submit bank send proposal. This one will pass & fail on execution due type is not whitelisted',
         '1000',
       );
     });
@@ -1043,7 +1043,7 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes('sdk.Msg is not whitelisted'));
+      expect(rawLog.includes('sdk.Msg is not whitelisted')).toBeTruthy();
     });
   });
 
