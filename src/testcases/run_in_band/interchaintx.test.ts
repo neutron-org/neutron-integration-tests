@@ -1,4 +1,5 @@
 import 'jest-extended';
+import { execSync } from 'child_process';
 import cosmosclient from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
@@ -893,33 +894,39 @@ describe('Neutron / Interchain TXs', () => {
         expect(failures.failures).toEqual([
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '0',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '1',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '2',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '3',
+            error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '4',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '5',
+            error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
         ]);
 
@@ -927,6 +934,39 @@ describe('Neutron / Interchain TXs', () => {
         // no acks at all because all sudo handling cases resulted in an error
         expect(acks).toEqual([]);
       });
+
+      // describe('get failure details via contractmanager failure-details query', () => {
+      //   test('ack failure during sudo', async () => {
+      //     expect(queryFailureDetails(contractAddress, 0)).toContain(
+      //       'Generic error: Integrations test mock error: execute wasm contract failed',
+      //     );
+      //   });
+      //   test('ack failure during sudo submsg', async () => {
+      //     expect(queryFailureDetails(contractAddress, 1)).toContain(
+      //       'dispatch: submessages: Generic error: Integrations test mock submsg error: execute wasm contract failed',
+      //     );
+      //   });
+      //   test('ack failure during sudo submsg reply', async () => {
+      //     expect(queryFailureDetails(contractAddress, 2)).toContain(
+      //       'dispatch: submessages: reply: Generic error: Integrations test mock reply error: execute wasm contract failed',
+      //     );
+      //   });
+      //   test('ack failure during sudo out of gas', async () => {
+      //     expect(queryFailureDetails(contractAddress, 3)).toContain(
+      //       'sudo handling went beyond the gas limit allowed by the module',
+      //     );
+      //   });
+      //   test('timeout failure during sudo', async () => {
+      //     expect(queryFailureDetails(contractAddress, 4)).toContain(
+      //       'Generic error: Integrations test mock error: execute wasm contract failed',
+      //     );
+      //   });
+      //   test('out of gas failure during sudo timeout', async () => {
+      //     expect(queryFailureDetails(contractAddress, 5)).toContain(
+      //       'sudo handling went beyond the gas limit allowed by the module',
+      //     );
+      //   });
+      // });
 
       test('failed attempt to resubmit failure', async () => {
         // Mock sudo handler to fail
