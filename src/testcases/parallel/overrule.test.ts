@@ -46,10 +46,10 @@ describe('Neutron / Subdao', () => {
     }
     mainDao = new Dao(neutronChain, daoContracts);
     mainDaoMember1 = new DaoMember(neutronAccount1, mainDao);
-    await mainDaoMember1.bondFunds('2000');
+    await mainDaoMember1.bondFunds('20000');
 
     mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
-    await mainDaoMember2.bondFunds('1000');
+    await mainDaoMember2.bondFunds('10000');
 
     subDao = await deploySubdao(
       neutronAccount1,
