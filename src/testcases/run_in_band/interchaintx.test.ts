@@ -1,5 +1,4 @@
 import 'jest-extended';
-import { execSync } from 'child_process';
 import cosmosclient from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
