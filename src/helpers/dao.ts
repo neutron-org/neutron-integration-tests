@@ -44,6 +44,20 @@ import Long from 'long';
 
 export type GetSubdaoResponse = { addr: string; charter: string };
 
+export type SubdaoProposalConfig = {
+  threshold: any;
+  max_voting_period: Duration;
+  min_voting_period: Duration;
+  allow_revoting: boolean;
+  dao: string;
+  close_proposal_on_execution_failure: boolean;
+};
+
+export type Duration = {
+  height: number | null;
+  time: number | null;
+};
+
 export type TimeLockSingleChoiceProposal = {
   id: number;
   msgs: Array<Record<string, any>>; // Vec<CosmosMsg<NeutronMsg>>
@@ -999,6 +1013,33 @@ export class DaoMember {
     const proposalId1 = parseInt(attribute);
     expect(proposalId1).toBeGreaterThanOrEqual(0);
     return proposalId1;
+  }
+
+  async submitUpdateConfigProposal(
+    title: string,
+    description: string,
+    config: SubdaoProposalConfig,
+    deposit: string,
+    customModule = 'single',
+  ): Promise<number> {
+    const msg = {
+      update_config: config,
+    };
+    const message = {
+      wasm: {
+        execute: {
+          contract_addr: this.dao.contracts.proposals[customModule].address,
+          msg: Buffer.from(JSON.stringify(msg)).toString('base64'),
+          funds: [],
+        },
+      },
+    };
+    return await this.submitSingleChoiceProposal(
+      title,
+      description,
+      [message],
+      deposit,
+    );
   }
 
   async submitUpdateSubDaoConfigProposal(
