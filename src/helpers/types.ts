@@ -81,6 +81,7 @@ type Failure = {
   address: string;
   id: string;
   sudo_payload: string; // base64 encoded json bytes
+  error: string;
 };
 
 export type ScheduleResponse = {

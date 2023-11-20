@@ -1,4 +1,5 @@
 import 'jest-extended';
+import { execSync } from 'child_process';
 import cosmosclient from '@cosmos-client/core';
 import { AccAddress } from '@cosmos-client/core/cjs/types';
 import {
@@ -890,42 +891,83 @@ describe('Neutron / Interchain TXs', () => {
       test('check stored failures and acks', async () => {
         const failures = await neutronChain.queryAckFailures(contractAddress);
         // 4 ack failures, 2 timeout failure, just as described in the tests above
-        expect(failures.failures).toEqual([
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '0',
-          }),
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '1',
-          }),
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '2',
-          }),
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '3',
-          }),
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '4',
-          }),
-          expect.objectContaining({
-            address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
-            id: '5',
-          }),
-        ]);
+        expect(failures.failures).toEqual(
+          expect.arrayContaining([
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '0',
+              error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            }),
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '1',
+              error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            }),
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '2',
+              error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            }),
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '3',
+              error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
+            }),
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '4',
+              error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            }),
+            expect.objectContaining({
+              address:
+                'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              id: '5',
+              error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
+            }),
+          ]),
+        );
 
         const acks = await getAcks(neutronChain, contractAddress);
         // no acks at all because all sudo handling cases resulted in an error
         expect(acks).toEqual([]);
+      });
+
+      describe('get failure details via contractmanager failure-details query', () => {
+        test('ack failure during sudo', async () => {
+          expect(queryFailureDetails(contractAddress, 0)).toContain(
+            'Generic error: Integrations test mock error: execute wasm contract failed',
+          );
+        });
+        test('ack failure during sudo submsg', async () => {
+          expect(queryFailureDetails(contractAddress, 1)).toContain(
+            'dispatch: submessages: Generic error: Integrations test mock submsg error: execute wasm contract failed',
+          );
+        });
+        test('ack failure during sudo submsg reply', async () => {
+          expect(queryFailureDetails(contractAddress, 2)).toContain(
+            'dispatch: submessages: reply: Generic error: Integrations test mock reply error: execute wasm contract failed',
+          );
+        });
+        test('ack failure during sudo out of gas', async () => {
+          expect(queryFailureDetails(contractAddress, 3)).toContain(
+            'sudo handling went beyond the gas limit allowed by the module',
+          );
+        });
+        test('timeout failure during sudo', async () => {
+          expect(queryFailureDetails(contractAddress, 4)).toContain(
+            'Generic error: Integrations test mock error: execute wasm contract failed',
+          );
+        });
+        test('out of gas failure during sudo timeout', async () => {
+          expect(queryFailureDetails(contractAddress, 5)).toContain(
+            'sudo handling went beyond the gas limit allowed by the module',
+          );
+        });
       });
 
       test('failed attempt to resubmit failure', async () => {
@@ -1074,3 +1116,8 @@ type AcksResponse = {
   port_id: string;
   sequence_id: number;
 };
+
+const queryFailureDetails = (address: string, failureID: number) =>
+  execSync(
+    `neutrond q contractmanager failure-details ${address} ${failureID}`,
+  ).toString();
