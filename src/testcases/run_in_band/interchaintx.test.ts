@@ -893,33 +893,39 @@ describe('Neutron / Interchain TXs', () => {
         expect(failures.failures).toEqual([
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '0',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '1',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '2',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '3',
+            error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '4',
+            error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
             address:
-              'neutron1m0z0kk0qqug74n9u9ul23e28x5fszr628h20xwt6jywjpp64xn4qatgvm0',
+              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
             id: '5',
+            error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
         ]);
 
