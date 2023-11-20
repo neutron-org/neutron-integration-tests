@@ -988,7 +988,7 @@ describe('Neutron / Subdao', () => {
       ).rejects.toThrow(/config name cannot be empty/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
       const configAfter = await neutronChain.queryContract<SubDaoConfig>(
         subDao.contracts.core.address,
