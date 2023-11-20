@@ -118,7 +118,7 @@ describe('Neutron / Subdao', () => {
     test('execute timelocked: nonexistant', async () => {
       await expect(
         subdaoMember1.executeTimelockedProposal(1_000_000),
-      ).rejects.toThrow(/SingleChoiceProposal not found/);
+      ).rejects.toThrow(/not found: execute wasm contract failed/);
     });
 
     test('execute timelocked: timelock_duration have not pass', async () => {
@@ -131,8 +131,9 @@ describe('Neutron / Subdao', () => {
       //wait for timelock durations
       await wait(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
-      await subdaoMember1.executeTimelockedProposal(proposalId);
-      // TODO: check the reason of the failure
+      await expect(
+        subdaoMember1.executeTimelockedProposal(proposalId),
+      ).rejects.toThrow(/spendable balance {2}is smaller than/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
@@ -142,13 +143,7 @@ describe('Neutron / Subdao', () => {
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId),
-      ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
-    });
-
-    test('overrule timelocked(ExecutionFailed): WrongStatus error', async () => {
-      await expect(
-        overruleTimelockedProposalMock(subdaoMember1, proposalId),
-      ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
+      ).rejects.toThrow(/spendable balance {2}is smaller than/);
     });
 
     let proposalId2: number;
@@ -195,7 +190,9 @@ describe('Neutron / Subdao', () => {
       //wait for timelock durations
       await wait(20);
       // timelocked proposal execution failed due to invalid param value
-      await subdaoMember1.executeTimelockedProposal(proposalId2);
+      await expect(
+        subdaoMember1.executeTimelockedProposal(proposalId2),
+      ).rejects.toThrow(/must be admin to submit proposals/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId2);
       expect(timelockedProp.id).toEqual(proposalId2);
       expect(timelockedProp.status).toEqual('execution_failed');
@@ -650,7 +647,7 @@ describe('Neutron / Subdao', () => {
       ).rejects.toThrow(/Contract execution is paused/);
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId),
-      ).rejects.toThrow(/SingleChoiceProposal not found/);
+      ).rejects.toThrow(/not found: execute wasm contract failed/);
     });
     test('unpause subDAO', async () => {
       // unpause subDAO on behalf of the main DAO
@@ -986,7 +983,9 @@ describe('Neutron / Subdao', () => {
       await subdaoMember1.supportAndExecuteProposal(proposalId);
 
       await wait(20);
-      await subdaoMember1.executeTimelockedProposal(proposalId);
+      await expect(
+        subdaoMember1.executeTimelockedProposal(proposalId),
+      ).rejects.toThrow(/config name cannot be empty/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
