@@ -125,7 +125,8 @@ export const NeutronContract = {
   RESERVE: 'neutron_reserve.wasm',
   SUBDAO_CORE: 'cwd_subdao_core.wasm',
   SUBDAO_PREPROPOSE: 'cwd_subdao_pre_propose_single.wasm',
-  SUBDAO_PREPROPOSE_NO_TIMELOCK: 'cwd_security_subdao_pre_propose.wasm',
+  SUBDAO_PREPROPOSE_NO_TIMELOCK:
+    'cwd_subdao_pre_propose_single_no_timelock.wasm',
   SUBDAO_PROPOSAL: 'cwd_subdao_proposal_single.wasm',
   SUBDAO_TIMELOCK: 'cwd_subdao_timelock_single.wasm',
   LOCKDROP_VAULT: 'lockdrop_vault.wasm',
