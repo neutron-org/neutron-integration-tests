@@ -131,9 +131,7 @@ describe('Neutron / Subdao', () => {
       //wait for timelock durations
       await wait(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
-      await expect(
-        subdaoMember1.executeTimelockedProposal(proposalId),
-      ).rejects.toThrow(/spendable balance {2}is smaller than/);
+      await subdaoMember1.executeTimelockedProposal(proposalId);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
@@ -143,7 +141,7 @@ describe('Neutron / Subdao', () => {
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId),
-      ).rejects.toThrow(/spendable balance {2}is smaller than/);
+      ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
     });
 
     let proposalId2: number;
@@ -190,9 +188,7 @@ describe('Neutron / Subdao', () => {
       //wait for timelock durations
       await wait(20);
       // timelocked proposal execution failed due to invalid param value
-      await expect(
-        subdaoMember1.executeTimelockedProposal(proposalId2),
-      ).rejects.toThrow(/must be admin to submit proposals/);
+      await subdaoMember1.executeTimelockedProposal(proposalId2);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId2);
       expect(timelockedProp.id).toEqual(proposalId2);
       expect(timelockedProp.status).toEqual('execution_failed');
@@ -988,7 +984,7 @@ describe('Neutron / Subdao', () => {
       ).rejects.toThrow(/config name cannot be empty/);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('execution_failed');
+      expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
       const configAfter = await neutronChain.queryContract<SubDaoConfig>(
         subDao.contracts.core.address,
