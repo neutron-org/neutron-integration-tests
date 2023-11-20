@@ -934,39 +934,6 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks).toEqual([]);
       });
 
-      // describe('get failure details via contractmanager failure-details query', () => {
-      //   test('ack failure during sudo', async () => {
-      //     expect(queryFailureDetails(contractAddress, 0)).toContain(
-      //       'Generic error: Integrations test mock error: execute wasm contract failed',
-      //     );
-      //   });
-      //   test('ack failure during sudo submsg', async () => {
-      //     expect(queryFailureDetails(contractAddress, 1)).toContain(
-      //       'dispatch: submessages: Generic error: Integrations test mock submsg error: execute wasm contract failed',
-      //     );
-      //   });
-      //   test('ack failure during sudo submsg reply', async () => {
-      //     expect(queryFailureDetails(contractAddress, 2)).toContain(
-      //       'dispatch: submessages: reply: Generic error: Integrations test mock reply error: execute wasm contract failed',
-      //     );
-      //   });
-      //   test('ack failure during sudo out of gas', async () => {
-      //     expect(queryFailureDetails(contractAddress, 3)).toContain(
-      //       'sudo handling went beyond the gas limit allowed by the module',
-      //     );
-      //   });
-      //   test('timeout failure during sudo', async () => {
-      //     expect(queryFailureDetails(contractAddress, 4)).toContain(
-      //       'Generic error: Integrations test mock error: execute wasm contract failed',
-      //     );
-      //   });
-      //   test('out of gas failure during sudo timeout', async () => {
-      //     expect(queryFailureDetails(contractAddress, 5)).toContain(
-      //       'sudo handling went beyond the gas limit allowed by the module',
-      //     );
-      //   });
-      // });
-
       test('failed attempt to resubmit failure', async () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
