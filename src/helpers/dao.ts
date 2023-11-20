@@ -1545,6 +1545,7 @@ export const deploySubdao = async (
   mainDaoCoreAddress: string,
   overrulePreProposeAddress: string,
   securityDaoAddr: string,
+  closeProposalOnExecutionFailure = true,
 ): Promise<Dao> => {
   const coreCodeId = await cm.storeWasm(NeutronContract.SUBDAO_CORE);
   const cw4VotingCodeId = await cm.storeWasm(NeutronContract.CW4_VOTING);
@@ -1594,7 +1595,7 @@ export const deploySubdao = async (
         },
       },
     },
-    close_proposal_on_execution_failure: false,
+    close_proposal_on_execution_failure: closeProposalOnExecutionFailure,
   };
   const proposalModuleInstantiateInfo = {
     code_id: proposeCodeId,
