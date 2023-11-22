@@ -153,6 +153,8 @@ export const NeutronContract = {
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
   BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
+  // https://github.com/CosmWasm/cosmwasm/tree/main/contracts/floaty
+  FLOATY: '../contracts_thirdparty/floaty_2.0.wasm',
 };
 
 export type MultiChoiceOption = {
