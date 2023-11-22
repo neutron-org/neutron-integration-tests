@@ -1,21 +1,31 @@
 import Long from 'long';
+import '@neutron-org/neutronjsplus';
+// import {
+//   COSMOS_DENOM,
+//   CosmosWrapper,
+//   getIBCDenom,
+//   IBC_RELAYER_NEUTRON_ADDRESS,
+//   NEUTRON_DENOM,
+//   // WalletWrapper,
+// } from '../../helpers/cosmos';
 import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  getIBCDenom,
-  IBC_RELAYER_NEUTRON_ADDRESS,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  COSMOS_DENOM,
+  getIBCDenom,
+  NEUTRON_DENOM,
+  IBC_RELAYER_NEUTRON_ADDRESS,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+
+import { CodeId } from '../../types';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
 import {
   AckFailuresResponse,
   NeutronContract,
   PageRequest,
-} from '../../helpers/types';
-
-import { getHeight, getWithAttempts } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -28,7 +38,9 @@ describe('Neutron / Simple', () => {
   let receiverContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    const config = require('../../config.json');
+    console.log('config: ' + JSON.stringify(config));
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
