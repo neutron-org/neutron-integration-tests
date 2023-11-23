@@ -1,17 +1,20 @@
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  IBC_ATOM_DENOM,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { IBC_ATOM_DENOM } from '@neutron-org/neutronjsplus';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
 import {
   NeutronContract,
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
-} from '../../helpers/types';
-import { getHeight } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+
+const config = require('../../config.json');
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';
@@ -27,7 +30,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,

@@ -1,14 +1,18 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { Wallet } from '../../types';
-import { NeutronContract } from '../../helpers/types';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
+import {
+  NeutronContract,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import cosmosclient from '@cosmos-client/core';
+
+const config = require('../../config.json');
 
 interface ReserveStats {
   readonly total_distributed: string;
@@ -25,12 +29,12 @@ describe('Neutron / Treasury', () => {
   let securityDaoWallet: Wallet;
   let holder1Wallet: Wallet;
   let holder2Wallet: Wallet;
-  let mainDaoAddr: AccAddress | ValAddress;
-  let securityDaoAddr: AccAddress | ValAddress;
-  let holder1Addr: AccAddress | ValAddress;
-  let holder2Addr: AccAddress | ValAddress;
+  let mainDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let securityDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let holder1Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let holder2Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -313,7 +317,7 @@ describe('Neutron / Treasury', () => {
       });
       test('claim pending', async () => {
         const balanceBefore = await neutronChain.queryDenomBalance(
-          holder1Addr,
+          holder1Addr.toString(),
           NEUTRON_DENOM,
         );
         const res = await neutronAccount2.executeContract(
@@ -337,7 +341,7 @@ describe('Neutron / Treasury', () => {
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(
-          holder1Addr,
+          holder1Addr.toString(),
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(4005);

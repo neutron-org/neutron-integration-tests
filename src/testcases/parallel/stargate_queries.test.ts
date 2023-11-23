@@ -1,16 +1,20 @@
 import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
-  WalletWrapper,
   getEventAttribute,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { msgCreateDenom } from '../../helpers/tokenfactory';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  NeutronContract,
+  CodeId,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/helpers/tokenfactory';
 
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
+const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,7 +28,7 @@ describe('Neutron / Simple', () => {
   let newTokenDenom: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,

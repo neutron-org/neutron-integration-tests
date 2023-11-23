@@ -1,11 +1,16 @@
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/helpers/dao';
 import {
   updateContractmanagerParamsProposal,
   updateCronParamsProposal,
@@ -13,7 +18,9 @@ import {
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfacoryParamsProposal,
-} from '../../helpers/proposal';
+} from '@neutron-org/neutronjsplus/dist/helpers/proposal';
+
+const config = require('../../config.json');
 
 describe('Neutron / Parameters', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -23,7 +30,7 @@ describe('Neutron / Parameters', () => {
   let dao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,

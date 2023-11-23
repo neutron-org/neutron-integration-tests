@@ -1,14 +1,10 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  IBC_ATOM_DENOM,
-  IBC_USDC_DENOM,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import { Asset, TotalPowerAtHeightResponse } from '../../helpers/types';
-import { getHeight } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   executeAuctionSetTokenInfo,
   executeCreditsVaultUpdateConfig,
@@ -22,8 +18,20 @@ import {
   queryVestingLpVaultConfig,
   Tge,
   VestingAccountResponse,
-} from '../../helpers/tge';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/helpers/tge';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+import {
+  Asset,
+  TotalPowerAtHeightResponse,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+
+const config = require('../../config.json');
 
 const MIN_LIQUDITY = 1000;
 const ATOM_DEPOSIT_AMOUNT = 10000;
@@ -146,7 +154,7 @@ describe('Neutron / TGE / Auction', () => {
   let dao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();

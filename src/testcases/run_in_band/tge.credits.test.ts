@@ -1,12 +1,17 @@
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { wait } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  NeutronContract,
+  CodeId,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+
+const config = require('../../config.json');
 
 const getTimestamp = (secondsFromNow: number): number =>
   (Date.now() / 1000 + secondsFromNow) | 0;
@@ -24,7 +29,7 @@ describe('Neutron / TGE / Credits', () => {
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     airdropAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();
@@ -315,7 +320,7 @@ describe('Neutron / TGE / Credits', () => {
       ).rejects.toThrow(/Too early to claim/);
     });
     it('should return withdrawable amount', async () => {
-      await wait(15);
+      await waitSeconds(15);
       const res = await neutronChain.queryContract<{ amount: string }>(
         contractAddresses['TGE_CREDITS'],
         {
@@ -328,7 +333,7 @@ describe('Neutron / TGE / Credits', () => {
     });
 
     it('should be able to withdraw after vesting', async () => {
-      await wait(10);
+      await waitSeconds(10);
       const balanceNtrnBefore = await neutronChain.queryDenomBalance(
         neutronAccount2Address,
         NEUTRON_DENOM,

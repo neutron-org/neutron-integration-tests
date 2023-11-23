@@ -1,12 +1,20 @@
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { Airdrop, getTimestamp } from '../../helpers/tge';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  CodeId,
+  NeutronContract,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import {
+  Airdrop,
+  getTimestamp,
+} from '@neutron-org/neutronjsplus/dist/helpers/tge';
+
+const config = require('../../config.json');
 
 const waitTill = (timestamp: number): Promise<void> =>
   new Promise((resolve) => {
@@ -29,7 +37,7 @@ describe('Neutron / TGE / Airdrop', () => {
   let reserveAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();

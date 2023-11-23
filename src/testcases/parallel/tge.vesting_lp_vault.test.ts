@@ -1,23 +1,26 @@
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  IBC_ATOM_DENOM,
-  IBC_USDC_DENOM,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
 import {
-  NeutronContract,
+  NativeToken,
   nativeToken,
-  PoolStatus,
   nativeTokenInfo,
+  NeutronContract,
+  PoolStatus,
+  Token,
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
-  NativeToken,
-  Token,
-} from '../../helpers/types';
-import { getHeight, wait } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+
+const config = require('../../config.json');
 
 // general contract keys used across the tests
 const ASTRO_PAIR_CONTRACT_KEY = 'ASTRO_PAIR';
@@ -48,7 +51,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -406,7 +409,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       describe('check unclaimed amounts', () => {
         let currentHeight: number;
         beforeAll(async () => {
-          await wait(5);
+          await waitSeconds(5);
           currentHeight = await getHeight(neutronChain.sdk);
         });
         test('user1 ATOM lp contract', async () => {

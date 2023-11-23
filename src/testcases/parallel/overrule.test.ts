@@ -1,16 +1,20 @@
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   Dao,
   DaoMember,
   deployNeutronDao,
   deploySubdao,
-} from '../../helpers/dao';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+
+const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,7 +28,7 @@ describe('Neutron / Subdao', () => {
   let mainDao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,

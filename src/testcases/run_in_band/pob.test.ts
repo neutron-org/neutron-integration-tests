@@ -1,13 +1,17 @@
-import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import Long from 'long';
 import cosmosclient from '@cosmos-client/core';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
-import { getHeight } from '../../helpers/wait';
+
+const config = require('../../config.json');
+
 const fee = {
   gas_limit: Long.fromString('200000'),
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -23,7 +27,7 @@ describe('Neutron / IBC hooks', () => {
   let n1: WalletWrapper;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -98,6 +102,7 @@ describe('Neutron / IBC hooks', () => {
     test('backrun tx + decreased fee', async () => {
       const amount = '1000000';
       const to = n1.wallet.address.toString();
+      // TODO: remake using newer types
       const backrunnedMsgSend =
         new cosmosclient.proto.cosmos.bank.v1beta1.MsgSend({
           from_address: neutronAccount.wallet.address.toString(),
