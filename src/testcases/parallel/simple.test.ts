@@ -1,13 +1,5 @@
 import Long from 'long';
 import '@neutron-org/neutronjsplus';
-// import {
-//   COSMOS_DENOM,
-//   CosmosWrapper,
-//   getIBCDenom,
-//   IBC_RELAYER_NEUTRON_ADDRESS,
-//   NEUTRON_DENOM,
-//   // WalletWrapper,
-// } from '../../helpers/cosmos';
 import {
   WalletWrapper,
   CosmosWrapper,
