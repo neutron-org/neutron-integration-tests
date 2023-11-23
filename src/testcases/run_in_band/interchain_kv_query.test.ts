@@ -516,7 +516,7 @@ describe('Neutron / Interchain KV Query', () => {
       // increase balance of val2 wallet
       const queryId = 3;
       const res = await gaiaAccount.msgSend(
-        testState.wallets.cosmos.val1.address.tocosmosclient.AccAddress().toString(),
+        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
         '9000',
       );
       expect(res.code).toEqual(0);
@@ -531,7 +531,7 @@ describe('Neutron / Interchain KV Query', () => {
         gaiaChain,
         contractAddress,
         queryId,
-        testState.wallets.cosmos.val1.address.tocosmosclient.AccAddress(),
+        testState.wallets.cosmos.val1.address.toAccAddress(),
       );
     });
 
