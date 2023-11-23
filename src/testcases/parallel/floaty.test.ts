@@ -26,18 +26,20 @@ describe('Float operations support', () => {
       testState.wallets.neutron.demo1,
     );
   });
-  let codeId: CodeId;
-  test('store contract', async () => {
-    codeId = await neutronAccount.storeWasm(NeutronContract.FLOATY);
-    expect(codeId).toBeGreaterThan(0);
-  });
-  test('instantiate', async () => {
-    const res = await neutronAccount.instantiateContract(
-      codeId,
-      '{}',
-      'floaty',
-    );
-    contractAddress = res[0]._contract_address;
+  describe('Contracts: ', () => {
+    let codeId: CodeId;
+    test('store contract', async () => {
+      codeId = await neutronAccount.storeWasm(NeutronContract.FLOATY);
+      expect(codeId).toBeGreaterThan(0);
+    });
+    test('instantiate', async () => {
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'floaty',
+      );
+      contractAddress = res[0]._contract_address;
+    });
   });
   describe('instructions', () => {
     test('autotests', async () => {
