@@ -1,33 +1,28 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  getEventAttribute,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import axios from 'axios';
-import { Wallet } from '../../types';
-import { NeutronContract } from '../../helpers/types';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+  getEventAttribute,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  NeutronContract,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
 import {
   msgBurn,
   msgChangeAdmin,
   msgCreateDenom,
   msgMintDenom,
   msgSetBeforeSendHook,
-} from '../../helpers/tokenfactory';
+  getDenomsFromCreator,
+  checkTokenfactoryParams,
+  getAuthorityMetadata,
+  getBeforeSendHook,
+} from '@neutron-org/neutronjsplus/dist/helpers/tokenfactory';
 
-interface DenomsFromCreator {
-  readonly denoms: readonly string[];
-}
-
-interface AuthorityMetadata {
-  readonly authority_metadata: { readonly Admin: string };
-}
-
-interface BeforeSendHook {
-  readonly contract_addr: string;
-}
+const config = require('../../config.json');
 
 describe('Neutron / Tokenfactory', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -36,7 +31,7 @@ describe('Neutron / Tokenfactory', () => {
   let ownerWallet: Wallet;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     ownerWallet = testState.wallets.qaNeutron.genQaWal1;
     neutronChain = new CosmosWrapper(
@@ -471,45 +466,3 @@ describe('Neutron / Tokenfactory', () => {
     });
   });
 });
-
-const checkTokenfactoryParams = async (sdkUrl: string): Promise<boolean> => {
-  try {
-    await axios.get(`${sdkUrl}/osmosis/tokenfactory/v1beta1/params`);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-const getDenomsFromCreator = async (
-  sdkUrl: string,
-  creator: string,
-): Promise<DenomsFromCreator> => {
-  const res = await axios.get<DenomsFromCreator>(
-    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms_from_creator/${creator}`,
-  );
-
-  return res.data;
-};
-
-const getAuthorityMetadata = async (
-  sdkUrl: string,
-  denom: string,
-): Promise<AuthorityMetadata> => {
-  const res = await axios.get<AuthorityMetadata>(
-    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/authority_metadata`,
-  );
-
-  return res.data;
-};
-
-const getBeforeSendHook = async (
-  sdkUrl: string,
-  denom: string,
-): Promise<BeforeSendHook> => {
-  const res = await axios.get<BeforeSendHook>(
-    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/before_send_hook`,
-  );
-
-  return res.data;
-};
