@@ -8,8 +8,6 @@ import {
   NEUTRON_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
-
-import { CodeId } from '../../types';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
@@ -17,7 +15,10 @@ import {
   AckFailuresResponse,
   NeutronContract,
   PageRequest,
+  CodeId,
 } from '@neutron-org/neutronjsplus/dist/helpers/types';
+
+const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -30,8 +31,6 @@ describe('Neutron / Simple', () => {
   let receiverContractAddress: string;
 
   beforeAll(async () => {
-    const config = require('../../config.json');
-    console.log('config: ' + JSON.stringify(config));
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
