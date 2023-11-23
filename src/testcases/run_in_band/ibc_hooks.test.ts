@@ -1,13 +1,18 @@
 import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  NeutronContract,
+  CodeId,
+} from '@neutron-org/neutronjsplus/dist/helpers/types';
+
+const config = require('../../config.json');
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -20,7 +25,7 @@ describe('Neutron / IBC hooks', () => {
     'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
