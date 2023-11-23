@@ -1,14 +1,21 @@
+import '@neutron-org/neutronjsplus';
 import {
-  ADMIN_MODULE_ADDRESS,
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
-import { NeutronContract } from '../../helpers/types';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
-import { updateInterchaintxsParamsProposal } from '../../helpers/proposal';
+  ADMIN_MODULE_ADDRESS,
+} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/helpers/types';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+import { updateInterchaintxsParamsProposal } from '@neutron-org/neutronjsplus/dist/helpers/proposal';
+
+const config = require('../../config.json');
 
 describe('Neutron / Governance', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -23,7 +30,7 @@ describe('Neutron / Governance', () => {
   let contractAddressForAdminMigration: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
