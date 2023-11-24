@@ -7,7 +7,7 @@ import path from 'path';
 import crypto from 'crypto';
 
 const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
-export const DEBUG_SUBMIT_TX = process.env.DEBUG_SUBMIT_TX;
+export const DEBUG_SUBMIT_TX = true;
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
