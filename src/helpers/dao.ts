@@ -8,7 +8,7 @@ import {
   wrapMsg,
 } from './cosmos';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { getWithAttempts } from './wait';
+import { getWithAttempts, wait } from './wait';
 import {
   MultiChoiceOption,
   NeutronContract,
@@ -273,6 +273,7 @@ export const getDaoContracts = async (
   });
 
   const votingModuleAddress = await getVotingModule(cm, daoAddress);
+  await wait(10);
   const votingVaults = await getVotingVaults(cm, votingModuleAddress);
 
   const proposalsStructure = await getProposalModules(cm, daoAddress);
