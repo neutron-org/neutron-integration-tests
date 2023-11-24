@@ -58,6 +58,7 @@ describe('Neutron / Subdao', () => {
     neutronAccount2 = new WalletWrapper(neutronChain, demo2Wallet);
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
+    console.log(JSON.stringify(daoContracts, null, 2));
     mainDao = new Dao(neutronChain, daoContracts);
     mainDaoMember = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember.bondFunds('10000');
