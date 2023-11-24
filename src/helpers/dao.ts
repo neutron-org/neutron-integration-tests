@@ -581,8 +581,10 @@ export class DaoMember {
   }
 
   async bondFunds(amount: string): Promise<BroadcastTx200ResponseTxResponse> {
+    console.log('bond 1: ', JSON.stringify(this.dao.contracts, null, 2));
     const vaultAddress = (this.dao.contracts.voting as VotingVaultsModule)
       .vaults.neutron.address;
+    console.log('bond 2: ', vaultAddress);
     return await this.user.executeContract(
       vaultAddress,
       JSON.stringify({
