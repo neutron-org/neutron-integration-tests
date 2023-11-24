@@ -39,6 +39,7 @@ import {
   ParamsInterchainqueriesInfo,
   ParamsTokenfactoryInfo,
 } from './proposal';
+import { DaoContractLabels } from './dao';
 const adminmodule = AdminProto.adminmodule.adminmodule;
 
 export const NEUTRON_DENOM = process.env.NEUTRON_DENOM || 'untrn';
@@ -686,7 +687,10 @@ export class WalletWrapper {
       10,
       cosmosclient.rest.tx.BroadcastTxMode.Sync,
     );
-
+    if (label == DaoContractLabels.DAO_CORE) {
+      console.log('inst coe subdao');
+      console.log(JSON.stringify(data, null, 2));
+    }
     if (data.tx_response.code !== 0) {
       throw new Error(`instantiate error: ${data.tx_response.raw_log}`);
     }
