@@ -1865,11 +1865,13 @@ export const deployNeutronDao = async (
     },
   };
 
+  console.log('vr inst info: ', votingRegistryInstantiateInfo);
+
   const coreInstantiateMessage = {
     name: 'SubDAO core test 1',
     description: 'serves testing purposes',
     initial_items: null,
-    vote_module_instantiate_info: votingRegistryInstantiateInfo,
+    voting_registry_module_instantiate_info: votingRegistryInstantiateInfo,
     proposal_modules_instantiate_info: [
       {
         admin: {
