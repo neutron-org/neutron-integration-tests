@@ -62,6 +62,7 @@ describe('Neutron / Subdao', () => {
     mainDaoMember = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember.bondFunds('10000');
 
+    console.log('before subdao deploy');
     subDao = await setupSubDaoTimelockSet(
       neutronAccount1,
       mainDao.contracts.core.address,
