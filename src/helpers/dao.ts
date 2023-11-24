@@ -1869,7 +1869,7 @@ export const deployNeutronDao = async (
     name: 'SubDAO core test 1',
     description: 'serves testing purposes',
     initial_items: null,
-    voting_registry_module_instantiate_info: votingRegistryInstantiateInfo,
+    vote_module_instantiate_info: votingRegistryInstantiateInfo,
     proposal_modules_instantiate_info: [
       {
         admin: {
