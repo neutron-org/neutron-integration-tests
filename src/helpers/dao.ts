@@ -1746,6 +1746,12 @@ export const deployNeutronDao = async (
   const f = (arr: Record<string, string>[], id: number) =>
     (arr.find((v) => Number(v.code_id) == id) || {})._contract_address;
   const neutronVaultAddess = f(neutronVaultCodeIdRes, neutronVaultCodeId);
+  console.log(
+    'neutron vault: ',
+    neutronVaultCodeId,
+    neutronVaultAddess,
+    neutronVaultCodeIdRes,
+  );
   const votingRegistryInstantiateInfo = {
     admin: {
       core_module: {},
