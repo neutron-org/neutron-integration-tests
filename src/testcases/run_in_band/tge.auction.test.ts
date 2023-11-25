@@ -1656,7 +1656,7 @@ describe('Neutron / TGE / Auction', () => {
 
         it('add lockdrop vault to the registry', async () => {
           let tvp = await dao.queryTotalVotingPower();
-          expect(tvp.power | 0).toBe(2000);
+          expect(tvp.power | 0).toBe(11000);
           const propID = await daoMember1.submitSingleChoiceProposal(
             'Proposal #1',
             'add LOCKDROP_VAULT',
@@ -1679,7 +1679,7 @@ describe('Neutron / TGE / Auction', () => {
           await daoMember1.executeProposal(propID);
           await neutronChain.blockWaiter.waitBlocks(2);
           tvp = await dao.queryTotalVotingPower();
-          expect(tvp.power | 0).toBeGreaterThan(2000);
+          expect(tvp.power | 0).toBeGreaterThan(11000);
           // lockdrop participants get voting power
           for (const v of [
             'airdropAuctionLockdrop',
