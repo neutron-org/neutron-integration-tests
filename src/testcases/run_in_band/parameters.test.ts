@@ -15,6 +15,7 @@ import {
   updateContractmanagerParamsProposal,
   updateCronParamsProposal,
   updateFeeburnerParamsProposal,
+  updateFeerefunderParamsProposal,
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfacoryParamsProposal,
@@ -206,6 +207,13 @@ describe('Neutron / Parameters', () => {
       await daoMember1.submitUpdateParamsFeerefunderProposal(
         'Proposal #4',
         'Feerefunder update params proposal',
+        updateFeerefunderParamsProposal({
+          min_fee: {
+            recv_fee: [],
+            ack_fee: [],
+            timeout_fee: [],
+          },
+        }),
         '1000',
       );
     });
@@ -290,7 +298,7 @@ describe('Neutron / Parameters', () => {
 
   describe('Contractanager params proposal', () => {
     test('create proposal', async () => {
-      await daoMember1.submitUpdateParamsContractmanageProposal(
+      await daoMember1.submitUpdateParamsContractmanagerProposal(
         'Proposal #6',
         'Contractanager params proposal',
         updateContractmanagerParamsProposal({
