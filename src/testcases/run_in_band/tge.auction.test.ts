@@ -180,7 +180,7 @@ describe('Neutron / TGE / Auction', () => {
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(cmInstantiator, dao);
-    await daoMember1.bondFunds('1000');
+    await daoMember1.bondFunds('10000');
     tge = new Tge(
       neutronChain,
       cmInstantiator,

@@ -38,7 +38,7 @@ describe('Neutron / Global Fee', () => {
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, dao);
-    await daoMember.bondFunds('1000');
+    await daoMember.bondFunds('10000');
     await getWithAttempts(
       neutronChain.blockWaiter,
       async () =>
@@ -54,7 +54,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   afterAll(async () => {
-    await daoMember.unbondFunds('1000');
+    await daoMember.unbondFunds('10000');
   });
 
   let counter = 1;
