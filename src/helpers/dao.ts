@@ -8,7 +8,7 @@ import {
   wrapMsg,
 } from './cosmos';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { getWithAttempts } from './wait';
+import { getWithAttempts, wait } from './wait';
 import {
   MultiChoiceOption,
   NeutronContract,
@@ -1894,5 +1894,7 @@ export const deployNeutronDao = async (
     JSON.stringify(coreInstantiateMessage),
     DaoContractLabels.DAO_CORE,
   );
+  // wait a couple of secs before we can query voting vaults from registry's 'Map'
+  await wait(10);
   return getDaoContracts(cm.chain, f(res, coreCodeId));
 };
