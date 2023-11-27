@@ -62,8 +62,8 @@ describe('Neutron / Subdao', () => {
       neutronAccount1.wallet.address.toString(),
       false,
     );
+    await neutronChain.blockWaiter.waitBlocks(2);
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
-
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
   });

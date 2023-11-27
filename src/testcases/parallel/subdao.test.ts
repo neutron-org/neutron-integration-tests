@@ -70,6 +70,7 @@ describe('Neutron / Subdao', () => {
       securityDaoAddr.toString(),
       true,
     );
+    await neutronChain.blockWaiter.waitBlocks(2);
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
     subdaoMember2 = new DaoMember(neutronAccount2, subDao);
