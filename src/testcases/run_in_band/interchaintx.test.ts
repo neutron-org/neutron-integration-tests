@@ -5,16 +5,16 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
   getSequenceId,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import cosmosclient from '@cosmos-client/core';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   AckFailuresResponse,
   AcknowledgementResult,
   NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
-import { getIca } from '@neutron-org/neutronjsplus/dist/helpers/ica';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { getIca } from '@neutron-org/neutronjsplus/dist/ica';
 
 const config = require('../../config.json');
 

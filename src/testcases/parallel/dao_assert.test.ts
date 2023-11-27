@@ -2,16 +2,16 @@ import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { NeutronContract } from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
   getDaoContracts,
   getTreasuryContract,
   VotingVaultsModule,
-} from '@neutron-org/neutronjsplus/dist/helpers/dao';
-import { getContractsHashes } from '@neutron-org/neutronjsplus/dist/helpers/env';
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { getContractsHashes } from '@neutron-org/neutronjsplus/dist/env';
 
 const config = require('../../config.json');
 

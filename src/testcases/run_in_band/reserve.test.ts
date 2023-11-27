@@ -3,13 +3,13 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import {
   NeutronContract,
   Wallet,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/types';
 import cosmosclient from '@cosmos-client/core';
 
 const config = require('../../config.json');

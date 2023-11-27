@@ -3,9 +3,9 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   NativeToken,
   nativeToken,
@@ -16,9 +16,9 @@ import {
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
-import { waitSeconds } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 

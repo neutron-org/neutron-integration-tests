@@ -3,16 +3,16 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import cosmosclient from '@cosmos-client/core';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   NeutronContract,
   Wallet,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
-import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 
 const config = require('../../config.json');
 

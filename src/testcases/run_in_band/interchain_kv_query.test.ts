@@ -5,26 +5,26 @@ import {
   NEUTRON_DENOM,
   filterIBCDenoms,
   getEventAttribute,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
-} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/dao';
 import cosmosclient from '@cosmos-client/core';
 import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '@neutron-org/neutronjsplus/dist/helpers/icq';
+} from '@neutron-org/neutronjsplus/dist/icq';
 import {
   CodeId,
   NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
-import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/helpers/proposal';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');

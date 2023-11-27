@@ -5,9 +5,9 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
   createBankSendMessage,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   Dao,
   DaoMember,
@@ -17,15 +17,15 @@ import {
   SubdaoProposalConfig,
   TimelockConfig,
   TimelockProposalListResponse,
-} from '@neutron-org/neutronjsplus/dist/helpers/dao';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import cosmosclient from '@cosmos-client/core';
-import { waitSeconds } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   paramChangeProposal,
   sendProposal,
-} from '@neutron-org/neutronjsplus/dist/helpers/proposal';
+} from '@neutron-org/neutronjsplus/dist/proposal';
 import Long from 'long';
 
 const config = require('../../config.json');

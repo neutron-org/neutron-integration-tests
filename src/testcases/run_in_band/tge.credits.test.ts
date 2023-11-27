@@ -3,13 +3,13 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   NeutronContract,
   CodeId,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
-import { waitSeconds } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 

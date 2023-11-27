@@ -4,14 +4,14 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
-} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/dao';
 
 const config = require('../../config.json');
 

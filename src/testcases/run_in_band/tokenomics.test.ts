@@ -7,10 +7,10 @@ import {
   NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/helpers/dao';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
+import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 

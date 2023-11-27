@@ -6,13 +6,13 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
   getEventAttribute,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   NeutronContract,
   CodeId,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
-import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/helpers/tokenfactory';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
 const config = require('../../config.json');
 

@@ -7,16 +7,16 @@ import {
   getIBCDenom,
   NEUTRON_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/helpers/wait';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   AckFailuresResponse,
   NeutronContract,
   PageRequest,
   CodeId,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/types';
 
 const config = require('../../config.json');
 

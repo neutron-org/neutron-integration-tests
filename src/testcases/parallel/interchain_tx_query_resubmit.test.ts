@@ -4,12 +4,12 @@ import {
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   NeutronContract,
   CodeId,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -17,7 +17,7 @@ import {
   queryRecipientTxs,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '@neutron-org/neutronjsplus/dist/helpers/icq';
+} from '@neutron-org/neutronjsplus/dist/icq';
 
 const config = require('../../config.json');
 

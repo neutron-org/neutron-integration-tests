@@ -5,20 +5,20 @@ import {
   CosmosWrapper,
   packAnyMsg,
   WalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   TestStateLocalCosmosTestNet,
   NEUTRON_DENOM,
   COSMOS_DENOM,
 } from '@neutron-org/neutronjsplus';
-import { NeutronContract } from '@neutron-org/neutronjsplus/dist/helpers/types';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   queryRecipientTxs,
   queryTransfersNumber,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '@neutron-org/neutronjsplus/dist/helpers/icq';
+} from '@neutron-org/neutronjsplus/dist/icq';
 
 const config = require('../../config.json');
 

@@ -3,7 +3,7 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   executeAuctionSetTokenInfo,
@@ -18,18 +18,18 @@ import {
   queryVestingLpVaultConfig,
   Tge,
   VestingAccountResponse,
-} from '@neutron-org/neutronjsplus/dist/helpers/tge';
+} from '@neutron-org/neutronjsplus/dist/tge';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
-} from '@neutron-org/neutronjsplus/dist/helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/dao';
 import {
   Asset,
   TotalPowerAtHeightResponse,
-} from '@neutron-org/neutronjsplus/dist/helpers/types';
+} from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 
 const config = require('../../config.json');
 
