@@ -1,6 +1,6 @@
 import Long from 'long';
 import { CodeId } from '../../types';
-import { MsgSend } from '@neutron-org/neutronjsplus/dist/generated/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
+import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
 import {
   CosmosWrapper,
   packAnyMsg,
