@@ -11,7 +11,6 @@ import {
 } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import {wait} from "../../helpers/wait";
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
