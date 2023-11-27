@@ -14,9 +14,6 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/helpers/dao';
 import cosmosclient from '@cosmos-client/core';
-
-const config = require('../../config.json');
-
 import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
 import { getHeight } from '@neutron-org/neutronjsplus/dist/helpers/env';
 import {
@@ -29,6 +26,8 @@ import {
 } from '@neutron-org/neutronjsplus/dist/helpers/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/helpers/proposal';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
+
+const config = require('../../config.json');
 
 const getKvCallbackStatus = (
   cm: CosmosWrapper,

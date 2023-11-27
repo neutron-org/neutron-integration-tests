@@ -17,7 +17,7 @@ const config = {
       statements: 95,
     },
   },
-  setupFilesAfterEnv: ['jest-extended/all', './src/helpers/console.ts'],
+  setupFilesAfterEnv: ['jest-extended/all'],
   transform: {
     '^.+\\.[t|j]sx?$': 'babel-jest',
   },
