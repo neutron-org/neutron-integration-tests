@@ -422,7 +422,8 @@ describe('Neutron / Treasury', () => {
     });
 
     test('distribution', async () => {
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         dsc,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -452,7 +453,8 @@ describe('Neutron / Treasury', () => {
 
     test('reserve', async () => {
       await neutronAccount1.msgSend(reserve, '10000000');
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         reserve,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -569,3 +571,83 @@ const setupReserve = async (
     )
   )[0]._contract_address;
 };
+
+/**
+ * Tests a pausable contract execution control.
+ * @param testingContract is the contract the method tests;
+ * @param execAction is an executable action to be called during a pause and after unpausing
+ * as the main part of the test. Should return the execution response code;
+ * @param actionCheck is called after unpausing to make sure the executable action worked.
+ */
+async function testExecControl(
+  account: WalletWrapper,
+  testingContract: string,
+  execAction: () => Promise<number | undefined>,
+  actionCheck: () => Promise<void>,
+) {
+  // check contract's pause info before pausing
+  let pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // pause contract
+  let res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: 50,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // execute msgs on paused contract
+  await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+  // unpause contract
+  res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      unpause: {},
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after unpausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // execute msgs on unpaused contract
+  const code = await execAction();
+  expect(code).toEqual(0);
+  await actionCheck();
+
+  // pause contract again for a short period
+  const shortPauseDuration = 5;
+  res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: shortPauseDuration,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // wait and check contract's pause info after unpausing
+  await account.chain.blockWaiter.waitBlocks(shortPauseDuration);
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+}
