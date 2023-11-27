@@ -11,6 +11,7 @@ import {
 } from '../../helpers/dao';
 import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import {wait} from "../../helpers/wait";
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -44,12 +45,15 @@ describe('Neutron / Subdao', () => {
     if (!daoContracts || !daoContracts.core || !daoContracts.proposals) {
       throw new Error('Failed to deploy dao');
     }
+
+    await neutronChain.blockWaiter.waitBlocks(5);
     mainDao = new Dao(neutronChain, daoContracts);
     mainDaoMember1 = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember1.bondFunds('20000');
 
     mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
     await mainDaoMember2.bondFunds('10000');
+    await neutronChain.blockWaiter.waitBlocks(5);
 
     subDao = await deploySubdao(
       neutronAccount1,
@@ -58,10 +62,7 @@ describe('Neutron / Subdao', () => {
       neutronAccount1.wallet.address.toString(),
       false,
     );
-
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
-
-    await neutronChain.blockWaiter.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');

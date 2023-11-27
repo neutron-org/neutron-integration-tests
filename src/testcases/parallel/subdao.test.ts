@@ -62,6 +62,8 @@ describe('Neutron / Subdao', () => {
     mainDaoMember = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember.bondFunds('10000');
 
+    await neutronChain.blockWaiter.waitBlocks(5);
+
     subDao = await setupSubDaoTimelockSet(
       neutronAccount1,
       mainDao.contracts.core.address,
