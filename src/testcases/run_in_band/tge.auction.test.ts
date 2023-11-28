@@ -13,6 +13,7 @@ import {
   executeVestingLpSetVestingToken,
   executeVestingLpVaultUpdateConfig,
   getTimestamp,
+  LockdropLockUpInfoResponse,
   queryCreditsVaultConfig,
   queryLockdropVaultConfig,
   queryVestingLpVaultConfig,
@@ -1919,10 +1920,13 @@ describe('Neutron / TGE / Auction', () => {
               rewardsStateBeforeClaim.balanceNtrn,
           ).toEqual(44); // lockdrop rewards share for the user
 
-          const expectedGeneratorRewards =
-            +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+          const rewardStateBeforeClaimUsdc: LockdropLockUpInfoResponse =
+            rewardsStateBeforeClaim.userInfo.lockup_infos.find(
               (i) => i.pool_type == 'USDC' && i.duration == 2,
-            )!.claimable_generator_astro_debt;
+            ) as LockdropLockUpInfoResponse;
+          expect(rewardStateBeforeClaimUsdc).not.toBeNull();
+          const expectedGeneratorRewards =
+            +rewardStateBeforeClaimUsdc.claimable_generator_astro_debt;
           expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
           // we expect the astro balance to increase by somewhere between user rewards amount and user
@@ -2012,10 +2016,13 @@ describe('Neutron / TGE / Auction', () => {
               rewardsStateAfterClaim.balanceNtrn + FEE_SIZE,
             ).toBeGreaterThan(rewardsStateBeforeClaim.balanceNtrn);
 
-            const expectedGeneratorRewards =
-              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+            const rewardsBeforeClaimUsdc =
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'USDC' && i.duration == 1,
-              )!.claimable_generator_astro_debt;
+              ) as LockdropLockUpInfoResponse;
+            expect(rewardsBeforeClaimUsdc).not.toBeNull();
+            const expectedGeneratorRewards =
+              +rewardsBeforeClaimUsdc.claimable_generator_astro_debt;
             expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
             // we expect the astro balance to increase by somewhere between user rewards amount and user
@@ -2083,31 +2090,42 @@ describe('Neutron / TGE / Auction', () => {
             ); // ntrn rewards were sent at the previous claim, so no ntrn income is expected
 
             // withdraw_lp_stake is true => expect lp tokens to be unlocked and returned to the user
-            const usdcNtrnLockedLp =
-              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+            const rewardsUscBeforeClaim =
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'USDC' && i.duration == 1,
-              )!.lp_units_locked;
+              ) as LockdropLockUpInfoResponse;
+            expect(rewardsUscBeforeClaim).not.toBeNull();
+            const usdcNtrnLockedLp = +rewardsUscBeforeClaim.lp_units_locked;
             expect(usdcNtrnLockedLp).toBeGreaterThan(0);
             expect(rewardsStateAfterClaim.usdcNtrnLpTokenBalance).toEqual(
               rewardsStateBeforeClaim.usdcNtrnLpTokenBalance + usdcNtrnLockedLp,
             );
-            const atomNtrnLockedLp =
-              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+            const rewardsAtomBeforeClaim =
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'ATOM' && i.duration == 1,
-              )!.lp_units_locked;
+              ) as LockdropLockUpInfoResponse;
+            expect(rewardsAtomBeforeClaim).not.toBeNull();
+            const atomNtrnLockedLp = +rewardsAtomBeforeClaim.lp_units_locked;
             expect(atomNtrnLockedLp).toBeGreaterThan(0);
             expect(rewardsStateAfterClaim.atomNtrnLpTokenBalance).toEqual(
               rewardsStateBeforeClaim.atomNtrnLpTokenBalance + atomNtrnLockedLp,
             );
 
             // claimed from both pools above, so expected rewards amount is a sum of both
-            const expectedGeneratorRewards =
-              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+            const rewardsBeforeClaimUsdc =
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'USDC' && i.duration == 1,
-              )!.claimable_generator_astro_debt +
-              +rewardsStateBeforeClaim.userInfo.lockup_infos.find(
+              ) as LockdropLockUpInfoResponse;
+            expect(rewardsBeforeClaimUsdc).not.toBeNull();
+            const rewardsBeforeClaimAtom =
+              rewardsStateBeforeClaim.userInfo.lockup_infos.find(
                 (i) => i.pool_type == 'ATOM' && i.duration == 1,
-              )!.claimable_generator_astro_debt;
+              ) as LockdropLockUpInfoResponse;
+            expect(rewardsBeforeClaimAtom).not.toBeNull();
+
+            const expectedGeneratorRewards =
+              +rewardsBeforeClaimUsdc.claimable_generator_astro_debt +
+              +rewardsBeforeClaimAtom.claimable_generator_astro_debt;
             expect(expectedGeneratorRewards).toBeGreaterThan(0);
 
             // we expect the astro balance to increase by somewhere between user rewards amount and user

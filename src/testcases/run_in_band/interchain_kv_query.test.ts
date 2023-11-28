@@ -20,10 +20,7 @@ import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '@neutron-org/neutronjsplus/dist/icq';
-import {
-  CodeId,
-  NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 

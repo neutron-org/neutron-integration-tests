@@ -6,10 +6,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
-import {
-  NeutronContract,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import cosmosclient from '@cosmos-client/core';
 
 const config = require('../../config.json');
@@ -265,6 +262,8 @@ describe('Neutron / Treasury', () => {
           reserve,
         );
         const burnedCoinsBefore = await getBurnedCoinsAmount(neutronChain);
+        expect(burnedCoinsBefore).not.toBeNull();
+
         await neutronAccount1.simulateFeeBurning(20_000_000);
         await neutronAccount1.msgSend(reserve, '1000000000');
 
@@ -278,6 +277,7 @@ describe('Neutron / Treasury', () => {
         await neutronChain.blockWaiter.waitBlocks(1);
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(neutronChain);
+        expect(burnedCoinsAfter).not.toBeNull();
 
         const stats = await neutronChain.queryContract(reserve, {
           stats: {},
@@ -287,8 +287,8 @@ describe('Neutron / Treasury', () => {
             total_distributed: '42014',
             total_reserved: `${158053 + parseInt(reserveStats.total_reserved)}`,
             total_processed_burned_coins: `${
-              parseInt(burnedCoinsAfter!) -
-              parseInt(burnedCoinsBefore!) +
+              parseInt(burnedCoinsAfter || '0') -
+              parseInt(burnedCoinsBefore || '0') +
               parseInt(reserveStats.total_processed_burned_coins)
             }`,
           }),
@@ -526,9 +526,10 @@ const normalizeReserveBurnedCoins = async (
     });
 
     const burnedCoins = await getBurnedCoinsAmount(cm.chain);
+    expect(burnedCoins).not.toBeNull();
     normalize =
       parseInt(reserveStats.total_processed_burned_coins) + 7500 !==
-      parseInt(burnedCoins!);
+      parseInt(burnedCoins || '0');
   }
 
   return reserveStats;

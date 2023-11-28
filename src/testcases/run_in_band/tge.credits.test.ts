@@ -5,10 +5,7 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import {
-  NeutronContract,
-  CodeId,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');

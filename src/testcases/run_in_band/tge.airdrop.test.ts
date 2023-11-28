@@ -5,14 +5,8 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import {
-  CodeId,
-  NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/types';
-import {
-  Airdrop,
-  getTimestamp,
-} from '@neutron-org/neutronjsplus/dist/tge';
+import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import { Airdrop, getTimestamp } from '@neutron-org/neutronjsplus/dist/tge';
 
 const config = require('../../config.json');
 

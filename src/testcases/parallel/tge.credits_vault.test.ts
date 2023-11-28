@@ -8,10 +8,7 @@ import cosmosclient from '@cosmos-client/core';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
-import {
-  NeutronContract,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 
 const config = require('../../config.json');
