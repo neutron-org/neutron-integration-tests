@@ -1249,6 +1249,11 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@bufbuild/protobuf@^1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-1.4.2.tgz#dc4faf21264a47b71a15806616043cb006e80ac8"
+  integrity sha512-JyEH8Z+OD5Sc2opSg86qMHn1EM1Sa+zj/Tc0ovxdwk56ByVNONJSabuCUbLQp+eKN3rWNfrho0X+3SEqEPXIow==
+
 "@confio/ics23@^0.6.8":
   version "0.6.8"
   resolved "https://registry.yarnpkg.com/@confio/ics23/-/ics23-0.6.8.tgz#2a6b4f1f2b7b20a35d9a0745bb5a446e72930b3d"
@@ -1435,20 +1440,6 @@
   resolved "https://registry.yarnpkg.com/@cosmjs/utils/-/utils-0.28.13.tgz#2fd2844ec832d7833811e2ae1691305d09791a08"
   integrity sha512-dVeMBiyg+46x7XBZEfJK8yTihphbCFpjVYmLJVqmTsHfJwymQ65cpyW/C+V/LgWARGK8hWQ/aX9HM5Ao8QmMSg==
 
-"@cosmos-client/core@0.45.13":
-  version "0.45.13"
-  resolved "https://registry.yarnpkg.com/@cosmos-client/core/-/core-0.45.13.tgz#53a99f65c53b0cdefee245582a8bbea6f2a04e7d"
-  integrity sha512-OTszam3HnH+PSRh9oW/NkEocrOuQnClCGxRmFSOk25Lck8CTtDeKLzkpNbeyFDJVyJvW5IGLL//n9f43UMwbXQ==
-  dependencies:
-    axios "^0.23.0"
-    bech32 "^1.1.4"
-    bip32 "^2.0.6"
-    bip39 "^3.0.4"
-    protobufjs "^6.11.2"
-    rxjs "^7.4.0"
-    secp256k1 "^4.0.2"
-    tweetnacl "^1.0.3"
-
 "@cosmos-client/core@^0.47.4":
   version "0.47.4"
   resolved "https://registry.yarnpkg.com/@cosmos-client/core/-/core-0.47.4.tgz#ba95e70d6833581bb1611a26474a4b14a3273fd9"
@@ -1462,20 +1453,6 @@
     protobufjs "^6.11.3"
     rxjs "^7.4.0"
     secp256k1 "^4.0.2"
-    tweetnacl "^1.0.3"
-
-"@cosmos-client/cosmwasm@^0.20.1":
-  version "0.20.1"
-  resolved "https://registry.yarnpkg.com/@cosmos-client/cosmwasm/-/cosmwasm-0.20.1.tgz#8eebfc9231c4d55f98d1f3595cd6a26835ebee70"
-  integrity sha512-yrAHT08YjIanfZkGE7yZL5yTucZeEQcASVh5SSZDE05Wj84YlqUGGWi/9DgTRYnaDu+3Dj7CrGrVZc2xYXNGXA==
-  dependencies:
-    axios "^0.23.0"
-    bech32 "^1.1.4"
-    bip32 "^2.0.6"
-    bip39 "^3.0.4"
-    protobufjs "^6.11.2"
-    rxjs "^7.4.0"
-    tiny-secp256k1 "^2.0.1"
     tweetnacl "^1.0.3"
 
 "@cosmos-client/cosmwasm@^0.40.3":
@@ -1890,13 +1867,14 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@0.0.16":
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.0.16.tgz#1817d978660966ea5a33858e0093f6ec9f5dde7b"
-  integrity sha512-bFswo2izpEJjGxeOJk0Hg2yOuimbCTjmvRqWbMwdye8lZcVCoTVrnZ2Lyf4b/POs7Pc43LZ7m1QktHg6INQCPQ==
+"@neutron-org/neutronjsplus@0.1.0-rc0":
+  version "0.1.0-rc0"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.1.0-rc0.tgz#4405fd2ff731e6ae61cadfd40a5b5b85d1e1d269"
+  integrity sha512-wMB20HFgc+Zr6J2gZblBF6IelDf6QcGgckfUGLW3cIny2oWC65xjnERyEhoWKGVTzgFXPS0hqs8xk5AhnLHSlQ==
   dependencies:
-    "@cosmos-client/core" "0.45.13"
-    "@cosmos-client/cosmwasm" "^0.20.1"
+    "@bufbuild/protobuf" "^1.4.2"
+    "@cosmos-client/core" "^0.47.4"
+    "@cosmos-client/cosmwasm" "^0.40.3"
     "@cosmos-client/ibc" "^1.2.1"
     axios "^0.27.2"
     long "^5.2.1"
