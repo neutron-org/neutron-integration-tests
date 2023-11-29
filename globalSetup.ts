@@ -1,6 +1,4 @@
 import { env } from '@neutron-org/neutronjsplus';
-// import matchers from 'jest-extended/all';
-// expect.extend(matchers);
 
 export default async () => {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';

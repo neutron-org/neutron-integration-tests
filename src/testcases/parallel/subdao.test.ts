@@ -143,6 +143,9 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const error = await subDao.getTimelockedProposalError(proposalId);
+      expect(error).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
@@ -292,6 +295,10 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.id).toEqual(proposalId3);
       expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const error = await subDao.getTimelockedProposalError(proposalId3);
+      // do not have an error because we did not have reply
+      expect(error).toEqual(null);
 
       await neutronAccount1.msgSend(subDao.contracts.core.address, '300000');
 

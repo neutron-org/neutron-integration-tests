@@ -893,38 +893,32 @@ describe('Neutron / Interchain TXs', () => {
         // 4 ack failures, 2 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '0',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '1',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '2',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '3',
             error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '4',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '5',
             error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
