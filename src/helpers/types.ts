@@ -155,6 +155,7 @@ export const NeutronContract = {
   BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
   // https://github.com/CosmWasm/cosmwasm/tree/main/contracts/floaty
   FLOATY: '../contracts_thirdparty/floaty_2.0.wasm',
+  DEX_STARGATE: 'dex_stargate.wasm',
 };
 
 export type MultiChoiceOption = {
