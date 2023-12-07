@@ -447,7 +447,7 @@ describe('Neutron / Simple', () => {
       });
     });
 
-    describe('Not enough amount of tokens on contract to pay fee', () => {
+    describe('Failing sudo handlers, () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
