@@ -447,7 +447,7 @@ describe('Neutron / Simple', () => {
       });
     });
 
-    describe('Failing sudo handlers, () => {
+    describe('Failing sudo handlers', () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
