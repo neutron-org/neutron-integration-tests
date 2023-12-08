@@ -1,10 +1,12 @@
+import '@neutron-org/neutronjsplus';
 import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -12,9 +14,9 @@ import {
   queryRecipientTxs,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '../../helpers/icq';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/icq';
+
+const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -26,7 +28,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
