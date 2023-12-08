@@ -1,55 +1,61 @@
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
-  dao,
+  WalletWrapper,
+  CosmosWrapper,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-} from '@neutron-org/neutronjsplus';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import {
+  Dao,
+  DaoMember,
+  deployNeutronDao,
+  deploySubdao,
+} from '@neutron-org/neutronjsplus/dist/dao';
 
 const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount1: cosmosWrapper.WalletWrapper;
-  let neutronAccount2: cosmosWrapper.WalletWrapper;
-  let subdaoMember1: dao.DaoMember;
-  let mainDaoMember1: dao.DaoMember;
-  let mainDaoMember2: dao.DaoMember;
-  let subDao: dao.Dao;
-  let mainDao: dao.Dao;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount1: WalletWrapper;
+  let neutronAccount2: WalletWrapper;
+  let subdaoMember1: DaoMember;
+  let mainDaoMember1: DaoMember;
+  let mainDaoMember2: DaoMember;
+  let subDao: Dao;
+  let mainDao: Dao;
 
   beforeAll(async () => {
-    cosmosWrapper.registerCodecs();
-
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new cosmosWrapper.WalletWrapper(
+    neutronAccount1 = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new cosmosWrapper.WalletWrapper(
+    neutronAccount2 = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
 
-    const daoContracts = await dao.deployNeutronDao(neutronAccount1);
+    const daoContracts = await deployNeutronDao(neutronAccount1);
     if (!daoContracts || !daoContracts.core || !daoContracts.proposals) {
       throw new Error('Failed to deploy dao');
     }
-    mainDao = new dao.Dao(neutronChain, daoContracts);
-    mainDaoMember1 = new dao.DaoMember(neutronAccount1, mainDao);
-    await mainDaoMember1.bondFunds('2000');
+    mainDao = new Dao(neutronChain, daoContracts);
+    mainDaoMember1 = new DaoMember(neutronAccount1, mainDao);
+    await mainDaoMember1.bondFunds('20000');
 
-    mainDaoMember2 = new dao.DaoMember(neutronAccount2, mainDao);
-    await mainDaoMember2.bondFunds('1000');
+    mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
+    await mainDaoMember2.bondFunds('10000');
 
-    subDao = await dao.deploySubdao(
+    subDao = await deploySubdao(
       neutronAccount1,
       daoContracts.core.address,
       daoContracts.proposals.overrule?.pre_propose?.address || '',
@@ -57,7 +63,9 @@ describe('Neutron / Subdao', () => {
       false, // do not close proposal on failure since otherwise we wont get an error exception from submsgs
     );
 
-    subdaoMember1 = new dao.DaoMember(neutronAccount1, subDao);
+    subdaoMember1 = new DaoMember(neutronAccount1, subDao);
+
+    await neutronChain.blockWaiter.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
@@ -168,12 +176,12 @@ describe('Neutron / Subdao', () => {
   });
 });
 
-// this function isn't in the dao.DaoMember class since it makes no sense in general but in a very specific test
+// this function isn't in the DaoMember class since it makes no sense in general but in a very specific test
 async function voteAgainstOverrule(
-  member: dao.DaoMember,
+  member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<InlineResponse20075TxResponse> {
+): Promise<BroadcastTx200ResponseTxResponse> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,

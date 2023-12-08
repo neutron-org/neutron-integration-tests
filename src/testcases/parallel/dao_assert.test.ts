@@ -1,18 +1,24 @@
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
-  dao,
-  env,
+  CosmosWrapper,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-  types,
-} from '@neutron-org/neutronjsplus';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  DaoContracts,
+  getDaoContracts,
+  getTreasuryContract,
+  VotingVaultsModule,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { getContractsHashes } from '@neutron-org/neutronjsplus/dist/env';
 
 const config = require('../../config.json');
 
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let daoContracts: dao.DaoContracts;
+  let neutronChain: CosmosWrapper;
+  let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
   let preProposalSingleAddress: string;
   let proposalMultipleAddress: string;
@@ -27,13 +33,13 @@ describe('DAO / Check', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
 
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0]; //add assert for some addresses
-    daoContracts = await dao.getDaoContracts(neutronChain, daoCoreAddress);
+    daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     proposalSingleAddress = daoContracts.proposals.single.address;
     preProposalSingleAddress =
       daoContracts.proposals.single.pre_propose.address;
@@ -44,9 +50,9 @@ describe('DAO / Check', () => {
     preProposalOverruleAddress =
       daoContracts.proposals.overrule.pre_propose.address;
     votingModuleAddress = daoContracts.voting.address;
-    votingVaultsNtrnAddress = (daoContracts.voting as dao.VotingVaultsModule)
-      .vaults.neutron.address;
-    treasuryContract = await dao.getTreasuryContract(neutronChain);
+    votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
+      .neutron.address;
+    treasuryContract = await getTreasuryContract(neutronChain);
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -122,7 +128,7 @@ describe('DAO / Check', () => {
       expect(propContract).toEqual(proposalOverruleAddress);
     });
     test('Treasury is correct', async () => {
-      const treasuryAddress = await dao.getTreasuryContract(neutronChain);
+      const treasuryAddress = await getTreasuryContract(neutronChain);
       expect(treasuryAddress.length).toBeGreaterThan(0);
     });
   });
@@ -160,7 +166,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         proposalSingleAddress,
-        types.NeutronContract.DAO_PROPOSAL_SINGLE,
+        NeutronContract.DAO_PROPOSAL_SINGLE,
       );
     });
 
@@ -168,7 +174,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         proposalMultipleAddress,
-        types.NeutronContract.DAO_PROPOSAL_MULTI,
+        NeutronContract.DAO_PROPOSAL_MULTI,
       );
     });
 
@@ -176,7 +182,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         preProposalSingleAddress,
-        types.NeutronContract.DAO_PREPROPOSAL_SINGLE,
+        NeutronContract.DAO_PREPROPOSAL_SINGLE,
       );
     });
 
@@ -184,7 +190,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         preProposalMultipleAddress,
-        types.NeutronContract.DAO_PREPROPOSAL_MULTI,
+        NeutronContract.DAO_PREPROPOSAL_MULTI,
       );
     });
 
@@ -192,7 +198,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         daoContracts.core.address,
-        types.NeutronContract.DAO_CORE,
+        NeutronContract.DAO_CORE,
       );
     });
 
@@ -200,7 +206,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         proposalOverruleAddress,
-        types.NeutronContract.DAO_PROPOSAL_SINGLE,
+        NeutronContract.DAO_PROPOSAL_SINGLE,
       );
     });
 
@@ -208,7 +214,7 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         preProposalOverruleAddress,
-        types.NeutronContract.DAO_PREPROPOSAL_OVERRULE,
+        NeutronContract.DAO_PREPROPOSAL_OVERRULE,
       );
     });
 
@@ -216,14 +222,14 @@ describe('DAO / Check', () => {
       await checkContractHash(
         neutronChain,
         treasuryContract,
-        types.NeutronContract.DAO_CORE,
+        NeutronContract.DAO_CORE,
       );
     });
     test('Dao neutron vault hash assert', async () => {
       await checkContractHash(
         neutronChain,
         votingVaultsNtrnAddress,
-        types.NeutronContract.NEUTRON_VAULT,
+        NeutronContract.NEUTRON_VAULT,
       );
     });
   });
@@ -239,7 +245,10 @@ describe('DAO / Check', () => {
           sudao.voting.address,
           // (sudao.voting as VotingCw4Module).cw4group.address, //  todo fix this
         ];
-        if (sudao.proposals.single.pre_propose.timelock) {
+        if (
+          sudao.proposals.single.pre_propose.timelock &&
+          sudao.proposals.single.pre_propose.timelock.address != null // TODO: figure out where a null value come from?
+        ) {
           contractsList.push(
             sudao.proposals.single.pre_propose.timelock.address,
           );
@@ -258,8 +267,8 @@ describe('DAO / Check', () => {
 });
 
 const performCommonChecks = async (
-  netronChain: cosmosWrapper.CosmosWrapper,
-  daoContracts: dao.DaoContracts,
+  netronChain: CosmosWrapper,
+  daoContracts: DaoContracts,
   contractAddress: string,
 ) => {
   await checkDaoAddress(
@@ -272,7 +281,7 @@ const performCommonChecks = async (
 };
 
 const verifyAdmin = async (
-  neutronChain: cosmosWrapper.CosmosWrapper,
+  neutronChain: CosmosWrapper,
   contractAddress: string,
   expectedAdmin: string,
 ) => {
@@ -281,7 +290,7 @@ const verifyAdmin = async (
 };
 
 const checkContractHash = async (
-  cm: cosmosWrapper.CosmosWrapper,
+  cm: CosmosWrapper,
   contractAddress: string,
   binaryName: string,
 ) => {
@@ -289,14 +298,12 @@ const checkContractHash = async (
   const hashFromChain = (
     await cm.getCodeDataHash(contractInfo.contract_info.code_id)
   ).toLowerCase();
-  const hashFromBinary = (await env.getContractsHashes())[
-    binaryName
-  ].toLowerCase();
+  const hashFromBinary = (await getContractsHashes())[binaryName].toLowerCase();
   expect(hashFromChain).toEqual(hashFromBinary);
 };
 
 const checkDaoAddress = async (
-  cm: cosmosWrapper.CosmosWrapper,
+  cm: CosmosWrapper,
   contractAddress: string,
   expectedDao: string,
 ) => {
@@ -307,8 +314,8 @@ const checkDaoAddress = async (
 };
 
 const verifyLabel = async (
-  neutronChain: cosmosWrapper.CosmosWrapper,
-  daoContracts: dao.DaoContracts,
+  neutronChain: CosmosWrapper,
+  daoContracts: DaoContracts,
   address: string,
 ) => {
   const label = (await neutronChain.getContractInfo(address))['contract_info'][

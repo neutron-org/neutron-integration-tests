@@ -1,41 +1,42 @@
-import axios from 'axios';
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
+  WalletWrapper,
+  CosmosWrapper,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-  tokenfactory,
-  types,
-} from '@neutron-org/neutronjsplus';
+  getEventAttribute,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  msgBurn,
+  msgChangeAdmin,
+  msgCreateDenom,
+  msgMintDenom,
+  msgSetBeforeSendHook,
+  getDenomsFromCreator,
+  checkTokenfactoryParams,
+  getAuthorityMetadata,
+  getBeforeSendHook,
+} from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
 const config = require('../../config.json');
 
-interface DenomsFromCreator {
-  readonly denoms: readonly string[];
-}
-
-interface AuthorityMetadata {
-  readonly authority_metadata: { readonly Admin: string };
-}
-
 describe('Neutron / Tokenfactory', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount: cosmosWrapper.WalletWrapper;
-  let ownerWallet: types.Wallet;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let ownerWallet: Wallet;
 
   beforeAll(async () => {
-    tokenfactory.registerCodecs();
-
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-
     ownerWallet = testState.wallets.qaNeutron.genQaWal1;
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new cosmosWrapper.WalletWrapper(neutronChain, ownerWallet);
+    neutronAccount = new WalletWrapper(neutronChain, ownerWallet);
   });
 
   test('tokenfactory module is added', async () => {
@@ -46,14 +47,13 @@ describe('Neutron / Tokenfactory', () => {
   describe('Module itself', () => {
     test('create denoms and check list', async () => {
       const denom = 'test1';
-
-      const data = await tokenfactory.msgCreateDenom(
+      const data = await msgCreateDenom(
         neutronAccount,
         ownerWallet.address.toString(),
         'test1',
       );
 
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -76,25 +76,21 @@ describe('Neutron / Tokenfactory', () => {
     test('create denom, mint', async () => {
       const denom = `test2`;
 
-      const data = await tokenfactory.msgCreateDenom(
+      const data = await msgCreateDenom(
         neutronAccount,
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
       );
 
-      await tokenfactory.msgMintDenom(
-        neutronAccount,
-        ownerWallet.address.toString(),
-        {
-          denom: newTokenDenom,
-          amount: '10000',
-        },
-      );
+      await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
+        denom: newTokenDenom,
+        amount: '10000',
+      });
 
       const balanceBefore = await neutronChain.queryDenomBalance(
         ownerWallet.address.toString(),
@@ -107,12 +103,12 @@ describe('Neutron / Tokenfactory', () => {
     test('check authority metadata update', async () => {
       const denom = `test3`;
 
-      const data = await tokenfactory.msgCreateDenom(
+      const data = await msgCreateDenom(
         neutronAccount,
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -129,7 +125,7 @@ describe('Neutron / Tokenfactory', () => {
 
       const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
 
-      await tokenfactory.msgChangeAdmin(
+      await msgChangeAdmin(
         neutronAccount,
         ownerWallet.address.toString(),
         newTokenDenom,
@@ -150,25 +146,20 @@ describe('Neutron / Tokenfactory', () => {
     test('create denom, mint and burn', async () => {
       const denom = `test4`;
 
-      const data = await tokenfactory.msgCreateDenom(
+      const data = await msgCreateDenom(
         neutronAccount,
         ownerWallet.address.toString(),
         denom,
       );
-      const newTokenDenom = cosmosWrapper.getEventAttribute(
+      const newTokenDenom = getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
       );
-
-      await tokenfactory.msgMintDenom(
-        neutronAccount,
-        ownerWallet.address.toString(),
-        {
-          denom: newTokenDenom,
-          amount: '10000',
-        },
-      );
+      await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
+        denom: newTokenDenom,
+        amount: '10000',
+      });
 
       const balanceBefore = await neutronChain.queryDenomBalance(
         ownerWallet.address.toString(),
@@ -177,7 +168,7 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceBefore).toEqual(10000);
 
-      await tokenfactory.msgBurn(
+      await msgBurn(
         neutronAccount,
         ownerWallet.address.toString(),
         newTokenDenom,
@@ -191,6 +182,114 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceAfter).toEqual(9900);
     });
+    test('create denom, set before send hook', async () => {
+      const codeId = await neutronAccount.storeWasm(
+        NeutronContract.BEFORE_SEND_HOOK_TEST,
+      );
+      expect(codeId).toBeGreaterThan(0);
+
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'before_send_hook_test',
+      );
+      const contractAddress = res[0]._contract_address;
+
+      const denom = `test5`;
+
+      const data = await msgCreateDenom(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        denom,
+      );
+      const newTokenDenom = getEventAttribute(
+        (data as any).events,
+        'create_denom',
+        'new_token_denom',
+      );
+
+      await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
+        denom: newTokenDenom,
+        amount: '10000',
+      });
+
+      const balanceBefore = await neutronChain.queryDenomBalance(
+        ownerWallet.address.toString(),
+        newTokenDenom,
+      );
+
+      expect(balanceBefore).toEqual(10000);
+
+      await neutronAccount.msgSend(contractAddress, {
+        amount: '666',
+        denom: newTokenDenom,
+      });
+
+      const contractBalance = await neutronChain.queryDenomBalance(
+        contractAddress,
+        newTokenDenom,
+      );
+      expect(contractBalance).toEqual(666);
+
+      let queryBlock = await neutronChain.queryContract<{
+        block: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_block_before: {},
+      });
+      let queryTrack = await neutronChain.queryContract<{
+        track: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_track_before: {},
+      });
+
+      expect(queryTrack.track.received).toEqual(false);
+      expect(queryBlock.block.received).toEqual(false);
+
+      await msgSetBeforeSendHook(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        newTokenDenom,
+        contractAddress,
+      );
+
+      const hookAfter = await getBeforeSendHook(
+        neutronChain.sdk.url,
+        newTokenDenom,
+      );
+      expect(hookAfter.contract_addr).toEqual(contractAddress);
+
+      await neutronAccount.msgSend(contractAddress, {
+        amount: '1',
+        denom: newTokenDenom,
+      });
+
+      const contractBalanceAfter = await neutronChain.queryDenomBalance(
+        contractAddress,
+        newTokenDenom,
+      );
+      expect(contractBalanceAfter).toEqual(667);
+
+      const balanceAfter = await neutronChain.queryDenomBalance(
+        ownerWallet.address.toString(),
+        newTokenDenom,
+      );
+      expect(balanceAfter).toEqual(9333);
+
+      queryBlock = await neutronChain.queryContract<{
+        block: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_block_before: {},
+      });
+
+      queryTrack = await neutronChain.queryContract<{
+        track: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_track_before: {},
+      });
+
+      expect(queryTrack.track.received).toEqual(true);
+      expect(queryBlock.block.received).toEqual(true);
+    });
   });
 
   describe('wasmbindings', () => {
@@ -202,7 +301,7 @@ describe('Neutron / Tokenfactory', () => {
 
     test('setup contract', async () => {
       const codeId = await neutronAccount.storeWasm(
-        types.NeutronContract.TOKENFACTORY,
+        NeutronContract.TOKENFACTORY,
       );
       expect(codeId).toBeGreaterThan(0);
 
@@ -228,15 +327,11 @@ describe('Neutron / Tokenfactory', () => {
           },
         }),
       );
-
-      expect(res).toBeDefined();
-      expect(res?.logs).toBeDefined();
-      expect(res.logs?.length).toBeGreaterThan(0);
-
-      denom = res.logs[0]?.events
+      denom = res.logs[0].events
         ?.find((event) => event.type == 'create_denom')
-        ?.attributes?.find((attribute) => attribute.key == 'new_token_denom')
-        ?.value as unknown as string;
+        ?.attributes?.find(
+          (attribute) => attribute.key == 'new_token_denom',
+        )?.value;
     });
 
     test('mint coins', async () => {
@@ -298,6 +393,38 @@ describe('Neutron / Tokenfactory', () => {
       expect(res.admin).toEqual(contractAddress);
     });
 
+    test('set_before_send_hook', async () => {
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_before_send_hook: {
+            denom,
+            contract_addr: contractAddress,
+          },
+        }),
+      );
+      const res = await neutronChain.queryContract<{
+        contract_addr: string;
+      }>(contractAddress, {
+        before_send_hook: {
+          denom,
+        },
+      });
+      expect(res.contract_addr).toEqual(contractAddress);
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_before_send_hook: {
+            denom,
+            contract_addr: '',
+          },
+        }),
+      );
+
+      // TODO: check that it actually sets hook by querying tokenfactory module
+    });
+
     test('change admin', async () => {
       await neutronAccount.executeContract(
         contractAddress,
@@ -336,34 +463,3 @@ describe('Neutron / Tokenfactory', () => {
     });
   });
 });
-
-const checkTokenfactoryParams = async (sdkUrl: string): Promise<boolean> => {
-  try {
-    await axios.get(`${sdkUrl}/osmosis/tokenfactory/v1beta1/params`);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
-
-const getDenomsFromCreator = async (
-  sdkUrl: string,
-  creator: string,
-): Promise<DenomsFromCreator> => {
-  const res = await axios.get<DenomsFromCreator>(
-    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms_from_creator/${creator}`,
-  );
-
-  return res.data;
-};
-
-const getAuthorityMetadata = async (
-  sdkUrl: string,
-  denom: string,
-): Promise<AuthorityMetadata> => {
-  const res = await axios.get<AuthorityMetadata>(
-    `${sdkUrl}/osmosis/tokenfactory/v1beta1/denoms/${denom}/authority_metadata`,
-  );
-
-  return res.data;
-};

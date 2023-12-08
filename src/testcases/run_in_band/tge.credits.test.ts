@@ -1,31 +1,31 @@
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
+  WalletWrapper,
+  CosmosWrapper,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-  types,
-  wait,
-} from '@neutron-org/neutronjsplus';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+
+const config = require('../../config.json');
 
 const getTimestamp = (secondsFromNow: number): number =>
   (Date.now() / 1000 + secondsFromNow) | 0;
 
-const config = require('../../config.json');
-
 describe('Neutron / TGE / Credits', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount1: cosmosWrapper.WalletWrapper;
-  let airdropMock: cosmosWrapper.WalletWrapper;
-  let lockdropMock: cosmosWrapper.WalletWrapper;
-  let neutronAccount2: cosmosWrapper.WalletWrapper;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount1: WalletWrapper;
+  let airdropMock: WalletWrapper;
+  let lockdropMock: WalletWrapper;
+  let neutronAccount2: WalletWrapper;
   const contractAddresses: Record<string, string> = {};
   let airdropAddress: string;
   let lockdropAddress: string;
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
-    cosmosWrapper.registerCodecs();
-
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     airdropAddress =
@@ -36,35 +36,33 @@ describe('Neutron / TGE / Credits', () => {
     neutronAccount2Address =
       testState.wallets.qaNeutronFive.genQaWal1.address.toString();
 
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount1 = new cosmosWrapper.WalletWrapper(
+    neutronAccount1 = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new cosmosWrapper.WalletWrapper(
+    neutronAccount2 = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
-    airdropMock = new cosmosWrapper.WalletWrapper(
+    airdropMock = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    lockdropMock = new cosmosWrapper.WalletWrapper(
+    lockdropMock = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
   });
 
   describe('Deploy', () => {
-    let codeId: types.CodeId;
+    let codeId: CodeId;
     it('should store contract', async () => {
-      codeId = await neutronAccount1.storeWasm(
-        types.NeutronContract['TGE_CREDITS'],
-      );
+      codeId = await neutronAccount1.storeWasm(NeutronContract['TGE_CREDITS']);
       expect(codeId).toBeGreaterThan(0);
     });
     it('should instantiate credits contract', async () => {
@@ -319,7 +317,7 @@ describe('Neutron / TGE / Credits', () => {
       ).rejects.toThrow(/Too early to claim/);
     });
     it('should return withdrawable amount', async () => {
-      await wait.waitSeconds(15);
+      await waitSeconds(15);
       const res = await neutronChain.queryContract<{ amount: string }>(
         contractAddresses['TGE_CREDITS'],
         {
@@ -332,7 +330,7 @@ describe('Neutron / TGE / Credits', () => {
     });
 
     it('should be able to withdraw after vesting', async () => {
-      await wait.waitSeconds(10);
+      await waitSeconds(10);
       const balanceNtrnBefore = await neutronChain.queryDenomBalance(
         neutronAccount2Address,
         NEUTRON_DENOM,

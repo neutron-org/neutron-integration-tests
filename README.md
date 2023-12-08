@@ -107,6 +107,7 @@ NODE2_WS_URL - url to websocket of the second node
 BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
 NO_REBUILD - skip containers rebuilding
+DEBUG_SUBMIT_TX - log submitted txs to stdout
 ```
 
 ## Config

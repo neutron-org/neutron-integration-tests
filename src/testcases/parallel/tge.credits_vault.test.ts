@@ -1,33 +1,33 @@
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
-  dao,
-  env,
+  WalletWrapper,
+  CosmosWrapper,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-  types,
-} from '@neutron-org/neutronjsplus';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import cosmosclient from '@cosmos-client/core';
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 
 const config = require('../../config.json');
 
 describe('Neutron / Credits Vault', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let daoWallet: types.Wallet;
-  let airdropWallet: types.Wallet;
-  let lockdropWallet: types.Wallet;
+  let neutronChain: CosmosWrapper;
+  let daoWallet: Wallet;
+  let airdropWallet: Wallet;
+  let lockdropWallet: Wallet;
 
-  let daoAccount: cosmosWrapper.WalletWrapper;
-  let airdropAccount: cosmosWrapper.WalletWrapper;
+  let daoAccount: WalletWrapper;
+  let airdropAccount: WalletWrapper;
 
-  let daoAddr: AccAddress | ValAddress;
-  let airdropAddr: AccAddress | ValAddress;
-  let lockdropAddr: AccAddress | ValAddress;
+  let daoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let airdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let lockdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
 
   beforeAll(async () => {
-    cosmosWrapper.registerCodecs();
-
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     daoWallet = testState.wallets.qaNeutron.genQaWal1;
@@ -36,18 +36,15 @@ describe('Neutron / Credits Vault', () => {
 
     lockdropAddr = lockdropWallet.address;
 
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
 
-    daoAccount = new cosmosWrapper.WalletWrapper(neutronChain, daoWallet);
+    daoAccount = new WalletWrapper(neutronChain, daoWallet);
     daoAddr = daoAccount.wallet.address;
-    airdropAccount = new cosmosWrapper.WalletWrapper(
-      neutronChain,
-      airdropWallet,
-    );
+    airdropAccount = new WalletWrapper(neutronChain, airdropWallet);
     airdropAddr = airdropAccount.wallet.address;
   });
 
@@ -113,7 +110,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop always has zero voting power', async () => {
-      const currentHeight = await env.getHeight(neutronChain.sdk);
+      const currentHeight = await getHeight(neutronChain.sdk);
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -128,7 +125,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop is never included in total voting power', async () => {
-      let currentHeight = await env.getHeight(neutronChain.sdk);
+      let currentHeight = await getHeight(neutronChain.sdk);
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -143,7 +140,7 @@ describe('Neutron / Credits Vault', () => {
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await env.getHeight(neutronChain.sdk);
+      currentHeight = await getHeight(neutronChain.sdk);
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -163,7 +160,7 @@ describe('Neutron / Credits Vault', () => {
       );
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await env.getHeight(neutronChain.sdk);
+      currentHeight = await getHeight(neutronChain.sdk);
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -188,7 +185,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Query voting power at different heights', async () => {
-      const firstHeight = await env.getHeight(neutronChain.sdk);
+      const firstHeight = await getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -198,7 +195,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const secondHeight = await env.getHeight(neutronChain.sdk);
+      const secondHeight = await getHeight(neutronChain.sdk);
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -208,7 +205,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const thirdHeight = await env.getHeight(neutronChain.sdk);
+      const thirdHeight = await getHeight(neutronChain.sdk);
 
       expect(
         await getTotalPowerAtHeight(
@@ -280,14 +277,14 @@ describe('Neutron / Credits Vault', () => {
 });
 
 const setupCreditsVault = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   name: string,
   description: string,
   creditsContractAddress: string,
   owner: string,
   airdropContractAddress: string,
 ) => {
-  const codeId = await wallet.storeWasm(types.NeutronContract.CREDITS_VAULT);
+  const codeId = await wallet.storeWasm(NeutronContract.CREDITS_VAULT);
   return (
     await wallet.instantiateContract(
       codeId,
@@ -304,13 +301,13 @@ const setupCreditsVault = async (
 };
 
 const setupCreditsContract = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   daoAddress: string,
   airdropAddress: string,
   lockdropAddress: string,
   whenWithdrawable: number,
 ) => {
-  const codeId = await wallet.storeWasm(types.NeutronContract.TGE_CREDITS);
+  const codeId = await wallet.storeWasm(NeutronContract.TGE_CREDITS);
   const creditsContractAddress = (
     await wallet.instantiateContract(
       codeId,
@@ -333,12 +330,12 @@ const setupCreditsContract = async (
 };
 
 const updateCreditsContractConfig = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   creditsContractAddress: string,
   airdropAddress: string,
   lockdropAddress: string,
   whenWithdrawable: number,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -353,31 +350,31 @@ const updateCreditsContractConfig = async (
   );
 
 const getVaultConfig = async (
-  cm: cosmosWrapper.CosmosWrapper,
+  cm: CosmosWrapper,
   creditsVaultContract: string,
-): Promise<dao.CreditsVaultConfig> =>
-  cm.queryContract<dao.CreditsVaultConfig>(creditsVaultContract, {
+): Promise<CreditsVaultConfig> =>
+  cm.queryContract<CreditsVaultConfig>(creditsVaultContract, {
     config: {},
   });
 
 const getTotalPowerAtHeight = async (
-  cm: cosmosWrapper.CosmosWrapper,
+  cm: CosmosWrapper,
   creditsVaultContract: string,
   height: number,
-): Promise<dao.CreditsVaultConfig> =>
-  cm.queryContract<dao.CreditsVaultConfig>(creditsVaultContract, {
+): Promise<CreditsVaultConfig> =>
+  cm.queryContract<CreditsVaultConfig>(creditsVaultContract, {
     total_power_at_height: {
       height,
     },
   });
 
 const getVotingPowerAtHeight = async (
-  cm: cosmosWrapper.CosmosWrapper,
+  cm: CosmosWrapper,
   creditsVaultContract: string,
   address: string,
   height: number,
-): Promise<dao.CreditsVaultConfig> =>
-  cm.queryContract<dao.CreditsVaultConfig>(creditsVaultContract, {
+): Promise<CreditsVaultConfig> =>
+  cm.queryContract<CreditsVaultConfig>(creditsVaultContract, {
     voting_power_at_height: {
       address,
       height,
@@ -385,10 +382,10 @@ const getVotingPowerAtHeight = async (
   });
 
 const mintTokens = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   creditsContractAddress: string,
   amount: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -403,11 +400,11 @@ const mintTokens = async (
   );
 
 const sendTokens = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   creditsContractAddress: string,
   recipient: string,
   amount: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
     JSON.stringify({
@@ -419,13 +416,13 @@ const sendTokens = async (
   );
 
 const updateVaultConfig = async (
-  wallet: cosmosWrapper.WalletWrapper,
+  wallet: WalletWrapper,
   vaultContract: string,
   creditsContractAddress: string,
   name: string,
   description: string,
   owner?: string,
-): Promise<InlineResponse20075TxResponse> =>
+): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     vaultContract,
     JSON.stringify({

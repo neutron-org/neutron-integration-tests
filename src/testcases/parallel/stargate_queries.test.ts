@@ -1,47 +1,48 @@
+import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
-  cosmosWrapper,
+  WalletWrapper,
+  CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
-  tokenfactory,
-  types,
-} from '@neutron-org/neutronjsplus';
-import Long from 'long';
+  getEventAttribute,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
+import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
 const config = require('../../config.json');
+
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount: cosmosWrapper.WalletWrapper;
+  let neutronChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
   let contractAddress: string;
 
-  let gaiaChain: cosmosWrapper.CosmosWrapper;
-  let gaiaAccount: cosmosWrapper.WalletWrapper;
+  let gaiaChain: CosmosWrapper;
+  let gaiaAccount: WalletWrapper;
 
   let newTokenDenom: string;
 
   beforeAll(async () => {
-    cosmosWrapper.registerCodecs();
-    tokenfactory.registerCodecs();
-
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new cosmosWrapper.CosmosWrapper(
+    neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
     );
-    neutronAccount = new cosmosWrapper.WalletWrapper(
+    neutronAccount = new WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
 
-    gaiaChain = new cosmosWrapper.CosmosWrapper(
+    gaiaChain = new CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
     );
-    gaiaAccount = new cosmosWrapper.WalletWrapper(
+    gaiaAccount = new WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
@@ -65,12 +66,12 @@ describe('Neutron / Simple', () => {
     test('create denom, mint', async () => {
       const denom = `teststargate`;
 
-      const data = await tokenfactory.msgCreateDenom(
+      const data = await msgCreateDenom(
         neutronAccount,
         neutronAccount.wallet.address.toString(),
         denom,
       );
-      newTokenDenom = cosmosWrapper.getEventAttribute(
+      newTokenDenom = getEventAttribute(
         (data as any).events,
         'create_denom',
         'new_token_denom',
@@ -79,11 +80,9 @@ describe('Neutron / Simple', () => {
   });
 
   describe('Contract instantiation', () => {
-    let codeId: types.CodeId;
+    let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(
-        types.NeutronContract.STARGATE_QUERIER,
-      );
+      codeId = await neutronAccount.storeWasm(NeutronContract.STARGATE_QUERIER);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
@@ -208,8 +207,7 @@ describe('Neutron / Simple', () => {
 
     test('tokenfactory params should work', async () => {
       const res = JSON.parse(await querySmart({ tokenfactory_params: {} }));
-      expect(res.params.denom_creation_fee[0].denom).toBe('untrn');
-      expect(res.params.denom_creation_fee[0].amount).toBe('1000000');
+      expect(res.params.denom_creation_gas_consume).toBe('0');
     });
 
     test('tokenfactory denom authority metadata should work', async () => {
@@ -230,28 +228,6 @@ describe('Neutron / Simple', () => {
       expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);
     });
 
-    test('contractmanager address failures should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          contractmanager_address_failures: {
-            address: neutronAccount.wallet.address.toString(),
-          },
-        }),
-      );
-      expect(res.failures).toEqual([]);
-    });
-
-    test('contractmanager failures should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          contractmanager_failures: {
-            address: neutronAccount.wallet.address.toString(),
-          },
-        }),
-      );
-      expect(res.failures).toEqual([]);
-    });
-
     test('interchaintx params should work', async () => {
       const res = JSON.parse(await querySmart({ interchaintx_params: {} }));
       expect(+res.params.msg_submit_tx_max_messages).toBeGreaterThan(0);
@@ -267,14 +243,6 @@ describe('Neutron / Simple', () => {
     test('feeburner params should work', async () => {
       const res = JSON.parse(await querySmart({ feeburner_params: {} }));
       expect(res.params.neutron_denom).toBe('untrn');
-    });
-
-    test('non whitelisted query should NOT work', async () => {
-      await expect(
-        querySmart({ feeburner_total_burned_neutrons_amount: {} }),
-      ).rejects.toThrow(
-        /Unsupported query type: '\/neutron.feeburner.Query\/TotalBurnedNeutronsAmount'/,
-      );
     });
   });
 });
