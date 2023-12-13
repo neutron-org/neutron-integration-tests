@@ -27,7 +27,7 @@ import {
   PoolResponse,
 } from '../../helpers/dex';
 
-describe('Neutron / IBC hooks', () => {
+describe('Neutron / dex module (stargate contract)', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
