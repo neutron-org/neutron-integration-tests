@@ -49,7 +49,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
   });
 
-  describe('Instantiate hooks ibc transfer contract', () => {
+  describe('Instantiate dex stargate contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(NeutronContract.DEX_STARGATE);
