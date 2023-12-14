@@ -3,10 +3,9 @@ import {
   getEventAttributesFromTx,
   NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   AllInactiveLimitOrderTrancheResponse,
   AllLimitOrderTrancheResponse,
@@ -25,7 +24,9 @@ import {
   PoolMetadataResponse,
   PoolReservesResponse,
   PoolResponse,
-} from '../../helpers/dex';
+} from '@neutron-org/neutronjsplus/dist/dex';
+
+const config = require('../../config.json');
 
 describe('Neutron / dex module (stargate contract)', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -36,7 +37,7 @@ describe('Neutron / dex module (stargate contract)', () => {
   let trancheKeyToQuery: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
