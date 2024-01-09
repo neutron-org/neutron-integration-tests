@@ -664,7 +664,8 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes('cannot update localhost client with proposal'));
+      // just check whether we've got an error from the correct proposal handler
+      expect(rawLog.includes('cannot update Active subject client'));
     });
   });
 
