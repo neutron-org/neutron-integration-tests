@@ -88,6 +88,25 @@ const getQueryBalanceResult = (
     },
   });
 
+const getValidatorsSigningInfosResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    balances: {
+      coins: {
+        denom: string;
+        amount: string;
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    validators_signing_infos: {
+      query_id: queryId,
+    },
+  });
+
 const getQueryDelegatorDelegationsResult = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -124,6 +143,36 @@ const registerBalanceQuery = async (
         connection_id: connectionId,
         denom: denom,
         addr: addr.toString(),
+        update_period: updatePeriod,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const registerSigningInfoQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  valcons: string,
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_validators_signing_info_query: {
+        connection_id: connectionId,
+        validators: [valcons],
         update_period: updatePeriod,
       },
     }),
@@ -839,6 +888,58 @@ describe('Neutron / Interchain KV Query', () => {
 
         expect(balancesAfterRemovalWithFee).toEqual(balancesBeforeRegistration);
       });
+    });
+  });
+
+  describe('Signing info query', () => {
+    let queryId: number;
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      queryId = await registerSigningInfoQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        'cosmosvalcons1gspwywrjyjkng4x3eccm6es7ukm4j8xsfyfdpt',
+      );
+    });
+
+    test('signing info registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      // XXX: I could actually check that "key" is correctly derived from contractAddress,
+      //      but this requires bech32 decoding/encoding shenanigans
+      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys[0].path).toEqual('slashing');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('signing info data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getValidatorsSigningInfosResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      console.log(interchainQueryResult);
     });
   });
 });
