@@ -210,8 +210,8 @@ describe('Neutron / Governance', () => {
       await daoMember1.submitClientUpdateProposal(
         'Proposal #6',
         'UpdateClient proposal. Will pass',
-        '07-tendermint-1',
         '07-tendermint-2',
+        '07-tendermint-1',
         '1000',
       );
     });
@@ -655,16 +655,32 @@ describe('Neutron / Governance', () => {
       await daoMember3.voteYes(6);
     });
   });
+
   describe('execute proposal #6', () => {
-    test('check if proposal is rejected', async () => {
-      const proposalId = 6;
-      let rawLog: any;
-      try {
-        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
-      } catch (e) {
-        rawLog = e.message;
-      }
-      expect(rawLog.includes('cannot update localhost client with proposal'));
+    test('check client statuses before update', async () => {
+      expect(
+        (await neutronChain.getIBCClientStatus('07-tendermint-2')).status,
+      ).toBe('Expired');
+      expect(
+        (await neutronChain.getIBCClientStatus('07-tendermint-1')).status,
+      ).toBe('Active');
+    });
+
+    const proposalId = 6;
+    test('check if proposal is passed', async () => {
+      await mainDao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposal(proposalId);
+    });
+
+    test('check client statuses after update', async () => {
+      expect(
+        (await neutronChain.getIBCClientStatus('07-tendermint-2')).status,
+      ).toBe('Active');
+      expect(
+        (await neutronChain.getIBCClientStatus('07-tendermint-1')).status,
+      ).toBe('Active');
     });
   });
 
