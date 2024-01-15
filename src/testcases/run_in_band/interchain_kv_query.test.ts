@@ -23,6 +23,7 @@ import {
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
+import axios from 'axios';
 
 const config = require('../../config.json');
 
@@ -94,10 +95,14 @@ const getValidatorsSigningInfosResult = (
   queryId: number,
 ) =>
   cm.queryContract<{
-    balances: {
-      coins: {
-        denom: string;
-        amount: string;
+    signing_infos: {
+      signing_infos: {
+        address: string;
+        start_height: string;
+        index_offset: string;
+        jailed_until: string;
+        tombstoned: boolean;
+        missed_blocks_counter: number;
       }[];
     };
     last_submitted_local_height: number;
@@ -106,6 +111,15 @@ const getValidatorsSigningInfosResult = (
       query_id: queryId,
     },
   });
+
+const getCosmosSigningInfosResult = async (sdkUrl: string) => {
+  try {
+    return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
+      .data;
+  } catch (e) {
+    return null;
+  }
+};
 
 const getQueryDelegatorDelegationsResult = (
   cm: CosmosWrapper,
@@ -893,16 +907,24 @@ describe('Neutron / Interchain KV Query', () => {
 
   describe('Signing info query', () => {
     let queryId: number;
+    let indexOffset: number;
+    let cosmosvalconspub: string;
     beforeEach(async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
+
+      const infos = await getCosmosSigningInfosResult(gaiaChain.sdk.url);
+      expect(infos).not.toBeNull();
+      const firstValidator = infos.info[0];
+      indexOffset = parseInt(firstValidator.index_offset);
+      cosmosvalconspub = firstValidator.address;
 
       queryId = await registerSigningInfoQuery(
         neutronAccount,
         contractAddress,
         connectionId,
         updatePeriods[2],
-        'cosmosvalcons1gspwywrjyjkng4x3eccm6es7ukm4j8xsfyfdpt',
+        cosmosvalconspub,
       );
     });
 
@@ -939,7 +961,16 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      console.log(interchainQueryResult);
+
+      expect(
+        interchainQueryResult.signing_infos.signing_infos[0].address,
+      ).toEqual(cosmosvalconspub);
+
+      expect(
+        parseInt(
+          interchainQueryResult.signing_infos.signing_infos[0].index_offset,
+        ),
+      ).toBeGreaterThan(indexOffset);
     });
   });
 });
