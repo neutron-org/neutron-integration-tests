@@ -19,6 +19,10 @@ import {
   queryVestingLpVaultConfig,
   Tge,
   VestingAccountResponse,
+  XykLockdropConfig,
+  queryXykLockdropConfig,
+  queryLockdropPool,
+  LockdropPool,
 } from '@neutron-org/neutronjsplus/dist/tge';
 import {
   Dao,
@@ -28,6 +32,9 @@ import {
 import {
   Asset,
   TotalPowerAtHeightResponse,
+  NeutronContract,
+  NativeToken,
+  nativeTokenInfo,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
@@ -2532,4 +2539,175 @@ describe('Neutron / TGE / Auction', () => {
       });
     });
   });
+
+  describe('migrate TGE liquidity to PCL', () => {
+    let ntrnAtomPclPool: string;
+    let ntrnAtomPclToken: string;
+    let ntrnUsdcPclPool: string;
+    let ntrnUsdcPclToken: string;
+    describe('replace XYK with PCL pools', () => {
+      test('deregister XYK pairs', async () => {
+        await deregisterPair(cmInstantiator, tgeMain.contracts.astroFactory, [
+          nativeTokenInfo(NEUTRON_DENOM),
+          nativeTokenInfo(IBC_ATOM_DENOM),
+        ]);
+        await deregisterPair(cmInstantiator, tgeMain.contracts.astroFactory, [
+          nativeTokenInfo(NEUTRON_DENOM),
+          nativeTokenInfo(IBC_USDC_DENOM),
+        ]);
+      });
+
+      test('create PCL pairs', async () => {
+        const ntrnAtomClPairInfo = await createPclPair(
+          neutronChain,
+          cmInstantiator,
+          tgeMain.contracts.astroFactory,
+          [nativeTokenInfo(NEUTRON_DENOM), nativeTokenInfo(IBC_ATOM_DENOM)],
+          0.109499708, // ntrn in pool divided by atom in pool. add calc?
+        );
+        ntrnAtomPclPool = ntrnAtomClPairInfo.contract_addr;
+        ntrnAtomPclToken = ntrnAtomClPairInfo.liquidity_token;
+
+        const ntrnUsdcClPairInfo = await createPclPair(
+          neutronChain,
+          cmInstantiator,
+          tgeMain.contracts.astroFactory,
+          [nativeTokenInfo(NEUTRON_DENOM), nativeTokenInfo(IBC_USDC_DENOM)],
+          1.09500203721, // ntrn in pool divided by usdc in pool. add calc?
+        );
+        ntrnUsdcPclPool = ntrnUsdcClPairInfo.contract_addr;
+        ntrnUsdcPclToken = ntrnUsdcClPairInfo.liquidity_token;
+      });
+    });
+
+    let lockdropPclAddr: string;
+    describe('instantiate PCL contracts', () => {
+      let xykLockdropConfig: XykLockdropConfig;
+      let xykLockdropUsdcPool: LockdropPool;
+      let xykLockdropAtomPool: LockdropPool;
+      it('retrieve XYK lockdrop contract state', async () => {
+        xykLockdropConfig = await queryXykLockdropConfig(
+          neutronChain,
+          tgeMain.contracts.lockdrop,
+        );
+        xykLockdropUsdcPool = await queryLockdropPool(
+          neutronChain,
+          tgeMain.contracts.lockdrop,
+          'USDC',
+        );
+        xykLockdropAtomPool = await queryLockdropPool(
+          neutronChain,
+          tgeMain.contracts.lockdrop,
+          'ATOM',
+        );
+      });
+      it('instantiate PCL lockdrop contract', async () => {
+        const codeId = await cmInstantiator.storeWasm(
+          NeutronContract.TGE_LOCKDROP_PCL,
+        );
+        const res = await cmInstantiator.instantiateContract(
+          codeId,
+          JSON.stringify({
+            owner: xykLockdropConfig.owner,
+            xyk_lockdrop_contract: tgeMain.contracts.lockdrop,
+            credits_contract: xykLockdropConfig.credits_contract,
+            auction_contract: xykLockdropConfig.auction_contract,
+            generator: xykLockdropConfig.generator,
+            lockup_rewards_info: xykLockdropConfig.lockup_rewards_info,
+            usdc_token: ntrnUsdcPclToken,
+            atom_token: ntrnAtomPclToken,
+            lockdrop_incentives: xykLockdropConfig.lockdrop_incentives,
+            usdc_incentives_share: xykLockdropUsdcPool.incentives_share,
+            usdc_weighted_amount: xykLockdropUsdcPool.weighted_amount,
+            atom_incentives_share: xykLockdropAtomPool.incentives_share,
+            atom_weighted_amount: xykLockdropAtomPool.weighted_amount,
+          }),
+          'lockdrop_pcl',
+        );
+        lockdropPclAddr = res[0]._contract_address;
+      });
+    });
+  });
 });
+
+const deregisterPair = async (
+  instantiator: WalletWrapper,
+  factoryAddr: string,
+  assetInfos: NativeToken[],
+) => {
+  const deregisterMsg = {
+    deregister: {
+      asset_infos: assetInfos,
+    },
+  };
+
+  const execRes = await instantiator.executeContract(
+    factoryAddr,
+    JSON.stringify(deregisterMsg),
+  );
+  expect(execRes.code).toBe(0);
+};
+
+const createPclPair = async (
+  chain: CosmosWrapper,
+  instantiator: WalletWrapper,
+  factoryAddr: string,
+  assetInfos: NativeToken[],
+  initPriceScale: number,
+): Promise<PairInfo> => {
+  const poolInitParams: ConcentratedPoolParams = {
+    amp: '40',
+    gamma: '0.000145',
+    mid_fee: '0.0026',
+    out_fee: '0.0045',
+    fee_gamma: '0.00023',
+    repeg_profit_threshold: '0.000002',
+    min_price_scale_delta: '0.000146',
+    price_scale: initPriceScale.toString(),
+    ma_half_time: 600,
+    track_asset_balances: false,
+  };
+
+  const createMsg = {
+    create_pair: {
+      pair_type: { custom: 'concentrated' },
+      asset_infos: assetInfos,
+      init_params: Buffer.from(JSON.stringify(poolInitParams)).toString(
+        'base64',
+      ),
+    },
+  };
+
+  const execRes = await instantiator.executeContract(
+    factoryAddr,
+    JSON.stringify(createMsg),
+  );
+  expect(execRes.code).toBe(0);
+
+  const pairInfo = await chain.queryContract<PairInfo>(factoryAddr, {
+    pair: {
+      asset_infos: assetInfos,
+    },
+  });
+  return pairInfo;
+};
+
+type PairInfo = {
+  asset_infos: NativeToken[];
+  contract_addr: string;
+  liquidity_token: string;
+  pair_type: Record<string, object>;
+};
+
+type ConcentratedPoolParams = {
+  amp: string;
+  gamma: string;
+  mid_fee: string;
+  out_fee: string;
+  fee_gamma: string;
+  repeg_profit_threshold: string;
+  min_price_scale_delta: string;
+  price_scale: string;
+  ma_half_time: number;
+  track_asset_balances: boolean;
+};
