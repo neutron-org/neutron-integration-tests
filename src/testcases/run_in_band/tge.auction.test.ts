@@ -1,4 +1,5 @@
 import '@neutron-org/neutronjsplus';
+import Long from 'long';
 import {
   WalletWrapper,
   CosmosWrapper,
@@ -23,6 +24,8 @@ import {
   queryXykLockdropConfig,
   queryLockdropPool,
   LockdropPool,
+  LockdropUserInfoResponse,
+  queryLockdropUserInfo,
 } from '@neutron-org/neutronjsplus/dist/tge';
 import {
   Dao,
@@ -207,6 +210,7 @@ describe('Neutron / TGE / Auction', () => {
       'auctionVesting',
       'auctionLockdrop',
       'auctionLockdropVesting',
+      'airdropAuctionLockdropVestingMigration',
     ]) {
       tgeWallets[v] = new WalletWrapper(
         neutronChain,
@@ -261,6 +265,13 @@ describe('Neutron / TGE / Auction', () => {
             tgeWallets['airdropAuctionVesting'].wallet.address.toString(),
           amount: '1000000',
         },
+        {
+          address:
+            tgeWallets[
+              'airdropAuctionLockdropVestingMigration'
+            ].wallet.address.toString(),
+          amount: '1000000',
+        },
       ];
       tgeMain.times.airdropStart = getTimestamp(0);
       tgeMain.times.airdropVestingStart = getTimestamp(300);
@@ -308,6 +319,8 @@ describe('Neutron / TGE / Auction', () => {
           tgeMain.contracts.astroGenerator,
         ),
       ).rejects.toThrowError(/Unauthorized/);
+
+      console.log('TGE contracts:', tgeMain.contracts);
     });
   });
 
@@ -318,6 +331,7 @@ describe('Neutron / TGE / Auction', () => {
         'airdropAuctionVesting',
         'airdropAuctionLockdrop',
         'airdropAuctionLockdropVesting',
+        'airdropAuctionLockdropVestingMigration',
       ]) {
         const address = tgeWallets[v].wallet.address.toString();
         const amount =
@@ -406,6 +420,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
+          'airdropAuctionLockdropVestingMigration',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
             tgeMain.contracts.auction,
@@ -466,6 +481,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
+          'airdropAuctionLockdropVestingMigration',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
             tgeMain.contracts.auction,
@@ -532,6 +548,7 @@ describe('Neutron / TGE / Auction', () => {
           'auctionVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
+          'airdropAuctionLockdropVestingMigration',
         ]) {
           const res2 = await tgeWallets[v].executeContract(
             tgeMain.contracts.auction,
@@ -896,6 +913,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
               tgeMain.contracts.auction,
@@ -975,6 +993,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
               tgeMain.contracts.auction,
@@ -1081,6 +1100,7 @@ describe('Neutron / TGE / Auction', () => {
           for (const v of [
             'airdropAuctionLockdropVesting',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
               tgeMain.contracts.auction,
@@ -1153,6 +1173,7 @@ describe('Neutron / TGE / Auction', () => {
           for (const v of [
             'airdropAuctionLockdropVesting',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const userInfo = await neutronChain.queryContract<UserInfoResponse>(
               tgeMain.contracts.auction,
@@ -1462,7 +1483,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(res.code).toEqual(0);
         tgeMain.times.vestTimestamp = Date.now();
       });
-      it('should not vest LP all 7 users have been migrated', async () => {
+      it('should not vest LP all 8 users have been migrated', async () => {
         await expect(
           cmInstantiator.executeContract(
             tgeMain.contracts.auction,
@@ -1523,17 +1544,17 @@ describe('Neutron / TGE / Auction', () => {
         );
         expect(vestingInfoAtom.info.released_amount).toEqual('0');
         expect(vestingInfoUsdc.info.released_amount).toEqual('0');
-        // NOTE: magic number - 3269
+        // NOTE: magic number - 3065
         expect(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(3269, -1);
+        ).toBeCloseTo(3065, -1);
         claimAtomLP = parseInt(
           vestingInfoAtom.info.schedules[0].end_point.amount,
         );
-        // NOTE: magic number - 22337
+        // NOTE: magic number - 20950
         expect(
           parseInt(vestingInfoUsdc.info.schedules[0].end_point.amount),
-        ).toBeCloseTo(22337, -1);
+        ).toBeCloseTo(20950, -1);
         claimUsdcLP = parseInt(
           vestingInfoUsdc.info.schedules[0].end_point.amount,
         );
@@ -1658,6 +1679,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBe(0);
@@ -1696,6 +1718,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
@@ -1744,6 +1767,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
             'auctionLockdrop',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
@@ -1763,6 +1787,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionLockdropVesting',
             'auctionVesting',
             'auctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
@@ -1803,6 +1828,7 @@ describe('Neutron / TGE / Auction', () => {
             'auctionLockdrop',
             'auctionLockdropVesting',
             'auctionVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             vp[v] = (await member.queryVotingPower()).power | 0;
@@ -1822,6 +1848,7 @@ describe('Neutron / TGE / Auction', () => {
             'airdropAuctionVesting',
             'airdropAuctionLockdrop',
             'airdropAuctionLockdropVesting',
+            'airdropAuctionLockdropVestingMigration',
           ]) {
             const member = new DaoMember(tgeWallets[v], daoMain);
             expect((await member.queryVotingPower()).power | 0).toBeGreaterThan(
@@ -1931,7 +1958,7 @@ describe('Neutron / TGE / Auction', () => {
             rewardsStateAfterClaim.balanceNtrn +
               FEE_SIZE -
               rewardsStateBeforeClaim.balanceNtrn,
-          ).toEqual(44); // lockdrop rewards share for the user
+          ).toEqual(40); // lockdrop rewards share for the user
 
           const rewardStateBeforeClaimUsdc: LockdropLockUpInfoResponse =
             rewardsStateBeforeClaim.userInfo.lockup_infos.find(
@@ -2625,6 +2652,105 @@ describe('Neutron / TGE / Auction', () => {
           'lockdrop_pcl',
         );
         lockdropPclAddr = res[0]._contract_address;
+      });
+    });
+
+    describe('migrate TGE contracts to liquidity migration versions', () => {
+      let newLockdropCodeID: number;
+      it('store new lockdrop contract version', async () => {
+        newLockdropCodeID = await cmInstantiator.storeWasm(
+          NeutronContract.TGE_LOCKDROP,
+        );
+      });
+      it('migrate lockdrop', async () => {
+        await cmInstantiator.migrateContract(
+          tgeMain.contracts.lockdrop,
+          newLockdropCodeID,
+          JSON.stringify({
+            pcl_lockdrop_contract: lockdropPclAddr,
+          }),
+        );
+      });
+    });
+
+    describe('execute migration handlers', () => {
+      let userInfoInXykLockdropBefore: LockdropUserInfoResponse;
+      let userInfoInPclLockdropBefore: LockdropUserInfoResponse;
+      it("get user's info before migration", async () => {
+        userInfoInXykLockdropBefore = await queryLockdropUserInfo(
+          neutronChain,
+          tgeMain.contracts.lockdrop,
+          tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].wallet.address.toString(),
+        );
+        userInfoInPclLockdropBefore = await queryLockdropUserInfo(
+          neutronChain,
+          lockdropPclAddr,
+          tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].wallet.address.toString(),
+        );
+
+        console.log(
+          `user info in XYK before migration:\n${JSON.stringify(
+            userInfoInXykLockdropBefore,
+          )}`,
+        );
+        console.log(
+          `user info in PCL before migration:\n${JSON.stringify(
+            userInfoInPclLockdropBefore,
+          )}`,
+        );
+      });
+
+      it('migrates a user', async () => {
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.lockdrop,
+          JSON.stringify({
+            migrate_liquidity_to_pcl_pools: {
+              user_address_raw:
+                tgeWallets[
+                  'airdropAuctionLockdropVestingMigration'
+                ].wallet.address.toString(),
+            },
+          }),
+          undefined,
+          {
+            gas_limit: Long.fromString('15000000'),
+            amount: [{ denom: NEUTRON_DENOM, amount: '750000' }],
+          },
+        );
+      });
+
+      let userInfoInXykLockdropAfter: LockdropUserInfoResponse;
+      let userInfoInPclLockdropAfter: LockdropUserInfoResponse;
+      it("get user's info after migration", async () => {
+        userInfoInXykLockdropAfter = await queryLockdropUserInfo(
+          neutronChain,
+          tgeMain.contracts.lockdrop,
+          tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].wallet.address.toString(),
+        );
+        userInfoInPclLockdropAfter = await queryLockdropUserInfo(
+          neutronChain,
+          lockdropPclAddr,
+          tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].wallet.address.toString(),
+        );
+
+        console.log(
+          `user info in XYK after migration:\n${JSON.stringify(
+            userInfoInXykLockdropAfter,
+          )}`,
+        );
+        console.log(
+          `user info in PCL after migration:\n${JSON.stringify(
+            userInfoInPclLockdropAfter,
+          )}`,
+        );
       });
     });
   });
