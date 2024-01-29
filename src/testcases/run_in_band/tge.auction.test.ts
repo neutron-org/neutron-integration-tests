@@ -38,6 +38,8 @@ import {
   NeutronContract,
   NativeToken,
   nativeTokenInfo,
+  nativeToken,
+  PoolStatus,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
@@ -2584,26 +2586,115 @@ describe('Neutron / TGE / Auction', () => {
         ]);
       });
 
-      test('create PCL pairs', async () => {
+      test('create and fill NTRN/ibcATOM PCL pair', async () => {
+        const poolStatus = await neutronChain.queryContract<PoolStatus>(
+          tgeMain.pairs.atom_ntrn.contract,
+          { pool: {} },
+        );
+        const ntrnInPool = poolStatus.assets.filter(
+          (a) => (a.info as NativeToken).native_token.denom == NEUTRON_DENOM,
+        )[0].amount;
+        const ibcAtomInPool = poolStatus.assets.filter(
+          (a) => (a.info as NativeToken).native_token.denom == IBC_ATOM_DENOM,
+        )[0].amount;
+        const priceScale = +ibcAtomInPool / +ntrnInPool;
+        console.log(
+          `NTRN/ibcATOM pool info:\n\tntrn: ${ntrnInPool},\n\tatom: ${ibcAtomInPool},\n\tscale:${priceScale}`,
+        );
+        console.log(
+          `NTRN/ibcATOM raw pool info:\n\t${JSON.stringify(poolStatus)}`,
+        );
+
         const ntrnAtomClPairInfo = await createPclPair(
           neutronChain,
           cmInstantiator,
           tgeMain.contracts.astroFactory,
           [nativeTokenInfo(NEUTRON_DENOM), nativeTokenInfo(IBC_ATOM_DENOM)],
-          0.109499708, // ntrn in pool divided by atom in pool. add calc?
+          priceScale,
         );
         ntrnAtomPclPool = ntrnAtomClPairInfo.contract_addr;
         ntrnAtomPclToken = ntrnAtomClPairInfo.liquidity_token;
+
+        const atomToProvide = Math.floor(NTRN_AMOUNT * priceScale);
+        const ntrnToProvide = NTRN_AMOUNT;
+        await cmInstantiator.executeContract(
+          ntrnAtomPclPool,
+          JSON.stringify({
+            provide_liquidity: {
+              assets: [
+                nativeToken(IBC_ATOM_DENOM, atomToProvide.toString()),
+                nativeToken(NEUTRON_DENOM, ntrnToProvide.toString()),
+              ],
+              slippage_tolerance: '0.5',
+            },
+          }),
+          [
+            {
+              denom: IBC_ATOM_DENOM,
+              amount: atomToProvide.toString(),
+            },
+            {
+              denom: NEUTRON_DENOM,
+              amount: ntrnToProvide.toString(),
+            },
+          ],
+        );
+      });
+
+      test('create and fill NTRN/ibcUSDC PCL pair', async () => {
+        const poolStatus = await neutronChain.queryContract<PoolStatus>(
+          tgeMain.pairs.usdc_ntrn.contract,
+          { pool: {} },
+        );
+        const ntrnInPool = poolStatus.assets.filter(
+          (a) => (a.info as NativeToken).native_token.denom == NEUTRON_DENOM,
+        )[0].amount;
+        const ibcUsdcInPool = poolStatus.assets.filter(
+          (a) => (a.info as NativeToken).native_token.denom == IBC_USDC_DENOM,
+        )[0].amount;
+        const priceScale = +ibcUsdcInPool / +ntrnInPool;
+
+        console.log(
+          `NTRN/ibcUSDC pool info:\n\tntrn: ${ntrnInPool},\n\tatom: ${ibcUsdcInPool},\n\tscale:${priceScale}`,
+        );
+        console.log(
+          `NTRN/ibcUSDC raw pool info:\n\t${JSON.stringify(poolStatus)}`,
+        );
 
         const ntrnUsdcClPairInfo = await createPclPair(
           neutronChain,
           cmInstantiator,
           tgeMain.contracts.astroFactory,
           [nativeTokenInfo(NEUTRON_DENOM), nativeTokenInfo(IBC_USDC_DENOM)],
-          1.09500203721, // ntrn in pool divided by usdc in pool. add calc?
+          priceScale,
         );
         ntrnUsdcPclPool = ntrnUsdcClPairInfo.contract_addr;
         ntrnUsdcPclToken = ntrnUsdcClPairInfo.liquidity_token;
+
+        const usdcToProvide = Math.floor(NTRN_AMOUNT * priceScale);
+        const ntrnToProvide = NTRN_AMOUNT;
+        await cmInstantiator.executeContract(
+          ntrnUsdcPclPool,
+          JSON.stringify({
+            provide_liquidity: {
+              assets: [
+                nativeToken(IBC_USDC_DENOM, usdcToProvide.toString()),
+                nativeToken(NEUTRON_DENOM, ntrnToProvide.toString()),
+              ],
+              slippage_tolerance: '0.5',
+            },
+          }),
+          [
+            {
+              denom: IBC_USDC_DENOM,
+              amount: usdcToProvide.toString(),
+            },
+            {
+              denom: NEUTRON_DENOM,
+              amount: ntrnToProvide.toString(),
+            },
+          ],
+        );
       });
     });
 
