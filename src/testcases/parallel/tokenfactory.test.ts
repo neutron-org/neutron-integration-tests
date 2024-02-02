@@ -19,7 +19,7 @@ import {
   getBeforeSendHook,
 } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 import { random } from 'lodash';
-import {meta} from "@typescript-eslint/parser";
+import { meta } from '@typescript-eslint/parser';
 
 const config = require('../../config.json');
 
@@ -359,16 +359,17 @@ describe('Neutron / Tokenfactory', () => {
         }),
       );
 
-      const metadata = await neutronChain.queryDenomsMetadata();
-      expect(metadata.metadatas[5].base).toEqual(denom);
-      expect(metadata.metadatas[5].uri).toEqual(denom);
-      expect(metadata.metadatas[5].display).toEqual(denom);
-      expect(metadata.metadatas[5].description).toEqual(denom);
-      expect(metadata.metadatas[5].name).toEqual(denom);
-      expect(metadata.metadatas[5].symbol).toEqual(denom);
-      expect(metadata.metadatas[5].uri_hash).toEqual(denom);
-      expect(metadata.metadatas[5].denom_units.length).toEqual(1);
-      expect(metadata.metadatas[5].denom_units[0].denom).toEqual(denom);
+      const metadatas = await neutronChain.queryDenomsMetadata();
+      const metadata = metadatas.metadatas.find((meta) => meta.base == denom);
+      expect(metadata.base).toEqual(denom);
+      expect(metadata.uri).toEqual(denom);
+      expect(metadata.display).toEqual(denom);
+      expect(metadata.description).toEqual(denom);
+      expect(metadata.name).toEqual(denom);
+      expect(metadata.symbol).toEqual(denom);
+      expect(metadata.uri_hash).toEqual(denom);
+      expect(metadata.denom_units.length).toEqual(1);
+      expect(metadata.denom_units[0].denom).toEqual(denom);
     });
 
     test('mint coins', async () => {
