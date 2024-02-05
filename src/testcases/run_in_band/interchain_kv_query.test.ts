@@ -1,12 +1,15 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
-  NEUTRON_DENOM,
   filterIBCDenoms,
   getEventAttribute,
+  NEUTRON_DENOM,
+  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  COSMOS_DENOM,
+  TestStateLocalCosmosTestNet,
+} from '@neutron-org/neutronjsplus';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
@@ -14,7 +17,6 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import cosmosclient from '@cosmos-client/core';
-import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
@@ -22,8 +24,9 @@ import {
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import axios from 'axios';
+import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
+import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
 
 const config = require('../../config.json');
 
@@ -112,6 +115,31 @@ const getValidatorsSigningInfosResult = (
     },
   });
 
+const getDelegatorUnbondingDelegationsResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    unbonding_delegations: {
+      unbonding_responses: {
+        delegator_address: string;
+        validator_address: string;
+        entries: {
+          balance: string;
+          completion_time: string | null;
+          creation_height: number;
+          initial_balance: string;
+        }[];
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    get_unbonding_delegations: {
+      query_id: queryId,
+    },
+  });
+
 const getCosmosSigningInfosResult = async (sdkUrl: string) => {
   try {
     return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
@@ -187,6 +215,38 @@ const registerSigningInfoQuery = async (
       register_validators_signing_info_query: {
         connection_id: connectionId,
         validators: [valcons],
+        update_period: updatePeriod,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const registerUnbondingDelegationsQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  delegator: string,
+  validator: string,
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_delegator_unbonding_delegations_query: {
+        connection_id: connectionId,
+        delegator,
+        validators: [validator],
         update_period: updatePeriod,
       },
     }),
@@ -598,7 +658,8 @@ describe('Neutron / Interchain KV Query', () => {
     //       because we only have one node per network in cosmopark
     test('perform icq #4: delegator delegations', async () => {
       const queryId = 4;
-      await gaiaAccount.msgDelegate(
+      await msgDelegate(
+        gaiaAccount,
         testState.wallets.cosmos.demo2.address.toString(),
         testState.wallets.cosmos.val1.address.toString(),
         '3000',
@@ -858,7 +919,7 @@ describe('Neutron / Interchain KV Query', () => {
           balancesAfterRegistration.balances as ICoin[],
         );
 
-        await removeQueryViaTx(neutronAccount, queryId);
+        await removeQueryViaTx(neutronAccount, BigInt(queryId));
 
         await getWithAttempts(
           neutronChain.blockWaiter,
@@ -971,6 +1032,96 @@ describe('Neutron / Interchain KV Query', () => {
           interchainQueryResult.signing_infos.signing_infos[0].index_offset,
         ),
       ).toBeGreaterThan(indexOffset);
+    });
+  });
+
+  describe('Unbonding delegations query', () => {
+    let queryId: number;
+    let validatorAddress: string;
+    let delegatorAddress: string;
+
+    beforeAll(async () => {
+      validatorAddress = testState.wallets.cosmos.val1.address.toString();
+      delegatorAddress = testState.wallets.cosmos.demo2.address.toString();
+
+      await msgDelegate(
+        gaiaAccount,
+        delegatorAddress,
+        validatorAddress,
+        '3000',
+      );
+      await msgUndelegate(
+        gaiaAccount,
+        delegatorAddress,
+        validatorAddress,
+        '2000',
+      );
+
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      queryId = await registerUnbondingDelegationsQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        delegatorAddress,
+        validatorAddress,
+      );
+    });
+
+    test('registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys[0].path).toEqual('staking');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('query result', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult =
+        await getDelegatorUnbondingDelegationsResult(
+          neutronChain,
+          contractAddress,
+          queryId,
+        );
+      expect(interchainQueryResult.last_submitted_local_height).toBeGreaterThan(
+        0,
+      );
+      expect(
+        interchainQueryResult.unbonding_delegations.unbonding_responses,
+      ).toEqual([
+        {
+          delegator_address: 'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
+          validator_address:
+            'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+          entries: [
+            {
+              balance: '2000',
+              completion_time: expect.any(String),
+              creation_height: expect.any(Number),
+              initial_balance: '2000',
+            },
+          ],
+        },
+      ]);
     });
   });
 });
