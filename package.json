@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks &&  yarn test:pob",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
@@ -23,11 +23,15 @@
     "test:dao": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/parallel/dao_assert",
     "test:globalfee": "jest -b src/testcases/run_in_band/globalfee",
     "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
+    "test:parameters": "jest -b src/testcases/run_in_band/parameters",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "test:overrule": "jest -b src/testcases/parallel/overrule",
     "test:tge:vesting_lp_vault": "jest -b src/testcases/parallel/tge.vesting_lp_vault",
     "test:tge:credits_vault": "jest -b src/testcases/parallel/tge.credits_vault",
     "test:tge:investors_vesting_vault": "jest -b src/testcases/parallel/tge.investors_vesting_vault",
+    "test:voting_registry": "jest -b src/testcases/parallel/voting_registry",
+    "test:float": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/float",
+    "test:dex_stargate": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_stargate",
     "test:pob": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/pob",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
@@ -37,9 +41,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@cosmos-client/core": "^0.47.1",
-    "@cosmos-client/cosmwasm": "^0.40.1",
+    "@cosmos-client/core": "^0.47.4",
+    "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
+    "@neutron-org/neutronjsplus": "0.3.0",
     "@types/lodash": "^4.14.182",
     "@types/long": "^4.0.2",
     "axios": "^0.27.2",
@@ -47,8 +52,9 @@
     "commander": "^10.0.0",
     "date-fns": "^2.16.1",
     "express": "^4.18.2",
-    "jest": "^27.5.1",
-    "jest-junit": "^15.0.0",
+    "jest": "^29.7.0",
+    "jest-extended": "^4.0.2",
+    "jest-junit": "^16.0.0",
     "lodash": "^4.17.21",
     "long": "^5.2.1",
     "merkletreejs": "^0.3.9",
@@ -58,14 +64,13 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.18.6",
     "@types/express": "^4.17.9",
-    "@types/jest": "^28.1",
+    "@types/jest": "^29.5",
     "@typescript-eslint/eslint-plugin": "^5.19.0",
     "@typescript-eslint/parser": "^5.19.0",
     "core-js": "^3.23.5",
     "eslint": "^8.13.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "jest-extended": "^3.0.2",
     "lint-staged": "^12.3.8",
     "prettier": "^2.6.2",
     "regenerator-runtime": "^0.13.9",
@@ -83,6 +88,6 @@
     ]
   },
   "engines": {
-    "node": ">=11.0 <17"
+    "node": ">=16.0 <17"
   }
 }

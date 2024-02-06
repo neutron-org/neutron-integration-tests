@@ -1,13 +1,19 @@
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CosmosWrapper, NEUTRON_DENOM } from '../../helpers/cosmos';
+import '@neutron-org/neutronjsplus';
 import {
-  getDaoContracts,
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import {
   DaoContracts,
-  VotingVaultsModule,
+  getDaoContracts,
   getTreasuryContract,
-} from '../../helpers/dao';
-import { getContractsHashes } from '../../helpers/env';
-import { NeutronContract } from '../../helpers/types';
+  VotingVaultsModule,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { getContractsHashes } from '@neutron-org/neutronjsplus/dist/env';
+
+const config = require('../../config.json');
 
 describe('DAO / Check', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,7 +30,7 @@ describe('DAO / Check', () => {
   let treasuryContract: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
 
     neutronChain = new CosmosWrapper(

@@ -1,26 +1,31 @@
-import cosmosclient from '@cosmos-client/core';
+import '@neutron-org/neutronjsplus';
 import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  getEventAttribute,
-  NEUTRON_DENOM,
   WalletWrapper,
+  CosmosWrapper,
+  NEUTRON_DENOM,
   filterIBCDenoms,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getHeight, getWithAttempts } from '../../helpers/wait';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
+  getEventAttribute,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import cosmosclient from '@cosmos-client/core';
+import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
-} from '../../helpers/icq';
-import { NeutronContract } from '../../helpers/types';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
-import { paramChangeProposal } from '../../helpers/proposal';
-import { CodeId } from '../../types';
-import { cosmos } from '@cosmos-client/core/cjs/proto';
-import ICoin = cosmos.base.v1beta1.ICoin;
+} from '@neutron-org/neutronjsplus/dist/icq';
+import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
+
+const config = require('../../config.json');
+
 const getKvCallbackStatus = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -110,7 +115,7 @@ const registerBalanceQuery = async (
   connectionId: string,
   updatePeriod: number,
   denom: string,
-  addr: AccAddress,
+  addr: cosmosclient.AccAddress,
 ) => {
   const txResult = await cm.executeContract(
     contractAddress,
@@ -180,7 +185,7 @@ const removeQuery = async (
 
 const removeQueryViaTx = async (
   cm: WalletWrapper,
-  queryId: number,
+  queryId: bigint,
   sender: string = cm.wallet.address.toString(),
 ) => await cm.msgRemoveInterchainQuery(queryId, sender);
 
@@ -189,8 +194,8 @@ const registerDelegatorDelegationsQuery = async (
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  delegator: AccAddress,
-  validators: ValAddress[],
+  delegator: cosmosclient.AccAddress,
+  validators: cosmosclient.ValAddress[],
 ) => {
   await cm.executeContract(
     contractAddress,
@@ -210,7 +215,7 @@ const validateBalanceQuery = async (
   targetCm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
-  address: AccAddress,
+  address: cosmosclient.AccAddress,
 ) => {
   const interchainQueryResult = await getQueryBalanceResult(
     neutronCm,
@@ -218,8 +223,8 @@ const validateBalanceQuery = async (
     queryId,
   );
   const directQueryResult = await cosmosclient.rest.bank.allBalances(
-    targetCm.sdk as CosmosSDK,
-    address,
+    targetCm.sdk as cosmosclient.CosmosSDK,
+    address.toString(),
   );
   expect(filterIBCDenoms(interchainQueryResult.balances.coins)).toEqual(
     filterIBCDenoms(directQueryResult.data.balances as ICoin[]),
@@ -242,7 +247,7 @@ describe('Neutron / Interchain KV Query', () => {
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -632,7 +637,7 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
-      const queryId = 2;
+      const queryId = BigInt(2);
       const result = await removeQueryViaTx(neutronAccount, queryId);
       expect(result.raw_log).toMatch(
         /only owner can remove a query within its service period: unauthorized/i,
