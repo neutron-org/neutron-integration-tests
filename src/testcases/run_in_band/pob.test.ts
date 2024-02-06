@@ -8,7 +8,6 @@ import {
   WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import cosmosclient from '@cosmos-client/core';
 import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 const fee = {
