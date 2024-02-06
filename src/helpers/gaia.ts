@@ -22,8 +22,8 @@ export const msgDelegate = async (
   });
   const res = await wallet.execTx(
     {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: wallet.chain.denom, amount: '1000' }],
+      gas_limit: Long.fromString('500000'),
+      amount: [{ denom: wallet.chain.denom, amount: '5000' }],
     },
     [packAnyMsg('/cosmos.staking.v1beta1.MsgDelegate', msgDelegate)],
   );
@@ -43,8 +43,8 @@ export const msgUndelegate = async (
   });
   const res = await wallet.execTx(
     {
-      gas_limit: Long.fromString('200000'),
-      amount: [{ denom: wallet.chain.denom, amount: '1000' }],
+      gas_limit: Long.fromString('500000'),
+      amount: [{ denom: wallet.chain.denom, amount: '5000' }],
     },
     [packAnyMsg('/cosmos.staking.v1beta1.MsgUndelegate', msgUndelegate)],
   );
