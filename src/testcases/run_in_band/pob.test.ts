@@ -13,14 +13,12 @@ const fee = {
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
 };
 
-const TreasuryAddress =
-  'neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff';
-
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let n1: WalletWrapper;
+  let TreasuryAddress: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet();
@@ -35,6 +33,8 @@ describe('Neutron / IBC hooks', () => {
       testState.wallets.neutron.demo1,
     );
     n1 = new WalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
+
+    TreasuryAddress = (await neutronChain.getChainAdmins())[0];
   });
 
   describe('POB', () => {
