@@ -27,6 +27,7 @@ import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import axios from 'axios';
 import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
 import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
+import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
 
 const config = require('../../config.json');
 
@@ -354,6 +355,70 @@ const validateBalanceQuery = async (
   );
 };
 
+const getCosmosProposalVotesResult = async (
+  sdkUrl: string,
+  proposalId: number,
+) => {
+  try {
+    return (await axios.get(`${sdkUrl}/cosmos/gov/v1beta1/votes/${proposalId}`))
+      .data;
+  } catch (e) {
+    return null;
+  }
+};
+
+const registerProposalVotesQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  proposalId: number,
+  voters: string[],
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_government_proposal_votes_query: {
+        connection_id: connectionId,
+        update_period: updatePeriod,
+        proposal_id: proposalId,
+        voters: voters,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getProposalVotesResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    votes: {
+      proposal_votes: {
+        proposal_id: number;
+        voter: string;
+        options: any;
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    government_proposal_votes: {
+      query_id: queryId,
+    },
+  });
+
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
@@ -395,7 +460,7 @@ describe('Neutron / Interchain KV Query', () => {
     await daoMember.bondFunds('10000000000');
   });
 
-  describe('Instantiate interchain queries contract', () => {
+  describe.only('Instantiate interchain queries contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
@@ -961,6 +1026,98 @@ describe('Neutron / Interchain KV Query', () => {
 
         expect(balancesAfterRemovalWithFee).toEqual(balancesBeforeRegistration);
       });
+    });
+  });
+
+  describe.only('Proposal votes query', () => {
+    let queryId: number;
+    let proposalId: number;
+
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      // const votes = await getProposalVotesResult(gaiaChain.sdk.url, 1);
+      // expect(votes).not.toBeNull();
+
+      const proposalResp = await msgSubmitProposal(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        '1250',
+      );
+
+      const proposalIdBase64 = getEventAttribute(
+        (proposalResp as any).events,
+        'submit_proposal',
+        Buffer.from('proposal_id').toString('base64'),
+      );
+
+      proposalId = parseInt(
+        Buffer.from(proposalIdBase64, 'base64').toString('utf-8'),
+      );
+
+      await msgVote(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        proposalId,
+        '1250',
+      );
+
+      queryId = await registerProposalVotesQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        proposalId,
+        [testState.wallets.cosmos.demo2.address.toString()],
+      );
+    });
+
+    test('proposal votes registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      // XXX: I could actually check that "key" is correctly derived from contractAddress,
+      //      but this requires bech32 decoding/encoding shenanigans
+      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys[0].path).toEqual('gov');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('proposal votes data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getProposalVotesResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+
+      console.log('interchainQueryResult', interchainQueryResult.votes);
+
+      // expect(
+      //   interchainQueryResult.signing_infos.signing_infos[0].address,
+      // ).toEqual(cosmosvalconspub);
+
+      // expect(
+      //   parseInt(
+      //     interchainQueryResult.signing_infos.signing_infos[0].index_offset,
+      //   ),
+      // ).toBeGreaterThan(indexOffset);
     });
   });
 
