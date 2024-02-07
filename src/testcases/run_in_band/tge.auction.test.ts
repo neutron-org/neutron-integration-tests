@@ -26,7 +26,6 @@ import {
   queryLockdropPool,
   LockdropPool,
   LockdropUserInfoResponse,
-  queryLockdropUserInfo,
 } from '@neutron-org/neutronjsplus/dist/tge';
 import {
   Dao,
@@ -4045,7 +4044,7 @@ describe('Neutron / TGE / Auction', () => {
       });
 
       const ntrnToPayGas = 200000;
-      it('withdraw both remaining lockups from PCL', async () => {
+      it('withdraw USDC lockup from PCL', async () => {
         await tgeWallets[
           'airdropAuctionLockdropVestingMigration'
         ].executeContract(
@@ -4063,23 +4062,72 @@ describe('Neutron / TGE / Auction', () => {
             amount: [{ denom: NEUTRON_DENOM, amount: ntrnToPayGas.toString() }],
           },
         );
-        await tgeWallets[
-          'airdropAuctionLockdropVestingMigration'
-        ].executeContract(
-          liqMigContracts.pclLockdrop,
-          JSON.stringify({
-            claim_rewards_and_optionally_unlock: {
-              pool_type: 'ATOM',
-              duration: 1,
-              withdraw_lp_stake: true,
+      });
+
+      describe('withdraw ATOM lockup from PCL', () => {
+        // just claim rewards to make sure this flow works
+        it('claim rewards', async () => {
+          await tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].executeContract(
+            liqMigContracts.pclLockdrop,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'ATOM',
+                duration: 1,
+                withdraw_lp_stake: false,
+              },
+            }),
+            undefined,
+            {
+              gas_limit: Long.fromString('5000000'),
+              amount: [
+                { denom: NEUTRON_DENOM, amount: ntrnToPayGas.toString() },
+              ],
             },
-          }),
-          undefined,
-          {
-            gas_limit: Long.fromString('5000000'),
-            amount: [{ denom: NEUTRON_DENOM, amount: ntrnToPayGas.toString() }],
-          },
-        );
+          );
+        });
+
+        it('make sure rewards are accrued', async () => {
+          const stateIntermediate = await gatherLiquidityMigrationState(
+            neutronChain,
+            tgeWallets[
+              'airdropAuctionLockdropVestingMigration'
+            ].wallet.address.toString(),
+            liqMigContracts,
+          );
+
+          // generator rewards are accrued
+          expect(stateIntermediate.balances.user.astro).toBeGreaterThan(
+            stateBefore.balances.user.astro,
+          );
+          // no LP received since the position wasn't withdrawn
+          expect(stateIntermediate.balances.user.atomPclPairLp).toBe(
+            stateBefore.balances.user.atomPclPairLp,
+          );
+        });
+
+        it('withdraw lockup', async () => {
+          await tgeWallets[
+            'airdropAuctionLockdropVestingMigration'
+          ].executeContract(
+            liqMigContracts.pclLockdrop,
+            JSON.stringify({
+              claim_rewards_and_optionally_unlock: {
+                pool_type: 'ATOM',
+                duration: 1,
+                withdraw_lp_stake: true,
+              },
+            }),
+            undefined,
+            {
+              gas_limit: Long.fromString('5000000'),
+              amount: [
+                { denom: NEUTRON_DENOM, amount: ntrnToPayGas.toString() },
+              ],
+            },
+          );
+        });
       });
 
       it('no more withdrawal available from PCL', async () => {
@@ -4200,7 +4248,7 @@ describe('Neutron / TGE / Auction', () => {
           // all ntrn rewards are transferred to the user during migration, so no additional
           // rewards are expected to be received by the user for withdrawals
           expect(stateAfter.balances.user.ntrn).toEqual(
-            stateBefore.balances.user.ntrn - ntrnToPayGas * 4, // fees for 4 withdrawal attempts
+            stateBefore.balances.user.ntrn - ntrnToPayGas * 5, // fees for 5 withdrawal/claim attempts
           );
         });
       });
