@@ -227,7 +227,7 @@ describe('Neutron / TGE / Auction', () => {
             [
               {
                 denom: NEUTRON_DENOM,
-                amount: '1000000',
+                amount: '5000000',
               },
               {
                 denom: IBC_ATOM_DENOM,
