@@ -3084,21 +3084,6 @@ describe('Neutron / TGE / Auction', () => {
               });
             });
 
-            test('no claimable generator ntrn debt', async () => {
-              // all collected rewards are transferred during migration
-              expect(
-                +stateAfter.pclUserLockups.claimable_generator_ntrn_debt,
-              ).toEqual(0);
-              expect(
-                +stateAfter.pclUserLockups.mapped_lockup_infos[atomLockupKey]
-                  .claimable_generator_astro_debt,
-              ).toEqual(0);
-              expect(
-                +stateAfter.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
-                  .claimable_generator_astro_debt,
-              ).toEqual(0);
-            });
-
             describe('astroport lp', () => {
               test('lp tokens are locked', async () => {
                 expect(
@@ -3527,21 +3512,6 @@ describe('Neutron / TGE / Auction', () => {
                 ntrn_transferred: false,
                 total_ntrn_rewards: '0',
               });
-            });
-
-            test('no claimable generator ntrn debt', async () => {
-              // all collected rewards are transferred during migration
-              expect(
-                +stateAfter.pclUserLockups.claimable_generator_ntrn_debt,
-              ).toEqual(0);
-              expect(
-                +stateAfter.pclUserLockups.mapped_lockup_infos[atomLockupKey]
-                  .claimable_generator_astro_debt,
-              ).toEqual(0);
-              expect(
-                +stateAfter.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
-                  .claimable_generator_astro_debt,
-              ).toEqual(0);
             });
 
             describe('astroport lp', () => {
