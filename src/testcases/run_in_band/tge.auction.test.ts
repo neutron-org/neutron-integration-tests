@@ -2675,7 +2675,7 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          votingPowerBeforeLp[v] = vp.power;
+          votingPowerBeforeLp[v] = +vp.power;
         }
       });
 
@@ -2697,7 +2697,7 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          votingPowerBeforeLockdrop[v] = vp.power;
+          votingPowerBeforeLockdrop[v] = +vp.power;
         }
       });
     });
