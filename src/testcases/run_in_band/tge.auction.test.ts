@@ -3104,7 +3104,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             );
           console.log('lockdrop vp:' + vp.power);
-          isWithinRange(
+          isWithinRangeRel(
             +vp.power,
             votingPowerBeforeLockdrop['airdropAuctionLockdropVestingMigration'],
             1,
@@ -3159,7 +3159,7 @@ describe('Neutron / TGE / Auction', () => {
                 );
                 // claimed rewards are transferred directly to the user
                 // assume fluctuation because rewards amount increases every block
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.balances.user.astro -
                     stateBefore.balances.user.astro,
                   userAstroRewards,
@@ -3265,7 +3265,7 @@ describe('Neutron / TGE / Auction', () => {
                   stateAfter.balances.user.ntrn -
                   stateBefore.balances.user.ntrn;
                 // assume fluctuation because of uncertain unvested tokens amount
-                isWithinRange(balanceChange, expectedRewards, 0.1);
+                isWithinRangeRel(balanceChange, expectedRewards, 0.1);
               });
 
               test('ntrn rewards sent by XYK lockdrop contract', async () => {
@@ -3343,14 +3343,14 @@ describe('Neutron / TGE / Auction', () => {
                 ).toBeGreaterThan(0);
 
                 // equivalent of locked assets should be roughly equal before and after migration
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.pclUserLockups.mapped_lockup_infos[atomLockupKey]
                     .expected_ntrn_share,
                   stateBefore.xykUserLockups.mapped_lockup_infos[atomLockupKey]
                     .expected_ntrn_share,
                   0.05,
                 );
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
                     .expected_ntrn_share,
                   stateBefore.xykUserLockups.mapped_lockup_infos[usdcLockupKey]
@@ -3573,7 +3573,7 @@ describe('Neutron / TGE / Auction', () => {
                 );
                 // claimed rewards are transferred directly to the user
                 // assume fluctuation because rewards amount increases every block
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.balances.user.astro -
                     stateBefore.balances.user.astro,
                   userAstroRewards,
@@ -3773,14 +3773,14 @@ describe('Neutron / TGE / Auction', () => {
                 ).toBeGreaterThan(0);
 
                 // equivalent of locked assets should be roughly equal before and after migration
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.pclUserLockups.mapped_lockup_infos[atomLockupKey]
                     .expected_ntrn_share,
                   stateBefore.xykUserLockups.mapped_lockup_infos[atomLockupKey]
                     .expected_ntrn_share,
                   0.05,
                 );
-                isWithinRange(
+                isWithinRangeRel(
                   stateAfter.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
                     .expected_ntrn_share,
                   stateBefore.xykUserLockups.mapped_lockup_infos[usdcLockupKey]
@@ -3909,7 +3909,7 @@ describe('Neutron / TGE / Auction', () => {
                     },
                   },
                 );
-              isWithinRange(+vp.power, votingPowerBeforeLockdrop[v], 0.5);
+              isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 0.5);
             });
 
             let stateAfter: LiquidityMigrationState;
@@ -4012,7 +4012,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(vestingInfoAtom.info.released_amount).toEqual('0');
         expect(vestingInfoUsdc.info.released_amount).toEqual('0');
 
-        isWithinRange(
+        isWithinRangeRel(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
           3916,
           0.5,
@@ -4126,7 +4126,7 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          isWithinRange(+vp.power, votingPowerBeforeLp[v], 1);
+          isWithinRangeRel(+vp.power, votingPowerBeforeLp[v], 1);
         }
       });
 
@@ -4147,7 +4147,7 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          isWithinRange(+vp.power, votingPowerBeforeLockdrop[v], 1);
+          isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 1);
         }
       });
 
@@ -4163,7 +4163,7 @@ describe('Neutron / TGE / Auction', () => {
         ]) {
           const member = new DaoMember(tgeWallets[v], daoMain);
           const vp = (await member.queryVotingPower()).power | 0;
-          isWithinRange(+vp, votingPowerBeforeLp[v], 1);
+          isWithinRangeRel(+vp, votingPowerBeforeLp[v], 1);
         }
       });
 
@@ -4204,8 +4204,8 @@ describe('Neutron / TGE / Auction', () => {
           }),
         ]);
         // diff is big, near 40%
-        isWithinRange(parseInt(lpBalanceAtom.balance), claimAtomLP, 50);
-        isWithinRange(parseInt(lpBalanceUsdc.balance), claimUsdcLP, 50);
+        isWithinRangeRel(parseInt(lpBalanceAtom.balance), claimAtomLP, 50);
+        isWithinRangeRel(parseInt(lpBalanceUsdc.balance), claimUsdcLP, 50);
       });
     });
   });
@@ -4447,7 +4447,7 @@ describe('Neutron / TGE / Auction', () => {
           );
 
           // assume fluctuation because rewards amount increases every block
-          isWithinRange(
+          isWithinRangeRel(
             stateAfter.balances.user.astro - stateBefore.balances.user.astro,
             +stateBefore.pclUserLockups.claimable_generator_ntrn_debt,
             0.5,
@@ -4706,7 +4706,7 @@ describe('Neutron / TGE / Auction', () => {
           );
 
           // assume fluctuation because rewards amount increases every block
-          isWithinRange(
+          isWithinRangeRel(
             stateAfter.balances.user.astro - stateBefore.balances.user.astro,
             +stateBefore.pclUserLockups.claimable_generator_ntrn_debt,
             0.5,
@@ -5190,16 +5190,16 @@ type ConcentratedPoolParams = {
   track_asset_balances: boolean;
 };
 
-// checks whether the value is in +/- range (inclusive) of the target with tolerance in %.
-const isWithinRange = (value: number, target: number, tolerance: number) => {
-  if (target === 0 && value === 0) {
-    return true;
-  } else if (target === 0) {
-    expect(value).toBeGreaterThanOrEqual(-tolerance);
-    expect(value).toBeLessThanOrEqual(tolerance);
-  } else {
-    const absoluteTolerance = Math.abs(target * tolerance);
-    expect(value).toBeGreaterThanOrEqual(target - absoluteTolerance);
-    expect(value).toBeLessThanOrEqual(target + absoluteTolerance);
-  }
+// checks whether the value is in +/- range (inclusive) from the target value with tolerance in %.
+// e.g. 10% is tolerance = 0.1
+const isWithinRangeRel = (value: number, target: number, tolerance: number) => {
+  expect(value).toBeGreaterThanOrEqual(target - target * tolerance);
+  expect(value).toBeLessThanOrEqual(target + target * tolerance);
+};
+
+// checks whether the value is in +/- range (inclusive) from the target value with absolute tolerance.
+// e.g. 500 tolerance means the value is expected be in [target-500;target+500].
+const isWithinRangeAbs = (value: number, target: number, tolerance: number) => {
+  expect(value).toBeGreaterThanOrEqual(target - tolerance);
+  expect(value).toBeLessThanOrEqual(target + tolerance);
 };
