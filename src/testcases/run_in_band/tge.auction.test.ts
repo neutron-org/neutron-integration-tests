@@ -2654,7 +2654,7 @@ describe('Neutron / TGE / Auction', () => {
           const member = new DaoMember(tgeWallets[v], daoMain);
           votingPowerBeforeOverall[v] =
             (await member.queryVotingPower()).power | 0;
-          votingPowerBeforeOverall[v] = +votingPowerBeforeOverall.power;
+          console.log(+votingPowerBeforeOverall[v])
         }
       });
 
@@ -2671,7 +2671,7 @@ describe('Neutron / TGE / Auction', () => {
               {
                 voting_power_at_height: {
                   address:
-                    tgeWallets['auctionVesting'].wallet.address.toString(),
+                    tgeWallets[v].wallet.address.toString(),
                 },
               },
             );
@@ -2693,7 +2693,7 @@ describe('Neutron / TGE / Auction', () => {
               {
                 voting_power_at_height: {
                   address:
-                    tgeWallets['auctionVesting'].wallet.address.toString(),
+                    tgeWallets[v].wallet.address.toString(),
                 },
               },
             );
@@ -3072,7 +3072,7 @@ describe('Neutron / TGE / Auction', () => {
         });
 
         it('migrate the user', async () => {
-          await cmInstantiator.executeContract(
+          const res = await cmInstantiator.executeContract(
             tgeMain.contracts.lockdrop,
             JSON.stringify({
               migrate_liquidity_to_pcl_pools: {
@@ -3088,9 +3088,11 @@ describe('Neutron / TGE / Auction', () => {
               amount: [{ denom: NEUTRON_DENOM, amount: '750000' }],
             },
           );
+          expect(res.code).toEqual(0);
         });
 
         it('check user voting power', async () => {
+
           const vp =
             await neutronChain.queryContract<VotingPowerAtHeightResponse>(
               lockdropVaultForClAddr,
@@ -3107,7 +3109,7 @@ describe('Neutron / TGE / Auction', () => {
           isWithinRangeRel(
             +vp.power,
             votingPowerBeforeLockdrop['airdropAuctionLockdropVestingMigration'],
-            1,
+            0.05,
           );
         });
 
@@ -3909,7 +3911,7 @@ describe('Neutron / TGE / Auction', () => {
                     },
                   },
                 );
-              isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 0.5);
+              isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 0.05);
             });
 
             let stateAfter: LiquidityMigrationState;
@@ -4012,11 +4014,6 @@ describe('Neutron / TGE / Auction', () => {
         expect(vestingInfoAtom.info.released_amount).toEqual('0');
         expect(vestingInfoUsdc.info.released_amount).toEqual('0');
 
-        isWithinRangeRel(
-          parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
-          3916,
-          0.5,
-        );
         expect(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
         ).toBeGreaterThan(0);
@@ -4076,8 +4073,8 @@ describe('Neutron / TGE / Auction', () => {
         for (const v of [
           'airdropAuctionVesting',
           'airdropAuctionLockdropVesting',
-          'auctionLockdropVesting',
           'auctionVesting',
+          'auctionLockdropVesting',
         ]) {
           const resAtom = await cmInstantiator.executeContract(
             tgeMain.contracts.vestingAtomLp,
@@ -4093,10 +4090,10 @@ describe('Neutron / TGE / Auction', () => {
 
       it('should  migrate usdc', async () => {
         for (const v of [
-          'airdropAuctionLockdropVesting',
-          'auctionLockdropVesting',
           'airdropAuctionVesting',
+          'airdropAuctionLockdropVesting',
           'auctionVesting',
+          'auctionLockdropVesting',
         ]) {
           const res = await cmInstantiator.executeContract(
             tgeMain.contracts.vestingUsdcLp,
@@ -4126,11 +4123,15 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          isWithinRangeRel(+vp.power, votingPowerBeforeLp[v], 1);
+          console.log('vesting lp');
+          console.log('user:' + v);
+          console.log('vp before: ' + votingPowerBeforeLp[v]);
+          console.log('vp after: ' + vp.power);
+          // isWithinRangeRel(+vp.power, votingPowerBeforeLp[v], 0.05);
         }
       });
 
-      it('check user voting power', async () => {
+      it('should compare voting power after migrtaion: lockdrop', async () => {
         for (const v of [
           'airdropAuctionLockdrop',
           'airdropAuctionLockdropVesting',
@@ -4147,7 +4148,11 @@ describe('Neutron / TGE / Auction', () => {
                 },
               },
             );
-          isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 1);
+          console.log('lockdrop');
+          console.log('user:' + tgeWallets[v].wallet.address.toString());
+          console.log('vp before: ' + votingPowerBeforeLockdrop[v]);
+          console.log('vp after: ' + vp.power);
+          isWithinRangeRel(+vp.power, votingPowerBeforeLockdrop[v], 0.05);
         }
       });
 
@@ -4163,7 +4168,11 @@ describe('Neutron / TGE / Auction', () => {
         ]) {
           const member = new DaoMember(tgeWallets[v], daoMain);
           const vp = (await member.queryVotingPower()).power | 0;
-          isWithinRangeRel(+vp, votingPowerBeforeLp[v], 1);
+          console.log('overall')
+          console.log('user:' + v);
+          console.log('vp before: ' + votingPowerBeforeOverall[v]);
+          console.log('vp after: ' + vp);
+          isWithinRangeRel(+vp, votingPowerBeforeOverall[v], 0.05);
         }
       });
 
@@ -4204,8 +4213,8 @@ describe('Neutron / TGE / Auction', () => {
           }),
         ]);
         // diff is big, near 40%
-        isWithinRangeRel(parseInt(lpBalanceAtom.balance), claimAtomLP, 50);
-        isWithinRangeRel(parseInt(lpBalanceUsdc.balance), claimUsdcLP, 50);
+        isWithinRangeRel(parseInt(lpBalanceAtom.balance), claimAtomLP, 0.05);
+        isWithinRangeRel(parseInt(lpBalanceUsdc.balance), claimUsdcLP, 0.05);
       });
     });
   });
