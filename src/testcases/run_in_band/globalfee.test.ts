@@ -34,7 +34,7 @@ describe('Neutron / Global Fee', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, daoMain);

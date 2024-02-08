@@ -42,7 +42,7 @@ describe('Neutron / Parameters', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(neutronAccount, dao);
