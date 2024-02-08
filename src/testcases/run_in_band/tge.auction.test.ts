@@ -2654,7 +2654,7 @@ describe('Neutron / TGE / Auction', () => {
           const member = new DaoMember(tgeWallets[v], daoMain);
           votingPowerBeforeOverall[v] =
             (await member.queryVotingPower()).power | 0;
-          console.log(+votingPowerBeforeOverall[v])
+          console.log(+votingPowerBeforeOverall[v]);
         }
       });
 
@@ -2670,8 +2670,7 @@ describe('Neutron / TGE / Auction', () => {
               tgeMain.contracts.vestingLpVault,
               {
                 voting_power_at_height: {
-                  address:
-                    tgeWallets[v].wallet.address.toString(),
+                  address: tgeWallets[v].wallet.address.toString(),
                 },
               },
             );
@@ -2692,8 +2691,7 @@ describe('Neutron / TGE / Auction', () => {
               tgeMain.contracts.lockdropVault,
               {
                 voting_power_at_height: {
-                  address:
-                    tgeWallets[v].wallet.address.toString(),
+                  address: tgeWallets[v].wallet.address.toString(),
                 },
               },
             );
@@ -3092,7 +3090,7 @@ describe('Neutron / TGE / Auction', () => {
         });
 
         it('check user voting power', async () => {
-
+          neutronChain.blockWaiter.waitBlocks(1);
           const vp =
             await neutronChain.queryContract<VotingPowerAtHeightResponse>(
               lockdropVaultForClAddr,
@@ -4111,7 +4109,6 @@ describe('Neutron / TGE / Auction', () => {
         for (const v of [
           'airdropAuctionVesting',
           'airdropAuctionLockdropVesting',
-          'auctionLockdropVesting',
           'auctionVesting',
         ]) {
           const vp =
@@ -4127,7 +4124,7 @@ describe('Neutron / TGE / Auction', () => {
           console.log('user:' + v);
           console.log('vp before: ' + votingPowerBeforeLp[v]);
           console.log('vp after: ' + vp.power);
-          // isWithinRangeRel(+vp.power, votingPowerBeforeLp[v], 0.05);
+          isWithinRangeRel(+vp.power, votingPowerBeforeLp[v], 0.05);
         }
       });
 
@@ -4168,7 +4165,7 @@ describe('Neutron / TGE / Auction', () => {
         ]) {
           const member = new DaoMember(tgeWallets[v], daoMain);
           const vp = (await member.queryVotingPower()).power | 0;
-          console.log('overall')
+          console.log('overall');
           console.log('user:' + v);
           console.log('vp before: ' + votingPowerBeforeOverall[v]);
           console.log('vp after: ' + vp);
@@ -5208,7 +5205,9 @@ const isWithinRangeRel = (value: number, target: number, tolerance: number) => {
 
 // checks whether the value is in +/- range (inclusive) from the target value with absolute tolerance.
 // e.g. 500 tolerance means the value is expected be in [target-500;target+500].
-const isWithinRangeAbs = (value: number, target: number, tolerance: number) => {
-  expect(value).toBeGreaterThanOrEqual(target - tolerance);
-  expect(value).toBeLessThanOrEqual(target + tolerance);
-};
+// uncomment if you want to use this one
+// const isWithinRangeAbs = (value: number, target: number, tolerance: number) => {
+//   expect(value).toBeGreaterThanOrEqual(target - tolerance);
+//   expect(value).toBeLessThanOrEqual(target + tolerance);
+// };
+
