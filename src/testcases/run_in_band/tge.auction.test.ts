@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import Long, {fromNumber} from 'long';
+import Long from 'long';
 import {
   WalletWrapper,
   CosmosWrapper,
@@ -41,7 +41,8 @@ import {
   NativeToken,
   nativeTokenInfo,
   nativeToken,
-  PoolStatus, VotingPowerAtHeightResponse,
+  PoolStatus,
+  VotingPowerAtHeightResponse,
 } from '@neutron-org/neutronjsplus/dist/types';
 
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
@@ -2640,7 +2641,6 @@ describe('Neutron / TGE / Auction', () => {
   let lockdropVaultForClAddr: string;
   describe('migrate TGE liquidity to PCL', () => {
     describe('save voting power before migration', () => {
-
       it('should save voting power before migration: overall', async () => {
         for (const v of [
           'airdropAuctionVesting',
@@ -2665,14 +2665,16 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
           'auctionVesting',
         ]) {
-          const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-            tgeMain.contracts.vestingLpVault,
-            {
-              voting_power_at_height: {
-                address: tgeWallets['auctionVesting'].wallet.address.toString(),
+          const vp =
+            await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+              tgeMain.contracts.vestingLpVault,
+              {
+                voting_power_at_height: {
+                  address:
+                    tgeWallets['auctionVesting'].wallet.address.toString(),
+                },
               },
-            },
-          );
+            );
           votingPowerBeforeLp[v] = vp.power;
         }
       });
@@ -2683,16 +2685,18 @@ describe('Neutron / TGE / Auction', () => {
           'airdropAuctionLockdropVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
-          'airdropAuctionLockdropVestingMigration'
+          'airdropAuctionLockdropVestingMigration',
         ]) {
-          const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-            tgeMain.contracts.lockdropVault,
-            {
-              voting_power_at_height: {
-                address: tgeWallets['auctionVesting'].wallet.address.toString(),
+          const vp =
+            await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+              tgeMain.contracts.lockdropVault,
+              {
+                voting_power_at_height: {
+                  address:
+                    tgeWallets['auctionVesting'].wallet.address.toString(),
+                },
               },
-            },
-          );
+            );
           votingPowerBeforeLockdrop[v] = vp.power;
         }
       });
@@ -2926,7 +2930,6 @@ describe('Neutron / TGE / Auction', () => {
     });
 
     describe('deploy new LP and Lockdrop vaults; add them to dao', () => {
-
       it('deploy vesting lp voting vault for CL', async () => {
         const codeId = await cmInstantiator.storeWasm(
           NeutronContract.VESTING_LP_VAULT_CL,
@@ -3017,15 +3020,15 @@ describe('Neutron / TGE / Auction', () => {
           const member = new DaoMember(tgeWallets[v], daoMain);
           vp = (await member.queryVotingPower()).power | 0;
           if (
-            (await daoMain.queryProposal(propID)).proposal.status == 'open' && vp>0
+            (await daoMain.queryProposal(propID)).proposal.status == 'open' &&
+            vp > 0
           ) {
             await member.voteYes(propID);
           }
         }
         await daoMember1.executeProposal(propID);
-        const status = (await daoMain.queryProposal(propID)).proposal
-          .status;
-        console.log('status: '+ status);
+        const status = (await daoMain.queryProposal(propID)).proposal.status;
+        console.log('status: ' + status);
       });
     });
 
@@ -3088,16 +3091,24 @@ describe('Neutron / TGE / Auction', () => {
         });
 
         it('check user voting power', async () => {
-          const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-            lockdropVaultForClAddr,
-            {
-              voting_power_at_height: {
-                address: tgeWallets['airdropAuctionLockdropVestingMigration'].wallet.address.toString(),
+          const vp =
+            await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+              lockdropVaultForClAddr,
+              {
+                voting_power_at_height: {
+                  address:
+                    tgeWallets[
+                      'airdropAuctionLockdropVestingMigration'
+                    ].wallet.address.toString(),
+                },
               },
-            },
+            );
+          console.log('lockdrop vp:' + vp.power);
+          isWithinRange(
+            +vp.power,
+            votingPowerBeforeLockdrop['airdropAuctionLockdropVestingMigration'],
+            1,
           );
-          console.log('lockdrop vp:'+ vp.power);
-          isWithinRange(+vp.power, votingPowerBeforeLockdrop['airdropAuctionLockdropVestingMigration'], 1);
         });
 
         let stateAfter: LiquidityMigrationState;
@@ -3889,16 +3900,16 @@ describe('Neutron / TGE / Auction', () => {
             });
 
             it('check user voting power', async () => {
-              const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-                lockdropVaultForClAddr,
-                {
-                  voting_power_at_height: {
-                    address: tgeWallets[v].wallet.address.toString(),
-                  },
+              const vp =
+                await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+                  lockdropVaultForClAddr,
+                  {
+                    voting_power_at_height: {
+                      address: tgeWallets[v].wallet.address.toString(),
+                    },
                   },
                 );
               isWithinRange(+vp.power, votingPowerBeforeLockdrop[v], 0.5);
-
             });
 
             let stateAfter: LiquidityMigrationState;
@@ -3949,7 +3960,6 @@ describe('Neutron / TGE / Auction', () => {
     });
 
     describe('execute migration handlers: vesting lp', () => {
-
       it('should validate numbers & save claim amount before migration', async () => {
         const [
           vestingInfoAtom,
@@ -3961,8 +3971,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeMain.contracts.vestingAtomLp,
             {
               vesting_account: {
-                address:
-                  tgeWallets['auctionVesting'].wallet.address.toString(),
+                address: tgeWallets['auctionVesting'].wallet.address.toString(),
               },
             },
           ),
@@ -3970,8 +3979,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeMain.contracts.vestingUsdcLp,
             {
               vesting_account: {
-                address:
-                  tgeWallets['auctionVesting'].wallet.address.toString(),
+                address: tgeWallets['auctionVesting'].wallet.address.toString(),
               },
             },
           ),
@@ -4004,7 +4012,11 @@ describe('Neutron / TGE / Auction', () => {
         expect(vestingInfoAtom.info.released_amount).toEqual('0');
         expect(vestingInfoUsdc.info.released_amount).toEqual('0');
 
-        isWithinRange(parseInt(vestingInfoAtom.info.schedules[0].end_point.amount), 3916, 0.5);
+        isWithinRange(
+          parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
+          3916,
+          0.5,
+        );
         expect(
           parseInt(vestingInfoAtom.info.schedules[0].end_point.amount),
         ).toBeGreaterThan(0);
@@ -4098,7 +4110,6 @@ describe('Neutron / TGE / Auction', () => {
         }
       });
 
-
       it('should compare voting power after migrtaion: vesting lp', async () => {
         for (const v of [
           'airdropAuctionVesting',
@@ -4106,16 +4117,16 @@ describe('Neutron / TGE / Auction', () => {
           'auctionLockdropVesting',
           'auctionVesting',
         ]) {
-          const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-            vestingLpVaultForClAddr,
-            {
-              voting_power_at_height: {
-                address: tgeWallets[v].wallet.address.toString(),
+          const vp =
+            await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+              vestingLpVaultForClAddr,
+              {
+                voting_power_at_height: {
+                  address: tgeWallets[v].wallet.address.toString(),
+                },
               },
-            },
-          );
+            );
           isWithinRange(+vp.power, votingPowerBeforeLp[v], 1);
-
         }
       });
 
@@ -4125,16 +4136,17 @@ describe('Neutron / TGE / Auction', () => {
           'airdropAuctionLockdropVesting',
           'auctionLockdrop',
           'auctionLockdropVesting',
-          'airdropAuctionLockdropVestingMigration'
+          'airdropAuctionLockdropVestingMigration',
         ]) {
-          const vp = await neutronChain.queryContract<VotingPowerAtHeightResponse>(
-            lockdropVaultForClAddr,
-            {
-              voting_power_at_height: {
-                address: tgeWallets[v].wallet.address.toString(),
+          const vp =
+            await neutronChain.queryContract<VotingPowerAtHeightResponse>(
+              lockdropVaultForClAddr,
+              {
+                voting_power_at_height: {
+                  address: tgeWallets[v].wallet.address.toString(),
+                },
               },
-            },
-          );
+            );
           isWithinRange(+vp.power, votingPowerBeforeLockdrop[v], 1);
         }
       });
@@ -4180,27 +4192,20 @@ describe('Neutron / TGE / Auction', () => {
         expect(resUsdc.code).toEqual(0);
 
         const [lpBalanceAtom, lpBalanceUsdc] = await Promise.all([
-          neutronChain.queryContract<BalanceResponse>(
-            ntrnAtomPclToken,
-            {
-              balance: {
-                address: tgeWallets['auctionVesting'].wallet.address.toString(),
-              },
+          neutronChain.queryContract<BalanceResponse>(ntrnAtomPclToken, {
+            balance: {
+              address: tgeWallets['auctionVesting'].wallet.address.toString(),
             },
-          ),
-          neutronChain.queryContract<BalanceResponse>(
-            ntrnUsdcPclToken,
-            {
-              balance: {
-                address: tgeWallets['auctionVesting'].wallet.address.toString(),
-              },
+          }),
+          neutronChain.queryContract<BalanceResponse>(ntrnUsdcPclToken, {
+            balance: {
+              address: tgeWallets['auctionVesting'].wallet.address.toString(),
             },
-          ),
+          }),
         ]);
         // diff is big, near 40%
         isWithinRange(parseInt(lpBalanceAtom.balance), claimAtomLP, 50);
-        isWithinRange(parseInt(lpBalanceUsdc.balance), claimAtomLP, 50);
-
+        isWithinRange(parseInt(lpBalanceUsdc.balance), claimUsdcLP, 50);
       });
     });
   });
@@ -5188,7 +5193,7 @@ type ConcentratedPoolParams = {
 // checks whether the value is in +/- range (inclusive) of the target with tolerance in %.
 const isWithinRange = (value: number, target: number, tolerance: number) => {
   if (target === 0 && value === 0) {
-    return
+    return true;
   } else if (target === 0) {
     expect(value).toBeGreaterThanOrEqual(-tolerance);
     expect(value).toBeLessThanOrEqual(tolerance);
