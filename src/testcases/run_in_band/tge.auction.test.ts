@@ -43,6 +43,9 @@ import {
   nativeToken,
   PoolStatus,
   VotingPowerAtHeightResponse,
+  vestingAccount,
+  vestingSchedule,
+  vestingSchedulePoint,
 } from '@neutron-org/neutronjsplus/dist/types';
 
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
@@ -2813,6 +2816,69 @@ describe('Neutron / TGE / Auction', () => {
         await cmInstantiator.executeContract(
           tgeMain.contracts.astroGenerator,
           JSON.stringify({
+            set_tokens_per_block: {
+              amount: '0',
+            },
+          }),
+        );
+
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.astroGenerator,
+          JSON.stringify({
+            setup_pools: {
+              pools: [
+                [ntrnAtomPclToken, '0'],
+                [ntrnUsdcPclToken, '0'],
+              ],
+            },
+          }),
+        );
+
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.astroFactory,
+          JSON.stringify({
+            update_config: {
+              generator_address: tgeMain.contracts.astroIncentives,
+            },
+          }),
+        );
+
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.astroVesting,
+          JSON.stringify({
+            register_vesting_accounts: {
+              vesting_accounts: [
+                vestingAccount(tgeMain.contracts.astroIncentives, [
+                  vestingSchedule(
+                    vestingSchedulePoint(
+                      0,
+                      tgeMain.generatorRewardsTotal.toString(),
+                    ),
+                  ),
+                ]),
+              ],
+            },
+          }),
+          [
+            {
+              denom: tgeMain.astroDenom,
+              amount: tgeMain.generatorRewardsTotal.toString(),
+            },
+          ],
+        );
+
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.astroIncentives,
+          JSON.stringify({
+            set_tokens_per_second: {
+              amount: tgeMain.generatorRewardsPerBlock.toString(),
+            },
+          }),
+        );
+
+        await cmInstantiator.executeContract(
+          tgeMain.contracts.astroIncentives,
+          JSON.stringify({
             setup_pools: {
               pools: [
                 [ntrnAtomPclToken, '1'],
@@ -2855,7 +2921,7 @@ describe('Neutron / TGE / Auction', () => {
             xyk_lockdrop_contract: tgeMain.contracts.lockdrop,
             credits_contract: xykLockdropConfig.credits_contract,
             auction_contract: xykLockdropConfig.auction_contract,
-            generator: xykLockdropConfig.generator,
+            generator: tgeMain.contracts.astroIncentives,
             lockup_rewards_info: xykLockdropConfig.lockup_rewards_info,
             usdc_token: ntrnUsdcPclToken,
             atom_token: ntrnAtomPclToken,
@@ -3044,6 +3110,7 @@ describe('Neutron / TGE / Auction', () => {
           usdcPclPair: ntrnUsdcPclPool,
           usdcPclLp: ntrnUsdcPclToken,
           generator: tgeMain.contracts.astroGenerator,
+          incentives: tgeMain.contracts.astroIncentives,
         };
       });
 
@@ -4220,7 +4287,7 @@ describe('Neutron / TGE / Auction', () => {
     describe('check generator state', () => {
       it('check generator stake presence', async () => {
         const stakedAtomLp = await neutronChain.queryContract<string>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
             deposit: {
               lp_token: liqMigContracts.atomPclLp,
@@ -4231,7 +4298,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(+stakedAtomLp).toBeGreaterThan(0);
 
         const stakedUsdcLp = await neutronChain.queryContract<string>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
             deposit: {
               lp_token: liqMigContracts.usdcPclLp,
@@ -4244,26 +4311,30 @@ describe('Neutron / TGE / Auction', () => {
 
       it('check generator rewards presence', async () => {
         const pendingAtomRewards = await neutronChain.queryContract<any>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
-            pending_token: {
+            pending_rewards: {
               lp_token: liqMigContracts.atomPclLp,
               user: liqMigContracts.pclLockdrop,
             },
           },
         );
-        expect(+pendingAtomRewards.pending).toBeGreaterThan(0);
+        expect(
+          pendingAtomRewards.reduce((sum, current) => sum + current.amount, 0),
+        ).toBeGreaterThan(0);
 
         const pendingUsdcRewards = await neutronChain.queryContract<any>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
-            pending_token: {
+            pending_rewards: {
               lp_token: liqMigContracts.usdcPclLp,
               user: liqMigContracts.pclLockdrop,
             },
           },
         );
-        expect(+pendingUsdcRewards.pending).toBeGreaterThan(0);
+        expect(
+          pendingUsdcRewards.reduce((sum, current) => sum + current.amount, 0),
+        ).toBeGreaterThan(0);
       });
     });
 
@@ -4919,7 +4990,7 @@ const gatherLiquidityMigrationState = async (
       },
     )),
     pclUsdcStakedInGen: +(await chain.queryContract<string>(
-      contracts.generator,
+      contracts.incentives,
       {
         deposit: {
           lp_token: contracts.usdcPclLp,
@@ -4928,7 +4999,7 @@ const gatherLiquidityMigrationState = async (
       },
     )),
     pclAtomStakedInGen: +(await chain.queryContract<string>(
-      contracts.generator,
+      contracts.incentives,
       {
         deposit: {
           lp_token: contracts.atomPclLp,
@@ -4952,6 +5023,7 @@ type LiquidityMigrationContracts = {
   usdcPclPair: string;
   usdcPclLp: string;
   generator: string;
+  incentives: string;
 };
 
 // Contains states of different contracts and balances related to TGE liquidity migration.
@@ -5210,4 +5282,3 @@ const isWithinRangeRel = (value: number, target: number, tolerance: number) => {
 //   expect(value).toBeGreaterThanOrEqual(target - tolerance);
 //   expect(value).toBeLessThanOrEqual(target + tolerance);
 // };
-
