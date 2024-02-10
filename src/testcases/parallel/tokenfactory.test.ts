@@ -18,8 +18,6 @@ import {
   getAuthorityMetadata,
   getBeforeSendHook,
 } from '@neutron-org/neutronjsplus/dist/tokenfactory';
-import { random } from 'lodash';
-import { meta } from '@typescript-eslint/parser';
 
 const config = require('../../config.json');
 
