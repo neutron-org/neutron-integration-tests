@@ -550,8 +550,6 @@ describe('Neutron / Interchain KV Query', () => {
       );
       expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
-      // XXX: I could actually check that "key" is correctly derived from contractAddress,
-      //      but this requires bech32 decoding/encoding shenanigans
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.keys[0].path).toEqual('bank');
       expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
@@ -997,8 +995,6 @@ describe('Neutron / Interchain KV Query', () => {
       );
       expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
-      // XXX: I could actually check that "key" is correctly derived from contractAddress,
-      //      but this requires bech32 decoding/encoding shenanigans
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.keys[0].path).toEqual('slashing');
       expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
