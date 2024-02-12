@@ -1,11 +1,12 @@
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+
+const config = require('../../config.json');
 
 describe('Float operations support', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -14,7 +15,7 @@ describe('Float operations support', () => {
   let contractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,

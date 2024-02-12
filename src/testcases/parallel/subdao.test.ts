@@ -1,27 +1,34 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  createBankMessage,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+  createBankSendMessage,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
-  TimelockConfig,
-  TimelockProposalListResponse,
-  SubDaoConfig,
   Dao,
   DaoMember,
-  setupSubDaoTimelockSet,
   deployNeutronDao,
+  setupSubDaoTimelockSet,
+  SubDaoConfig,
   SubdaoProposalConfig,
-} from '../../helpers/dao';
-import { getHeight, wait } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { Wallet } from '../../types';
+  TimelockConfig,
+  TimelockProposalListResponse,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import cosmosclient from '@cosmos-client/core';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  paramChangeProposal,
+  sendProposal,
+} from '@neutron-org/neutronjsplus/dist/proposal';
 import Long from 'long';
-import { paramChangeProposal, sendProposal } from '../../helpers/proposal';
+
+const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -34,14 +41,14 @@ describe('Neutron / Subdao', () => {
   let demo1Wallet: Wallet;
   let securityDaoWallet: Wallet;
   let demo2Wallet: Wallet;
-  let demo1Addr: AccAddress | ValAddress;
-  let securityDaoAddr: AccAddress | ValAddress;
-  let demo2Addr: AccAddress | ValAddress;
+  let demo1Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let securityDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let demo2Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
   let subDao: Dao;
   let mainDao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     demo1Wallet = testState.wallets.qaNeutron.genQaWal1;
     securityDaoWallet = testState.wallets.qaNeutronThree.genQaWal1;
@@ -129,13 +136,16 @@ describe('Neutron / Subdao', () => {
 
     test('execute timelocked: execution failed', async () => {
       //wait for timelock durations
-      await wait(20);
+      await waitSeconds(20);
       // timelocked proposal execution failed due to insufficient funds on timelock contract
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('execution_failed');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const error = await subDao.getTimelockedProposalError(proposalId);
+      expect(error).toEqual('codespace: sdk, code: 5'); // 'insufficient funds' error
     });
 
     test('execute timelocked(ExecutionFailed): WrongStatus error', async () => {
@@ -186,7 +196,7 @@ describe('Neutron / Subdao', () => {
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
 
       //wait for timelock durations
-      await wait(20);
+      await waitSeconds(20);
       // timelocked proposal execution failed due to invalid param value
       await subdaoMember1.executeTimelockedProposal(proposalId2);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId2);
@@ -229,7 +239,7 @@ describe('Neutron / Subdao', () => {
       );
       expect(timelockedProp.status).toEqual('timelocked');
       //wait for timelock durations
-      await wait(20);
+      await waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId); // should execute no problem
 
       await neutronChain.blockWaiter.waitBlocks(2);
@@ -276,7 +286,7 @@ describe('Neutron / Subdao', () => {
       expect(subdaoConfig.close_proposal_on_execution_failure).toEqual(false);
 
       //wait for timelock durations
-      await wait(20);
+      await waitSeconds(20);
       // timelocked proposal execution failed due to insufficient funds
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId3),
@@ -285,6 +295,10 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.id).toEqual(proposalId3);
       expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const error = await subDao.getTimelockedProposalError(proposalId3);
+      // do not have an error because we did not have reply
+      expect(error).toEqual(null);
 
       await neutronAccount1.msgSend(subDao.contracts.core.address, '300000');
 
@@ -329,7 +343,7 @@ describe('Neutron / Subdao', () => {
     test('execute timelocked: success', async () => {
       await neutronAccount1.msgSend(subDao.contracts.core.address, '20000'); // fund the subdao treasury
       const balance2 = await neutronAccount2.queryDenomBalance(NEUTRON_DENOM);
-      await wait(20);
+      await waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const balance2After = await neutronAccount2.queryDenomBalance(
         NEUTRON_DENOM,
@@ -417,7 +431,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('execute timelocked: success', async () => {
-      await wait(20);
+      await waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId, 'single2');
 
       const timelockedProp = await subDao.getTimelockedProposal(
@@ -580,7 +594,7 @@ describe('Neutron / Subdao', () => {
     });
 
     test('update members: success', async () => {
-      await wait(20);
+      await waitSeconds(20);
       const votingPowerBefore = await subdaoMember2.queryVotingPower();
       expect(votingPowerBefore.power).toEqual('0');
       const res = await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -670,7 +684,7 @@ describe('Neutron / Subdao', () => {
       );
       await subdaoMember1.executeProposalWithAttempts(proposalId);
 
-      await wait(20); // wait until timelock duration passes
+      await waitSeconds(20); // wait until timelock duration passes
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const timelockedProp = await subDao.getTimelockedProposal(proposalId);
       expect(timelockedProp.id).toEqual(proposalId);
@@ -852,8 +866,16 @@ describe('Neutron / Subdao', () => {
             `Proposal ${i}`,
             `proposal ${i} description`,
             [
-              createBankMessage(demo1Addr.toString(), 1000, neutronChain.denom),
-              createBankMessage(demo2Addr.toString(), 2000, neutronChain.denom),
+              createBankSendMessage(
+                demo1Addr.toString(),
+                1000,
+                neutronChain.denom,
+              ),
+              createBankSendMessage(
+                demo2Addr.toString(),
+                2000,
+                neutronChain.denom,
+              ),
             ],
           );
 
@@ -955,7 +977,7 @@ describe('Neutron / Subdao', () => {
       });
       await subdaoMember1.supportAndExecuteProposal(proposalId);
 
-      await wait(20);
+      await waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId);
       const configAfter = await neutronChain.queryContract<SubDaoConfig>(
         subDao.contracts.core.address,
@@ -978,7 +1000,7 @@ describe('Neutron / Subdao', () => {
       });
       await subdaoMember1.supportAndExecuteProposal(proposalId);
 
-      await wait(20);
+      await waitSeconds(20);
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId),
       ).rejects.toThrow(/config name cannot be empty/);

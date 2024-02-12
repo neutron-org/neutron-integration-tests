@@ -1,22 +1,22 @@
-import 'jest-extended';
-import cosmosclient from '@cosmos-client/core';
-import { AccAddress } from '@cosmos-client/core/cjs/types';
+import '@neutron-org/neutronjsplus';
 import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  getSequenceId,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+  getSequenceId,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import cosmosclient from '@cosmos-client/core';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
+  AckFailuresResponse,
   AcknowledgementResult,
   NeutronContract,
-  AckFailuresResponse,
-} from '../../helpers/types';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
-import { CosmosSDK } from '@cosmos-client/core/cjs/sdk';
-import { getIca } from '../../helpers/ica';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { getIca } from '@neutron-org/neutronjsplus/dist/ica';
+
+const config = require('../../config.json');
 
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -27,12 +27,13 @@ describe('Neutron / Interchain TXs', () => {
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
+
   const icaId1 = 'test1';
   const icaId2 = 'test2';
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -210,8 +211,8 @@ describe('Neutron / Interchain TXs', () => {
           gaiaChain.blockWaiter,
           () =>
             cosmosclient.rest.staking.delegatorDelegations(
-              gaiaChain.sdk as CosmosSDK,
-              icaAddress1 as unknown as AccAddress,
+              gaiaChain.sdk as cosmosclient.CosmosSDK,
+              icaAddress1 as unknown as cosmosclient.AccAddress,
             ),
           async (delegations) =>
             delegations.data.delegation_responses?.length == 1,
@@ -228,8 +229,8 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
         const res2 = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as CosmosSDK,
-          icaAddress2 as unknown as AccAddress,
+          gaiaChain.sdk as cosmosclient.CosmosSDK,
+          icaAddress2 as unknown as cosmosclient.AccAddress,
         );
         expect(res2.data.delegation_responses).toEqual([]);
       });
@@ -283,8 +284,8 @@ describe('Neutron / Interchain TXs', () => {
           gaiaChain.blockWaiter,
           () =>
             cosmosclient.rest.staking.delegatorDelegations(
-              gaiaChain.sdk as CosmosSDK,
-              icaAddress1 as unknown as AccAddress,
+              gaiaChain.sdk as cosmosclient.CosmosSDK,
+              icaAddress1 as unknown as cosmosclient.AccAddress,
             ),
           async (delegations) =>
             delegations.data.delegation_responses?.length === 1,
@@ -301,8 +302,8 @@ describe('Neutron / Interchain TXs', () => {
           },
         ]);
         const res2 = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as CosmosSDK,
-          icaAddress2 as unknown as AccAddress,
+          gaiaChain.sdk as cosmosclient.CosmosSDK,
+          icaAddress2 as unknown as cosmosclient.AccAddress,
         );
         expect(res2.data.delegation_responses).toEqual([]);
       });
@@ -595,8 +596,8 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('check validator state after ICA recreation', async () => {
         const res = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as CosmosSDK,
-          icaAddress1 as unknown as AccAddress,
+          gaiaChain.sdk as cosmosclient.CosmosSDK,
+          icaAddress1 as unknown as cosmosclient.AccAddress,
         );
         expect(res.data.delegation_responses).toEqual([
           {
@@ -892,38 +893,32 @@ describe('Neutron / Interchain TXs', () => {
         // 4 ack failures, 2 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '0',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '1',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '2',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '3',
             error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '4',
             error: 'codespace: wasm, code: 5', // execute wasm contract failer
           }),
           expect.objectContaining({
-            address:
-              'neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj',
+            address: contractAddress,
             id: '5',
             error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),

@@ -1,14 +1,15 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { Wallet } from '../../types';
-import { NeutronContract } from '../../helpers/types';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import cosmosclient from '@cosmos-client/core';
+
+const config = require('../../config.json');
 
 interface ReserveStats {
   readonly total_distributed: string;
@@ -25,12 +26,12 @@ describe('Neutron / Treasury', () => {
   let securityDaoWallet: Wallet;
   let holder1Wallet: Wallet;
   let holder2Wallet: Wallet;
-  let mainDaoAddr: AccAddress | ValAddress;
-  let securityDaoAddr: AccAddress | ValAddress;
-  let holder1Addr: AccAddress | ValAddress;
-  let holder2Addr: AccAddress | ValAddress;
+  let mainDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let securityDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let holder1Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let holder2Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -261,6 +262,8 @@ describe('Neutron / Treasury', () => {
           reserve,
         );
         const burnedCoinsBefore = await getBurnedCoinsAmount(neutronChain);
+        expect(burnedCoinsBefore).not.toBeNull();
+
         await neutronAccount1.simulateFeeBurning(20_000_000);
         await neutronAccount1.msgSend(reserve, '1000000000');
 
@@ -274,6 +277,7 @@ describe('Neutron / Treasury', () => {
         await neutronChain.blockWaiter.waitBlocks(1);
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(neutronChain);
+        expect(burnedCoinsAfter).not.toBeNull();
 
         const stats = await neutronChain.queryContract(reserve, {
           stats: {},
@@ -283,8 +287,8 @@ describe('Neutron / Treasury', () => {
             total_distributed: '42014',
             total_reserved: `${158053 + parseInt(reserveStats.total_reserved)}`,
             total_processed_burned_coins: `${
-              parseInt(burnedCoinsAfter!) -
-              parseInt(burnedCoinsBefore!) +
+              parseInt(burnedCoinsAfter || '0') -
+              parseInt(burnedCoinsBefore || '0') +
               parseInt(reserveStats.total_processed_burned_coins)
             }`,
           }),
@@ -313,7 +317,7 @@ describe('Neutron / Treasury', () => {
       });
       test('claim pending', async () => {
         const balanceBefore = await neutronChain.queryDenomBalance(
-          holder1Addr,
+          holder1Addr.toString(),
           NEUTRON_DENOM,
         );
         const res = await neutronAccount2.executeContract(
@@ -337,7 +341,7 @@ describe('Neutron / Treasury', () => {
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(
-          holder1Addr,
+          holder1Addr.toString(),
           NEUTRON_DENOM,
         );
         expect(balanceAfter - balanceBefore).toEqual(4005);
@@ -418,7 +422,8 @@ describe('Neutron / Treasury', () => {
     });
 
     test('distribution', async () => {
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         dsc,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -448,7 +453,8 @@ describe('Neutron / Treasury', () => {
 
     test('reserve', async () => {
       await neutronAccount1.msgSend(reserve, '10000000');
-      await neutronAccount1.testExecControl(
+      await testExecControl(
+        neutronAccount1,
         reserve,
         async () => {
           const res = await neutronAccount1.executeContract(
@@ -520,9 +526,10 @@ const normalizeReserveBurnedCoins = async (
     });
 
     const burnedCoins = await getBurnedCoinsAmount(cm.chain);
+    expect(burnedCoins).not.toBeNull();
     normalize =
       parseInt(reserveStats.total_processed_burned_coins) + 7500 !==
-      parseInt(burnedCoins!);
+      parseInt(burnedCoins || '0');
   }
 
   return reserveStats;
@@ -565,3 +572,83 @@ const setupReserve = async (
     )
   )[0]._contract_address;
 };
+
+/**
+ * Tests a pausable contract execution control.
+ * @param testingContract is the contract the method tests;
+ * @param execAction is an executable action to be called during a pause and after unpausing
+ * as the main part of the test. Should return the execution response code;
+ * @param actionCheck is called after unpausing to make sure the executable action worked.
+ */
+async function testExecControl(
+  account: WalletWrapper,
+  testingContract: string,
+  execAction: () => Promise<number | undefined>,
+  actionCheck: () => Promise<void>,
+) {
+  // check contract's pause info before pausing
+  let pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // pause contract
+  let res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: 50,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // execute msgs on paused contract
+  await expect(execAction()).rejects.toThrow(/Contract execution is paused/);
+
+  // unpause contract
+  res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      unpause: {},
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after unpausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+
+  // execute msgs on unpaused contract
+  const code = await execAction();
+  expect(code).toEqual(0);
+  await actionCheck();
+
+  // pause contract again for a short period
+  const shortPauseDuration = 5;
+  res = await account.executeContract(
+    testingContract,
+    JSON.stringify({
+      pause: {
+        duration: shortPauseDuration,
+      },
+    }),
+  );
+  expect(res.code).toEqual(0);
+
+  // check contract's pause info after pausing
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo.unpaused).toEqual(undefined);
+  expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
+
+  // wait and check contract's pause info after unpausing
+  await account.chain.blockWaiter.waitBlocks(shortPauseDuration);
+  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  expect(pauseInfo).toEqual({ unpaused: {} });
+  expect(pauseInfo.paused).toEqual(undefined);
+}
