@@ -337,7 +337,9 @@ describe('Neutron / Parameters', () => {
 
   describe('Interchaintxs params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsInterchaintxsProposal(
+        chainManagerAddress,
         'Proposal #7',
         'Update interchaintxs params',
         updateInterchaintxsParamsProposal({

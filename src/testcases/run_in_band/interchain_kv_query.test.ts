@@ -152,13 +152,17 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   const daoContracts = await getDaoContracts(cm.chain, daoCoreAddress);
   const dao = new Dao(cm.chain, daoContracts);
   const daoMember = new DaoMember(cm, dao);
-  const message = paramChangeProposal({
-    title,
-    description,
-    subspace: 'interchainqueries',
-    key,
-    value,
-  });
+  const chainManagerAddress = (await cm.chain.getChainAdmins())[0];
+  const message = paramChangeProposal(
+    {
+      title,
+      description,
+      subspace: 'interchainqueries',
+      key,
+      value,
+    },
+    chainManagerAddress,
+  );
   await dao.makeSingleChoiceProposalPass(
     [daoMember],
     title,
