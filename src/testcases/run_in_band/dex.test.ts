@@ -1,5 +1,6 @@
 import {
   CosmosWrapper,
+  getEventAttribute,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
   WalletWrapper,
@@ -26,6 +27,7 @@ import {
   PoolReservesResponse,
   PoolResponse,
 } from '../../helpers/dex';
+import { msgCreateDenom, msgMintDenom } from '../../helpers/tokenfactory';
 
 describe('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -160,7 +162,7 @@ describe('Neutron / IBC hooks', () => {
               token_out: 'uibcusdc',
               tick_index_in_to_out: 1,
               amount_in: '10',
-              order_type: LimitOrderType.GoodTilCanceled,
+              order_type: LimitOrderType.GoodTilCancelled,
             },
           }),
         );
@@ -289,12 +291,12 @@ describe('Neutron / IBC hooks', () => {
                 tick_index_in_to_out: 1,
                 amount_in: '10',
                 expiration_time: 1,
-                order_type: 10,
+                order_type: 'unknown',
               },
             }),
           ),
         ).rejects.toThrowError(
-          /invalid value: 10, expected one of: 0, 1, 2, 3, 4/,
+          /unknown variant `unknown`, expected one of `GOOD_TIL_CANCELLED`, `FILL_OR_KILL`, `IMMEDIATE_OR_CANCEL`, `JUST_IN_TIME`, `GOOD_TIL_TIME`/,
         );
       });
     });
@@ -331,22 +333,114 @@ describe('Neutron / IBC hooks', () => {
     });
 
     describe('MultiHopSwap', () => {
-      // TBD
-      // console.log(trancheKey);
-      // test('MultiHopSwap', async () => {
-      //   await expect(
-      //     neutronAccount.executeContract(
-      //       contractAddress,
-      //       JSON.stringify({
-      //         cancel_limit_order: {
-      //           tranche_key: trancheKey,
-      //         },
-      //       }),
-      //     ),
-      //   ).rejects.toThrowError(
-      //     /No active limit found. It does not exist or has already been filled/,
-      //   );
-      // });
+      const denoms: any[] = [];
+      test('successfull multihops', async () => {
+        const numberDenoms = 10;
+        for (let i = 0; i < numberDenoms; i++) {
+          const data = await msgCreateDenom(
+            neutronAccount,
+            neutronAccount.wallet.address.toString(),
+            String(i),
+          );
+
+          const newTokenDenom = getEventAttribute(
+            (data as any).events,
+            'create_denom',
+            'new_token_denom',
+          );
+
+          await msgMintDenom(
+            neutronAccount,
+            neutronAccount.wallet.address.toString(),
+            {
+              denom: newTokenDenom,
+              amount: '1000000',
+            },
+          );
+          await neutronAccount.msgSend(contractAddress, {
+            amount: '1000000',
+            denom: newTokenDenom,
+          });
+          denoms.push({
+            denom: newTokenDenom,
+            balance: 1000000,
+          });
+        }
+        for (let i = 0; i < numberDenoms - 1; i++) {
+          const res = await neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              deposit: {
+                receiver: contractAddress,
+                token_a: denoms[i].denom,
+                token_b: denoms[i + 1].denom,
+                amounts_a: ['1000'], // uint128
+                amounts_b: ['1000'], // uint128
+                tick_indexes_a_to_b: [5], // i64
+                fees: [0], // u64
+                options: [
+                  {
+                    disable_swap: true,
+                  },
+                ],
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+        }
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            multi_hop_swap: {
+              receiver: contractAddress,
+              routes: [
+                {
+                  hops: [
+                    denoms[0].denom,
+                    denoms[1].denom,
+                    denoms[2].denom,
+                    denoms[3].denom,
+                    denoms[4].denom,
+                    denoms[5].denom,
+                    denoms[6].denom,
+                    denoms[7].denom,
+                    denoms[8].denom,
+                    denoms[9].denom,
+                  ],
+                },
+              ],
+              amount_in: '100',
+              exit_limit_price: '0.1',
+              pick_best_route: true,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+        console.log(res);
+      });
+
+      test('no route found', async () => {
+        await expect(
+          neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              multi_hop_swap: {
+                receiver: contractAddress,
+                routes: [
+                  {
+                    hops: [denoms[0].denom, denoms[9].denom],
+                  },
+                ],
+                amount_in: '100',
+                exit_limit_price: '0.1',
+                pick_best_route: true,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(
+          /All multihop routes failed limitPrice check or had insufficient liquidity/,
+        );
+      });
     });
   });
   describe('DEX queries', () => {

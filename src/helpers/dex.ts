@@ -248,11 +248,11 @@ export type AllPoolMetadataResponse = {
 // types
 
 export enum LimitOrderType {
-  GoodTilCanceled = 0,
-  FillOrKill = 1,
-  ImmediateOrCancel = 2,
-  JustInTime = 3,
-  GoodTilTime = 4,
+  GoodTilCancelled = 'GOOD_TIL_CANCELLED',
+  FillOrKill = 'FILL_OR_KILL',
+  ImmediateOrCancel = 'IMMEDIATE_OR_CANCEL',
+  JustInTime = 'JUST_IN_TIME',
+  GoodTilTime = 'GOOD_TIL_TIME',
 }
 
 export type MultiHopRoute = {
