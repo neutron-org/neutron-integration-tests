@@ -36,7 +36,8 @@
     "test:dex_bindings": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_bindings",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
-    "fmt": "eslint ./src --fix"
+    "fmt": "eslint ./src --fix",
+    "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json"
   },
   "author": "Neutron",
   "license": "Apache-2.0",
@@ -45,9 +46,9 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "neutron-org/neutronjsplus#feat/add-dex-bindings",
+    "@neutron-org/neutronjsplus": "neutron-org/neutronjsplus#aa48ecebfda6134ff19b0b5924c22a17a14782a8",
     "@types/lodash": "^4.14.182",
-    "@types/long": "^4.0.2",
+    "@types/long": "^5.0.0",
     "axios": "^0.27.2",
     "babel-jest": "^29.3.1",
     "commander": "^10.0.0",
@@ -77,7 +78,7 @@
     "regenerator-runtime": "^0.13.9",
     "ts-node": "^9.1.1",
     "tslint": "^5.20.1",
-    "typescript": "^4.1.3"
+    "typescript": "^5.1.6"
   },
   "lint-staged": {
     "./**/src/**/*.{ts,tsx}": [
