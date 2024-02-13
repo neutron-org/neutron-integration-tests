@@ -72,6 +72,14 @@ NO_DOCKER=1 yarn test # all tests
 ...
 ```
 
+## Development
+
+If you're developing integration tests and need to add additional helper methods to the @neutron-org/neutronjs packages, start by cloning the package repository. Use the command git clone git@github.com:neutron-org/neutronjs.git. After cloning, you have two options: either alter the package reference in the package.json file to point to your cloned repository, or use yarn link.
+
+Once the JavaScript helper code in your local repository is ready, your next step is to create a Pull Request (PR). This PR must be reviewed and approved before it can be merged into the main branch.
+
+However, even after the merge, you cannot immediately use the new package version in your integration tests. First, you need to wait until the updated version of the package will be published to the npmjs repository. After the new version has been published, you can incorporate it into your integration tests. This will allow you to complete the testing sequence in your GitHub Actions workflow.
+
 ## Warning
 
 Since docker-compose doesn't rebuild images on file changing, there is a chance for one to launch the tests with an
@@ -99,6 +107,7 @@ NODE2_WS_URL - url to websocket of the second node
 BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
 NO_REBUILD - skip containers rebuilding
+DEBUG_SUBMIT_TX - log submitted txs to stdout
 ```
 
 ## Config

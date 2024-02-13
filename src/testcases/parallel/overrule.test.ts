@@ -1,16 +1,20 @@
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+
+import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   Dao,
   DaoMember,
   deployNeutronDao,
   deploySubdao,
-} from '../../helpers/dao';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { InlineResponse20075TxResponse } from '@cosmos-client/core/cjs/openapi/api';
+} from '@neutron-org/neutronjsplus/dist/dao';
+
+const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,7 +28,7 @@ describe('Neutron / Subdao', () => {
   let mainDao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -46,10 +50,10 @@ describe('Neutron / Subdao', () => {
     }
     mainDao = new Dao(neutronChain, daoContracts);
     mainDaoMember1 = new DaoMember(neutronAccount1, mainDao);
-    await mainDaoMember1.bondFunds('2000');
+    await mainDaoMember1.bondFunds('20000');
 
     mainDaoMember2 = new DaoMember(neutronAccount2, mainDao);
-    await mainDaoMember2.bondFunds('1000');
+    await mainDaoMember2.bondFunds('10000');
 
     subDao = await deploySubdao(
       neutronAccount1,
@@ -60,6 +64,8 @@ describe('Neutron / Subdao', () => {
     );
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
+
+    await neutronChain.blockWaiter.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
@@ -175,7 +181,7 @@ async function voteAgainstOverrule(
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<InlineResponse20075TxResponse> {
+): Promise<BroadcastTx200ResponseTxResponse> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,

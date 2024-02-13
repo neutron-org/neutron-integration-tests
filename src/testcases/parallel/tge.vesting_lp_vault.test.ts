@@ -1,23 +1,26 @@
+import '@neutron-org/neutronjsplus';
 import {
-  CosmosWrapper,
-  IBC_ATOM_DENOM,
-  IBC_USDC_DENOM,
-  NEUTRON_DENOM,
   WalletWrapper,
-} from '../../helpers/cosmos';
+  CosmosWrapper,
+  NEUTRON_DENOM,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
-  NeutronContract,
+  NativeToken,
   nativeToken,
-  PoolStatus,
   nativeTokenInfo,
+  NeutronContract,
+  PoolStatus,
+  Token,
   vestingAccount,
   vestingSchedule,
   vestingSchedulePoint,
-  NativeToken,
-  Token,
-} from '../../helpers/types';
-import { getHeight, wait } from '../../helpers/wait';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+} from '@neutron-org/neutronjsplus/dist/types';
+import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+
+const config = require('../../config.json');
 
 // general contract keys used across the tests
 const ASTRO_PAIR_CONTRACT_KEY = 'ASTRO_PAIR';
@@ -48,7 +51,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -235,13 +238,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
@@ -285,13 +288,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           JSON.stringify({ update: {} }),
         );
         expect(execRes.code).toBe(0);
-        neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
@@ -406,7 +409,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       describe('check unclaimed amounts', () => {
         let currentHeight: number;
         beforeAll(async () => {
-          await wait(5);
+          await waitSeconds(5);
           currentHeight = await getHeight(neutronChain.sdk);
         });
         test('user1 ATOM lp contract', async () => {
@@ -976,6 +979,38 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             }),
           ),
         ).rejects.toThrow(/Unauthorized/);
+      });
+
+      test('set vesting token not allowed more than once', async () => {
+        await expect(
+          cmManager.executeContract(
+            contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  native_token: {
+                    denom: NEUTRON_DENOM,
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Vesting token is already set!/);
+
+        await expect(
+          cmManager.executeContract(
+            contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+            JSON.stringify({
+              set_vesting_token: {
+                vesting_token: {
+                  native_token: {
+                    denom: NEUTRON_DENOM,
+                  },
+                },
+              },
+            }),
+          ),
+        ).rejects.toThrow(/Vesting token is already set!/);
       });
 
       describe('register vesting accounts not allowed to a stranger', () => {

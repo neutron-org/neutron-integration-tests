@@ -1,21 +1,26 @@
-import {
-  COSMOS_DENOM,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { proto } from '@cosmos-client/core';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
 import Long from 'long';
+import { CodeId } from '../../types';
+import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
+import {
+  CosmosWrapper,
+  packAnyMsg,
+  WalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import {
+  TestStateLocalCosmosTestNet,
+  NEUTRON_DENOM,
+  COSMOS_DENOM,
+} from '@neutron-org/neutronjsplus';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   queryRecipientTxs,
   queryTransfersNumber,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '../../helpers/icq';
-import { NeutronContract } from '../../helpers/types';
-import { CodeId } from '../../types';
+} from '@neutron-org/neutronjsplus/dist/icq';
+
+const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -27,7 +32,7 @@ describe('Neutron / Interchain TX Query', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -403,29 +408,32 @@ describe('Neutron / Interchain TX Query', () => {
     test('exec tx with two transfers', async () => {
       addr1ExpectedBalance += amountToAddrFirst2;
       addr2ExpectedBalance += amountToAddrSecond2;
+      const sendMsg1 = new MsgSend({
+        fromAddress: gaiaAccount.wallet.address.toString(),
+        toAddress: watchedAddr1,
+        amount: [
+          { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
+        ],
+      });
+      const sendMsg2 = new MsgSend({
+        fromAddress: gaiaAccount.wallet.address.toString(),
+        toAddress: watchedAddr2,
+        amount: [
+          {
+            denom: gaiaChain.denom,
+            amount: amountToAddrSecond2.toString(),
+          },
+        ],
+      });
+
       const res = await gaiaAccount.execTx(
         {
           gas_limit: Long.fromString('200000'),
           amount: [{ denom: gaiaChain.denom, amount: '1000' }],
         },
         [
-          new proto.cosmos.bank.v1beta1.MsgSend({
-            from_address: gaiaAccount.wallet.address.toString(),
-            to_address: watchedAddr1,
-            amount: [
-              { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
-            ],
-          }),
-          new proto.cosmos.bank.v1beta1.MsgSend({
-            from_address: gaiaAccount.wallet.address.toString(),
-            to_address: watchedAddr2,
-            amount: [
-              {
-                denom: gaiaChain.denom,
-                amount: amountToAddrSecond2.toString(),
-              },
-            ],
-          }),
+          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg1),
+          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg2),
         ],
       );
       expectedIncomingTransfers += 2;

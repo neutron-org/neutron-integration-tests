@@ -1,15 +1,18 @@
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
-  COSMOS_DENOM,
+  WalletWrapper,
   CosmosWrapper,
+  COSMOS_DENOM,
   NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import Long from 'long';
-import { getWithAttempts } from '../../helpers/wait';
-import { getTreasuryContract } from '../../helpers/dao';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+
+const config = require('../../config.json');
 
 describe('Neutron / Tokenomics', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -20,7 +23,7 @@ describe('Neutron / Tokenomics', () => {
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
