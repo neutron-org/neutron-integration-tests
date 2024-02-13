@@ -1564,10 +1564,10 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.3.0.tgz#cb133953cfdd8ff9c3e3f89b6a8bf3ab192424c3"
-  integrity sha512-gLI1hk1SOQaJnK/JDWfcDH4ERXNWdftUhpUHdoWWaMY5VbnYM2Sf1vM8tUnLBoNkJE2iTxYSDxkriU5jTYzYww==
+"@neutron-org/neutronjsplus@0.4.0-rc":
+  version "0.4.0-rc"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.4.0-rc.tgz#b45b4696013fb0b15edff97f0e895d4d5a314933"
+  integrity sha512-XA+hXbPTuwdU7br9wD/niTtdYUXbsGKWT1vMH/hhhcLw5ZdbZZ+2iM8pd9r9RY3QLKIn3rLeln5EFiFFqlniIg==
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
