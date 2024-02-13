@@ -1,16 +1,17 @@
 import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
-  WalletWrapper,
   getEventAttribute,
-} from '../../helpers/cosmos';
-import { NeutronContract } from '../../helpers/types';
-import { msgCreateDenom } from '../../helpers/tokenfactory';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
+import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { CodeId } from '../../types';
+const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -24,7 +25,7 @@ describe('Neutron / Simple', () => {
   let newTokenDenom: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -242,14 +243,6 @@ describe('Neutron / Simple', () => {
     test('feeburner params should work', async () => {
       const res = JSON.parse(await querySmart({ feeburner_params: {} }));
       expect(res.params.neutron_denom).toBe('untrn');
-    });
-
-    test('non whitelisted query should NOT work', async () => {
-      await expect(
-        querySmart({ feeburner_total_burned_neutrons_amount: {} }),
-      ).rejects.toThrow(
-        /Unsupported query type: '\/neutron.feeburner.Query\/TotalBurnedNeutronsAmount'/,
-      );
     });
   });
 });

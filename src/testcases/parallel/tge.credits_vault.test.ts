@@ -1,15 +1,17 @@
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { AccAddress, ValAddress } from '@cosmos-client/core/cjs/types';
-import { Wallet } from '../../types';
-import { CreditsVaultConfig } from '../../helpers/dao';
-import { NeutronContract } from '../../helpers/types';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import cosmosclient from '@cosmos-client/core';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
-import { getHeight } from '../../helpers/wait';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
+
+const config = require('../../config.json');
 
 describe('Neutron / Credits Vault', () => {
   let testState: TestStateLocalCosmosTestNet;
@@ -21,12 +23,12 @@ describe('Neutron / Credits Vault', () => {
   let daoAccount: WalletWrapper;
   let airdropAccount: WalletWrapper;
 
-  let daoAddr: AccAddress | ValAddress;
-  let airdropAddr: AccAddress | ValAddress;
-  let lockdropAddr: AccAddress | ValAddress;
+  let daoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let airdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let lockdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     daoWallet = testState.wallets.qaNeutron.genQaWal1;
     airdropWallet = testState.wallets.qaNeutronFour.genQaWal1;

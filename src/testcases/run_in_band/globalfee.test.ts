@@ -1,22 +1,29 @@
+import Long from 'long';
+import '@neutron-org/neutronjsplus';
 import {
+  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  WalletWrapper,
-} from '../../helpers/cosmos';
-import { TestStateLocalCosmosTestNet } from '../common_localcosmosnet';
-import { getWithAttempts } from '../../helpers/wait';
-import { Dao, DaoMember, getDaoContracts } from '../../helpers/dao';
-import Long from 'long';
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/dao';
+
+const config = require('../../config.json');
 
 describe('Neutron / Global Fee', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let daoMember: DaoMember;
-  let dao: Dao;
+  let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet();
+    testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
       testState.sdk1,
@@ -29,25 +36,27 @@ describe('Neutron / Global Fee', () => {
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    dao = new Dao(neutronChain, daoContracts);
-    daoMember = new DaoMember(neutronAccount, dao);
-    await daoMember.bondFunds('1000');
+    daoMain = new Dao(neutronChain, daoContracts);
+    daoMember = new DaoMember(neutronAccount, daoMain);
+    await daoMember.bondFunds('10000');
     await getWithAttempts(
       neutronChain.blockWaiter,
       async () =>
-        await dao.queryVotingPower(daoMember.user.wallet.address.toString()),
+        await daoMain.queryVotingPower(
+          daoMember.user.wallet.address.toString(),
+        ),
       async (response) => response.power == 1000,
       20,
     );
 
-    await daoMember.user.msgSend(dao.contracts.core.address, '1000', {
+    await daoMember.user.msgSend(daoMain.contracts.core.address, '1000', {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
     });
   });
 
   afterAll(async () => {
-    await daoMember.unbondFunds('1000');
+    await daoMember.unbondFunds('10000');
   });
 
   let counter = 1;
@@ -74,7 +83,7 @@ describe('Neutron / Global Fee', () => {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
-    await dao.checkPassedProposal(proposalId);
+    await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
       gas_limit: Long.fromString('4000000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
@@ -118,7 +127,7 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command', async () => {
     await expect(
-      neutronAccount.msgSend(dao.contracts.core.address, '1000', {
+      neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       }),
@@ -144,7 +153,7 @@ describe('Neutron / Global Fee', () => {
 
   test('check that MsgSend passes check for allowed messages - now works with only validator fees', async () => {
     const res = await neutronAccount.msgSend(
-      dao.contracts.core.address,
+      daoMain.contracts.core.address,
       '1000',
       {
         gas_limit: Long.fromString('200000'),
@@ -173,7 +182,7 @@ describe('Neutron / Global Fee', () => {
   test('check that MsgSend does not work without minimal fees now', async () => {
     await neutronChain.blockWaiter.waitBlocks(2);
     await expect(
-      neutronAccount.msgSend(dao.contracts.core.address, '1000', {
+      neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       }),
@@ -200,7 +209,7 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command after revert with zero value (only validator min fee settings applied)', async () => {
     const res = await neutronAccount.msgSend(
-      dao.contracts.core.address,
+      daoMain.contracts.core.address,
       '1000',
       {
         gas_limit: Long.fromString('200000'),
