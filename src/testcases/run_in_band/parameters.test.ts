@@ -44,14 +44,6 @@ describe('Neutron / Parameters', () => {
     );
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-
-    console.log(
-      '>>>>>> daoCoreAddress',
-      daoCoreAddress,
-      '>>>>>> chainManagerAddress',
-      chainManagerAddress,
-    );
 
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(neutronAccount, dao);
