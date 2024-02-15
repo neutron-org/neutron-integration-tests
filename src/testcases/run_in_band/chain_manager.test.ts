@@ -15,10 +15,7 @@ import {
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import cosmosclient from '@cosmos-client/core';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import {
-  paramChangeProposal,
-  updateCronParamsProposal,
-} from '@neutron-org/neutronjsplus/dist/proposal';
+import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
 
@@ -70,51 +67,9 @@ describe('Neutron / Subdao', () => {
     expect(votingPower.power).toEqual('1');
   });
 
-  describe('Add an ALLOW_ONLY strategy', () => {
-    test('create proposal', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      await mainDaoMember.submitAddChainManagerStrategyProposal(
-        chainManagerAddress,
-        'Proposal #2',
-        'Add strategy proposal. It will pass',
-        {
-          add_strategy: {
-            strategy: {
-              address: subDao.contracts.core.address,
-              permissions: [
-                {
-                  UpdateParamsPermission: {
-                    CronUpdateParamsPermission: {
-                      security_address: true,
-                      limit: true,
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
-        '1000',
-      );
-    });
-    describe('vote for proposal', () => {
-      const proposalId = 2;
-      test('vote YES from wallet 1', async () => {
-        await mainDaoMember.voteYes(proposalId);
-      });
-    });
-
-    describe('execute proposal', () => {
-      const proposalId = 2;
-      test('check if proposal is passed', async () => {
-        await mainDao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
-        await mainDaoMember.executeProposalWithAttempts(proposalId);
-      });
-    });
-  });
-
+  // We need to do this because the real main dao has a super long voting period.
+  // In the subdao tests, a new set of dao contracts was deployed with a smaller
+  // period, but feels like an overkill here.
   describe('Change the overrule proposal voting period', () => {
     let proposalId: number;
     test('create proposal', async () => {
@@ -173,6 +128,60 @@ describe('Neutron / Subdao', () => {
     });
   });
 
+  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, legacy param changes)', () => {
+    let proposalId: number;
+    test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      proposalId = await mainDaoMember.submitAddChainManagerStrategyProposal(
+        chainManagerAddress,
+        'Proposal #2',
+        'Add strategy proposal. It will pass',
+        {
+          add_strategy: {
+            strategy: {
+              address: subDao.contracts.core.address,
+              permissions: [
+                {
+                  ParamChangePermission: {
+                    params: [
+                      {
+                        subspace: 'globalfee',
+                        key: 'MaxTotalBypassMinFeeMsgGasUsage',
+                      },
+                    ],
+                  },
+                },
+                {
+                  UpdateParamsPermission: {
+                    CronUpdateParamsPermission: {
+                      security_address: true,
+                      limit: true,
+                    },
+                  },
+                },
+              ],
+            },
+          },
+        },
+        '1000',
+      );
+    });
+    describe('vote for proposal', () => {
+      test('vote YES from wallet 1', async () => {
+        await mainDaoMember.voteYes(proposalId);
+      });
+    });
+
+    describe('execute proposal', () => {
+      test('check if proposal is passed', async () => {
+        await mainDao.checkPassedProposal(proposalId);
+      });
+      test('execute passed proposal', async () => {
+        await mainDaoMember.executeProposalWithAttempts(proposalId);
+      });
+    });
+  });
+
   describe('ALLOW_ONLY: change CRON parameters', () => {
     let proposalId: number;
     beforeAll(async () => {
@@ -205,6 +214,48 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
+
+      const cronParams = await neutronChain.queryCronParams();
+      expect(cronParams.params.limit).toEqual('42');
+    });
+  });
+
+  describe('ALLOW_ONLY: change legacy (global fee) parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      proposalId = await subdaoMember1.submitParameterChangeProposal(
+        chainManagerAddress,
+        'Proposal #2',
+        'Globalfee param update proposal. Will pass',
+        'globalfee',
+        'MaxTotalBypassMinFeeMsgGasUsage',
+        '"42000"',
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const globalFeeParams = await neutronChain.queryGlobalfeeParams();
+      expect(globalFeeParams.max_total_bypass_min_fee_msg_gas_usage).toEqual(
+        '42000',
+      );
     });
   });
 });
