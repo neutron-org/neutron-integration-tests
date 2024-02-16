@@ -536,12 +536,32 @@ describe('Neutron / IBC hooks', () => {
       // expect(res.limit_order_tranche.length).toBeGreaterThan(0);
     });
     test('AllUserDeposits', async () => {
-      await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
-        contractAddress,
-        {
-          user_deposit_all: { address: contractAddress },
-        },
-      );
+      const resp =
+        await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
+          contractAddress,
+          {
+            user_deposit_all: {
+              address: contractAddress,
+              include_pool_data: true,
+            },
+          },
+        );
+      console.log(resp);
+      expect(Number(resp.deposits[0].total_shares)).toBeGreaterThan(0);
+      expect(Number(resp.deposits[0].pool!.id)).toEqual(0);
+
+      const respNoPoolData =
+        await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
+          contractAddress,
+          {
+            user_deposit_all: {
+              address: contractAddress,
+              include_pool_data: false,
+            },
+          },
+        );
+      expect(respNoPoolData.deposits[0].total_shares).toBeNull();
+      expect(respNoPoolData.deposits[0].pool).toBeNull();
     });
     test('AllTickLiquidity', async () => {
       const res =
