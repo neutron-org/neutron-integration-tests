@@ -2977,7 +2977,7 @@ describe('Neutron / TGE / Auction', () => {
             xyk_lockdrop_contract: tgeMain.contracts.lockdrop,
             credits_contract: xykLockdropConfig.credits_contract,
             auction_contract: xykLockdropConfig.auction_contract,
-            generator: tgeMain.contracts.astroIncentives,
+            incentives: tgeMain.contracts.astroIncentives,
             lockup_rewards_info: xykLockdropConfig.lockup_rewards_info,
             usdc_token: ntrnUsdcPclToken,
             atom_token: ntrnAtomPclToken,
@@ -3435,7 +3435,7 @@ describe('Neutron / TGE / Auction', () => {
           describe('PCL user lockups', () => {
             test('no user lockup info before migration', async () => {
               expect(stateBefore.pclUserLockups).toMatchObject({
-                claimable_generator_astro_debt: '0',
+                claimable_incentives_debt: '0',
                 mapped_lockup_infos: {},
                 lockup_positions_index: 0,
                 ntrn_transferred: false,
@@ -3865,7 +3865,7 @@ describe('Neutron / TGE / Auction', () => {
           describe('PCL user lockups', () => {
             test('no user lockup info before migration', async () => {
               expect(stateBefore.pclUserLockups).toMatchObject({
-                claimable_generator_astro_debt: '0',
+                claimable_incentives_debt: '0',
                 mapped_lockup_infos: {},
                 lockup_positions_index: 0,
                 ntrn_transferred: false,
@@ -4058,7 +4058,7 @@ describe('Neutron / TGE / Auction', () => {
 
               test('no user lockup info in PCL lockdrop', async () => {
                 expect(stateAfter.pclUserLockups).toMatchObject({
-                  claimable_generator_astro_debt: '0',
+                  claimable_incentives_debt: '0',
                   mapped_lockup_infos: {},
                   lockup_positions_index: 0,
                   ntrn_transferred: false,
@@ -4170,6 +4170,7 @@ describe('Neutron / TGE / Auction', () => {
             cl_pair: ntrnAtomPclPool,
             new_lp_token: ntrnAtomPclToken,
             pcl_vesting: atomVestingLpAddr,
+            dust_threshold: '0',
           },
         );
         expect(res.code).toEqual(0);
@@ -4187,6 +4188,7 @@ describe('Neutron / TGE / Auction', () => {
             cl_pair: ntrnUsdcPclPool,
             new_lp_token: ntrnUsdcPclToken,
             pcl_vesting: usdcVestingLpAddr,
+            dust_threshold: '0',
           },
         );
         expect(res.code).toEqual(0);
@@ -4569,21 +4571,21 @@ describe('Neutron / TGE / Auction', () => {
           it('astro', async () => {
             // sanity check
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
             ).toBeGreaterThan(0);
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
             ).toEqual(
               +stateBefore.pclUserLockups.mapped_lockup_infos[atomLockupKey]
-                .claimable_astro_rewards_debt +
+                .claimable_incentives_debt +
                 +stateBefore.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
-                  .claimable_astro_rewards_debt,
+                  .claimable_incentives_debt,
             );
 
             // assume fluctuation because rewards amount increases every block
             isWithinRangeRel(
               stateAfter.balances.user.astro - stateBefore.balances.user.astro,
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
               0.5,
             );
           });
@@ -4591,20 +4593,20 @@ describe('Neutron / TGE / Auction', () => {
           it('external rewards', async () => {
             // sanity check
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
             ).toBeGreaterThan(0);
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
             ).toEqual(
               +stateBefore.pclUserLockups.mapped_lockup_infos[atomLockupKey] // only atom cuz usdc is not incentivized
-                .claimable_external_rewards_debt,
+                .claimable_external_incentives_rewards_debt,
             );
 
             // assume fluctuation because rewards amount increases every block
             isWithinRangeRel(
               stateAfter.balances.user.external_rewards -
                 stateBefore.balances.user.external_rewards,
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
               0.5,
             );
           });
@@ -4851,21 +4853,21 @@ describe('Neutron / TGE / Auction', () => {
           it('astro', async () => {
             // sanity check
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
             ).toBeGreaterThan(0);
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
             ).toEqual(
               +stateBefore.pclUserLockups.mapped_lockup_infos[atomLockupKey]
-                .claimable_astro_rewards_debt +
+                .claimable_incentives_debt +
                 +stateBefore.pclUserLockups.mapped_lockup_infos[usdcLockupKey]
-                  .claimable_astro_rewards_debt,
+                  .claimable_incentives_debt,
             );
 
             // assume fluctuation because rewards amount increases every block
             isWithinRangeRel(
               stateAfter.balances.user.astro - stateBefore.balances.user.astro,
-              +stateBefore.pclUserLockups.claimable_generator_astro_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_debt,
               0.5,
             );
           });
@@ -4873,20 +4875,20 @@ describe('Neutron / TGE / Auction', () => {
           it('external rewards', async () => {
             // sanity check
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
             ).toBeGreaterThan(0);
             expect(
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
             ).toEqual(
               +stateBefore.pclUserLockups.mapped_lockup_infos[atomLockupKey] // only atom cuz usdc is not incentivized
-                .claimable_external_rewards_debt,
+                .claimable_external_incentives_rewards_debt,
             );
 
             // assume fluctuation because rewards amount increases every block
             isWithinRangeRel(
               stateAfter.balances.user.external_rewards -
                 stateBefore.balances.user.external_rewards,
-              +stateBefore.pclUserLockups.claimable_generator_external_debt,
+              +stateBefore.pclUserLockups.claimable_incentives_external_debt,
               0.5,
             );
           });
@@ -5283,22 +5285,22 @@ const transformPclUserInfo = async (
       astroport_lp_token: v.astroport_lp_token,
       astroport_lp_transferred: v.astroport_lp_transferred,
       astroport_lp_units: v.astroport_lp_units,
-      astro_rewards_debt:
-        v.generator_debt.find((v) =>
+      incentives_debt:
+        v.incentives_debt.find((v) =>
           (v[0] as NativeToken).native_token.denom.includes('/uastro'),
         )?.[1] || '0',
-      claimable_astro_rewards_debt:
-        v.claimable_generator_debt.find((v) =>
+      claimable_incentives_debt:
+        v.claimable_incentives_debt.find((v) =>
           (v[0] as NativeToken).native_token.denom.includes('/uastro'),
         )?.[1] || '0',
-      external_rewards_debt:
-        v.generator_debt.find((v) =>
+      external_incentives_rewards_debt:
+        v.incentives_debt.find((v) =>
           (v[0] as NativeToken).native_token.denom.includes(
             EXT_REWARD_SUBDENOM,
           ),
         )?.[1] || '0',
-      claimable_external_rewards_debt:
-        v.claimable_generator_debt.find((v) =>
+      claimable_external_incentives_rewards_debt:
+        v.claimable_incentives_debt.find((v) =>
           (v[0] as NativeToken).native_token.denom.includes(
             EXT_REWARD_SUBDENOM,
           ),
@@ -5318,12 +5320,12 @@ const transformPclUserInfo = async (
     });
   });
   return {
-    claimable_generator_astro_debt:
-      userInfo.claimable_generator_debt.find((v) =>
+    claimable_incentives_debt:
+      userInfo.claimable_incentives_debt.find((v) =>
         (v[0] as NativeToken).native_token.denom.includes('/uastro'),
       )?.[1] || '0',
-    claimable_generator_external_debt:
-      userInfo.claimable_generator_debt.find((v) =>
+    claimable_incentives_external_debt:
+      userInfo.claimable_incentives_debt.find((v) =>
         (v[0] as NativeToken).native_token.denom.includes(EXT_REWARD_SUBDENOM),
       )?.[1] || '0',
     mapped_lockup_infos: mappedLockupInfos,
@@ -5349,8 +5351,8 @@ type ExpandedLockdropUserInfoResponse = {
 
 // Just the same LockdropPclUserInfoResponse but with some additional info added.
 type ExpandedLockdropPclUserInfoResponse = {
-  claimable_generator_astro_debt: string;
-  claimable_generator_external_debt: string;
+  claimable_incentives_debt: string;
+  claimable_incentives_external_debt: string;
   mapped_lockup_infos: Record<string, ExpandedLockdropPclLockUpInfoResponse>; // pool_type + duration as a key
   lockup_positions_index: number;
   ntrn_transferred: boolean;
@@ -5383,10 +5385,10 @@ type ExpandedLockdropPclLockUpInfoResponse = {
   withdrawal_flag: boolean;
   ntrn_rewards: string; // Uint128
   duration: number;
-  astro_rewards_debt: string; // Uint128
-  claimable_astro_rewards_debt: string; // Uint128
-  external_rewards_debt: string; // Uint128
-  claimable_external_rewards_debt: string; // Uint128
+  incentives_debt: string; // Uint128
+  claimable_incentives_debt: string; // Uint128
+  external_incentives_rewards_debt: string; // Uint128
+  claimable_external_incentives_rewards_debt: string; // Uint128
   unlock_timestamp: number;
   astroport_lp_units: string | null;
   astroport_lp_token: string;
