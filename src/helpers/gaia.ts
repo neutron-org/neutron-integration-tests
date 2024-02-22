@@ -106,7 +106,5 @@ export const msgVote = async (
     [packAnyMsg('/cosmos.gov.v1beta1.MsgVote', msgVote)],
   );
 
-  console.log(res);
-
   return res?.tx_response;
 };
