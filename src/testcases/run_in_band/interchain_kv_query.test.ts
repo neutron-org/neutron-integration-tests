@@ -419,6 +419,52 @@ const getProposalVotesResult = (
     },
   });
 
+const registerGovProposalsQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  proposalsIds: number[],
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_government_proposals_query: {
+        connection_id: connectionId,
+        update_period: updatePeriod,
+        proposals_ids: proposalsIds,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getProposalsResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    proposals: {
+      proposals: any[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    government_proposals: {
+      query_id: queryId,
+    },
+  });
+
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
@@ -1029,16 +1075,13 @@ describe('Neutron / Interchain KV Query', () => {
     });
   });
 
-  describe.only('Proposal votes query', () => {
+  describe('Proposal votes query', () => {
     let queryId: number;
     let proposalId: number;
 
     beforeEach(async () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
-
-      // const votes = await getProposalVotesResult(gaiaChain.sdk.url, 1);
-      // expect(votes).not.toBeNull();
 
       const proposalResp = await msgSubmitProposal(
         gaiaAccount,
@@ -1069,7 +1112,10 @@ describe('Neutron / Interchain KV Query', () => {
         connectionId,
         updatePeriods[2],
         proposalId,
-        [testState.wallets.cosmos.demo2.address.toString()],
+        [
+          testState.wallets.cosmos.demo2.address.toString(),
+          'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw',
+        ],
       );
     });
 
@@ -1083,7 +1129,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
-      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys.length).toEqual(2);
       expect(queryResult.registered_query.keys[0].path).toEqual('gov');
       expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
         0,
@@ -1107,17 +1153,124 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
 
-      console.log('interchainQueryResult', interchainQueryResult.votes);
+      expect(interchainQueryResult.votes.proposal_votes).toEqual([
+        {
+          proposal_id: proposalId,
+          voter: testState.wallets.cosmos.demo2.address.toString(),
+          options: [{ option: 1, weight: '1000000000000000000' }],
+        },
+        { proposal_id: 0, voter: '', options: [] },
+      ]);
+    });
+  });
 
-      // expect(
-      //   interchainQueryResult.signing_infos.signing_infos[0].address,
-      // ).toEqual(cosmosvalconspub);
+  describe('Government proposals query', () => {
+    let queryId: number;
+    let proposalId: number;
 
-      // expect(
-      //   parseInt(
-      //     interchainQueryResult.signing_infos.signing_infos[0].index_offset,
-      //   ),
-      // ).toBeGreaterThan(indexOffset);
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      const proposalResp = await msgSubmitProposal(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        '1250',
+      );
+
+      const proposalIdBase64 = getEventAttribute(
+        (proposalResp as any).events,
+        'submit_proposal',
+        Buffer.from('proposal_id').toString('base64'),
+      );
+
+      proposalId = parseInt(
+        Buffer.from(proposalIdBase64, 'base64').toString('utf-8'),
+      );
+
+      queryId = await registerGovProposalsQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        [proposalId, proposalId + 1, proposalId + 2],
+      );
+    });
+
+    test('proposals registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      // XXX: I could actually check that "key" is correctly derived from contractAddress,
+      //      but this requires bech32 decoding/encoding shenanigans
+      expect(queryResult.registered_query.keys.length).toEqual(3);
+      expect(queryResult.registered_query.keys[0].path).toEqual('gov');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('proposals data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getProposalsResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+
+      expect(interchainQueryResult.proposals.proposals).toEqual([
+        {
+          proposal_id: proposalId,
+          proposal_type: '/cosmos.gov.v1beta1.TextProposal',
+          total_deposit: [{ denom: 'uatom', amount: '10000000' }],
+          status: 2,
+          submit_time: expect.any(Number),
+          deposit_end_time: expect.any(Number),
+          voting_start_time: expect.any(Number),
+          voting_end_time: expect.any(Number),
+          final_tally_result: {
+            yes: '0',
+            no: '0',
+            abstain: '0',
+            no_with_veto: '0',
+          },
+        },
+        {
+          proposal_id: 0,
+          proposal_type: null,
+          total_deposit: [],
+          status: 0,
+          submit_time: null,
+          deposit_end_time: null,
+          voting_start_time: null,
+          voting_end_time: null,
+          final_tally_result: null,
+        },
+        {
+          proposal_id: 0,
+          proposal_type: null,
+          total_deposit: [],
+          status: 0,
+          submit_time: null,
+          deposit_end_time: null,
+          voting_start_time: null,
+          voting_end_time: null,
+          final_tally_result: null,
+        },
+      ]);
     });
   });
 
