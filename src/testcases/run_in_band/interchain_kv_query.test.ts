@@ -506,7 +506,7 @@ describe('Neutron / Interchain KV Query', () => {
     await daoMember.bondFunds('10000000000');
   });
 
-  describe.only('Instantiate interchain queries contract', () => {
+  describe('Instantiate interchain queries contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
