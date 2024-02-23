@@ -33,7 +33,7 @@ import {
 
 const config = require('../../config.json');
 
-describe('Neutron / IBC hooks', () => {
+describe('Neutron / dex module bindings', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -55,7 +55,7 @@ describe('Neutron / IBC hooks', () => {
     );
   });
 
-  describe('Instantiate hooks ibc transfer contract', () => {
+  describe('Instantiate dex binding contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(NeutronContract.DEX_DEV);
