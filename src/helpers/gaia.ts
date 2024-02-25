@@ -6,14 +6,16 @@ import {
 import {
   MsgSubmitProposal,
   MsgVote,
-  TextProposal,
-  VoteOption,
 } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/tx_pb';
 import {
   packAnyMsg,
   WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import Long from 'long';
+import {
+  TextProposal,
+  VoteOption,
+} from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/gov_pb';
 
 export const msgDelegate = async (
   wallet: WalletWrapper,
