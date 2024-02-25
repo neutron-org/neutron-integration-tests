@@ -355,18 +355,6 @@ const validateBalanceQuery = async (
   );
 };
 
-const getCosmosProposalVotesResult = async (
-  sdkUrl: string,
-  proposalId: number,
-) => {
-  try {
-    return (await axios.get(`${sdkUrl}/cosmos/gov/v1beta1/votes/${proposalId}`))
-      .data;
-  } catch (e) {
-    return null;
-  }
-};
-
 const registerProposalVotesQuery = async (
   cm: WalletWrapper,
   contractAddress: string,
