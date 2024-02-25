@@ -381,7 +381,7 @@ const registerProposalVotesQuery = async (
       register_government_proposal_votes_query: {
         connection_id: connectionId,
         update_period: updatePeriod,
-        proposal_id: proposalId,
+        proposals_ids: [proposalId],
         voters: voters,
       },
     }),
