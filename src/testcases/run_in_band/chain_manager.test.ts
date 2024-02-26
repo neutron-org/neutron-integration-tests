@@ -138,9 +138,9 @@ describe('Neutron / Subdao', () => {
         'Add strategy proposal. It will pass',
         {
           add_strategy: {
+            address: subDao.contracts.core.address,
             strategy: {
-              address: subDao.contracts.core.address,
-              permissions: [
+              AllowOnly: [
                 {
                   ParamChangePermission: {
                     params: [
