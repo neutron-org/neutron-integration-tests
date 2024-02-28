@@ -14,11 +14,11 @@ git clone git@github.com:neutron-org/neutron.git
 git clone git@github.com:neutron-org/neutron-query-relayer.git
 ```
 
-We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v9.0.3 for the tests.
+We use the Gaia network as a host network, so you need to clone it next to the neutron repos. We use v13.0.0 for the tests.
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
-git checkout v9.0.3
+git checkout v13.0.0
 ```
 
 ### 2. Prepare docker environment
