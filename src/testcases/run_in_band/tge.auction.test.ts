@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import Long from 'long';
 import {
@@ -194,7 +195,7 @@ describe('Neutron / TGE / Auction', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    
+
     neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
@@ -3199,7 +3200,7 @@ describe('Neutron / TGE / Auction', () => {
 
     describe('execute migration handlers: reserve', () => {
       let sharesBefore: tgePoolShares; // reserve shares in XYK pools
-      it('check reserve shares before migration', async() => {
+      it('check reserve shares before migration', async () => {
         sharesBefore = await queryTgePoolShares(
           neutronChain,
           reserveContract,
@@ -3211,7 +3212,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(sharesBefore.usdcNtrn.usdcShares).toBeGreaterThan(0);
         expect(sharesBefore.usdcNtrn.ntrnShares).toBeGreaterThan(0);
       });
-      it('check Neutron DAO shares before migration', async() => {
+      it('check Neutron DAO shares before migration', async () => {
         const shares = await queryTgePoolShares(
           neutronChain,
           NEUTRON_DAO_ADDR,
@@ -3224,7 +3225,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(shares.usdcNtrn.ntrnShares).toEqual(0);
       });
 
-      it('migrate reserve contract liquidity', async() => {
+      it('migrate reserve contract liquidity', async () => {
         await cmInstantiator.executeContract(
           reserveContract,
           JSON.stringify({
@@ -3232,10 +3233,10 @@ describe('Neutron / TGE / Auction', () => {
               slippage_tolerance: '0.05', // 5%
             },
           }),
-          );
+        );
       });
 
-      it('check reserve shares after migration', async() => {
+      it('check reserve shares after migration', async () => {
         const shares = await queryTgePoolShares(
           neutronChain,
           reserveContract,
@@ -3247,8 +3248,9 @@ describe('Neutron / TGE / Auction', () => {
         expect(shares.usdcNtrn.usdcShares).toEqual(0);
         expect(shares.usdcNtrn.ntrnShares).toEqual(0);
       });
-      it('check Neutron DAO shares after migration', async() => {
-        const sharesAfter = await queryTgePoolShares( // Neutron DAO shares in PCL pools
+      it('check Neutron DAO shares after migration', async () => {
+        const sharesAfter = await queryTgePoolShares(
+          // Neutron DAO shares in PCL pools
           neutronChain,
           NEUTRON_DAO_ADDR,
           ntrnAtomPclPool,
@@ -3256,10 +3258,26 @@ describe('Neutron / TGE / Auction', () => {
         );
 
         // according to 5% slippage tolerance
-        isWithinRangeRel(sharesAfter.atomNtrn.atomShares, sharesBefore.atomNtrn.atomShares, 0.05);
-        isWithinRangeRel(sharesAfter.atomNtrn.ntrnShares, sharesBefore.atomNtrn.ntrnShares, 0.05);
-        isWithinRangeRel(sharesAfter.usdcNtrn.usdcShares, sharesBefore.usdcNtrn.usdcShares, 0.05);
-        isWithinRangeRel(sharesAfter.usdcNtrn.ntrnShares, sharesBefore.usdcNtrn.ntrnShares, 0.05);
+        isWithinRangeRel(
+          sharesAfter.atomNtrn.atomShares,
+          sharesBefore.atomNtrn.atomShares,
+          0.05,
+        );
+        isWithinRangeRel(
+          sharesAfter.atomNtrn.ntrnShares,
+          sharesBefore.atomNtrn.ntrnShares,
+          0.05,
+        );
+        isWithinRangeRel(
+          sharesAfter.usdcNtrn.usdcShares,
+          sharesBefore.usdcNtrn.usdcShares,
+          0.05,
+        );
+        isWithinRangeRel(
+          sharesAfter.usdcNtrn.ntrnShares,
+          sharesBefore.usdcNtrn.ntrnShares,
+          0.05,
+        );
       });
     });
 
@@ -5327,7 +5345,7 @@ const getLiquidityMigrationBalances = async (
   ),
 });
 
-const queryTgePoolShares = async(
+const queryTgePoolShares = async (
   chain: CosmosWrapper,
   address: string,
   atomPair: string,
@@ -5344,14 +5362,11 @@ const queryTgePoolShares = async(
       },
     },
   );
-  const atomPairShares = await chain.queryContract<Asset[]>(
-    atomPair,
-    {
-      share: {
-        amount: atomPairLp.balance,
-      },
+  const atomPairShares = await chain.queryContract<Asset[]>(atomPair, {
+    share: {
+      amount: atomPairLp.balance,
     },
-  );
+  });
   const usdcPairInfo = await chain.queryContract<PairInfo>(usdcPair, {
     pair: {},
   });
@@ -5363,14 +5378,11 @@ const queryTgePoolShares = async(
       },
     },
   );
-  const usdcPairShares = await chain.queryContract<Asset[]>(
-    usdcPair,
-    {
-      share: {
-        amount: usdcPairLp.balance,
-      },
+  const usdcPairShares = await chain.queryContract<Asset[]>(usdcPair, {
+    share: {
+      amount: usdcPairLp.balance,
     },
-  );
+  });
   return {
     atomNtrn: {
       atomShares: +atomPairShares.filter(
@@ -5389,18 +5401,18 @@ const queryTgePoolShares = async(
       )[0].amount,
     },
   };
-}
+};
 
 type tgePoolShares = {
   atomNtrn: {
-    atomShares: number,
-    ntrnShares: number,
-  }
+    atomShares: number;
+    ntrnShares: number;
+  };
   usdcNtrn: {
-    usdcShares: number,
-    ntrnShares: number,
-  }
-}
+    usdcShares: number;
+    ntrnShares: number;
+  };
+};
 
 // Transforms a bit a user info response from a lockdrop contract to ease test assertions.
 const transformUserInfo = async (
