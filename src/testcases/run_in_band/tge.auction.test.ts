@@ -73,6 +73,9 @@ const TINY_AIRDROP_AMOUNT = 100;
 const EXT_REWARD_SUBDENOM = 'urwrd';
 const EXT_REWARD_AMOUNT = '1000000000';
 
+const NEUTRON_DAO_ADDR =
+  'neutron1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrstdxvff';
+
 const getLpSize = (token1: number, token2: number) =>
   (Math.sqrt(token1 * token2) - MIN_LIQUDITY) | 0;
 
@@ -168,7 +171,6 @@ describe('Neutron / TGE / Auction', () => {
   let cmTokenManager: WalletWrapper;
   let cmStranger: WalletWrapper;
   const tgeWallets: Record<string, WalletWrapper> = {};
-  let reserveAddress: string;
   let atomBalance = 0;
   let usdcBalance = 0;
   let ntrnAtomSize = 0;
@@ -180,6 +182,7 @@ describe('Neutron / TGE / Auction', () => {
   let tgeEndHeight = 0;
   let daoMember1: DaoMember;
   let daoMain: Dao;
+  let reserveContract: string;
   let ntrnAtomPclPool: string;
   let ntrnAtomPclToken: string;
   let ntrnUsdcPclPool: string;
@@ -191,8 +194,7 @@ describe('Neutron / TGE / Auction', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    reserveAddress =
-      testState.wallets.qaNeutronThree.genQaWal1.address.toString();
+    
     neutronChain = new CosmosWrapper(
       testState.sdk1,
       testState.blockWaiter1,
@@ -216,11 +218,31 @@ describe('Neutron / TGE / Auction', () => {
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(cmInstantiator, daoMain);
     await daoMember1.bondFunds('10000');
+
+    const reserveCodeID = await cmInstantiator.storeWasm(
+      NeutronContract.RESERVE_CURRENT,
+    );
+    const res = await cmInstantiator.instantiateContract(
+      reserveCodeID,
+      JSON.stringify({
+        main_dao_address: NEUTRON_DAO_ADDR,
+        denom: NEUTRON_DENOM,
+        distribution_rate: '0.23',
+        min_period: 1000,
+        distribution_contract: cmInstantiator.wallet.address.toString(),
+        treasury_contract: cmInstantiator.wallet.address.toString(),
+        security_dao_address: cmInstantiator.wallet.address.toString(),
+        vesting_denominator: '100000000000',
+      }),
+      'reserve',
+    );
+    reserveContract = res[0]._contract_address;
+
     tgeMain = new Tge(
       neutronChain,
       cmInstantiator,
       cmTokenManager,
-      reserveAddress,
+      reserveContract,
       IBC_ATOM_DENOM,
       IBC_USDC_DENOM,
       NEUTRON_DENOM,
@@ -1310,7 +1332,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeMain.pairs.atom_ntrn.liquidity,
             {
               balance: {
-                address: reserveAddress,
+                address: reserveContract,
               },
             },
           ),
@@ -1318,7 +1340,7 @@ describe('Neutron / TGE / Auction', () => {
             tgeMain.pairs.usdc_ntrn.liquidity,
             {
               balance: {
-                address: reserveAddress,
+                address: reserveContract,
               },
             },
           ),
@@ -3047,6 +3069,29 @@ describe('Neutron / TGE / Auction', () => {
           }),
         );
       });
+
+      let newReserveCodeID: number;
+      it('store new reserve contract version', async () => {
+        newReserveCodeID = await cmInstantiator.storeWasm(
+          NeutronContract.RESERVE,
+        );
+      });
+      it('migrate reserve', async () => {
+        await cmInstantiator.migrateContract(
+          reserveContract,
+          newReserveCodeID,
+          JSON.stringify({
+            max_slippage: '0.05', // 5%
+            ntrn_denom: NEUTRON_DENOM,
+            atom_denom: IBC_ATOM_DENOM,
+            ntrn_atom_xyk_pair: tgeMain.pairs.atom_ntrn.contract,
+            ntrn_atom_cl_pair: ntrnAtomPclPool,
+            usdc_denom: IBC_USDC_DENOM,
+            ntrn_usdc_xyk_pair: tgeMain.pairs.usdc_ntrn.contract,
+            ntrn_usdc_cl_pair: ntrnUsdcPclPool,
+          }),
+        );
+      });
     });
 
     describe('deploy new LP and Lockdrop vaults; add them to dao', () => {
@@ -3149,6 +3194,72 @@ describe('Neutron / TGE / Auction', () => {
         await daoMember1.executeProposal(propID);
         const status = (await daoMain.queryProposal(propID)).proposal.status;
         console.log('status: ' + status);
+      });
+    });
+
+    describe('execute migration handlers: reserve', () => {
+      let sharesBefore: tgePoolShares; // reserve shares in XYK pools
+      it('check reserve shares before migration', async() => {
+        sharesBefore = await queryTgePoolShares(
+          neutronChain,
+          reserveContract,
+          tgeMain.pairs.atom_ntrn.contract,
+          tgeMain.pairs.usdc_ntrn.contract,
+        );
+        expect(sharesBefore.atomNtrn.atomShares).toBeGreaterThan(0);
+        expect(sharesBefore.atomNtrn.ntrnShares).toBeGreaterThan(0);
+        expect(sharesBefore.usdcNtrn.usdcShares).toBeGreaterThan(0);
+        expect(sharesBefore.usdcNtrn.ntrnShares).toBeGreaterThan(0);
+      });
+      it('check Neutron DAO shares before migration', async() => {
+        const shares = await queryTgePoolShares(
+          neutronChain,
+          NEUTRON_DAO_ADDR,
+          ntrnAtomPclPool,
+          ntrnUsdcPclPool,
+        );
+        expect(shares.atomNtrn.atomShares).toEqual(0);
+        expect(shares.atomNtrn.ntrnShares).toEqual(0);
+        expect(shares.usdcNtrn.usdcShares).toEqual(0);
+        expect(shares.usdcNtrn.ntrnShares).toEqual(0);
+      });
+
+      it('migrate reserve contract liquidity', async() => {
+        await cmInstantiator.executeContract(
+          reserveContract,
+          JSON.stringify({
+            migrate_from_xyk_to_cl: {
+              slippage_tolerance: '0.05', // 5%
+            },
+          }),
+          );
+      });
+
+      it('check reserve shares after migration', async() => {
+        const shares = await queryTgePoolShares(
+          neutronChain,
+          reserveContract,
+          tgeMain.pairs.atom_ntrn.contract,
+          tgeMain.pairs.usdc_ntrn.contract,
+        );
+        expect(shares.atomNtrn.atomShares).toEqual(0);
+        expect(shares.atomNtrn.ntrnShares).toEqual(0);
+        expect(shares.usdcNtrn.usdcShares).toEqual(0);
+        expect(shares.usdcNtrn.ntrnShares).toEqual(0);
+      });
+      it('check Neutron DAO shares after migration', async() => {
+        const sharesAfter = await queryTgePoolShares( // Neutron DAO shares in PCL pools
+          neutronChain,
+          NEUTRON_DAO_ADDR,
+          ntrnAtomPclPool,
+          ntrnUsdcPclPool,
+        );
+
+        // according to 5% slippage tolerance
+        isWithinRangeRel(sharesAfter.atomNtrn.atomShares, sharesBefore.atomNtrn.atomShares, 0.05);
+        isWithinRangeRel(sharesAfter.atomNtrn.ntrnShares, sharesBefore.atomNtrn.ntrnShares, 0.05);
+        isWithinRangeRel(sharesAfter.usdcNtrn.usdcShares, sharesBefore.usdcNtrn.usdcShares, 0.05);
+        isWithinRangeRel(sharesAfter.usdcNtrn.ntrnShares, sharesBefore.usdcNtrn.ntrnShares, 0.05);
       });
     });
 
@@ -5215,6 +5326,81 @@ const getLiquidityMigrationBalances = async (
     )?.amount || '0'
   ),
 });
+
+const queryTgePoolShares = async(
+  chain: CosmosWrapper,
+  address: string,
+  atomPair: string,
+  usdcPair: string,
+): Promise<tgePoolShares> => {
+  const atomPairInfo = await chain.queryContract<PairInfo>(atomPair, {
+    pair: {},
+  });
+  const atomPairLp = await chain.queryContract<BalanceResponse>(
+    atomPairInfo.liquidity_token,
+    {
+      balance: {
+        address: address,
+      },
+    },
+  );
+  const atomPairShares = await chain.queryContract<Asset[]>(
+    atomPair,
+    {
+      share: {
+        amount: atomPairLp.balance,
+      },
+    },
+  );
+  const usdcPairInfo = await chain.queryContract<PairInfo>(usdcPair, {
+    pair: {},
+  });
+  const usdcPairLp = await chain.queryContract<BalanceResponse>(
+    usdcPairInfo.liquidity_token,
+    {
+      balance: {
+        address: address,
+      },
+    },
+  );
+  const usdcPairShares = await chain.queryContract<Asset[]>(
+    usdcPair,
+    {
+      share: {
+        amount: usdcPairLp.balance,
+      },
+    },
+  );
+  return {
+    atomNtrn: {
+      atomShares: +atomPairShares.filter(
+        (a) => (a.info as NativeToken).native_token.denom == IBC_ATOM_DENOM,
+      )[0].amount,
+      ntrnShares: +atomPairShares.filter(
+        (a) => (a.info as NativeToken).native_token.denom == NEUTRON_DENOM,
+      )[0].amount,
+    },
+    usdcNtrn: {
+      usdcShares: +usdcPairShares.filter(
+        (a) => (a.info as NativeToken).native_token.denom == IBC_USDC_DENOM,
+      )[0].amount,
+      ntrnShares: +usdcPairShares.filter(
+        (a) => (a.info as NativeToken).native_token.denom == NEUTRON_DENOM,
+      )[0].amount,
+    },
+  };
+}
+
+type tgePoolShares = {
+  atomNtrn: {
+    atomShares: number,
+    ntrnShares: number,
+  }
+  usdcNtrn: {
+    usdcShares: number,
+    ntrnShares: number,
+  }
+}
 
 // Transforms a bit a user info response from a lockdrop contract to ease test assertions.
 const transformUserInfo = async (
