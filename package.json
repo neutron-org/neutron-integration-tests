@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && test:pob",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
