@@ -1,4 +1,4 @@
-FROM ubuntu:23.04
+FROM ubuntu:mantic-20240216
 COPY ./hermes/ /app/network/hermes/
 WORKDIR /app
 RUN apt-get update && apt-get install -y wget && \
