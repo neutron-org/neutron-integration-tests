@@ -203,7 +203,7 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId,
         );
         expect(qres).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
       test('check validator state', async () => {
@@ -270,13 +270,13 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId,
         );
         expect(qres).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
 
         const ackSequenceId = sequenceId + 1;
         await waitForAck(neutronChain, contractAddress, icaId1, ackSequenceId);
         expect(qres).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
       test('check validator state', async () => {
@@ -344,7 +344,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(qres).toMatchObject<AcknowledgementResult>({
           error: [
             'message',
-            'ABCI code: 1: error handling packet: see events for details',
+            'ABCI code: 7: error handling packet: see events for details',
           ],
         });
       });
@@ -387,7 +387,7 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId1,
         );
         expect(qres1).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgUndelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgUndelegateResponse'],
         });
 
         const qres2 = await waitForAck(
@@ -397,7 +397,7 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId2,
         );
         expect(qres2).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
       test('delegate with timeout', async () => {
@@ -591,7 +591,7 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId,
         );
         expect(qres).toMatchObject<AcknowledgementResult>({
-          success: ['/cosmos.staking.v1beta1.MsgDelegate'],
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
       test('check validator state after ICA recreation', async () => {
