@@ -334,6 +334,42 @@ describe('Neutron / Tokenfactory', () => {
         )?.value;
     });
 
+    test('set denom metadata', async () => {
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          set_denom_metadata: {
+            description: denom,
+            denom_units: [
+              {
+                denom,
+                exponent: 0,
+                aliases: [],
+              },
+            ],
+            base: denom,
+            display: denom,
+            name: denom,
+            symbol: denom,
+            uri: denom,
+            uri_hash: denom,
+          },
+        }),
+      );
+
+      const metadatas = await neutronChain.queryDenomsMetadata();
+      const metadata = metadatas.metadatas.find((meta) => meta.base == denom);
+      expect(metadata.base).toEqual(denom);
+      expect(metadata.uri).toEqual(denom);
+      expect(metadata.display).toEqual(denom);
+      expect(metadata.description).toEqual(denom);
+      expect(metadata.name).toEqual(denom);
+      expect(metadata.symbol).toEqual(denom);
+      expect(metadata.uri_hash).toEqual(denom);
+      expect(metadata.denom_units.length).toEqual(1);
+      expect(metadata.denom_units[0].denom).toEqual(denom);
+    });
+
     test('mint coins', async () => {
       await neutronAccount.executeContract(
         contractAddress,
@@ -423,6 +459,54 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       // TODO: check that it actually sets hook by querying tokenfactory module
+    });
+
+    test('force transfer', async () => {
+      const randomAccount = 'neutron14640tst2rx45nxg3evqwlzuaestnnhm8es3rtc';
+      const randomAccount2 = 'neutron14qncu5xag9ec26cx09x6pwncn9w74pq3zqe408';
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          mint_tokens: {
+            denom,
+            amount: amount.toString(),
+          },
+        }),
+      );
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          send_tokens: {
+            recipient: randomAccount,
+            denom,
+            amount: amount.toString(),
+          },
+        }),
+      );
+      const balance = await neutronChain.queryDenomBalance(
+        randomAccount,
+        denom,
+      );
+      expect(balance).toEqual(amount);
+
+      await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          force_transfer: {
+            denom,
+            amount: amount.toString(),
+            from: randomAccount,
+            to: randomAccount2,
+          },
+        }),
+      );
+      const balance2 = await neutronChain.queryDenomBalance(
+        randomAccount2,
+        denom,
+      );
+      expect(balance2).toEqual(amount);
     });
 
     test('change admin', async () => {
