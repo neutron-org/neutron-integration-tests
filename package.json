@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:pob",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:airdrop && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
@@ -33,9 +33,11 @@
     "test:float": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/float",
     "test:dex_stargate": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_stargate",
     "test:pob": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/pob",
+    "test:dex_bindings": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_bindings",
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
-    "fmt": "eslint ./src --fix"
+    "fmt": "eslint ./src --fix",
+    "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json"
   },
   "author": "Neutron",
   "license": "Apache-2.0",
@@ -44,9 +46,9 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "0.3.1",
+    "@neutron-org/neutronjsplus": "^0.3.2",
     "@types/lodash": "^4.14.182",
-    "@types/long": "^4.0.2",
+    "@types/long": "^5.0.0",
     "axios": "^0.27.2",
     "babel-jest": "^29.3.1",
     "commander": "^10.0.0",
@@ -76,7 +78,7 @@
     "regenerator-runtime": "^0.13.9",
     "ts-node": "^9.1.1",
     "tslint": "^5.20.1",
-    "typescript": "^4.1.3"
+    "typescript": "^5.1.6"
   },
   "lint-staged": {
     "./**/src/**/*.{ts,tsx}": [
