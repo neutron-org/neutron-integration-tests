@@ -113,14 +113,12 @@ describe('Neutron / PFM', () => {
 
   // A -> B (swap) -> C
   describe('IBC transfer with Swap', () => {
+    let uatomIBCDenom: string;
+
     test('setup pool on chain B (neutron) for swap', async () => {
       const portName = 'transfer';
       const channelName = 'channel-0';
-      const uatomIBCDenom = cosmosWrapper.getIBCDenom(
-        portName,
-        channelName,
-        'uatom',
-      );
+      uatomIBCDenom = cosmosWrapper.getIBCDenom(portName, channelName, 'uatom');
 
       const depositMsg = new MsgDeposit({
         creator: neutronAccount.wallet.address.toString(),
@@ -150,7 +148,7 @@ describe('Neutron / PFM', () => {
       expect(res.tx_response?.code).toEqual(0);
     });
 
-    test.skip('IBC swap with multihop', async () => {
+    test('IBC swap with multihop', async () => {
       const sender = gaiaAccount.wallet.address.toString();
       const middlehop = neutronAccount.wallet.address.toString();
       const receiver = gaiaAccount2.wallet.address.toString();
@@ -166,22 +164,21 @@ describe('Neutron / PFM', () => {
       );
       console.log('receiverNTRNBalanceBefore: ' + receiverNTRNBalanceBefore);
 
-      const transferAmount = 333333;
-
-      // this memo will be handled on chain B (neutron)
+      const transferAmount = 500000;
+      gaia -> neutron SWAP -> gaia
       const memo = JSON.stringify({
-        // TODO: memo for swap
         swap: {
-          // If a value is provided for NeutronRefundAddress and the swap fails the Transfer.Amount will be moved to this address for later recovery.
-          // If no NeutronRefundAddress is provided and a swap fails we will fail the ibc transfer and tokens will be refunded on the source chain.
+          // If a value is provided for NeutronRefundAddress and the swap fails
+          // the Transfer.Amount will be moved to this address for later recovery.
+          // If no NeutronRefundAddress is provided and a swap fails
+          // we will fail the ibc transfer and tokens will be refunded on the source chain.
           // neutron_refund_account: '',
-          // TODO
-          creator: '',
-          receiver: '',
-          token_in: '',
-          token_out: '',
-          tick_index_in_to_out: 1,
-          amount_in: '',
+          creator: middlehop,
+          receiver: middlehop,
+          token_in: uatomIBCDenom,
+          token_out: 'untrn',
+          tick_index_in_to_out: 22000,
+          amount_in: transferAmount.toString(),
           order_type: 1, // FillOrKill
           // expiration_time: { seconds: 1, nanos: 1 },
           // max_amount_out: '1000000',
@@ -191,6 +188,8 @@ describe('Neutron / PFM', () => {
               receiver: receiver,
               port: 'transfer',
               channel: 'channel-0',
+              timeout: '',
+              retries: '',
             },
           },
         },
@@ -208,6 +207,27 @@ describe('Neutron / PFM', () => {
         memo,
       );
       expect(res.code).toEqual(0);
+      console.log('multihop with ibc swap: \n' + JSON.stringify(res.raw_log));
+
+      // const portName = 'transfer';
+      // const channelName = 'channel-0';
+      // const untrnIBCDenom = cosmosWrapper.getIBCDenom(
+      //   portName,
+      //   channelName,
+      //   'untrn',
+      // );
+
+      const receiverBalances = await gaiaChain.queryBalances(
+        receiver,
+        // untrnIBCDenom,
+      );
+
+      await neutronChain.blockWaiter.waitBlocks(15);
+
+      // console.log('receiverIBCNeutron: ' + receiverIBCNeutron.toString());
+      console.log('receiverBalances: ' + JSON.stringify(receiverBalances));
     });
   });
+
+  // TODO: test neutron_refund_account works
 });
