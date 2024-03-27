@@ -16,7 +16,7 @@ import {
 
 const config = require('../../config.json');
 
-describe('Neutron / Subdao', () => {
+describe('Neutron / Subdao Overrule', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;

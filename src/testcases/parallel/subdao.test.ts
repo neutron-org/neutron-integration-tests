@@ -18,10 +18,16 @@ import {
   TimelockConfig,
   TimelockProposalListResponse,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  SingleChoiceProposal,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import cosmosclient from '@cosmos-client/core';
-import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  getWithAttempts,
+  waitSeconds,
+} from '@neutron-org/neutronjsplus/dist/wait';
 import {
   paramChangeProposal,
   sendProposal,
@@ -476,6 +482,86 @@ describe('Neutron / Subdao', () => {
       );
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('overruled');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+  });
+
+  describe('Timelock3: Closed overruled proposal should not prevent execution', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateSubDaoConfigProposal(
+        {
+          name: 'dao name after timelock3',
+        },
+        'single2',
+      );
+
+      // move proposal to the timelocked state where it can be overruled
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+        'single2',
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('close rejected overrule proposal', async () => {
+      const overruleProposalId = await mainDao.getOverruleProposalId(
+        subDao.contracts.proposals.single2.pre_propose.timelock!.address,
+        proposalId,
+      );
+
+      // wait 20 seconds
+      await waitSeconds(20);
+
+      const propOverruledTest =
+        await mainDao.chain.queryContract<SingleChoiceProposal>(
+          mainDaoMember.dao.contracts.proposals.overrule?.address,
+          {
+            proposal: {
+              proposal_id: overruleProposalId,
+            },
+          },
+        );
+      expect(propOverruledTest.proposal.status).toEqual('rejected');
+
+      await subdaoMember1.user.executeContract(
+        mainDaoMember.dao.contracts.proposals.overrule.address,
+        JSON.stringify({
+          close: { proposal_id: overruleProposalId },
+        }),
+      );
+
+      const propOverruledTest2 = await getWithAttempts(
+        neutronChain.blockWaiter,
+        async () =>
+          await mainDao.chain.queryContractWithWait<SingleChoiceProposal>(
+            mainDaoMember.dao.contracts.proposals.overrule?.address,
+            {
+              proposal: {
+                proposal_id: overruleProposalId,
+              },
+            },
+          ),
+        async (p) => p.proposal.status === 'closed',
+        5,
+      );
+
+      expect(propOverruledTest2.proposal.status).toEqual('closed');
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(20);
+      await subdaoMember1.executeTimelockedProposal(proposalId, 'single2');
+
+      const timelockedProp = await subDao.getTimelockedProposal(
+        proposalId,
+        'single2',
+      );
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
     });
   });
