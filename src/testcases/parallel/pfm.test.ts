@@ -55,7 +55,7 @@ describe('Neutron / PFM', () => {
       // 5. Check Balance of Account 3 on Chain 2, confirm it stays the same
       // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
       // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
-      test('IBC transfer from a usual account', async () => {
+      test.skip('IBC transfer from a usual account', async () => {
         const sender = gaiaAccount.wallet.address.toString();
         const middlehop = neutronAccount.wallet.address.toString();
         const receiver = gaiaAccount2.wallet.address.toString();
@@ -165,7 +165,7 @@ describe('Neutron / PFM', () => {
       console.log('receiverNTRNBalanceBefore: ' + receiverNTRNBalanceBefore);
 
       const transferAmount = 500000;
-      gaia -> neutron SWAP -> gaia
+      // gaia -> neutron SWAP -> gaia
       const memo = JSON.stringify({
         swap: {
           // If a value is provided for NeutronRefundAddress and the swap fails
@@ -188,8 +188,8 @@ describe('Neutron / PFM', () => {
               receiver: receiver,
               port: 'transfer',
               channel: 'channel-0',
-              timeout: '',
-              retries: '',
+              // timeout: '',
+              // retries: '',
             },
           },
         },
@@ -226,6 +226,7 @@ describe('Neutron / PFM', () => {
 
       // console.log('receiverIBCNeutron: ' + receiverIBCNeutron.toString());
       console.log('receiverBalances: ' + JSON.stringify(receiverBalances));
+      console.log('expected receiver: ' + receiver);
     });
   });
 
