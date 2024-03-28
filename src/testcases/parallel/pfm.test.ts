@@ -123,12 +123,12 @@ describe('Neutron / PFM', () => {
       const depositMsg = new MsgDeposit({
         creator: neutronAccount.wallet.address.toString(),
         receiver: neutronAccount.wallet.address.toString(),
-        tokenA: 'untrn',
-        tokenB: uatomIBCDenom,
-        amountsA: ['1000000'],
-        amountsB: ['0'],
-        tickIndexesAToB: [BigInt(22000)], // around 1 to 9 ratio (9.0240208687)
-        fees: [BigInt(1)],
+        tokenA: uatomIBCDenom,
+        tokenB: 'untrn',
+        amountsA: ['0'],
+        amountsB: ['1000000000'],
+        tickIndexesAToB: [BigInt(15000)], // 22000 -> around 1 to 9 ratio (9.0240208687)
+        fees: [BigInt(100)],
         options: [{ disableAutoswap: true }],
       });
 
@@ -177,7 +177,7 @@ describe('Neutron / PFM', () => {
           receiver: middlehop,
           token_in: uatomIBCDenom,
           token_out: 'untrn',
-          tick_index_in_to_out: 22000,
+          tick_index_in_to_out: 16000,
           amount_in: transferAmount.toString(),
           order_type: 1, // FillOrKill
           // expiration_time: { seconds: 1, nanos: 1 },
