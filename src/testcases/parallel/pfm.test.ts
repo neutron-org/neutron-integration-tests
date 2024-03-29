@@ -16,6 +16,8 @@ describe('Neutron / PFM', () => {
   let neutronChain: cosmosWrapper.CosmosWrapper;
   let gaiaChain: cosmosWrapper.CosmosWrapper;
   let neutronAccount: cosmosWrapper.WalletWrapper;
+  let neutronAccount2: cosmosWrapper.WalletWrapper;
+  let depositor: cosmosWrapper.WalletWrapper;
   let gaiaAccount: cosmosWrapper.WalletWrapper;
   let gaiaAccount2: cosmosWrapper.WalletWrapper;
 
@@ -30,6 +32,14 @@ describe('Neutron / PFM', () => {
     neutronAccount = new cosmosWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
+    );
+    neutronAccount2 = new cosmosWrapper.WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronFive.genQaWal1,
+    );
+    depositor = new cosmosWrapper.WalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronThree.genQaWal1,
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
@@ -111,7 +121,6 @@ describe('Neutron / PFM', () => {
     });
   });
 
-  // A -> B (swap) -> C
   describe('IBC transfer with Swap', () => {
     let uatomIBCDenom: string;
 
@@ -119,10 +128,9 @@ describe('Neutron / PFM', () => {
       const portName = 'transfer';
       const channelName = 'channel-0';
       uatomIBCDenom = cosmosWrapper.getIBCDenom(portName, channelName, 'uatom');
-
       const depositMsg = new MsgDeposit({
-        creator: neutronAccount.wallet.address.toString(),
-        receiver: neutronAccount.wallet.address.toString(),
+        creator: depositor.wallet.address.toString(),
+        receiver: depositor.wallet.address.toString(),
         tokenA: uatomIBCDenom,
         tokenB: 'untrn',
         amountsA: ['0'],
@@ -137,7 +145,7 @@ describe('Neutron / PFM', () => {
         amount: [{ denom: neutronAccount.chain.denom, amount: '10000' }],
       };
 
-      const res = await neutronAccount.execTx(
+      const res = await depositor.execTx(
         fee,
         [packAnyMsg('/neutron.dex.MsgDeposit', depositMsg)],
         10,
@@ -148,7 +156,87 @@ describe('Neutron / PFM', () => {
       expect(res.tx_response?.code).toEqual(0);
     });
 
-    test('IBC swap with multihop', async () => {
+    // A -> B (swap) | no PFM used
+    test('IBC swap', async () => {
+
+      // const sender = gaiaAccount.wallet.address.toString();
+      const receiver = neutronAccount2.wallet.address.toString();
+
+      const receiverNTRNBalanceBefore = await neutronChain.queryDenomBalance(
+        receiver,
+        'untrn',
+      );
+
+      console.log('receiver: ' + receiver);
+      console.log('receiverNTRNBalanceBefore: ' + receiverNTRNBalanceBefore);
+
+      const transferAmount = 500000;
+      // gaia -> neutron SWAP
+      const memo = JSON.stringify({
+        swap: {
+          // If a value is provided for NeutronRefundAddress and the swap fails
+          // the Transfer.Amount will be moved to this address for later recovery.
+          // If no NeutronRefundAddress is provided and a swap fails
+          // we will fail the ibc transfer and tokens will be refunded on the source chain.
+          // neutron_refund_account: '',
+          creator: receiver,
+          receiver: receiver,
+          token_in: uatomIBCDenom,
+          token_out: 'untrn',
+          tick_index_in_to_out: 16000,
+          amount_in: transferAmount.toString(),
+          order_type: 1, // FillOrKill
+          // expiration_time: { seconds: 1, nanos: 1 },
+          // max_amount_out: '1000000',
+        },
+      });
+
+      // console.log('before swap');
+
+      const res = await gaiaAccount.msgIBCTransfer(
+        'transfer',
+        'channel-0',
+        { denom: COSMOS_DENOM, amount: transferAmount.toString() },
+        receiver,
+        {
+          revision_number: new Long(2),
+          revision_height: new Long(100000000),
+        },
+        memo,
+      );
+      expect(res.code).toEqual(0);
+      console.log('multihop with ibc swap: \n' + JSON.stringify(res.raw_log));
+      // console.log('after swap');
+
+      // const portName = 'transfer';
+      // const channelName = 'channel-0';
+      // const untrnIBCDenom = cosmosWrapper.getIBCDenom(
+      //   portName,
+      //   channelName,
+      //   'untrn',
+      // );
+
+      // const receiverBalances = await gaiaChain.queryBalances(
+      //   receiver,
+      //   // untrnIBCDenom,
+      // );
+
+      await neutronChain.blockWaiter.waitBlocks(15);
+
+      const receiverNTRNBalanceAfter = await neutronChain.queryDenomBalance(
+        receiver,
+        'untrn',
+      );
+      console.log('receiverNTRNBalanceBefore: ' + receiverNTRNBalanceBefore);
+      console.log('receiverNTRNBalanceAfter: ' + receiverNTRNBalanceAfter);
+
+      // console.log('receiverIBCNeutron: ' + receiverIBCNeutron.toString());
+      // console.log('receiverBalances: ' + JSON.stringify(receiverBalances));
+      // console.log('expected receiver: ' + receiver);
+    });
+
+    // A -> B (swap) -> C
+    test.skip('IBC swap with multihop', async () => {
       const sender = gaiaAccount.wallet.address.toString();
       const middlehop = neutronAccount.wallet.address.toString();
       const receiver = gaiaAccount2.wallet.address.toString();
