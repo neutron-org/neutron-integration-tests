@@ -5064,7 +5064,7 @@ describe('Neutron / TGE / Auction', () => {
     // make sure there are no generator rewards and LP tokens staked by lockdrop contracts
     // meaning that all the funds and rewards have been distributed between lockdrop participants
     describe('confirm lockdrop withdrawal completeness', () => {
-      it('no XYK lp tokens kept by XYK lockdrop', async () => {
+      it('no XYK lp tokens staked by XYK lockdrop', async () => {
         const stakedAtomLp = await neutronChain.queryContract<string>(
           liqMigContracts.generator,
           {
@@ -5088,9 +5088,9 @@ describe('Neutron / TGE / Auction', () => {
         expect(+stakedUsdcLp).toBe(0);
       });
 
-      it('no PCL lp tokens kept by PCL lockdrop', async () => {
+      it('no PCL lp tokens staked by PCL lockdrop', async () => {
         const stakedAtomLp = await neutronChain.queryContract<string>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
             deposit: {
               lp_token: liqMigContracts.atomPclLp,
@@ -5101,7 +5101,7 @@ describe('Neutron / TGE / Auction', () => {
         expect(+stakedAtomLp).toBe(0);
 
         const stakedUsdcLp = await neutronChain.queryContract<string>(
-          liqMigContracts.generator,
+          liqMigContracts.incentives,
           {
             deposit: {
               lp_token: liqMigContracts.usdcPclLp,
@@ -5113,51 +5113,25 @@ describe('Neutron / TGE / Auction', () => {
       });
 
       describe('no generator rewards left to be paid', () => {
-        it('for XYK pairs', async () => {
-          const pendingAtomRewards = await neutronChain.queryContract<any>(
-            liqMigContracts.generator,
-            {
-              pending_token: {
-                lp_token: liqMigContracts.atomXykLp,
-                user: liqMigContracts.xykLockdrop,
-              },
-            },
+        let state: LiquidityMigrationState;
+        it('query balances', async () => {
+          state = await gatherLiquidityMigrationState(
+            neutronChain,
+            // any address is fine cuz we're interested in lockdrops balances
+            cmInstantiator.wallet.address.toString(),
+            liqMigContracts,
           );
-          expect(+pendingAtomRewards.pending).toBe(0);
-
-          const pendingUsdcRewards = await neutronChain.queryContract<any>(
-            liqMigContracts.generator,
-            {
-              pending_token: {
-                lp_token: liqMigContracts.usdcXykLp,
-                user: liqMigContracts.xykLockdrop,
-              },
-            },
-          );
-          expect(+pendingUsdcRewards.pending).toBe(0);
         });
-        it('for PCL pairs', async () => {
-          const pendingAtomRewards = await neutronChain.queryContract<any>(
-            liqMigContracts.generator,
-            {
-              pending_token: {
-                lp_token: liqMigContracts.atomPclLp,
-                user: liqMigContracts.pclLockdrop,
-              },
-            },
-          );
-          expect(+pendingAtomRewards.pending).toBe(0);
 
-          const pendingUsdcRewards = await neutronChain.queryContract<any>(
-            liqMigContracts.generator,
-            {
-              pending_token: {
-                lp_token: liqMigContracts.usdcPclLp,
-                user: liqMigContracts.pclLockdrop,
-              },
-            },
-          );
-          expect(+pendingUsdcRewards.pending).toBe(0);
+        // make sure lockdrop contracts don't have any reward assets left on their accounts
+        // allowing tiny to_uint_floor leftovers
+        it('XYK lockdrop', async () => {
+          expect(state.balances.xykLockdrop.astro).toBeLessThan(20);
+          expect(state.balances.xykLockdrop.external_rewards).toBeLessThan(20);
+        });
+        it('PCL lockdrop', async () => {
+          expect(state.balances.pclLockdrop.astro).toBeLessThan(20);
+          expect(state.balances.pclLockdrop.external_rewards).toBeLessThan(20);
         });
       });
     });
