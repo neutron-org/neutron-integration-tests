@@ -4299,7 +4299,6 @@ describe('Neutron / TGE / Auction', () => {
             cl_pair: ntrnAtomPclPool,
             new_lp_token: ntrnAtomPclToken,
             pcl_vesting: atomVestingLpAddr,
-            dust_threshold: '0',
           },
         );
         expect(res.code).toEqual(0);
@@ -4317,7 +4316,6 @@ describe('Neutron / TGE / Auction', () => {
             cl_pair: ntrnUsdcPclPool,
             new_lp_token: ntrnUsdcPclToken,
             pcl_vesting: usdcVestingLpAddr,
-            dust_threshold: '0',
           },
         );
         expect(res.code).toEqual(0);
