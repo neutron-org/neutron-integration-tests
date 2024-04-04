@@ -1573,7 +1573,7 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#6ca591c99a484675815fe4274bc78454aedd1d88":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#chore/node-20":
   version "0.3.0"
   resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/6ca591c99a484675815fe4274bc78454aedd1d88"
   dependencies:
