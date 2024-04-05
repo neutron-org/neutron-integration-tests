@@ -78,6 +78,27 @@ services:
     networks:
       - neutron-testing
 
+  oracle:
+    image: slinky-sidecar
+    volumes:
+      - ./config/dydx/oracle.json:/oracle/oracle.json
+      - ./config/dydx/market.json:/oracle/market.json
+    entrypoint: [
+      "slinky",
+      "--oracle-config-path", "/etc/slinky/default_config/oracle.json",
+      "--market-config-path", "/etc/slinky/default_config/market.json",
+      "--chain-id", "test-1", # ?
+      "--pprof-port", "6060",
+      "--run-pprof",
+      ]
+    ports:
+      - "8080:8080" # main oracle port
+      - "8002:8002" # oracle metrics port
+      - "6060:6060" # pprof port
+    networks:
+      - neutron-testing
+
+
 volumes:
   data:
     name: neutron-testing-data

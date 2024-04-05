@@ -13,7 +13,10 @@ build-hermes:
 build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
 
-build-all: build-gaia build-neutron build-hermes build-relayer
+build-slinky:
+		@docker buildx build --build-context build=$(APP_DIR)/slinky -t slinky-sidecar -f dockerbuilds/Dockerfile.slinky --no-cache --progress=plain .
+
+build-all: build-gaia build-neutron build-hermes build-relayer build-sidecar
 
 start-cosmopark: build-neutron build-relayer
 		@$(COMPOSE) up -d
