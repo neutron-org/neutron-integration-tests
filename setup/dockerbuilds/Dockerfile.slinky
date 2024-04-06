@@ -1,22 +1,20 @@
-FROM golang:1.22-bullseye AS build
+FROM golang:1.22-bullseye AS builder
 
 WORKDIR /src/slinky
-COPY go.mod .
+COPY --from=app go.mod .
 
 RUN go mod download
 
-COPY . .
+COPY --from=app . .
 
 RUN make build
-RUN make update-local-configs
 
 FROM ubuntu:rolling
 EXPOSE 8080
 EXPOSE 8002
 
-
-COPY --from=build ./build/* /usr/local/bin/
-COPY --from=build ./config/local/* /etc/slinky/default_config
+COPY --from=builder /src/slinky/build/* /usr/local/bin/
+COPY --from=builder /src/slinky/config/local/* /oracle/
 RUN apt-get update && apt-get install ca-certificates -y
 
 WORKDIR /usr/local/bin/
