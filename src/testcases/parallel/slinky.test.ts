@@ -6,9 +6,13 @@ import {
   ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
-import { Dao, DaoMember, getDaoContracts } from '@neutron-org/neutronjsplus/dist/dao';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import axios from 'axios';
 
 const config = require('../../config.json');
 
@@ -50,21 +54,13 @@ describe('Neutron / Slinky', () => {
         20,
       );
     });
-    // test('check voting power', async () => {
-    //   await getWithAttempts(
-    //     neutronChain.blockWaiter,
-    //     async () => await dao.queryTotalVotingPower(),
-    //     async (response) => response.power == 21000,
-    //     20,
-    //   );
-    // });
   });
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
       proposalId = await daoMember1.submitSingleChoiceProposal(
         'Proposal for update marketmap',
-        'UpdateMarketmap proposal. This one will pass',
+        'Add new marketmap with currency pair',
         [updateMarketMapProposal()],
         '1000',
       );
@@ -87,26 +83,27 @@ describe('Neutron / Slinky', () => {
     });
   });
 
-  describe('Module fetches prices', () => {
-    // TODO
+  describe('module fetches prices', () => {
+    test('currency pairs not empty', async () => {
+      // wait to make sure we updated the price in oracle module
+      await neutronChain.blockWaiter.waitBlocks(5);
+      // check
+      const res = await queryAllCurrencyPairs(neutronChain.sdk);
+      expect(res.currency_pairs[0].Base).toBe('ETH');
+      expect(res.currency_pairs[0].Quote).toBe('USDT');
+    });
+
+    test('prices not empty', async () => {
+      const res = await queryPrices(neutronChain.sdk, ['ETH/USDT']);
+      expect(+res.prices[0].price.price).toBeGreaterThan(0);
+    });
+
+    test('eth price present', async () => {
+      const res = await queryPrice(neutronChain.sdk, 'ETH', 'USDT');
+      expect(+res.price.price).toBeGreaterThan(0);
+    });
   });
 });
-
-// const queryPrices = async(): Promise<any> => {
-//   const req = await axios.get(
-//     `${this.sdk.url}/slinky/oracle/v1/get_prices`,
-//   );
-
-//   return req.data.prices;
-// }
-
-// const queryAllTickers = async(): Promise<any> => {
-//   const req = await axios.get(
-//     `${this.sdk.url}/slinky/oracle/v1/get_all_tickers`,
-//   );
-
-//   return req.data.currency_pairs;
-// }
 
 const updateMarketMapMessage = JSON.stringify({
   '@type': '/slinky.marketmap.v1.MsgUpdateMarketMap',
@@ -162,3 +159,58 @@ const updateMarketMapProposal = (): any => ({
     },
   },
 });
+
+type GetPriceResponse = {
+  price: {
+    price: string;
+    block_timestamp: string;
+    block_height: string;
+  };
+  nonce: string;
+  decimals: string;
+  id: string;
+};
+
+type GetPricesResponse = {
+  prices: GetPriceResponse[];
+};
+
+type CurrencyPair = {
+  Quote: string;
+  Base: string;
+};
+
+type GetAllCurrencyPairsResponse = {
+  currency_pairs: CurrencyPair[];
+};
+
+const queryPrice = async (sdk: any, base: string, quote: string): Promise<GetPriceResponse> => {
+  try {
+    const req = await axios.get<any>(`${sdk.url}/slinky/oracle/v1/get_price`, {
+      params: {
+        'currency_pair.Base': base,
+        'currency_pair.Quote': quote,
+      },
+    });
+    return req.data;
+  } catch (e) {
+    if (e.response?.data?.message !== undefined) {
+      throw new Error(e.response?.data?.message);
+    }
+    throw e;
+  }
+};
+
+const queryPrices = async (sdk: any, currencyPairIds: string[]): Promise<GetPricesResponse> => {
+  const req = await axios.get(`${sdk.url}/slinky/oracle/v1/get_prices`, {
+    params: { currency_pair_ids: currencyPairIds.join(',') },
+  });
+
+  return req.data;
+};
+
+const queryAllCurrencyPairs = async (sdk: any): Promise<GetAllCurrencyPairsResponse> => {
+  const req = await axios.get(`${sdk.url}/slinky/oracle/v1/get_all_tickers`);
+
+  return req.data;
+};

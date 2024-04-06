@@ -12,6 +12,7 @@ services:
       - 8090:9090
     environment:
       - RUN_BACKGROUND=0
+      - ORACLE_ADDRESS=oracle:8080
     networks:
       - neutron-testing
 
@@ -92,7 +93,6 @@ services:
       - "8002:8002" # oracle metrics port
     networks:
       - neutron-testing
-
 
 volumes:
   data:
