@@ -1175,7 +1175,7 @@ describe('Neutron / TGE / Auction', () => {
               tgeMain.contracts.auction,
               JSON.stringify({
                 withdraw_lp: {
-                  amount: Math.round(
+                  amount: Math.floor(
                     Number(userInfo.atom_lp_locked) / 2,
                   ).toString(),
                   asset: 'ATOM',
@@ -1248,7 +1248,7 @@ describe('Neutron / TGE / Auction', () => {
               tgeMain.contracts.auction,
               JSON.stringify({
                 withdraw_lp: {
-                  amount: Math.round(
+                  amount: Math.floor(
                     Number(userInfo.usdc_lp_locked) / 2,
                   ).toString(),
                   asset: 'USDC',
