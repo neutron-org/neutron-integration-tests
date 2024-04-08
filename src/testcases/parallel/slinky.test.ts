@@ -3,7 +3,6 @@ import {
   WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
-  ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
@@ -12,7 +11,6 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import axios from 'axios';
 
 const config = require('../../config.json');
 
@@ -58,10 +56,47 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
-      proposalId = await daoMember1.submitSingleChoiceProposal(
+      proposalId = await daoMember1.submitUpdateMarketMap(
         'Proposal for update marketmap',
         'Add new marketmap with currency pair',
-        [updateMarketMapProposal()],
+        [
+          {
+            ticker: {
+              currency_pair: {
+                Base: 'ETH',
+                Quote: 'USDT',
+              },
+              decimals: 8,
+              min_provider_count: 1,
+              enabled: true,
+              metadata_JSON: '{}',
+            },
+            providers: {
+              providers: [
+                {
+                  name: 'kucoin_ws',
+                  off_chain_ticker: 'eth-usdt',
+                },
+              ],
+            },
+            paths: {
+              paths: [
+                {
+                  operations: [
+                    {
+                      provider: 'kucoin_ws',
+                      currency_pair: {
+                        Base: 'ETH',
+                        Quote: 'USDT',
+                      },
+                      invert: false,
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
         '1000',
       );
     });
@@ -88,129 +123,19 @@ describe('Neutron / Slinky', () => {
       // wait to make sure we updated the price in oracle module
       await neutronChain.blockWaiter.waitBlocks(5);
       // check
-      const res = await queryAllCurrencyPairs(neutronChain.sdk);
+      const res = await neutronChain.queryOracleAllCurrencyPairs();
       expect(res.currency_pairs[0].Base).toBe('ETH');
       expect(res.currency_pairs[0].Quote).toBe('USDT');
     });
 
     test('prices not empty', async () => {
-      const res = await queryPrices(neutronChain.sdk, ['ETH/USDT']);
+      const res = await neutronChain.queryOraclePrices(['ETH/USDT']);
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
     test('eth price present', async () => {
-      const res = await queryPrice(neutronChain.sdk, 'ETH', 'USDT');
+      const res = await neutronChain.queryOraclePrice('ETH', 'USDT');
       expect(+res.price.price).toBeGreaterThan(0);
     });
   });
 });
-
-const updateMarketMapMessage = JSON.stringify({
-  '@type': '/slinky.marketmap.v1.MsgUpdateMarketMap',
-  signer: ADMIN_MODULE_ADDRESS,
-  create_markets: [
-    {
-      ticker: {
-        currency_pair: {
-          Base: 'ETH',
-          Quote: 'USDT',
-        },
-        decimals: 8,
-        min_provider_count: 1,
-        enabled: true,
-        metadata_JSON: '{}',
-      },
-      providers: {
-        providers: [
-          {
-            name: 'kucoin_ws',
-            off_chain_ticker: 'eth-usdt',
-          },
-        ],
-      },
-      paths: {
-        paths: [
-          {
-            operations: [
-              {
-                provider: 'kucoin_ws',
-                currency_pair: {
-                  Base: 'ETH',
-                  Quote: 'USDT',
-                },
-                invert: false,
-              },
-            ],
-          },
-        ],
-      },
-    },
-  ],
-});
-
-const updateMarketMapProposal = (): any => ({
-  custom: {
-    submit_admin_proposal: {
-      admin_proposal: {
-        proposal_execute_message: {
-          message: updateMarketMapMessage,
-        },
-      },
-    },
-  },
-});
-
-type GetPriceResponse = {
-  price: {
-    price: string;
-    block_timestamp: string;
-    block_height: string;
-  };
-  nonce: string;
-  decimals: string;
-  id: string;
-};
-
-type GetPricesResponse = {
-  prices: GetPriceResponse[];
-};
-
-type CurrencyPair = {
-  Quote: string;
-  Base: string;
-};
-
-type GetAllCurrencyPairsResponse = {
-  currency_pairs: CurrencyPair[];
-};
-
-const queryPrice = async (sdk: any, base: string, quote: string): Promise<GetPriceResponse> => {
-  try {
-    const req = await axios.get<any>(`${sdk.url}/slinky/oracle/v1/get_price`, {
-      params: {
-        'currency_pair.Base': base,
-        'currency_pair.Quote': quote,
-      },
-    });
-    return req.data;
-  } catch (e) {
-    if (e.response?.data?.message !== undefined) {
-      throw new Error(e.response?.data?.message);
-    }
-    throw e;
-  }
-};
-
-const queryPrices = async (sdk: any, currencyPairIds: string[]): Promise<GetPricesResponse> => {
-  const req = await axios.get(`${sdk.url}/slinky/oracle/v1/get_prices`, {
-    params: { currency_pair_ids: currencyPairIds.join(',') },
-  });
-
-  return req.data;
-};
-
-const queryAllCurrencyPairs = async (sdk: any): Promise<GetAllCurrencyPairsResponse> => {
-  const req = await axios.get(`${sdk.url}/slinky/oracle/v1/get_all_tickers`);
-
-  return req.data;
-};
