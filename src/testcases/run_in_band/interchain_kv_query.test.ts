@@ -492,6 +492,9 @@ describe('Neutron / Interchain KV Query', () => {
     const dao = new Dao(neutronChain, daoContracts);
     const daoMember = new DaoMember(neutronAccount, dao);
     await daoMember.bondFunds('10000000000');
+
+    const validatorAddress = testState.wallets.cosmos.val1.address.toString();
+    const delegatorAddress = testState.wallets.cosmos.demo2.address.toString();
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -759,7 +762,7 @@ describe('Neutron / Interchain KV Query', () => {
         gaiaAccount,
         testState.wallets.cosmos.demo2.address.toString(),
         testState.wallets.cosmos.val1.address.toString(),
-        '3000',
+        '1500000',
       );
       await waitForICQResultWithRemoteHeight(
         neutronChain,
@@ -773,7 +776,7 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
       expect(interchainQueryResult.delegations[0].amount.amount).toEqual(
-        (3000).toString(),
+        (1500000).toString(),
       );
     });
   });
@@ -1077,14 +1080,14 @@ describe('Neutron / Interchain KV Query', () => {
         '1250',
       );
 
-      const proposalIdBase64 = getEventAttribute(
-        (proposalResp as any).events,
-        'submit_proposal',
-        Buffer.from('proposal_id').toString('base64'),
-      );
+      testState.wallets.neutron.demo1;
 
       proposalId = parseInt(
-        Buffer.from(proposalIdBase64, 'base64').toString('utf-8'),
+        getEventAttribute(
+          (proposalResp as any).events,
+          'submit_proposal',
+          'proposal_id',
+        ),
       );
 
       await msgVote(
@@ -1141,11 +1144,14 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
 
+      console.log('proposalId');
+      console.log(proposalId);
+
       expect(interchainQueryResult.votes.proposal_votes).toEqual([
         {
           proposal_id: proposalId,
           voter: testState.wallets.cosmos.demo2.address.toString(),
-          options: [{ option: 1, weight: '1000000000000000000' }],
+          options: [{ option: 1, weight: '1.000000000000000000' }],
         },
         { proposal_id: 0, voter: '', options: [] },
       ]);
@@ -1166,14 +1172,12 @@ describe('Neutron / Interchain KV Query', () => {
         '1250',
       );
 
-      const proposalIdBase64 = getEventAttribute(
-        (proposalResp as any).events,
-        'submit_proposal',
-        Buffer.from('proposal_id').toString('base64'),
-      );
-
       proposalId = parseInt(
-        Buffer.from(proposalIdBase64, 'base64').toString('utf-8'),
+        getEventAttribute(
+          (proposalResp as any).events,
+          'submit_proposal',
+          'proposal_id',
+        ),
       );
 
       queryId = await registerGovProposalsQuery(
@@ -1222,7 +1226,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(interchainQueryResult.proposals.proposals).toEqual([
         {
           proposal_id: proposalId,
-          proposal_type: '/cosmos.gov.v1beta1.TextProposal',
+          proposal_type: '/cosmos.gov.v1.MsgExecLegacyContent',
           total_deposit: [{ denom: 'uatom', amount: '10000000' }],
           status: 2,
           submit_time: expect.any(Number),
