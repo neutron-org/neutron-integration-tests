@@ -492,9 +492,6 @@ describe('Neutron / Interchain KV Query', () => {
     const dao = new Dao(neutronChain, daoContracts);
     const daoMember = new DaoMember(neutronAccount, dao);
     await daoMember.bondFunds('10000000000');
-
-    const validatorAddress = testState.wallets.cosmos.val1.address.toString();
-    const delegatorAddress = testState.wallets.cosmos.demo2.address.toString();
   });
 
   describe('Instantiate interchain queries contract', () => {
