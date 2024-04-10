@@ -16,7 +16,7 @@ build-relayer:
 build-slinky:
 		@docker buildx build --build-context app=$(APP_DIR)/slinky -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
 
-build-all: build-gaia build-neutron build-hermes build-relayer build-sidecar
+build-all: build-gaia build-neutron build-hermes build-relayer build-slinky
 
 start-cosmopark: build-neutron build-relayer
 		@$(COMPOSE) up -d
