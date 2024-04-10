@@ -93,7 +93,6 @@ export const msgVote = async (
   proposalId: number,
   amount = '0',
 ): Promise<BroadcastTx200ResponseTxResponse> => {
-  console.log('msgVote', voter, proposalId, amount);
   const msgVote = new MsgVote({
     voter,
     proposalId: BigInt(proposalId),

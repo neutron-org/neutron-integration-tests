@@ -1102,7 +1102,7 @@ describe('Neutron / Interchain KV Query', () => {
         proposalId,
         [
           testState.wallets.cosmos.demo2.address.toString(),
-          'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw',
+          'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw', // Random address to check absent vote behavior in the result
         ],
       );
     });
@@ -1141,16 +1141,13 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
 
-      console.log('proposalId');
-      console.log(proposalId);
-
       expect(interchainQueryResult.votes.proposal_votes).toEqual([
         {
           proposal_id: proposalId,
           voter: testState.wallets.cosmos.demo2.address.toString(),
           options: [{ option: 1, weight: '1.000000000000000000' }],
         },
-        { proposal_id: 0, voter: '', options: [] },
+        { proposal_id: 0, voter: '', options: [] }, // Absent vote for random address (see above, about address cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw)
       ]);
     });
   });
@@ -1182,7 +1179,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         connectionId,
         updatePeriods[2],
-        [proposalId, proposalId + 1, proposalId + 2],
+        [proposalId, proposalId + 1, proposalId + 2], // Send proposal Id as well as couple of non-existent proposals, to check result
       );
     });
 
@@ -1237,6 +1234,7 @@ describe('Neutron / Interchain KV Query', () => {
             no_with_veto: '0',
           },
         },
+        // These are non-existent proposals in the KV result
         {
           proposal_id: 0,
           proposal_type: null,
