@@ -97,7 +97,6 @@ describe('Neutron / Slinky', () => {
             },
           },
         ],
-        '1000',
       );
     });
 
