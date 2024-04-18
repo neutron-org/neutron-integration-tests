@@ -8,6 +8,7 @@ import {
   TestStateLocalCosmosTestNet,
   types,
   wait,
+  walletWrapper,
 } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
@@ -16,9 +17,9 @@ describe('Neutron / Simple', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: cosmosWrapper.CosmosWrapper;
   let gaiaChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount: cosmosWrapper.WalletWrapper;
-  let gaiaAccount: cosmosWrapper.WalletWrapper;
-  let gaiaAccount2: cosmosWrapper.WalletWrapper;
+  let neutronAccount: walletWrapper.WalletWrapper;
+  let gaiaAccount: walletWrapper.WalletWrapper;
+  let gaiaAccount2: walletWrapper.WalletWrapper;
   let contractAddress: string;
   let receiverContractAddress: string;
 
@@ -29,23 +30,31 @@ describe('Neutron / Simple', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new cosmosWrapper.WalletWrapper(
+    neutronAccount = new walletWrapper.WalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
+      testState.client1,
+      testState.wasmClient1,
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new cosmosWrapper.WalletWrapper(
+    gaiaAccount = new walletWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
+      testState.client2,
+      testState.wasmClient2,
     );
-    gaiaAccount2 = new cosmosWrapper.WalletWrapper(
+    gaiaAccount2 = new walletWrapper.WalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmosTwo.genQaWal1,
+      testState.client2,
+      testState.wasmClient2,
     );
   });
 
@@ -69,12 +78,11 @@ describe('Neutron / Simple', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
         '{}',
         'ibc_transfer',
       );
-      contractAddress = res[0]._contract_address;
     });
   });
 
@@ -85,22 +93,16 @@ describe('Neutron / Simple', () => {
       );
       expect(codeId).toBeGreaterThan(0);
 
-      const res = await neutronAccount.instantiateContract(
+      receiverContractAddress = await neutronAccount.instantiateContract(
         codeId,
         '{}',
         'msg_receiver',
       );
-      receiverContractAddress = res[0]._contract_address;
     });
     test('staking queries must fail since we have no staking module in Neutron', async () => {
       let exceptionThrown = false;
       try {
-        await neutronAccount.executeContract(
-          receiverContractAddress,
-          JSON.stringify({
-            call_staking: {},
-          }),
-        );
+        await neutronAccount.executeContract(receiverContractAddress, { call_staking: {} });
       } catch (err) {
         const error = err as Error;
         expect(error.message).toMatch(/Staking is not supported/i);
@@ -199,14 +201,14 @@ describe('Neutron / Simple', () => {
       test('set payer fees', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             set_fees: {
               denom: neutronChain.denom,
               ack_fee: '2333',
               recv_fee: '0',
               timeout_fee: '2666',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -214,14 +216,14 @@ describe('Neutron / Simple', () => {
       test('execute contract', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             send: {
               channel: 'channel-0',
               to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -267,28 +269,28 @@ describe('Neutron / Simple', () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             set_fees: {
               denom: neutronChain.denom,
               ack_fee: '0',
               recv_fee: '0',
               timeout_fee: '0',
             },
-          }),
+          },
         );
       });
       test('execute contract should fail', async () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               send: {
                 channel: 'channel-0',
                 to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
-            }),
+            },
           ),
         ).rejects.toThrow(/invalid coins/);
       });
@@ -390,28 +392,28 @@ describe('Neutron / Simple', () => {
       test('try to set fee in IBC transferred atoms', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             set_fees: {
               denom: uatomIBCDenom,
               ack_fee: '100',
               recv_fee: '0',
               timeout_fee: '100',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
 
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               send: {
                 channel: 'channel-0',
                 to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
-            }),
+            },
           ),
         ).rejects.toThrow(/insufficient fee/);
       });
@@ -420,28 +422,28 @@ describe('Neutron / Simple', () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             set_fees: {
               denom: neutronChain.denom,
               ack_fee: '1000000',
               recv_fee: '0',
               timeout_fee: '100000',
             },
-          }),
+          },
         );
       });
       test('execute contract should fail', async () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               send: {
                 channel: 'channel-0',
                 to: gaiaAccount.wallet.address.toString(),
                 denom: NEUTRON_DENOM,
                 amount: '1000',
               },
-            }),
+            },
           ),
         ).rejects.toThrow(/insufficient funds/);
       });
@@ -451,14 +453,14 @@ describe('Neutron / Simple', () => {
       beforeAll(async () => {
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             set_fees: {
               denom: neutronChain.denom,
               ack_fee: '1000',
               recv_fee: '0',
               timeout_fee: '1000',
             },
-          }),
+          },
         );
       });
       test('execute contract with failing sudo', async () => {
@@ -470,23 +472,23 @@ describe('Neutron / Simple', () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             integration_tests_set_sudo_failure_mock: {
               state: 'enabled',
             },
-          }),
+          },
         );
 
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             send: {
               channel: 'channel-0',
               to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
-          }),
+          },
         );
 
         /*
@@ -505,7 +507,7 @@ describe('Neutron / Simple', () => {
 
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             send: {
               channel: 'channel-0',
               to: gaiaAccount.wallet.address.toString(),
@@ -513,7 +515,7 @@ describe('Neutron / Simple', () => {
               amount: '1000',
               timeout_height: currentHeight + 5,
             },
-          }),
+          },
         );
 
         const failuresAfterCall =
@@ -583,9 +585,9 @@ describe('Neutron / Simple', () => {
         // Restore sudo handler to state
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             integration_tests_unset_sudo_failure_mock: {},
-          }),
+          },
         );
       });
 
@@ -593,23 +595,23 @@ describe('Neutron / Simple', () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             integration_tests_set_sudo_failure_mock: {
               state: 'enabled_infinite_loop',
             },
-          }),
+          },
         );
 
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             send: {
               channel: 'channel-0',
               to: gaiaAccount.wallet.address.toString(),
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
-          }),
+          },
         );
 
         await neutronChain.blockWaiter.waitBlocks(5);
@@ -627,11 +629,11 @@ describe('Neutron / Simple', () => {
         // Mock sudo handler to fail
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             integration_tests_set_sudo_failure_mock: {
               state: 'enabled',
             },
-          }),
+          },
         );
 
         await neutronChain.blockWaiter.waitBlocks(2);
@@ -644,11 +646,11 @@ describe('Neutron / Simple', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               resubmit_failure: {
                 failure_id: +failuresResBefore.failures[0].id,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError();
 
@@ -663,9 +665,9 @@ describe('Neutron / Simple', () => {
         // Restore sudo handler's normal state
         await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             integration_tests_unset_sudo_failure_mock: {},
-          }),
+          },
         );
         await neutronChain.blockWaiter.waitBlocks(5);
       });
@@ -679,11 +681,11 @@ describe('Neutron / Simple', () => {
         const failureId = +failure.id;
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             resubmit_failure: {
               failure_id: +failureId,
             },
-          }),
+          },
         );
         expect(res.code).toBe(0);
 
