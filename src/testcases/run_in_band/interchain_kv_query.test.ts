@@ -1,12 +1,15 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
-  NEUTRON_DENOM,
   filterIBCDenoms,
   getEventAttribute,
+  NEUTRON_DENOM,
+  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import {
+  COSMOS_DENOM,
+  TestStateLocalCosmosTestNet,
+} from '@neutron-org/neutronjsplus';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
@@ -14,7 +17,6 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import cosmosclient from '@cosmos-client/core';
-import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
@@ -22,7 +24,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
+import axios from 'axios';
+import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
+import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
+import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
 
 const config = require('../../config.json');
 
@@ -88,6 +93,63 @@ const getQueryBalanceResult = (
     },
   });
 
+const getValidatorsSigningInfosResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    signing_infos: {
+      signing_infos: {
+        address: string;
+        start_height: string;
+        index_offset: string;
+        jailed_until: string;
+        tombstoned: boolean;
+        missed_blocks_counter: number;
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    validators_signing_infos: {
+      query_id: queryId,
+    },
+  });
+
+const getDelegatorUnbondingDelegationsResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    unbonding_delegations: {
+      unbonding_responses: {
+        delegator_address: string;
+        validator_address: string;
+        entries: {
+          balance: string;
+          completion_time: string | null;
+          creation_height: number;
+          initial_balance: string;
+        }[];
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    get_unbonding_delegations: {
+      query_id: queryId,
+    },
+  });
+
+const getCosmosSigningInfosResult = async (sdkUrl: string) => {
+  try {
+    return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
+      .data;
+  } catch (e) {
+    return null;
+  }
+};
+
 const getQueryDelegatorDelegationsResult = (
   cm: CosmosWrapper,
   contractAddress: string,
@@ -124,6 +186,68 @@ const registerBalanceQuery = async (
         connection_id: connectionId,
         denom: denom,
         addr: addr.toString(),
+        update_period: updatePeriod,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const registerSigningInfoQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  valcons: string,
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_validators_signing_info_query: {
+        connection_id: connectionId,
+        validators: [valcons],
+        update_period: updatePeriod,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const registerUnbondingDelegationsQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  delegator: string,
+  validator: string,
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_delegator_unbonding_delegations_query: {
+        connection_id: connectionId,
+        delegator,
+        validators: [validator],
         update_period: updatePeriod,
       },
     }),
@@ -234,6 +358,104 @@ const validateBalanceQuery = async (
     filterIBCDenoms(directQueryResult.data.balances as ICoin[]),
   );
 };
+
+const registerProposalVotesQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  proposalId: number,
+  voters: string[],
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_government_proposal_votes_query: {
+        connection_id: connectionId,
+        update_period: updatePeriod,
+        proposals_ids: [proposalId],
+        voters: voters,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getProposalVotesResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    votes: {
+      proposal_votes: {
+        proposal_id: number;
+        voter: string;
+        options: any;
+      }[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    government_proposal_votes: {
+      query_id: queryId,
+    },
+  });
+
+const registerGovProposalsQuery = async (
+  cm: WalletWrapper,
+  contractAddress: string,
+  connectionId: string,
+  updatePeriod: number,
+  proposalsIds: number[],
+) => {
+  const txResult = await cm.executeContract(
+    contractAddress,
+    JSON.stringify({
+      register_government_proposals_query: {
+        connection_id: connectionId,
+        update_period: updatePeriod,
+        proposals_ids: proposalsIds,
+      },
+    }),
+  );
+
+  const attribute = getEventAttribute(
+    (txResult as any).events,
+    'neutron',
+    'query_id',
+  );
+
+  const queryId = parseInt(attribute);
+  expect(queryId).toBeGreaterThanOrEqual(0);
+
+  return queryId;
+};
+
+const getProposalsResult = (
+  cm: CosmosWrapper,
+  contractAddress: string,
+  queryId: number,
+) =>
+  cm.queryContract<{
+    proposals: {
+      proposals: any[];
+    };
+    last_submitted_local_height: number;
+  }>(contractAddress, {
+    government_proposals: {
+      query_id: queryId,
+    },
+  });
 
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
@@ -431,8 +653,6 @@ describe('Neutron / Interchain KV Query', () => {
       );
       expect(queryResult.registered_query.id).toEqual(queryId);
       expect(queryResult.registered_query.owner).toEqual(contractAddress);
-      // XXX: I could actually check that "key" is correctly derived from contractAddress,
-      //      but this requires bech32 decoding/encoding shenanigans
       expect(queryResult.registered_query.keys.length).toEqual(1);
       expect(queryResult.registered_query.keys[0].path).toEqual('bank');
       expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
@@ -539,10 +759,11 @@ describe('Neutron / Interchain KV Query', () => {
     //       because we only have one node per network in cosmopark
     test('perform icq #4: delegator delegations', async () => {
       const queryId = 4;
-      await gaiaAccount.msgDelegate(
+      await msgDelegate(
+        gaiaAccount,
         testState.wallets.cosmos.demo2.address.toString(),
         testState.wallets.cosmos.val1.address.toString(),
-        '3000',
+        '1500000',
       );
       await waitForICQResultWithRemoteHeight(
         neutronChain,
@@ -556,7 +777,7 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
       expect(interchainQueryResult.delegations[0].amount.amount).toEqual(
-        (3000).toString(),
+        (1500000).toString(),
       );
     });
   });
@@ -799,7 +1020,7 @@ describe('Neutron / Interchain KV Query', () => {
           balancesAfterRegistration.balances as ICoin[],
         );
 
-        await removeQueryViaTx(neutronAccount, queryId);
+        await removeQueryViaTx(neutronAccount, BigInt(queryId));
 
         await getWithAttempts(
           neutronChain.blockWaiter,
@@ -843,6 +1064,361 @@ describe('Neutron / Interchain KV Query', () => {
 
         expect(balancesAfterRemovalWithFee).toEqual(balancesBeforeRegistration);
       });
+    });
+  });
+
+  describe('Proposal votes query', () => {
+    let queryId: number;
+    let proposalId: number;
+
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      const proposalResp = await msgSubmitProposal(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        '1250',
+      );
+
+      testState.wallets.neutron.demo1;
+
+      proposalId = parseInt(
+        getEventAttribute(
+          (proposalResp as any).events,
+          'submit_proposal',
+          'proposal_id',
+        ),
+      );
+
+      await msgVote(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        proposalId,
+        '1250',
+      );
+
+      queryId = await registerProposalVotesQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        proposalId,
+        [
+          testState.wallets.cosmos.demo2.address.toString(),
+          'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw', // Random address to check absent vote behavior in the result
+        ],
+      );
+    });
+
+    test('proposal votes registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      // XXX: I could actually check that "key" is correctly derived from contractAddress,
+      //      but this requires bech32 decoding/encoding shenanigans
+      expect(queryResult.registered_query.keys.length).toEqual(2);
+      expect(queryResult.registered_query.keys[0].path).toEqual('gov');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('proposal votes data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getProposalVotesResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+
+      expect(interchainQueryResult.votes.proposal_votes).toEqual([
+        {
+          proposal_id: proposalId,
+          voter: testState.wallets.cosmos.demo2.address.toString(),
+          options: [{ option: 1, weight: '1.000000000000000000' }],
+        },
+        { proposal_id: 0, voter: '', options: [] }, // Absent vote for random address (see above, about address cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw)
+      ]);
+    });
+  });
+
+  describe('Government proposals query', () => {
+    let queryId: number;
+    let proposalId: number;
+
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      const proposalResp = await msgSubmitProposal(
+        gaiaAccount,
+        testState.wallets.cosmos.demo2.address.toString(),
+        '1250',
+      );
+
+      proposalId = parseInt(
+        getEventAttribute(
+          (proposalResp as any).events,
+          'submit_proposal',
+          'proposal_id',
+        ),
+      );
+
+      queryId = await registerGovProposalsQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        [proposalId, proposalId + 1, proposalId + 2], // Send proposal Id as well as couple of non-existent proposals, to check result
+      );
+    });
+
+    test('proposals registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      // XXX: I could actually check that "key" is correctly derived from contractAddress,
+      //      but this requires bech32 decoding/encoding shenanigans
+      expect(queryResult.registered_query.keys.length).toEqual(3);
+      expect(queryResult.registered_query.keys[0].path).toEqual('gov');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('proposals data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getProposalsResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+
+      expect(interchainQueryResult.proposals.proposals).toEqual([
+        {
+          proposal_id: proposalId,
+          proposal_type: '/cosmos.gov.v1.MsgExecLegacyContent',
+          total_deposit: [{ denom: 'uatom', amount: '10000000' }],
+          status: 2,
+          submit_time: expect.any(Number),
+          deposit_end_time: expect.any(Number),
+          voting_start_time: expect.any(Number),
+          voting_end_time: expect.any(Number),
+          final_tally_result: {
+            yes: '0',
+            no: '0',
+            abstain: '0',
+            no_with_veto: '0',
+          },
+        },
+        // These are non-existent proposals in the KV result
+        {
+          proposal_id: 0,
+          proposal_type: null,
+          total_deposit: [],
+          status: 0,
+          submit_time: null,
+          deposit_end_time: null,
+          voting_start_time: null,
+          voting_end_time: null,
+          final_tally_result: null,
+        },
+        {
+          proposal_id: 0,
+          proposal_type: null,
+          total_deposit: [],
+          status: 0,
+          submit_time: null,
+          deposit_end_time: null,
+          voting_start_time: null,
+          voting_end_time: null,
+          final_tally_result: null,
+        },
+      ]);
+    });
+  });
+
+  describe('Signing info query', () => {
+    let queryId: number;
+    let indexOffset: number;
+    let cosmosvalconspub: string;
+    beforeEach(async () => {
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      const infos = await getCosmosSigningInfosResult(gaiaChain.sdk.url);
+      expect(infos).not.toBeNull();
+      const firstValidator = infos.info[0];
+      indexOffset = parseInt(firstValidator.index_offset);
+      cosmosvalconspub = firstValidator.address;
+
+      queryId = await registerSigningInfoQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        cosmosvalconspub,
+      );
+    });
+
+    test('signing info registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys[0].path).toEqual('slashing');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('signing info data', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult = await getValidatorsSigningInfosResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+
+      expect(
+        interchainQueryResult.signing_infos.signing_infos[0].address,
+      ).toEqual(cosmosvalconspub);
+
+      expect(
+        parseInt(
+          interchainQueryResult.signing_infos.signing_infos[0].index_offset,
+        ),
+      ).toBeGreaterThan(indexOffset);
+    });
+  });
+
+  describe('Unbonding delegations query', () => {
+    let queryId: number;
+    let validatorAddress: string;
+    let delegatorAddress: string;
+
+    beforeAll(async () => {
+      validatorAddress = testState.wallets.cosmos.val1.address.toString();
+      delegatorAddress = testState.wallets.cosmos.demo2.address.toString();
+
+      await msgDelegate(
+        gaiaAccount,
+        delegatorAddress,
+        validatorAddress,
+        '3000',
+      );
+      await msgUndelegate(
+        gaiaAccount,
+        delegatorAddress,
+        validatorAddress,
+        '2000',
+      );
+
+      // Top up contract address before running query
+      await neutronAccount.msgSend(contractAddress, '1000000');
+
+      queryId = await registerUnbondingDelegationsQuery(
+        neutronAccount,
+        contractAddress,
+        connectionId,
+        updatePeriods[2],
+        delegatorAddress,
+        validatorAddress,
+      );
+    });
+
+    test('registered query data', async () => {
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      expect(queryResult.registered_query.keys.length).toEqual(1);
+      expect(queryResult.registered_query.keys[0].path).toEqual('staking');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+    });
+
+    test('query result', async () => {
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await getHeight(gaiaChain.sdk),
+      );
+
+      const interchainQueryResult =
+        await getDelegatorUnbondingDelegationsResult(
+          neutronChain,
+          contractAddress,
+          queryId,
+        );
+      expect(interchainQueryResult.last_submitted_local_height).toBeGreaterThan(
+        0,
+      );
+      expect(
+        interchainQueryResult.unbonding_delegations.unbonding_responses,
+      ).toEqual([
+        {
+          delegator_address: 'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
+          validator_address:
+            'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+          entries: [
+            {
+              balance: '2000',
+              completion_time: expect.any(String),
+              creation_height: expect.any(Number),
+              initial_balance: '2000',
+            },
+          ],
+        },
+      ]);
     });
   });
 });
