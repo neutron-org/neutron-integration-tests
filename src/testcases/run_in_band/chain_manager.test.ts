@@ -140,9 +140,9 @@ describe('Neutron / Subdao', () => {
           add_strategy: {
             address: subDao.contracts.core.address,
             strategy: {
-              AllowOnly: [
+              allow_only: [
                 {
-                  ParamChangePermission: {
+                  param_change_permission: {
                     params: [
                       {
                         subspace: 'globalfee',
@@ -152,8 +152,8 @@ describe('Neutron / Subdao', () => {
                   },
                 },
                 {
-                  UpdateParamsPermission: {
-                    CronUpdateParamsPermission: {
+                  update_params_permission: {
+                    cron_update_params_permission: {
                       security_address: true,
                       limit: true,
                     },
