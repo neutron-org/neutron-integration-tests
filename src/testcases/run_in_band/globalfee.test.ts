@@ -12,6 +12,8 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import {updateGlobalFeeParamsProposal} from "@neutron-org/neutronjsplus/dist/proposal";
+import cosmosclient from "@cosmos-client/core";
 
 const config = require('../../config.json');
 
@@ -64,19 +66,30 @@ describe('Neutron / Global Fee', () => {
   const executeParamChange = async (
     daoMember: DaoMember,
     kind: string,
-    value: string,
+    bypass_min_fee_msg_types: string[],
+    minimum_gas_prices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
+    max_total_bypass_min_fee_msg_gas_usage: string,
   ) => {
-    const proposalId = await daoMember.submitParameterChangeProposal(
+    const params = await neutronChain.queryGlobalfeeParams();
+    if (bypass_min_fee_msg_types == null) {
+      bypass_min_fee_msg_types = params.bypass_min_fee_msg_types
+    }
+    if (minimum_gas_prices == null) {
+      minimum_gas_prices = params.minimum_gas_prices
+    }
+    if (max_total_bypass_min_fee_msg_gas_usage == null) {
+      max_total_bypass_min_fee_msg_gas_usage = params.max_total_bypass_min_fee_msg_gas_usage
+    }
+
+    const proposalId = await daoMember1.submitUpdateParamsGlobalfeeProposal(
       'Change Proposal - ' + kind + ' #' + counter,
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
-      'globalfee',
-      kind,
-      value,
+      updateGlobalFeeParamsProposal({
+        bypass_min_fee_msg_types: bypass_min_fee_msg_types,
+        max_total_bypass_min_fee_msg_gas_usage: max_total_bypass_min_fee_msg_gas_usage,
+        minimum_gas_prices: minimum_gas_prices
+      }),
       '1000',
-      {
-        gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-      },
     );
 
     await daoMember.voteYes(proposalId, 'single', {
@@ -114,7 +127,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MinimumGasPricesParam',
-      '[{"denom": "untrn", "amount": "0.01"}]',
+      null,
+      [{"denom": "untrn", "amount": "0.01"}],
+      null
     );
   });
 
@@ -140,7 +155,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'BypassMinFeeMsgTypes',
-      '["/cosmos.bank.v1beta1.MsgSend"]',
+      ["/cosmos.bank.v1beta1.MsgSend"],
+      null,
+      null
     );
   });
 
@@ -170,7 +187,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MaxTotalBypassMinFeeMsgGasUsage',
-      '"50"',
+      null,
+      null,
+      "50",
     );
   });
 
@@ -195,7 +214,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MinimumGasPricesParam',
-      '[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]',
+      null,
+      [{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}],
+      null,
     );
   });
 
@@ -203,7 +224,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'BypassMinFeeMsgTypes',
-      '["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]',
+      ["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"],
+      null,
+      null
     );
   });
 
