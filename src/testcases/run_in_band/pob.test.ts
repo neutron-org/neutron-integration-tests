@@ -161,13 +161,12 @@ describe('Neutron / IBC hooks', () => {
         [overriderTxData, txData],
       );
       expect(res.code).toEqual(0);
-      const [{ events }] = JSON.parse(res.raw_log || '[]') as {
-        events: InlineResponse20071TxResponseEvents[];
-      }[];
+      const events = res.events;
       const attrs = events.find((e) => e.type === 'auction_bid')?.attributes;
       expect(attrs).toEqual(
         expect.arrayContaining([
           {
+            index: true,
             key: 'bid',
             value: `1000${NEUTRON_DENOM}`,
           },

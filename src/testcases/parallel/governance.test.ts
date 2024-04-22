@@ -150,7 +150,7 @@ describe('Neutron / Governance', () => {
   });
 
   describe('create several proposals', () => {
-    test('create proposal #1, will pass', async () => {
+    test('create proposal #1, will be rejected', async () => {
       await daoMember1.submitParameterChangeProposal(
         'Proposal #1',
         'Param change proposal. This one will pass',
@@ -446,7 +446,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.voteNo(proposalId);
     });
     test('vote YES from wallet 2', async () => {
-      await daoMember2.voteYes(proposalId);
+      await daoMember2.voteNo(proposalId);
     });
     test('vote YES from wallet 3', async () => {
       await daoMember3.voteYes(proposalId);
@@ -454,18 +454,21 @@ describe('Neutron / Governance', () => {
   });
 
   describe('execute proposal #1', () => {
-    const proposalId = 1;
-    test('check if proposal is passed', async () => {
-      await mainDao.checkPassedProposal(proposalId);
-    });
-    test('execute passed proposal', async () => {
-      const host = await neutronChain.queryHostEnabled();
-      expect(host).toEqual(true);
-      await daoMember1.executeProposalWithAttempts(proposalId);
-    });
-    test('check if host is not enabled after proposal execution', async () => {
-      const host = await neutronChain.queryHostEnabled();
-      expect(host).toEqual(false);
+    test('check if proposal is rejected', async () => {
+      const proposalId = 1;
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes("proposal is not in 'passed' state"));
+      await getWithAttempts(
+        neutronChain.blockWaiter,
+        async () => await mainDao.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'rejected',
+        20,
+      );
     });
   });
 
@@ -1107,11 +1110,11 @@ describe('Neutron / Governance', () => {
       const res = await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
-        'true',
+        'false',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
-      expect(afterProposalHostStatus).toEqual(false);
+      expect(afterProposalHostStatus).toEqual(true);
     });
   });
 });
