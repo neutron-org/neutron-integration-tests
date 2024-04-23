@@ -90,6 +90,10 @@ describe('Neutron / Global Fee', () => {
         minimum_gas_prices: minimum_gas_prices
       }),
       '1000',
+     {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: this.user.chain.denom, amount: '100000' }],
+      },
     );
 
     await daoMember.voteYes(proposalId, 'single', {
