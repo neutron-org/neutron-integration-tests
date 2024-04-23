@@ -10,6 +10,7 @@ import {
   wait,
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
+import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -32,11 +33,9 @@ describe('Neutron / Simple', () => {
       NEUTRON_DENOM,
       testState.rpc1,
     );
-    neutronAccount = new walletWrapper.WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
-      testState.client1,
-      testState.wasmClient1,
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       testState.sdk2,
@@ -44,17 +43,13 @@ describe('Neutron / Simple', () => {
       COSMOS_DENOM,
       testState.rpc2,
     );
-    gaiaAccount = new walletWrapper.WalletWrapper(
+    gaiaAccount = await createWalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
-      testState.client2,
-      testState.wasmClient2,
     );
-    gaiaAccount2 = new walletWrapper.WalletWrapper(
+    gaiaAccount2 = await createWalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmosTwo.genQaWal1,
-      testState.client2,
-      testState.wasmClient2,
     );
   });
 
