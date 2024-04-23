@@ -92,7 +92,7 @@ describe('Neutron / Global Fee', () => {
       '1000',
      {
         gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: this.user.chain.denom, amount: '100000' }],
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
       },
     );
 
