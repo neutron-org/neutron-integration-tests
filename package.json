@@ -37,7 +37,7 @@
     "gen:proto": "bash ./gen-proto.sh",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
-    "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json"
+    "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || cd ./node_modules/@neutron-org/neutronjsplus && yarn && yarn build"
   },
   "author": "Neutron",
   "license": "Apache-2.0",

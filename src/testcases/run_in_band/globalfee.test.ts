@@ -68,7 +68,7 @@ describe('Neutron / Global Fee', () => {
     kind: string,
     bypassMinFeeMsgTypes: string[],
     minimumGasPrices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
-    maxTotalBypassMinFeeMsgGasUsage: string,
+    maxTotalBypassMinFeesgGasUsage: string,
   ) => {
     const params = await neutronChain.queryGlobalfeeParams();
     if (bypassMinFeeMsgTypes == null) {
@@ -77,8 +77,8 @@ describe('Neutron / Global Fee', () => {
     if (minimumGasPrices == null) {
       minimumGasPrices = params.minimum_gas_prices;
     }
-    if (maxTotalBypassMinFeeMsgGasUsage == null) {
-      maxTotalBypassMinFeeMsgGasUsage =
+    if (maxTotalBypassMinFeesgGasUsage == null) {
+      maxTotalBypassMinFeesgGasUsage =
         params.max_total_bypass_min_fee_msg_gas_usage;
     }
 
@@ -87,7 +87,7 @@ describe('Neutron / Global Fee', () => {
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
       updateGlobalFeeParamsProposal({
         bypass_min_fee_msg_types: bypassMinFeeMsgTypes,
-        max_total_bypass_min_fee_msg_gas_usage: maxTotalBypassMinFeeMsgGasUsage,
+        max_total_bypass_min_fee_msg_gas_usage: maxTotalBypassMinFeesgGasUsage,
         minimum_gas_prices: minimumGasPrices,
       }),
       '1000',
