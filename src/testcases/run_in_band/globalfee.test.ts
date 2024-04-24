@@ -81,7 +81,7 @@ describe('Neutron / Global Fee', () => {
       max_total_bypass_min_fee_msg_gas_usage = params.max_total_bypass_min_fee_msg_gas_usage
     }
 
-    const proposalId = await daoMember1.submitUpdateParamsGlobalfeeProposal(
+    const proposalId = await daoMember.submitUpdateParamsGlobalfeeProposal(
       'Change Proposal - ' + kind + ' #' + counter,
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
       updateGlobalFeeParamsProposal({
@@ -90,6 +90,10 @@ describe('Neutron / Global Fee', () => {
         minimum_gas_prices: minimum_gas_prices
       }),
       '1000',
+     {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
+      },
     );
 
     await daoMember.voteYes(proposalId, 'single', {
