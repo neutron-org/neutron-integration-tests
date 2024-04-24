@@ -188,6 +188,6 @@ async function voteAgainstOverrule(
   );
   return await member.user.executeContract(
     member.dao.contracts.proposals.overrule?.address || '',
-    JSON.stringify({ vote: { proposal_id: propId, vote: 'no' } }),
+    { vote: { proposal_id: propId, vote: 'no' } },
   );
 }

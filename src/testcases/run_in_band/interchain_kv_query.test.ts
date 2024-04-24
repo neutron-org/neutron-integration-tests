@@ -180,14 +180,14 @@ const registerBalanceQuery = async (
 ) => {
   const txResult = await cm.executeContract(
     contractAddress,
-    JSON.stringify({
+    {
       register_balance_query: {
         connection_id: connectionId,
         denom: denom,
         addr: addr.toString(),
         update_period: updatePeriod,
       },
-    }),
+    },
   );
 
   const attribute = getEventAttribute(
@@ -211,13 +211,13 @@ const registerSigningInfoQuery = async (
 ) => {
   const txResult = await cm.executeContract(
     contractAddress,
-    JSON.stringify({
+    {
       register_validators_signing_info_query: {
         connection_id: connectionId,
         validators: [valcons],
         update_period: updatePeriod,
       },
-    }),
+    },
   );
 
   const attribute = getEventAttribute(
@@ -242,14 +242,14 @@ const registerUnbondingDelegationsQuery = async (
 ) => {
   const txResult = await cm.executeContract(
     contractAddress,
-    JSON.stringify({
+    {
       register_delegator_unbonding_delegations_query: {
         connection_id: connectionId,
         delegator,
         validators: [validator],
         update_period: updatePeriod,
       },
-    }),
+    },
   );
 
   const attribute = getEventAttribute(
@@ -298,11 +298,11 @@ const removeQuery = async (
 ) =>
   await cm.executeContract(
     contractAddress,
-    JSON.stringify({
+    {
       remove_interchain_query: {
         query_id: queryId,
       },
-    }),
+    },
     [],
   );
 
@@ -322,14 +322,14 @@ const registerDelegatorDelegationsQuery = async (
 ) => {
   await cm.executeContract(
     contractAddress,
-    JSON.stringify({
+    {
       register_delegator_delegations_query: {
         delegator: delegator.toString(),
         validators: validators.map((valAddr) => valAddr.toString()),
         connection_id: connectionId,
         update_period: updatePeriod,
       },
-    }),
+    },
   );
 };
 
@@ -422,14 +422,14 @@ describe('Neutron / Interchain KV Query', () => {
         try {
           await neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               register_balance_query: {
                 connection_id: connectionId,
                 denom: gaiaChain.denom,
                 addr: testState.wallets.cosmos.demo2.address.toString(),
                 update_period: 10,
               },
-            }),
+            },
           );
         } catch (err) {
           const error = err as Error;
@@ -443,11 +443,11 @@ describe('Neutron / Interchain KV Query', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               integration_tests_register_query_empty_keys: {
                 connection_id: connectionId,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(/keys cannot be empty/);
       });
@@ -456,11 +456,11 @@ describe('Neutron / Interchain KV Query', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               integration_tests_register_query_empty_id: {
                 connection_id: connectionId,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(/keys id cannot be empty/);
       });
@@ -469,11 +469,11 @@ describe('Neutron / Interchain KV Query', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               integration_tests_register_query_empty_path: {
                 connection_id: connectionId,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(/keys path cannot be empty/);
       });
@@ -697,9 +697,9 @@ describe('Neutron / Interchain KV Query', () => {
     test('enable mock', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           integration_tests_set_query_mock: {},
-        }),
+        },
       );
     });
 
@@ -731,9 +731,9 @@ describe('Neutron / Interchain KV Query', () => {
     test('disable mock', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           integration_tests_unset_query_mock: {},
-        }),
+        },
       );
     });
 
@@ -819,6 +819,7 @@ describe('Neutron / Interchain KV Query', () => {
           `"${querySubmitTimeoutParam.toString()}"`,
         );
 
+        //TODO remove ICOIN
         const queryDepositParam: cosmosclient.proto.cosmos.base.v1beta1.ICoin[] =
           [
             {

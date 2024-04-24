@@ -84,7 +84,7 @@ describe('Neutron / dex module bindings', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               deposit: {
                 receiver: contractAddress,
                 token_a: 'untrn',
@@ -99,7 +99,7 @@ describe('Neutron / dex module bindings', () => {
                   },
                 ],
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /failed to execute \*types.MsgDeposit: untrn<>untrn: Invalid token pair/,
@@ -109,7 +109,7 @@ describe('Neutron / dex module bindings', () => {
         // pool denom - 'neutron/pool/0'
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             deposit: {
               receiver: contractAddress,
               token_a: 'untrn',
@@ -124,7 +124,7 @@ describe('Neutron / dex module bindings', () => {
                 },
               ],
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -134,7 +134,7 @@ describe('Neutron / dex module bindings', () => {
         // pool denom - 'neutron/pool/0'
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             withdrawal: {
               receiver: contractAddress,
               token_a: 'untrn',
@@ -143,7 +143,7 @@ describe('Neutron / dex module bindings', () => {
               tick_indexes_a_to_b: [1], // i64
               fees: [0], // u64
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -159,7 +159,7 @@ describe('Neutron / dex module bindings', () => {
       test('GOOD_TIL_CANCELLED', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -168,14 +168,14 @@ describe('Neutron / dex module bindings', () => {
               amount_in: '10',
               order_type: LimitOrderType.GoodTilCancelled,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('FILL_OR_KILL', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -185,14 +185,14 @@ describe('Neutron / dex module bindings', () => {
               order_type: LimitOrderType.FillOrKill,
               max_amount_out: '100',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('IMMEDIATE_OR_CANCEL', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -202,14 +202,14 @@ describe('Neutron / dex module bindings', () => {
               order_type: LimitOrderType.ImmediateOrCancel,
               max_amount_out: '100',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('JUST_IN_TIME', async () => {
         let res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -218,7 +218,7 @@ describe('Neutron / dex module bindings', () => {
               amount_in: '10',
               order_type: LimitOrderType.JustInTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
         trancheKeyToWithdraw = getEventAttributesFromTx(
@@ -228,7 +228,7 @@ describe('Neutron / dex module bindings', () => {
         )[0]['TrancheKey'];
         res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -237,7 +237,7 @@ describe('Neutron / dex module bindings', () => {
               amount_in: '10',
               order_type: LimitOrderType.JustInTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
         trancheKeyToQuery = getEventAttributesFromTx(
@@ -249,7 +249,7 @@ describe('Neutron / dex module bindings', () => {
       test('GOOD_TIL_TIME', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -259,7 +259,7 @@ describe('Neutron / dex module bindings', () => {
               expiration_time: Math.ceil(Date.now() / 1000) + 1000,
               order_type: LimitOrderType.GoodTilTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -267,7 +267,7 @@ describe('Neutron / dex module bindings', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               place_limit_order: {
                 receiver: contractAddress,
                 token_in: 'untrn',
@@ -277,7 +277,7 @@ describe('Neutron / dex module bindings', () => {
                 expiration_time: 1,
                 order_type: LimitOrderType.GoodTilTime,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /Limit order expiration time must be greater than current block time/,
@@ -287,7 +287,7 @@ describe('Neutron / dex module bindings', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               place_limit_order: {
                 receiver: contractAddress,
                 token_in: 'untrn',
@@ -297,7 +297,7 @@ describe('Neutron / dex module bindings', () => {
                 expiration_time: 1,
                 order_type: 'unknown',
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /unknown variant `unknown`, expected one of `GOOD_TIL_CANCELLED`, `FILL_OR_KILL`, `IMMEDIATE_OR_CANCEL`, `JUST_IN_TIME`, `GOOD_TIL_TIME`/,
@@ -309,11 +309,11 @@ describe('Neutron / dex module bindings', () => {
       test('Withdraw', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             withdraw_filled_limit_order: {
               tranche_key: trancheKeyToWithdraw,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -324,11 +324,11 @@ describe('Neutron / dex module bindings', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               cancel_limit_order: {
                 tranche_key: trancheKeyToWithdraw,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /No active limit found. It does not exist or has already been filled/,
@@ -360,6 +360,7 @@ describe('Neutron / dex module bindings', () => {
               denom: newTokenDenom,
               amount: '1000000',
             },
+            neutronAccount.wallet.address.toString(),
           );
           await neutronAccount.msgSend(contractAddress, {
             amount: '1000000',
@@ -373,7 +374,7 @@ describe('Neutron / dex module bindings', () => {
         for (let i = 0; i < numberDenoms - 1; i++) {
           const res = await neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               deposit: {
                 receiver: contractAddress,
                 token_a: denoms[i].denom,
@@ -388,13 +389,13 @@ describe('Neutron / dex module bindings', () => {
                   },
                 ],
               },
-            }),
+            },
           );
           expect(res.code).toEqual(0);
         }
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             multi_hop_swap: {
               receiver: contractAddress,
               routes: [
@@ -417,7 +418,7 @@ describe('Neutron / dex module bindings', () => {
               exit_limit_price: '0.1',
               pick_best_route: true,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
         console.log(res);
@@ -427,7 +428,7 @@ describe('Neutron / dex module bindings', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               multi_hop_swap: {
                 receiver: contractAddress,
                 routes: [
@@ -439,7 +440,7 @@ describe('Neutron / dex module bindings', () => {
                 exit_limit_price: '0.1',
                 pick_best_route: true,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /All multihop routes failed limitPrice check or had insufficient liquidity/,

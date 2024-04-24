@@ -731,13 +731,13 @@ describe('Neutron / Interchain TX Query', () => {
     it('should update recipient', async () => {
       const res = await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           update_interchain_query: {
             query_id: 3,
             new_update_period: query3UpdatePeriod,
             new_recipient: newWatchedAddr5,
           },
-        }),
+        },
       );
       expect(res.code).toEqual(0);
     });

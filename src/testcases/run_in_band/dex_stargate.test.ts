@@ -79,7 +79,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               deposit: {
                 receiver: contractAddress,
                 token_a: 'untrn',
@@ -94,7 +94,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                   },
                 ],
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(/untrn<>untrn: Invalid token pair/);
       });
@@ -102,7 +102,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         // pool denom - 'neutron/pool/0'
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             deposit: {
               receiver: contractAddress,
               token_a: 'untrn',
@@ -117,7 +117,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                 },
               ],
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -127,7 +127,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         // pool denom - 'neutron/pool/0'
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             withdrawal: {
               receiver: contractAddress,
               token_a: 'untrn',
@@ -136,7 +136,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               tick_indexes_a_to_b: [1], // i64
               fees: [0], // u64
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -152,7 +152,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       test('GOOD_TIL_CANCELLED', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -161,14 +161,14 @@ describe('Neutron / dex module (stargate contract)', () => {
               amount_in: '10',
               order_type: LimitOrderType.GoodTilCanceled,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('FILL_OR_KILL', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -178,14 +178,14 @@ describe('Neutron / dex module (stargate contract)', () => {
               order_type: LimitOrderType.FillOrKill,
               max_amount_out: '100',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('IMMEDIATE_OR_CANCEL', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -195,14 +195,14 @@ describe('Neutron / dex module (stargate contract)', () => {
               order_type: LimitOrderType.ImmediateOrCancel,
               max_amount_out: '100',
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
       test('JUST_IN_TIME', async () => {
         let res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -211,7 +211,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               amount_in: '10',
               order_type: LimitOrderType.JustInTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
         trancheKeyToWithdraw = getEventAttributesFromTx(
@@ -221,7 +221,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         )[0]['TrancheKey'];
         res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -230,7 +230,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               amount_in: '10',
               order_type: LimitOrderType.JustInTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
         trancheKeyToQuery = getEventAttributesFromTx(
@@ -242,7 +242,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       test('GOOD_TIL_TIME', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
@@ -252,7 +252,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               expiration_time: Math.ceil(Date.now() / 1000) + 1000,
               order_type: LimitOrderType.GoodTilTime,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -260,7 +260,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               place_limit_order: {
                 receiver: contractAddress,
                 token_in: 'untrn',
@@ -270,7 +270,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                 expiration_time: 1,
                 order_type: LimitOrderType.GoodTilTime,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /Limit order expiration time must be greater than current block time/,
@@ -280,7 +280,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               place_limit_order: {
                 receiver: contractAddress,
                 token_in: 'untrn',
@@ -290,7 +290,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                 expiration_time: 1,
                 order_type: 10,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(/invalid numeric value for LimitOrderType/); // checked on contract's level
       });
@@ -300,11 +300,11 @@ describe('Neutron / dex module (stargate contract)', () => {
       test('Withdraw', async () => {
         const res = await neutronAccount.executeContract(
           contractAddress,
-          JSON.stringify({
+          {
             withdraw_filled_limit_order: {
               tranche_key: trancheKeyToWithdraw,
             },
-          }),
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -315,11 +315,11 @@ describe('Neutron / dex module (stargate contract)', () => {
         await expect(
           neutronAccount.executeContract(
             contractAddress,
-            JSON.stringify({
+            {
               cancel_limit_order: {
                 tranche_key: trancheKeyToWithdraw,
               },
-            }),
+            },
           ),
         ).rejects.toThrowError(
           /No active limit found. It does not exist or has already been filled/,
@@ -334,11 +334,11 @@ describe('Neutron / dex module (stargate contract)', () => {
       //   await expect(
       //     neutronAccount.executeContract(
       //       contractAddress,
-      //       JSON.stringify({
+      //       {
       //         cancel_limit_order: {
       //           tranche_key: trancheKey,
       //         },
-      //       }),
+      //       },
       //     ),
       //   ).rejects.toThrowError(
       //     /No active limit found. It does not exist or has already been filled/,

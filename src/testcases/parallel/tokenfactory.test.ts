@@ -193,7 +193,7 @@ describe('Neutron / Tokenfactory', () => {
         '{}',
         'before_send_hook_test',
       );
-      const contractAddress = res[0]._contract_address;
+      const contractAddress = res;
 
       const denom = `test5`;
 
@@ -211,7 +211,7 @@ describe('Neutron / Tokenfactory', () => {
       await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
         denom: newTokenDenom,
         amount: '10000',
-      });
+      }, ownerWallet.address.toString());
 
       const balanceBefore = await neutronChain.queryDenomBalance(
         ownerWallet.address.toString(),
@@ -310,7 +310,7 @@ describe('Neutron / Tokenfactory', () => {
         '{}',
         'tokenfactory',
       );
-      contractAddress = res[0]._contract_address;
+      contractAddress = res;
 
       await neutronAccount.msgSend(contractAddress, {
         amount: '10000000',
@@ -321,11 +321,11 @@ describe('Neutron / Tokenfactory', () => {
     test('create denom', async () => {
       const res = await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           create_denom: {
             subdenom,
           },
-        }),
+        },
       );
       console.log(JSON.stringify(res.events));
       denom = res.events
@@ -338,7 +338,7 @@ describe('Neutron / Tokenfactory', () => {
     test('set denom metadata', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           set_denom_metadata: {
             description: denom,
             denom_units: [
@@ -355,7 +355,7 @@ describe('Neutron / Tokenfactory', () => {
             uri: denom,
             uri_hash: denom,
           },
-        }),
+        },
       );
 
       const metadatas = await neutronChain.queryDenomsMetadata();
@@ -374,12 +374,12 @@ describe('Neutron / Tokenfactory', () => {
     test('mint coins', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           mint_tokens: {
             denom,
             amount: amount.toString(),
           },
-        }),
+        },
       );
 
       const balance = await neutronChain.queryDenomBalance(
@@ -392,12 +392,12 @@ describe('Neutron / Tokenfactory', () => {
     test('burn coins', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           burn_tokens: {
             denom,
             amount: toBurn.toString(),
           },
-        }),
+        },
       );
       amount -= toBurn;
 
@@ -433,12 +433,12 @@ describe('Neutron / Tokenfactory', () => {
     test('set_before_send_hook', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           set_before_send_hook: {
             denom,
             contract_addr: contractAddress,
           },
-        }),
+        },
       );
       const res = await neutronChain.queryContract<{
         contract_addr: string;
@@ -451,12 +451,12 @@ describe('Neutron / Tokenfactory', () => {
 
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           set_before_send_hook: {
             denom,
             contract_addr: '',
           },
-        }),
+        },
       );
 
       // TODO: check that it actually sets hook by querying tokenfactory module
@@ -468,23 +468,23 @@ describe('Neutron / Tokenfactory', () => {
 
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           mint_tokens: {
             denom,
             amount: amount.toString(),
           },
-        }),
+        },
       );
 
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           send_tokens: {
             recipient: randomAccount,
             denom,
             amount: amount.toString(),
           },
-        }),
+        },
       );
       const balance = await neutronChain.queryDenomBalance(
         randomAccount,
@@ -494,14 +494,14 @@ describe('Neutron / Tokenfactory', () => {
 
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           force_transfer: {
             denom,
             amount: amount.toString(),
             from: randomAccount,
             to: randomAccount2,
           },
-        }),
+        },
       );
       const balance2 = await neutronChain.queryDenomBalance(
         randomAccount2,
@@ -513,22 +513,22 @@ describe('Neutron / Tokenfactory', () => {
     test('change admin', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           send_tokens: {
             recipient: neutronAccount.wallet.address.toString(),
             denom,
             amount: amount.toString(),
           },
-        }),
+        },
       );
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           change_admin: {
             denom,
             new_admin_address: neutronAccount.wallet.address.toString(),
           },
-        }),
+        },
       );
 
       const balance = await neutronChain.queryDenomBalance(

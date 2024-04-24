@@ -70,7 +70,7 @@ describe('Neutron / Governance', () => {
       'ibc_transfer',
       mainDao.contracts.core.address,
     );
-    contractAddressForAdminMigration = contractRes[0]._contract_address;
+    contractAddressForAdminMigration = contractRes;
     expect(contractAddressForAdminMigration).toBeDefined();
     expect(contractAddressForAdminMigration).not.toEqual('');
   });
@@ -82,12 +82,11 @@ describe('Neutron / Governance', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
         '{}',
         'msg_receiver',
       );
-      contractAddress = res[0]._contract_address;
     });
   });
 

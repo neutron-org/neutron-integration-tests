@@ -93,12 +93,12 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount1.executeContract(
           subDao.contracts.proposals.single.pre_propose.timelock?.address || '',
-          JSON.stringify({
+          {
             timelock_proposal: {
               proposal_id: 1,
               msgs: [],
             },
-          }),
+          },
         ),
       ).rejects.toThrow(/Unauthorized/);
     });
@@ -638,11 +638,11 @@ describe('Neutron / Subdao', () => {
       const pauseHeight = await getHeight(neutronChain.sdk); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
-        JSON.stringify({
+        {
           pause: {
             duration: 50,
           },
-        }),
+        },
       );
       expect(res.code).toEqual(0);
 
@@ -665,9 +665,9 @@ describe('Neutron / Subdao', () => {
       // unpause subDAO on behalf of the main DAO
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
-        JSON.stringify({
+        {
           unpause: {},
-        }),
+        },
       );
       expect(res.code).toEqual(0);
 
@@ -706,11 +706,11 @@ describe('Neutron / Subdao', () => {
       const pauseHeight = await getHeight(neutronChain.sdk); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
-        JSON.stringify({
+        {
           pause: {
             duration: shortPauseDuration,
           },
-        }),
+        },
       );
       expect(res.code).toEqual(0);
 
@@ -736,11 +736,11 @@ describe('Neutron / Subdao', () => {
       // return to the starting timelock_duration
       await neutronAccount1.executeContract(
         subDao.contracts.proposals.single.pre_propose.timelock?.address || '',
-        JSON.stringify({
+        {
           update_config: {
             timelock_duration: 20,
           },
-        }),
+        },
       );
     });
 
@@ -748,9 +748,9 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount2.executeContract(
           subDao.contracts.proposals.single.pre_propose.timelock?.address || '',
-          JSON.stringify({
+          {
             update_config: {},
-          }),
+          },
         ),
       ).rejects.toThrow(/Unauthorized/);
     });
@@ -759,11 +759,11 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount1.executeContract(
           subDao.contracts.proposals.single.pre_propose.timelock?.address || '',
-          JSON.stringify({
+          {
             update_config: {
               owner: 'owner',
             },
-          }),
+          },
         ),
       ).rejects.toThrow(
         /addr_validate errored: decoding bech32 failed: invalid bech32/,
@@ -772,11 +772,11 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount1.executeContract(
           subDao.contracts.proposals.single.pre_propose.timelock?.address || '',
-          JSON.stringify({
+          {
             update_config: {
               owner: 'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
             },
-          }),
+          },
         ),
       ).rejects.toThrow(
         /addr_validate errored: invalid Bech32 prefix; expected neutron, got cosmos/,
@@ -786,11 +786,11 @@ describe('Neutron / Subdao', () => {
     test('Update config: owner success', async () => {
       await neutronAccount1.executeContract(
         subDao.contracts.proposals.single.pre_propose.timelock!.address,
-        JSON.stringify({
+        {
           update_config: {
             owner: demo2Addr.toString(),
           },
-        }),
+        },
       );
 
       const expectedConfig: TimelockConfig = {
@@ -813,9 +813,9 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount1.executeContract(
           subDao.contracts.proposals.single.pre_propose.timelock!.address,
-          JSON.stringify({
+          {
             update_config: {},
-          }),
+          },
         ),
       ).rejects.toThrow(/Unauthorized/);
     });
@@ -823,11 +823,11 @@ describe('Neutron / Subdao', () => {
     test('Update config: update both params with new owner', async () => {
       await neutronAccount2.executeContract(
         subDao.contracts.proposals.single.pre_propose.timelock!.address,
-        JSON.stringify({
+        {
           update_config: {
             owner: demo1Addr.toString(),
           },
-        }),
+        },
       );
 
       const expectedConfig: TimelockConfig = {
@@ -958,9 +958,9 @@ describe('Neutron / Subdao', () => {
       await expect(
         neutronAccount1.executeContract(
           subDao.contracts.core.address,
-          JSON.stringify({
+          {
             update_config: {},
-          }),
+          },
         ),
       ).rejects.toThrow(/Unauthorized/);
     });
@@ -1028,10 +1028,10 @@ async function overruleTimelockedProposalMock(
 ): Promise<IndexedTx> {
   return acc.user.executeContract(
     acc.dao.contracts.proposals[customModule].pre_propose.timelock!.address,
-    JSON.stringify({
+    {
       overrule_proposal: {
         proposal_id: proposalId,
       },
-    }),
+    },
   );
 }

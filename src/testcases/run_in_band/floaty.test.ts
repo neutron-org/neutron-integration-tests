@@ -34,12 +34,11 @@ describe('Float operations support', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
         '{}',
         'floaty',
       );
-      contractAddress = res[0]._contract_address;
     });
   });
   describe('instructions', () => {

@@ -86,12 +86,11 @@ describe('Neutron / Simple', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
         '{}',
         'stargate_querier',
       );
-      contractAddress = res[0]._contract_address;
     });
   });
 

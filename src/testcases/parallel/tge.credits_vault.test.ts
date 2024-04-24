@@ -288,13 +288,13 @@ const setupCreditsVault = async (
   return (
     await wallet.instantiateContract(
       codeId,
-      JSON.stringify({
+      {
         name,
         description,
         credits_contract_address: creditsContractAddress,
         owner,
         airdrop_contract_address: airdropContractAddress,
-      }),
+      },
       'credits_vault',
     )
   )[0]._contract_address;
@@ -311,9 +311,9 @@ const setupCreditsContract = async (
   const creditsContractAddress = (
     await wallet.instantiateContract(
       codeId,
-      JSON.stringify({
+      {
         dao_address: daoAddress,
-      }),
+      },
       'credits',
     )
   )[0]._contract_address;
@@ -338,7 +338,7 @@ const updateCreditsContractConfig = async (
 ): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
-    JSON.stringify({
+    {
       update_config: {
         config: {
           airdrop_address: airdropAddress,
@@ -346,7 +346,7 @@ const updateCreditsContractConfig = async (
           when_withdrawable: whenWithdrawable,
         },
       },
-    }),
+    },
   );
 
 const getVaultConfig = async (
@@ -388,9 +388,9 @@ const mintTokens = async (
 ): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
-    JSON.stringify({
+    {
       mint: {},
-    }),
+    },
     [
       {
         amount,
@@ -407,12 +407,12 @@ const sendTokens = async (
 ): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     creditsContractAddress,
-    JSON.stringify({
+    {
       transfer: {
         recipient,
         amount,
       },
-    }),
+    },
   );
 
 const updateVaultConfig = async (
@@ -425,12 +425,12 @@ const updateVaultConfig = async (
 ): Promise<BroadcastTx200ResponseTxResponse> =>
   wallet.executeContract(
     vaultContract,
-    JSON.stringify({
+    {
       update_config: {
         credits_contract_address: creditsContractAddress,
         owner,
         name,
         description,
       },
-    }),
+    },
   );

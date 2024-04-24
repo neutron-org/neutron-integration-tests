@@ -4,7 +4,9 @@ import {
   types,
   env,
   TestStateLocalCosmosTestNet,
+  walletWrapper,
 } from '@neutron-org/neutronjsplus';
+import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -19,8 +21,8 @@ const NEUTRON_VAULT_3_CONTRACT_KEY = 'NEUTRON_VAULT_3';
 describe('Neutron / Voting Registry', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: cosmosWrapper.CosmosWrapper;
-  let cmInstantiator: cosmosWrapper.WalletWrapper;
-  let cmDaoMember: cosmosWrapper.WalletWrapper;
+  let cmInstantiator: walletWrapper.WalletWrapper;
+  let cmDaoMember: walletWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
   let votingRegistryAddr: string;
   let vault1Addr: string;
@@ -45,12 +47,13 @@ describe('Neutron / Voting Registry', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    cmInstantiator = new cosmosWrapper.WalletWrapper(
+    cmInstantiator = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cmDaoMember = new cosmosWrapper.WalletWrapper(
+    cmDaoMember = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -531,7 +534,7 @@ describe('Neutron / Voting Registry', () => {
 
 const deployContracts = async (
   chain: cosmosWrapper.CosmosWrapper,
-  instantiator: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
 ): Promise<Record<string, string>> => {
   const codeIds: Record<string, number> = {};
   for (const contract of [
@@ -579,111 +582,111 @@ const deployContracts = async (
 };
 
 const deployVotingRegistry = async (
-  instantiator: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
   vaults: string[],
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
   const res = await instantiator.instantiateContract(
     codeIds[VOTING_REGISTRY_CONTRACT_KEY],
-    JSON.stringify({
+    {
       owner: instantiator.wallet.address.toString(),
       voting_vaults: vaults,
-    }),
+    },
     'voting_registry',
   );
   expect(res).toBeTruthy();
-  contractAddresses[VOTING_REGISTRY_CONTRACT_KEY] = res[0]._contract_address;
+  contractAddresses[VOTING_REGISTRY_CONTRACT_KEY] = res;
 };
 
 const deployNeutronVault = async (
-  instantiator: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
   vaultKey: string,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
   const res = await instantiator.instantiateContract(
     codeIds[NEUTRON_VAULT_CONTRACT_KEY],
-    JSON.stringify({
+    {
       owner: instantiator.wallet.address.toString(),
       name: vaultKey,
       description: vaultKey,
       denom: NEUTRON_DENOM,
-    }),
+    },
     'neutron_vault',
   );
   expect(res).toBeTruthy();
-  contractAddresses[vaultKey] = res[0]._contract_address;
+  contractAddresses[vaultKey] = res;
 };
 
 const bondFunds = async (
-  cm: cosmosWrapper.WalletWrapper,
+  cm: walletWrapper.WalletWrapper,
   vault: string,
   amount: string,
 ) =>
   cm.executeContract(
     vault,
-    JSON.stringify({
+    {
       bond: {},
-    }),
+    },
     [{ denom: NEUTRON_DENOM, amount: amount }],
   );
 
 const unbondFunds = async (
-  cm: cosmosWrapper.WalletWrapper,
+  cm: walletWrapper.WalletWrapper,
   vault: string,
   amount: string,
 ) =>
   cm.executeContract(
     vault,
-    JSON.stringify({
+    {
       unbond: { amount: amount },
-    }),
+    },
     [],
   );
 
 const activateVotingVault = async (
-  cm: cosmosWrapper.WalletWrapper,
+  cm: walletWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
   cm.executeContract(
     registry,
-    JSON.stringify({
+    {
       activate_voting_vault: {
         voting_vault_contract: vault,
       },
-    }),
+    },
     [],
   );
 
 const deactivateVotingVault = async (
-  cm: cosmosWrapper.WalletWrapper,
+  cm: walletWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
   cm.executeContract(
     registry,
-    JSON.stringify({
+    {
       deactivate_voting_vault: {
         voting_vault_contract: vault,
       },
-    }),
+    },
     [],
   );
 
 const addVotingVault = async (
-  cm: cosmosWrapper.WalletWrapper,
+  cm: walletWrapper.WalletWrapper,
   registry: string,
   vault: string,
 ) =>
   cm.executeContract(
     registry,
-    JSON.stringify({
+    {
       add_voting_vault: {
         new_voting_vault_contract: vault,
       },
-    }),
+    },
     [],
   );
 

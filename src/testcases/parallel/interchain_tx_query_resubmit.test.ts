@@ -73,9 +73,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     test('enable mock', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           integration_tests_set_query_mock: {},
-        }),
+        },
       );
     });
   });
@@ -132,9 +132,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     test('resubmit failed tx', async () => {
       await neutronAccount.executeContract(
         contractAddress,
-        JSON.stringify({
+        {
           integration_tests_unset_query_mock: {},
-        }),
+        },
       );
 
       const resubmitTxs = (

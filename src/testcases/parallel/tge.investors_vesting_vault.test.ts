@@ -5,7 +5,9 @@ import {
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
+  walletWrapper,
 } from '@neutron-org/neutronjsplus';
+import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';
@@ -16,10 +18,10 @@ const config = require('../../config.json');
 describe('Neutron / TGE / Investors vesting vault', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: cosmosWrapper.CosmosWrapper;
-  let cmInstantiator: cosmosWrapper.WalletWrapper;
-  let cmManager: cosmosWrapper.WalletWrapper;
-  let cmUser1: cosmosWrapper.WalletWrapper;
-  let cmUser2: cosmosWrapper.WalletWrapper;
+  let cmInstantiator: walletWrapper.WalletWrapper;
+  let cmManager: walletWrapper.WalletWrapper;
+  let cmUser1: walletWrapper.WalletWrapper;
+  let cmUser2: walletWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
@@ -29,20 +31,21 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    cmInstantiator = new cosmosWrapper.WalletWrapper(
+    cmInstantiator = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cmManager = new cosmosWrapper.WalletWrapper(
+    cmManager = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    cmUser1 = new cosmosWrapper.WalletWrapper(
+    cmUser1 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
-    cmUser2 = new cosmosWrapper.WalletWrapper(
+    cmUser2 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
@@ -87,14 +90,14 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       await expect(
         cmInstantiator.executeContract(
           vaultAddress,
-          JSON.stringify({ bond: {} }),
+          { bond: {} },
         ),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
         cmInstantiator.executeContract(
           vaultAddress,
-          JSON.stringify({ unbond: { amount: '1000' } }),
+          { unbond: { amount: '1000' } },
         ),
       ).rejects.toThrow(/Direct unbonding is not available for this contract/);
     });
@@ -107,7 +110,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       test('create vesting accounts', async () => {
         await cmInstantiator.executeContract(
           contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-          JSON.stringify({
+          {
             register_vesting_accounts: {
               vesting_accounts: [
                 types.vestingAccount(cmUser1.wallet.address.toString(), [
@@ -128,7 +131,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                 ]),
               ],
             },
-          }),
+          },
           [{ denom: NEUTRON_DENOM, amount: totalVestingAmount.toString() }],
         );
       });
@@ -214,11 +217,11 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         test('user1 partial claim', async () => {
           await cmUser1.executeContract(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-            JSON.stringify({
+            {
               claim: {
                 amount: user1PartialClaim.toString(),
               },
-            }),
+            },
           );
           await neutronChain.blockWaiter.waitBlocks(1);
 
@@ -240,9 +243,9 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         test('user2 full claim', async () => {
           await cmUser2.executeContract(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-            JSON.stringify({
+            {
               claim: {},
-            }),
+            },
           );
           await neutronChain.blockWaiter.waitBlocks(1);
 
@@ -266,9 +269,9 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         test('user1 full claim', async () => {
           await cmUser1.executeContract(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-            JSON.stringify({
+            {
               claim: {},
-            }),
+            },
           );
           await neutronChain.blockWaiter.waitBlocks(1);
 
@@ -371,7 +374,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           test('execute register_vesting_accounts', async () => {
             await cmInstantiator.executeContract(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-              JSON.stringify({
+              {
                 register_vesting_accounts: {
                   vesting_accounts: [
                     types.vestingAccount(cmUser1.wallet.address.toString(), [
@@ -386,7 +389,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     ]),
                   ],
                 },
-              }),
+              },
               [
                 {
                   denom: NEUTRON_DENOM,
@@ -576,7 +579,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
             );
             await cmInstantiator.executeContract(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-              JSON.stringify({
+              {
                 managed_extension: {
                   msg: {
                     remove_vesting_accounts: {
@@ -585,7 +588,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     },
                   },
                 },
-              }),
+              },
             );
           });
 
@@ -768,7 +771,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         await expect(
           cmUser1.executeContract(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-            JSON.stringify({
+            {
               set_vesting_token: {
                 vesting_token: {
                   native_token: {
@@ -776,7 +779,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   },
                 },
               },
-            }),
+            },
           ),
         ).rejects.toThrow(/Unauthorized/);
       });
@@ -785,7 +788,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         await expect(
           cmManager.executeContract(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-            JSON.stringify({
+            {
               set_vesting_token: {
                 vesting_token: {
                   native_token: {
@@ -793,7 +796,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   },
                 },
               },
-            }),
+            },
           ),
         ).rejects.toThrow(/Vesting token is already set!/);
       });
@@ -803,7 +806,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           await expect(
             cmUser2.executeContract(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-              JSON.stringify({
+              {
                 managed_extension: {
                   msg: {
                     remove_vesting_accounts: {
@@ -812,7 +815,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     },
                   },
                 },
-              }),
+              },
             ),
           ).rejects.toThrow(/Unauthorized/);
         });
@@ -827,22 +830,22 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           expect(codeId).toBeGreaterThan(0);
           const initRes = await cmInstantiator.instantiateContract(
             codeId,
-            JSON.stringify({
+            {
               name: 'a cw20 token',
               symbol: 'TKN',
               decimals: 6,
               initial_balances: [
                 { address: cmUser1.wallet.address.toString(), amount: '1000' },
               ],
-            }),
+            },
             'a_cw20_token',
           );
           expect(initRes).toBeTruthy();
 
           await expect(
             cmUser1.executeContract(
-              initRes[0]._contract_address,
-              JSON.stringify({
+              initRes,
+              {
                 send: {
                   contract: contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
                   amount: '1000',
@@ -863,7 +866,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     }),
                   ).toString('base64'),
                 },
-              }),
+              },
             ),
           ).rejects.toThrow(/Unauthorized/);
         });
@@ -871,7 +874,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           await expect(
             cmManager.executeContract(
               contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-              JSON.stringify({
+              {
                 register_vesting_accounts: {
                   vesting_accounts: [
                     types.vestingAccount(cmUser2.wallet.address.toString(), [
@@ -881,7 +884,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     ]),
                   ],
                 },
-              }),
+              },
               [{ denom: NEUTRON_DENOM, amount: '1000' }],
             ),
           ).rejects.toThrow(/Unauthorized/);
@@ -893,8 +896,8 @@ describe('Neutron / TGE / Investors vesting vault', () => {
 
 const deployContracts = async (
   chain: cosmosWrapper.CosmosWrapper,
-  instantiator: cosmosWrapper.WalletWrapper,
-  cmManager: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
+  cmManager: walletWrapper.WalletWrapper,
 ): Promise<Record<string, string>> => {
   const codeIds: Record<string, number> = {};
   for (const contract of [
@@ -925,8 +928,8 @@ const deployContracts = async (
 };
 
 const deployInvestorsVestingContract = async (
-  instantiator: cosmosWrapper.WalletWrapper,
-  cmManager: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
+  cmManager: walletWrapper.WalletWrapper,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
@@ -936,20 +939,20 @@ const deployInvestorsVestingContract = async (
   };
   const res = await instantiator.instantiateContract(
     codeIds[INVESTORS_VESTING_CONTRACT_KEY],
-    JSON.stringify(msg),
+    msg,
     'investors_vesting',
   );
   expect(res).toBeTruthy();
-  contractAddresses[INVESTORS_VESTING_CONTRACT_KEY] = res[0]._contract_address;
+  contractAddresses[INVESTORS_VESTING_CONTRACT_KEY] = res;
 };
 
 const setInvestorsVestingAsset = async (
-  instantiator: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
   contractAddresses: Record<string, string>,
 ) => {
   await instantiator.executeContract(
     contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-    JSON.stringify({
+    {
       set_vesting_token: {
         vesting_token: {
           native_token: {
@@ -957,29 +960,28 @@ const setInvestorsVestingAsset = async (
           },
         },
       },
-    }),
+    },
   );
 };
 
 const deployInvestorsVestingVaultContract = async (
-  instantiator: cosmosWrapper.WalletWrapper,
+  instantiator: walletWrapper.WalletWrapper,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
   const res = await instantiator.instantiateContract(
     codeIds[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-    JSON.stringify({
+    {
       vesting_contract_address:
         contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
       description: 'An investors vesting vault',
       owner: instantiator.wallet.address.toString(),
       name: 'Investors vesting vault',
-    }),
+    },
     'investors_vesting_vault',
   );
   expect(res).toBeTruthy();
-  contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY] =
-    res[0]._contract_address;
+  contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY] = res;
 };
 
 type InvestorsVestingVaultConfig = {
