@@ -202,7 +202,6 @@ describe('Neutron / Interchain TXs', () => {
           icaId1,
           sequenceId,
         );
-        const ares = await getAcks(neutronChain, contractAddress);
         expect(qres).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });

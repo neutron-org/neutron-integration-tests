@@ -552,7 +552,7 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes("proposal content is not whitelisted"));
+      expect(rawLog.includes('proposal content is not whitelisted'));
     });
   });
 
@@ -1002,7 +1002,7 @@ describe('Neutron / Governance', () => {
       } catch (e) {
         rawLog = e.message;
       }
-      expect(rawLog.includes("proposal content is not whitelisted"));
+      expect(rawLog.includes('proposal content is not whitelisted'));
     });
   });
 
