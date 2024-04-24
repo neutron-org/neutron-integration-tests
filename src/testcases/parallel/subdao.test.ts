@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
   createBankSendMessage,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
@@ -20,13 +23,11 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
-import cosmosclient from '@cosmos-client/core';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   paramChangeProposal,
   sendProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-import Long from 'long';
 
 const config = require('../../config.json');
 
@@ -41,9 +42,9 @@ describe('Neutron / Subdao', () => {
   let demo1Wallet: Wallet;
   let securityDaoWallet: Wallet;
   let demo2Wallet: Wallet;
-  let demo1Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
-  let securityDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
-  let demo2Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let demo1Addr: string;
+  let securityDaoAddr: string;
+  let demo2Addr: string;
   let subDao: Dao;
   let mainDao: Dao;
 
@@ -62,8 +63,8 @@ describe('Neutron / Subdao', () => {
       NEUTRON_DENOM,
       testState.rpc1,
     );
-    neutronAccount1 = new WalletWrapper(neutronChain, demo1Wallet);
-    neutronAccount2 = new WalletWrapper(neutronChain, demo2Wallet);
+    neutronAccount1 = await createWalletWrapper(neutronChain, demo1Wallet);
+    neutronAccount2 = await createWalletWrapper(neutronChain, demo2Wallet);
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
     mainDao = new Dao(neutronChain, daoContracts);
@@ -171,7 +172,7 @@ describe('Neutron / Subdao', () => {
         amount: '100',
       });
       const fee = {
-        gas_limit: Long.fromString('4000000'),
+        gas: '4000000',
         amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
       };
       proposalId2 = await subdaoMember1.submitSingleChoiceProposal(

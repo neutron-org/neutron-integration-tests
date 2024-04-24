@@ -18,9 +18,6 @@ build-all: build-gaia build-neutron build-hermes build-relayer
 start-cosmopark:
 		@$(COMPOSE) up -d
 
-start-cosmopark-no-rebuild:
-		@$(COMPOSE) up -d
-
 stop-cosmopark:
 		@$(COMPOSE) down -t0 --remove-orphans -v
 

@@ -75,7 +75,7 @@ describe('Neutron / Simple', () => {
     test('instantiate', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'ibc_transfer',
       );
     });
@@ -90,7 +90,7 @@ describe('Neutron / Simple', () => {
 
       receiverContractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'msg_receiver',
       );
     });
