@@ -1,3 +1,4 @@
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import {
   WalletWrapper,
@@ -248,7 +249,7 @@ describe('Neutron / Interchain TXs', () => {
     describe('DOUBLE ACK - Send Interchain TX', () => {
       test('delegate from first ICA', async () => {
         // it will delegate two times of passed amount - first from contract call, and second from successful sudo IBC response
-        const res = await neutronAccount.executeContract(
+        const res: IndexedTx = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
             delegate_double_ack: {

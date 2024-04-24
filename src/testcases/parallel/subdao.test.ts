@@ -19,7 +19,7 @@ import {
   TimelockProposalListResponse,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import cosmosclient from '@cosmos-client/core';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
@@ -60,6 +60,7 @@ describe('Neutron / Subdao', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
     neutronAccount1 = new WalletWrapper(neutronChain, demo1Wallet);
     neutronAccount2 = new WalletWrapper(neutronChain, demo2Wallet);
@@ -1023,7 +1024,7 @@ async function overruleTimelockedProposalMock(
   acc: DaoMember,
   proposalId: number,
   customModule = 'single',
-): Promise<BroadcastTx200ResponseTxResponse> {
+): Promise<IndexedTx> {
   return acc.user.executeContract(
     acc.dao.contracts.proposals[customModule].pre_propose.timelock!.address,
     JSON.stringify({
