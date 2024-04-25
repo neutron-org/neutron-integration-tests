@@ -1573,10 +1573,9 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@0.4.0-rc19":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/slinky":
   version "0.4.0-rc19"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-0.4.0-rc19.tgz#0e8548648662d30cd31eb3a435b53df43be7851b"
-  integrity sha512-2lkrztWRPuMLYexBA3G2NkhICSHg1OyW7I/eGBwi3KN3fztY52t2PRssQPWoE79jxJ26XLpIlk97eeDjr2z44A==
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/65f1287a2e3ac4c0658d823f9c3ab6a849f11b9c"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
