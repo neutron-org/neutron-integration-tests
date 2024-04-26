@@ -1,8 +1,4 @@
-import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
-import {
-  CosmosWrapper,
-  packAnyMsg,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   TestStateLocalCosmosTestNet,
   NEUTRON_DENOM,
@@ -20,6 +16,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { MsgSendEncodeObject } from '@cosmjs/stargate';
 
 const config = require('../../config.json');
 
@@ -412,35 +409,38 @@ describe('Neutron / Interchain TX Query', () => {
     test('exec tx with two transfers', async () => {
       addr1ExpectedBalance += amountToAddrFirst2;
       addr2ExpectedBalance += amountToAddrSecond2;
-      const sendMsg1 = new MsgSend({
-        fromAddress: gaiaAccount.wallet.address.toString(),
-        toAddress: watchedAddr1,
-        amount: [
-          { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
-        ],
-      });
-      const sendMsg2 = new MsgSend({
-        fromAddress: gaiaAccount.wallet.address.toString(),
-        toAddress: watchedAddr2,
-        amount: [
-          {
-            denom: gaiaChain.denom,
-            amount: amountToAddrSecond2.toString(),
-          },
-        ],
-      });
 
-      // TODO: fixme
+      const msgSendObject1: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: gaiaAccount.wallet.address.toString(),
+          toAddress: watchedAddr1,
+          amount: [
+            { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
+          ],
+        },
+      };
+
+      const msgSendObject2: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: gaiaAccount.wallet.address.toString(),
+          toAddress: watchedAddr2,
+          amount: [
+            { denom: gaiaChain.denom, amount: amountToAddrSecond2.toString() },
+          ],
+        },
+      };
+
       const res = await gaiaAccount.execTx2(
         {
           gas: '200000',
           amount: [{ denom: gaiaChain.denom, amount: '1000' }],
         },
-        [
-          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg1),
-          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg2),
-        ],
+        [msgSendObject1, msgSendObject2],
+        10,
       );
+
       expectedIncomingTransfers += 2;
       expect(res?.hash?.length).toBeGreaterThan(0);
       let balances = await gaiaChain.queryBalances(watchedAddr1);
