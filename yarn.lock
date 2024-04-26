@@ -1575,7 +1575,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/slinky":
   version "0.4.0-rc19"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/00dc6ba6d0bc73cbeb1896f9c034b7cdd60e82a8"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/9bcd4b7795ec7fbd3137acb3a934e9cfc97a5146"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
