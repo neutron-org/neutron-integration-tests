@@ -30,7 +30,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
-import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 

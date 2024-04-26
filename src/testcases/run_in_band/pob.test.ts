@@ -8,7 +8,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
-import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 const fee = {
   gas_limit: Long.fromString('200000'),
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -36,7 +39,10 @@ describe('Neutron / IBC hooks', () => {
       neutronChain,
       testState.wallets.neutron.demo1,
     );
-    n1 = await createWalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
+    n1 = await createWalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutron.genQaWal1,
+    );
 
     TreasuryAddress = (await neutronChain.getChainAdmins())[0];
   });

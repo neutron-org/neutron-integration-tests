@@ -15,7 +15,10 @@ import {
   NeutronContract,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { getIca } from '@neutron-org/neutronjsplus/dist/ica';
-import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -66,7 +69,11 @@ describe('Neutron / Interchain TXs', () => {
         expect(codeId).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        contractAddress = await neutronAccount.instantiateContract(codeId, {}, 'interchaintx');
+        contractAddress = await neutronAccount.instantiateContract(
+          codeId,
+          {},
+          'interchaintx',
+        );
       });
     });
     describe('Create ICAs and setup contract', () => {
@@ -406,18 +413,17 @@ describe('Neutron / Interchain TXs', () => {
       test('delegate after the ICA channel was closed', async () => {
         let rawLog: string;
         try {
-          rawLog =
-            (
-              await neutronAccount.executeContract(contractAddress, {
-                delegate: {
-                  interchain_account_id: icaId1,
-                  validator: testState.wallets.cosmos.val1.address.toString(),
-                  amount: '10',
-                  denom: gaiaChain.denom,
-                  timeout: 1,
-                },
-              })
-            ).raw_log || '';
+          const res = await neutronAccount.executeContract(contractAddress, {
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.address.toString(),
+              amount: '10',
+              denom: gaiaChain.denom,
+              timeout: 1,
+            },
+          });
+          // FIXME
+          rawLog = JSON.stringify(res.events);
         } catch (e) {
           rawLog = e.message;
         }

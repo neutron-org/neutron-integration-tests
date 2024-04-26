@@ -8,7 +8,10 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 

@@ -6,7 +6,10 @@ import {
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
