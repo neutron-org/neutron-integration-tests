@@ -1702,14 +1702,14 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/cosmjs-types@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.0.tgz#43e267066cf2fabffa73bfbc7d3152e70c3818a2"
-  integrity sha512-+J7cRkQmtDzO/SSa45xC7iiWZhEUplP2Rm2l2LnEyvU6ABNdzaXStSOx8nM7R3SeW4abKoTmzi/tht4lvJit6w==
+"@neutron-org/cosmjs-types@^0.9.1":
+  version "0.9.1"
+  resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.1.tgz#efe52eb19eb0be7f24fd3f5ac4a693a063655eed"
+  integrity sha512-b7MZy5dzE5E2E+sUiPVYzi3Qt0gXozGQBVXLJLXjGxRqikGtDeMNXv3yc0svpHBASAUCotSz/sf864CTqzVYJw==
 
-"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#e38112c2217bdd3cd3ab0749243770cc2d928211":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/cosmjs":
   version "0.3.4"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/e38112c2217bdd3cd3ab0749243770cc2d928211"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/1b6c57fa82a326839b9a6818dd6088f42d4fdf01"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmjs/cosmwasm-stargate" "^0.32.3"
@@ -1717,7 +1717,7 @@
     "@cosmjs/stargate" "^0.32.3"
     "@cosmos-client/core" "^0.47.4"
     "@cosmos-client/ibc" "^1.2.1"
-    "@neutron-org/cosmjs-types" "^0.9.0"
+    "@neutron-org/cosmjs-types" "^0.9.1"
     axios "^0.27.2"
     long "^5.2.1"
     merkletreejs "^0.3.9"
