@@ -1,10 +1,7 @@
-import Long from 'long';
-import { CodeId } from '../../types';
 import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
 import {
   CosmosWrapper,
   packAnyMsg,
-  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   TestStateLocalCosmosTestNet,
@@ -19,6 +16,10 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '@neutron-org/neutronjsplus/dist/icq';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -38,8 +39,9 @@ describe('Neutron / Interchain TX Query', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
@@ -47,12 +49,16 @@ describe('Neutron / Interchain TX Query', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    gaiaAccount = await createWalletWrapper(
+      gaiaChain,
+      testState.wallets.cosmos.demo2,
+    );
   });
 
   describe('deploy contract', () => {
-    let codeId: CodeId;
+    let codeId: number;
     test('store contract', async () => {
       codeId = await neutronAccount.storeWasm(
         NeutronContract.INTERCHAIN_QUERIES,
@@ -60,13 +66,11 @@ describe('Neutron / Interchain TX Query', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(
-          codeId,
-          '{}',
-          'neutron_interchain_queries',
-        )
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'neutron_interchain_queries',
+      );
     });
   });
 
@@ -186,7 +190,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle failed transfer', async () => {
       const res = await gaiaAccount.msgSend(watchedAddr1, '99999999999999'); // the amount is greater than the sender has
-      expect(res.txhash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
+      expect(res.hash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
       expect(res.code).toEqual(5); // failed to execute message: insufficient funds
       const balances = await gaiaChain.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
@@ -426,9 +430,10 @@ describe('Neutron / Interchain TX Query', () => {
         ],
       });
 
-      const res = await gaiaAccount.execTx(
+      // TODO: fixme
+      const res = await gaiaAccount.execTx2(
         {
-          gas_limit: Long.fromString('200000'),
+          gas: '200000',
           amount: [{ denom: gaiaChain.denom, amount: '1000' }],
         },
         [
@@ -437,7 +442,7 @@ describe('Neutron / Interchain TX Query', () => {
         ],
       );
       expectedIncomingTransfers += 2;
-      expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
+      expect(res?.hash?.length).toBeGreaterThan(0);
       let balances = await gaiaChain.queryBalances(watchedAddr1);
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
@@ -729,16 +734,13 @@ describe('Neutron / Interchain TX Query', () => {
   describe('update recipient and check', () => {
     const newWatchedAddr5 = 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa';
     it('should update recipient', async () => {
-      const res = await neutronAccount.executeContract(
-        contractAddress,
-        {
-          update_interchain_query: {
-            query_id: 3,
-            new_update_period: query3UpdatePeriod,
-            new_recipient: newWatchedAddr5,
-          },
+      const res = await neutronAccount.executeContract(contractAddress, {
+        update_interchain_query: {
+          query_id: 3,
+          new_update_period: query3UpdatePeriod,
+          new_recipient: newWatchedAddr5,
         },
-      );
+      });
       expect(res.code).toEqual(0);
     });
     it('seems registered transfers query is updated', async () => {

@@ -5,10 +5,10 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
   packAnyMsg,
-  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
+import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 const fee = {
   gas_limit: Long.fromString('200000'),
   amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -30,12 +30,13 @@ describe('Neutron / IBC hooks', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
-    n1 = new WalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
+    n1 = await createWalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
 
     TreasuryAddress = (await neutronChain.getChainAdmins())[0];
   });
@@ -50,6 +51,7 @@ describe('Neutron / IBC hooks', () => {
         toAddress: to,
         amount: [{ denom: NEUTRON_DENOM, amount }],
       });
+      // FIXME
       const txBuilder = neutronAccount.buildTx(
         fee,
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', msgSend)],

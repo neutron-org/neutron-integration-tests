@@ -4,7 +4,6 @@ import {
   filterIBCDenoms,
   getEventAttribute,
   NEUTRON_DENOM,
-  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   COSMOS_DENOM,
@@ -27,6 +26,10 @@ import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import axios from 'axios';
 import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
 import ICoin = cosmosclient.proto.cosmos.base.v1beta1.ICoin;
+import {
+  createWalletWrapper,
+  WalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -176,19 +179,16 @@ const registerBalanceQuery = async (
   connectionId: string,
   updatePeriod: number,
   denom: string,
-  addr: cosmosclient.AccAddress,
+  addr: string,
 ) => {
-  const txResult = await cm.executeContract(
-    contractAddress,
-    {
-      register_balance_query: {
-        connection_id: connectionId,
-        denom: denom,
-        addr: addr.toString(),
-        update_period: updatePeriod,
-      },
+  const txResult = await cm.executeContract(contractAddress, {
+    register_balance_query: {
+      connection_id: connectionId,
+      denom: denom,
+      addr: addr,
+      update_period: updatePeriod,
     },
-  );
+  });
 
   const attribute = getEventAttribute(
     (txResult as any).events,
@@ -209,16 +209,13 @@ const registerSigningInfoQuery = async (
   updatePeriod: number,
   valcons: string,
 ) => {
-  const txResult = await cm.executeContract(
-    contractAddress,
-    {
-      register_validators_signing_info_query: {
-        connection_id: connectionId,
-        validators: [valcons],
-        update_period: updatePeriod,
-      },
+  const txResult = await cm.executeContract(contractAddress, {
+    register_validators_signing_info_query: {
+      connection_id: connectionId,
+      validators: [valcons],
+      update_period: updatePeriod,
     },
-  );
+  });
 
   const attribute = getEventAttribute(
     (txResult as any).events,
@@ -240,17 +237,14 @@ const registerUnbondingDelegationsQuery = async (
   delegator: string,
   validator: string,
 ) => {
-  const txResult = await cm.executeContract(
-    contractAddress,
-    {
-      register_delegator_unbonding_delegations_query: {
-        connection_id: connectionId,
-        delegator,
-        validators: [validator],
-        update_period: updatePeriod,
-      },
+  const txResult = await cm.executeContract(contractAddress, {
+    register_delegator_unbonding_delegations_query: {
+      connection_id: connectionId,
+      delegator,
+      validators: [validator],
+      update_period: updatePeriod,
     },
-  );
+  });
 
   const attribute = getEventAttribute(
     (txResult as any).events,
@@ -317,20 +311,17 @@ const registerDelegatorDelegationsQuery = async (
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  delegator: cosmosclient.AccAddress,
-  validators: cosmosclient.ValAddress[],
+  delegator: string,
+  validators: string[],
 ) => {
-  await cm.executeContract(
-    contractAddress,
-    {
-      register_delegator_delegations_query: {
-        delegator: delegator.toString(),
-        validators: validators.map((valAddr) => valAddr.toString()),
-        connection_id: connectionId,
-        update_period: updatePeriod,
-      },
+  await cm.executeContract(contractAddress, {
+    register_delegator_delegations_query: {
+      delegator: delegator.toString(),
+      validators: validators,
+      connection_id: connectionId,
+      update_period: updatePeriod,
     },
-  );
+  });
 };
 
 const validateBalanceQuery = async (
@@ -338,7 +329,7 @@ const validateBalanceQuery = async (
   targetCm: CosmosWrapper,
   contractAddress: string,
   queryId: number,
-  address: cosmosclient.AccAddress,
+  address: string,
 ) => {
   const interchainQueryResult = await getQueryBalanceResult(
     neutronCm,
@@ -347,7 +338,7 @@ const validateBalanceQuery = async (
   );
   const directQueryResult = await cosmosclient.rest.bank.allBalances(
     targetCm.sdk as cosmosclient.CosmosSDK,
-    address.toString(),
+    address,
   );
   expect(filterIBCDenoms(interchainQueryResult.balances.coins)).toEqual(
     filterIBCDenoms(directQueryResult.data.balances as ICoin[]),
@@ -376,8 +367,9 @@ describe('Neutron / Interchain KV Query', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
@@ -385,8 +377,12 @@ describe('Neutron / Interchain KV Query', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    gaiaAccount = await createWalletWrapper(
+      gaiaChain,
+      testState.wallets.cosmos.demo2,
+    );
 
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -404,13 +400,11 @@ describe('Neutron / Interchain KV Query', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(
-          codeId,
-          '{}',
-          'neutron_interchain_queries',
-        )
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'neutron_interchain_queries',
+      );
     });
   });
 
@@ -420,17 +414,14 @@ describe('Neutron / Interchain KV Query', () => {
         expect.assertions(1);
 
         try {
-          await neutronAccount.executeContract(
-            contractAddress,
-            {
-              register_balance_query: {
-                connection_id: connectionId,
-                denom: gaiaChain.denom,
-                addr: testState.wallets.cosmos.demo2.address.toString(),
-                update_period: 10,
-              },
+          await neutronAccount.executeContract(contractAddress, {
+            register_balance_query: {
+              connection_id: connectionId,
+              denom: gaiaChain.denom,
+              addr: testState.wallets.cosmos.demo2.address.toString(),
+              update_period: 10,
             },
-          );
+          });
         } catch (err) {
           const error = err as Error;
           expect(error.message).toMatch(
@@ -441,40 +432,31 @@ describe('Neutron / Interchain KV Query', () => {
 
       test('should throw exception because of empty keys', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              integration_tests_register_query_empty_keys: {
-                connection_id: connectionId,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            integration_tests_register_query_empty_keys: {
+              connection_id: connectionId,
             },
-          ),
+          }),
         ).rejects.toThrowError(/keys cannot be empty/);
       });
 
       test('should throw exception because of empty key id', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              integration_tests_register_query_empty_id: {
-                connection_id: connectionId,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            integration_tests_register_query_empty_id: {
+              connection_id: connectionId,
             },
-          ),
+          }),
         ).rejects.toThrowError(/keys id cannot be empty/);
       });
 
       test('should throw exception because of empty key path', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              integration_tests_register_query_empty_path: {
-                connection_id: connectionId,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            integration_tests_register_query_empty_path: {
+              connection_id: connectionId,
             },
-          ),
+          }),
         ).rejects.toThrowError(/keys path cannot be empty/);
       });
 
@@ -633,7 +615,7 @@ describe('Neutron / Interchain KV Query', () => {
       // increase balance of val2 wallet
       const queryId = 3;
       const res = await gaiaAccount.msgSend(
-        testState.wallets.cosmos.val1.address.toAccAddress().toString(),
+        testState.wallets.cosmos.val1.address,
         '9000',
       );
       expect(res.code).toEqual(0);
@@ -648,7 +630,7 @@ describe('Neutron / Interchain KV Query', () => {
         gaiaChain,
         contractAddress,
         queryId,
-        testState.wallets.cosmos.val1.address.toAccAddress(),
+        testState.wallets.cosmos.val1.address,
       );
     });
 
@@ -695,12 +677,9 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('enable mock', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        {
-          integration_tests_set_query_mock: {},
-        },
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_set_query_mock: {},
+      });
     });
 
     test('callbacks are failing, but contract state is not corrupted', async () => {
@@ -729,12 +708,9 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('disable mock', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        {
-          integration_tests_unset_query_mock: {},
-        },
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_unset_query_mock: {},
+      });
     });
 
     test('now callbacks work again', async () => {
@@ -761,7 +737,8 @@ describe('Neutron / Interchain KV Query', () => {
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = BigInt(2);
       const result = await removeQueryViaTx(neutronAccount, queryId);
-      expect(result.raw_log).toMatch(
+      // TODO: fixme
+      expect(JSON.stringify(result.events)).toMatch(
         /only owner can remove a query within its service period: unauthorized/i,
       );
     });

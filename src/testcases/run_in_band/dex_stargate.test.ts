@@ -2,7 +2,6 @@ import {
   CosmosWrapper,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
-  WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
@@ -25,6 +24,10 @@ import {
   PoolReservesResponse,
   PoolResponse,
 } from '@neutron-org/neutronjsplus/dist/dex';
+import {
+  createWalletWrapper,
+  WalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -43,8 +46,9 @@ describe('Neutron / dex module (stargate contract)', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
@@ -57,9 +61,11 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(codeId, '{}', 'dex_dev')
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'dex_dev',
+      );
       console.log(contractAddress);
 
       await neutronAccount.msgSend(contractAddress, {
@@ -77,36 +83,11 @@ describe('Neutron / dex module (stargate contract)', () => {
     describe('Deposit', () => {
       test('Invalid pair', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              deposit: {
-                receiver: contractAddress,
-                token_a: 'untrn',
-                token_b: 'untrn',
-                amounts_a: ['100'], // uint128
-                amounts_b: ['100'], // uint128
-                tick_indexes_a_to_b: [1], // i64
-                fees: [0], // u64
-                options: [
-                  {
-                    disable_autoswap: true,
-                  },
-                ],
-              },
-            },
-          ),
-        ).rejects.toThrowError(/untrn<>untrn: Invalid token pair/);
-      });
-      test('Valid pair', async () => {
-        // pool denom - 'neutron/pool/0'
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
+          neutronAccount.executeContract(contractAddress, {
             deposit: {
               receiver: contractAddress,
               token_a: 'untrn',
-              token_b: 'uibcusdc',
+              token_b: 'untrn',
               amounts_a: ['100'], // uint128
               amounts_b: ['100'], // uint128
               tick_indexes_a_to_b: [1], // i64
@@ -117,27 +98,43 @@ describe('Neutron / dex module (stargate contract)', () => {
                 },
               ],
             },
+          }),
+        ).rejects.toThrowError(/untrn<>untrn: Invalid token pair/);
+      });
+      test('Valid pair', async () => {
+        // pool denom - 'neutron/pool/0'
+        const res = await neutronAccount.executeContract(contractAddress, {
+          deposit: {
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            amounts_a: ['100'], // uint128
+            amounts_b: ['100'], // uint128
+            tick_indexes_a_to_b: [1], // i64
+            fees: [0], // u64
+            options: [
+              {
+                disable_autoswap: true,
+              },
+            ],
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
     });
     describe('Withdrawal', () => {
       test('valid', async () => {
         // pool denom - 'neutron/pool/0'
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            withdrawal: {
-              receiver: contractAddress,
-              token_a: 'untrn',
-              token_b: 'uibcusdc',
-              shares_to_remove: ['10'], // uint128
-              tick_indexes_a_to_b: [1], // i64
-              fees: [0], // u64
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          withdrawal: {
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            shares_to_remove: ['10'], // uint128
+            tick_indexes_a_to_b: [1], // i64
+            fees: [0], // u64
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
     });
@@ -150,88 +147,73 @@ describe('Neutron / dex module (stargate contract)', () => {
       //   GOOD_TIL_TIME = 4;
       // }
       test('GOOD_TIL_CANCELLED', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            place_limit_order: {
-              receiver: contractAddress,
-              token_in: 'untrn',
-              token_out: 'uibcusdc',
-              tick_index_in_to_out: 1,
-              amount_in: '10',
-              order_type: LimitOrderType.GoodTilCanceled,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            order_type: LimitOrderType.GoodTilCanceled,
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
       test('FILL_OR_KILL', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            place_limit_order: {
-              receiver: contractAddress,
-              token_in: 'untrn',
-              token_out: 'uibcusdc',
-              tick_index_in_to_out: 1,
-              amount_in: '10',
-              order_type: LimitOrderType.FillOrKill,
-              max_amount_out: '100',
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            order_type: LimitOrderType.FillOrKill,
+            max_amount_out: '100',
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
       test('IMMEDIATE_OR_CANCEL', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            place_limit_order: {
-              receiver: contractAddress,
-              token_in: 'untrn',
-              token_out: 'uibcusdc',
-              tick_index_in_to_out: 1,
-              amount_in: '10',
-              order_type: LimitOrderType.ImmediateOrCancel,
-              max_amount_out: '100',
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            order_type: LimitOrderType.ImmediateOrCancel,
+            max_amount_out: '100',
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
       test('JUST_IN_TIME', async () => {
-        let res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            place_limit_order: {
-              receiver: contractAddress,
-              token_in: 'untrn',
-              token_out: 'uibcusdc',
-              tick_index_in_to_out: 1,
-              amount_in: '10',
-              order_type: LimitOrderType.JustInTime,
-            },
+        let res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            order_type: LimitOrderType.JustInTime,
           },
-        );
+        });
         expect(res.code).toEqual(0);
         trancheKeyToWithdraw = getEventAttributesFromTx(
           { tx_response: res },
           'TickUpdate',
           ['TrancheKey'],
         )[0]['TrancheKey'];
-        res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            place_limit_order: {
-              receiver: contractAddress,
-              token_in: 'untrn',
-              token_out: 'uibcusdc',
-              tick_index_in_to_out: 2,
-              amount_in: '10',
-              order_type: LimitOrderType.JustInTime,
-            },
+        res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 2,
+            amount_in: '10',
+            order_type: LimitOrderType.JustInTime,
           },
-        );
+        });
         expect(res.code).toEqual(0);
         trancheKeyToQuery = getEventAttributesFromTx(
           { tx_response: res },
@@ -240,72 +222,60 @@ describe('Neutron / dex module (stargate contract)', () => {
         )[0]['TrancheKey'];
       });
       test('GOOD_TIL_TIME', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
+        const res = await neutronAccount.executeContract(contractAddress, {
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
+            order_type: LimitOrderType.GoodTilTime,
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
+      test('GOOD_TIL_TIME expired', async () => {
+        await expect(
+          neutronAccount.executeContract(contractAddress, {
             place_limit_order: {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 1,
               amount_in: '10',
-              expiration_time: Math.ceil(Date.now() / 1000) + 1000,
+              expiration_time: 1,
               order_type: LimitOrderType.GoodTilTime,
             },
-          },
-        );
-        expect(res.code).toEqual(0);
-      });
-      test('GOOD_TIL_TIME expired', async () => {
-        await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              place_limit_order: {
-                receiver: contractAddress,
-                token_in: 'untrn',
-                token_out: 'uibcusdc',
-                tick_index_in_to_out: 1,
-                amount_in: '10',
-                expiration_time: 1,
-                order_type: LimitOrderType.GoodTilTime,
-              },
-            },
-          ),
+          }),
         ).rejects.toThrowError(
           /Limit order expiration time must be greater than current block time/,
         );
       });
       test('unknown order type', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              place_limit_order: {
-                receiver: contractAddress,
-                token_in: 'untrn',
-                token_out: 'uibcusdc',
-                tick_index_in_to_out: 1,
-                amount_in: '10',
-                expiration_time: 1,
-                order_type: 10,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            place_limit_order: {
+              receiver: contractAddress,
+              token_in: 'untrn',
+              token_out: 'uibcusdc',
+              tick_index_in_to_out: 1,
+              amount_in: '10',
+              expiration_time: 1,
+              order_type: 10,
             },
-          ),
+          }),
         ).rejects.toThrowError(/invalid numeric value for LimitOrderType/); // checked on contract's level
       });
     });
     describe('Withdraw filled lo', () => {
       console.log(trancheKeyToWithdraw);
       test('Withdraw', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            withdraw_filled_limit_order: {
-              tranche_key: trancheKeyToWithdraw,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          withdraw_filled_limit_order: {
+            tranche_key: trancheKeyToWithdraw,
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
     });
@@ -313,14 +283,11 @@ describe('Neutron / dex module (stargate contract)', () => {
       console.log(trancheKeyToWithdraw);
       test('cancel failed', async () => {
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              cancel_limit_order: {
-                tranche_key: trancheKeyToWithdraw,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            cancel_limit_order: {
+              tranche_key: trancheKeyToWithdraw,
             },
-          ),
+          }),
         ).rejects.toThrowError(
           /No active limit found. It does not exist or has already been filled/,
         );

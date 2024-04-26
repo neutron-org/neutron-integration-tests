@@ -1,7 +1,6 @@
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
@@ -16,6 +15,7 @@ import {
   NeutronContract,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { getIca } from '@neutron-org/neutronjsplus/dist/ica';
+import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -40,8 +40,9 @@ describe('Neutron / Interchain TXs', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -49,8 +50,9 @@ describe('Neutron / Interchain TXs', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = await createWalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
@@ -64,15 +66,9 @@ describe('Neutron / Interchain TXs', () => {
         expect(codeId).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        const res = (
-          await neutronAccount.instantiateContract(
-            codeId,
-            {},
-            'interchaintx',
-          )
-        )[0]._contract_address;
-
-        contractAddress = res;
+        contractAddress = (
+          await neutronAccount.instantiateContract(codeId, {}, 'interchaintx')
+        );
       });
     });
     describe('Create ICAs and setup contract', () => {
@@ -81,27 +77,21 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
       });
       test('create ICA1', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            register: {
-              connection_id: connectionId,
-              interchain_account_id: icaId1,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          register: {
+            connection_id: connectionId,
+            interchain_account_id: icaId1,
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
       test('create ICA2', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            register: {
-              connection_id: connectionId,
-              interchain_account_id: icaId2,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          register: {
+            connection_id: connectionId,
+            interchain_account_id: icaId2,
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
       test('check contract balance', async () => {
@@ -157,17 +147,14 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('set payer fees', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            set_fees: {
-              denom: neutronChain.denom,
-              ack_fee: '2000',
-              recv_fee: '0',
-              timeout_fee: '2000',
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          set_fees: {
+            denom: neutronChain.denom,
+            ack_fee: '2000',
+            recv_fee: '0',
+            timeout_fee: '2000',
           },
-        );
+        });
         expect(res.code).toEqual(0);
       });
 
@@ -180,19 +167,14 @@ describe('Neutron / Interchain TXs', () => {
     });
     describe('Send Interchain TX', () => {
       test('delegate from first ICA', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: (
-                testState.wallets.cosmos.val1.address as cosmosclient.ValAddress
-              ).toString(),
-              amount: '1000',
-              denom: gaiaChain.denom,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address,
+            amount: '1000',
+            denom: gaiaChain.denom,
           },
-        );
+        });
         expect(res.code).toEqual(0);
         console.log(JSON.stringify(res.events));
         const sequenceId = getSequenceId(res);
@@ -252,9 +234,7 @@ describe('Neutron / Interchain TXs', () => {
           {
             delegate_double_ack: {
               interchain_account_id: icaId1,
-              validator: (
-                testState.wallets.cosmos.val1.address as cosmosclient.ValAddress
-              ).toString(),
+              validator: testState.wallets.cosmos.val1.address,
               amount: '500',
               denom: gaiaChain.denom,
             },
@@ -320,17 +300,14 @@ describe('Neutron / Interchain TXs', () => {
 
     describe('Error cases', () => {
       test('delegate for unknown validator from second ICA', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId2,
-              validator: 'nonexistent_address',
-              amount: '2000',
-              denom: gaiaChain.denom,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId2,
+            validator: 'nonexistent_address',
+            amount: '2000',
+            denom: gaiaChain.denom,
           },
-        );
+        });
         expect(res.code).toEqual(0);
 
         const sequenceId = getSequenceId(res);
@@ -351,32 +328,26 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('undelegate from first ICA, delegate from second ICA', async () => {
         await cleanAckResults(neutronAccount, contractAddress);
-        const res1 = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            undelegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '1000',
-              denom: gaiaChain.denom,
-            },
+        const res1 = await neutronAccount.executeContract(contractAddress, {
+          undelegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '1000',
+            denom: gaiaChain.denom,
           },
-        );
+        });
         expect(res1.code).toEqual(0);
 
         const sequenceId1 = getSequenceId(res1);
 
-        const res2 = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId2,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '2000',
-              denom: gaiaChain.denom,
-            },
+        const res2 = await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId2,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '2000',
+            denom: gaiaChain.denom,
           },
-        );
+        });
         expect(res2.code).toEqual(0);
 
         const sequenceId2 = getSequenceId(res2);
@@ -403,18 +374,15 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('delegate with timeout', async () => {
         await cleanAckResults(neutronAccount, contractAddress);
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-              timeout: 1,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
+            timeout: 1,
           },
-        );
+        });
         expect(res.code).toEqual(0);
 
         const sequenceId = getSequenceId(res);
@@ -442,18 +410,15 @@ describe('Neutron / Interchain TXs', () => {
         try {
           rawLog =
             (
-              await neutronAccount.executeContract(
-                contractAddress,
-                {
-                  delegate: {
-                    interchain_account_id: icaId1,
-                    validator: testState.wallets.cosmos.val1.address.toString(),
-                    amount: '10',
-                    denom: gaiaChain.denom,
-                    timeout: 1,
-                  },
+              await neutronAccount.executeContract(contractAddress, {
+                delegate: {
+                  interchain_account_id: icaId1,
+                  validator: testState.wallets.cosmos.val1.address.toString(),
+                  amount: '10',
+                  denom: gaiaChain.denom,
+                  timeout: 1,
                 },
-              )
+              })
             ).raw_log || '';
         } catch (e) {
           rawLog = e.message;
@@ -462,95 +427,71 @@ describe('Neutron / Interchain TXs', () => {
       });
       describe('zero fee', () => {
         beforeAll(async () => {
-          await neutronAccount.executeContract(
-            contractAddress,
-            {
-              set_fees: {
-                denom: neutronChain.denom,
-                ack_fee: '0',
-                recv_fee: '0',
-                timeout_fee: '0',
-              },
+          await neutronAccount.executeContract(contractAddress, {
+            set_fees: {
+              denom: neutronChain.denom,
+              ack_fee: '0',
+              recv_fee: '0',
+              timeout_fee: '0',
             },
-          );
+          });
         });
         test('delegate with zero fee', async () => {
           await expect(
-            neutronAccount.executeContract(
-              contractAddress,
-              {
-                delegate: {
-                  interchain_account_id: icaId1,
-                  validator: (
-                    testState.wallets.cosmos.val1
-                      .address as cosmosclient.ValAddress
-                  ).toString(),
-                  amount: '2000',
-                  denom: gaiaChain.denom,
-                },
+            neutronAccount.executeContract(contractAddress, {
+              delegate: {
+                interchain_account_id: icaId1,
+                validator: testState.wallets.cosmos.val1.address,
+                amount: '2000',
+                denom: gaiaChain.denom,
               },
-            ),
+            }),
           ).rejects.toThrow(/invalid coins/);
         });
       });
       describe('insufficient funds for fee', () => {
         beforeAll(async () => {
-          await neutronAccount.executeContract(
-            contractAddress,
-            {
-              set_fees: {
-                denom: neutronChain.denom,
-                ack_fee: '9999999999',
-                recv_fee: '0',
-                timeout_fee: '9999999999',
-              },
+          await neutronAccount.executeContract(contractAddress, {
+            set_fees: {
+              denom: neutronChain.denom,
+              ack_fee: '9999999999',
+              recv_fee: '0',
+              timeout_fee: '9999999999',
             },
-          );
+          });
         });
         afterAll(async () => {
-          await neutronAccount.executeContract(
-            contractAddress,
-            {
-              set_fees: {
-                denom: neutronChain.denom,
-                ack_fee: '2000',
-                recv_fee: '0',
-                timeout_fee: '2000',
-              },
+          await neutronAccount.executeContract(contractAddress, {
+            set_fees: {
+              denom: neutronChain.denom,
+              ack_fee: '2000',
+              recv_fee: '0',
+              timeout_fee: '2000',
             },
-          );
+          });
         });
         test('delegate with zero fee', async () => {
           await expect(
-            neutronAccount.executeContract(
-              contractAddress,
-              {
-                delegate: {
-                  interchain_account_id: icaId1,
-                  validator: (
-                    testState.wallets.cosmos.val1
-                      .address as cosmosclient.ValAddress
-                  ).toString(),
-                  amount: '2000',
-                  denom: gaiaChain.denom,
-                },
+            neutronAccount.executeContract(contractAddress, {
+              delegate: {
+                interchain_account_id: icaId1,
+                validator: testState.wallets.cosmos.val1.address,
+                amount: '2000',
+                denom: gaiaChain.denom,
               },
-            ),
+            }),
           ).rejects.toThrow(/insufficient funds/);
         });
       });
     });
     describe('Recreation', () => {
       test('recreate ICA1', async () => {
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            register: {
-              connection_id: connectionId,
-              interchain_account_id: icaId1,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          register: {
+            connection_id: connectionId,
+            interchain_account_id: icaId1,
           },
-        );
+        });
         expect(res.code).toEqual(0);
         await getWithAttempts(
           neutronChain.blockWaiter,
@@ -571,17 +512,14 @@ describe('Neutron / Interchain TXs', () => {
       });
       test('delegate from first ICA after ICA recreation', async () => {
         await cleanAckResults(neutronAccount, contractAddress);
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              denom: gaiaChain.denom,
-              amount: '20',
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            denom: gaiaChain.denom,
+            amount: '20',
           },
-        );
+        });
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res);
 
@@ -627,25 +565,19 @@ describe('Neutron / Interchain TXs', () => {
 
       test('ack failure during sudo', async () => {
         // Mock sudo handler to fail
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_failure_mock: { state: 'enabled' },
+        });
 
         // Testing ACK failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -660,35 +592,26 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('ack failure during sudo submsg', async () => {
         // Mock sudo handler to fail on submsg
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_submsg_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_submsg_failure_mock: {},
+        });
 
         // Testing ACK failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -703,35 +626,26 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('ack failure during sudo submsg reply', async () => {
         // Mock sudo handler to fail on submsg reply
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_submsg_reply_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_submsg_reply_failure_mock: {},
+        });
 
         // Testing ACK failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -746,37 +660,28 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('ack failure during sudo out of gas', async () => {
         // Mock sudo handler to fail
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_failure_mock: {
-              state: 'enabled_infinite_loop',
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_failure_mock: {
+            state: 'enabled_infinite_loop',
           },
-        );
+        });
 
         // Testing ACK failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -791,36 +696,27 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('timeout failure during sudo', async () => {
         // Mock sudo handler to fail
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_failure_mock: { state: 'enabled' },
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_failure_mock: { state: 'enabled' },
+        });
 
         // Testing timeout failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-              timeout: 1,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
+            timeout: 1,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -835,38 +731,29 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('out of gas failure during sudo timeout', async () => {
         // Mock sudo handler to fail
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_failure_mock: {
-              state: 'enabled_infinite_loop',
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_failure_mock: {
+            state: 'enabled_infinite_loop',
           },
-        );
+        });
 
         // Testing timeout failure
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            delegate: {
-              interchain_account_id: icaId2,
-              validator: testState.wallets.cosmos.val1.address.toString(),
-              amount: '10',
-              denom: gaiaChain.denom,
-              timeout: 1,
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId2,
+            validator: testState.wallets.cosmos.val1.address.toString(),
+            amount: '10',
+            denom: gaiaChain.denom,
+            timeout: 1,
           },
-        );
+        });
 
         // wait until sudo is called and processed and failure is recorder
         await getWithAttempts<AckFailuresResponse>(
@@ -881,12 +768,9 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
       });
 
       test('check stored failures and acks', async () => {
@@ -932,14 +816,11 @@ describe('Neutron / Interchain TXs', () => {
 
       test('failed attempt to resubmit failure', async () => {
         // Mock sudo handler to fail
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_set_sudo_failure_mock: {
-              state: 'enabled',
-            },
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_set_sudo_failure_mock: {
+            state: 'enabled',
           },
-        );
+        });
 
         await neutronChain.blockWaiter.waitBlocks(5);
 
@@ -948,14 +829,11 @@ describe('Neutron / Interchain TXs', () => {
           contractAddress,
         );
         await expect(
-          neutronAccount.executeContract(
-            contractAddress,
-            {
-              resubmit_failure: {
-                failure_id: +failuresResBefore.failures[0].id,
-              },
+          neutronAccount.executeContract(contractAddress, {
+            resubmit_failure: {
+              failure_id: +failuresResBefore.failures[0].id,
             },
-          ),
+          }),
         ).rejects.toThrowError();
 
         await neutronChain.blockWaiter.waitBlocks(5);
@@ -971,12 +849,9 @@ describe('Neutron / Interchain TXs', () => {
         expect(acks.length).toEqual(0);
 
         // Restore sudo handler's normal state
-        await neutronAccount.executeContract(
-          contractAddress,
-          {
-            integration_tests_unset_sudo_failure_mock: {},
-          },
-        );
+        await neutronAccount.executeContract(contractAddress, {
+          integration_tests_unset_sudo_failure_mock: {},
+        });
         await neutronChain.blockWaiter.waitBlocks(5);
       });
 
@@ -987,14 +862,11 @@ describe('Neutron / Interchain TXs', () => {
         );
         const failure = failuresResBefore.failures[0];
         const failureId = failure.id;
-        const res = await neutronAccount.executeContract(
-          contractAddress,
-          {
-            resubmit_failure: {
-              failure_id: +failureId,
-            },
+        const res = await neutronAccount.executeContract(contractAddress, {
+          resubmit_failure: {
+            failure_id: +failureId,
           },
-        );
+        });
         expect(res.code).toBe(0);
 
         await neutronChain.blockWaiter.waitBlocks(5);
@@ -1021,10 +893,7 @@ describe('Neutron / Interchain TXs', () => {
  * cleanAckResults clears all ACK's from contract storage
  */
 const cleanAckResults = (cm: WalletWrapper, contractAddress: string) =>
-  cm.executeContract(
-    contractAddress,
-    { clean_ack_results: {} },
-  );
+  cm.executeContract(contractAddress, { clean_ack_results: {} });
 
 /**
  * waitForAck waits until ACK appears in contract storage

@@ -71,12 +71,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
   describe('prepare ICQ for failing', () => {
     test('enable mock', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        {
-          integration_tests_set_query_mock: {},
-        },
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_set_query_mock: {},
+      });
     });
   });
 
@@ -130,12 +127,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     });
 
     test('resubmit failed tx', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        {
-          integration_tests_unset_query_mock: {},
-        },
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_unset_query_mock: {},
+      });
 
       const resubmitTxs = (
         await getUnsuccessfulTxs(testState.icq_web_host)

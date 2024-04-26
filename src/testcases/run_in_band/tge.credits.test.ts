@@ -1,12 +1,12 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -40,20 +40,21 @@ describe('Neutron / TGE / Credits', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
-    airdropMock = new WalletWrapper(
+    airdropMock = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    lockdropMock = new WalletWrapper(
+    lockdropMock = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
@@ -95,12 +96,9 @@ describe('Neutron / TGE / Credits', () => {
   describe('Mint', () => {
     it('should not be able to mint without funds', async () => {
       await expect(
-        neutronAccount1.executeContract(
-          contractAddresses['TGE_CREDITS'],
-          {
-            mint: {},
-          },
-        ),
+        neutronAccount1.executeContract(contractAddresses['TGE_CREDITS'], {
+          mint: {},
+        }),
       ).rejects.toThrow(/No funds supplied/);
     });
     it('should be able to mint with funds', async () => {
@@ -139,14 +137,11 @@ describe('Neutron / TGE / Credits', () => {
   describe('Burn', () => {
     it('should not be able to burn by non airdrop address ', async () => {
       await expect(
-        neutronAccount1.executeContract(
-          contractAddresses['TGE_CREDITS'],
-          {
-            burn: {
-              amount: '1000000',
-            },
+        neutronAccount1.executeContract(contractAddresses['TGE_CREDITS'], {
+          burn: {
+            amount: '1000000',
           },
-        ),
+        }),
       ).rejects.toThrow(/Unauthorized/);
     });
     it('should allow airdrop address to burn', async () => {
@@ -190,15 +185,12 @@ describe('Neutron / TGE / Credits', () => {
   describe('Burn from', () => {
     it('should not be able to burn from by non lockdrop address ', async () => {
       await expect(
-        neutronAccount1.executeContract(
-          contractAddresses['TGE_CREDITS'],
-          {
-            burn_from: {
-              amount: '1000000',
-              owner: airdropAddress,
-            },
+        neutronAccount1.executeContract(contractAddresses['TGE_CREDITS'], {
+          burn_from: {
+            amount: '1000000',
+            owner: airdropAddress,
           },
-        ),
+        }),
       ).rejects.toThrow(/Unauthorized/);
     });
     it('should allow lockdrop address to burn from', async () => {
@@ -244,17 +236,14 @@ describe('Neutron / TGE / Credits', () => {
     const startTime = (Date.now() / 1000 + 10) | 0;
     it('should not be able to vest without funds', async () => {
       await expect(
-        airdropMock.executeContract(
-          contractAddresses['TGE_CREDITS'],
-          {
-            add_vesting: {
-              address: neutronAccount2Address,
-              amount: '1000000',
-              start_time: startTime,
-              duration: 10,
-            },
+        airdropMock.executeContract(contractAddresses['TGE_CREDITS'], {
+          add_vesting: {
+            address: neutronAccount2Address,
+            amount: '1000000',
+            start_time: startTime,
+            duration: 10,
           },
-        ),
+        }),
       ).rejects.toThrow(/No funds supplied/);
     });
     it('should transfer some to another address', async () => {
@@ -308,12 +297,9 @@ describe('Neutron / TGE / Credits', () => {
     });
     it('should not be able to withdraw before vesting', async () => {
       await expect(
-        neutronAccount2.executeContract(
-          contractAddresses['TGE_CREDITS'],
-          {
-            withdraw: {},
-          },
-        ),
+        neutronAccount2.executeContract(contractAddresses['TGE_CREDITS'], {
+          withdraw: {},
+        }),
       ).rejects.toThrow(/Too early to claim/);
     });
     it('should return withdrawable amount', async () => {

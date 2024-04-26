@@ -37,6 +37,7 @@ describe('DAO / Check', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0]; //add assert for some addresses
     daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);

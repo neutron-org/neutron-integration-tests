@@ -1,15 +1,17 @@
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import cosmosclient from '@cosmos-client/core';
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -23,9 +25,9 @@ describe('Neutron / Credits Vault', () => {
   let daoAccount: WalletWrapper;
   let airdropAccount: WalletWrapper;
 
-  let daoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
-  let airdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
-  let lockdropAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let daoAddr: string;
+  let airdropAddr: string;
+  let lockdropAddr: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
@@ -40,11 +42,12 @@ describe('Neutron / Credits Vault', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
 
-    daoAccount = new WalletWrapper(neutronChain, daoWallet);
+    daoAccount = await createWalletWrapper(neutronChain, daoWallet);
     daoAddr = daoAccount.wallet.address;
-    airdropAccount = new WalletWrapper(neutronChain, airdropWallet);
+    airdropAccount = await createWalletWrapper(neutronChain, airdropWallet);
     airdropAddr = airdropAccount.wallet.address;
   });
 
@@ -285,19 +288,17 @@ const setupCreditsVault = async (
   airdropContractAddress: string,
 ) => {
   const codeId = await wallet.storeWasm(NeutronContract.CREDITS_VAULT);
-  return (
-    await wallet.instantiateContract(
-      codeId,
-      {
-        name,
-        description,
-        credits_contract_address: creditsContractAddress,
-        owner,
-        airdrop_contract_address: airdropContractAddress,
-      },
-      'credits_vault',
-    )
-  )[0]._contract_address;
+  return await wallet.instantiateContract(
+    codeId,
+    {
+      name,
+      description,
+      credits_contract_address: creditsContractAddress,
+      owner,
+      airdrop_contract_address: airdropContractAddress,
+    },
+    'credits_vault',
+  );
 };
 
 const setupCreditsContract = async (
@@ -308,15 +309,13 @@ const setupCreditsContract = async (
   whenWithdrawable: number,
 ) => {
   const codeId = await wallet.storeWasm(NeutronContract.TGE_CREDITS);
-  const creditsContractAddress = (
-    await wallet.instantiateContract(
-      codeId,
-      {
-        dao_address: daoAddress,
-      },
-      'credits',
-    )
-  )[0]._contract_address;
+  const creditsContractAddress = await wallet.instantiateContract(
+    codeId,
+    {
+      dao_address: daoAddress,
+    },
+    'credits',
+  );
 
   await updateCreditsContractConfig(
     wallet,
@@ -335,19 +334,16 @@ const updateCreditsContractConfig = async (
   airdropAddress: string,
   lockdropAddress: string,
   whenWithdrawable: number,
-): Promise<BroadcastTx200ResponseTxResponse> =>
-  wallet.executeContract(
-    creditsContractAddress,
-    {
-      update_config: {
-        config: {
-          airdrop_address: airdropAddress,
-          lockdrop_address: lockdropAddress,
-          when_withdrawable: whenWithdrawable,
-        },
+): Promise<IndexedTx> =>
+  wallet.executeContract(creditsContractAddress, {
+    update_config: {
+      config: {
+        airdrop_address: airdropAddress,
+        lockdrop_address: lockdropAddress,
+        when_withdrawable: whenWithdrawable,
       },
     },
-  );
+  });
 
 const getVaultConfig = async (
   cm: CosmosWrapper,
@@ -385,7 +381,7 @@ const mintTokens = async (
   wallet: WalletWrapper,
   creditsContractAddress: string,
   amount: string,
-): Promise<BroadcastTx200ResponseTxResponse> =>
+): Promise<IndexedTx> =>
   wallet.executeContract(
     creditsContractAddress,
     {
@@ -404,16 +400,13 @@ const sendTokens = async (
   creditsContractAddress: string,
   recipient: string,
   amount: string,
-): Promise<BroadcastTx200ResponseTxResponse> =>
-  wallet.executeContract(
-    creditsContractAddress,
-    {
-      transfer: {
-        recipient,
-        amount,
-      },
+): Promise<IndexedTx> =>
+  wallet.executeContract(creditsContractAddress, {
+    transfer: {
+      recipient,
+      amount,
     },
-  );
+  });
 
 const updateVaultConfig = async (
   wallet: WalletWrapper,
@@ -422,15 +415,12 @@ const updateVaultConfig = async (
   name: string,
   description: string,
   owner?: string,
-): Promise<BroadcastTx200ResponseTxResponse> =>
-  wallet.executeContract(
-    vaultContract,
-    {
-      update_config: {
-        credits_contract_address: creditsContractAddress,
-        owner,
-        name,
-        description,
-      },
+): Promise<IndexedTx> =>
+  wallet.executeContract(vaultContract, {
+    update_config: {
+      credits_contract_address: creditsContractAddress,
+      owner,
+      name,
+      description,
     },
-  );
+  });

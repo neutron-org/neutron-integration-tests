@@ -1,13 +1,16 @@
 import Long from 'long';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -28,8 +31,9 @@ describe('Neutron / IBC hooks', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
@@ -37,8 +41,12 @@ describe('Neutron / IBC hooks', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    gaiaAccount = await createWalletWrapper(
+      gaiaChain,
+      testState.wallets.cosmos.demo2,
+    );
   });
 
   describe('Wallets', () => {
@@ -59,9 +67,11 @@ describe('Neutron / IBC hooks', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(codeId, '{}', 'msg_receiver')
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'msg_receiver',
+      );
     });
   });
 

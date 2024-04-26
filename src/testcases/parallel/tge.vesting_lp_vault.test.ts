@@ -1,6 +1,5 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -19,6 +18,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -57,20 +60,21 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    cmInstantiator = new WalletWrapper(
+    cmInstantiator = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
-    cmManager = new WalletWrapper(
+    cmManager = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    cmUser1 = new WalletWrapper(
+    cmUser1 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
-    cmUser2 = new WalletWrapper(
+    cmUser2 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFive.genQaWal1,
     );
@@ -116,17 +120,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
-        cmInstantiator.executeContract(
-          vaultAddress,
-          { bond: {} },
-        ),
+        cmInstantiator.executeContract(vaultAddress, { bond: {} }),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
-        cmInstantiator.executeContract(
-          vaultAddress,
-          { unbond: { amount: '1000' } },
-        ),
+        cmInstantiator.executeContract(vaultAddress, {
+          unbond: { amount: '1000' },
+        }),
       ).rejects.toThrow(/Direct unbonding is not available for this contract/);
     });
 
@@ -1035,26 +1035,23 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           expect(initRes).toBeTruthy();
 
           await expect(
-            cmUser1.executeContract(
-              initRes,
-              {
-                send: {
-                  contract: contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
-                  amount: '1000',
-                  msg: Buffer.from(
-                    JSON.stringify({
-                      register_vesting_accounts: {
-                        vesting_accounts: [
-                          vestingAccount(cmUser1.wallet.address.toString(), [
-                            vestingSchedule(vestingSchedulePoint(0, '1000')),
-                          ]),
-                        ],
-                      },
-                    }),
-                  ).toString('base64'),
-                },
+            cmUser1.executeContract(initRes, {
+              send: {
+                contract: contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY],
+                amount: '1000',
+                msg: Buffer.from(
+                  JSON.stringify({
+                    register_vesting_accounts: {
+                      vesting_accounts: [
+                        vestingAccount(cmUser1.wallet.address.toString(), [
+                          vestingSchedule(vestingSchedulePoint(0, '1000')),
+                        ]),
+                      ],
+                    },
+                  }),
+                ).toString('base64'),
               },
-            ),
+            }),
           ).rejects.toThrow(/Unauthorized/);
         });
         test('via direct exec msg', async () => {

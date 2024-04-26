@@ -88,17 +88,13 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
-        cmInstantiator.executeContract(
-          vaultAddress,
-          { bond: {} },
-        ),
+        cmInstantiator.executeContract(vaultAddress, { bond: {} }),
       ).rejects.toThrow(/Bonding is not available for this contract/);
 
       await expect(
-        cmInstantiator.executeContract(
-          vaultAddress,
-          { unbond: { amount: '1000' } },
-        ),
+        cmInstantiator.executeContract(vaultAddress, {
+          unbond: { amount: '1000' },
+        }),
       ).rejects.toThrow(/Direct unbonding is not available for this contract/);
     });
 
@@ -843,31 +839,28 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           expect(initRes).toBeTruthy();
 
           await expect(
-            cmUser1.executeContract(
-              initRes,
-              {
-                send: {
-                  contract: contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
-                  amount: '1000',
-                  msg: Buffer.from(
-                    JSON.stringify({
-                      register_vesting_accounts: {
-                        vesting_accounts: [
-                          types.vestingAccount(
-                            cmUser1.wallet.address.toString(),
-                            [
-                              types.vestingSchedule(
-                                types.vestingSchedulePoint(0, '1000'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      },
-                    }),
-                  ).toString('base64'),
-                },
+            cmUser1.executeContract(initRes, {
+              send: {
+                contract: contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
+                amount: '1000',
+                msg: Buffer.from(
+                  JSON.stringify({
+                    register_vesting_accounts: {
+                      vesting_accounts: [
+                        types.vestingAccount(
+                          cmUser1.wallet.address.toString(),
+                          [
+                            types.vestingSchedule(
+                              types.vestingSchedulePoint(0, '1000'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    },
+                  }),
+                ).toString('base64'),
               },
-            ),
+            }),
           ).rejects.toThrow(/Unauthorized/);
         });
         test('via direct exec msg by the token manager', async () => {

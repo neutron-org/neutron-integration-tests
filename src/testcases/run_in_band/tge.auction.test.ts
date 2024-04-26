@@ -1,6 +1,5 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -31,6 +30,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
+import { WalletWrapper, createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -163,16 +163,17 @@ describe('Neutron / TGE / Auction', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    cmInstantiator = new WalletWrapper(
+    cmInstantiator = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    cmTokenManager = new WalletWrapper(
+    cmTokenManager = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronFour.genQaWal1,
     );
-    cmStranger = new WalletWrapper(
+    cmStranger = await createWalletWrapper(
       neutronChain,
 
       testState.wallets.qaNeutronFive.genQaWal1,
@@ -201,15 +202,15 @@ describe('Neutron / TGE / Auction', () => {
       'auctionLockdrop',
       'auctionLockdropVesting',
     ]) {
-      tgeWallets[v] = new WalletWrapper(
+      tgeWallets[v] = await createWalletWrapper(
         neutronChain,
         (
           await testState.createQaWallet(
             'neutron',
             testState.sdk1,
-            testState.blockWaiter1,
             testState.wallets.neutron.demo1,
             NEUTRON_DENOM,
+            testState.rpc1,
             [
               {
                 denom: NEUTRON_DENOM,
@@ -563,15 +564,12 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should not be able to withdraw mode than 50% of current deposit', async () => {
         await expect(
-          cmInstantiator.executeContract(
-            tgeMain.contracts.auction,
-            {
-              withdraw: {
-                amount_usdc: '5000',
-                amount_atom: '5000',
-              },
+          cmInstantiator.executeContract(tgeMain.contracts.auction, {
+            withdraw: {
+              amount_usdc: '5000',
+              amount_atom: '5000',
             },
-          ),
+          }),
         ).rejects.toThrow(
           /Amount exceeds maximum allowed withdrawal limit of 0.5/,
         );
@@ -621,15 +619,12 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should not allow to withdraw more than once', async () => {
         await expect(
-          cmInstantiator.executeContract(
-            tgeMain.contracts.auction,
-            {
-              withdraw: {
-                amount_usdc: '1000',
-                amount_atom: '1000',
-              },
+          cmInstantiator.executeContract(tgeMain.contracts.auction, {
+            withdraw: {
+              amount_usdc: '1000',
+              amount_atom: '1000',
             },
-          ),
+          }),
         ).rejects.toThrow(/Max 1 withdrawal allowed/);
       });
     });
@@ -660,12 +655,9 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to set pool size before withdrawal_window is closed', async () => {
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                set_pool_size: {},
-              },
-            ),
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              set_pool_size: {},
+            }),
           ).rejects.toThrow(/Deposit\/withdrawal windows are still open/);
         });
         it('should not be able to set pool size bc of wrong price feed data', async () => {
@@ -676,12 +668,9 @@ describe('Neutron / TGE / Auction', () => {
               5,
           );
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                set_pool_size: {},
-              },
-            ),
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              set_pool_size: {},
+            }),
           ).rejects.toThrow(/Invalid price feed data/);
         });
         it('should not be able to set pool size (no NTRN)', async () => {
@@ -715,12 +704,9 @@ describe('Neutron / TGE / Auction', () => {
           );
           expect(r2.code).toEqual(0);
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                set_pool_size: {},
-              },
-            ),
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              set_pool_size: {},
+            }),
           ).rejects.toThrow(/Not enough NTRN in the contract/);
         });
         it('should not be able to set pool size when price feed data is set but too old', async () => {
@@ -758,12 +744,9 @@ describe('Neutron / TGE / Auction', () => {
           expect(r2.code).toEqual(0);
 
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                set_pool_size: {},
-              },
-            ),
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              set_pool_size: {},
+            }),
           ).rejects.toThrow(/Price feed data is too old/);
         });
         it('should be able to set pool size', async () => {
@@ -838,12 +821,9 @@ describe('Neutron / TGE / Auction', () => {
         });
         it('should not be able to set pool size twice', async () => {
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                set_pool_size: {},
-              },
-            ),
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              set_pool_size: {},
+            }),
           ).rejects.toThrow(/Pool size has already been set/);
         });
       });
@@ -1001,16 +981,13 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                lock_lp: {
-                  amount: userInfo.atom_lp_amount,
-                  asset: 'ATOM',
-                  duration: 1,
-                },
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              lock_lp: {
+                amount: userInfo.atom_lp_amount,
+                asset: 'ATOM',
+                duration: 1,
               },
-            ),
+            }),
           ).rejects.toThrow(/Not enough ATOM LP/);
         });
         it('should not be able to lock USDC LP tokens more than have', async () => {
@@ -1023,16 +1000,13 @@ describe('Neutron / TGE / Auction', () => {
             },
           );
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                lock_lp: {
-                  amount: userInfo.usdc_lp_amount,
-                  asset: 'USDC',
-                  duration: 1,
-                },
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              lock_lp: {
+                amount: userInfo.usdc_lp_amount,
+                asset: 'USDC',
+                duration: 1,
               },
-            ),
+            }),
           ).rejects.toThrow(/Not enough USDC LP/);
         });
         it('should be able to withdraw ATOM LP tokens', async () => {
@@ -1178,16 +1152,13 @@ describe('Neutron / TGE / Auction', () => {
               5,
           );
           await expect(
-            cmInstantiator.executeContract(
-              tgeMain.contracts.auction,
-              {
-                lock_lp: {
-                  amount: '100',
-                  asset: 'ATOM',
-                  duration: 1,
-                },
+            cmInstantiator.executeContract(tgeMain.contracts.auction, {
+              lock_lp: {
+                amount: '100',
+                asset: 'ATOM',
+                duration: 1,
               },
-            ),
+            }),
           ).rejects.toThrow(/Lock window is closed/);
         });
       });
@@ -1426,12 +1397,9 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should not be able to init pool twice', async () => {
         await expect(
-          cmInstantiator.executeContract(
-            tgeMain.contracts.auction,
-            {
-              init_pool: {},
-            },
-          ),
+          cmInstantiator.executeContract(tgeMain.contracts.auction, {
+            init_pool: {},
+          }),
         ).rejects.toThrow(/Liquidity already added/);
       });
     });
@@ -1439,12 +1407,9 @@ describe('Neutron / TGE / Auction', () => {
       let claimAtomLP: number;
       let claimUsdcLP: number;
       it('should vest LP (permissionless)', async () => {
-        let res = await cmStranger.executeContract(
-          tgeMain.contracts.auction,
-          {
-            migrate_to_vesting: {},
-          },
-        );
+        let res = await cmStranger.executeContract(tgeMain.contracts.auction, {
+          migrate_to_vesting: {},
+        });
         expect(res.code).toEqual(0);
         res = await tgeWallets.airdropOnly.executeContract(
           tgeMain.contracts.auction,
@@ -1457,12 +1422,9 @@ describe('Neutron / TGE / Auction', () => {
       });
       it('should not vest LP all 7 users have been migrated', async () => {
         await expect(
-          cmInstantiator.executeContract(
-            tgeMain.contracts.auction,
-            {
-              migrate_to_vesting: {},
-            },
-          ),
+          cmInstantiator.executeContract(tgeMain.contracts.auction, {
+            migrate_to_vesting: {},
+          }),
         ).rejects.toThrow(/No users to migrate/);
       });
       it('should validate numbers', async () => {
@@ -1963,28 +1925,22 @@ describe('Neutron / TGE / Auction', () => {
             'auctionVesting',
           ]) {
             await expect(
-              tgeWallets[v].executeContract(
-                tgeMain.contracts.lockdrop,
-                {
-                  claim_rewards_and_optionally_unlock: {
-                    pool_type: 'USDC',
-                    duration: 1,
-                    withdraw_lp_stake: false,
-                  },
+              tgeWallets[v].executeContract(tgeMain.contracts.lockdrop, {
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'USDC',
+                  duration: 1,
+                  withdraw_lp_stake: false,
                 },
-              ),
+              }),
             ).rejects.toThrowError(/LockupInfoV1 not found/);
             await expect(
-              tgeWallets[v].executeContract(
-                tgeMain.contracts.lockdrop,
-                {
-                  claim_rewards_and_optionally_unlock: {
-                    pool_type: 'ATOM',
-                    duration: 1,
-                    withdraw_lp_stake: false,
-                  },
+              tgeWallets[v].executeContract(tgeMain.contracts.lockdrop, {
+                claim_rewards_and_optionally_unlock: {
+                  pool_type: 'ATOM',
+                  duration: 1,
+                  withdraw_lp_stake: false,
                 },
-              ),
+              }),
             ).rejects.toThrowError(/LockupInfoV1 not found/);
           }
         });
@@ -2345,14 +2301,11 @@ describe('Neutron / TGE / Auction', () => {
           ),
         ).rejects.toThrow(/Bonding is not available for this contract/);
         await expect(
-          cmStranger.executeContract(
-            vault,
-            {
-              unbond: {
-                amount: '1000',
-              },
+          cmStranger.executeContract(vault, {
+            unbond: {
+              amount: '1000',
             },
-          ),
+          }),
         ).rejects.toThrow(
           /Direct unbonding is not available for this contract/,
         );

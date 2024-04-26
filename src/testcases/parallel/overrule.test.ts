@@ -1,18 +1,21 @@
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   Dao,
   DaoMember,
   deployNeutronDao,
   deploySubdao,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -34,12 +37,13 @@ describe('Neutron / Subdao', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutronThree.genQaWal1,
     );
@@ -181,7 +185,7 @@ async function voteAgainstOverrule(
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<BroadcastTx200ResponseTxResponse> {
+): Promise<IndexedTx> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,

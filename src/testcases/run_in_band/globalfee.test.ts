@@ -1,7 +1,6 @@
 import Long from 'long';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -14,6 +13,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import cosmosclient from '@cosmos-client/core';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -31,8 +34,9 @@ describe('Neutron / Global Fee', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -92,18 +96,15 @@ describe('Neutron / Global Fee', () => {
       }),
       '1000',
       {
-        gas_limit: Long.fromString('4000000'),
+        gas: '4000000',
         amount: [{ denom: neutronChain.denom, amount: '100000' }],
       },
     );
 
-    await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
-    });
+    await daoMember.voteYes(proposalId, 'single');
     await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
+      gas: '4000000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
 

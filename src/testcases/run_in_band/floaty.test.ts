@@ -1,10 +1,13 @@
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
-  WalletWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -21,8 +24,9 @@ describe('Float operations support', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );

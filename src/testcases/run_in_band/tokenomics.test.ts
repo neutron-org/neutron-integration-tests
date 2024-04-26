@@ -1,7 +1,6 @@
 import Long from 'long';
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
@@ -11,6 +10,10 @@ import {
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -29,8 +32,9 @@ describe('Neutron / Tokenomics', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -38,8 +42,9 @@ describe('Neutron / Tokenomics', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = await createWalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );

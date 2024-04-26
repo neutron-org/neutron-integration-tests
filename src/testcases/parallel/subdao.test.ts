@@ -956,12 +956,9 @@ describe('Neutron / Subdao', () => {
     let proposalId: number;
     test('Update config: Unauthorized', async () => {
       await expect(
-        neutronAccount1.executeContract(
-          subDao.contracts.core.address,
-          {
-            update_config: {},
-          },
-        ),
+        neutronAccount1.executeContract(subDao.contracts.core.address, {
+          update_config: {},
+        }),
       ).rejects.toThrow(/Unauthorized/);
     });
     test('Update config (subDAO name) via proposal', async () => {
