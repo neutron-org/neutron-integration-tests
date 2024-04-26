@@ -66,32 +66,35 @@ describe('Neutron / Global Fee', () => {
   const executeParamChange = async (
     daoMember: DaoMember,
     kind: string,
-    bypass_min_fee_msg_types: string[],
-    minimum_gas_prices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
-    max_total_bypass_min_fee_msg_gas_usage: string,
+    bypassMinFeeMsgTypes: string[],
+    minimumGasPrices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
+    maxTotalBypassMinFeesgGasUsage: string,
   ) => {
     const params = await neutronChain.queryGlobalfeeParams();
-    if (bypass_min_fee_msg_types == null) {
-      bypass_min_fee_msg_types = params.bypass_min_fee_msg_types;
+    if (bypassMinFeeMsgTypes == null) {
+      bypassMinFeeMsgTypes = params.bypass_min_fee_msg_types;
     }
-    if (minimum_gas_prices == null) {
-      minimum_gas_prices = params.minimum_gas_prices;
+    if (minimumGasPrices == null) {
+      minimumGasPrices = params.minimum_gas_prices;
     }
-    if (max_total_bypass_min_fee_msg_gas_usage == null) {
-      max_total_bypass_min_fee_msg_gas_usage =
+    if (maxTotalBypassMinFeesgGasUsage == null) {
+      maxTotalBypassMinFeesgGasUsage =
         params.max_total_bypass_min_fee_msg_gas_usage;
     }
 
-    const proposalId = await daoMember1.submitUpdateParamsGlobalfeeProposal(
+    const proposalId = await daoMember.submitUpdateParamsGlobalfeeProposal(
       'Change Proposal - ' + kind + ' #' + counter,
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
       updateGlobalFeeParamsProposal({
-        bypass_min_fee_msg_types: bypass_min_fee_msg_types,
-        max_total_bypass_min_fee_msg_gas_usage:
-          max_total_bypass_min_fee_msg_gas_usage,
-        minimum_gas_prices: minimum_gas_prices,
+        bypass_min_fee_msg_types: bypassMinFeeMsgTypes,
+        max_total_bypass_min_fee_msg_gas_usage: maxTotalBypassMinFeesgGasUsage,
+        minimum_gas_prices: minimumGasPrices,
       }),
       '1000',
+      {
+        gas_limit: Long.fromString('4000000'),
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
+      },
     );
 
     await daoMember.voteYes(proposalId, 'single', {
