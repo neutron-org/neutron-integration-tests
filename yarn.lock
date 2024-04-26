@@ -1575,7 +1575,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#fix/pool_metadata_proto":
   version "0.4.0-rc15"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/b0004c122f568b4e02bb977934434a59acefab17"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/53254651cf922db07de680aa0dedc9fe5fe45957"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
