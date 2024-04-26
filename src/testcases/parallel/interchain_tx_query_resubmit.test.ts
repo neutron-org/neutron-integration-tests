@@ -62,7 +62,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       contractAddress = (
         await neutronAccount.instantiateContract(
           codeId,
-          '{}',
+          {},
           'neutron_interchain_queries',
         )
       )[0]._contract_address;

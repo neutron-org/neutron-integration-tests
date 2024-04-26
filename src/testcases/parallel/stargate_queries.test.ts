@@ -93,7 +93,7 @@ describe('Neutron / Simple', () => {
     test('instantiate', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'stargate_querier',
       );
     });

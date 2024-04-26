@@ -68,7 +68,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('instantiate contract', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'neutron_interchain_queries',
       );
     });

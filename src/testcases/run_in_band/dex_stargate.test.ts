@@ -63,7 +63,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     test('instantiate contract', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'dex_dev',
       );
       console.log(contractAddress);

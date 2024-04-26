@@ -40,7 +40,7 @@ describe('Float operations support', () => {
     test('instantiate', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'floaty',
       );
     });

@@ -66,9 +66,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(codeId).toBeGreaterThan(0);
       });
       test('instantiate', async () => {
-        contractAddress = (
-          await neutronAccount.instantiateContract(codeId, {}, 'interchaintx')
-        );
+        contractAddress = await neutronAccount.instantiateContract(codeId, {}, 'interchaintx');
       });
     });
     describe('Create ICAs and setup contract', () => {

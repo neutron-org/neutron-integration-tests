@@ -69,7 +69,7 @@ describe('Neutron / IBC hooks', () => {
     test('instantiate contract', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'msg_receiver',
       );
     });

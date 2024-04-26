@@ -70,7 +70,7 @@ describe('Neutron / Governance', () => {
     expect(contractCodeId).toBeGreaterThan(0);
     const contractRes = await neutronAccount.instantiateContract(
       contractCodeId,
-      '{}',
+      {},
       'ibc_transfer',
       mainDao.contracts.core.address,
     );
@@ -88,7 +88,7 @@ describe('Neutron / Governance', () => {
     test('instantiate', async () => {
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'msg_receiver',
       );
     });
