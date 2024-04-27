@@ -168,7 +168,7 @@ describe('Neutron / Tokenomics', () => {
           amount: '100000',
         },
         testState.wallets.qaNeutron.genQaWal1.address.toString(),
-        { revisionNumber: new Long(2), revisionHeight: new Long(100000000) },
+        { revisionNumber: BigInt(2), revisionHeight: BigInt(100000000) },
       );
       await getWithAttempts(
         neutronChain.blockWaiter,
