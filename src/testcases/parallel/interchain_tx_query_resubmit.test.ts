@@ -1,6 +1,5 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   COSMOS_DENOM,
   NEUTRON_DENOM,
@@ -15,6 +14,10 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '@neutron-org/neutronjsplus/dist/icq';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -34,8 +37,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
@@ -43,8 +47,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       testState.sdk2,
       testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = await createWalletWrapper(
       gaiaChain,
       testState.wallets.qaCosmos.genQaWal1,
     );
@@ -59,13 +64,11 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(
-          codeId,
-          {},
-          'neutron_interchain_queries',
-        )
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        {},
+        'neutron_interchain_queries',
+      );
     });
   });
 
