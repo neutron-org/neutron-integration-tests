@@ -318,7 +318,7 @@ const registerDelegatorDelegationsQuery = async (
 ) => {
   await cm.executeContract(contractAddress, {
     register_delegator_delegations_query: {
-      delegator: delegator.toString(),
+      delegator: delegator,
       validators: validators,
       connection_id: connectionId,
       update_period: updatePeriod,

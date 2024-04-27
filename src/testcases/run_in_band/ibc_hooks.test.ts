@@ -85,8 +85,8 @@ describe('Neutron / IBC hooks', () => {
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address.toString(),
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
         );
         expect(res.code).toEqual(0);
@@ -113,8 +113,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
@@ -160,8 +160,8 @@ describe('Neutron / IBC hooks', () => {
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address.toString(),
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
         );
         expect(res.code).toEqual(0);
@@ -189,8 +189,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
@@ -233,8 +233,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
           `{"othermemohook": {}}`,
         );
@@ -266,8 +266,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revision_number: new Long(2),
-            revision_height: new Long(100000000),
+            revisionNumber: new Long(2),
+            revisionHeight: new Long(100000000),
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
