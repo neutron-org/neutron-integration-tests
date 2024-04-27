@@ -467,7 +467,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         );
       console.log(resp);
       expect(Number(resp.deposits[0].total_shares)).toBeGreaterThan(0);
-      expect(Number(resp.deposits[0].pool!.id)).toEqual(0);
+      expect(Number(resp.deposits[0].pool.id)).toEqual(0);
 
       const respNoPoolData =
         await neutronAccount.chain.queryContract<AllUserDepositsResponse>(

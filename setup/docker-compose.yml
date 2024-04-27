@@ -12,6 +12,7 @@ services:
       - 8090:9090
     environment:
       - RUN_BACKGROUND=0
+      - ORACLE_ADDRESS=oracle:8080
     networks:
       - neutron-testing
 
@@ -75,6 +76,21 @@ services:
       - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
       - RELAYER_LISTEN_ADDR=0.0.0.0:9999
       - LOGGER_LEVEL=debug
+    networks:
+      - neutron-testing
+
+  oracle:
+    image: skip-mev/slinky-e2e-oracle
+    entrypoint: [
+      "slinky",
+      "--oracle-config-path",
+      "/oracle/oracle.json",
+      "--market-config-path",
+      "/oracle/market.json",
+      ]
+    ports:
+      - "8080:8080" # main oracle port
+      - "8002:8002" # oracle metrics port
     networks:
       - neutron-testing
 
