@@ -191,11 +191,7 @@ const registerBalanceQuery = async (
     },
   });
 
-  const attribute = getEventAttribute(
-    (txResult as any).events,
-    'neutron',
-    'query_id',
-  );
+  const attribute = getEventAttribute(txResult.events, 'neutron', 'query_id');
 
   const queryId = parseInt(attribute);
   expect(queryId).toBeGreaterThanOrEqual(0);
@@ -218,11 +214,7 @@ const registerSigningInfoQuery = async (
     },
   });
 
-  const attribute = getEventAttribute(
-    (txResult as any).events,
-    'neutron',
-    'query_id',
-  );
+  const attribute = getEventAttribute(txResult.events, 'neutron', 'query_id');
 
   const queryId = parseInt(attribute);
   expect(queryId).toBeGreaterThanOrEqual(0);
@@ -247,11 +239,7 @@ const registerUnbondingDelegationsQuery = async (
     },
   });
 
-  const attribute = getEventAttribute(
-    (txResult as any).events,
-    'neutron',
-    'query_id',
-  );
+  const attribute = getEventAttribute(txResult.events, 'neutron', 'query_id');
 
   const queryId = parseInt(attribute);
   expect(queryId).toBeGreaterThanOrEqual(0);
@@ -354,23 +342,16 @@ const registerProposalVotesQuery = async (
   proposalId: number,
   voters: string[],
 ) => {
-  const txResult = await cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      register_government_proposal_votes_query: {
-        connection_id: connectionId,
-        update_period: updatePeriod,
-        proposals_ids: [proposalId],
-        voters: voters,
-      },
-    }),
-  );
+  const txResult = await cm.executeContract(contractAddress, {
+    register_government_proposal_votes_query: {
+      connection_id: connectionId,
+      update_period: updatePeriod,
+      proposals_ids: [proposalId],
+      voters: voters,
+    },
+  });
 
-  const attribute = getEventAttribute(
-    (txResult as any).events,
-    'neutron',
-    'query_id',
-  );
+  const attribute = getEventAttribute(txResult.events, 'neutron', 'query_id');
 
   const queryId = parseInt(attribute);
   expect(queryId).toBeGreaterThanOrEqual(0);
@@ -405,22 +386,15 @@ const registerGovProposalsQuery = async (
   updatePeriod: number,
   proposalsIds: number[],
 ) => {
-  const txResult = await cm.executeContract(
-    contractAddress,
-    JSON.stringify({
-      register_government_proposals_query: {
-        connection_id: connectionId,
-        update_period: updatePeriod,
-        proposals_ids: proposalsIds,
-      },
-    }),
-  );
+  const txResult = await cm.executeContract(contractAddress, {
+    register_government_proposals_query: {
+      connection_id: connectionId,
+      update_period: updatePeriod,
+      proposals_ids: proposalsIds,
+    },
+  });
 
-  const attribute = getEventAttribute(
-    (txResult as any).events,
-    'neutron',
-    'query_id',
-  );
+  const attribute = getEventAttribute(txResult.events, 'neutron', 'query_id');
 
   const queryId = parseInt(attribute);
   expect(queryId).toBeGreaterThanOrEqual(0);
@@ -1144,7 +1118,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       proposalId = parseInt(
         getEventAttribute(
-          (proposalResp as any).events,
+          proposalResp.events,
           'submit_proposal',
           'proposal_id',
         ),

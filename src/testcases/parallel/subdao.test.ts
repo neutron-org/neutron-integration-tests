@@ -21,9 +21,15 @@ import {
   TimelockConfig,
   TimelockProposalListResponse,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  SingleChoiceProposal,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
-import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  getWithAttempts,
+  waitSeconds,
+} from '@neutron-org/neutronjsplus/dist/wait';
 import {
   paramChangeProposal,
   sendProposal,
@@ -525,9 +531,9 @@ describe('Neutron / Subdao', () => {
 
       await subdaoMember1.user.executeContract(
         mainDaoMember.dao.contracts.proposals.overrule.address,
-        JSON.stringify({
+        {
           close: { proposal_id: overruleProposalId },
-        }),
+        },
       );
 
       const propOverruledTest2 = await getWithAttempts(
