@@ -300,13 +300,12 @@ describe('Neutron / Treasury', () => {
         const attrs = events.filter((e) => e.type === 'transfer');
         expect(attrs[1].attributes).toEqual([
           {
-            index: true,
             key: 'recipient',
             value: holder1Addr.toString(),
           },
-          { index: true, key: 'sender', value: dsc },
-          { index: true, key: 'amount', value: `14005${NEUTRON_DENOM}` },
-          { index: true, key: 'msg_index', value: '0' },
+          { key: 'sender', value: dsc },
+          { key: 'amount', value: `14005${NEUTRON_DENOM}` },
+          { key: 'msg_index', value: '0' },
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(

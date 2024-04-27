@@ -173,7 +173,6 @@ describe('Neutron / IBC hooks', () => {
       expect(attrs).toEqual(
         expect.arrayContaining([
           {
-            index: true,
             key: 'bid',
             value: `1000${NEUTRON_DENOM}`,
           },
