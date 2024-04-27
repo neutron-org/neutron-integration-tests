@@ -6,8 +6,9 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob && yarn test:slinky",
     "test:simple": "jest -b src/testcases/parallel/simple",
+    "test:slinky": "jest -b src/testcases/run_in_band/slinky",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
     "test:interchaintx": "jest -b src/testcases/run_in_band/interchaintx",
     "test:interchain_kv_query": "jest -b src/testcases/run_in_band/interchain_kv_query",
