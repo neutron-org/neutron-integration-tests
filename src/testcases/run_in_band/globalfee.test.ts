@@ -97,7 +97,7 @@ describe('Neutron / Global Fee', () => {
       '1000',
       {
         gas: '4000000',
-        amount: [{ denom: neutronChain.denom, amount: '400000' }],
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
       },
     );
 
@@ -105,7 +105,7 @@ describe('Neutron / Global Fee', () => {
     await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
       gas: '4000000',
-      amount: [{ denom: daoMember.user.chain.denom, amount: '400000' }],
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
 
     counter++;
