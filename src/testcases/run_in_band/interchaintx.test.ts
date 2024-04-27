@@ -164,9 +164,9 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('add some money to ICAs', async () => {
-        const res1 = await gaiaAccount.msgSend(icaAddress1.toString(), '10000');
+        const res1 = await gaiaAccount.msgSend(icaAddress1, '10000');
         expect(res1.code).toEqual(0);
-        const res2 = await gaiaAccount.msgSend(icaAddress2.toString(), '10000');
+        const res2 = await gaiaAccount.msgSend(icaAddress2, '10000');
         expect(res2.code).toEqual(0);
       });
     });
@@ -175,13 +175,12 @@ describe('Neutron / Interchain TXs', () => {
         const res = await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address,
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '1000',
             denom: gaiaChain.denom,
           },
         });
         expect(res.code).toEqual(0);
-        console.log(JSON.stringify(res.events));
         const sequenceId = getSequenceId(res);
         await waitForAck(neutronChain, contractAddress, icaId1, sequenceId);
         const qres = await getAck(
@@ -239,7 +238,7 @@ describe('Neutron / Interchain TXs', () => {
           {
             delegate_double_ack: {
               interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address,
+              validator: testState.wallets.cosmos.val1.valAddress,
               amount: '500',
               denom: gaiaChain.denom,
             },
@@ -336,7 +335,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await neutronAccount.executeContract(contractAddress, {
           undelegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '1000',
             denom: gaiaChain.denom,
           },
@@ -348,7 +347,7 @@ describe('Neutron / Interchain TXs', () => {
         const res2 = await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId2,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '2000',
             denom: gaiaChain.denom,
           },
@@ -382,7 +381,7 @@ describe('Neutron / Interchain TXs', () => {
         const res = await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
             timeout: 1,
@@ -416,7 +415,7 @@ describe('Neutron / Interchain TXs', () => {
           const res = await neutronAccount.executeContract(contractAddress, {
             delegate: {
               interchain_account_id: icaId1,
-              validator: testState.wallets.cosmos.val1.address.toString(),
+              validator: testState.wallets.cosmos.val1.valAddress,
               amount: '10',
               denom: gaiaChain.denom,
               timeout: 1,
@@ -445,7 +444,7 @@ describe('Neutron / Interchain TXs', () => {
             neutronAccount.executeContract(contractAddress, {
               delegate: {
                 interchain_account_id: icaId1,
-                validator: testState.wallets.cosmos.val1.address,
+                validator: testState.wallets.cosmos.val1.valAddress,
                 amount: '2000',
                 denom: gaiaChain.denom,
               },
@@ -479,7 +478,7 @@ describe('Neutron / Interchain TXs', () => {
             neutronAccount.executeContract(contractAddress, {
               delegate: {
                 interchain_account_id: icaId1,
-                validator: testState.wallets.cosmos.val1.address,
+                validator: testState.wallets.cosmos.val1.valAddress,
                 amount: '2000',
                 denom: gaiaChain.denom,
               },
@@ -519,7 +518,7 @@ describe('Neutron / Interchain TXs', () => {
         const res = await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             denom: gaiaChain.denom,
             amount: '20',
           },
@@ -538,6 +537,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
+        // TODO: remove
         const res = await cosmosclient.rest.staking.delegatorDelegations(
           gaiaChain.sdk as cosmosclient.CosmosSDK,
           icaAddress1 as unknown as cosmosclient.AccAddress,
@@ -577,7 +577,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
           },
@@ -611,7 +611,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
           },
@@ -645,7 +645,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
           },
@@ -681,7 +681,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
           },
@@ -715,7 +715,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId1,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
             timeout: 1,
@@ -752,7 +752,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           delegate: {
             interchain_account_id: icaId2,
-            validator: testState.wallets.cosmos.val1.address.toString(),
+            validator: testState.wallets.cosmos.val1.valAddress,
             amount: '10',
             denom: gaiaChain.denom,
             timeout: 1,

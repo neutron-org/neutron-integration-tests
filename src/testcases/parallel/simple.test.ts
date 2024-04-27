@@ -144,8 +144,8 @@ describe('Neutron / Simple', () => {
           { denom: NEUTRON_DENOM, amount: '1000' },
           gaiaAccount.wallet.address.toString(),
           {
-            revisionNumber: new Long(2),
-            revisionHeight: new Long(100000000),
+            revisionNumber: BigInt(2),
+            revisionHeight: BigInt(100000000),
           },
         );
         expect(res.code).toEqual(0);
@@ -170,8 +170,8 @@ describe('Neutron / Simple', () => {
           { denom: COSMOS_DENOM, amount: '1000' },
           neutronAccount.wallet.address.toString(),
           {
-            revisionNumber: new Long(2),
-            revisionHeight: new Long(100000000),
+            revisionNumber: BigInt(2),
+            revisionHeight: BigInt(100000000),
           },
         );
         expect(res.code).toEqual(0);
@@ -310,8 +310,8 @@ describe('Neutron / Simple', () => {
           { denom: COSMOS_DENOM, amount: transferAmount + '' },
           middlehop,
           {
-            revisionNumber: new Long(2),
-            revisionHeight: new Long(100000000),
+            revisionNumber: BigInt(2),
+            revisionHeight: BigInt(100000000),
           },
           `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
         );
@@ -361,8 +361,8 @@ describe('Neutron / Simple', () => {
           { denom: gaiaChain.denom, amount: uatomAmount },
           contractAddress,
           {
-            revisionNumber: new Long(2),
-            revisionHeight: new Long(100000000),
+            revisionNumber: BigInt(2),
+            revisionHeight: BigInt(100000000),
           },
         );
         expect(res.code).toEqual(0);

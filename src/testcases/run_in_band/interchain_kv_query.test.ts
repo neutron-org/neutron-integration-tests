@@ -616,7 +616,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           updatePeriods[4],
           testState.wallets.cosmos.demo2.address,
-          [testState.wallets.cosmos.val1.address],
+          [testState.wallets.cosmos.val1.valAddress],
         );
       });
     });
@@ -740,8 +740,8 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 4;
       await msgDelegate(
         gaiaAccount,
-        testState.wallets.cosmos.demo2.address.toString(),
-        testState.wallets.cosmos.val1.address.toString(),
+        testState.wallets.cosmos.demo2.address,
+        testState.wallets.cosmos.val1.valAddress,
         '1500000',
       );
       await waitForICQResultWithRemoteHeight(
@@ -1311,8 +1311,8 @@ describe('Neutron / Interchain KV Query', () => {
     let delegatorAddress: string;
 
     beforeAll(async () => {
-      validatorAddress = testState.wallets.cosmos.val1.address.toString();
-      delegatorAddress = testState.wallets.cosmos.demo2.address.toString();
+      validatorAddress = testState.wallets.cosmos.val1.valAddress;
+      delegatorAddress = testState.wallets.cosmos.demo2.address;
 
       await msgDelegate(
         gaiaAccount,
