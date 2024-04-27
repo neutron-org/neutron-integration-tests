@@ -1,4 +1,3 @@
-import Long from 'long';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,

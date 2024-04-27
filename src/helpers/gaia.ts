@@ -1,73 +1,71 @@
 import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
+import { walletWrapper } from '@neutron-org/neutronjsplus';
+import { TextProposal } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/gov_pb';
+// TODO: should be from basic cosmjs types
 import {
   MsgDelegate,
   MsgUndelegate,
-} from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/staking/v1beta1/tx_pb';
+} from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/tx';
 import {
   MsgSubmitProposal,
   MsgVote,
-} from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/tx_pb';
-import {
-  packAnyMsg,
-  WalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import Long from 'long';
-import {
-  TextProposal,
-  VoteOption,
-} from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/gov_pb';
+} from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/tx';
+import { VoteOption } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
 
 export const msgDelegate = async (
-  wallet: WalletWrapper,
+  wallet: walletWrapper.WalletWrapper,
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
 ): Promise<BroadcastTx200ResponseTxResponse> => {
-  const msgDelegate = new MsgDelegate({
+  const msgDelegate: MsgDelegate = {
     delegatorAddress,
     validatorAddress,
     amount: { denom: wallet.chain.denom, amount: amount },
-  });
-  const res = await wallet.execTx(
+  };
+  const msg = { typeUrl: MsgDelegate.typeUrl, value: msgDelegate };
+  const res = await wallet.execTx2(
     {
-      gas_limit: Long.fromString('500000'),
+      gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: '5000' }],
     },
-    [packAnyMsg('/cosmos.staking.v1beta1.MsgDelegate', msgDelegate)],
+    [msg],
   );
   return res?.tx_response;
 };
 
 export const msgUndelegate = async (
-  wallet: WalletWrapper,
+  wallet: walletWrapper.WalletWrapper,
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
 ): Promise<BroadcastTx200ResponseTxResponse> => {
-  const msgUndelegate = new MsgUndelegate({
+  const msgUndelegate: MsgUndelegate = {
     delegatorAddress,
     validatorAddress,
     amount: { denom: wallet.chain.denom, amount: amount },
-  });
-  const res = await wallet.execTx(
+  };
+  const msg = { typeUrl: MsgUndelegate.typeUrl, value: msgUndelegate };
+  const res = await wallet.execTx2(
     {
-      gas_limit: Long.fromString('500000'),
+      gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: '5000' }],
     },
-    [packAnyMsg('/cosmos.staking.v1beta1.MsgUndelegate', msgUndelegate)],
+    [msg],
   );
 
   return res?.tx_response;
 };
 
 export const msgSubmitProposal = async (
-  wallet: WalletWrapper,
+  wallet: walletWrapper.WalletWrapper,
   proposer: string,
   amount = '0',
 ): Promise<BroadcastTx200ResponseTxResponse> => {
-  const msgSubmitProposal = new MsgSubmitProposal({
+  const msgSubmitProposal: MsgSubmitProposal = {
     proposer,
     content: {
+      // TODO: encode using cosmjs types
       typeUrl: '/cosmos.gov.v1beta1.TextProposal',
       value: new TextProposal({
         title: 'mock',
@@ -75,36 +73,38 @@ export const msgSubmitProposal = async (
       }).toBinary(),
     },
     initialDeposit: [{ denom: wallet.chain.denom, amount: '10000000' }],
-  });
-  const res = await wallet.execTx(
+  };
+  const msg = { typeUrl: MsgSubmitProposal.typeUrl, value: msgSubmitProposal };
+  const res = await wallet.execTx2(
     {
-      gas_limit: Long.fromString('500000'),
+      gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: amount }],
     },
-    [packAnyMsg('/cosmos.gov.v1beta1.MsgSubmitProposal', msgSubmitProposal)],
+    [msg],
   );
 
   return res?.tx_response;
 };
 
 export const msgVote = async (
-  wallet: WalletWrapper,
+  wallet: walletWrapper.WalletWrapper,
   voter: string,
   proposalId: number,
   amount = '0',
 ): Promise<BroadcastTx200ResponseTxResponse> => {
-  const msgVote = new MsgVote({
+  const msgVote: MsgVote = {
     voter,
     proposalId: BigInt(proposalId),
-    option: VoteOption.YES,
-  });
+    option: VoteOption.VOTE_OPTION_YES,
+  };
+  const msg = { typeUrl: MsgVote.typeUrl, value: msgVote };
 
-  const res = await wallet.execTx(
+  const res = await wallet.execTx2(
     {
-      gas_limit: Long.fromString('500000'),
+      gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: amount }],
     },
-    [packAnyMsg('/cosmos.gov.v1beta1.MsgVote', msgVote)],
+    [msg],
   );
 
   return res?.tx_response;

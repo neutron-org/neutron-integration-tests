@@ -1,4 +1,3 @@
-import Long from 'long';
 import {
   cosmosWrapper,
   COSMOS_DENOM,

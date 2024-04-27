@@ -32,7 +32,6 @@ import {
 import { Coin } from '@cosmjs/proto-signing';
 import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
 
-
 const config = require('../../config.json');
 
 const getKvCallbackStatus = (
