@@ -1,4 +1,3 @@
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { TextProposal } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/gov_pb';
 // TODO: should be from basic cosmjs types
@@ -11,13 +10,14 @@ import {
   MsgVote,
 } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/tx';
 import { VoteOption } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 
 export const msgDelegate = async (
   wallet: walletWrapper.WalletWrapper,
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
-): Promise<BroadcastTx200ResponseTxResponse> => {
+): Promise<IndexedTx> => {
   const msgDelegate: MsgDelegate = {
     delegatorAddress,
     validatorAddress,
@@ -31,7 +31,7 @@ export const msgDelegate = async (
     },
     [msg],
   );
-  return res?.tx_response;
+  return res;
 };
 
 export const msgUndelegate = async (
@@ -39,7 +39,7 @@ export const msgUndelegate = async (
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
-): Promise<BroadcastTx200ResponseTxResponse> => {
+): Promise<IndexedTx> => {
   const msgUndelegate: MsgUndelegate = {
     delegatorAddress,
     validatorAddress,
@@ -54,14 +54,14 @@ export const msgUndelegate = async (
     [msg],
   );
 
-  return res?.tx_response;
+  return res;
 };
 
 export const msgSubmitProposal = async (
   wallet: walletWrapper.WalletWrapper,
   proposer: string,
   amount = '0',
-): Promise<BroadcastTx200ResponseTxResponse> => {
+): Promise<IndexedTx> => {
   const msgSubmitProposal: MsgSubmitProposal = {
     proposer,
     content: {
@@ -83,7 +83,7 @@ export const msgSubmitProposal = async (
     [msg],
   );
 
-  return res?.tx_response;
+  return res;
 };
 
 export const msgVote = async (
@@ -91,7 +91,7 @@ export const msgVote = async (
   voter: string,
   proposalId: number,
   amount = '0',
-): Promise<BroadcastTx200ResponseTxResponse> => {
+): Promise<IndexedTx> => {
   const msgVote: MsgVote = {
     voter,
     proposalId: BigInt(proposalId),
@@ -107,5 +107,5 @@ export const msgVote = async (
     [msg],
   );
 
-  return res?.tx_response;
+  return res;
 };

@@ -315,7 +315,7 @@ describe('Neutron / dex module bindings', () => {
           );
 
           const newTokenDenom = getEventAttribute(
-            (data as any).events,
+            data.events,
             'create_denom',
             'new_token_denom',
           );

@@ -58,7 +58,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );
@@ -86,7 +86,7 @@ describe('Neutron / Tokenfactory', () => {
         denom,
       );
       const newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );
@@ -118,7 +118,7 @@ describe('Neutron / Tokenfactory', () => {
         denom,
       );
       const newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );
@@ -161,7 +161,7 @@ describe('Neutron / Tokenfactory', () => {
         denom,
       );
       const newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );
@@ -218,7 +218,7 @@ describe('Neutron / Tokenfactory', () => {
         denom,
       );
       const newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );

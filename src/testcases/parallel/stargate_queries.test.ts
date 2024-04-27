@@ -76,7 +76,7 @@ describe('Neutron / Simple', () => {
         denom,
       );
       newTokenDenom = getEventAttribute(
-        (data as any).events,
+        data.events,
         'create_denom',
         'new_token_denom',
       );

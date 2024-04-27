@@ -1057,7 +1057,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       proposalId = parseInt(
         getEventAttribute(
-          (proposalResp as any).events,
+          proposalResp.events,
           'submit_proposal',
           'proposal_id',
         ),
