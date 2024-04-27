@@ -12,7 +12,7 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import cosmosclient from '@cosmos-client/core';
+import { Coin } from '@cosmjs/proto-signing';
 import {
   WalletWrapper,
   createWalletWrapper,
@@ -70,9 +70,9 @@ describe('Neutron / Global Fee', () => {
   const executeParamChange = async (
     daoMember: DaoMember,
     kind: string,
-    bypassMinFeeMsgTypes: string[],
-    minimumGasPrices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
-    maxTotalBypassMinFeesgGasUsage: string,
+    bypassMinFeeMsgTypes: string[] | null,
+    minimumGasPrices: Coin[] | null,
+    maxTotalBypassMinFeesgGasUsage: string | null,
   ) => {
     const params = await neutronChain.queryGlobalfeeParams();
     if (bypassMinFeeMsgTypes == null) {

@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   neutron-node:
     image: neutron-node
