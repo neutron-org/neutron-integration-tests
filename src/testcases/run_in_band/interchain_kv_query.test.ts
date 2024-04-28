@@ -15,7 +15,6 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import cosmosclient from '@cosmos-client/core';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
@@ -325,12 +324,9 @@ const validateBalanceQuery = async (
     contractAddress,
     queryId,
   );
-  const directQueryResult = await cosmosclient.rest.bank.allBalances(
-    targetCm.sdk as cosmosclient.CosmosSDK,
-    address,
-  );
+  const directQueryResult = await targetCm.queryBalances(address);
   expect(filterIBCDenoms(interchainQueryResult.balances.coins)).toEqual(
-    filterIBCDenoms(directQueryResult.data.balances as Coin[]),
+    filterIBCDenoms(directQueryResult.balances),
   );
 };
 

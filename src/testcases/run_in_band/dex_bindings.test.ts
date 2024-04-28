@@ -507,7 +507,10 @@ describe('Neutron / dex module bindings', () => {
         );
       console.log(resp);
       expect(Number(resp.deposits[0].total_shares)).toBeGreaterThan(0);
-      expect(Number(resp.deposits[0].pool.id)).toEqual(0);
+      expect(resp.deposits[0].pool).toBeDefined();
+      if (resp.deposits[0].pool) {
+        expect(Number(resp.deposits[0].pool.id)).toEqual(0);
+      }
 
       const respNoPoolData =
         await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
