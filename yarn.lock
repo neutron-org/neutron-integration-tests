@@ -1709,7 +1709,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/cosmjs":
   version "0.4.0-rc19"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/e885f64e135d2c26480d646c0156b1d04dc0396b"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/7237e7a49b51f6001e501dbde8003efb795d626b"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmjs/cosmwasm-stargate" "^0.32.3"
@@ -4554,9 +4554,9 @@ node-addon-api@^2.0.0:
   integrity sha512-Ntyt4AIXyaLIuMHF6IOoTakB3K+RWxwtsHNRxllEoA6vPwP9o4866g6YWDLUdnucilZhmkxiHwHr11gAENw+QA==
 
 node-gyp-build@^4.2.0:
-  version "4.8.0"
-  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.8.0.tgz#3fee9c1731df4581a3f9ead74664369ff00d26dd"
-  integrity sha512-u6fs2AEUljNho3EYTJNBfImO5QTo/J/1Etd+NVdCj7qWKUSN/bSLkZwhDv7I+w/MSC6qJ4cknepkAYykDdK8og==
+  version "4.8.1"
+  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.8.1.tgz#976d3ad905e71b76086f4f0b0d3637fe79b6cda5"
+  integrity sha512-OSs33Z9yWr148JZcbZd5WiAXhh/n9z8TxQcdMhIOlpN9AhWpLfvVFO73+m77bBABQMaY9XSvIa+qk0jlI7Gcaw==
 
 node-int64@^0.4.0:
   version "0.4.0"
