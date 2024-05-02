@@ -6,7 +6,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   WalletWrapper,
   createWalletWrapper,
@@ -62,7 +61,7 @@ describe.skip('Neutron / IBC hooks', () => {
         fee,
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', msgSend)],
         Number(neutronAccount.wallet.account.sequence) + 1,
-        (await getHeight(neutronChain.sdk)) + 1,
+        (await neutronChain.getHeight()) + 1,
       );
       const d = Buffer.from(txBuilder.txBytes(), 'base64');
       await neutronAccount.msgSendAuction(
@@ -92,7 +91,7 @@ describe.skip('Neutron / IBC hooks', () => {
         },
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', msgSend)],
         Number(neutronAccount.wallet.account.sequence) + 1,
-        (await getHeight(neutronChain.sdk)) + 1,
+        (await neutronChain.getHeight()) + 1,
       );
       const d = Buffer.from(txBuilder.txBytes(), 'base64');
       await neutronAccount.msgSendAuction(
@@ -118,7 +117,7 @@ describe.skip('Neutron / IBC hooks', () => {
         fee,
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', backrunnedMsgSend)],
         +neutronAccount.wallet.account.sequence,
-        (await getHeight(neutronChain.sdk)) + 2,
+        (await neutronChain.getHeight()) + 2,
       );
       // wait for new block, to be sured the next txs are sent within a single block
       await neutronChain.blockWaiter.waitBlocks(1);
@@ -133,7 +132,7 @@ describe.skip('Neutron / IBC hooks', () => {
         fee,
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', msgSendN1)],
         Number(n1.wallet.account.sequence) + 1,
-        (await getHeight(neutronChain.sdk)) + 1,
+        (await neutronChain.getHeight()) + 1,
       );
       const overriderMsgSend = new MsgSend({
         fromAddress: neutronAccount.wallet.address.toString(),
@@ -148,7 +147,7 @@ describe.skip('Neutron / IBC hooks', () => {
         [packAnyMsg('/cosmos.bank.v1beta1.MsgSend', overriderMsgSend)],
         // a previous broadcast event has increased seq_number, but we want to override it
         Number(neutronAccount.wallet.account.sequence) - 1,
-        (await getHeight(neutronChain.sdk)) + 1,
+        (await neutronChain.getHeight()) + 1,
       );
       const overriderTxData = Buffer.from(
         overriderTxBuilder.txBytes(),

@@ -701,7 +701,7 @@ const getVotingPowerInfo = async (
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
-    height = await env.getHeight(chain.sdk);
+    height = await chain.getHeight();
   }
   const vault1Power = getVotingPowerAtHeight(
     chain,

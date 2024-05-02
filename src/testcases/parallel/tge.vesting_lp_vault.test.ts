@@ -4,7 +4,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   NativeToken,
   nativeToken,
@@ -410,7 +409,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
         let currentHeight: number;
         beforeAll(async () => {
           await waitSeconds(5);
-          currentHeight = await getHeight(neutronChain.sdk);
+          currentHeight = await neutronChain.getHeight();
         });
         test('user1 ATOM lp contract', async () => {
           expect(
@@ -562,7 +561,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       describe('check voting power on claim', () => {
         const user1PartialClaimAtom = Math.round(user1AtomVestingAmount / 2);
         beforeAll(async () => {
-          heightBeforeClaim = await getHeight(neutronChain.sdk);
+          heightBeforeClaim = await neutronChain.getHeight();
           await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial ATOM claim', async () => {

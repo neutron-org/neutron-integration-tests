@@ -465,7 +465,7 @@ describe('Neutron / Simple', () => {
         current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
         hermes checks height on remote chain and Timeout error occurs.
         */
-        const currentHeight = await env.getHeight(gaiaChain.sdk);
+        const currentHeight = await gaiaChain.getHeight();
         await gaiaChain.blockWaiter.waitBlocks(15);
 
         await neutronAccount.executeContract(contractAddress, {

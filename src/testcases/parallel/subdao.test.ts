@@ -10,7 +10,6 @@ import {
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   Dao,
   DaoMember,
@@ -721,7 +720,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused).toEqual(undefined);
 
       // pause subDAO on behalf of the security DAO
-      const pauseHeight = await getHeight(neutronChain.sdk); // an approximate one
+      const pauseHeight = await neutronChain.getHeight(); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
         {
@@ -789,7 +788,7 @@ describe('Neutron / Subdao', () => {
     test('auto unpause on pause timeout', async () => {
       // pause subDAO on behalf of the Neutron DAO
       const shortPauseDuration = 5;
-      const pauseHeight = await getHeight(neutronChain.sdk); // an approximate one
+      const pauseHeight = await neutronChain.getHeight(); // an approximate one
       const res = await neutronAccount1.executeContract(
         subDao.contracts.core.address,
         {

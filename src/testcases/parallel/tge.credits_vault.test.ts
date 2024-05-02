@@ -5,7 +5,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 import {
@@ -113,7 +112,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop always has zero voting power', async () => {
-      const currentHeight = await getHeight(neutronChain.sdk);
+      const currentHeight = await neutronChain.getHeight();
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -128,7 +127,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Airdrop is never included in total voting power', async () => {
-      let currentHeight = await getHeight(neutronChain.sdk);
+      let currentHeight = await neutronChain.getHeight();
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -143,7 +142,7 @@ describe('Neutron / Credits Vault', () => {
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await getHeight(neutronChain.sdk);
+      currentHeight = await neutronChain.getHeight();
       expect(
         await getTotalPowerAtHeight(
           neutronChain,
@@ -163,7 +162,7 @@ describe('Neutron / Credits Vault', () => {
       );
       await neutronChain.blockWaiter.waitBlocks(1);
 
-      currentHeight = await getHeight(neutronChain.sdk);
+      currentHeight = await neutronChain.getHeight();
       expect(
         await getVotingPowerAtHeight(
           neutronChain,
@@ -188,7 +187,7 @@ describe('Neutron / Credits Vault', () => {
     });
 
     test('Query voting power at different heights', async () => {
-      const firstHeight = await getHeight(neutronChain.sdk);
+      const firstHeight = await neutronChain.getHeight();
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -198,7 +197,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const secondHeight = await getHeight(neutronChain.sdk);
+      const secondHeight = await neutronChain.getHeight();
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
       await sendTokens(
@@ -208,7 +207,7 @@ describe('Neutron / Credits Vault', () => {
         '1000',
       );
       await neutronChain.blockWaiter.waitBlocks(1);
-      const thirdHeight = await getHeight(neutronChain.sdk);
+      const thirdHeight = await neutronChain.getHeight();
 
       expect(
         await getTotalPowerAtHeight(

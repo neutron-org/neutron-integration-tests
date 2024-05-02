@@ -29,7 +29,6 @@ import {
   TotalPowerAtHeightResponse,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   WalletWrapper,
   createWalletWrapper,
@@ -1359,7 +1358,7 @@ describe('Neutron / TGE / Auction', () => {
         );
       });
       it('update oracles', async () => {
-        tgeEndHeight = await getHeight(neutronChain.sdk);
+        tgeEndHeight = await neutronChain.getHeight();
         let res = await cmInstantiator.executeContract(
           tgeMain.contracts.oracleAtom,
           {

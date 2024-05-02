@@ -15,7 +15,6 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
@@ -55,7 +54,7 @@ const watchForKvCallbackUpdates = async (
   const statusPrev = await Promise.all(
     queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
   );
-  const targetHeight = await getHeight(targetCm.sdk);
+  const targetHeight = await targetCm.getHeight();
   await Promise.all(
     queryIds.map((i) =>
       waitForICQResultWithRemoteHeight(
@@ -669,7 +668,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
       await validateBalanceQuery(
         neutronChain,
@@ -692,7 +691,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
       await validateBalanceQuery(
         neutronChain,
@@ -717,7 +716,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
       const interchainQueryResult = await getQueryDelegatorDelegationsResult(
         neutronChain,
@@ -951,7 +950,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await getHeight(neutronChain.sdk)),
+              (await neutronChain.getHeight()),
           20,
         );
 
@@ -1078,7 +1077,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
 
       const interchainQueryResult = await getProposalVotesResult(
@@ -1154,7 +1153,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
 
       const interchainQueryResult = await getProposalsResult(
@@ -1253,7 +1252,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
 
       const interchainQueryResult = await getValidatorsSigningInfosResult(
@@ -1332,7 +1331,7 @@ describe('Neutron / Interchain KV Query', () => {
         neutronChain,
         contractAddress,
         queryId,
-        await getHeight(gaiaChain.sdk),
+        await gaiaChain.getHeight(),
       );
 
       const interchainQueryResult =
