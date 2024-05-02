@@ -55,8 +55,7 @@ describe('Neutron / Parameters', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () =>
           await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
         async (response) => response.power == 10000,
@@ -64,8 +63,7 @@ describe('Neutron / Parameters', () => {
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await dao.queryTotalVotingPower(),
         async (response) => response.power == 11000,
         20,

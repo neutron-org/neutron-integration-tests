@@ -97,8 +97,7 @@ describe('Neutron / Governance', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
@@ -109,8 +108,7 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 2', async () => {
       await daoMember2.bondFunds('10000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
@@ -121,8 +119,7 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 3 ', async () => {
       await daoMember3.bondFunds('10000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () =>
           await mainDao.queryVotingPower(
             daoMember1.user.wallet.address.toString(),
@@ -132,8 +129,7 @@ describe('Neutron / Governance', () => {
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await mainDao.queryTotalVotingPower(),
         // 3x10000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
         async (response) => response.power == 31000,
@@ -468,8 +464,7 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -502,8 +497,7 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -587,8 +581,7 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await mainDao.queryMultiChoiceProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,

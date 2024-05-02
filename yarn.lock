@@ -1709,7 +1709,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/cosmjs":
   version "0.4.0-rc19"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/336a23ea6e7251693079873ad68ec0adcde8499f"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/1343af32d11a6bbc639978a7a52ae8a49d7bab32"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmjs/cosmwasm-stargate" "^0.32.3"

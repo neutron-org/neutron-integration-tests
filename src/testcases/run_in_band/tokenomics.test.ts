@@ -170,8 +170,7 @@ describe('Neutron / Tokenomics', () => {
         testState.wallets.qaNeutron.genQaWal1.address.toString(),
         { revisionNumber: BigInt(2), revisionHeight: BigInt(100000000) },
       );
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () =>
           neutronChain.queryBalances(
             testState.wallets.qaNeutron.genQaWal1.address.toString(),

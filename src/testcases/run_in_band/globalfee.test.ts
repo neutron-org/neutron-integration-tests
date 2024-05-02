@@ -45,8 +45,7 @@ describe('Neutron / Global Fee', () => {
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, daoMain);
     await daoMember.bondFunds('10000');
-    await getWithAttempts(
-      neutronChain.blockWaiter,
+    await neutronChain.getWithAttempts(
       async () =>
         await daoMain.queryVotingPower(
           daoMember.user.wallet.address.toString(),

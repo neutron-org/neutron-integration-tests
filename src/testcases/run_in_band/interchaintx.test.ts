@@ -116,8 +116,7 @@ describe('Neutron / Interchain TXs', () => {
         expect(balance).toEqual('8000000');
       });
       test('multiple IBC accounts created', async () => {
-        const channels = await getWithAttempts(
-          neutronChain.blockWaiter,
+        const channels = await neutronChain.getWithAttempts(
           () => neutronChain.listIBCChannels(),
           // Wait until there are 3 channels:
           // - one exists already, it is open for IBC transfers;
@@ -203,8 +202,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state', async () => {
-        const res1 = await getWithAttempts(
-          gaiaChain.blockWaiter,
+        const res1 = await gaiaChain.getWithAttempts(
           () =>
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
@@ -220,8 +218,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await getWithAttempts(
-          gaiaChain.blockWaiter,
+        const res2 = await gaiaChain.getWithAttempts(
           () =>
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress2 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
@@ -272,8 +269,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state', async () => {
-        const res1 = await getWithAttempts(
-          gaiaChain.blockWaiter,
+        const res1 = await gaiaChain.getWithAttempts(
           () =>
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
@@ -498,8 +494,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         });
         expect(res.code).toEqual(0);
-        await getWithAttempts(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts(
           async () => neutronChain.listIBCChannels(),
           // Wait until there are 4 channels:
           // - one exists already, it is open for IBC transfers;
@@ -507,8 +502,7 @@ describe('Neutron / Interchain TXs', () => {
           // - one more, we are opening it right now
           async (channels) => channels.channels.length == 4,
         );
-        await getWithAttempts(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts(
           () => neutronChain.listIBCChannels(),
           async (channels) =>
             channels.channels.find((c) => c.channel_id == 'channel-3')?.state ==
@@ -909,8 +903,7 @@ const waitForAck = (
   sequenceId: number,
   numAttempts = 20,
 ) =>
-  getWithAttempts(
-    cm.blockWaiter,
+  cm.getWithAttempts(
     () =>
       cm.queryContract<AcknowledgementResult>(contractAddress, {
         acknowledgement_result: {

@@ -944,8 +944,7 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.demo2.address,
         );
 
-        await getWithAttempts(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts(
           () => getRegisteredQuery(neutronChain, contractAddress, queryId),
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
@@ -963,8 +962,7 @@ describe('Neutron / Interchain KV Query', () => {
 
         await removeQueryViaTx(neutronAccount, BigInt(queryId));
 
-        await getWithAttempts(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts(
           async () =>
             await neutronChain.queryBalances(
               testState.wallets.neutron.demo1.address.toString(),
