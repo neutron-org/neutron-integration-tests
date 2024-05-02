@@ -6,9 +6,11 @@ import {
   NEUTRON_DENOM,
   getSequenceId,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import cosmosclient from '@cosmos-client/core';
+import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
+import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,
   AcknowledgementResult,
@@ -31,6 +33,7 @@ describe('Neutron / Interchain TXs', () => {
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
+  let stakingService: QueryClientImpl;
 
   const icaId1 = 'test1';
   const icaId2 = 'test2';
@@ -74,6 +77,12 @@ describe('Neutron / Interchain TXs', () => {
           {},
           'interchaintx',
         );
+      });
+      test('init client', async () => {
+        const tendermint = await Tendermint37Client.connect(gaiaChain.rpc);
+        const queryClient = new QueryClient(tendermint);
+        const rpcClient = createProtobufRpcClient(queryClient);
+        stakingService = new QueryClientImpl(rpcClient);
       });
     });
     describe('Create ICAs and setup contract', () => {
@@ -197,14 +206,10 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
-            cosmosclient.rest.staking.delegatorDelegations(
-              gaiaChain.sdk as cosmosclient.CosmosSDK,
-              icaAddress1 as unknown as cosmosclient.AccAddress,
-            ),
-          async (delegations) =>
-            delegations.data.delegation_responses?.length == 1,
+            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+          async (delegations) => delegations.delegationResponses?.length == 1,
         );
-        expect(res1.data.delegation_responses).toEqual([
+        expect(res1.delegationResponses).toEqual([
           {
             balance: { amount: '1000', denom: gaiaChain.denom },
             delegation: {
@@ -215,11 +220,13 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as cosmosclient.CosmosSDK,
-          icaAddress2 as unknown as cosmosclient.AccAddress,
+        const res2 = await getWithAttempts(
+          gaiaChain.blockWaiter,
+          () =>
+            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress2 }),
+          async (delegations) => delegations.delegationResponses?.length == 1,
         );
-        expect(res2.data.delegation_responses).toEqual([]);
+        expect(res2.delegationResponses).toEqual([]);
       });
       test('check contract balance', async () => {
         const res = await neutronChain.queryBalances(contractAddress);
@@ -268,14 +275,10 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaChain.blockWaiter,
           () =>
-            cosmosclient.rest.staking.delegatorDelegations(
-              gaiaChain.sdk as cosmosclient.CosmosSDK,
-              icaAddress1 as unknown as cosmosclient.AccAddress,
-            ),
-          async (delegations) =>
-            delegations.data.delegation_responses?.length === 1,
+            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+          async (delegations) => delegations.delegationResponses?.length == 1,
         );
-        expect(res1.data.delegation_responses).toEqual([
+        expect(res1.delegationResponses).toEqual([
           {
             balance: { amount: '2000', denom: gaiaChain.denom },
             delegation: {
@@ -286,11 +289,10 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as cosmosclient.CosmosSDK,
-          icaAddress2 as unknown as cosmosclient.AccAddress,
-        );
-        expect(res2.data.delegation_responses).toEqual([]);
+        const res2 = await stakingService.DelegatorDelegations({
+          delegatorAddr: icaAddress2,
+        });
+        expect(res2.delegationResponses).toEqual([]);
       });
       test('check contract balance', async () => {
         const res = await neutronChain.queryBalances(contractAddress);
@@ -537,12 +539,10 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
-        // TODO: remove
-        const res = await cosmosclient.rest.staking.delegatorDelegations(
-          gaiaChain.sdk as cosmosclient.CosmosSDK,
-          icaAddress1 as unknown as cosmosclient.AccAddress,
-        );
-        expect(res.data.delegation_responses).toEqual([
+        const res = await stakingService.DelegatorDelegations({
+          delegatorAddr: icaAddress1,
+        });
+        expect(res.delegationResponses).toEqual([
           {
             balance: { amount: '1020', denom: gaiaChain.denom },
             delegation: {

@@ -4,7 +4,6 @@ import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos
 import {
   CosmosWrapper,
   NEUTRON_DENOM,
-  packAnyMsg,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
