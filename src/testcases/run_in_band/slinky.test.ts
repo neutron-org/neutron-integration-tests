@@ -1,6 +1,5 @@
 import '@neutron-org/neutronjsplus';
 import {
-  WalletWrapper,
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -11,6 +10,10 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 
 const config = require('../../config.json');
 
@@ -30,8 +33,9 @@ describe('Neutron / Slinky', () => {
       testState.sdk1,
       testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );

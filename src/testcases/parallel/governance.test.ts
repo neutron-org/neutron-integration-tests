@@ -1132,6 +1132,7 @@ describe('Neutron / Governance', () => {
         'HostEnabled',
         'false',
       );
+      // TODO: check that this test has exact error?
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
       expect(afterProposalHostStatus).toEqual(true);
