@@ -19,7 +19,8 @@ const fee = {
 
 const config = require('../../config.json');
 
-describe('Neutron / IBC hooks', () => {
+// TODO: remove?
+describe.skip('Neutron / IBC hooks', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;

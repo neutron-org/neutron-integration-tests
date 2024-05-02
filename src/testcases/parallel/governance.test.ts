@@ -1125,9 +1125,8 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  // TODO: fixme
   describe('check that only admin can create valid proposals', () => {
-    test.skip('submit admin proposal from non-admin addr, should fail', async () => {
+    test('submit admin proposal from non-admin addr, should fail', async () => {
       const res = await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
