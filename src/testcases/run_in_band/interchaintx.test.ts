@@ -213,9 +213,9 @@ describe('Neutron / Interchain TXs', () => {
           {
             balance: { amount: '1000', denom: gaiaChain.denom },
             delegation: {
-              delegator_address: icaAddress1,
+              delegatorAddress: icaAddress1,
               shares: '1000.000000000000000000',
-              validator_address:
+              validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
           },
@@ -282,9 +282,9 @@ describe('Neutron / Interchain TXs', () => {
           {
             balance: { amount: '2000', denom: gaiaChain.denom },
             delegation: {
-              delegator_address: icaAddress1,
+              delegatorAddress: icaAddress1,
               shares: '2000.000000000000000000',
-              validator_address:
+              validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
           },
@@ -546,9 +546,9 @@ describe('Neutron / Interchain TXs', () => {
           {
             balance: { amount: '1020', denom: gaiaChain.denom },
             delegation: {
-              delegator_address: icaAddress1,
+              delegatorAddress: icaAddress1,
               shares: '1020.000000000000000000',
-              validator_address:
+              validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
           },
