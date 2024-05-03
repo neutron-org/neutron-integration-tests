@@ -1,6 +1,5 @@
 import { walletWrapper } from '@neutron-org/neutronjsplus';
-import { TextProposal } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/gov/v1beta1/gov_pb';
-// TODO: should be from basic cosmjs types
+import { TextProposal } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
 import {
   MsgDelegate,
   MsgUndelegate,
