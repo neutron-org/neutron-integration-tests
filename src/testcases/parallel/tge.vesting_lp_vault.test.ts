@@ -1094,6 +1094,9 @@ const deployContracts = async (
     VESTING_LP_VAULT_CONTRACT_KEY,
     ORACLE_HISTORY_CONTRACT_KEY,
   ]) {
+    console.log(`
+      storing wasm file by key ${contract}: ${NeutronContract[contract]}
+    `);
     const codeId = await instantiator.storeWasm(NeutronContract[contract]);
     expect(codeId).toBeGreaterThan(0);
     codeIds[contract] = codeId;
