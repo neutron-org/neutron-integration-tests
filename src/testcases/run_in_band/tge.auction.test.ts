@@ -162,9 +162,8 @@ describe('Neutron / TGE / Auction', () => {
     reserveAddress =
       testState.wallets.qaNeutronThree.genQaWal1.address.toString();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     cmInstantiator = await createWalletWrapper(
@@ -1375,7 +1374,7 @@ describe('Neutron / TGE / Auction', () => {
         );
         expect(res.code).toEqual(0);
 
-        testState.blockWaiter1.waitBlocks(3);
+        neutronChain.waitBlocks(3);
         res = await cmInstantiator.executeContract(
           tgeMain.contracts.oracleAtom,
           {
@@ -1634,7 +1633,7 @@ describe('Neutron / TGE / Auction', () => {
           );
           await daoMember1.voteYes(propID);
           await daoMember1.executeProposal(propID);
-          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          await neutronChain.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           tvp = await daoMain.queryTotalVotingPower();
           expect(tvp.power | 0).toBeGreaterThan(11000);
           // lockdrop participants get voting power
@@ -1701,7 +1700,7 @@ describe('Neutron / TGE / Auction', () => {
             }
           }
           await daoMember1.executeProposal(propID);
-          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          await neutronChain.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // vesting participants get(increase) the voting power
@@ -1760,7 +1759,7 @@ describe('Neutron / TGE / Auction', () => {
             }
           }
           await daoMember1.executeProposal(propID);
-          await neutronChain.blockWaiter.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
+          await neutronChain.waitBlocks(2); // wait for a couple of blocks so the vault becomes active
           const tvpNew = await daoMain.queryTotalVotingPower();
           expect(tvpNew.power | 0).toBeGreaterThan(tvp.power | 0);
           // airdrop participants get(increase) the voting power

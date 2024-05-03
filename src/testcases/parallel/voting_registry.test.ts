@@ -44,9 +44,8 @@ describe('Neutron / Voting Registry', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     cmInstantiator = await createWalletWrapper(
@@ -110,7 +109,7 @@ describe('Neutron / Voting Registry', () => {
       await bondFunds(cmDaoMember, vault2Addr, vault2Bonding.toString());
       // we bond to vault3 in advance regardless of this is not in the registry yet
       await bondFunds(cmDaoMember, vault3Addr, vault3Bonding.toString());
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
     });
 
     test('check accrued voting power', async () => {
@@ -137,7 +136,7 @@ describe('Neutron / Voting Registry', () => {
   describe('VP on bond and unbond', () => {
     test('bond funds', async () => {
       await bondFunds(cmDaoMember, vault1Addr, vault1AddBonding.toString());
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
     });
     test('check voting power after bonding', async () => {
       const vpInfo = await getVotingPowerInfo(
@@ -179,7 +178,7 @@ describe('Neutron / Voting Registry', () => {
 
     test('unbond funds', async () => {
       await unbondFunds(cmDaoMember, vault1Addr, vault1Unbonding.toString());
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
     });
     test('check voting power after unbonding', async () => {
       const vpInfo = await getVotingPowerInfo(
@@ -264,7 +263,7 @@ describe('Neutron / Voting Registry', () => {
         votingRegistryAddr,
         vault2Addr,
       );
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
 
       const votingVaults = await getVotingVaults(
         neutronChain,
@@ -324,7 +323,7 @@ describe('Neutron / Voting Registry', () => {
 
     test('add another vault', async () => {
       await addVotingVault(cmInstantiator, votingRegistryAddr, vault3Addr);
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
 
       const votingVaults = await getVotingVaults(
         neutronChain,
@@ -396,7 +395,7 @@ describe('Neutron / Voting Registry', () => {
 
     test('activate vault', async () => {
       await activateVotingVault(cmInstantiator, votingRegistryAddr, vault2Addr);
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
 
       const votingVaults = await getVotingVaults(
         neutronChain,

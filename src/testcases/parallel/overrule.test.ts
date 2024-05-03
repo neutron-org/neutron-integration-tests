@@ -34,9 +34,8 @@ describe('Neutron / Subdao Overrule', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount1 = await createWalletWrapper(
@@ -69,7 +68,7 @@ describe('Neutron / Subdao Overrule', () => {
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');

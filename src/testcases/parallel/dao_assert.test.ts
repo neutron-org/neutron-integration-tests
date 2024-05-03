@@ -34,9 +34,8 @@ describe('DAO / Check', () => {
     await testState.init();
 
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0]; //add assert for some addresses

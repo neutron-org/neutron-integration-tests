@@ -56,9 +56,8 @@ describe('Neutron / TGE / Vesting LP vault', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     cmInstantiator = await createWalletWrapper(
@@ -237,13 +236,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           { update: {} },
         );
         expect(execRes.code).toBe(0);
-        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_ATOM_CONTRACT_KEY],
           { update: {} },
         );
         expect(execRes.code).toBe(0);
-        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
@@ -287,13 +286,13 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           { update: {} },
         );
         expect(execRes.code).toBe(0);
-        await neutronChain.blockWaiter.waitBlocks(1); // update twice for precise twap
+        await neutronChain.waitBlocks(1); // update twice for precise twap
         execRes = await cmInstantiator.executeContract(
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
           { update: {} },
         );
         expect(execRes.code).toBe(0);
-        await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAP is available
+        await neutronChain.waitBlocks(1); // wait until the new TWAP is available
 
         const consultAmount = 1_000; // a low value compared to pool depth to avoid slippage
         expect(
@@ -562,7 +561,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
         const user1PartialClaimAtom = Math.round(user1AtomVestingAmount / 2);
         beforeAll(async () => {
           heightBeforeClaim = await neutronChain.getHeight();
-          await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
+          await neutronChain.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial ATOM claim', async () => {
           const execRes = await cmUser1.executeContract(
@@ -574,7 +573,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -604,7 +603,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -646,7 +645,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -673,7 +672,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -712,7 +711,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -739,7 +738,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             },
           );
           expect(execRes.code).toBe(0);
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await neutronChain.queryContract<VotingPowerResponse>(
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
@@ -831,7 +830,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               { update: {} },
             );
             expect(execRes.code).toBe(0);
-            await neutronChain.blockWaiter.waitBlocks(1); // wait until the new TWAPs are available
+            await neutronChain.waitBlocks(1); // wait until the new TWAPs are available
 
             const ntrnTwapInAtomResp = await getTwapAtHeight(
               neutronChain,

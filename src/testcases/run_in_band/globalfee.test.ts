@@ -5,7 +5,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
   DaoMember,
@@ -31,9 +30,8 @@ describe('Neutron / Global Fee', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -183,7 +181,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
@@ -204,7 +202,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
@@ -256,7 +254,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });

@@ -63,9 +63,8 @@ describe('Neutron / Subdao', () => {
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount1 = await createWalletWrapper(neutronChain, demo1Wallet);
@@ -221,7 +220,7 @@ describe('Neutron / Subdao', () => {
       await expect(
         subdaoMember1.executeTimelockedProposal(proposalId2),
       ).rejects.toThrow(/Wrong proposal status \(execution_failed\)/);
-      await neutronChain.blockWaiter.waitBlocks(2);
+      await neutronChain.waitBlocks(2);
     });
 
     test('change subdao proposal config with closeOnProposalExecutionFailed = false', async () => {
@@ -249,7 +248,7 @@ describe('Neutron / Subdao', () => {
       await waitSeconds(20);
       await subdaoMember1.executeTimelockedProposal(proposalId); // should execute no problem
 
-      await neutronChain.blockWaiter.waitBlocks(2);
+      await neutronChain.waitBlocks(2);
 
       const subdaoConfigAfter =
         await neutronChain.queryContract<SubdaoProposalConfig>(
@@ -316,7 +315,7 @@ describe('Neutron / Subdao', () => {
         NEUTRON_DENOM,
       );
       await subdaoMember1.executeTimelockedProposal(proposalId3);
-      await neutronChain.blockWaiter.waitBlocks(2);
+      await neutronChain.waitBlocks(2);
       const balanceAfter = await neutronChain.queryDenomBalance(
         demo2Addr.toString(),
         NEUTRON_DENOM,
@@ -536,7 +535,7 @@ describe('Neutron / Subdao', () => {
       );
 
       const propOverruledTest2 = await getWithAttempts(
-        neutronChain.blockWaiter,
+        neutronChain,
         async () =>
           await mainDao.chain.queryContractWithWait<SingleChoiceProposal>(
             mainDaoMember.dao.contracts.proposals.overrule?.address,
@@ -686,7 +685,7 @@ describe('Neutron / Subdao', () => {
       expect(votingPowerBefore.power).toEqual('0');
       const res = await subdaoMember1.executeTimelockedProposal(proposalId);
       expect(res.code).toEqual(0);
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const votingPowerAfter = await subdaoMember2.queryVotingPower();
       expect(votingPowerAfter.power).toEqual('1');
 
@@ -807,7 +806,7 @@ describe('Neutron / Subdao', () => {
       expect(pauseInfo.paused.until_height).toBeGreaterThan(pauseHeight);
 
       // wait and check contract's pause info after unpausing
-      await neutronChain.blockWaiter.waitBlocks(shortPauseDuration);
+      await neutronChain.waitBlocks(shortPauseDuration);
       pauseInfo = await neutronChain.queryPausedInfo(
         subDao.contracts.core.address,
       );

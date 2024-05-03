@@ -1,6 +1,6 @@
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   cosmosWrapper,
-  env,
   IBC_ATOM_DENOM,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
@@ -17,7 +17,7 @@ const config = require('../../config.json');
 
 describe('Neutron / TGE / Investors vesting vault', () => {
   let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronChain: CosmosWrapper;
   let cmInstantiator: walletWrapper.WalletWrapper;
   let cmManager: walletWrapper.WalletWrapper;
   let cmUser1: walletWrapper.WalletWrapper;
@@ -27,10 +27,9 @@ describe('Neutron / TGE / Investors vesting vault', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    neutronChain = new cosmosWrapper.CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
+    neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     cmInstantiator = await createWalletWrapper(
@@ -132,8 +131,8 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         );
       });
       test('check unclaimed amounts', async () => {
-        await neutronChain.blockWaiter.waitBlocks(1);
-        const currentHeight = await env.neutronChain.getHeight();
+        await neutronChain.waitBlocks(1);
+        const currentHeight = await neutronChain.getHeight();
         expect(
           await neutronChain.queryContract<UnclaimedAmountResponse>(
             contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -175,7 +174,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
     describe('voting power', () => {
       describe('check initial voting power', () => {
         test('total power at height', async () => {
-          heightInit = await env.neutronChain.getHeight();
+          heightInit = await neutronChain.getHeight();
           totalVpInit = await totalPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
@@ -207,8 +206,8 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       describe('check voting power on claim', () => {
         const user1PartialClaim = Math.round(user1VestingAmount / 2);
         beforeAll(async () => {
-          heightBeforeClaim = await env.neutronChain.getHeight();
-          await neutronChain.blockWaiter.waitBlocks(1); // so it's before claim for sure
+          heightBeforeClaim = await neutronChain.getHeight();
+          await neutronChain.waitBlocks(1); // so it's before claim for sure
         });
         test('user1 partial claim', async () => {
           await cmUser1.executeContract(
@@ -219,7 +218,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               },
             },
           );
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await votingPowerAtHeight(
             neutronChain,
@@ -243,7 +242,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               claim: {},
             },
           );
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await votingPowerAtHeight(
             neutronChain,
@@ -269,7 +268,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               claim: {},
             },
           );
-          await neutronChain.blockWaiter.waitBlocks(1);
+          await neutronChain.waitBlocks(1);
 
           const res = await votingPowerAtHeight(
             neutronChain,
@@ -346,7 +345,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
       let heightAfterAdd: number;
       describe('add vesting accounts', () => {
         test('record current voting power', async () => {
-          heightBeforeAdd = await env.neutronChain.getHeight();
+          heightBeforeAdd = await neutronChain.getHeight();
           user1VpBeforeAdd = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
@@ -393,11 +392,11 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                 },
               ],
             );
-            await neutronChain.blockWaiter.waitBlocks(1);
+            await neutronChain.waitBlocks(1);
           });
 
           test('check available amounts', async () => {
-            const currentHeight = await env.neutronChain.getHeight();
+            const currentHeight = await neutronChain.getHeight();
             expect(
               await neutronChain.queryContract<UnclaimedAmountResponse>(
                 contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -445,7 +444,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           });
 
           test('record voting power after vesting account addition', async () => {
-            heightAfterAdd = await env.neutronChain.getHeight();
+            heightAfterAdd = await neutronChain.getHeight();
             user1VpAfterAdd = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
@@ -546,7 +545,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         let totalVpAfterRm: VotingPowerResponse;
         let heightAfterRm: number;
         test('record current voting power', async () => {
-          heightBeforeRm = await env.neutronChain.getHeight();
+          heightBeforeRm = await neutronChain.getHeight();
           user1VpBeforeRm = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
@@ -589,8 +588,8 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           });
 
           test('unclaimed amount after removal', async () => {
-            await neutronChain.blockWaiter.waitBlocks(1);
-            const currentHeight = await env.neutronChain.getHeight();
+            await neutronChain.waitBlocks(1);
+            const currentHeight = await neutronChain.getHeight();
             expect(
               await neutronChain.queryContract<UnclaimedAmountResponse>(
                 contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
@@ -623,7 +622,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           });
 
           test('record voting power after vesting account removal', async () => {
-            heightAfterRm = await env.neutronChain.getHeight();
+            heightAfterRm = await neutronChain.getHeight();
             user1VpAfterRm = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],

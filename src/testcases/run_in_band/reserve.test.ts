@@ -38,9 +38,8 @@ describe('Neutron / Treasury', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount1 = await createWalletWrapper(
@@ -231,7 +230,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('fund', async () => {
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
         reserveStats = await normalizeReserveBurnedCoins(
           neutronAccount1,
           reserve,
@@ -246,7 +245,7 @@ describe('Neutron / Treasury', () => {
           distribute: {},
         });
         expect(res.code).toEqual(0);
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
 
         const burnedCoinsAfter = await getBurnedCoinsAmount(neutronChain);
         expect(burnedCoinsAfter).not.toBeNull();
@@ -268,7 +267,7 @@ describe('Neutron / Treasury', () => {
       });
 
       test('verify treasury', async () => {
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
         const treasuryBalance = await neutronChain.queryDenomBalance(
           treasury,
           NEUTRON_DENOM,
@@ -587,7 +586,7 @@ async function testExecControl(
   expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
   // wait and check contract's pause info after unpausing
-  await account.chain.blockWaiter.waitBlocks(shortPauseDuration);
+  await account.chain.waitBlocks(shortPauseDuration);
   pauseInfo = await account.chain.queryPausedInfo(testingContract);
   expect(pauseInfo).toEqual({ unpaused: {} });
   expect(pauseInfo.paused).toEqual(undefined);

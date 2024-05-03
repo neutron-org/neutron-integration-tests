@@ -33,9 +33,8 @@ describe('Neutron / Interchain TX Query', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -43,9 +42,8 @@ describe('Neutron / Interchain TX Query', () => {
       testState.wallets.neutron.demo1,
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -160,7 +158,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
-      await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
+      await neutronChain.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
@@ -193,7 +191,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(balances.balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom }, // balance hasn't changed thus tx failed
       ]);
-      await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await neutronChain.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the watched address receivings are not changed
       const deposits = await queryRecipientTxs(
@@ -563,7 +561,7 @@ describe('Neutron / Interchain TX Query', () => {
         query5UpdatePeriod,
         watchedAddr5,
       );
-      await neutronChain.blockWaiter.waitBlocks(2); // wait for queries handling on init
+      await neutronChain.waitBlocks(2); // wait for queries handling on init
     });
 
     test('make older sending', async () => {
@@ -706,7 +704,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('check that transfer has not been recorded', async () => {
-      await neutronChain.blockWaiter.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await neutronChain.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
       const deposits = await queryRecipientTxs(
         neutronChain,
         contractAddress,

@@ -27,9 +27,8 @@ describe('Neutron / Simple', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -37,9 +36,8 @@ describe('Neutron / Simple', () => {
       testState.wallets.qaNeutron.genQaWal1,
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -113,7 +111,7 @@ describe('Neutron / Simple', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
@@ -150,7 +148,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check IBC token balance', async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await gaiaChain.queryBalances(
           gaiaAccount.wallet.address.toString(),
         );
@@ -176,7 +174,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check uatom token balance transfered  via IBC on Neutron', async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           neutronAccount.wallet.address.toString(),
         );
@@ -219,7 +217,7 @@ describe('Neutron / Simple', () => {
       });
 
       test('check wallet balance', async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await gaiaChain.queryBalances(
           gaiaAccount.wallet.address.toString(),
         );
@@ -233,7 +231,7 @@ describe('Neutron / Simple', () => {
         ).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
@@ -245,7 +243,7 @@ describe('Neutron / Simple', () => {
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(contractAddress);
         const balance = parseInt(
           balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
@@ -316,7 +314,7 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await neutronChain.blockWaiter.waitBlocks(20);
+        await neutronChain.waitBlocks(20);
 
         const middlehopNTRNBalanceAfter = await neutronChain.queryDenomBalance(
           middlehop,
@@ -366,7 +364,7 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await neutronChain.blockWaiter.waitBlocks(10);
+        await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(contractAddress);
         expect(
           balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
@@ -466,7 +464,7 @@ describe('Neutron / Simple', () => {
         hermes checks height on remote chain and Timeout error occurs.
         */
         const currentHeight = await gaiaChain.getHeight();
-        await gaiaChain.blockWaiter.waitBlocks(15);
+        await gaiaChain.waitBlocks(15);
 
         await neutronAccount.executeContract(contractAddress, {
           send: {
@@ -480,7 +478,7 @@ describe('Neutron / Simple', () => {
 
         const failuresAfterCall =
           await wait.getWithAttempts<types.AckFailuresResponse>(
-            neutronChain.blockWaiter,
+            neutronChain,
             async () => neutronChain.queryAckFailures(contractAddress),
             // Wait until there 4 failures in the list
             async (data) => data.failures.length == 4,
@@ -565,10 +563,10 @@ describe('Neutron / Simple', () => {
           },
         });
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         const res = await wait.getWithAttempts<types.AckFailuresResponse>(
-          neutronChain.blockWaiter,
+          neutronChain,
           async () => neutronChain.queryAckFailures(contractAddress),
           // Wait until there 6 failures in the list
           async (data) => data.failures.length == 6,
@@ -584,7 +582,7 @@ describe('Neutron / Simple', () => {
           },
         });
 
-        await neutronChain.blockWaiter.waitBlocks(2);
+        await neutronChain.waitBlocks(2);
 
         // Try to resubmit failure
         const failuresResBefore = await neutronChain.queryAckFailures(
@@ -599,7 +597,7 @@ describe('Neutron / Simple', () => {
           }),
         ).rejects.toThrowError();
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         // check that failures count is the same
         const failuresResAfter = await neutronChain.queryAckFailures(
@@ -611,7 +609,7 @@ describe('Neutron / Simple', () => {
         await neutronAccount.executeContract(contractAddress, {
           integration_tests_unset_sudo_failure_mock: {},
         });
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
       });
 
       test('successful resubmit failure', async () => {
@@ -628,7 +626,7 @@ describe('Neutron / Simple', () => {
         });
         expect(res.code).toBe(0);
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         // check that failures count is changed
         const failuresResAfter = await neutronChain.queryAckFailures(

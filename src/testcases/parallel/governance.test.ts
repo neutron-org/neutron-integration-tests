@@ -36,9 +36,8 @@ describe('Neutron / Governance', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -829,7 +828,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that msg from schedule was executed', async () => {
-      await neutronChain.blockWaiter.waitBlocks(15);
+      await neutronChain.waitBlocks(15);
       const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
@@ -846,7 +845,7 @@ describe('Neutron / Governance', () => {
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
-      await neutronChain.blockWaiter.waitBlocks(10);
+      await neutronChain.waitBlocks(10);
       const queryResultLater =
         await neutronChain.queryContract<TestArgResponse>(contractAddress, {
           test_msg: { arg: 'proposal_11' },
@@ -919,7 +918,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that last msg from schedule was not executed because there was error in other messages', async () => {
-      await neutronChain.blockWaiter.waitBlocks(15);
+      await neutronChain.waitBlocks(15);
       const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
@@ -1015,7 +1014,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
-      await neutronChain.blockWaiter.waitBlocks(15);
+      await neutronChain.waitBlocks(15);
       const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {

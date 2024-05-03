@@ -35,16 +35,15 @@ describe('Neutron / Tokenfactory', () => {
     await testState.init();
     ownerWallet = testState.wallets.qaNeutron.genQaWal1;
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(neutronChain, ownerWallet);
   });
 
   test('tokenfactory module is added', async () => {
-    const paramsPresent = await checkTokenfactoryParams(neutronChain.sdk.url);
+    const paramsPresent = await checkTokenfactoryParams(neutronChain.rest);
     expect(paramsPresent).toBeTruthy();
   });
 
@@ -68,7 +67,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const denomsAfter = await getDenomsFromCreator(
-        neutronChain.sdk.url,
+        neutronChain.rest,
         ownerWallet.address.toString(),
       );
 
@@ -124,7 +123,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const authorityMetadataBefore = await getAuthorityMetadata(
-        neutronChain.sdk.url,
+        neutronChain.rest,
         newTokenDenom,
       );
 
@@ -142,7 +141,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const authorityMetadataAfter = await getAuthorityMetadata(
-        neutronChain.sdk.url,
+        neutronChain.rest,
         newTokenDenom,
       );
 
@@ -273,7 +272,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const hookAfter = await getBeforeSendHook(
-        neutronChain.sdk.url,
+        neutronChain.rest,
         newTokenDenom,
       );
       expect(hookAfter.contract_addr).toEqual(contractAddress);

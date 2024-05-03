@@ -34,9 +34,8 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -44,9 +43,8 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       testState.wallets.qaNeutron.genQaWal1,
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -123,7 +121,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         expect(res.code).toEqual(0);
       }
 
-      await neutronChain.blockWaiter.waitBlocks(5);
+      await neutronChain.waitBlocks(5);
 
       const txs = await getUnsuccessfulTxs(testState.icq_web_host);
       expect(txs.length).toEqual(5);
@@ -140,7 +138,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icq_web_host, resubmitTxs);
       expect(resp.status).toEqual(200);
 
-      await neutronChain.blockWaiter.waitBlocks(20);
+      await neutronChain.waitBlocks(20);
 
       await waitForTransfersAmount(
         neutronChain,

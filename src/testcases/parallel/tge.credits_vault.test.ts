@@ -38,9 +38,8 @@ describe('Neutron / Credits Vault', () => {
     lockdropAddr = lockdropWallet.address;
 
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
 
@@ -140,7 +139,7 @@ describe('Neutron / Credits Vault', () => {
       });
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
 
       currentHeight = await neutronChain.getHeight();
       expect(
@@ -160,7 +159,7 @@ describe('Neutron / Credits Vault', () => {
         daoAddr.toString(),
         '500',
       );
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
 
       currentHeight = await neutronChain.getHeight();
       expect(
@@ -196,7 +195,7 @@ describe('Neutron / Credits Vault', () => {
         daoAddr.toString(),
         '1000',
       );
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const secondHeight = await neutronChain.getHeight();
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
@@ -206,7 +205,7 @@ describe('Neutron / Credits Vault', () => {
         daoAddr.toString(),
         '1000',
       );
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const thirdHeight = await neutronChain.getHeight();
 
       expect(

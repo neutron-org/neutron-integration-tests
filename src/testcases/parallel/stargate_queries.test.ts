@@ -30,9 +30,8 @@ describe('Neutron / Simple', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -41,9 +40,8 @@ describe('Neutron / Simple', () => {
     );
 
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(

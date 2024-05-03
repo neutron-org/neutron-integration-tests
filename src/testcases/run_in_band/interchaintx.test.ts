@@ -9,7 +9,6 @@ import {
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,
@@ -43,9 +42,8 @@ describe('Neutron / Interchain TXs', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -53,9 +51,8 @@ describe('Neutron / Interchain TXs', () => {
       testState.wallets.qaNeutron.genQaWal1,
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -578,8 +575,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 1,
           100,
@@ -612,8 +608,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 2,
           100,
@@ -646,8 +641,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 3,
           100,
@@ -682,8 +676,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 4,
           100,
@@ -717,8 +710,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 5,
           100,
@@ -754,8 +746,7 @@ describe('Neutron / Interchain TXs', () => {
         });
 
         // wait until sudo is called and processed and failure is recorder
-        await getWithAttempts<AckFailuresResponse>(
-          neutronChain.blockWaiter,
+        await neutronChain.getWithAttempts<AckFailuresResponse>(
           async () => neutronChain.queryAckFailures(contractAddress),
           async (data) => data.failures.length == 6,
           100,
@@ -820,7 +811,7 @@ describe('Neutron / Interchain TXs', () => {
           },
         });
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         // Try to resubmit failure
         const failuresResBefore = await neutronChain.queryAckFailures(
@@ -834,7 +825,7 @@ describe('Neutron / Interchain TXs', () => {
           }),
         ).rejects.toThrowError();
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         // check that failures count is the same
         const failuresResAfter = await neutronChain.queryAckFailures(
@@ -850,7 +841,7 @@ describe('Neutron / Interchain TXs', () => {
         await neutronAccount.executeContract(contractAddress, {
           integration_tests_unset_sudo_failure_mock: {},
         });
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
       });
 
       test('successful resubmit failure', async () => {
@@ -867,7 +858,7 @@ describe('Neutron / Interchain TXs', () => {
         });
         expect(res.code).toBe(0);
 
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
 
         // check that failures count is changed
         const failuresResAfter = await neutronChain.queryAckFailures(

@@ -9,7 +9,6 @@ import {
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
 import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   WalletWrapper,
   createWalletWrapper,
@@ -29,9 +28,8 @@ describe('Neutron / Tokenomics', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -39,9 +37,8 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaNeutron.genQaWal1,
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -135,7 +132,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const balanceAfter = await neutronChain.queryDenomBalance(
         treasuryContractAddress,
         NEUTRON_DENOM,

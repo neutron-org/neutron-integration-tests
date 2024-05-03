@@ -40,9 +40,8 @@ describe('Neutron / TGE / Credits', () => {
       testState.wallets.qaNeutronFive.genQaWal1.address.toString();
 
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount1 = await createWalletWrapper(

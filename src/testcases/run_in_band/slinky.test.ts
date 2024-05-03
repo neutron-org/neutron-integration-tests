@@ -4,7 +4,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
   DaoMember,
@@ -30,9 +29,8 @@ describe('Neutron / Slinky', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -111,7 +109,7 @@ describe('Neutron / Slinky', () => {
 
     describe('execute proposal', () => {
       test('check if proposal is passed', async () => {
-        await neutronChain.blockWaiter.waitBlocks(5);
+        await neutronChain.waitBlocks(5);
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
@@ -123,7 +121,7 @@ describe('Neutron / Slinky', () => {
   describe('module fetches prices', () => {
     test('currency pairs not empty', async () => {
       // wait to make sure we updated the price in oracle module
-      await neutronChain.blockWaiter.waitBlocks(5);
+      await neutronChain.waitBlocks(5);
       // check
       const res = await neutronChain.queryOracleAllCurrencyPairs();
       expect(res.currency_pairs[0].Base).toBe('ETH');

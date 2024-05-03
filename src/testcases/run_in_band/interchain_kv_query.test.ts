@@ -9,7 +9,6 @@ import {
   COSMOS_DENOM,
   TestStateLocalCosmosTestNet,
 } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   Dao,
   DaoMember,
@@ -432,9 +431,8 @@ describe('Neutron / Interchain KV Query', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -442,9 +440,8 @@ describe('Neutron / Interchain KV Query', () => {
       testState.wallets.neutron.demo1,
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
       testState.rpc2,
     );
     gaiaAccount = await createWalletWrapper(
@@ -765,7 +762,7 @@ describe('Neutron / Interchain KV Query', () => {
         for (const j of res) {
           expect(j).not.toEqual(0);
         }
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
       }
       const end = await Promise.all(
         [2, 3, 4].map((i) =>
@@ -829,7 +826,7 @@ describe('Neutron / Interchain KV Query', () => {
           gaiaAccount.wallet.address,
         );
 
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
 
         const queryResult = await getRegisteredQuery(
           neutronChain,
@@ -888,7 +885,7 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.demo2.address,
         );
 
-        await neutronChain.blockWaiter.waitBlocks(1);
+        await neutronChain.waitBlocks(1);
 
         const queryResult = await getRegisteredQuery(
           neutronChain,
@@ -1212,7 +1209,7 @@ describe('Neutron / Interchain KV Query', () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
 
-      const infos = await getCosmosSigningInfosResult(gaiaChain.sdk.url);
+      const infos = await getCosmosSigningInfosResult(gaiaChain.rest);
       expect(infos).not.toBeNull();
       const firstValidator = infos.info[0];
       indexOffset = parseInt(firstValidator.index_offset);

@@ -29,9 +29,8 @@ describe.skip('Neutron / IBC hooks', () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
       testState.rpc1,
     );
     neutronAccount = await createWalletWrapper(
@@ -48,7 +47,7 @@ describe.skip('Neutron / IBC hooks', () => {
 
   describe('POB', () => {
     test('single pob tx', async () => {
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const amount = '1000000';
       const to = n1.wallet.address.toString();
       const msgSend = new MsgSend({
@@ -120,7 +119,7 @@ describe.skip('Neutron / IBC hooks', () => {
         (await neutronChain.getHeight()) + 2,
       );
       // wait for new block, to be sured the next txs are sent within a single block
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       await neutronAccount.broadcastTx(backrunnerTxBuilder);
       // tx broadcasted with origHash in Sync mode, we want to "rebroadcast it" by another user with POB
       const msgSendN1 = new MsgSend({
@@ -197,7 +196,7 @@ describe.skip('Neutron / IBC hooks', () => {
         packAnyMsg('/cosmos.bank.v1beta1.MsgSend', frontrunnedMsgSend),
       ]);
       // wait for new block, to be sured the next txs are sent within one block
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       await neutronAccount.broadcastTx(frontrunnedTxBuilder);
       // tx broadcasted with origHash in Sync mode, we want to "rebroadcast it" by another user with POB
       const maliciousMsgSend = new MsgSend({
