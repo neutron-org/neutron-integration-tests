@@ -423,6 +423,7 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronChain: CosmosWrapper;
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
+  let otherNeutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
@@ -438,6 +439,10 @@ describe('Neutron / Interchain KV Query', () => {
     neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
+    );
+    otherNeutronAccount = await createWalletWrapper(
+      neutronChain,
+      testState.wallets.qaNeutronThree.genQaWal1,
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -801,9 +806,8 @@ describe('Neutron / Interchain KV Query', () => {
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
       const queryId = BigInt(2);
-      const result = await removeQueryViaTx(neutronAccount, queryId);
-      // TODO: fixme
-      expect(JSON.stringify(result.events)).toMatch(
+      const result = await removeQueryViaTx(otherNeutronAccount, queryId);
+      expect(JSON.stringify(result.rawLog)).toMatch(
         /only owner can remove a query within its service period: unauthorized/i,
       );
     });
