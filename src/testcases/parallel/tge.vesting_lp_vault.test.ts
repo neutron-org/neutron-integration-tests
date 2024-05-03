@@ -23,7 +23,7 @@ import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 const config = require('../../config.json');
 
 // general contract keys used across the tests
-const ASTRO_PAIR_CONTRACT_KEY = 'ASTRO_PAIR';
+const ASTRO_PAIR_CONTRACT_KEY = 'ASTRO_PAIR_XYK';
 const ASTRO_FACTORY_CONTRACT_KEY = 'ASTRO_FACTORY';
 const ASTRO_TOKEN_CONTRACT_KEY = 'ASTRO_TOKEN';
 const ASTRO_COIN_REGISTRY_CONTRACT_KEY = 'ASTRO_COIN_REGISTRY';
