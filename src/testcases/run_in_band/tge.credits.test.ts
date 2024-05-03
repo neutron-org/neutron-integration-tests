@@ -87,7 +87,7 @@ describe('Neutron / TGE / Credits', () => {
             config: {
               airdrop_address: airdropAddress,
               lockdrop_address: lockdropAddress,
-              when_withdrawable: getTimestamp(30),
+              when_withdrawable: getTimestamp(50),
             },
           },
         },
