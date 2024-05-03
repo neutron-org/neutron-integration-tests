@@ -25,10 +25,7 @@ import {
   Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
-import {
-  getWithAttempts,
-  waitSeconds,
-} from '@neutron-org/neutronjsplus/dist/wait';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   paramChangeProposal,
   sendProposal,
@@ -534,8 +531,7 @@ describe('Neutron / Subdao', () => {
         },
       );
 
-      const propOverruledTest2 = await getWithAttempts(
-        neutronChain,
+      const propOverruledTest2 = await neutronChain.getWithAttempts(
         async () =>
           await mainDao.chain.queryContractWithWait<SingleChoiceProposal>(
             mainDaoMember.dao.contracts.proposals.overrule?.address,
