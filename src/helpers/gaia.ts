@@ -24,7 +24,7 @@ export const msgDelegate = async (
     amount: { denom: wallet.chain.denom, amount: amount },
   };
   const msg = { typeUrl: MsgDelegate.typeUrl, value: msgDelegate };
-  const res = await wallet.execTx2(
+  const res = await wallet.execTx(
     {
       gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: '5000' }],
@@ -46,7 +46,7 @@ export const msgUndelegate = async (
     amount: { denom: wallet.chain.denom, amount: amount },
   };
   const msg = { typeUrl: MsgUndelegate.typeUrl, value: msgUndelegate };
-  const res = await wallet.execTx2(
+  const res = await wallet.execTx(
     {
       gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: '5000' }],
@@ -75,7 +75,7 @@ export const msgSubmitProposal = async (
     initialDeposit: [{ denom: wallet.chain.denom, amount: '10000000' }],
   };
   const msg = { typeUrl: MsgSubmitProposal.typeUrl, value: msgSubmitProposal };
-  const res = await wallet.execTx2(
+  const res = await wallet.execTx(
     {
       gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: amount }],
@@ -99,7 +99,7 @@ export const msgVote = async (
   };
   const msg = { typeUrl: MsgVote.typeUrl, value: msgVote };
 
-  const res = await wallet.execTx2(
+  const res = await wallet.execTx(
     {
       gas: '500000',
       amount: [{ denom: wallet.chain.denom, amount: amount }],

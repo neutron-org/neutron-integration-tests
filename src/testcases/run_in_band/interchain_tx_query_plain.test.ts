@@ -430,7 +430,7 @@ describe('Neutron / Interchain TX Query', () => {
         },
       };
 
-      const res = await gaiaAccount.execTx2(
+      const res = await gaiaAccount.execTx(
         {
           gas: '200000',
           amount: [{ denom: gaiaChain.denom, amount: '1000' }],

@@ -176,7 +176,6 @@ describe('Neutron / TGE / Auction', () => {
     );
     cmStranger = await createWalletWrapper(
       neutronChain,
-
       testState.wallets.qaNeutronFive.genQaWal1,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
