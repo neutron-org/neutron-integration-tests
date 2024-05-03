@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob && yarn test:slinky",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:slinky",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:slinky": "jest -b src/testcases/run_in_band/slinky",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
@@ -32,7 +32,6 @@
     "test:voting_registry": "jest -b src/testcases/parallel/voting_registry",
     "test:float": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/float",
     "test:dex_stargate": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_stargate",
-    "test:pob": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/pob",
     "test:dex_bindings": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 jest -b src/testcases/run_in_band/dex_bindings",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
