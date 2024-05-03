@@ -1,12 +1,10 @@
 import {
   cosmosWrapper,
   COSMOS_DENOM,
-  env,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   TestStateLocalCosmosTestNet,
   types,
-  wait,
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
@@ -477,8 +475,7 @@ describe('Neutron / Simple', () => {
         });
 
         const failuresAfterCall =
-          await wait.getWithAttempts<types.AckFailuresResponse>(
-            neutronChain,
+          await neutronChain.getWithAttempts<types.AckFailuresResponse>(
             async () => neutronChain.queryAckFailures(contractAddress),
             // Wait until there 4 failures in the list
             async (data) => data.failures.length == 4,
@@ -565,12 +562,12 @@ describe('Neutron / Simple', () => {
 
         await neutronChain.waitBlocks(5);
 
-        const res = await wait.getWithAttempts<types.AckFailuresResponse>(
-          neutronChain,
-          async () => neutronChain.queryAckFailures(contractAddress),
-          // Wait until there 6 failures in the list
-          async (data) => data.failures.length == 6,
-        );
+        const res =
+          await neutronChain.getWithAttempts<types.AckFailuresResponse>(
+            async () => neutronChain.queryAckFailures(contractAddress),
+            // Wait until there 6 failures in the list
+            async (data) => data.failures.length == 6,
+          );
         expect(res.failures.length).toEqual(6);
       });
 

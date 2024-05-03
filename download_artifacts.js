@@ -253,6 +253,39 @@ Request failed with an error: ${e.toString()}`,
   }
 };
 
+
+// /**
+//  * getWithAttempts waits until readyFunc(getFunc()) returns true
+//  * and only then returns result of getFunc()
+//  */
+// const getWithAttempts = async <T>(
+//   blockWaiter: BlockWaiter,
+//   getFunc: () => Promise<T>,
+//   readyFunc: (t: T) => Promise<boolean>,
+//   numAttempts = 20,
+// ): Promise<T> => {
+//   let error = null;
+//   let data: T;
+//   while (numAttempts > 0) {
+//     numAttempts--;
+//     try {
+//       data = await getFunc();
+//       if (await readyFunc(data)) {
+//         return data;
+//       }
+//     } catch (e) {
+//       error = e;
+//     }
+//     await blockWaiter.waitBlocks(1);
+//   }
+//   throw error != null
+//     ? error
+//     : new Error(
+//         'getWithAttempts: no attempts left. Latest get response: ' +
+//           (data === Object(data) ? JSON.stringify(data) : data).toString(),
+//       );
+// };
+
 const parseChecksumsTxt = (checksums_txt) => {
   const regex = /(\S+)\s+(\S+.wasm)\s/g;
   return Array.from(checksums_txt.matchAll(regex)).map((v) => ({
