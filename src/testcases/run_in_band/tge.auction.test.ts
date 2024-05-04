@@ -3,7 +3,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
 import {
   executeAuctionSetTokenInfo,
   executeCreditsVaultUpdateConfig,

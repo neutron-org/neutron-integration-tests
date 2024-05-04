@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgBurn,

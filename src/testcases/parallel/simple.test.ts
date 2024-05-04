@@ -3,11 +3,11 @@ import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
   types,
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { TestStateLocalCosmosTestNet } from '../../helpers/cosmos_testnet';
 
 const config = require('../../config.json');
 

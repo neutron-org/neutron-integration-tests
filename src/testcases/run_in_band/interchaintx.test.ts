@@ -8,7 +8,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
 import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,

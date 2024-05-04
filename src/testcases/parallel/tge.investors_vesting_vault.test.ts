@@ -3,11 +3,11 @@ import {
   cosmosWrapper,
   IBC_ATOM_DENOM,
   NEUTRON_DENOM,
-  TestStateLocalCosmosTestNet,
   types,
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { TestStateLocalCosmosTestNet } from '../../helpers/cosmos_testnet';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';

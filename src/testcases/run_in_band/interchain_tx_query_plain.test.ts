@@ -1,6 +1,5 @@
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
-  TestStateLocalCosmosTestNet,
   NEUTRON_DENOM,
   COSMOS_DENOM,
 } from '@neutron-org/neutronjsplus';
@@ -16,6 +15,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { TestStateLocalCosmosTestNet } from '../../helpers/cosmos_testnet';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 
 const config = require('../../config.json');
