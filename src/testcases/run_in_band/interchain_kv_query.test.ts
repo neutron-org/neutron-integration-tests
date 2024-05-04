@@ -5,9 +5,7 @@ import {
   getEventAttribute,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import {
-  COSMOS_DENOM,
-} from '@neutron-org/neutronjsplus';
+import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import {
   Dao,
   DaoMember,

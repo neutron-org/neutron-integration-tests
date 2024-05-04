@@ -1,8 +1,5 @@
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import {
-  NEUTRON_DENOM,
-  COSMOS_DENOM,
-} from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM, COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
