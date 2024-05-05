@@ -146,7 +146,6 @@ export class TestStateLocalCosmosTestNet {
     );
     const mnemonic = generateMnemonic();
 
-    console.log('mnemonic: ' + mnemonic);
     const newWallet = await mnemonicToWallet(mnemonic, prefix);
     for (const balance of balances) {
       await client.sendTokens(

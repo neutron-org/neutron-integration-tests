@@ -50,7 +50,7 @@ describe('Neutron / Global Fee', () => {
     );
 
     await daoMember.user.msgSend(daoMain.contracts.core.address, '1000', {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
     });
   });
@@ -143,7 +143,7 @@ describe('Neutron / Global Fee', () => {
   test('check minumum global fees with bank send command', async () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       }),
     ).rejects.toThrowError(
@@ -173,7 +173,7 @@ describe('Neutron / Global Fee', () => {
       daoMain.contracts.core.address,
       '1000',
       {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       },
     );
@@ -202,7 +202,7 @@ describe('Neutron / Global Fee', () => {
     await neutronChain.waitBlocks(2);
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       }),
     ).rejects.toThrowError(
@@ -246,7 +246,7 @@ describe('Neutron / Global Fee', () => {
       daoMain.contracts.core.address,
       '1000',
       {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
       },
     );

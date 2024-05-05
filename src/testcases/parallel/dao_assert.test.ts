@@ -1,3 +1,4 @@
+import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
@@ -11,7 +12,6 @@ import {
   getTreasuryContract,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { getContractsHashes } from '@neutron-org/neutronjsplus/dist/env';
 
 const config = require('../../config.json');
 

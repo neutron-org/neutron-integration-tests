@@ -51,7 +51,7 @@ describe('Neutron / Tokenomics', () => {
 
   describe('75% of Neutron fees are burned', () => {
     const bigFee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
     let burnedBefore: TotalBurnedNeutronsAmountResponse;
@@ -79,7 +79,7 @@ describe('Neutron / Tokenomics', () => {
 
   describe('Total supply of neutrons decreases after fee processing', () => {
     const bigFee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
     let totalSupplyBefore: TotalSupplyByDenomResponse;
@@ -112,7 +112,7 @@ describe('Neutron / Tokenomics', () => {
   describe('NTRN fees are not sent to Treasury', () => {
     let balanceBefore: number;
     const fee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
     };
 
@@ -147,7 +147,7 @@ describe('Neutron / Tokenomics', () => {
     const ibcUatomDenom =
       'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
     const fee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [
         {
           denom: ibcUatomDenom,
