@@ -42,7 +42,7 @@ describe('Neutron / Parameters', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -54,8 +54,7 @@ describe('Neutron / Parameters', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
       await neutronChain.getWithAttempts(
-        async () =>
-          await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
+        async () => await dao.queryVotingPower(daoMember1.user.wallet.address),
         async (response) => response.power == 10000,
         20,
       );

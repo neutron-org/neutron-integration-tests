@@ -36,7 +36,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
 
     gaiaChain = new CosmosWrapper(
@@ -46,7 +46,7 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+      testState.wallets.qaCosmos.qa,
     );
   });
 
@@ -56,7 +56,7 @@ describe('Neutron / Simple', () => {
         'transfer',
         'channel-0',
         { denom: COSMOS_DENOM, amount: '1000' },
-        neutronAccount.wallet.address.toString(),
+        neutronAccount.wallet.address,
         {
           revisionNumber: BigInt(2),
           revisionHeight: BigInt(100000000),
@@ -70,7 +70,7 @@ describe('Neutron / Simple', () => {
 
       const data = await msgCreateDenom(
         neutronAccount,
-        neutronAccount.wallet.address.toString(),
+        neutronAccount.wallet.address,
         denom,
       );
       newTokenDenom = getEventAttribute(
@@ -105,7 +105,7 @@ describe('Neutron / Simple', () => {
       const res = JSON.parse(
         await querySmart({
           bank_balance: {
-            address: neutronAccount.wallet.address.toString(),
+            address: neutronAccount.wallet.address,
             denom: NEUTRON_DENOM,
           },
         }),
@@ -142,13 +142,11 @@ describe('Neutron / Simple', () => {
       const res = JSON.parse(
         await querySmart({
           auth_account: {
-            address: neutronAccount.wallet.address.toString(),
+            address: neutronAccount.wallet.address,
           },
         }),
       );
-      expect(res.account.address).toBe(
-        neutronAccount.wallet.address.toString(),
-      );
+      expect(res.account.address).toBe(neutronAccount.wallet.address);
     });
 
     test('transfer denom trace should work', async () => {
@@ -223,7 +221,7 @@ describe('Neutron / Simple', () => {
     test('denoms from creator should work', async () => {
       const res = await querySmart({
         tokenfactory_denoms_from_creator: {
-          creator: neutronAccount.wallet.address.toString(),
+          creator: neutronAccount.wallet.address,
         },
       });
       expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);

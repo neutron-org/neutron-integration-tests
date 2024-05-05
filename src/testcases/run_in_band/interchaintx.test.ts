@@ -48,7 +48,7 @@ describe('Neutron / Interchain TXs', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -57,7 +57,7 @@ describe('Neutron / Interchain TXs', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+      testState.wallets.qaCosmos.qa,
     );
   });
 

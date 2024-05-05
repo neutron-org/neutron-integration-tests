@@ -159,8 +159,7 @@ describe('Neutron / TGE / Auction', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    reserveAddress =
-      testState.wallets.qaNeutronThree.genQaWal1.address.toString();
+    reserveAddress = testState.wallets.qaNeutronThree.qa.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -168,15 +167,15 @@ describe('Neutron / TGE / Auction', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     cmTokenManager = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.genQaWal1,
+      testState.wallets.qaNeutronFour.qa,
     );
     cmStranger = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.genQaWal1,
+      testState.wallets.qaNeutronFive.qa,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -225,7 +224,7 @@ describe('Neutron / TGE / Auction', () => {
               },
             ],
           )
-        ).genQaWal1,
+        ).qa,
       );
     }
   });

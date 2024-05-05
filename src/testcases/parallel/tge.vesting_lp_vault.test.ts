@@ -62,19 +62,19 @@ describe('Neutron / TGE / Vesting LP vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      testState.wallets.qaNeutronThree.qa,
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.genQaWal1,
+      testState.wallets.qaNeutronFour.qa,
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.genQaWal1,
+      testState.wallets.qaNeutronFive.qa,
     );
     contractAddresses = await deployContracts(
       neutronChain,
@@ -101,7 +101,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
           contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
         usdc_oracle_contract:
           contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
-        owner: cmInstantiator.wallet.address.toString(),
+        owner: cmInstantiator.wallet.address,
       });
     });
 
@@ -343,7 +343,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 JSON.stringify({
                   register_vesting_accounts: {
                     vesting_accounts: [
-                      vestingAccount(cmUser1.wallet.address.toString(), [
+                      vestingAccount(cmUser1.wallet.address, [
                         vestingSchedule(
                           vestingSchedulePoint(
                             0,
@@ -351,7 +351,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                           ),
                         ),
                       ]),
-                      vestingAccount(cmUser2.wallet.address.toString(), [
+                      vestingAccount(cmUser2.wallet.address, [
                         vestingSchedule(
                           vestingSchedulePoint(
                             0,
@@ -379,7 +379,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 JSON.stringify({
                   register_vesting_accounts: {
                     vesting_accounts: [
-                      vestingAccount(cmUser1.wallet.address.toString(), [
+                      vestingAccount(cmUser1.wallet.address, [
                         vestingSchedule(
                           vestingSchedulePoint(
                             0,
@@ -387,7 +387,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                           ),
                         ),
                       ]),
-                      vestingAccount(cmUser2.wallet.address.toString(), [
+                      vestingAccount(cmUser2.wallet.address, [
                         vestingSchedule(
                           vestingSchedulePoint(
                             0,
@@ -418,7 +418,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 historical_extension: {
                   msg: {
                     unclaimed_amount_at_height: {
-                      address: cmUser1.wallet.address.toString(),
+                      address: cmUser1.wallet.address,
                       height: currentHeight,
                     },
                   },
@@ -435,7 +435,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 historical_extension: {
                   msg: {
                     unclaimed_amount_at_height: {
-                      address: cmUser2.wallet.address.toString(),
+                      address: cmUser2.wallet.address,
                       height: currentHeight,
                     },
                   },
@@ -452,7 +452,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 historical_extension: {
                   msg: {
                     unclaimed_amount_at_height: {
-                      address: cmUser1.wallet.address.toString(),
+                      address: cmUser1.wallet.address,
                       height: currentHeight,
                     },
                   },
@@ -469,7 +469,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 historical_extension: {
                   msg: {
                     unclaimed_amount_at_height: {
-                      address: cmUser2.wallet.address.toString(),
+                      address: cmUser2.wallet.address,
                       height: currentHeight,
                     },
                   },
@@ -523,7 +523,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser1.wallet.address.toString(),
+                address: cmUser1.wallet.address,
               },
             },
           );
@@ -541,7 +541,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser2.wallet.address.toString(),
+                address: cmUser2.wallet.address,
               },
             },
           );
@@ -579,7 +579,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser1.wallet.address.toString(),
+                address: cmUser1.wallet.address,
               },
             },
           );
@@ -609,7 +609,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser1.wallet.address.toString(),
+                address: cmUser1.wallet.address,
               },
             },
           );
@@ -651,7 +651,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser2.wallet.address.toString(),
+                address: cmUser2.wallet.address,
               },
             },
           );
@@ -678,7 +678,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser2.wallet.address.toString(),
+                address: cmUser2.wallet.address,
               },
             },
           );
@@ -717,7 +717,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser1.wallet.address.toString(),
+                address: cmUser1.wallet.address,
               },
             },
           );
@@ -744,7 +744,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
             contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
             {
               voting_power_at_height: {
-                address: cmUser1.wallet.address.toString(),
+                address: cmUser1.wallet.address,
               },
             },
           );
@@ -874,7 +874,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
               {
                 voting_power_at_height: {
-                  address: cmUser1.wallet.address.toString(),
+                  address: cmUser1.wallet.address,
                   height: heightBeforeClaim,
                 },
               },
@@ -893,7 +893,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               contractAddresses[VESTING_LP_VAULT_CONTRACT_KEY],
               {
                 voting_power_at_height: {
-                  address: cmUser2.wallet.address.toString(),
+                  address: cmUser2.wallet.address,
                   height: heightBeforeClaim,
                 },
               },
@@ -921,7 +921,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 msg: {
                   remove_vesting_accounts: {
                     vesting_accounts: [],
-                    clawback_account: cmUser1.wallet.address.toString(),
+                    clawback_account: cmUser1.wallet.address,
                   },
                 },
               },
@@ -936,7 +936,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                 msg: {
                   remove_vesting_accounts: {
                     vesting_accounts: [],
-                    clawback_account: cmUser1.wallet.address.toString(),
+                    clawback_account: cmUser1.wallet.address,
                   },
                 },
               },
@@ -1025,7 +1025,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               symbol: 'TKN',
               decimals: 6,
               initial_balances: [
-                { address: cmUser1.wallet.address.toString(), amount: '1000' },
+                { address: cmUser1.wallet.address, amount: '1000' },
               ],
             },
             'a_cw20_token',
@@ -1041,7 +1041,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
                   JSON.stringify({
                     register_vesting_accounts: {
                       vesting_accounts: [
-                        vestingAccount(cmUser1.wallet.address.toString(), [
+                        vestingAccount(cmUser1.wallet.address, [
                           vestingSchedule(vestingSchedulePoint(0, '1000')),
                         ]),
                       ],
@@ -1059,7 +1059,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
               {
                 register_vesting_accounts: {
                   vesting_accounts: [
-                    vestingAccount(cmUser2.wallet.address.toString(), [
+                    vestingAccount(cmUser2.wallet.address, [
                       vestingSchedule(vestingSchedulePoint(0, '1000')),
                     ]),
                   ],
@@ -1125,7 +1125,7 @@ const deployCoinRegistry = async (
   const res = await instantiator.instantiateContract(
     codeIds[ASTRO_COIN_REGISTRY_CONTRACT_KEY],
     {
-      owner: instantiator.wallet.address.toString(),
+      owner: instantiator.wallet.address,
     },
     'coin_registry',
   );
@@ -1183,7 +1183,7 @@ const deployFactory = async (
       },
     ],
     token_code_id: codeIds[ASTRO_TOKEN_CONTRACT_KEY],
-    owner: instantiator.wallet.address.toString(),
+    owner: instantiator.wallet.address,
     whitelist_code_id: 0,
     coin_registry_address: contractAddresses[ASTRO_COIN_REGISTRY_CONTRACT_KEY],
   };
@@ -1207,7 +1207,7 @@ const deployOracles = async (
     {
       factory_contract: contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
       period: 1,
-      manager: cmManager.wallet.address.toString(),
+      manager: cmManager.wallet.address,
     },
     'oracle usdc',
   );
@@ -1219,7 +1219,7 @@ const deployOracles = async (
     {
       factory_contract: contractAddresses[ASTRO_FACTORY_CONTRACT_KEY],
       period: 1,
-      manager: cmManager.wallet.address.toString(),
+      manager: cmManager.wallet.address,
     },
     'oracle atom',
   );
@@ -1306,9 +1306,9 @@ const deployVestingLpContracts = async (
   contractAddresses: Record<string, string>,
 ) => {
   let msg = {
-    owner: instantiator.wallet.address.toString(),
-    token_info_manager: cmManager.wallet.address.toString(),
-    vesting_managers: [cmManager.wallet.address.toString()],
+    owner: instantiator.wallet.address,
+    token_info_manager: cmManager.wallet.address,
+    vesting_managers: [cmManager.wallet.address],
   };
   let res = await instantiator.instantiateContract(
     codeIds[VESTING_LP_CONTRACT_KEY],
@@ -1319,9 +1319,9 @@ const deployVestingLpContracts = async (
   contractAddresses[VESTING_LP_ATOM_CONTRACT_KEY] = res;
 
   msg = {
-    owner: instantiator.wallet.address.toString(),
-    token_info_manager: cmManager.wallet.address.toString(),
-    vesting_managers: [cmManager.wallet.address.toString()],
+    owner: instantiator.wallet.address,
+    token_info_manager: cmManager.wallet.address,
+    vesting_managers: [cmManager.wallet.address],
   };
   res = await instantiator.instantiateContract(
     codeIds[VESTING_LP_CONTRACT_KEY],
@@ -1382,7 +1382,7 @@ const deployVestingLpVaultContract = async (
       usdc_vesting_lp_contract: contractAddresses[VESTING_LP_USDC_CONTRACT_KEY],
       usdc_oracle_contract:
         contractAddresses[ORACLE_HISTORY_NTRN_USDC_CONTRACT_KEY],
-      owner: instantiator.wallet.address.toString(),
+      owner: instantiator.wallet.address,
     },
     'vesting_lp_vault',
   );

@@ -48,10 +48,10 @@ describe('Neutron / IBC hooks', () => {
 
   describe('Wallets', () => {
     test('Addresses', () => {
-      expect(testState.wallets.neutron.demo1.address.toString()).toEqual(
+      expect(testState.wallets.neutron.demo1.address).toEqual(
         'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       );
-      expect(testState.wallets.cosmos.demo2.address.toString()).toEqual(
+      expect(testState.wallets.cosmos.demo2.address).toEqual(
         'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
       );
     });
@@ -80,7 +80,7 @@ describe('Neutron / IBC hooks', () => {
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.cosmos.demo2.address,
           {
             revisionNumber: BigInt(2),
             revisionHeight: BigInt(100000000),
@@ -93,7 +93,7 @@ describe('Neutron / IBC hooks', () => {
       test('check IBC token balance', async () => {
         await gaiaChain.waitBlocks(10);
         const res = await gaiaChain.queryDenomBalance(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.cosmos.demo2.address,
           transferDenom,
         );
         expect(res).toEqual(transferAmount);
@@ -155,7 +155,7 @@ describe('Neutron / IBC hooks', () => {
           'transfer',
           'channel-0',
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.cosmos.demo2.address,
           {
             revisionNumber: BigInt(2),
             revisionHeight: BigInt(100000000),
@@ -168,7 +168,7 @@ describe('Neutron / IBC hooks', () => {
       test('check IBC token balance', async () => {
         await gaiaChain.waitBlocks(10);
         const balance = await gaiaChain.queryDenomBalance(
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.cosmos.demo2.address,
           transferDenom,
         );
         expect(balance).toEqual(transferAmount);

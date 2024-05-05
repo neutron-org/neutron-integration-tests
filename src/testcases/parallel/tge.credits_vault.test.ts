@@ -31,9 +31,9 @@ describe('Neutron / Credits Vault', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    daoWallet = testState.wallets.qaNeutron.genQaWal1;
-    airdropWallet = testState.wallets.qaNeutronFour.genQaWal1;
-    lockdropWallet = testState.wallets.qaNeutronFive.genQaWal1;
+    daoWallet = testState.wallets.qaNeutron.qa;
+    airdropWallet = testState.wallets.qaNeutronFour.qa;
+    lockdropWallet = testState.wallets.qaNeutronFive.qa;
 
     lockdropAddr = lockdropWallet.address;
 

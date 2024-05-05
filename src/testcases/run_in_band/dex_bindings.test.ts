@@ -309,7 +309,7 @@ describe('Neutron / dex module bindings', () => {
         for (let i = 0; i < numberDenoms; i++) {
           const data = await msgCreateDenom(
             neutronAccount,
-            neutronAccount.wallet.address.toString(),
+            neutronAccount.wallet.address,
             String(i),
           );
 
@@ -321,12 +321,12 @@ describe('Neutron / dex module bindings', () => {
 
           await msgMintDenom(
             neutronAccount,
-            neutronAccount.wallet.address.toString(),
+            neutronAccount.wallet.address,
             {
               denom: newTokenDenom,
               amount: '1000000',
             },
-            neutronAccount.wallet.address.toString(),
+            neutronAccount.wallet.address,
           );
           await neutronAccount.msgSend(contractAddress, {
             amount: '1000000',

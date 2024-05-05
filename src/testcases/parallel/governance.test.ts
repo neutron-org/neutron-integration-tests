@@ -41,7 +41,7 @@ describe('Neutron / Governance', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -50,14 +50,14 @@ describe('Neutron / Governance', () => {
     daoMember2 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        testState.wallets.qaNeutronThree.genQaWal1,
+        testState.wallets.qaNeutronThree.qa,
       ),
       mainDao,
     );
     daoMember3 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        testState.wallets.qaNeutronFour.genQaWal1,
+        testState.wallets.qaNeutronFour.qa,
       ),
       mainDao,
     );
@@ -97,9 +97,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.bondFunds('10000');
       await neutronChain.getWithAttempts(
         async () =>
-          await mainDao.queryVotingPower(
-            daoMember1.user.wallet.address.toString(),
-          ),
+          await mainDao.queryVotingPower(daoMember1.user.wallet.address),
         async (response) => response.power == 10000,
         20,
       );
@@ -108,9 +106,7 @@ describe('Neutron / Governance', () => {
       await daoMember2.bondFunds('10000');
       await neutronChain.getWithAttempts(
         async () =>
-          await mainDao.queryVotingPower(
-            daoMember1.user.wallet.address.toString(),
-          ),
+          await mainDao.queryVotingPower(daoMember1.user.wallet.address),
         async (response) => response.power == 10000,
         20,
       );
@@ -119,9 +115,7 @@ describe('Neutron / Governance', () => {
       await daoMember3.bondFunds('10000');
       await neutronChain.getWithAttempts(
         async () =>
-          await mainDao.queryVotingPower(
-            daoMember1.user.wallet.address.toString(),
-          ),
+          await mainDao.queryVotingPower(daoMember1.user.wallet.address),
         async (response) => response.power == 10000,
         20,
       );
@@ -175,7 +169,7 @@ describe('Neutron / Governance', () => {
         'This one will pass',
         [
           {
-            recipient: mainDao.contracts.core.address.toString(),
+            recipient: mainDao.contracts.core.address,
             amount: 1000,
             denom: neutronChain.denom,
           },
@@ -237,7 +231,7 @@ describe('Neutron / Governance', () => {
         'Update admin proposal. Will pass',
         ADMIN_MODULE_ADDRESS,
         contractAddressForAdminMigration,
-        daoMember1.user.wallet.address.toString(),
+        daoMember1.user.wallet.address,
         '1000',
       );
     });
@@ -365,7 +359,7 @@ describe('Neutron / Governance', () => {
         'Pin codes proposal with wrong authority. This one will pass & fail on execution',
         [1, 2],
         '1000',
-        daoMember1.user.wallet.address.toString(),
+        daoMember1.user.wallet.address,
       );
     });
 
@@ -765,7 +759,7 @@ describe('Neutron / Governance', () => {
       const admin = await neutronChain.queryContractAdmin(
         contractAddressForAdminMigration,
       );
-      expect(admin).toEqual(daoMember1.user.wallet.address.toString());
+      expect(admin).toEqual(daoMember1.user.wallet.address);
     });
   });
 

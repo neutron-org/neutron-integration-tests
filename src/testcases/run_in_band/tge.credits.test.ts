@@ -31,13 +31,10 @@ describe('Neutron / TGE / Credits', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    airdropAddress =
-      testState.wallets.qaNeutronThree.genQaWal1.address.toString();
-    lockdropAddress =
-      testState.wallets.qaNeutronFour.genQaWal1.address.toString();
+    airdropAddress = testState.wallets.qaNeutronThree.qa.address;
+    lockdropAddress = testState.wallets.qaNeutronFour.qa.address;
 
-    neutronAccount2Address =
-      testState.wallets.qaNeutronFive.genQaWal1.address.toString();
+    neutronAccount2Address = testState.wallets.qaNeutronFive.qa.address;
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -46,19 +43,19 @@ describe('Neutron / TGE / Credits', () => {
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.genQaWal1,
+      testState.wallets.qaNeutronFive.qa,
     );
     airdropMock = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      testState.wallets.qaNeutronThree.qa,
     );
     lockdropMock = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.genQaWal1,
+      testState.wallets.qaNeutronFour.qa,
     );
   });
 
@@ -72,7 +69,7 @@ describe('Neutron / TGE / Credits', () => {
       const res = await neutronAccount1.instantiateContract(
         codeId,
         {
-          dao_address: neutronAccount1.wallet.address.toString(),
+          dao_address: neutronAccount1.wallet.address,
         },
         'credits',
       );

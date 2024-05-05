@@ -36,7 +36,7 @@ describe('Neutron / Global Fee', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -44,10 +44,7 @@ describe('Neutron / Global Fee', () => {
     daoMember = new DaoMember(neutronAccount, daoMain);
     await daoMember.bondFunds('10000');
     await neutronChain.getWithAttempts(
-      async () =>
-        await daoMain.queryVotingPower(
-          daoMember.user.wallet.address.toString(),
-        ),
+      async () => await daoMain.queryVotingPower(daoMember.user.wallet.address),
       async (response) => response.power == 10000,
       20,
     );

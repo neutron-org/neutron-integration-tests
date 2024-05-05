@@ -34,7 +34,7 @@ describe('Neutron / Tokenomics', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -43,7 +43,7 @@ describe('Neutron / Tokenomics', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+      testState.wallets.qaCosmos.qa,
     );
 
     treasuryContractAddress = await getTreasuryContract(neutronChain);
@@ -62,7 +62,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
+        testState.wallets.neutron.rly1.address,
         '1000',
         bigFee,
       );
@@ -92,7 +92,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
+        testState.wallets.neutron.rly1.address,
         '1000',
         bigFee,
       );
@@ -125,7 +125,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with neutron fee', async () => {
       await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
+        testState.wallets.neutron.rly1.address,
         '1000',
         fee,
       );
@@ -164,14 +164,12 @@ describe('Neutron / Tokenomics', () => {
           denom: COSMOS_DENOM,
           amount: '100000',
         },
-        testState.wallets.qaNeutron.genQaWal1.address.toString(),
+        testState.wallets.qaNeutron.qa.address,
         { revisionNumber: BigInt(2), revisionHeight: BigInt(100000000) },
       );
       await neutronChain.getWithAttempts(
         async () =>
-          neutronChain.queryBalances(
-            testState.wallets.qaNeutron.genQaWal1.address.toString(),
-          ),
+          neutronChain.queryBalances(testState.wallets.qaNeutron.qa.address),
         async (balances) =>
           balances.balances.find(
             (balance) => balance.denom === ibcUatomDenom,
@@ -188,7 +186,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with uatom fee', async () => {
       await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
+        testState.wallets.neutron.rly1.address,
         '1000',
         fee,
       );

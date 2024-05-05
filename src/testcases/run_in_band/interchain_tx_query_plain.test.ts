@@ -134,7 +134,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr1ExpectedBalance.toString(),
         },
@@ -173,7 +173,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr1ExpectedBalance.toString(),
         },
@@ -199,7 +199,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr1ExpectedBalance.toString(),
         },
@@ -258,7 +258,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr2ExpectedBalance.toString(),
         },
@@ -334,7 +334,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr3ExpectedBalance.toString(),
         },
@@ -364,7 +364,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: (addr3ExpectedBalance - amountToAddrThird2).toString(),
         },
@@ -384,13 +384,13 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrThird2.toString(),
         },
@@ -408,7 +408,7 @@ describe('Neutron / Interchain TX Query', () => {
       const msgSendObject1: MsgSendEncodeObject = {
         typeUrl: '/cosmos.bank.v1beta1.MsgSend',
         value: {
-          fromAddress: gaiaAccount.wallet.address.toString(),
+          fromAddress: gaiaAccount.wallet.address,
           toAddress: watchedAddr1,
           amount: [
             { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
@@ -419,7 +419,7 @@ describe('Neutron / Interchain TX Query', () => {
       const msgSendObject2: MsgSendEncodeObject = {
         typeUrl: '/cosmos.bank.v1beta1.MsgSend',
         value: {
-          fromAddress: gaiaAccount.wallet.address.toString(),
+          fromAddress: gaiaAccount.wallet.address,
           toAddress: watchedAddr2,
           amount: [
             { denom: gaiaChain.denom, amount: amountToAddrSecond2.toString() },
@@ -467,13 +467,13 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrFirst1.toString(),
         },
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrFirst2.toString(),
         },
@@ -486,13 +486,13 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrSecond1.toString(),
         },
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrSecond2.toString(),
         },
@@ -505,13 +505,13 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: amountToAddrThird2.toString(),
         },
@@ -635,7 +635,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr4,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr4ExpectedBalance.toString(),
         },
@@ -663,7 +663,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr5,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: addr5ExpectedBalance.toString(),
         },
@@ -710,7 +710,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr4,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
           amount: (addr4ExpectedBalance - amountToAddrForth2).toString(),
         },
@@ -771,7 +771,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toMatchObject([
         {
           recipient: newWatchedAddr5,
-          sender: gaiaAccount.wallet.address.toString(),
+          sender: gaiaAccount.wallet.address,
           denom: gaiaChain.denom,
         },
       ]);

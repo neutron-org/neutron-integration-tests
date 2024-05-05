@@ -34,19 +34,19 @@ describe('Neutron / TGE / Investors vesting vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      testState.wallets.qaNeutronThree.qa,
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.genQaWal1,
+      testState.wallets.qaNeutronFour.qa,
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.genQaWal1,
+      testState.wallets.qaNeutronFive.qa,
     );
     contractAddresses = await deployContracts(
       neutronChain,
@@ -68,7 +68,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
         vesting_contract_address:
           contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
         description: 'An investors vesting vault',
-        owner: cmInstantiator.wallet.address.toString(),
+        owner: cmInstantiator.wallet.address,
         name: 'Investors vesting vault',
       });
     });
@@ -108,7 +108,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           {
             register_vesting_accounts: {
               vesting_accounts: [
-                types.vestingAccount(cmUser1.wallet.address.toString(), [
+                types.vestingAccount(cmUser1.wallet.address, [
                   types.vestingSchedule(
                     types.vestingSchedulePoint(
                       0,
@@ -116,7 +116,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                     ),
                   ),
                 ]),
-                types.vestingAccount(cmUser2.wallet.address.toString(), [
+                types.vestingAccount(cmUser2.wallet.address, [
                   types.vestingSchedule(
                     types.vestingSchedulePoint(
                       0,
@@ -140,7 +140,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               historical_extension: {
                 msg: {
                   unclaimed_amount_at_height: {
-                    address: cmUser1.wallet.address.toString(),
+                    address: cmUser1.wallet.address,
                     height: currentHeight,
                   },
                 },
@@ -155,7 +155,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               historical_extension: {
                 msg: {
                   unclaimed_amount_at_height: {
-                    address: cmUser2.wallet.address.toString(),
+                    address: cmUser2.wallet.address,
                     height: currentHeight,
                   },
                 },
@@ -186,7 +186,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           user1VpInit = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser1.wallet.address.toString(),
+            cmUser1.wallet.address,
             heightInit,
           );
           expect(+user1VpInit.power).toBe(user1VestingAmount);
@@ -195,7 +195,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           user2VpInit = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser2.wallet.address.toString(),
+            cmUser2.wallet.address,
             heightInit,
           );
           expect(+user2VpInit.power).toBe(user2VestingAmount);
@@ -223,7 +223,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           const res = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser1.wallet.address.toString(),
+            cmUser1.wallet.address,
           );
           expect(+res.power).toBe(user1VestingAmount - user1PartialClaim);
         });
@@ -247,7 +247,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           const res = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser2.wallet.address.toString(),
+            cmUser2.wallet.address,
           );
           expect(+res.power).toBe(0);
         });
@@ -273,7 +273,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           const res = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser1.wallet.address.toString(),
+            cmUser1.wallet.address,
           );
           expect(+res.power).toBe(0);
         });
@@ -302,7 +302,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
             const res = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser1.wallet.address.toString(),
+              cmUser1.wallet.address,
               heightBeforeClaim,
             );
             expect(+res.power).toBe(user1VestingAmount);
@@ -311,7 +311,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
             const res = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser2.wallet.address.toString(),
+              cmUser2.wallet.address,
               heightBeforeClaim,
             );
             expect(+res.power).toBe(user2VestingAmount);
@@ -349,13 +349,13 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           user1VpBeforeAdd = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser1.wallet.address.toString(),
+            cmUser1.wallet.address,
             heightBeforeAdd,
           );
           user2VpBeforeAdd = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser2.wallet.address.toString(),
+            cmUser2.wallet.address,
             heightBeforeAdd,
           );
           totalVpBeforeAdd = await totalPowerAtHeight(
@@ -372,12 +372,12 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               {
                 register_vesting_accounts: {
                   vesting_accounts: [
-                    types.vestingAccount(cmUser1.wallet.address.toString(), [
+                    types.vestingAccount(cmUser1.wallet.address, [
                       types.vestingSchedule(
                         types.vestingSchedulePoint(0, vestingAmount.toString()),
                       ),
                     ]),
-                    types.vestingAccount(cmUser2.wallet.address.toString(), [
+                    types.vestingAccount(cmUser2.wallet.address, [
                       types.vestingSchedule(
                         types.vestingSchedulePoint(0, vestingAmount.toString()),
                       ),
@@ -404,7 +404,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   historical_extension: {
                     msg: {
                       unclaimed_amount_at_height: {
-                        address: cmUser1.wallet.address.toString(),
+                        address: cmUser1.wallet.address,
                         height: currentHeight,
                       },
                     },
@@ -419,7 +419,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   historical_extension: {
                     msg: {
                       unclaimed_amount_at_height: {
-                        address: cmUser2.wallet.address.toString(),
+                        address: cmUser2.wallet.address,
                         height: currentHeight,
                       },
                     },
@@ -448,13 +448,13 @@ describe('Neutron / TGE / Investors vesting vault', () => {
             user1VpAfterAdd = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser1.wallet.address.toString(),
+              cmUser1.wallet.address,
               heightAfterAdd,
             );
             user2VpAfterAdd = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser2.wallet.address.toString(),
+              cmUser2.wallet.address,
               heightAfterAdd,
             );
             totalVpAfterAdd = await totalPowerAtHeight(
@@ -482,7 +482,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser1.wallet.address.toString(),
+                cmUser1.wallet.address,
                 heightInit,
               ),
             ).toEqual(user1VpInit);
@@ -490,7 +490,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser2.wallet.address.toString(),
+                cmUser2.wallet.address,
                 heightInit,
               ),
             ).toEqual(user2VpInit);
@@ -508,7 +508,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser1.wallet.address.toString(),
+                cmUser1.wallet.address,
                 heightBeforeAdd,
               ),
             ).toEqual(user1VpBeforeAdd);
@@ -516,7 +516,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser2.wallet.address.toString(),
+                cmUser2.wallet.address,
                 heightBeforeAdd,
               ),
             ).toEqual(user2VpBeforeAdd);
@@ -549,13 +549,13 @@ describe('Neutron / TGE / Investors vesting vault', () => {
           user1VpBeforeRm = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser1.wallet.address.toString(),
+            cmUser1.wallet.address,
             heightBeforeRm,
           );
           user2VpBeforeRm = await votingPowerAtHeight(
             neutronChain,
             contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-            cmUser2.wallet.address.toString(),
+            cmUser2.wallet.address,
             heightBeforeRm,
           );
           totalVpBeforeRm = await totalPowerAtHeight(
@@ -567,7 +567,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
 
         describe('remove vesting accounts', () => {
           test('execute remove_vesting_accounts', async () => {
-            clawbackAccount = cmManager.wallet.address.toString();
+            clawbackAccount = cmManager.wallet.address;
             clawbackAccountBalance = await neutronChain.queryDenomBalance(
               clawbackAccount,
               NEUTRON_DENOM,
@@ -578,7 +578,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                 managed_extension: {
                   msg: {
                     remove_vesting_accounts: {
-                      vesting_accounts: [cmUser1.wallet.address.toString()],
+                      vesting_accounts: [cmUser1.wallet.address],
                       clawback_account: clawbackAccount,
                     },
                   },
@@ -597,7 +597,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   historical_extension: {
                     msg: {
                       unclaimed_amount_at_height: {
-                        address: cmUser1.wallet.address.toString(),
+                        address: cmUser1.wallet.address,
                         height: currentHeight,
                       },
                     },
@@ -626,13 +626,13 @@ describe('Neutron / TGE / Investors vesting vault', () => {
             user1VpAfterRm = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser1.wallet.address.toString(),
+              cmUser1.wallet.address,
               heightAfterRm,
             );
             user2VpAfterRm = await votingPowerAtHeight(
               neutronChain,
               contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-              cmUser2.wallet.address.toString(),
+              cmUser2.wallet.address,
               heightAfterRm,
             );
             totalVpAfterRm = await totalPowerAtHeight(
@@ -670,7 +670,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser1.wallet.address.toString(),
+                cmUser1.wallet.address,
                 heightInit,
               ),
             ).toEqual(user1VpInit);
@@ -678,7 +678,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser2.wallet.address.toString(),
+                cmUser2.wallet.address,
                 heightInit,
               ),
             ).toEqual(user2VpInit);
@@ -695,7 +695,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser1.wallet.address.toString(),
+                cmUser1.wallet.address,
                 heightBeforeAdd,
               ),
             ).toEqual(user1VpBeforeAdd);
@@ -703,7 +703,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser2.wallet.address.toString(),
+                cmUser2.wallet.address,
                 heightBeforeAdd,
               ),
             ).toEqual(user2VpBeforeAdd);
@@ -720,7 +720,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser1.wallet.address.toString(),
+                cmUser1.wallet.address,
                 heightBeforeRm,
               ),
             ).toEqual(user1VpBeforeRm);
@@ -728,7 +728,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               await votingPowerAtHeight(
                 neutronChain,
                 contractAddresses[INVESTORS_VESTING_VAULT_CONTRACT_KEY],
-                cmUser2.wallet.address.toString(),
+                cmUser2.wallet.address,
                 heightBeforeRm,
               ),
             ).toEqual(user2VpBeforeRm);
@@ -805,8 +805,8 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                 managed_extension: {
                   msg: {
                     remove_vesting_accounts: {
-                      vesting_accounts: [cmUser1.wallet.address.toString()],
-                      clawback_account: cmUser2.wallet.address.toString(),
+                      vesting_accounts: [cmUser1.wallet.address],
+                      clawback_account: cmUser2.wallet.address,
                     },
                   },
                 },
@@ -830,7 +830,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               symbol: 'TKN',
               decimals: 6,
               initial_balances: [
-                { address: cmUser1.wallet.address.toString(), amount: '1000' },
+                { address: cmUser1.wallet.address, amount: '1000' },
               ],
             },
             'a_cw20_token',
@@ -846,14 +846,11 @@ describe('Neutron / TGE / Investors vesting vault', () => {
                   JSON.stringify({
                     register_vesting_accounts: {
                       vesting_accounts: [
-                        types.vestingAccount(
-                          cmUser1.wallet.address.toString(),
-                          [
-                            types.vestingSchedule(
-                              types.vestingSchedulePoint(0, '1000'),
-                            ),
-                          ],
-                        ),
+                        types.vestingAccount(cmUser1.wallet.address, [
+                          types.vestingSchedule(
+                            types.vestingSchedulePoint(0, '1000'),
+                          ),
+                        ]),
                       ],
                     },
                   }),
@@ -869,7 +866,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
               {
                 register_vesting_accounts: {
                   vesting_accounts: [
-                    types.vestingAccount(cmUser2.wallet.address.toString(), [
+                    types.vestingAccount(cmUser2.wallet.address, [
                       types.vestingSchedule(
                         types.vestingSchedulePoint(0, '1000'),
                       ),
@@ -926,8 +923,8 @@ const deployInvestorsVestingContract = async (
   contractAddresses: Record<string, string>,
 ) => {
   const msg = {
-    owner: instantiator.wallet.address.toString(),
-    token_info_manager: cmManager.wallet.address.toString(),
+    owner: instantiator.wallet.address,
+    token_info_manager: cmManager.wallet.address,
   };
   const res = await instantiator.instantiateContract(
     codeIds[INVESTORS_VESTING_CONTRACT_KEY],
@@ -967,7 +964,7 @@ const deployInvestorsVestingVaultContract = async (
       vesting_contract_address:
         contractAddresses[INVESTORS_VESTING_CONTRACT_KEY],
       description: 'An investors vesting vault',
-      owner: instantiator.wallet.address.toString(),
+      owner: instantiator.wallet.address,
       name: 'Investors vesting vault',
     },
     'investors_vesting_vault',

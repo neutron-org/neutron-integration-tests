@@ -40,11 +40,11 @@ describe('Neutron / Subdao Overrule', () => {
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      testState.wallets.qaNeutronThree.qa,
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
@@ -62,7 +62,7 @@ describe('Neutron / Subdao Overrule', () => {
       neutronAccount1,
       daoContracts.core.address,
       daoContracts.proposals.overrule?.pre_propose?.address || '',
-      neutronAccount1.wallet.address.toString(),
+      neutronAccount1.wallet.address,
       false, // do not close proposal on failure since otherwise we wont get an error exception from submsgs
     );
 
@@ -82,7 +82,7 @@ describe('Neutron / Subdao Overrule', () => {
         'send',
         [
           {
-            recipient: neutronAccount2.wallet.address.toString(),
+            recipient: neutronAccount2.wallet.address,
             amount: 2000,
             denom: neutronChain.denom,
           },
@@ -124,7 +124,7 @@ describe('Neutron / Subdao Overrule', () => {
         'send',
         [
           {
-            recipient: neutronAccount2.wallet.address.toString(),
+            recipient: neutronAccount2.wallet.address,
             amount: 2000,
             denom: neutronChain.denom,
           },

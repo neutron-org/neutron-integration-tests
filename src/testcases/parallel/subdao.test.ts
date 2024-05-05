@@ -53,9 +53,9 @@ describe('Neutron / Subdao', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    demo1Wallet = testState.wallets.qaNeutron.genQaWal1;
-    securityDaoWallet = testState.wallets.qaNeutronThree.genQaWal1;
-    demo2Wallet = testState.wallets.qaNeutronFour.genQaWal1;
+    demo1Wallet = testState.wallets.qaNeutron.qa;
+    securityDaoWallet = testState.wallets.qaNeutronThree.qa;
+    demo2Wallet = testState.wallets.qaNeutronFour.qa;
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;
@@ -168,7 +168,7 @@ describe('Neutron / Subdao', () => {
         value: '123123123', // expected boolean, provided number
       });
       const goodMessage = sendProposal({
-        to: neutronAccount2.wallet.address.toString(),
+        to: neutronAccount2.wallet.address,
         denom: NEUTRON_DENOM,
         amount: '100',
       });
@@ -328,7 +328,7 @@ describe('Neutron / Subdao', () => {
       const coinsForDemo2 = 2000;
       proposalId = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: neutronAccount2.wallet.address.toString(),
+          recipient: neutronAccount2.wallet.address,
           amount: coinsForDemo2,
           denom: NEUTRON_DENOM,
         },
@@ -663,7 +663,7 @@ describe('Neutron / Subdao', () => {
     let proposalId: number;
     beforeAll(async () => {
       proposalId = await subdaoMember1.submitUpdateSubDaoMultisigParticipants([
-        subdaoMember2.user.wallet.address.toString(),
+        subdaoMember2.user.wallet.address,
       ]);
 
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(

@@ -1,5 +1,4 @@
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { exec } from 'child_process';
 import { generateMnemonic } from 'bip39';
 
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
@@ -10,11 +9,6 @@ import {
   IBC_ATOM_DENOM,
   IBC_USDC_DENOM,
 } from '@neutron-org/neutronjsplus';
-
-export const disconnectValidator = async (name: string) => {
-  const { stdout } = exec(`docker stop ${name}`);
-  return stdout;
-};
 
 const walletSet = async (
   prefix: string,
@@ -30,7 +24,7 @@ const walletSet = async (
 
 export class TestStateLocalCosmosTestNet {
   wallets: Record<string, Record<string, Wallet>>;
-  icq_web_host: string;
+  icqWebHost: string;
   rpc1: string;
   rpc2: string;
   rest1: string;
@@ -54,7 +48,7 @@ export class TestStateLocalCosmosTestNet {
     this.rest1 = restNeutron;
     this.rest2 = restGaia;
 
-    this.icq_web_host = 'http://localhost:9999';
+    this.icqWebHost = 'http://localhost:9999';
 
     this.wallets = {};
     const neutron = await walletSet(neutronPrefix, this.config);
@@ -151,6 +145,8 @@ export class TestStateLocalCosmosTestNet {
       { registry: new Registry(defaultRegistryTypes) },
     );
     const mnemonic = generateMnemonic();
+
+    console.log('mnemonic: ' + mnemonic);
     const newWallet = await mnemonicToWallet(mnemonic, prefix);
     for (const balance of balances) {
       await client.sendTokens(
@@ -164,7 +160,7 @@ export class TestStateLocalCosmosTestNet {
       );
     }
     const wal = await mnemonicToWallet(mnemonic, prefix);
-    return { genQaWal1: wal };
+    return { qa: wal };
   }
 }
 

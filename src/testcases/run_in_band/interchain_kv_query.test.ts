@@ -287,7 +287,7 @@ const removeQuery = async (
 const removeQueryViaTx = async (
   cm: WalletWrapper,
   queryId: bigint,
-  sender: string = cm.wallet.address.toString(),
+  sender: string = cm.wallet.address,
 ) => await cm.msgRemoveInterchainQuery(queryId, sender);
 
 const registerDelegatorDelegationsQuery = async (
@@ -440,7 +440,7 @@ describe('Neutron / Interchain KV Query', () => {
     );
     otherNeutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      testState.wallets.qaNeutronThree.qa,
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -486,7 +486,7 @@ describe('Neutron / Interchain KV Query', () => {
             register_balance_query: {
               connection_id: connectionId,
               denom: gaiaChain.denom,
-              addr: testState.wallets.cosmos.demo2.address.toString(),
+              addr: testState.wallets.cosmos.demo2.address,
               update_period: 10,
             },
           });
@@ -660,7 +660,7 @@ describe('Neutron / Interchain KV Query', () => {
       // reduce balance of demo2 wallet
       const queryId = 2;
       const res = await gaiaAccount.msgSend(
-        testState.wallets.cosmos.rly2.address.toString(),
+        testState.wallets.cosmos.rly2.address,
         '9000',
       );
       expect(res.code).toEqual(0);
@@ -928,7 +928,7 @@ describe('Neutron / Interchain KV Query', () => {
       // FIXME: enable after fix change params via proposal
       test.skip('should remove icq and check balances updates', async () => {
         const balancesBeforeRegistration = await neutronChain.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.neutron.demo1.address,
         );
         balancesBeforeRegistration.balances = filterIBCDenoms(
           balancesBeforeRegistration.balances as Coin[],
@@ -953,7 +953,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         const balancesAfterRegistration = await neutronChain.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.neutron.demo1.address,
         );
         balancesAfterRegistration.balances = filterIBCDenoms(
           balancesAfterRegistration.balances as Coin[],
@@ -964,7 +964,7 @@ describe('Neutron / Interchain KV Query', () => {
         await neutronChain.getWithAttempts(
           async () =>
             await neutronChain.queryBalances(
-              testState.wallets.neutron.demo1.address.toString(),
+              testState.wallets.neutron.demo1.address,
             ),
           async (response) => {
             const balances = filterIBCDenoms(response.balances as Coin[]);
@@ -982,7 +982,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         const balancesAfterRemoval = await neutronChain.queryBalances(
-          testState.wallets.neutron.demo1.address.toString(),
+          testState.wallets.neutron.demo1.address,
         );
         balancesAfterRemoval.balances = filterIBCDenoms(
           balancesAfterRemoval.balances as Coin[],
@@ -1015,7 +1015,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       const proposalResp = await msgSubmitProposal(
         gaiaAccount,
-        testState.wallets.cosmos.demo2.address.toString(),
+        testState.wallets.cosmos.demo2.address,
         '1250',
       );
 
@@ -1031,7 +1031,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       await msgVote(
         gaiaAccount,
-        testState.wallets.cosmos.demo2.address.toString(),
+        testState.wallets.cosmos.demo2.address,
         proposalId,
         '1250',
       );
@@ -1043,7 +1043,7 @@ describe('Neutron / Interchain KV Query', () => {
         updatePeriods[2],
         proposalId,
         [
-          testState.wallets.cosmos.demo2.address.toString(),
+          testState.wallets.cosmos.demo2.address,
           'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw', // Random address to check absent vote behavior in the result
         ],
       );
@@ -1086,7 +1086,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(interchainQueryResult.votes.proposal_votes).toEqual([
         {
           proposal_id: proposalId,
-          voter: testState.wallets.cosmos.demo2.address.toString(),
+          voter: testState.wallets.cosmos.demo2.address,
           options: [{ option: 1, weight: '1.000000000000000000' }],
         },
         { proposal_id: 0, voter: '', options: [] }, // Absent vote for random address (see above, about address cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw)
@@ -1104,7 +1104,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       const proposalResp = await msgSubmitProposal(
         gaiaAccount,
-        testState.wallets.cosmos.demo2.address.toString(),
+        testState.wallets.cosmos.demo2.address,
         '1250',
       );
 

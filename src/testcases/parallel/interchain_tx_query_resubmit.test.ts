@@ -40,7 +40,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -49,7 +49,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+      testState.wallets.qaCosmos.qa,
     );
   });
 
@@ -123,7 +123,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
       await neutronChain.waitBlocks(5);
 
-      const txs = await getUnsuccessfulTxs(testState.icq_web_host);
+      const txs = await getUnsuccessfulTxs(testState.icqWebHost);
       expect(txs.length).toEqual(5);
     });
 
@@ -132,10 +132,10 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         integration_tests_unset_query_mock: {},
       });
 
-      const resubmitTxs = (
-        await getUnsuccessfulTxs(testState.icq_web_host)
-      ).map((tx) => ({ query_id: tx.query_id, hash: tx.submitted_tx_hash }));
-      const resp = await postResubmitTxs(testState.icq_web_host, resubmitTxs);
+      const resubmitTxs = (await getUnsuccessfulTxs(testState.icqWebHost)).map(
+        (tx) => ({ query_id: tx.query_id, hash: tx.submitted_tx_hash }),
+      );
+      const resp = await postResubmitTxs(testState.icqWebHost, resubmitTxs);
       expect(resp.status).toEqual(200);
 
       await neutronChain.waitBlocks(20);
@@ -147,7 +147,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         query1UpdatePeriod * 2,
       );
 
-      const txs = await getUnsuccessfulTxs(testState.icq_web_host);
+      const txs = await getUnsuccessfulTxs(testState.icqWebHost);
       expect(txs.length).toEqual(0);
 
       const deposits = await queryRecipientTxs(
@@ -160,7 +160,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('resubmit nonexistent failed tx', async () => {
       await expect(
-        postResubmitTxs(testState.icq_web_host, [
+        postResubmitTxs(testState.icqWebHost, [
           { query_id: 1, hash: 'nonexistent' },
         ]).catch((e) => {
           throw new Error(e.response.data);
