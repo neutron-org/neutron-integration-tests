@@ -23,8 +23,11 @@ export class TestStateLocalCosmosTestNet {
   rpc2: string;
   rest1: string;
   rest2: string;
+  taken: any;
 
-  constructor(private config: any) {}
+  constructor(private config: any, private mnemonics: string[]) {
+    this.taken = {};
+  }
 
   async init() {
     const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
@@ -51,19 +54,23 @@ export class TestStateLocalCosmosTestNet {
     this.wallets = {
       cosmos,
       neutron,
-      // qaNeutron,
-      // qaCosmos,
-      // qaCosmosTwo,
-      // qaNeutronThree,
-      // qaNeutronFour,
-      // qaNeutronFive,
+      qaNeutron: { qa: await this.randomWallet(neutronPrefix) },
+      qaCosmos: { qa: await this.randomWallet(cosmosPrefix) },
+      qaCosmosTwo: { qa: await this.randomWallet(neutronPrefix) },
+      qaNeutronThree: { qa: await this.randomWallet(neutronPrefix) },
+      qaNeutronFour: { qa: await this.randomWallet(neutronPrefix) },
+      qaNeutronFive: { qa: await this.randomWallet(neutronPrefix) },
     };
     return this.wallets;
   }
 
-  async randomWallet(mnemonics: string[], prefix: string): Promise<Wallet> {
-    const idx = Math.floor(Math.random() * mnemonics.length);
-    return mnemonicToWallet(mnemonics[idx], prefix);
+  async randomWallet(prefix: string): Promise<Wallet> {
+    const idx = Math.floor(Math.random() * this.mnemonics.length);
+    if (this.taken[idx]) {
+      return this.randomWallet(prefix);
+    }
+    this.taken[idx] = true;
+    return mnemonicToWallet(this.mnemonics[idx], prefix);
   }
 
   async createQaWallet(

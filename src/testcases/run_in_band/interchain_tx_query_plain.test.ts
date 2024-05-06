@@ -1,6 +1,7 @@
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM, COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import { inject } from 'vitest';
 import {
   getRegisteredQuery,
   queryRecipientTxs,
@@ -27,7 +28,8 @@ describe('Neutron / Interchain TX Query', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

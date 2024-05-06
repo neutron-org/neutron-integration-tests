@@ -28,8 +28,8 @@ describe('Neutron / Simple', () => {
   let newTokenDenom: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
     const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

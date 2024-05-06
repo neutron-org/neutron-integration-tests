@@ -3,6 +3,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   WalletWrapper,
@@ -18,7 +19,8 @@ describe('Float operations support', () => {
   let contractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

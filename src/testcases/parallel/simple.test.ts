@@ -23,9 +23,9 @@ describe('Neutron / Simple', () => {
   let receiverContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
     const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,

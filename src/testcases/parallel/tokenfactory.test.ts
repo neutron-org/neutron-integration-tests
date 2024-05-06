@@ -32,9 +32,9 @@ describe('Neutron / Tokenfactory', () => {
   let ownerWallet: Wallet;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
     const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    await testState.init();
     ownerWallet = await testState.randomWallet(mnemonics, 'neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

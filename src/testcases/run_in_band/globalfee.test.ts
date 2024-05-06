@@ -4,6 +4,7 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { inject } from 'vitest';
 import {
   Dao,
   DaoMember,
@@ -26,7 +27,8 @@ describe('Neutron / Global Fee', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

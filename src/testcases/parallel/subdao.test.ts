@@ -52,9 +52,9 @@ describe('Neutron / Subdao', () => {
   let mainDao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
     const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    await testState.init();
     demo1Wallet = await testState.randomWallet(mnemonics, 'neutron');
     securityDaoWallet = await testState.randomWallet(mnemonics, 'neutron');
     demo2Wallet = await testState.randomWallet(mnemonics, 'neutron');
@@ -950,16 +950,8 @@ describe('Neutron / Subdao', () => {
             `Proposal ${i}`,
             `proposal ${i} description`,
             [
-              createBankSendMessage(
-                demo1Addr,
-                1000,
-                neutronChain.denom,
-              ),
-              createBankSendMessage(
-                demo2Addr,
-                2000,
-                neutronChain.denom,
-              ),
+              createBankSendMessage(demo1Addr, 1000, neutronChain.denom),
+              createBankSendMessage(demo2Addr, 2000, neutronChain.denom),
             ],
           );
 

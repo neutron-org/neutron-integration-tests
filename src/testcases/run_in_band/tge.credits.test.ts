@@ -3,6 +3,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
@@ -29,7 +30,8 @@ describe('Neutron / TGE / Credits', () => {
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     airdropAddress = testState.wallets.qaNeutronThree.qa.address;
     lockdropAddress = testState.wallets.qaNeutronFour.qa.address;

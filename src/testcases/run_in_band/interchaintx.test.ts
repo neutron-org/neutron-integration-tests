@@ -6,6 +6,7 @@ import {
   NEUTRON_DENOM,
   getSequenceId,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
 import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
@@ -39,7 +40,8 @@ describe('Neutron / Interchain TXs', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

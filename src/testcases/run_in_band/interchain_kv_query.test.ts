@@ -6,6 +6,7 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
+import { inject } from 'vitest';
 import {
   Dao,
   DaoMember,
@@ -427,7 +428,8 @@ describe('Neutron / Interchain KV Query', () => {
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

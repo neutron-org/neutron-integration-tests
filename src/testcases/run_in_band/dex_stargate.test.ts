@@ -3,6 +3,7 @@ import {
   getEventAttributesFromTx,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
@@ -40,7 +41,8 @@ describe('Neutron / dex module (stargate contract)', () => {
   let trancheKeyToQuery: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

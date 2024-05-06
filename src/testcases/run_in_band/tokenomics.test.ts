@@ -1,4 +1,3 @@
-import Long from 'long';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
@@ -7,6 +6,7 @@ import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
 import {
@@ -25,7 +25,8 @@ describe('Neutron / Tokenomics', () => {
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

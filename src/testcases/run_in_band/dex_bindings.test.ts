@@ -1,3 +1,4 @@
+import { inject } from 'vitest';
 import {
   CosmosWrapper,
   getEventAttribute,
@@ -45,7 +46,8 @@ describe('Neutron / dex module bindings', () => {
   let trancheKeyToQuery: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

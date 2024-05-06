@@ -33,9 +33,9 @@ describe('Neutron / Governance', () => {
   let contractAddressForAdminMigration: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
     const mnemonics = inject('initMnemonics');
+    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
