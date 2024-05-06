@@ -1,4 +1,3 @@
-import { Registry } from '@cosmjs/proto-signing';
 import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { TextProposal } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
 import {
@@ -60,18 +59,22 @@ export const msgUndelegate = async (
 export const msgSubmitProposal = async (
   wallet: walletWrapper.WalletWrapper,
   proposer: string,
-  registry: Registry,
   amount = '0',
 ): Promise<IndexedTx> => {
+  wallet.registry.register(TextProposal.typeUrl, TextProposal as any);
+  const textProposal: TextProposal = {
+    title: 'mock',
+    description: 'mock',
+  };
+  const value = wallet.registry.encode({
+    typeUrl: TextProposal.typeUrl,
+    value: textProposal,
+  });
   const msgSubmitProposal: MsgSubmitProposal = {
     proposer,
     content: {
-      // TODO: encode using cosmjs types
       typeUrl: '/cosmos.gov.v1beta1.TextProposal',
-      value: new TextProposal({
-        title: 'mock',
-        description: 'mock',
-      }).toBinary(),
+      value: value,
     },
     initialDeposit: [{ denom: wallet.chain.denom, amount: '10000000' }],
   };
