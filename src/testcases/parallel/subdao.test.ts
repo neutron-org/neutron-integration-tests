@@ -1,3 +1,4 @@
+import { inject } from 'vitest';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import {
@@ -53,9 +54,10 @@ describe('Neutron / Subdao', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    demo1Wallet = testState.wallets.qaNeutron.qa;
-    securityDaoWallet = testState.wallets.qaNeutronThree.qa;
-    demo2Wallet = testState.wallets.qaNeutronFour.qa;
+    const mnemonics = inject('initMnemonics');
+    demo1Wallet = await testState.randomWallet(mnemonics, 'neutron');
+    securityDaoWallet = await testState.randomWallet(mnemonics, 'neutron');
+    demo2Wallet = await testState.randomWallet(mnemonics, 'neutron');
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;
@@ -75,7 +77,7 @@ describe('Neutron / Subdao', () => {
     subDao = await setupSubDaoTimelockSet(
       neutronAccount1,
       mainDao.contracts.core.address,
-      securityDaoAddr.toString(),
+      securityDaoAddr,
       true,
     );
 
@@ -110,7 +112,7 @@ describe('Neutron / Subdao', () => {
     test('proposal timelock', async () => {
       proposalId = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: demo2Addr.toString(),
+          recipient: demo2Addr,
           amount: 2000,
           denom: neutronChain.denom,
         },
@@ -263,7 +265,7 @@ describe('Neutron / Subdao', () => {
     test('proposal timelock 3 with not enough funds initially to resubmit later', async () => {
       proposalId3 = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: demo2Addr.toString(),
+          recipient: demo2Addr,
           amount: 200000,
           denom: neutronChain.denom,
         },
@@ -308,13 +310,13 @@ describe('Neutron / Subdao', () => {
       // now that we have funds should execute without problems
 
       const balanceBefore = await neutronChain.queryDenomBalance(
-        demo2Addr.toString(),
+        demo2Addr,
         NEUTRON_DENOM,
       );
       await subdaoMember1.executeTimelockedProposal(proposalId3);
       await neutronChain.waitBlocks(2);
       const balanceAfter = await neutronChain.queryDenomBalance(
-        demo2Addr.toString(),
+        demo2Addr,
         NEUTRON_DENOM,
       );
 
@@ -377,7 +379,7 @@ describe('Neutron / Subdao', () => {
     beforeAll(async () => {
       proposalId = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: demo2Addr.toString(),
+          recipient: demo2Addr,
           amount: 2000,
           denom: neutronChain.denom,
         },
@@ -698,7 +700,7 @@ describe('Neutron / Subdao', () => {
     test('create a proposal to fund security DAO', async () => {
       proposalId = await subdaoMember1.submitSendProposal('send', 'send', [
         {
-          recipient: securityDaoAddr.toString(),
+          recipient: securityDaoAddr,
           amount: funding,
           denom: neutronChain.denom,
         },
@@ -761,7 +763,7 @@ describe('Neutron / Subdao', () => {
     test('execute proposal when subDAO is unpaused', async () => {
       await neutronAccount1.msgSend(subDao.contracts.core.address, '10000');
       const beforeExecBalance = await neutronChain.queryDenomBalance(
-        securityDaoAddr.toString(),
+        securityDaoAddr,
         neutronChain.denom,
       );
       await subdaoMember1.executeProposalWithAttempts(proposalId);
@@ -774,7 +776,7 @@ describe('Neutron / Subdao', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const afterExecBalance = await neutronChain.queryDenomBalance(
-        securityDaoAddr.toString(),
+        securityDaoAddr,
         neutronChain.denom,
       );
       expect(afterExecBalance).toEqual(beforeExecBalance + funding);
@@ -868,13 +870,13 @@ describe('Neutron / Subdao', () => {
         subDao.contracts.proposals.single.pre_propose.timelock!.address,
         {
           update_config: {
-            owner: demo2Addr.toString(),
+            owner: demo2Addr,
           },
         },
       );
 
       const expectedConfig: TimelockConfig = {
-        owner: demo2Addr.toString(),
+        owner: demo2Addr,
         overrule_pre_propose:
           mainDao.contracts.proposals.overrule.pre_propose.address,
         subdao: subDao.contracts.core.address,
@@ -905,13 +907,13 @@ describe('Neutron / Subdao', () => {
         subDao.contracts.proposals.single.pre_propose.timelock!.address,
         {
           update_config: {
-            owner: demo1Addr.toString(),
+            owner: demo1Addr,
           },
         },
       );
 
       const expectedConfig: TimelockConfig = {
-        owner: demo1Addr.toString(),
+        owner: demo1Addr,
         subdao: subDao.contracts.core.address,
         overrule_pre_propose:
           mainDao.contracts.proposals.overrule.pre_propose.address,
@@ -934,7 +936,7 @@ describe('Neutron / Subdao', () => {
       subDAOQueryTestScope = await setupSubDaoTimelockSet(
         neutronAccount1,
         mainDao.contracts.core.address,
-        demo1Addr.toString(),
+        demo1Addr,
         true,
       );
       subDAOQueryTestScopeMember = new DaoMember(
@@ -949,12 +951,12 @@ describe('Neutron / Subdao', () => {
             `proposal ${i} description`,
             [
               createBankSendMessage(
-                demo1Addr.toString(),
+                demo1Addr,
                 1000,
                 neutronChain.denom,
               ),
               createBankSendMessage(
-                demo2Addr.toString(),
+                demo2Addr,
                 2000,
                 neutronChain.denom,
               ),

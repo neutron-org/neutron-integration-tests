@@ -16,6 +16,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -34,6 +35,7 @@ describe('Neutron / Governance', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
+    const mnemonics = inject('initMnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -41,7 +43,7 @@ describe('Neutron / Governance', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -50,14 +52,14 @@ describe('Neutron / Governance', () => {
     daoMember2 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        testState.wallets.qaNeutronThree.qa,
+        await testState.randomWallet(mnemonics, 'neutron'),
       ),
       mainDao,
     );
     daoMember3 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        testState.wallets.qaNeutronFour.qa,
+        await testState.randomWallet(mnemonics, 'neutron'),
       ),
       mainDao,
     );

@@ -16,6 +16,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -33,6 +34,7 @@ describe('Neutron / Subdao Overrule', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
+    const mnemonics = inject('initMnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -40,11 +42,11 @@ describe('Neutron / Subdao Overrule', () => {
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);

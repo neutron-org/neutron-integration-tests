@@ -21,6 +21,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -33,7 +34,8 @@ describe('Neutron / Tokenfactory', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    ownerWallet = testState.wallets.qaNeutron.qa;
+    const mnemonics = inject('initMnemonics');
+    ownerWallet = await testState.randomWallet(mnemonics, 'neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,

@@ -8,6 +8,7 @@ import {
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { inject } from 'vitest';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
 const INVESTORS_VESTING_VAULT_CONTRACT_KEY = 'INVESTORS_VESTING_VAULT';
@@ -27,6 +28,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
+    const mnemonics = inject('initMnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -34,19 +36,19 @@ describe('Neutron / TGE / Investors vesting vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     contractAddresses = await deployContracts(
       neutronChain,

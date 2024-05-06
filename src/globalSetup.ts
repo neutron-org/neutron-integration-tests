@@ -66,7 +66,7 @@ async function fundWallets(
   );
 
   const richguy = (await directwallet.getAccounts())[0].address;
-  const pooramount = '100000000';
+  const pooramount = '10000000000';
   const values: Promise<Output>[] = mnemonics.map((mnemonic) => {
     const promiseFunc = DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
       prefix: prefix,

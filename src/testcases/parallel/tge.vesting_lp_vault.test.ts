@@ -21,6 +21,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -55,6 +56,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
+    const mnemonics = inject('initMnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -62,19 +64,19 @@ describe('Neutron / TGE / Vesting LP vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFour.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronFive.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     contractAddresses = await deployContracts(
       neutronChain,
@@ -153,6 +155,29 @@ describe('Neutron / TGE / Vesting LP vault', () => {
       usdcNtrnProviderShare - user1UsdcVestingAmount;
     describe('prepare oracles', () => {
       test('provide liquidity to NTRN_ATOM pool', async () => {
+        const testCoins = [
+          {
+            denom: IBC_ATOM_DENOM,
+            amount: '11500000000',
+          },
+          {
+            denom: IBC_USDC_DENOM,
+            amount: '11500000000',
+          },
+        ];
+        const rich = await createWalletWrapper(
+          neutronChain,
+          testState.wallets.neutron.demo1,
+        );
+        await rich.wasmClient.sendTokens(
+          rich.wallet.address,
+          cmManager.wallet.address,
+          testCoins,
+          {
+            gas: '300000',
+            amount: [{ denom: neutronChain.denom, amount: '1500' }],
+          },
+        );
         const providedAssets = [
           nativeToken(IBC_ATOM_DENOM, atomProvideAmount.toString()),
           nativeToken(NEUTRON_DENOM, ntrnProvideAmount.toString()),

@@ -18,6 +18,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -33,6 +34,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
+    const mnemonics = inject('initMnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
@@ -40,7 +42,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -49,7 +51,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.qa,
+      await testState.randomWallet(mnemonics, 'cosmos'),
     );
   });
 

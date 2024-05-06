@@ -11,6 +11,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -31,9 +32,10 @@ describe('Neutron / Credits Vault', () => {
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
-    daoWallet = testState.wallets.qaNeutron.qa;
-    airdropWallet = testState.wallets.qaNeutronFour.qa;
-    lockdropWallet = testState.wallets.qaNeutronFive.qa;
+    const mnemonics = inject('initMnemonics');
+    daoWallet = await testState.randomWallet(mnemonics, 'neutron');
+    airdropWallet = await testState.randomWallet(mnemonics, 'neutron');
+    lockdropWallet = await testState.randomWallet(mnemonics, 'neutron');
 
     lockdropAddr = lockdropWallet.address;
 

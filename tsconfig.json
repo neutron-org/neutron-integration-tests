@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "types": ["node", "jest", "vitest/globals"],
+    "types": ["node", "vitest/globals"],
     "module": "commonjs",
     "lib": ["esnext"],
     "outDir": "lib",
