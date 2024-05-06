@@ -295,7 +295,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       });
     });
 
-    describe('MultiHopSwap', () => {
+    describe.skip('MultiHopSwap', () => {
       // TBD
       // console.log(trancheKey);
       // test('MultiHopSwap', async () => {

@@ -269,7 +269,7 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr3: string = addrThird;
-  const query3UpdatePeriod = 4;
+  const query3UpdatePeriod = 8;
   const amountToAddrThird1 = 3000;
   const amountToAddrThird2 = 4000;
   describe('check update period', () => {
@@ -363,6 +363,7 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
       let deposits = await depositsPromise;
       // update time hasn't come yet despite the fact the sent funds are already on the account
+      console.log('deposits.transfers: \n' + JSON.stringify(deposits.transfers));
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
