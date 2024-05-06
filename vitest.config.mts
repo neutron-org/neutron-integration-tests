@@ -3,6 +3,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [],
   test: {
+    sequence: {
+      hooks: 'list',
+    },
+    // maxConcurrency: 1,
     globals: true,
     globalSetup: ['./src/globalSetup.ts'],
     hookTimeout: 500_000,
