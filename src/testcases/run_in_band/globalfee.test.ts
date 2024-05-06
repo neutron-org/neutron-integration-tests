@@ -45,7 +45,7 @@ describe('Neutron / Global Fee', () => {
         await daoMain.queryVotingPower(
           daoMember.user.wallet.address.toString(),
         ),
-      async (response) => response.power == 1000,
+      async (response) => response.power == 10000,
       20,
     );
 

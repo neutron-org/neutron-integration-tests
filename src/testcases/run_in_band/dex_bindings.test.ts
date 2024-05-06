@@ -1,5 +1,6 @@
 import {
   CosmosWrapper,
+  getEventAttribute,
   getEventAttributesFromTx,
   NEUTRON_DENOM,
   WalletWrapper,
@@ -24,11 +25,15 @@ import {
   PoolMetadataResponse,
   PoolReservesResponse,
   PoolResponse,
-} from '@neutron-org/neutronjsplus/dist/dex';
+} from '@neutron-org/neutronjsplus/dist/dex_bindings';
+import {
+  msgCreateDenom,
+  msgMintDenom,
+} from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
 const config = require('../../config.json');
 
-describe('Neutron / dex module (stargate contract)', () => {
+describe('Neutron / dex module bindings', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -50,10 +55,10 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
   });
 
-  describe('Instantiate dex stargate contract', () => {
+  describe('Instantiate dex binding contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_STARGATE);
+      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_DEV);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
@@ -90,13 +95,15 @@ describe('Neutron / dex module (stargate contract)', () => {
                 fees: [0], // u64
                 options: [
                   {
-                    disable_autoswap: true,
+                    disable_swap: true,
                   },
                 ],
               },
             }),
           ),
-        ).rejects.toThrowError(/untrn<>untrn: Invalid token pair/);
+        ).rejects.toThrowError(
+          /failed to execute \*types.MsgDeposit: untrn<>untrn: Invalid token pair/,
+        );
       });
       test('Valid pair', async () => {
         // pool denom - 'neutron/pool/0'
@@ -113,7 +120,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               fees: [0], // u64
               options: [
                 {
-                  disable_autoswap: true,
+                  disable_swap: true,
                 },
               ],
             },
@@ -159,7 +166,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_out: 'uibcusdc',
               tick_index_in_to_out: 1,
               amount_in: '10',
-              order_type: LimitOrderType.GoodTilCanceled,
+              order_type: LimitOrderType.GoodTilCancelled,
             },
           }),
         );
@@ -288,11 +295,13 @@ describe('Neutron / dex module (stargate contract)', () => {
                 tick_index_in_to_out: 1,
                 amount_in: '10',
                 expiration_time: 1,
-                order_type: 10,
+                order_type: 'unknown',
               },
             }),
           ),
-        ).rejects.toThrowError(/invalid numeric value for LimitOrderType/); // checked on contract's level
+        ).rejects.toThrowError(
+          /unknown variant `unknown`, expected one of `GOOD_TIL_CANCELLED`, `FILL_OR_KILL`, `IMMEDIATE_OR_CANCEL`, `JUST_IN_TIME`, `GOOD_TIL_TIME`/,
+        );
       });
     });
     describe('Withdraw filled lo', () => {
@@ -328,22 +337,114 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
 
     describe('MultiHopSwap', () => {
-      // TBD
-      // console.log(trancheKey);
-      // test('MultiHopSwap', async () => {
-      //   await expect(
-      //     neutronAccount.executeContract(
-      //       contractAddress,
-      //       JSON.stringify({
-      //         cancel_limit_order: {
-      //           tranche_key: trancheKey,
-      //         },
-      //       }),
-      //     ),
-      //   ).rejects.toThrowError(
-      //     /No active limit found. It does not exist or has already been filled/,
-      //   );
-      // });
+      const denoms: any[] = [];
+      test('successfull multihops', async () => {
+        const numberDenoms = 10;
+        for (let i = 0; i < numberDenoms; i++) {
+          const data = await msgCreateDenom(
+            neutronAccount,
+            neutronAccount.wallet.address.toString(),
+            String(i),
+          );
+
+          const newTokenDenom = getEventAttribute(
+            (data as any).events,
+            'create_denom',
+            'new_token_denom',
+          );
+
+          await msgMintDenom(
+            neutronAccount,
+            neutronAccount.wallet.address.toString(),
+            {
+              denom: newTokenDenom,
+              amount: '1000000',
+            },
+          );
+          await neutronAccount.msgSend(contractAddress, {
+            amount: '1000000',
+            denom: newTokenDenom,
+          });
+          denoms.push({
+            denom: newTokenDenom,
+            balance: 1000000,
+          });
+        }
+        for (let i = 0; i < numberDenoms - 1; i++) {
+          const res = await neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              deposit: {
+                receiver: contractAddress,
+                token_a: denoms[i].denom,
+                token_b: denoms[i + 1].denom,
+                amounts_a: ['1000'], // uint128
+                amounts_b: ['1000'], // uint128
+                tick_indexes_a_to_b: [5], // i64
+                fees: [0], // u64
+                options: [
+                  {
+                    disable_swap: true,
+                  },
+                ],
+              },
+            }),
+          );
+          expect(res.code).toEqual(0);
+        }
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            multi_hop_swap: {
+              receiver: contractAddress,
+              routes: [
+                {
+                  hops: [
+                    denoms[0].denom,
+                    denoms[1].denom,
+                    denoms[2].denom,
+                    denoms[3].denom,
+                    denoms[4].denom,
+                    denoms[5].denom,
+                    denoms[6].denom,
+                    denoms[7].denom,
+                    denoms[8].denom,
+                    denoms[9].denom,
+                  ],
+                },
+              ],
+              amount_in: '100',
+              exit_limit_price: '0.1',
+              pick_best_route: true,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+        console.log(res);
+      });
+
+      test('no route found', async () => {
+        await expect(
+          neutronAccount.executeContract(
+            contractAddress,
+            JSON.stringify({
+              multi_hop_swap: {
+                receiver: contractAddress,
+                routes: [
+                  {
+                    hops: [denoms[0].denom, denoms[9].denom],
+                  },
+                ],
+                amount_in: '100',
+                exit_limit_price: '0.1',
+                pick_best_route: true,
+              },
+            }),
+          ),
+        ).rejects.toThrowError(
+          /All multihop routes failed limitPrice check or had insufficient liquidity/,
+        );
+      });
     });
   });
   describe('DEX queries', () => {
@@ -360,7 +461,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<LimitOrderTrancheUserResponse>(
           contractAddress,
           {
-            get_limit_order_tranche_user: {
+            limit_order_tranche_user: {
               address: contractAddress,
               tranche_key: trancheKeyToWithdraw,
             },
@@ -373,7 +474,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllLimitOrderTrancheUserResponse>(
           contractAddress,
           {
-            all_limit_order_tranche_user: {},
+            limit_order_tranche_user_all: {},
           },
         );
       expect(res.limit_order_tranche_user.length).toBeGreaterThan(0);
@@ -383,7 +484,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllUserLimitOrdersResponse>(
           contractAddress,
           {
-            all_limit_order_tranche_user_by_address: {
+            limit_order_tranche_user_all_by_address: {
               address: contractAddress,
             },
           },
@@ -395,7 +496,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<LimitOrderTrancheResponse>(
           contractAddress,
           {
-            get_limit_order_tranche: {
+            limit_order_tranche: {
               pair_id: 'uibcusdc<>untrn',
               tick_index: -2,
               token_in: 'untrn',
@@ -410,7 +511,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         neutronAccount.chain.queryContract<LimitOrderTrancheResponse>(
           contractAddress,
           {
-            get_limit_order_tranche: {
+            limit_order_tranche: {
               pair_id: 'untrn<>notadenom',
               tick_index: 1,
               token_in: 'untrn',
@@ -425,7 +526,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       await neutronAccount.chain.queryContract<AllLimitOrderTrancheResponse>(
         contractAddress,
         {
-          all_limit_order_tranche: {
+          limit_order_tranche_all: {
             pair_id: 'uibcusdc<>untrn',
             token_in: 'untrn',
           },
@@ -439,7 +540,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
           contractAddress,
           {
-            all_user_deposits: {
+            user_deposit_all: {
               address: contractAddress,
               include_pool_data: true,
             },
@@ -453,7 +554,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllUserDepositsResponse>(
           contractAddress,
           {
-            all_user_deposits: {
+            user_deposit_all: {
               address: contractAddress,
               include_pool_data: false,
             },
@@ -467,7 +568,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllTickLiquidityResponse>(
           contractAddress,
           {
-            all_tick_liquidity: {
+            tick_liquidity_all: {
               pair_id: 'uibcusdc<>untrn',
               token_in: 'untrn',
             },
@@ -479,7 +580,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       await neutronAccount.chain.queryContract<InactiveLimitOrderTrancheResponse>(
         contractAddress,
         {
-          get_inactive_limit_order_tranche: {
+          inactive_limit_order_tranche: {
             pair_id: 'uibcusdc<>untrn',
             tick_index: -2,
             token_in: 'untrn',
@@ -493,7 +594,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllInactiveLimitOrderTrancheResponse>(
           contractAddress,
           {
-            all_inactive_limit_order_tranche: {},
+            inactive_limit_order_tranche_all: {},
           },
         );
       expect(res.inactive_limit_order_tranche.length).toBeGreaterThan(0);
@@ -503,7 +604,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllPoolReservesResponse>(
           contractAddress,
           {
-            all_pool_reserves: {
+            pool_reserves_all: {
               pair_id: 'uibcusdc<>untrn',
               token_in: 'untrn',
             },
@@ -515,7 +616,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       await neutronAccount.chain.queryContract<PoolReservesResponse>(
         contractAddress,
         {
-          get_pool_reserves: {
+          pool_reserves: {
             pair_id: 'uibcusdc<>untrn',
             tick_index: -1,
             token_in: 'untrn',
@@ -564,7 +665,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       await neutronAccount.chain.queryContract<PoolMetadataResponse>(
         contractAddress,
         {
-          get_pool_metadata: { id: 0 },
+          pool_metadata: { id: 0 },
         },
       );
     });
@@ -573,7 +674,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         await neutronAccount.chain.queryContract<AllPoolMetadataResponse>(
           contractAddress,
           {
-            all_pool_metadata: {},
+            pool_metadata_all: {},
           },
         );
       expect(res.pool_metadata.length).toBeGreaterThan(0);
