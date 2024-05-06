@@ -5,13 +5,14 @@ import {
   NEUTRON_DENOM,
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -28,6 +29,7 @@ describe('Neutron / Simple', () => {
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('initMnemonics');
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -36,7 +38,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet(mnemonics, 'neutron'),
     );
 
     gaiaChain = new CosmosWrapper(
@@ -46,7 +48,7 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.qa,
+      await testState.randomWallet(mnemonics, 'cosmos'),
     );
   });
 

@@ -1,4 +1,4 @@
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import {
   CosmosWrapper,
   NEUTRON_DENOM,

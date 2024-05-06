@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,

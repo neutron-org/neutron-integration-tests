@@ -19,7 +19,7 @@ import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import axios from 'axios';
 import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmos_testnet';
+import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
 import {
   createWalletWrapper,
   WalletWrapper,

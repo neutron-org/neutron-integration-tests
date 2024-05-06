@@ -6,7 +6,7 @@ export default defineConfig({
     sequence: {
       hooks: 'list',
     },
-    // maxConcurrency: 1,
+    maxConcurrency: 4,
     globals: true,
     globalSetup: ['./src/globalSetup.ts'],
     hookTimeout: 500_000,

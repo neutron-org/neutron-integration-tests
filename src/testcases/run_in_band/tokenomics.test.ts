@@ -7,7 +7,7 @@ import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmos_testnet';
+import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
 import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
 import {
   WalletWrapper,

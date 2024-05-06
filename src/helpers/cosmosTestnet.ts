@@ -3,14 +3,8 @@ import { generateMnemonic } from 'bip39';
 
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import {
-  NEUTRON_DENOM,
-  COSMOS_DENOM,
-  IBC_ATOM_DENOM,
-  IBC_USDC_DENOM,
-} from '@neutron-org/neutronjsplus';
 
-const walletSet = async (
+const genesisWalletSet = async (
   prefix: string,
   config: any,
 ): Promise<Record<string, Wallet>> => ({
@@ -51,76 +45,25 @@ export class TestStateLocalCosmosTestNet {
     this.icqWebHost = 'http://localhost:9999';
 
     this.wallets = {};
-    const neutron = await walletSet(neutronPrefix, this.config);
-    const cosmos = await walletSet(cosmosPrefix, this.config);
-
-    const qaNeutron = await this.createQaWallet(
-      neutronPrefix,
-      neutron.demo1,
-      NEUTRON_DENOM,
-      rpcNeutron,
-      [
-        {
-          denom: NEUTRON_DENOM,
-          amount: '11500000000',
-        },
-        {
-          denom: IBC_ATOM_DENOM,
-          amount: '11500000000',
-        },
-        {
-          denom: IBC_USDC_DENOM,
-          amount: '11500000000',
-        },
-      ],
-    );
-
-    const qaNeutronThree = await this.createQaWallet(
-      neutronPrefix,
-      neutron.demo1,
-      NEUTRON_DENOM,
-      rpcNeutron,
-    );
-
-    const qaNeutronFour = await this.createQaWallet(
-      neutronPrefix,
-      neutron.demo1,
-      NEUTRON_DENOM,
-      rpcNeutron,
-    );
-
-    const qaNeutronFive = await this.createQaWallet(
-      neutronPrefix,
-      neutron.demo1,
-      NEUTRON_DENOM,
-      rpcNeutron,
-    );
-
-    const qaCosmos = await this.createQaWallet(
-      cosmosPrefix,
-      cosmos.demo2,
-      COSMOS_DENOM,
-      rpcGaia,
-    );
-
-    const qaCosmosTwo = await this.createQaWallet(
-      cosmosPrefix,
-      cosmos.demo2,
-      COSMOS_DENOM,
-      rpcGaia,
-    );
+    const neutron = await genesisWalletSet(neutronPrefix, this.config);
+    const cosmos = await genesisWalletSet(cosmosPrefix, this.config);
 
     this.wallets = {
       cosmos,
       neutron,
-      qaNeutron,
-      qaCosmos,
-      qaCosmosTwo,
-      qaNeutronThree,
-      qaNeutronFour,
-      qaNeutronFive,
+      // qaNeutron,
+      // qaCosmos,
+      // qaCosmosTwo,
+      // qaNeutronThree,
+      // qaNeutronFour,
+      // qaNeutronFive,
     };
     return this.wallets;
+  }
+
+  async randomWallet(mnemonics: string[], prefix: string): Promise<Wallet> {
+    const idx = Math.floor(Math.random() * mnemonics.length);
+    return mnemonicToWallet(mnemonics[idx], prefix);
   }
 
   async createQaWallet(
