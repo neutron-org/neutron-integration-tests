@@ -69,6 +69,7 @@ export class TestStateLocalCosmosTestNet {
     if (this.taken[idx]) {
       return this.randomWallet(prefix);
     }
+    console.log('randomWallet: ' + prefix + ' mnemonics: \n' + this.mnemonics[idx] + '\n\n')
     this.taken[idx] = true;
     return mnemonicToWallet(this.mnemonics[idx], prefix);
   }
