@@ -1,21 +1,21 @@
+import { Coin } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
-import { inject } from 'vitest';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { Coin } from '@cosmjs/proto-signing';
 import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { inject } from 'vitest';
+import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
 
 const config = require('../../config.json');
 
@@ -27,8 +27,7 @@ describe('Neutron / Global Fee', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new TestStateLocalCosmosTestNet(config, inject('mnemonics'));
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -37,7 +36,7 @@ describe('Neutron / Global Fee', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.qa,
+      await testState.randomWallet('neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -45,7 +44,10 @@ describe('Neutron / Global Fee', () => {
     daoMember = new DaoMember(neutronAccount, daoMain);
     await daoMember.bondFunds('10000');
     await neutronChain.getWithAttempts(
-      async () => await daoMain.queryVotingPower(daoMember.user.wallet.address),
+      async () =>
+        await daoMain.queryVotingPower(
+          daoMember.user.wallet.address.toString(),
+        ),
       async (response) => response.power == 10000,
       20,
     );
@@ -57,10 +59,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   afterAll(async () => {
-    await daoMember.unbondFunds('10000', {
-      gas: '4000000',
-      amount: [{ denom: 'untrn', amount: '40000' }],
-    });
+    await daoMember.unbondFunds('10000');
   });
 
   let counter = 1;
@@ -95,15 +94,18 @@ describe('Neutron / Global Fee', () => {
       '1000',
       {
         gas: '4000000',
-        amount: [{ denom: neutronChain.denom, amount: '400000' }],
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
       },
     );
 
-    await daoMember.voteYes(proposalId, 'single');
+    await daoMember.voteYes(proposalId, 'single', {
+      gas: '4000000',
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+    });
     await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
       gas: '4000000',
-      amount: [{ denom: daoMember.user.chain.denom, amount: '400000' }],
+      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
 
     counter++;

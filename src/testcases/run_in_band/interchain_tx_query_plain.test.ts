@@ -363,7 +363,9 @@ describe('Neutron / Interchain TX Query', () => {
       ]);
       let deposits = await depositsPromise;
       // update time hasn't come yet despite the fact the sent funds are already on the account
-      console.log('deposits.transfers: \n' + JSON.stringify(deposits.transfers));
+      console.log(
+        'deposits.transfers: \n' + JSON.stringify(deposits.transfers),
+      );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,

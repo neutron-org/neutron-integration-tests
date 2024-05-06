@@ -24,8 +24,6 @@ import {
 
 const config = require('../../config.json');
 
-BigInt.prototype.toJSON = function() { return this.toString() };
-
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
