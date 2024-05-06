@@ -41,7 +41,7 @@ describe('Neutron / Voting Registry', () => {
   const vault3Bonding = 5_000_000;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(

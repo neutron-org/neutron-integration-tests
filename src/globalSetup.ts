@@ -24,19 +24,19 @@ export default async function ({ provide }: GlobalSetupContext) {
     await setup(host1, host2);
   }
 
-  const initMnemonics: string[] = [];
+  const mnemonics: string[] = [];
   for (let i = 0; i < WALLET_COUNT; i++) {
-    initMnemonics.push(generateMnemonic());
+    mnemonics.push(generateMnemonic());
   }
 
   const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
   const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
   const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
   const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
-  await fundWallets(initMnemonics, rpcNeutron, neutronPrefix, NEUTRON_DENOM);
-  await fundWallets(initMnemonics, rpcGaia, cosmosPrefix, COSMOS_DENOM);
+  await fundWallets(mnemonics, rpcNeutron, neutronPrefix, NEUTRON_DENOM);
+  await fundWallets(mnemonics, rpcGaia, cosmosPrefix, COSMOS_DENOM);
 
-  provide('initMnemonics', initMnemonics);
+  provide('mnemonics', mnemonics);
 
   return async () => {
     if (teardownHappened) {
@@ -114,6 +114,6 @@ async function fundWallets(
 // to have type safe access to `provide/inject` methods:
 declare module 'vitest' {
   export interface ProvidedContext {
-    initMnemonics: string[];
+    mnemonics: string[];
   }
 }

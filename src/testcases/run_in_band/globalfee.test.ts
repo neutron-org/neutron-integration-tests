@@ -27,7 +27,7 @@ describe('Neutron / Global Fee', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(

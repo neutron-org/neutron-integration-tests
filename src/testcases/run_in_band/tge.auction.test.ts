@@ -158,7 +158,7 @@ describe('Neutron / TGE / Auction', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     reserveAddress = testState.wallets.qaNeutronThree.qa.address;
@@ -229,6 +229,30 @@ describe('Neutron / TGE / Auction', () => {
         ).qa,
       );
     }
+
+    const testCoins = [
+      {
+        denom: IBC_ATOM_DENOM,
+        amount: '11500000000',
+      },
+      {
+        denom: IBC_USDC_DENOM,
+        amount: '11500000000',
+      },
+    ];
+    const rich = await createWalletWrapper(
+      neutronChain,
+      testState.wallets.neutron.demo1,
+    );
+    await rich.wasmClient.sendTokens(
+      rich.wallet.address,
+      cmInstantiator.wallet.address,
+      testCoins,
+      {
+        gas: '300000',
+        amount: [{ denom: neutronChain.denom, amount: '1500' }],
+      },
+    );
   });
 
   describe('Deploy', () => {

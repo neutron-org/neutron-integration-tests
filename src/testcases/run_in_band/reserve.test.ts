@@ -34,7 +34,7 @@ describe('Neutron / Treasury', () => {
   let holder1Addr: string;
   let holder2Addr: string;
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(

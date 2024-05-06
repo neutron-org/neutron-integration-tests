@@ -52,7 +52,7 @@ describe('Neutron / Subdao', () => {
   let mainDao: Dao;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     demo1Wallet = await testState.randomWallet(mnemonics, 'neutron');

@@ -41,7 +41,7 @@ describe('Neutron / dex module (stargate contract)', () => {
   let trancheKeyToQuery: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(

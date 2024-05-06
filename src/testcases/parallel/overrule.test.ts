@@ -32,10 +32,10 @@ describe('Neutron / Subdao Overrule', () => {
   let mainDao: Dao;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,

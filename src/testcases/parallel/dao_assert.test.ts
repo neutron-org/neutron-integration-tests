@@ -30,7 +30,7 @@ describe('DAO / Check', () => {
   let treasuryContract: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
 

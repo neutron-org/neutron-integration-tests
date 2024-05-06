@@ -25,7 +25,7 @@ describe('Neutron / Tokenomics', () => {
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(

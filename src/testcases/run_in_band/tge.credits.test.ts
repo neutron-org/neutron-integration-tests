@@ -30,7 +30,7 @@ describe('Neutron / TGE / Credits', () => {
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     airdropAddress = testState.wallets.qaNeutronThree.qa.address;

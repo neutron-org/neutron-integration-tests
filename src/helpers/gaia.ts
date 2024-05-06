@@ -1,3 +1,4 @@
+import { Registry } from '@cosmjs/proto-signing';
 import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { TextProposal } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
 import {
@@ -59,6 +60,7 @@ export const msgUndelegate = async (
 export const msgSubmitProposal = async (
   wallet: walletWrapper.WalletWrapper,
   proposer: string,
+  registry: Registry,
   amount = '0',
 ): Promise<IndexedTx> => {
   const msgSubmitProposal: MsgSubmitProposal = {

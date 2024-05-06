@@ -26,7 +26,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
   let contractAddresses: Record<string, string> = {};
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(

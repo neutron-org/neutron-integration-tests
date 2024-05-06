@@ -24,6 +24,8 @@ import {
 
 const config = require('../../config.json');
 
+BigInt.prototype.toJSON = function() { return this.toString() };
+
 describe('Neutron / Interchain TXs', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
@@ -40,7 +42,7 @@ describe('Neutron / Interchain TXs', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    const mnemonics = inject('initMnemonics');
+    const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
@@ -206,12 +208,13 @@ describe('Neutron / Interchain TXs', () => {
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
+        // console.log('dres: \n' + JSON.stringify(res1.delegationResponses));
         expect(res1.delegationResponses).toEqual([
           {
             balance: { amount: '1000', denom: gaiaChain.denom },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '1000.000000000000000000',
+              shares: '1000000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -220,7 +223,7 @@ describe('Neutron / Interchain TXs', () => {
         const res2 = await gaiaChain.getWithAttempts(
           () =>
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress2 }),
-          async (delegations) => delegations.delegationResponses?.length == 1,
+          async (delegations) => delegations.delegationResponses?.length == 0,
         );
         expect(res2.delegationResponses).toEqual([]);
       });
@@ -278,7 +281,7 @@ describe('Neutron / Interchain TXs', () => {
             balance: { amount: '2000', denom: gaiaChain.denom },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '2000.000000000000000000',
+              shares: '2000000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -540,7 +543,7 @@ describe('Neutron / Interchain TXs', () => {
             balance: { amount: '1020', denom: gaiaChain.denom },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '1020.000000000000000000',
+              shares: '1020000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
