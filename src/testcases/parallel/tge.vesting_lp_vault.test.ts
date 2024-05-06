@@ -64,19 +64,19 @@ describe('Neutron / TGE / Vesting LP vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     contractAddresses = await deployContracts(
       neutronChain,

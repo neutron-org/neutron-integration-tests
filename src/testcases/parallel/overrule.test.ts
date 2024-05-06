@@ -42,11 +42,11 @@ describe('Neutron / Subdao Overrule', () => {
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);

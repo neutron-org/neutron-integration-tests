@@ -33,9 +33,9 @@ describe('Neutron / Credits Vault', () => {
     const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
-    daoWallet = await testState.randomWallet(mnemonics, 'neutron');
-    airdropWallet = await testState.randomWallet(mnemonics, 'neutron');
-    lockdropWallet = await testState.randomWallet(mnemonics, 'neutron');
+    daoWallet = await testState.randomWallet('neutron');
+    airdropWallet = await testState.randomWallet('neutron');
+    lockdropWallet = await testState.randomWallet('neutron');
 
     lockdropAddr = lockdropWallet.address;
 

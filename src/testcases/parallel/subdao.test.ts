@@ -55,9 +55,9 @@ describe('Neutron / Subdao', () => {
     const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
-    demo1Wallet = await testState.randomWallet(mnemonics, 'neutron');
-    securityDaoWallet = await testState.randomWallet(mnemonics, 'neutron');
-    demo2Wallet = await testState.randomWallet(mnemonics, 'neutron');
+    demo1Wallet = await testState.randomWallet('neutron');
+    securityDaoWallet = await testState.randomWallet('neutron');
+    demo2Wallet = await testState.randomWallet('neutron');
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;

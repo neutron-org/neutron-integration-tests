@@ -43,7 +43,7 @@ describe('Neutron / Governance', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -52,14 +52,14 @@ describe('Neutron / Governance', () => {
     daoMember2 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.randomWallet(mnemonics, 'neutron'),
+        await testState.randomWallet('neutron'),
       ),
       mainDao,
     );
     daoMember3 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.randomWallet(mnemonics, 'neutron'),
+        await testState.randomWallet('neutron'),
       ),
       mainDao,
     );

@@ -33,7 +33,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       COSMOS_DENOM,
@@ -42,11 +42,11 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet(mnemonics, 'cosmos'),
+      await testState.randomWallet('cosmos'),
     );
     gaiaAccount2 = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet(mnemonics, 'cosmos'),
+      await testState.randomWallet('cosmos'),
     );
   });
 

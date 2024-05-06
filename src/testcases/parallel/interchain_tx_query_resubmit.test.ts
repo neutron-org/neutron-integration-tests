@@ -42,7 +42,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet(mnemonics, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
@@ -51,7 +51,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet(mnemonics, 'cosmos'),
+      await testState.randomWallet('cosmos'),
     );
   });
 

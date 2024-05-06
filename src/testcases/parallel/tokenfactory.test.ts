@@ -35,7 +35,7 @@ describe('Neutron / Tokenfactory', () => {
     const mnemonics = inject('mnemonics');
     testState = new TestStateLocalCosmosTestNet(config, mnemonics);
     await testState.init();
-    ownerWallet = await testState.randomWallet(mnemonics, 'neutron');
+    ownerWallet = await testState.randomWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,
