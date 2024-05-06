@@ -1,3 +1,4 @@
+import { inject } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import {
