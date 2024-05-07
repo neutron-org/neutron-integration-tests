@@ -1,28 +1,33 @@
-import { inject } from 'vitest';
+import { Suite, inject } from 'vitest';
 import {
   cosmosWrapper,
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
   types,
-  walletWrapper,
 } from '@neutron-org/neutronjsplus';
-import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState } from '../../helpers/localState';
+import {
+  WalletWrapper,
+  createWalletWrapper,
+} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { LocalState, testOffset } from '../../helpers/localState';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 
 const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
   let testState: LocalState;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
-  let gaiaChain: cosmosWrapper.CosmosWrapper;
-  let neutronAccount: walletWrapper.WalletWrapper;
-  let gaiaAccount: walletWrapper.WalletWrapper;
-  let gaiaAccount2: walletWrapper.WalletWrapper;
+  let neutronChain: CosmosWrapper;
+  let gaiaChain: CosmosWrapper;
+  let neutronAccount: WalletWrapper;
+  let gaiaAccount: WalletWrapper;
+  let gaiaAccount2: WalletWrapper;
   let contractAddress: string;
   let receiverContractAddress: string;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
+    const offset = await testOffset(s);
+    console.log('simple test index: ' + offset);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
@@ -33,7 +38,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.walletWithOffset(offset, 'neutron'),
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       COSMOS_DENOM,
@@ -42,11 +47,11 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet('cosmos'),
+      await testState.walletWithOffset(offset, 'cosmos'),
     );
     gaiaAccount2 = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet('cosmos'),
+      await testState.walletWithOffset(offset, 'cosmos'),
     );
   });
 

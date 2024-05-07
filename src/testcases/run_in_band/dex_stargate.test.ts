@@ -3,8 +3,8 @@ import {
   getEventAttributesFromTx,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { inject } from 'vitest';
-import { LocalState } from './../../helpers/localState';
+import { inject, Suite } from 'vitest';
+import { LocalState, testIdx } from './../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   AllInactiveLimitOrderTrancheResponse,
@@ -40,7 +40,9 @@ describe('Neutron / dex module (stargate contract)', () => {
   let trancheKeyToWithdraw: string;
   let trancheKeyToQuery: string;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
+    const idx = await testIdx(s);
+    console.log('simple test index: ' + idx);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
