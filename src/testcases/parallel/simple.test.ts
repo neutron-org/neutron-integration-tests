@@ -10,7 +10,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState, testOffset } from '../../helpers/localState';
+import { LocalState } from '../../helpers/localState';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 
 const config = require('../../config.json');
@@ -25,10 +25,9 @@ describe('Neutron / Simple', () => {
   let contractAddress: string;
   let receiverContractAddress: string;
 
-  beforeAll(async (s: Suite) => {
-    const offset = await testOffset(s);
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
       NEUTRON_DENOM,
@@ -37,7 +36,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       COSMOS_DENOM,
@@ -46,11 +45,11 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.walletWithOffset(offset, 'cosmos'),
+      await testState.walletWithOffset('cosmos'),
     );
     gaiaAccount2 = await createWalletWrapper(
       gaiaChain,
-      await testState.walletWithOffset(offset, 'cosmos'),
+      await testState.walletWithOffset('cosmos'),
     );
   });
 

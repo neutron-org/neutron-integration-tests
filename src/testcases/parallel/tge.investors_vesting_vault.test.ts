@@ -7,7 +7,7 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState, testOffset } from '../../helpers/localState';
+import { LocalState } from '../../helpers/localState';
 import { inject, Suite } from 'vitest';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
@@ -25,10 +25,9 @@ describe('Neutron / TGE / Investors vesting vault', () => {
   let cmUser2: walletWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
 
-  beforeAll(async (s: Suite) => {
-    const offset = await testOffset(s);
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -37,19 +36,19 @@ describe('Neutron / TGE / Investors vesting vault', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     cmManager = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     cmUser1 = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     cmUser2 = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     contractAddresses = await deployContracts(
       neutronChain,

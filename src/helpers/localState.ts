@@ -6,6 +6,9 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 
+// limit of wallets precreated for one test
+const LIMIT_PER_TEST = 20;
+
 export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
   icqWebHost: string;
@@ -15,13 +18,17 @@ export class LocalState {
   rest2: string;
   taken: any;
   currentIdx: any;
+  suite: Suite | null;
+  offset: number;
 
-  constructor(private config: any, private mnemonics: string[]) {
+  constructor(private config: any, private mnemonics: string[], suite?: Suite) {
     this.taken = {
       cosmos: {},
       neutron: {},
     };
     this.currentIdx = { neutron: 0, cosmos: 0 };
+    this.suite = suite;
+    this.offset = null;
   }
 
   async init() {
@@ -68,15 +75,20 @@ export class LocalState {
     return mnemonicToWallet(this.mnemonics[idx], prefix);
   }
 
-  async walletWithOffset(offset: number, prefix: string): Promise<Wallet> {
-    const LIMIT_PER_TEST = 20;
+  async walletWithOffset(prefix: string): Promise<Wallet> {
+    if (!this.suite) {
+      throw 'no suite provided to use walletWithOffset';
+    }
+    if (this.offset === null) {
+      this.offset = await testOffset(this.suite);
+    }
 
-    const resultIdx = offset * LIMIT_PER_TEST + this.currentIdx[prefix];
+    const resultIdx = this.offset * LIMIT_PER_TEST + this.currentIdx[prefix];
 
     this.currentIdx[prefix] += 1;
 
     if (this.taken[prefix][resultIdx]) {
-      return this.walletWithOffset(offset, prefix);
+      return this.walletWithOffset(prefix);
     }
 
     this.taken[prefix][resultIdx] = true;
@@ -142,15 +154,11 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
-export async function testOffset(s: Suite): Promise<number> {
-  // console.log('testOffset(' + JSON.stringify(s.file.filepath) + ')\n\n');
+async function testOffset(s: Suite): Promise<number> {
   const filepath = s.file.filepath.trim();
-  // remove last element to get directory
   const splitted = filepath.split('/');
   const filename = splitted.pop().trim();
   const dir = splitted.join('/');
-
-  // console.log('filename: ' + filename, '  dir: ' + dir);
 
   return testIdxForNameDir(dir, filename);
 }

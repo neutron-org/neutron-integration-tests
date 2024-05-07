@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState, testOffset } from './../../helpers/localState';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,
@@ -32,10 +32,9 @@ describe('Neutron / Governance', () => {
   let contractAddress: string;
   let contractAddressForAdminMigration: string;
 
-  beforeAll(async (s: Suite) => {
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    const offset = await testOffset(s);
-    testState = new LocalState(config, mnemonics);
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -44,7 +43,7 @@ describe('Neutron / Governance', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -53,14 +52,14 @@ describe('Neutron / Governance', () => {
     daoMember2 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.walletWithOffset(offset, 'neutron'),
+        await testState.walletWithOffset('neutron'),
       ),
       mainDao,
     );
     daoMember3 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.walletWithOffset(offset, 'neutron'),
+        await testState.walletWithOffset('neutron'),
       ),
       mainDao,
     );

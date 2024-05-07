@@ -26,17 +26,7 @@ describe('Neutron / Global Fee', () => {
   let daoMember: DaoMember;
   let daoMain: Dao;
 
-  beforeAll(async (t) => {
-    console.log(
-      'fileid: ' +
-        t.file.id +
-        ' t.file.filepath' +
-        t.file.filepath +
-        ' t.file.location: ' +
-        t.file.location +
-        ' t.name: ' +
-        t.name,
-    );
+  beforeAll(async () => {
     testState = new LocalState(config, inject('mnemonics'));
     await testState.init();
     neutronChain = new CosmosWrapper(
@@ -46,7 +36,7 @@ describe('Neutron / Global Fee', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.randomWallet('neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);

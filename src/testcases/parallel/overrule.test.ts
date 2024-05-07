@@ -4,7 +4,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState, testOffset } from './../../helpers/localState';
+import { LocalState } from './../../helpers/localState';
 
 import {
   Dao,
@@ -31,10 +31,9 @@ describe('Neutron / Subdao Overrule', () => {
   let subDao: Dao;
   let mainDao: Dao;
 
-  beforeAll(async (s: Suite) => {
-    const offset = await testOffset(s);
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -43,11 +42,11 @@ describe('Neutron / Subdao Overrule', () => {
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
     neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset(offset, 'neutron'),
+      await testState.walletWithOffset('neutron'),
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);

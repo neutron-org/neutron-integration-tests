@@ -4,7 +4,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState, testOffset } from './../../helpers/localState';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 import {
@@ -29,14 +29,13 @@ describe('Neutron / Credits Vault', () => {
   let airdropAddr: string;
   let lockdropAddr: string;
 
-  beforeAll(async (s: Suite) => {
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    const offset = await testOffset(s);
-    testState = new LocalState(config, mnemonics);
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    daoWallet = await testState.walletWithOffset(offset, 'neutron');
-    airdropWallet = await testState.walletWithOffset(offset, 'neutron');
-    lockdropWallet = await testState.walletWithOffset(offset, 'neutron');
+    daoWallet = await testState.walletWithOffset('neutron');
+    airdropWallet = await testState.walletWithOffset('neutron');
+    lockdropWallet = await testState.walletWithOffset('neutron');
 
     lockdropAddr = lockdropWallet.address;
 
