@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from './../../helpers/localState';
+import { LocalState, testOffset } from './../../helpers/localState';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgBurn,
@@ -21,7 +21,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { inject } from 'vitest';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -31,11 +31,12 @@ describe('Neutron / Tokenfactory', () => {
   let neutronAccount: WalletWrapper;
   let ownerWallet: Wallet;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
+    const offset = await testOffset(s);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    ownerWallet = await testState.randomWallet('neutron');
+    ownerWallet = await testState.walletWithOffset(offset, 'neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.rest1,

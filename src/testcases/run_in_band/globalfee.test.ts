@@ -46,7 +46,7 @@ describe('Neutron / Global Fee', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.walletWithOffset(offset, 'neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);

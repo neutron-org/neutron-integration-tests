@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from './../../helpers/localState';
+import { LocalState, testOffset } from './../../helpers/localState';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,
@@ -16,7 +16,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { inject } from 'vitest';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -32,8 +32,9 @@ describe('Neutron / Governance', () => {
   let contractAddress: string;
   let contractAddressForAdminMigration: string;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
     const mnemonics = inject('mnemonics');
+    const offset = await testOffset(s);
     testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
@@ -43,7 +44,7 @@ describe('Neutron / Governance', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.walletWithOffset(offset, 'neutron'),
     );
     const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -52,14 +53,14 @@ describe('Neutron / Governance', () => {
     daoMember2 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.randomWallet('neutron'),
+        await testState.walletWithOffset(offset, 'neutron'),
       ),
       mainDao,
     );
     daoMember3 = new DaoMember(
       await createWalletWrapper(
         neutronChain,
-        await testState.randomWallet('neutron'),
+        await testState.walletWithOffset(offset, 'neutron'),
       ),
       mainDao,
     );

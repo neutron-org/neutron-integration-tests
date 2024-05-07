@@ -1,4 +1,4 @@
-import { inject } from 'vitest';
+import { Suite, inject } from 'vitest';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import {
@@ -10,7 +10,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState } from './../../helpers/localState';
+import { LocalState, testOffset } from './../../helpers/localState';
 import {
   Dao,
   DaoMember,
@@ -51,13 +51,14 @@ describe('Neutron / Subdao', () => {
   let subDao: Dao;
   let mainDao: Dao;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
+    const offset = await testOffset(s);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    demo1Wallet = await testState.randomWallet('neutron');
-    securityDaoWallet = await testState.randomWallet('neutron');
-    demo2Wallet = await testState.randomWallet('neutron');
+    demo1Wallet = await testState.walletWithOffset(offset, 'neutron');
+    securityDaoWallet = await testState.walletWithOffset(offset, 'neutron');
+    demo2Wallet = await testState.walletWithOffset(offset, 'neutron');
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;

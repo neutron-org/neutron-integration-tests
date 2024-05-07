@@ -4,14 +4,14 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from './../../helpers/localState';
+import { LocalState, testOffset } from './../../helpers/localState';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { inject } from 'vitest';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -29,13 +29,14 @@ describe('Neutron / Credits Vault', () => {
   let airdropAddr: string;
   let lockdropAddr: string;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
     const mnemonics = inject('mnemonics');
+    const offset = await testOffset(s);
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    daoWallet = await testState.randomWallet('neutron');
-    airdropWallet = await testState.randomWallet('neutron');
-    lockdropWallet = await testState.randomWallet('neutron');
+    daoWallet = await testState.walletWithOffset(offset, 'neutron');
+    airdropWallet = await testState.walletWithOffset(offset, 'neutron');
+    lockdropWallet = await testState.walletWithOffset(offset, 'neutron');
 
     lockdropAddr = lockdropWallet.address;
 
@@ -60,9 +61,9 @@ describe('Neutron / Credits Vault', () => {
     beforeEach(async () => {
       creditsContractAddr = await setupCreditsContract(
         daoAccount,
-        daoAddr.toString(),
-        airdropAddr.toString(),
-        lockdropAddr.toString(),
+        daoAddr,
+        airdropAddr,
+        lockdropAddr,
         1676016745597000,
       );
 
@@ -71,8 +72,8 @@ describe('Neutron / Credits Vault', () => {
         originalName,
         originalDescription,
         creditsContractAddr,
-        daoAddr.toString(),
-        airdropAddr.toString(),
+        daoAddr,
+        airdropAddr,
       );
     });
 
@@ -83,8 +84,8 @@ describe('Neutron / Credits Vault', () => {
         name: originalName,
         description: originalDescription,
         credits_contract_address: creditsContractAddr,
-        owner: daoAddr.toString(),
-        airdrop_contract_address: airdropAddr.toString(),
+        owner: daoAddr,
+        airdrop_contract_address: airdropAddr,
       });
     });
 
@@ -97,7 +98,7 @@ describe('Neutron / Credits Vault', () => {
         creditsContractAddr,
         newName,
         newDescription,
-        daoAddr.toString(),
+        daoAddr,
       );
       expect(res.code).toEqual(0);
 
@@ -107,8 +108,8 @@ describe('Neutron / Credits Vault', () => {
         name: newName,
         description: newDescription,
         credits_contract_address: creditsContractAddr,
-        owner: daoAddr.toString(),
-        airdrop_contract_address: airdropAddr.toString(),
+        owner: daoAddr,
+        airdrop_contract_address: airdropAddr,
       });
     });
 
@@ -118,7 +119,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          airdropAddr.toString(),
+          airdropAddr,
           currentHeight,
         ),
       ).toMatchObject({
@@ -155,12 +156,7 @@ describe('Neutron / Credits Vault', () => {
         power: '0',
       });
 
-      await sendTokens(
-        airdropAccount,
-        creditsContractAddr,
-        daoAddr.toString(),
-        '500',
-      );
+      await sendTokens(airdropAccount, creditsContractAddr, daoAddr, '500');
       await neutronChain.waitBlocks(1);
 
       currentHeight = await neutronChain.getHeight();
@@ -168,7 +164,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          daoAddr.toString(),
+          daoAddr,
           currentHeight,
         ),
       ).toMatchObject({
@@ -191,22 +187,12 @@ describe('Neutron / Credits Vault', () => {
       const firstHeight = await neutronChain.getHeight();
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
-      await sendTokens(
-        airdropAccount,
-        creditsContractAddr,
-        daoAddr.toString(),
-        '1000',
-      );
+      await sendTokens(airdropAccount, creditsContractAddr, daoAddr, '1000');
       await neutronChain.waitBlocks(1);
       const secondHeight = await neutronChain.getHeight();
 
       await mintTokens(daoAccount, creditsContractAddr, '1000');
-      await sendTokens(
-        airdropAccount,
-        creditsContractAddr,
-        daoAddr.toString(),
-        '1000',
-      );
+      await sendTokens(airdropAccount, creditsContractAddr, daoAddr, '1000');
       await neutronChain.waitBlocks(1);
       const thirdHeight = await neutronChain.getHeight();
 
@@ -224,7 +210,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          daoAddr.toString(),
+          daoAddr,
           secondHeight,
         ),
       ).toMatchObject({
@@ -246,7 +232,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          daoAddr.toString(),
+          daoAddr,
           firstHeight,
         ),
       ).toMatchObject({
@@ -268,7 +254,7 @@ describe('Neutron / Credits Vault', () => {
         await getVotingPowerAtHeight(
           neutronChain,
           creditsVaultAddr,
-          daoAddr.toString(),
+          daoAddr,
           thirdHeight,
         ),
       ).toMatchObject({

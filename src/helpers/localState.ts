@@ -162,7 +162,6 @@ async function testIdxForNameDir(
 ): Promise<number> {
   const files = await listFilenames(dir);
   const idx = files.findIndex((f) => f === filename);
-  console.log('search for ' + filename + ' in ' + JSON.stringify(files));
 
   if (idx === -1) {
     throw 'no index for filename: ' + filename + ' and dir: ' + dir;

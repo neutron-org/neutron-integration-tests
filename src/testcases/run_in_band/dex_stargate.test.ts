@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject, Suite } from 'vitest';
-import { LocalState, testIdx } from './../../helpers/localState';
+import { LocalState, testOffset } from './../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   AllInactiveLimitOrderTrancheResponse,
@@ -41,8 +41,7 @@ describe('Neutron / dex module (stargate contract)', () => {
   let trancheKeyToQuery: string;
 
   beforeAll(async (s: Suite) => {
-    const idx = await testIdx(s);
-    console.log('simple test index: ' + idx);
+    const offset = await testOffset(s);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
@@ -53,7 +52,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.neutron.demo1,
+      await testState.walletWithOffset(offset, 'neutron'),
     );
   });
 
@@ -318,12 +317,9 @@ describe('Neutron / dex module (stargate contract)', () => {
   });
   describe('DEX queries', () => {
     test('ParamsQuery', async () => {
-      await neutronAccount.chain.queryContract<ParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
+      await neutronChain.queryContract<ParamsResponse>(contractAddress, {
+        params: {},
+      });
     });
     test('LimitOrderTrancheUserQuery', async () => {
       const resTx = await neutronAccount.executeContract(contractAddress, {

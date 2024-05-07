@@ -5,8 +5,8 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState } from '../../helpers/localState';
-import { inject } from 'vitest';
+import { LocalState, testOffset } from '../../helpers/localState';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
@@ -40,7 +40,8 @@ describe('Neutron / Voting Registry', () => {
   // bonding to an additional vault
   const vault3Bonding = 5_000_000;
 
-  beforeAll(async () => {
+  beforeAll(async (s: Suite) => {
+    const offset = await testOffset(s);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
@@ -51,11 +52,11 @@ describe('Neutron / Voting Registry', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.walletWithOffset(offset, 'neutron'),
     );
     cmDaoMember = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.walletWithOffset(offset, 'neutron'),
     );
     contractAddresses = await deployContracts(neutronChain, cmInstantiator);
     votingRegistryAddr = contractAddresses[VOTING_REGISTRY_CONTRACT_KEY];

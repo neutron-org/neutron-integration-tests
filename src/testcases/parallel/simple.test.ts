@@ -27,7 +27,6 @@ describe('Neutron / Simple', () => {
 
   beforeAll(async (s: Suite) => {
     const offset = await testOffset(s);
-    console.log('simple test index: ' + offset);
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
