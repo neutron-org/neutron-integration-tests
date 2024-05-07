@@ -13,7 +13,7 @@ import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 let teardownHappened = false;
 
-const WALLET_COUNT = 500;
+const WALLET_COUNT = 1000;
 
 const config = require('./config.json');
 
