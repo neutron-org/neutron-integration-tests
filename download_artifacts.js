@@ -92,9 +92,9 @@ const getWithAttempts = async (getFunc, readyFunc, numAttempts = 20) => {
       );
 };
 
-const askForRewrite = async (file_name) => {
+const askForRewrite = async (fileName) => {
   const ok = await yesno({
-    question: `File ${file_name} already exists, do you want to overwrite it? \
+    question: `File ${fileName} already exists, do you want to overwrite it? \
 (if yes, all further differing files will be overwritten)`,
   });
   if (ok) {
@@ -104,11 +104,11 @@ const askForRewrite = async (file_name) => {
   }
 };
 
-const checkForAlreadyDownloaded = async (contracts_list, dest_dir) => {
-  for (const element of contracts_list) {
-    const file_path = `${dest_dir}/${element}`;
-    if (fs.existsSync(file_path)) {
-      await askForRewrite(file_path);
+const checkForAlreadyDownloaded = async (contractsList, destDir) => {
+  for (const element of contractsList) {
+    const filePath = `${destDir}/${element}`;
+    if (fs.existsSync(filePath)) {
+      await askForRewrite(filePath);
       return;
     }
   }
@@ -124,31 +124,31 @@ function cliParseInt(value) {
 
 // -------------------- GIT/GITHUB --------------------
 
-const getLatestCommit = async (repo_name, branch_name) => {
-  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/branches/${branch_name}`;
+const getLatestCommit = async (repoName, branchName) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repoName}/branches/${branchName}`;
   verboseLog(`Getting latest commit by url:\n${url}`);
   try {
     const resp = (await axios.get(url)).data;
     return resp['commit']['sha'];
   } catch (e) {
     throw new Error(
-      `Branch ${branch_name} not exist in ${repo_name} repo. Request failed with an error: ${e.toString()}`,
+      `Branch ${branchName} not exist in ${repoName} repo. Request failed with an error: ${e.toString()}`,
     );
   }
 };
 
-const triggerContractsBuilding = async (repo_name, commit_hash, ci_token) => {
-  if (!ci_token) {
+const triggerContractsBuilding = async (repoName, commitHash, ciToken) => {
+  if (!ciToken) {
     console.log(
       `No ${CI_TOKEN_ENV_NAME} provided. Please provide one or run the workflow manually here: \
-https://github.com/neutron-org/${repo_name}/actions/workflows/${WORKFLOW_YAML_NAME}`,
+https://github.com/neutron-org/${repoName}/actions/workflows/${WORKFLOW_YAML_NAME}`,
     );
     throw new Error("CI token isn't provided, can't trigger the build");
   }
 
-  const workflow_id = await getBuildWorkflowId(repo_name);
-  verboseLog(`Using workflow id ${workflow_id}`);
-  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows/${workflow_id}/dispatches`;
+  const workflowId = await getBuildWorkflowId(repoName);
+  verboseLog(`Using workflow id ${workflowId}`);
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repoName}/actions/workflows/${workflowId}/dispatches`;
   let resp = null;
   try {
     resp = await axios.post(
@@ -156,12 +156,12 @@ https://github.com/neutron-org/${repo_name}/actions/workflows/${WORKFLOW_YAML_NA
       {
         ref: 'main',
         inputs: {
-          branch: commit_hash,
+          branch: commitHash,
         },
       },
       {
         headers: {
-          Authorization: `Bearer ${ci_token}`,
+          Authorization: `Bearer ${ciToken}`,
         },
       },
     );
@@ -179,38 +179,38 @@ Make sure ${CI_TOKEN_ENV_NAME} is correct and isn't expired.`,
   }
 };
 
-const getBuildWorkflowId = async (repo_name) => {
-  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/actions/workflows`;
+const getBuildWorkflowId = async (repoName) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repoName}/actions/workflows`;
   const resp = (await axios.get(url)).data;
-  const build_yml_workflow = resp['workflows'].find((x) =>
+  const buildYmlWorkflow = resp['workflows'].find((x) =>
     x['path'].includes(WORKFLOW_YAML_NAME),
   );
-  if (!build_yml_workflow) {
-    throw new Error(`Repo ${repo_name} has no ${WORKFLOW_YAML_NAME} workflow.`);
+  if (!buildYmlWorkflow) {
+    throw new Error(`Repo ${repoName} has no ${WORKFLOW_YAML_NAME} workflow.`);
   }
-  return build_yml_workflow['id'];
+  return buildYmlWorkflow['id'];
 };
 
-const normalizeCommitHash = async (repo_name, commit_hash) => {
-  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}/commits/${commit_hash}`;
+const normalizeCommitHash = async (repoName, commitHash) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repoName}/commits/${commitHash}`;
   let resp = null;
   try {
     resp = await axios.get(url);
   } catch (e) {
     throw new Error(
-      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo. Request failed with an error:\n${e.toString()}`,
+      `Provided commit (${commitHash}) doesn't exist in ${repoName} repo. Request failed with an error:\n${e.toString()}`,
     );
   }
   if (resp.status !== 200) {
     throw new Error(
-      `Provided commit (${commit_hash}) doesn't exist in ${repo_name} repo`,
+      `Provided commit (${commitHash}) doesn't exist in ${repoName} repo`,
     );
   }
   return resp.data['sha'];
 };
 
-const isRepoExists = async (repo_name) => {
-  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repo_name}`;
+const isRepoExists = async (repoName) => {
+  const url = `${GITHUB_API_BASEURL}/repos/${NEUTRON_ORG}/${repoName}`;
   try {
     await axios.get(url);
   } catch (e) {
@@ -221,27 +221,27 @@ const isRepoExists = async (repo_name) => {
 
 // -------------------- STORAGE --------------------
 
-const getChecksumsTxt = async (repo_name, commit_hash, ci_token, timeout) => {
-  const url = `${STORAGE_ADDR_BASE}/${repo_name}/${commit_hash}/checksums.txt`;
+const getChecksumsTxt = async (repoName, commitHash, ciToken, timeout) => {
+  const url = `${STORAGE_ADDR_BASE}/${repoName}/${commitHash}/checksums.txt`;
   verboseLog(`Getting checksums by url: ${url}`);
 
   try {
     return (await axios.get(url)).data;
   } catch (error) {
     console.log('No checksum file found, launching the building workflow');
-    await triggerContractsBuilding(repo_name, commit_hash, ci_token);
-    const actions_link = `https://github.com/${NEUTRON_ORG}/${repo_name}/actions`;
+    await triggerContractsBuilding(repoName, commitHash, ciToken);
+    const actionsLink = `https://github.com/${NEUTRON_ORG}/${repoName}/actions`;
     console.log(
-      `Workflow launched, you follow the link to ensure: ${actions_link}`,
+      `Workflow launched, you follow the link to ensure: ${actionsLink}`,
     );
 
-    const attempts_number = timeout / DELAY_BETWEEN_TRIES;
+    const attemptsNumber = timeout / DELAY_BETWEEN_TRIES;
     try {
       return (
         await getWithAttempts(
           async () => axios.get(url),
           async (response) => response.status === 200,
-          attempts_number,
+          attemptsNumber,
         )
       ).data;
     } catch (e) {
@@ -253,60 +253,27 @@ Request failed with an error: ${e.toString()}`,
   }
 };
 
-
-// /**
-//  * getWithAttempts waits until readyFunc(getFunc()) returns true
-//  * and only then returns result of getFunc()
-//  */
-// const getWithAttempts = async <T>(
-//   blockWaiter: BlockWaiter,
-//   getFunc: () => Promise<T>,
-//   readyFunc: (t: T) => Promise<boolean>,
-//   numAttempts = 20,
-// ): Promise<T> => {
-//   let error = null;
-//   let data: T;
-//   while (numAttempts > 0) {
-//     numAttempts--;
-//     try {
-//       data = await getFunc();
-//       if (await readyFunc(data)) {
-//         return data;
-//       }
-//     } catch (e) {
-//       error = e;
-//     }
-//     await blockWaiter.waitBlocks(1);
-//   }
-//   throw error != null
-//     ? error
-//     : new Error(
-//         'getWithAttempts: no attempts left. Latest get response: ' +
-//           (data === Object(data) ? JSON.stringify(data) : data).toString(),
-//       );
-// };
-
-const parseChecksumsTxt = (checksums_txt) => {
+const parseChecksumsTxt = (checksumsTxt) => {
   const regex = /(\S+)\s+(\S+.wasm)\s/g;
-  return Array.from(checksums_txt.matchAll(regex)).map((v) => ({
+  return Array.from(checksumsTxt.matchAll(regex)).map((v) => ({
     checksum: v[1],
     file: v[2],
   }));
 };
 
 const downloadContracts = async (
-  repo_name,
-  contracts_list,
-  commit_hash,
-  dest_dir,
+  repoName,
+  contractsList,
+  commitHash,
+  destDir,
 ) => {
-  const dir_name = repo_name;
+  const dirName = repoName;
   let promises = [];
-  for (const contract of contracts_list) {
-    const url = `${STORAGE_ADDR_BASE}/${dir_name}/${commit_hash}/${contract.file}`;
-    const file_path = `${dest_dir}/${contract.file}`;
+  for (const contract of contractsList) {
+    const url = `${STORAGE_ADDR_BASE}/${dirName}/${commitHash}/${contract.file}`;
+    const filePath = `${destDir}/${contract.file}`;
 
-    promises.push(downloadFile(url, file_path, contract.checksum));
+    promises.push(downloadFile(url, filePath, contract.checksum));
   }
   await Promise.all(promises);
 };
@@ -314,48 +281,48 @@ const downloadContracts = async (
 // -------------------- MAIN --------------------
 
 const downloadArtifacts = async (
-  repo_name,
-  branch_name,
-  commit_hash,
-  dest_dir,
-  ci_token,
+  repoName,
+  branchName,
+  commitHash,
+  destDir,
+  ciToken,
   timeout,
 ) => {
-  if (!(await isRepoExists(repo_name))) {
-    console.log(`Repo ${repo_name} doesn't exist, exiting.`);
+  if (!(await isRepoExists(repoName))) {
+    console.log(`Repo ${repoName} doesn't exist, exiting.`);
     return;
   }
 
-  console.log(`Downloading artifacts for ${repo_name} repo`);
+  console.log(`Downloading artifacts for ${repoName} repo`);
 
-  if (commit_hash) {
+  if (commitHash) {
     try {
-      commit_hash = await normalizeCommitHash(repo_name, commit_hash);
+      commitHash = await normalizeCommitHash(repoName, commitHash);
     } catch (e) {
       console.log(`Error during commit hash validation:\n${e.toString()}`);
       return;
     }
-    console.log(`Using specified commit: ${commit_hash}`);
+    console.log(`Using specified commit: ${commitHash}`);
   } else {
     try {
-      commit_hash = await getLatestCommit(repo_name, branch_name);
+      commitHash = await getLatestCommit(repoName, branchName);
     } catch (e) {
       console.log(
-        `Error during getting commit for branch ${branch_name}:\n${e.toString()}`,
+        `Error during getting commit for branch ${branchName}:\n${e.toString()}`,
       );
       return;
     }
-    console.log(`Using branch ${branch_name}`);
-    console.log(`The latest commit is: ${commit_hash}`);
+    console.log(`Using branch ${branchName}`);
+    console.log(`The latest commit is: ${commitHash}`);
   }
 
   verboseLog('Downloading checksum.txt');
-  let checksums_txt = null;
+  let checksumsTxt = null;
   try {
-    checksums_txt = await getChecksumsTxt(
-      repo_name,
-      commit_hash,
-      ci_token,
+    checksumsTxt = await getChecksumsTxt(
+      repoName,
+      commitHash,
+      ciToken,
       timeout,
     );
   } catch (e) {
@@ -363,22 +330,22 @@ const downloadArtifacts = async (
     return;
   }
 
-  if (!checksums_txt) {
+  if (!checksumsTxt) {
     console.log('Checksum file received but empty, exiting.');
     return;
   }
 
-  const contracts_list = parseChecksumsTxt(checksums_txt);
-  const contracts_list_pretty = contracts_list
+  const contractsList = parseChecksumsTxt(checksumsTxt);
+  const contractsListPretty = contractsList
     .map((c) => `\t${c.file}`)
     .join('\n');
-  console.log(`Contracts to be downloaded:\n${contracts_list_pretty}`);
+  console.log(`Contracts to be downloaded:\n${contractsListPretty}`);
 
   if (!REWRITE_FILES) {
     try {
       await checkForAlreadyDownloaded(
-        contracts_list.map((c) => c.file),
-        dest_dir,
+        contractsList.map((c) => c.file),
+        destDir,
       );
     } catch (e) {
       console.log(e.toString());
@@ -386,9 +353,9 @@ const downloadArtifacts = async (
     }
   }
 
-  await downloadContracts(repo_name, contracts_list, commit_hash, dest_dir);
+  await downloadContracts(repoName, contractsList, commitHash, destDir);
 
-  console.log(`Contracts are downloaded to the "${dest_dir}" dir\n`);
+  console.log(`Contracts are downloaded to the "${destDir}" dir\n`);
 };
 
 const initCli = () => {
@@ -427,31 +394,31 @@ const main = async () => {
 
   program.parse();
 
-  const ci_token = process.env[CI_TOKEN_ENV_NAME];
+  const ciToken = process.env[CI_TOKEN_ENV_NAME];
 
   const options = program.opts();
-  const dest_dir = options.dir || DEFAULT_DIR;
-  if (!fs.existsSync(dest_dir)) {
-    console.log(`Directory ${dest_dir} not found, exiting.`);
+  const destDir = options.dir || DEFAULT_DIR;
+  if (!fs.existsSync(destDir)) {
+    console.log(`Directory ${destDir} not found, exiting.`);
     return;
   }
-  if (!fs.lstatSync(dest_dir).isDirectory()) {
-    console.log(`${dest_dir} is not directory, exiting.`);
+  if (!fs.lstatSync(destDir).isDirectory()) {
+    console.log(`${destDir} is not directory, exiting.`);
     return;
   }
-  const repos_to_download = program.args;
+  const reposToDownload = program.args;
 
-  let branch_name = options.branch;
-  const commit_hash = options.commit;
-  if (branch_name && commit_hash) {
+  let branchName = options.branch;
+  const commitHash = options.commit;
+  if (branchName && commitHash) {
     console.log(
       'Both branch and commit hash are specified, exiting. \
 Please specify only a single thing.',
     );
     return;
   }
-  if (!branch_name && !commit_hash) {
-    branch_name = DEFAULT_BRANCH;
+  if (!branchName && !commitHash) {
+    branchName = DEFAULT_BRANCH;
   }
 
   const timeout = options.timeout || DEFAULT_TIMEOUT;
@@ -464,13 +431,13 @@ Please specify only a single thing.',
     REWRITE_FILES = true;
   }
 
-  for (const repo of repos_to_download) {
+  for (const repo of reposToDownload) {
     await downloadArtifacts(
       repo,
-      branch_name,
-      commit_hash,
-      dest_dir,
-      ci_token,
+      branchName,
+      commitHash,
+      destDir,
+      ciToken,
       timeout,
     );
   }
