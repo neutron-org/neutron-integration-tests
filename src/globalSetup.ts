@@ -28,7 +28,6 @@ export default async function ({ provide }: GlobalSetupContext) {
   for (let i = 0; i < WALLET_COUNT; i++) {
     mnemonics.push(generateMnemonic());
   }
-  console.log('mnemonics: ' + JSON.stringify(mnemonics));
 
   const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
   const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
