@@ -13,13 +13,13 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -29,7 +29,7 @@ describe('Neutron / Interchain TX Query', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

@@ -32,7 +32,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 import { inject } from 'vitest';
 
 const config = require('../../config.json');
@@ -137,7 +137,7 @@ const waitTill = (timestamp: number): Promise<void> => {
 };
 
 describe.skip('Neutron / TGE / Auction', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let tgeMain: Tge;
   let neutronChain: CosmosWrapper;
   let cmInstantiator: WalletWrapper;
@@ -158,7 +158,7 @@ describe.skip('Neutron / TGE / Auction', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config, inject('mnemonics'));
+    testState = new LocalState(config, inject('mnemonics'));
     await testState.init();
     reserveAddress = testState.wallets.qaNeutronThree.qa.address;
     neutronChain = new CosmosWrapper(
@@ -1609,7 +1609,12 @@ describe.skip('Neutron / TGE / Auction', () => {
               },
             },
           );
-          console.log('rateNtrnUsdc: ' + JSON.stringify(rateNtrnUsdc) + ' rateUsdcNtrn: '+ JSON.stringify(rateUsdcNtrn))
+          console.log(
+            'rateNtrnUsdc: ' +
+              JSON.stringify(rateNtrnUsdc) +
+              ' rateUsdcNtrn: ' +
+              JSON.stringify(rateUsdcNtrn),
+          );
           expect(
             Math.abs(
               Number(rateNtrnUsdc[0][1]) * Number(rateUsdcNtrn[0][1]) - 1,

@@ -5,7 +5,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
@@ -17,7 +17,7 @@ import {
 const config = require('../../config.json');
 
 describe('DAO / Check', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
@@ -32,7 +32,7 @@ describe('DAO / Check', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
 
     neutronChain = new CosmosWrapper(

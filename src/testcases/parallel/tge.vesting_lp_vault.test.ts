@@ -3,7 +3,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import {
   NativeToken,
   nativeToken,
@@ -45,7 +45,7 @@ const NTRN_USDC_PAIR_CONTRACT_KEY = 'NTRN_USDC_PAIR';
 const NTRN_USDC_LP_TOKEN_CONTRACT_KEY = 'NTRN_USDC_LP_TOKEN';
 
 describe('Neutron / TGE / Vesting LP vault', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let cmInstantiator: WalletWrapper;
   let cmManager: WalletWrapper;
@@ -55,7 +55,7 @@ describe('Neutron / TGE / Vesting LP vault', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
@@ -18,7 +18,7 @@ const getTimestamp = (secondsFromNow: number): number =>
   (Date.now() / 1000 + secondsFromNow) | 0;
 
 describe('Neutron / TGE / Credits', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let airdropMock: WalletWrapper;
@@ -31,7 +31,7 @@ describe('Neutron / TGE / Credits', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     airdropAddress = testState.wallets.qaNeutronThree.qa.address;
     lockdropAddress = testState.wallets.qaNeutronFour.qa.address;

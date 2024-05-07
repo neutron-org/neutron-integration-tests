@@ -10,7 +10,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 
 const config = require('../../config.json');
 
@@ -21,7 +21,7 @@ interface ReserveStats {
 }
 
 describe('Neutron / Treasury', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: walletWrapper.WalletWrapper;
   let neutronAccount2: walletWrapper.WalletWrapper;
@@ -35,7 +35,7 @@ describe('Neutron / Treasury', () => {
   let holder2Addr: string;
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

@@ -7,7 +7,7 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 import { inject } from 'vitest';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';
@@ -17,7 +17,7 @@ const CW20_BASE_CONTRACT_KEY = 'CW20_BASE';
 const config = require('../../config.json');
 
 describe('Neutron / TGE / Investors vesting vault', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let cmInstantiator: walletWrapper.WalletWrapper;
   let cmManager: walletWrapper.WalletWrapper;
@@ -27,7 +27,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

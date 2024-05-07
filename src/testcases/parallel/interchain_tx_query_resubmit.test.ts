@@ -4,7 +4,7 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
@@ -23,7 +23,7 @@ import { inject } from 'vitest';
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -33,7 +33,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

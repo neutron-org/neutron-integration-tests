@@ -10,7 +10,7 @@ import {
   WalletWrapper,
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import {
   Dao,
   DaoMember,
@@ -35,7 +35,7 @@ import {
 const config = require('../../config.json');
 
 describe('Neutron / Subdao', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
@@ -53,7 +53,7 @@ describe('Neutron / Subdao', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     demo1Wallet = await testState.randomWallet('neutron');
     securityDaoWallet = await testState.randomWallet('neutron');

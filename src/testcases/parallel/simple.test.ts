@@ -8,12 +8,12 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 
 const config = require('../../config.json');
 
 describe('Neutron / Simple', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: cosmosWrapper.CosmosWrapper;
   let gaiaChain: cosmosWrapper.CosmosWrapper;
   let neutronAccount: walletWrapper.WalletWrapper;
@@ -24,7 +24,7 @@ describe('Neutron / Simple', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
       NEUTRON_DENOM,

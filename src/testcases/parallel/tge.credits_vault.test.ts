@@ -4,7 +4,7 @@ import {
   CosmosWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 import {
@@ -16,7 +16,7 @@ import { inject } from 'vitest';
 const config = require('../../config.json');
 
 describe('Neutron / Credits Vault', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let daoWallet: Wallet;
   let airdropWallet: Wallet;
@@ -31,7 +31,7 @@ describe('Neutron / Credits Vault', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     daoWallet = await testState.randomWallet('neutron');
     airdropWallet = await testState.randomWallet('neutron');

@@ -5,7 +5,7 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 import { createWalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 import { inject } from 'vitest';
 
 const config = require('../../config.json');
@@ -19,7 +19,7 @@ const NEUTRON_VAULT_2_CONTRACT_KEY = 'NEUTRON_VAULT_2';
 const NEUTRON_VAULT_3_CONTRACT_KEY = 'NEUTRON_VAULT_3';
 
 describe('Neutron / Voting Registry', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: cosmosWrapper.CosmosWrapper;
   let cmInstantiator: walletWrapper.WalletWrapper;
   let cmDaoMember: walletWrapper.WalletWrapper;
@@ -42,7 +42,7 @@ describe('Neutron / Voting Registry', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new cosmosWrapper.CosmosWrapper(
       NEUTRON_DENOM,

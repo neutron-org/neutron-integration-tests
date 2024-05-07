@@ -4,7 +4,7 @@ import {
   NEUTRON_DENOM,
   ADMIN_MODULE_ADDRESS,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,
@@ -21,7 +21,7 @@ import { inject } from 'vitest';
 const config = require('../../config.json');
 
 describe('Neutron / Governance', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let daoMember1: DaoMember;
@@ -34,7 +34,7 @@ describe('Neutron / Governance', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

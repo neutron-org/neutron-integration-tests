@@ -15,19 +15,29 @@ import {
   createWalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
 import { inject } from 'vitest';
-import { TestStateLocalCosmosTestNet } from '../../helpers/cosmosTestnet';
+import { LocalState } from '../../helpers/localState';
 
 const config = require('../../config.json');
 
 describe('Neutron / Global Fee', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let daoMember: DaoMember;
   let daoMain: Dao;
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config, inject('mnemonics'));
+  beforeAll(async (t) => {
+    console.log(
+      'fileid: ' +
+        t.file.id +
+        ' t.file.filepath' +
+        t.file.filepath +
+        ' t.file.location: ' +
+        t.file.location +
+        ' t.name: ' +
+        t.name,
+    );
+    testState = new LocalState(config, inject('mnemonics'));
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

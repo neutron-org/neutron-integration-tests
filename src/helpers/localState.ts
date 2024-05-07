@@ -16,7 +16,7 @@ const genesisWalletSet = async (
   rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
 });
 
-export class TestStateLocalCosmosTestNet {
+export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
   icqWebHost: string;
   rpc1: string;

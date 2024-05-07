@@ -7,7 +7,7 @@ import {
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
-import { TestStateLocalCosmosTestNet } from './../../helpers/cosmosTestnet';
+import { LocalState } from './../../helpers/localState';
 import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
 import {
   WalletWrapper,
@@ -17,7 +17,7 @@ import {
 const config = require('../../config.json');
 
 describe('Neutron / Tokenomics', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -26,7 +26,7 @@ describe('Neutron / Tokenomics', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new TestStateLocalCosmosTestNet(config, mnemonics);
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
