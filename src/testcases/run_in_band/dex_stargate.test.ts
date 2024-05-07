@@ -51,7 +51,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      testState.wallets.neutron.demo1,
     );
   });
 
