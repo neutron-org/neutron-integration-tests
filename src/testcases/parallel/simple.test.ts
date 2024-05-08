@@ -105,8 +105,7 @@ describe('Neutron / Simple', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
         relayerBalance = parseInt(
-          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount || '0',
           10,
         );
       });
@@ -116,9 +115,7 @@ describe('Neutron / Simple', () => {
       });
       it('check balance', async () => {
         const balances = await neutronChain.queryBalances(contractAddress);
-        expect(balances.balances).toEqual([
-          { amount: '50000', denom: NEUTRON_DENOM },
-        ]);
+        expect(balances).toEqual([{ amount: '50000', denom: NEUTRON_DENOM }]);
       });
       it('IBC transfer from a usual account', async () => {
         const res = await neutronAccount.msgIBCTransfer(
@@ -139,7 +136,7 @@ describe('Neutron / Simple', () => {
           gaiaAccount.wallet.address,
         );
         expect(
-          balances.balances.find(
+          balances.find(
             (bal): boolean =>
               bal.denom ==
               'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
@@ -165,7 +162,7 @@ describe('Neutron / Simple', () => {
           neutronAccount.wallet.address,
         );
         expect(
-          balances.balances.find(
+          balances.find(
             (bal): boolean =>
               bal.denom ==
               'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
@@ -209,7 +206,7 @@ describe('Neutron / Simple', () => {
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(
-          balances.balances.find(
+          balances.find(
             (bal): boolean =>
               bal.denom ==
               'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6',
@@ -222,8 +219,7 @@ describe('Neutron / Simple', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
         );
         const balance = parseInt(
-          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount || '0',
           10,
         );
         expect(balance - 2333 * 2 - relayerBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
@@ -232,8 +228,7 @@ describe('Neutron / Simple', () => {
         await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(contractAddress);
         const balance = parseInt(
-          balances.balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount ||
-            '0',
+          balances.find((bal) => bal.denom == NEUTRON_DENOM)?.amount || '0',
           10,
         );
         expect(balance).toBe(50000 - 3000 - 2333 * 2);
@@ -353,8 +348,7 @@ describe('Neutron / Simple', () => {
         await neutronChain.waitBlocks(10);
         const balances = await neutronChain.queryBalances(contractAddress);
         expect(
-          balances.balances.find((bal): boolean => bal.denom == uatomIBCDenom)
-            ?.amount,
+          balances.find((bal): boolean => bal.denom == uatomIBCDenom)?.amount,
         ).toEqual(uatomAmount);
       });
       it('try to set fee in IBC transferred atoms', async () => {

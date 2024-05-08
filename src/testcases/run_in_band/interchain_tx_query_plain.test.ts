@@ -107,7 +107,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('handle callback on a sending', async () => {
       addr1ExpectedBalance += amountToAddrFirst1;
       let balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([]);
+      expect(balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr1,
         amountToAddrFirst1.toString(),
@@ -115,7 +115,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
@@ -144,14 +144,14 @@ describe('Neutron / Interchain TX Query', () => {
       const differentAddr = addrSecond;
       addr2ExpectedBalance += amountToAddrSecond1;
       let balances = await gaiaChain.queryBalances(differentAddr);
-      expect(balances.balances).toEqual([]);
+      expect(balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         differentAddr,
         amountToAddrSecond1.toString(),
       );
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(differentAddr);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       await neutronChain.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
@@ -184,7 +184,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(res.hash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
       expect(res.code).toEqual(5); // failed to execute message: insufficient funds
       const balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom }, // balance hasn't changed thus tx failed
       ]);
       await neutronChain.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
@@ -239,7 +239,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('handle callback on a past sending', async () => {
       const balances = await gaiaChain.queryBalances(watchedAddr2);
       expectedIncomingTransfers++;
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
@@ -300,7 +300,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('check first sending handling', async () => {
       addr3ExpectedBalance += amountToAddrThird1;
       let balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([]);
+      expect(balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr3,
         amountToAddrThird1.toString(),
@@ -308,7 +308,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       let deposits = await queryRecipientTxs(
@@ -355,7 +355,7 @@ describe('Neutron / Interchain TX Query', () => {
         watchedAddr3,
       );
       const balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       let deposits = await depositsPromise;
@@ -441,15 +441,15 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers += 2;
       expect(res?.hash?.length).toBeGreaterThan(0);
       let balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       balances = await gaiaChain.queryBalances(watchedAddr2);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
     });
@@ -566,7 +566,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('make older sending', async () => {
       addr5ExpectedBalance += amountToAddrFifth1;
       let balances = await gaiaChain.queryBalances(watchedAddr5);
-      expect(balances.balances).toEqual([]);
+      expect(balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr5,
         amountToAddrFifth1.toString(),
@@ -574,7 +574,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr5);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr5ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
     });
@@ -610,7 +610,7 @@ describe('Neutron / Interchain TX Query', () => {
     test('make younger sending and check', async () => {
       addr4ExpectedBalance += amountToAddrForth1;
       let balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([]);
+      expect(balances).toEqual([]);
       const res = await gaiaAccount.msgSend(
         watchedAddr4,
         amountToAddrForth1.toString(),
@@ -618,7 +618,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
 
@@ -687,7 +687,7 @@ describe('Neutron / Interchain TX Query', () => {
       transfersAmountBeforeSending = transfers.transfers_number;
 
       let balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
       const res = await gaiaAccount.msgSend(
@@ -697,7 +697,7 @@ describe('Neutron / Interchain TX Query', () => {
       addr4ExpectedBalance += amountToAddrForth2;
       expect(res.code).toEqual(0);
       balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([
+      expect(balances).toEqual([
         { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
       ]);
     });

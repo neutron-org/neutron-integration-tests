@@ -168,9 +168,8 @@ describe('Neutron / Tokenomics', () => {
         async () =>
           neutronChain.queryBalances(testState.wallets.qaNeutron.qa.address),
         async (balances) =>
-          balances.balances.find(
-            (balance) => balance.denom === ibcUatomDenom,
-          ) !== undefined,
+          balances.find((balance) => balance.denom === ibcUatomDenom) !==
+          undefined,
       );
     });
 

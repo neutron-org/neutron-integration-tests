@@ -299,14 +299,10 @@ export const validateBalanceQuery = async (
   queryId: number,
   address: string,
 ) => {
-  const interchainQueryResult = await getQueryBalanceResult(
-    neutronCm,
-    contractAddress,
-    queryId,
-  );
+  const res = await getQueryBalanceResult(neutronCm, contractAddress, queryId);
   const directQueryResult = await targetCm.queryBalances(address);
-  expect(filterIBCDenoms(interchainQueryResult.balances.coins)).toEqual(
-    filterIBCDenoms(directQueryResult.balances),
+  expect(filterIBCDenoms(res.balances.coins)).toEqual(
+    filterIBCDenoms(directQueryResult),
   );
 };
 

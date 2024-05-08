@@ -169,7 +169,7 @@ describe('Neutron / Interchain KV Query', () => {
         await neutronAccount.msgSend(contractAddress, '1000000');
 
         let balances = await neutronChain.queryBalances(contractAddress);
-        expect(balances.balances[0].amount).toEqual('1000000');
+        expect(balances[0].amount).toEqual('1000000');
 
         await registerBalanceQuery(
           neutronAccount,
@@ -181,7 +181,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
 
         balances = await neutronChain.queryBalances(contractAddress);
-        expect(balances.balances.length).toEqual(0);
+        expect(balances.length).toEqual(0);
       });
     });
 
@@ -430,12 +430,12 @@ describe('Neutron / Interchain KV Query', () => {
   describe('Remove interchain query', () => {
     test('remove icq #1 using query owner address', async () => {
       let balances = await neutronChain.queryBalances(contractAddress);
-      expect(balances.balances.length).toEqual(0);
+      expect(balances.length).toEqual(0);
 
       await removeQuery(neutronAccount, contractAddress, 1);
 
       balances = await neutronChain.queryBalances(contractAddress);
-      expect(balances.balances[0].amount).toEqual('1000000');
+      expect(balances[0].amount).toEqual('1000000');
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
@@ -563,11 +563,11 @@ describe('Neutron / Interchain KV Query', () => {
 
       // FIXME: enable after fix change params via proposal
       test.skip('should remove icq and check balances updates', async () => {
-        const balancesBeforeRegistration = await neutronChain.queryBalances(
+        let balancesBeforeRegistration = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address,
         );
-        balancesBeforeRegistration.balances = filterIBCDenoms(
-          balancesBeforeRegistration.balances as Coin[],
+        balancesBeforeRegistration = filterIBCDenoms(
+          balancesBeforeRegistration,
         );
 
         const queryId = await registerBalanceQuery(
@@ -588,12 +588,10 @@ describe('Neutron / Interchain KV Query', () => {
           20,
         );
 
-        const balancesAfterRegistration = await neutronChain.queryBalances(
+        let balancesAfterRegistration = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address,
         );
-        balancesAfterRegistration.balances = filterIBCDenoms(
-          balancesAfterRegistration.balances as Coin[],
-        );
+        balancesAfterRegistration = filterIBCDenoms(balancesAfterRegistration);
 
         await removeQueryViaTx(neutronAccount, BigInt(queryId));
 
@@ -603,10 +601,8 @@ describe('Neutron / Interchain KV Query', () => {
               testState.wallets.neutron.demo1.address,
             ),
           async (response) => {
-            const balances = filterIBCDenoms(response.balances as Coin[]);
-            const beforeBalances = filterIBCDenoms(
-              balancesAfterRegistration.balances as Coin[],
-            );
+            const balances = filterIBCDenoms(response);
+            const beforeBalances = filterIBCDenoms(balancesAfterRegistration);
             return (
               balances[0].denom === beforeBalances[0].denom &&
               parseInt(balances[0].amount || '0') >
@@ -617,20 +613,18 @@ describe('Neutron / Interchain KV Query', () => {
           100,
         );
 
-        const balancesAfterRemoval = await neutronChain.queryBalances(
+        let balancesAfterRemoval = await neutronChain.queryBalances(
           testState.wallets.neutron.demo1.address,
         );
-        balancesAfterRemoval.balances = filterIBCDenoms(
-          balancesAfterRemoval.balances as Coin[],
-        );
+        balancesAfterRemoval = filterIBCDenoms(balancesAfterRemoval);
         // Add fees (100) that was deducted during removeQueryViaTx call
         const balancesAfterRemovalWithFee = {
           ...balancesAfterRemoval,
           balances: [
             {
-              denom: balancesAfterRemoval.balances[0].denom,
+              denom: balancesAfterRemoval[0].denom,
               amount: (
-                parseInt(balancesAfterRemoval.balances[0].amount || '') + 1000
+                parseInt(balancesAfterRemoval[0].amount || '') + 1000
               ).toString(),
             },
           ],
