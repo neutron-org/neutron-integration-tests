@@ -1,18 +1,14 @@
 import '@neutron-org/neutronjsplus';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { inject } from 'vitest';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import {
-  CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { inject } from 'vitest';
-import { LocalState } from './../../helpers/localState';
-import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+} from '@neutron-org/neutronjsplus/dist/types';
 
 const config = require('../../config.json');
 

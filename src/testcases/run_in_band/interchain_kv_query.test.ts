@@ -3,8 +3,8 @@ import {
   CosmosWrapper,
   filterIBCDenoms,
   getEventAttribute,
-  NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import {
@@ -18,11 +18,8 @@ import {
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
-import { LocalState } from '../../helpers/localState';
-import {
-  createWalletWrapper,
-  WalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
 import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
 import {

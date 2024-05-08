@@ -1,11 +1,8 @@
 import { inject } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from './../../helpers/localState';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { LocalState } from '../../helpers/localState';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
@@ -13,6 +10,7 @@ import {
   getTreasuryContract,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 

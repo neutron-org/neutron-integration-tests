@@ -1,10 +1,8 @@
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from './../../helpers/localState';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 
 import {
   Dao,
@@ -12,10 +10,7 @@ import {
   deployNeutronDao,
   deploySubdao,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');

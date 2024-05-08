@@ -1,10 +1,10 @@
 import {
   CosmosWrapper,
   getEventAttributesFromTx,
-  NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject, Suite } from 'vitest';
-import { LocalState } from './../../helpers/localState';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   AllInactiveLimitOrderTrancheResponse,
@@ -25,10 +25,7 @@ import {
   PoolReservesResponse,
   PoolResponse,
 } from '@neutron-org/neutronjsplus/dist/dex';
-import {
-  createWalletWrapper,
-  WalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
 const config = require('../../config.json');
 

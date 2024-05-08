@@ -3,14 +3,11 @@ import { Suite, inject } from 'vitest';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
-  NEUTRON_DENOM,
   createBankSendMessage,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState } from './../../helpers/localState';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import {
   Dao,
   DaoMember,

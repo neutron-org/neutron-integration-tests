@@ -2,14 +2,13 @@ import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
   getSequenceId,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
-import { LocalState } from './../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,
@@ -17,10 +16,7 @@ import {
   NeutronContract,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { getIca } from '@neutron-org/neutronjsplus/dist/ica';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
 const config = require('../../config.json');
 

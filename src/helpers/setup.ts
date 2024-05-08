@@ -9,8 +9,8 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 
-const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
-export const DEBUG_SUBMIT_TX = process.env.DEBUG_SUBMIT_TX;
+export const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
+export const DEBUG_SUBMIT_TX: boolean = !!process.env.DEBUG_SUBMIT_TX || false;
 
 const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
   ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)

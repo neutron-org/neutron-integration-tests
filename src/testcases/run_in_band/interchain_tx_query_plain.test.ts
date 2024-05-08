@@ -9,11 +9,8 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '@neutron-org/neutronjsplus/dist/icq';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
-import { LocalState } from '../../helpers/localState';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 
 const config = require('../../config.json');

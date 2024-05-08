@@ -10,7 +10,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitForICQResultWithRemoteHeight } from '@neutron-org/neutronjsplus/dist/icq';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import axios from 'axios';
 
 export const getKvCallbackStatus = (

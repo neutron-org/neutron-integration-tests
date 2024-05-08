@@ -1,9 +1,7 @@
-import { LocalState } from './../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import '@neutron-org/neutronjsplus';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import {
   Dao,
@@ -19,10 +17,7 @@ import {
   updateInterchaintxsParamsProposal,
   updateTokenfacoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-import {
-  WalletWrapper,
-  createWalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/wallet_wrapper';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
 const config = require('../../config.json');
 
