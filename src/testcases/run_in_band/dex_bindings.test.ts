@@ -303,6 +303,38 @@ describe('Neutron / dex module bindings', () => {
           /unknown variant `unknown`, expected one of `GOOD_TIL_CANCELLED`, `FILL_OR_KILL`, `IMMEDIATE_OR_CANCEL`, `JUST_IN_TIME`, `GOOD_TIL_TIME`/,
         );
       });
+      test('limit_sell_price decimal', async () => {
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            place_limit_order: {
+              receiver: contractAddress,
+              token_in: 'untrn',
+              token_out: 'uibcusdc',
+              limit_sell_price: '10.1',
+              amount_in: '10',
+              order_type: LimitOrderType.GoodTilCancelled,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
+      test('limit_sell_price scientific notation', async () => {
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            place_limit_order: {
+              receiver: contractAddress,
+              token_in: 'untrn',
+              token_out: 'uibcusdc',
+              limit_sell_price: '1.4564654E-5',
+              amount_in: '10',
+              order_type: LimitOrderType.GoodTilCancelled,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
+      });
     });
     describe('Withdraw filled lo', () => {
       console.log(trancheKeyToWithdraw);
