@@ -65,13 +65,12 @@ describe('Neutron / Governance', () => {
       NeutronContract.IBC_TRANSFER,
     );
     expect(contractCodeId).toBeGreaterThan(0);
-    const contractRes = await neutronAccount.instantiateContract(
+    contractAddressForAdminMigration = await neutronAccount.instantiateContract(
       contractCodeId,
       {},
       'ibc_transfer',
       mainDao.contracts.core.address,
     );
-    contractAddressForAdminMigration = contractRes;
     expect(contractAddressForAdminMigration).toBeDefined();
     expect(contractAddressForAdminMigration).not.toEqual('');
   });
@@ -449,7 +448,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         rawLog = JSON.stringify(
-          (await daoMember1.executeProposal(proposalId)).events,
+          (await daoMember1.executeProposal(proposalId)).rawLog,
         );
       } catch (e) {
         rawLog = e.message;
@@ -482,7 +481,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         rawLog = JSON.stringify(
-          (await daoMember1.executeProposal(proposalId)).events,
+          (await daoMember1.executeProposal(proposalId)).rawLog,
         );
       } catch (e) {
         rawLog = e.message;
@@ -990,7 +989,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         rawLog = JSON.stringify(
-          (await daoMember1.executeProposal(proposalId)).events,
+          (await daoMember1.executeProposal(proposalId)).rawLog,
         );
       } catch (e) {
         rawLog = e.message;
@@ -1040,7 +1039,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         rawLog = JSON.stringify(
-          (await daoMember1.executeProposal(proposalId)).events,
+          (await daoMember1.executeProposal(proposalId)).rawLog,
         );
       } catch (e) {
         rawLog = e.message;
@@ -1075,7 +1074,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         rawLog = JSON.stringify(
-          (await daoMember1.executeProposal(proposalId)).events,
+          (await daoMember1.executeProposal(proposalId)).rawLog,
         );
       } catch (e) {
         rawLog = e.message;
@@ -1116,7 +1115,6 @@ describe('Neutron / Governance', () => {
         'HostEnabled',
         'false',
       );
-      // TODO: check that this test has exact error?
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
       expect(afterProposalHostStatus).toEqual(true);

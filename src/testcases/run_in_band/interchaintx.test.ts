@@ -200,7 +200,6 @@ describe('Neutron / Interchain TXs', () => {
             stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
-        // console.log('dres: \n' + JSON.stringify(res1.delegationResponses));
         expect(res1.delegationResponses).toEqual([
           {
             balance: { amount: '1000', denom: gaiaChain.denom },
@@ -410,7 +409,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           });
           // FIXME
-          rawLog = JSON.stringify(res.events);
+          rawLog = res.rawLog;
         } catch (e) {
           rawLog = e.message;
         }

@@ -199,12 +199,11 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(codeId).toBeGreaterThan(0);
 
-      const res = await neutronAccount.instantiateContract(
+      const contractAddress = await neutronAccount.instantiateContract(
         codeId,
         {},
         'before_send_hook_test',
       );
-      const contractAddress = res;
 
       const denom = `test5`;
 
@@ -321,12 +320,11 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(codeId).toBeGreaterThan(0);
 
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
         {},
         'tokenfactory',
       );
-      contractAddress = res;
 
       await neutronAccount.msgSend(contractAddress, {
         amount: '10000000',
@@ -340,13 +338,7 @@ describe('Neutron / Tokenfactory', () => {
           subdenom,
         },
       });
-      // TODO: use getEventAttribute function
-      denom =
-        res.events
-          ?.find((event) => event.type == 'create_denom')
-          ?.attributes?.find((attribute) => attribute.key == 'new_token_denom')
-          ?.value || '';
-
+      denom = getEventAttribute(res.events, 'create_denom', 'new_token_denom');
       expect(denom.length).toBeGreaterThan(0);
     });
 
