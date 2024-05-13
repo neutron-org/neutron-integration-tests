@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "jest -b src/testcases/parallel",
-    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob && yarn test:slinky",
+    "test:run_in_band": "yarn test:tge:auction && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:globalfee && yarn test:dex_bindings && yarn test:pob && yarn test:slinky && yarn test:chain_manager",
     "test:simple": "jest -b src/testcases/parallel/simple",
     "test:slinky": "jest -b src/testcases/run_in_band/slinky",
     "test:stargate_queries": "jest -b src/testcases/parallel/stargate_queries",
@@ -47,7 +47,7 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#db0be76c5775cea92ce9001792081e6e863b9791",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#772d01326e9cc7449036d1ae8d68a8b834d6a257",
     "@types/lodash": "^4.14.182",
     "@types/long": "^5.0.0",
     "axios": "^0.27.2",

@@ -140,10 +140,10 @@ describe('Neutron / Chain Manager', () => {
           add_strategy: {
             address: subDao.contracts.core.address,
             strategy: {
-              AllowOnly: [
+              allow_only: [
                 {
-                  UpdateParamsPermission: {
-                    CronUpdateParamsPermission: {
+                  update_params_permission: {
+                    cron_update_params_permission: {
                       security_address: true,
                       limit: true,
                     },

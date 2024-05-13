@@ -11,6 +11,7 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import ch from "child_process";
 
 const config = require('../../config.json');
 
@@ -35,7 +36,7 @@ describe('Neutron / Slinky', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(neutronAccount, dao);
@@ -56,7 +57,9 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       proposalId = await daoMember1.submitUpdateMarketMap(
+        chainManagerAddress,
         'Proposal for update marketmap',
         'Add new marketmap with currency pair',
         [
