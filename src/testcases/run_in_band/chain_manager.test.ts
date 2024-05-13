@@ -19,7 +19,7 @@ import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/propos
 
 import config from '../../config.json';
 
-describe('Neutron / Subdao', () => {
+describe('Neutron / Chain Manager', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
