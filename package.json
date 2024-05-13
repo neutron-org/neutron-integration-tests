@@ -47,7 +47,7 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#053608f0df346df7d2057488b4f1534f94f59f74",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#35a66ac1e24b1224a57f335eddf7ba250f784a13",
     "@types/lodash": "^4.14.182",
     "@types/long": "^5.0.0",
     "axios": "^0.27.2",
@@ -86,9 +86,7 @@
       "eslint --max-warnings=0",
       "jest --bail --findRelatedTests"
     ],
-    "./**/*.{ts,tsx,js,jsx,md,json}": [
-      "prettier --write"
-    ]
+    "./**/*.{ts,tsx,js,jsx,md,json}": ["prettier --write"]
   },
   "engines": {
     "node": ">=16.0 <17"
