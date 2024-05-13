@@ -34,7 +34,7 @@ describe('Neutron / Global Fee', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, daoMain);
@@ -66,7 +66,9 @@ describe('Neutron / Global Fee', () => {
     kind: string,
     value: string,
   ) => {
+    const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
     const proposalId = await daoMember.submitParameterChangeProposal(
+      chainManagerAddress,
       'Change Proposal - ' + kind + ' #' + counter,
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
       'globalfee',

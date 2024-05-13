@@ -24,6 +24,7 @@
     "test:globalfee": "jest -b src/testcases/run_in_band/globalfee",
     "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
     "test:parameters": "jest -b src/testcases/run_in_band/parameters",
+    "test:chain_manager": "jest -b src/testcases/run_in_band/chain_manager",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "test:overrule": "jest -b src/testcases/parallel/overrule",
     "test:tge:vesting_lp_vault": "jest -b src/testcases/parallel/tge.vesting_lp_vault",
@@ -46,7 +47,7 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "0.4.0",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#35a66ac1e24b1224a57f335eddf7ba250f784a13",
     "@types/lodash": "^4.14.182",
     "@types/long": "^5.0.0",
     "axios": "^0.27.2",
@@ -85,9 +86,7 @@
       "eslint --max-warnings=0",
       "jest --bail --findRelatedTests"
     ],
-    "./**/*.{ts,tsx,js,jsx,md,json}": [
-      "prettier --write"
-    ]
+    "./**/*.{ts,tsx,js,jsx,md,json}": ["prettier --write"]
   },
   "engines": {
     "node": ">=16.0 <17"

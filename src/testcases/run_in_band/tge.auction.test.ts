@@ -214,7 +214,7 @@ describe('Neutron / TGE / Auction', () => {
 
       testState.wallets.qaNeutronFive.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(cmInstantiator, daoMain);
