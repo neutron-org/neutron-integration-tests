@@ -11,7 +11,6 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import ch from "child_process";
 
 const config = require('../../config.json');
 
