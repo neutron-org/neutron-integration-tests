@@ -47,7 +47,7 @@
     "@cosmos-client/core": "^0.47.4",
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#44ca65a83435ea5412313b0ca3392ec1b8ecb360",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#02d0a8b9e4921523b6d4d7ca37097033fea68062",
     "@types/lodash": "^4.14.182",
     "@types/long": "^5.0.0",
     "axios": "^0.27.2",
