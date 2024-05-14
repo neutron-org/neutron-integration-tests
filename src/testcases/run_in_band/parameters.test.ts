@@ -268,8 +268,19 @@ describe('Neutron / Parameters', () => {
         );
         // toHaveLength(0) equals fee struct is '[]'
         expect(paramsAfter.params.min_fee.recv_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.ack_fee).toHaveLength(1);
-        expect(paramsAfter.params.min_fee.timeout_fee).toHaveLength(1);
+
+        expect(paramsAfter.params.min_fee.ack_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
+        expect(paramsAfter.params.min_fee.timeout_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
       });
     });
   });
