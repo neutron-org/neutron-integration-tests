@@ -37,7 +37,7 @@ describe('Neutron / IBC hooks', () => {
     );
     n1 = new WalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
 
-    TreasuryAddress = (await neutronChain.getChainAdmins())[0];
+    TreasuryAddress = await neutronChain.getNeutronDAOCore();
   });
 
   describe('POB', () => {

@@ -46,7 +46,7 @@ describe('Neutron / Slinky', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(neutronAccount, dao);
@@ -67,7 +67,9 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
-      proposalId = await daoMember1.submitUpdateMarketMap(
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      proposalId = await daoMember1.submitCreateMarketMap(
+        chainManagerAddress,
         'Proposal for update marketmap',
         'Add new marketmap with currency pair',
         [
@@ -82,30 +84,18 @@ describe('Neutron / Slinky', () => {
               enabled: true,
               metadata_JSON: '{}',
             },
-            providers: {
-              providers: [
-                {
-                  name: 'kucoin_ws',
-                  off_chain_ticker: 'eth-usdt',
+            provider_configs: [
+              {
+                name: 'kucoin_ws',
+                off_chain_ticker: 'eth-usdt',
+                normalize_by_pair: {
+                  Base: 'ETH',
+                  Quote: 'USDT',
                 },
-              ],
-            },
-            paths: {
-              paths: [
-                {
-                  operations: [
-                    {
-                      provider: 'kucoin_ws',
-                      currency_pair: {
-                        Base: 'ETH',
-                        Quote: 'USDT',
-                      },
-                      invert: false,
-                    },
-                  ],
-                },
-              ],
-            },
+                invert: false,
+                metadata_JSON: '{}',
+              },
+            ],
           },
         ],
       );
