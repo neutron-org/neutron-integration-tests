@@ -58,7 +58,7 @@ describe('Neutron / Slinky', () => {
   describe('submit proposal', () => {
     test('create proposal', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      proposalId = await daoMember1.submitUpdateMarketMap(
+      proposalId = await daoMember1.submitCreateMarketMap(
         chainManagerAddress,
         'Proposal for update marketmap',
         'Add new marketmap with currency pair',
@@ -74,30 +74,18 @@ describe('Neutron / Slinky', () => {
               enabled: true,
               metadata_JSON: '{}',
             },
-            providers: {
-              providers: [
-                {
-                  name: 'kucoin_ws',
-                  off_chain_ticker: 'eth-usdt',
+            provider_configs: [
+              {
+                name: 'kucoin_ws',
+                off_chain_ticker: 'eth-usdt',
+                normalize_by_pair: {
+                  Base: 'ETH',
+                  Quote: 'USDT',
                 },
-              ],
-            },
-            paths: {
-              paths: [
-                {
-                  operations: [
-                    {
-                      provider: 'kucoin_ws',
-                      currency_pair: {
-                        Base: 'ETH',
-                        Quote: 'USDT',
-                      },
-                      invert: false,
-                    },
-                  ],
-                },
-              ],
-            },
+                invert: false,
+                metadata_JSON: '{}',
+              },
+            ],
           },
         ],
       );
