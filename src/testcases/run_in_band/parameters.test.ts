@@ -127,6 +127,7 @@ describe('Neutron / Parameters', () => {
         'Proposal #2',
         'Tokenfactory params proposal',
         updateTokenfacoryParamsProposal({
+          fee_collector_address: await neutronChain.getNeutronDAOCore(),
           denom_creation_fee: null,
           denom_creation_gas_consume: 100000,
         }),
@@ -219,8 +220,18 @@ describe('Neutron / Parameters', () => {
         updateFeerefunderParamsProposal({
           min_fee: {
             recv_fee: [],
-            ack_fee: [],
-            timeout_fee: [],
+            ack_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
+            timeout_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
           },
         }),
         '1000',
@@ -257,8 +268,8 @@ describe('Neutron / Parameters', () => {
         );
         // toHaveLength(0) equals fee struct is '[]'
         expect(paramsAfter.params.min_fee.recv_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.ack_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.timeout_fee).toHaveLength(0);
+        expect(paramsAfter.params.min_fee.ack_fee).toHaveLength(1);
+        expect(paramsAfter.params.min_fee.timeout_fee).toHaveLength(1);
       });
     });
   });
