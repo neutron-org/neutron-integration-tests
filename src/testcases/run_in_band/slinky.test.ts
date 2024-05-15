@@ -235,7 +235,7 @@ describe('Neutron / Slinky', () => {
       );
       expect(res).toBeDefined();
       expect(res.params.version).toEqual(0);
-      expect(res.params.market_authority).toEqual('neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z');
+      expect(res.params.market_authorities[0]).toEqual('neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z');
     });
   });
 });
