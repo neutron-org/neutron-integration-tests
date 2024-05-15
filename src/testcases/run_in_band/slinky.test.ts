@@ -18,9 +18,9 @@ import {
   GetPricesResponse,
 } from '@neutron-org/neutronjsplus/src/oracle';
 import {
-  GetLastUpdatedResponse,
   ParamsResponse,
-  GetMarketMapResponse,
+  LastUpdatedResponse,
+  MarketMapResponse,
 } from '@neutron-org/neutronjsplus/src/marketmap';
 
 const config = require('../../config.json');
@@ -204,20 +204,20 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query last', async () => {
-      const res = await neutronChain.queryContract<GetLastUpdatedResponse>(
+      const res = await neutronChain.queryContract<LastUpdatedResponse>(
         contractAddress,
         {
-          get_last_updated: {},
+          last_updated: {},
         },
       );
       expect(res.last_updated).toBeGreaterThan(0);
     });
 
     test('query market', async () => {
-      const res = await neutronChain.queryContract<GetMarketMapResponse>(
+      const res = await neutronChain.queryContract<MarketMapResponse>(
         contractAddress,
         {
-          get_market_map: {},
+          market_map: {},
         },
       );
       expect(res.market_map).toBeDefined();
@@ -235,7 +235,9 @@ describe('Neutron / Slinky', () => {
       );
       expect(res).toBeDefined();
       expect(res.params.version).toEqual(0);
-      expect(res.params.market_authorities[0]).toEqual('neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z');
+      expect(res.params.market_authorities[0]).toEqual(
+        'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+      );
     });
   });
 });
