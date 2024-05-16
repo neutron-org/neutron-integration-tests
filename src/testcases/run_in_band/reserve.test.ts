@@ -61,7 +61,7 @@ describe('Neutron / Treasury', () => {
     let treasury: string;
     beforeAll(async () => {
       dsc = await setupDSC(neutronAccount1, mainDaoAddr, securityDaoAddr);
-      treasury = (await neutronChain.getChainAdmins())[0];
+      treasury = await neutronChain.getNeutronDAOCore();
     });
 
     describe('some corner cases', () => {
@@ -357,7 +357,7 @@ describe('Neutron / Treasury', () => {
     let reserve: string;
     beforeAll(async () => {
       dsc = await setupDSC(neutronAccount1, mainDaoAddr, securityDaoAddr);
-      treasury = (await neutronChain.getChainAdmins())[0];
+      treasury = await neutronChain.getNeutronDAOCore();
       reserve = await setupReserve(neutronAccount1, {
         mainDaoAddress: mainDaoAddr,
         securityDaoAddress: securityDaoAddr,

@@ -173,7 +173,7 @@ describe.skip('Neutron / TGE / Auction', () => {
       neutronChain,
       testState.wallets.qaNeutronFive.qa,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(cmInstantiator, daoMain);

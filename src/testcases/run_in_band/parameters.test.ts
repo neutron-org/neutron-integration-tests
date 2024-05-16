@@ -41,8 +41,9 @@ describe('Neutron / Parameters', () => {
       neutronChain,
       testState.wallets.qaNeutron.qa,
     );
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
+
     dao = new Dao(neutronChain, daoContracts);
     daoMember1 = new DaoMember(neutronAccount, dao);
   });
@@ -67,7 +68,9 @@ describe('Neutron / Parameters', () => {
 
   describe('Interchain queries params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsInterchainqueriesProposal(
+        chainManagerAddress,
         'Proposal #1',
         'Param change proposal. This one will pass',
         updateInterchainqueriesParamsProposal({
@@ -114,10 +117,13 @@ describe('Neutron / Parameters', () => {
 
   describe('Tokenfactory params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsTokenfactoryProposal(
+        chainManagerAddress,
         'Proposal #2',
         'Tokenfactory params proposal',
         updateTokenfacoryParamsProposal({
+          fee_collector_address: await neutronChain.getNeutronDAOCore(),
           denom_creation_fee: null,
           denom_creation_gas_consume: 100000,
         }),
@@ -159,7 +165,9 @@ describe('Neutron / Parameters', () => {
 
   describe('Feeburner params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsFeeburnerProposal(
+        chainManagerAddress,
         'Proposal #3',
         'Feeburner params proposal',
         updateFeeburnerParamsProposal({
@@ -200,14 +208,26 @@ describe('Neutron / Parameters', () => {
 
   describe('Feerefunder params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsFeerefunderProposal(
+        chainManagerAddress,
         'Proposal #4',
         'Feerefunder update params proposal',
         updateFeerefunderParamsProposal({
           min_fee: {
             recv_fee: [],
-            ack_fee: [],
-            timeout_fee: [],
+            ack_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
+            timeout_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
           },
         }),
         '1000',
@@ -244,15 +264,28 @@ describe('Neutron / Parameters', () => {
         );
         // toHaveLength(0) equals fee struct is '[]'
         expect(paramsAfter.params.min_fee.recv_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.ack_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.timeout_fee).toHaveLength(0);
+
+        expect(paramsAfter.params.min_fee.ack_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
+        expect(paramsAfter.params.min_fee.timeout_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
       });
     });
   });
 
   describe('Cron params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsCronProposal(
+        chainManagerAddress,
         'Proposal #5',
         'Cron update params proposal. Will pass',
         updateCronParamsProposal({
@@ -294,7 +327,9 @@ describe('Neutron / Parameters', () => {
 
   describe('Contractanager params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsContractmanagerProposal(
+        chainManagerAddress,
         'Proposal #6',
         'Contractanager params proposal',
         updateContractmanagerParamsProposal({
@@ -333,7 +368,9 @@ describe('Neutron / Parameters', () => {
 
   describe('Interchaintxs params proposal', () => {
     test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsInterchaintxsProposal(
+        chainManagerAddress,
         'Proposal #7',
         'Update interchaintxs params',
         updateInterchaintxsParamsProposal({

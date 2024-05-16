@@ -158,14 +158,18 @@ describe('Neutron / Subdao', () => {
 
     let proposalId2: number;
     test('proposal timelock 2 with two messages, one of them fails', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       // pack two messages in one proposal
-      const failMessage = paramChangeProposal({
-        title: 'paramchange',
-        description: 'paramchange',
-        subspace: 'icahost',
-        key: 'HostEnabled',
-        value: '123123123', // expected boolean, provided number
-      });
+      const failMessage = paramChangeProposal(
+        {
+          title: 'paramchange',
+          description: 'paramchange',
+          subspace: 'icahost',
+          key: 'HostEnabled',
+          value: '123123123', // expected boolean, provided number
+        },
+        chainManagerAddress,
+      );
       const goodMessage = sendProposal({
         to: neutronAccount2.wallet.address,
         denom: NEUTRON_DENOM,
@@ -627,12 +631,15 @@ describe('Neutron / Subdao', () => {
     let proposalId: number;
 
     test('Non-timelock schedule proposal: Succeed creation', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       proposalId = await subdaoMember1.submitRemoveSchedule(
+        chainManagerAddress,
         'Proposal #12',
         '',
         '1000',
         'proposal11',
         'single_nt_pause',
+        false,
       );
       await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
 

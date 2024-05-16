@@ -88,7 +88,7 @@ describe('Neutron / Interchain KV Query', () => {
       testState.wallets.cosmos.demo2,
     );
 
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     const dao = new Dao(neutronChain, daoContracts);
     const daoMember = new DaoMember(neutronAccount, dao);
