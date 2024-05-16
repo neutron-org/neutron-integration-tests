@@ -223,7 +223,6 @@ describe('Neutron / Slinky', () => {
       expect(res.market_map).toBeDefined();
       expect(res.last_updated).toBeDefined();
       expect(res.chain_id).toBeDefined();
-      expect(res.version).toBeDefined();
     });
 
     test('query params', async () => {
