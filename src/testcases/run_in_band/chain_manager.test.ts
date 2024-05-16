@@ -1,48 +1,45 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
   setupSubDaoTimelockSet,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import cosmosclient from '@cosmos-client/core';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { Suite, inject } from 'vitest';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 describe('Neutron / Chain Manager', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
-  let neutronAccount1: WalletWrapper;
   let subdaoMember1: DaoMember;
   let mainDaoMember: DaoMember;
-  let demo1Wallet: Wallet;
-  let securityDaoWallet: Wallet;
-  let securityDaoAddr: cosmosclient.AccAddress | cosmosclient.ValAddress;
+  let securityDaoAddr: string;
   let subDao: Dao;
   let mainDao: Dao;
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+  beforeAll(async (suite: Suite) => {
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    demo1Wallet = testState.wallets.qaNeutron.genQaWal1;
-    securityDaoWallet = testState.wallets.qaNeutronThree.genQaWal1;
+    const demo1Wallet = await testState.walletWithOffset('neutron');
+    const securityDaoWallet = await testState.walletWithOffset('neutron');
     securityDaoAddr = securityDaoWallet.address;
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount1 = new WalletWrapper(neutronChain, demo1Wallet);
+    const neutronAccount1 = await createWalletWrapper(
+      neutronChain,
+      demo1Wallet,
+    );
 
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -54,7 +51,7 @@ describe('Neutron / Chain Manager', () => {
     subDao = await setupSubDaoTimelockSet(
       neutronAccount1,
       mainDao.contracts.core.address,
-      securityDaoAddr.toString(),
+      securityDaoAddr,
       true,
     );
 
