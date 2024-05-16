@@ -217,7 +217,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<MarketResponse>(
         contractAddress,
         {
-          currency_pair: { Base: 'ETH', Quote: 'USDT'},
+          market: {currency_pair: { Base: 'ETH', Quote: 'USDT'}},
         },
       );
       expect(res.market).toBeDefined();
