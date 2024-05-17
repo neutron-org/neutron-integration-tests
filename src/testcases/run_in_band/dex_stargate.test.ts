@@ -440,7 +440,7 @@ describe('Neutron / dex module (stargate contract)', () => {
         }),
       );
       expect(resTx.code).toEqual(0);
-      trancheKeyToWithdraw = getEventAttributesFromTx(
+      activeTrancheKey = getEventAttributesFromTx(
         { tx_response: resTx },
         'TickUpdate',
         ['TrancheKey'],
