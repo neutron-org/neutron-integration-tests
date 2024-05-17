@@ -20,7 +20,8 @@ import {
 import {
   ParamsResponse,
   LastUpdatedResponse,
-  MarketMapResponse, MarketResponse,
+  MarketMapResponse,
+  MarketResponse,
 } from '@neutron-org/neutronjsplus/src/marketmap';
 
 const config = require('../../config.json');
@@ -217,24 +218,23 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<MarketResponse>(
         contractAddress,
         {
-          market: {currency_pair: { Base: 'ETH', Quote: 'USDT'}},
+          market: { currency_pair: { Base: 'ETH', Quote: 'USDT' } },
         },
       );
       expect(res.market).toBeDefined();
     });
 
-    test('query market', async () => {
-      const res = await neutronChain.queryContract<ParamsResponse>(
+    test('query market map', async () => {
+      const res = await neutronChain.queryContract<MarketMapResponse>(
         contractAddress,
         {
-          params: {},
+          market_map: {},
         },
       );
       expect(res).toBeDefined();
-      expect(res.params.version).toEqual(0);
-      expect(res.params.market_authorities[0]).toEqual(
-        'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
-      );
+      expect(res.chain_id).toBeDefined();
+      expect(res.market_map).toBeDefined();
+      expect(res.last_updated).toBeDefined();
     });
 
     test('query params', async () => {
