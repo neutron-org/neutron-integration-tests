@@ -426,6 +426,25 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
     });
     test('LimitOrderTrancheUserQuery', async () => {
+      const resTx = await neutronAccount.executeContract(
+        contractAddress,
+        JSON.stringify({
+          place_limit_order: {
+            receiver: contractAddress,
+            token_in: 'untrn',
+            token_out: 'uibcusdc',
+            tick_index_in_to_out: 1,
+            amount_in: '10',
+            order_type: LimitOrderType.JustInTime,
+          },
+        }),
+      );
+      expect(resTx.code).toEqual(0);
+      trancheKeyToWithdraw = getEventAttributesFromTx(
+        { tx_response: resTx },
+        'TickUpdate',
+        ['TrancheKey'],
+      )[0]['TrancheKey'];
       const res =
         await neutronAccount.chain.queryContract<LimitOrderTrancheUserResponse>(
           contractAddress,
@@ -433,6 +452,7 @@ describe('Neutron / dex module (stargate contract)', () => {
             get_limit_order_tranche_user: {
               address: contractAddress,
               tranche_key: activeTrancheKey,
+              calc_withdrawable_shares: true,
             },
           },
         );
@@ -515,7 +535,7 @@ describe('Neutron / dex module (stargate contract)', () => {
           },
         );
       expect(Number(resp.deposits[0].total_shares)).toBeGreaterThan(0);
-      expect(Number(resp.deposits[0].pool!.id)).toEqual(0);
+      expect(Number(resp.deposits[0].pool.id)).toEqual(0);
 
       const respNoPoolData =
         await neutronAccount.chain.queryContract<AllUserDepositsResponse>(

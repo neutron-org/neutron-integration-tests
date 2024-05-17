@@ -272,17 +272,21 @@ const acceptInterchainqueriesParamsChangeProposal = async (
   key: string,
   value: string,
 ) => {
-  const daoCoreAddress = (await cm.chain.getChainAdmins())[0];
+  const daoCoreAddress = await cm.chain.getNeutronDAOCore();
   const daoContracts = await getDaoContracts(cm.chain, daoCoreAddress);
   const dao = new Dao(cm.chain, daoContracts);
   const daoMember = new DaoMember(cm, dao);
-  const message = paramChangeProposal({
-    title,
-    description,
-    subspace: 'interchainqueries',
-    key,
-    value,
-  });
+  const chainManagerAddress = (await cm.chain.getChainAdmins())[0];
+  const message = paramChangeProposal(
+    {
+      title,
+      description,
+      subspace: 'interchainqueries',
+      key,
+      value,
+    },
+    chainManagerAddress,
+  );
   await dao.makeSingleChoiceProposalPass(
     [daoMember],
     title,
@@ -487,7 +491,7 @@ describe('Neutron / Interchain KV Query', () => {
     );
     gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
 
-    const daoCoreAddress = (await neutronChain.getChainAdmins())[0];
+    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     const dao = new Dao(neutronChain, daoContracts);
     const daoMember = new DaoMember(neutronAccount, dao);
@@ -533,7 +537,7 @@ describe('Neutron / Interchain KV Query', () => {
         } catch (err) {
           const error = err as Error;
           expect(error.message).toMatch(
-            /spendable balance {2}is smaller than 1000000untrn/i,
+            /spendable balance 0untrn is smaller than 1000000untrn/i,
           );
         }
       });

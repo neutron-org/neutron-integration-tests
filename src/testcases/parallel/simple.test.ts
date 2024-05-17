@@ -489,10 +489,10 @@ describe('Neutron / Simple', () => {
           }),
         );
 
-        /* 
+        /*
         What is going on here. To test SudoTimeout handler functionality
         we have to make an IBC package delivery by hermes really slowly.
-        But, actually there is no any activity on the IBC channel at this stage, as a result 
+        But, actually there is no any activity on the IBC channel at this stage, as a result
         hermes does not send any UpdateClient messages from gaia to neuron.
         Gaia keeps building blocks and hermes knows nothing about it.
         We get the height =N of the gaia chain, wait 15 blocks.

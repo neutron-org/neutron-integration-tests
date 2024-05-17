@@ -8,7 +8,6 @@ import {
   WalletWrapper,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import { getHeight } from '@neutron-org/neutronjsplus/dist/env';
 const fee = {
   gas_limit: Long.fromString('200000'),
@@ -38,7 +37,7 @@ describe('Neutron / IBC hooks', () => {
     );
     n1 = new WalletWrapper(neutronChain, testState.wallets.qaNeutron.genQaWal1);
 
-    TreasuryAddress = (await neutronChain.getChainAdmins())[0];
+    TreasuryAddress = await neutronChain.getNeutronDAOCore();
   });
 
   describe('POB', () => {
@@ -161,13 +160,12 @@ describe('Neutron / IBC hooks', () => {
         [overriderTxData, txData],
       );
       expect(res.code).toEqual(0);
-      const [{ events }] = JSON.parse(res.raw_log || '[]') as {
-        events: InlineResponse20071TxResponseEvents[];
-      }[];
+      const events = res.events;
       const attrs = events.find((e) => e.type === 'auction_bid')?.attributes;
       expect(attrs).toEqual(
         expect.arrayContaining([
           {
+            index: true,
             key: 'bid',
             value: `1000${NEUTRON_DENOM}`,
           },
