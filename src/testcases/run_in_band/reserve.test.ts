@@ -65,7 +65,7 @@ describe('Neutron / Treasury', () => {
         mainDaoAddr.toString(),
         securityDaoAddr.toString(),
       );
-      treasury = (await neutronChain.getChainAdmins())[0];
+      treasury = await neutronChain.getNeutronDAOCore();
     });
 
     describe('some corner cases', () => {
@@ -408,7 +408,7 @@ describe('Neutron / Treasury', () => {
         mainDaoAddr.toString(),
         securityDaoAddr.toString(),
       );
-      treasury = (await neutronChain.getChainAdmins())[0];
+      treasury = await neutronChain.getNeutronDAOCore();
       reserve = await setupReserve(neutronAccount1, {
         mainDaoAddress: mainDaoAddr.toString(),
         securityDaoAddress: securityDaoAddr.toString(),
