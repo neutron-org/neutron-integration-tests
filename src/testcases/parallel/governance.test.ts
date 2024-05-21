@@ -205,13 +205,12 @@ describe('Neutron / Governance', () => {
 
     test('create proposal #6, will pass', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      await daoMember1.submitClientUpdateProposal(
+      await daoMember1.submitRecoverIBCClient(
         chainManagerAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
         '07-tendermint-2',
         '07-tendermint-1',
-        '1000',
       );
     });
 
