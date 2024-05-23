@@ -9,6 +9,18 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import {
+  GetAllCurrencyPairsResponse,
+  GetPriceResponse,
+  GetPricesResponse,
+} from '@neutron-org/neutronjsplus/dist/oracle';
+import {
+  ParamsResponse,
+  MarketResponse,
+  MarketMapResponse,
+  LastUpdatedResponse,
+} from '@neutron-org/neutronjsplus/dist/marketmap';
 
 const config = require('../../config.json');
 
@@ -122,6 +134,116 @@ describe('Neutron / Slinky', () => {
     test('eth price present', async () => {
       const res = await neutronChain.queryOraclePrice('ETH', 'USDT');
       expect(+res.price.price).toBeGreaterThan(0);
+    });
+  });
+
+  describe('wasmbindings oracle', () => {
+    let contractAddress: string;
+
+    test('setup contract', async () => {
+      const codeId = await neutronAccount.storeWasm(NeutronContract.ORACLE);
+      expect(codeId).toBeGreaterThan(0);
+
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'oracle',
+      );
+    });
+
+    test('query prices', async () => {
+      const res = await neutronChain.queryContract<GetPricesResponse>(
+        contractAddress,
+        {
+          get_prices: {
+            currency_pair_ids: ['ETH/USDT'],
+          },
+        },
+      );
+      expect(res.prices).toHaveLength(1);
+      expect(+res.prices[0].price.price).toBeGreaterThan(0);
+    });
+
+    test('query price', async () => {
+      const res = await neutronChain.queryContract<GetPriceResponse>(
+        contractAddress,
+        {
+          get_price: { currency_pair: { Base: 'ETH', Quote: 'USDT' } },
+        },
+      );
+      expect(+res.price.price).toBeGreaterThan(0);
+    });
+
+    test('query currencies', async () => {
+      const res = await neutronChain.queryContract<GetAllCurrencyPairsResponse>(
+        contractAddress,
+        {
+          get_all_currency_pairs: {},
+        },
+      );
+      expect(res.currency_pairs[0].Base).toBe('ETH');
+      expect(res.currency_pairs[0].Quote).toBe('USDT');
+    });
+  });
+  describe('wasmbindings marketmap', () => {
+    let contractAddress: string;
+
+    test('setup contract', async () => {
+      const codeId = await neutronAccount.storeWasm(NeutronContract.MARKETMAP);
+      expect(codeId).toBeGreaterThan(0);
+
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'marketmap',
+      );
+    });
+
+    test('query last', async () => {
+      const res = await neutronChain.queryContract<LastUpdatedResponse>(
+        contractAddress,
+        {
+          last_updated: {},
+        },
+      );
+      expect(res.last_updated).toBeGreaterThan(0);
+    });
+
+    test('query market', async () => {
+      const res = await neutronChain.queryContract<MarketResponse>(
+        contractAddress,
+        {
+          market: { currency_pair: { Base: 'ETH', Quote: 'USDT' } },
+        },
+      );
+      expect(res.market).toBeDefined();
+    });
+
+    test('query market map', async () => {
+      const res = await neutronChain.queryContract<MarketMapResponse>(
+        contractAddress,
+        {
+          market_map: {},
+        },
+      );
+      expect(res).toBeDefined();
+      expect(res.chain_id).toBeDefined();
+      expect(res.market_map).toBeDefined();
+      expect(res.last_updated).toBeDefined();
+    });
+
+    test('query params', async () => {
+      const res = await neutronChain.queryContract<ParamsResponse>(
+        contractAddress,
+        {
+          params: {},
+        },
+      );
+      expect(res).toBeDefined();
+      expect(res.params.admin).toBeDefined();
+      expect(res.params.market_authorities[0]).toEqual(
+        'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+      );
     });
   });
 });
