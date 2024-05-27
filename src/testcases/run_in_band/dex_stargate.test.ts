@@ -487,7 +487,7 @@ describe('Neutron / dex module (stargate contract)', () => {
           {
             get_limit_order_tranche: {
               pair_id: 'uibcusdc<>untrn',
-              tick_index: -200,
+              tick_index: -2000,
               token_in: 'untrn',
               tranche_key: activeTrancheKey,
             },
