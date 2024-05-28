@@ -303,7 +303,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'uibcusdc',
               token_out: 'untrn',
               tick_index_in_to_out: -10,
-              amount_in: '100',
+              amount_in: '1000',
               order_type: LimitOrderType.ImmediateOrCancel,
             },
           }),
