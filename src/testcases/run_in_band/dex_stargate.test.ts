@@ -174,7 +174,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 30000,
+              tick_index_in_to_out: 0,
               limit_sell_price: '0.74',
               amount_in: '100',
               order_type: LimitOrderType.FillOrKill,
@@ -193,7 +193,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 20,
+              tick_index_in_to_out: 0,
               limit_sell_price: '0.998',
               amount_in: '1000000',
               order_type: LimitOrderType.ImmediateOrCancel,
@@ -247,7 +247,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                 receiver: contractAddress,
                 token_in: 'untrn',
                 token_out: 'uibcusdc',
-                tick_index_in_to_out: 20,
+                tick_index_in_to_out: 0,
                 limit_sell_price: '0.998',
                 amount_in: '10000000',
                 expiration_time: 1,
@@ -281,7 +281,6 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     describe('Withdraw filled LO', () => {
       test('Withdraw', async () => {
-        // place GTC LO at top of orderbook
         const res1 = await neutronAccount.executeContract(
           contractAddress,
           JSON.stringify({
@@ -289,7 +288,8 @@ describe('Neutron / dex module (stargate contract)', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 200,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '0.8188125757',
               amount_in: '1000000',
               order_type: LimitOrderType.GoodTilCanceled,
             },
@@ -309,7 +309,8 @@ describe('Neutron / dex module (stargate contract)', () => {
               receiver: contractAddress,
               token_in: 'uibcusdc',
               token_out: 'untrn',
-              tick_index_in_to_out: -10,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '1.1',
               amount_in: '1000',
               order_type: LimitOrderType.ImmediateOrCancel,
             },
@@ -389,7 +390,8 @@ describe('Neutron / dex module (stargate contract)', () => {
             receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
-            tick_index_in_to_out: 200,
+            tick_index_in_to_out: 0,
+            limit_sell_price: '0.8188125757',
             amount_in: '1000000',
             order_type: LimitOrderType.GoodTilCanceled,
           },
@@ -409,7 +411,8 @@ describe('Neutron / dex module (stargate contract)', () => {
             receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
-            tick_index_in_to_out: -2000,
+            tick_index_in_to_out: 0,
+            limit_sell_price: '7.3816756536',
             amount_in: '1000000',
             order_type: LimitOrderType.JustInTime,
           },
@@ -475,7 +478,7 @@ describe('Neutron / dex module (stargate contract)', () => {
           {
             get_limit_order_tranche: {
               pair_id: 'uibcusdc<>untrn',
-              tick_index: -200,
+              tick_index: -1999,
               token_in: 'untrn',
               tranche_key: activeTrancheKey,
             },
@@ -490,7 +493,7 @@ describe('Neutron / dex module (stargate contract)', () => {
           {
             get_limit_order_tranche: {
               pair_id: 'untrn<>notadenom',
-              tick_index: -200,
+              tick_index: -1999,
               token_in: 'untrn',
               tranche_key: activeTrancheKey,
             },
@@ -552,34 +555,12 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(res.tick_liquidity.length).toBeGreaterThan(0);
     });
     test('InactiveLimitOrderTranche', async () => {
-      // create an expired tranche
-      const res = await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          place_limit_order: {
-            receiver: contractAddress,
-            token_in: 'untrn',
-            token_out: 'uibcusdc',
-            tick_index_in_to_out: 0,
-            limit_sell_price: '1.0001',
-            amount_in: '1000000',
-            order_type: LimitOrderType.JustInTime,
-          },
-        }),
-      );
-      let inactiveTrancheKey = getEventAttributesFromTx(
-        { tx_response: res },
-        'TickUpdate',
-        ['TrancheKey'],
-      )[0]['TrancheKey'];
-      // wait a few blocks to make sure JIT order expires
-      await neutronChain.blockWaiter.waitBlocks(2);
       await neutronAccount.chain.queryContract<InactiveLimitOrderTrancheResponse>(
         contractAddress,
         {
           get_inactive_limit_order_tranche: {
             pair_id: 'uibcusdc<>untrn',
-            tick_index: 2000,
+            tick_index: 19991,
             token_in: 'untrn',
             tranche_key: inactiveTrancheKey,
           },
