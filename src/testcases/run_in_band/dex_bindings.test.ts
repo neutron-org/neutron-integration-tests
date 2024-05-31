@@ -163,7 +163,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: -2000,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '1.221390545',
               amount_in: '1000000',
               order_type: LimitOrderType.GoodTilCancelled,
             },
@@ -180,7 +181,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 30000,
+              limit_sell_price: '0.74',
+              tick_index_in_to_out: 0,
               amount_in: '100',
               order_type: LimitOrderType.FillOrKill,
               max_amount_out: '100',
@@ -198,7 +200,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 20,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '0.98',
               amount_in: '1000000',
               order_type: LimitOrderType.ImmediateOrCancel,
             },
@@ -215,7 +218,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: -2000,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '7.38',
               amount_in: '1000000',
               order_type: LimitOrderType.JustInTime,
             },
@@ -231,7 +235,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: -20,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '1.002',
               amount_in: '10000000',
               expiration_time: Math.ceil(Date.now() / 1000) + 1000,
               order_type: LimitOrderType.GoodTilTime,
@@ -249,7 +254,8 @@ describe('Neutron / dex module bindings', () => {
                 receiver: contractAddress,
                 token_in: 'untrn',
                 token_out: 'uibcusdc',
-                tick_index_in_to_out: 20,
+                tick_index_in_to_out: 0,
+                limit_sell_price: '0.998',
                 amount_in: '10000000',
                 expiration_time: 1,
                 order_type: LimitOrderType.GoodTilTime,
@@ -269,7 +275,8 @@ describe('Neutron / dex module bindings', () => {
                 receiver: contractAddress,
                 token_in: 'untrn',
                 token_out: 'uibcusdc',
-                tick_index_in_to_out: 1,
+                tick_index_in_to_out: 0,
+                limit_sell_price: '1.0001',
                 amount_in: '10',
                 expiration_time: 1,
                 order_type: 'unknown',
@@ -279,6 +286,23 @@ describe('Neutron / dex module bindings', () => {
         ).rejects.toThrowError(
           /unknown variant `unknown`, expected one of `GOOD_TIL_CANCELLED`, `FILL_OR_KILL`, `IMMEDIATE_OR_CANCEL`, `JUST_IN_TIME`, `GOOD_TIL_TIME`/,
         );
+      });
+      test('limit_sell_price scientific notation', async () => {
+        const res = await neutronAccount.executeContract(
+          contractAddress,
+          JSON.stringify({
+            place_limit_order: {
+              receiver: contractAddress,
+              token_in: 'untrn',
+              token_out: 'uibcusdc',
+              tick_index_in_to_out: 0,
+              limit_sell_price: '1.4564654E-4',
+              amount_in: '100000',
+              order_type: LimitOrderType.GoodTilCancelled,
+            },
+          }),
+        );
+        expect(res.code).toEqual(0);
       });
     });
     describe('Withdraw filled LO', () => {
@@ -291,7 +315,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'untrn',
               token_out: 'uibcusdc',
-              tick_index_in_to_out: 200,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '0.8188125757',
               amount_in: '1000000',
               order_type: LimitOrderType.GoodTilCancelled,
             },
@@ -311,7 +336,8 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               token_in: 'uibcusdc',
               token_out: 'untrn',
-              tick_index_in_to_out: -10,
+              tick_index_in_to_out: 0,
+              limit_sell_price: '1.1',
               amount_in: '1000',
               order_type: LimitOrderType.ImmediateOrCancel,
             },
@@ -360,6 +386,7 @@ describe('Neutron / dex module bindings', () => {
         );
       });
     });
+
     describe('MultiHopSwap', () => {
       const denoms: any[] = [];
       test('successfull multihops', async () => {
@@ -480,7 +507,8 @@ describe('Neutron / dex module bindings', () => {
             receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
-            tick_index_in_to_out: 200,
+            tick_index_in_to_out: 0,
+            limit_sell_price: '0.8188125757',
             amount_in: '1000000',
             order_type: LimitOrderType.GoodTilCancelled,
           },
@@ -500,7 +528,8 @@ describe('Neutron / dex module bindings', () => {
             receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
-            tick_index_in_to_out: -2000,
+            tick_index_in_to_out: 0,
+            limit_sell_price: '7.3816756536',
             amount_in: '1000000',
             order_type: LimitOrderType.JustInTime,
           },
@@ -564,7 +593,7 @@ describe('Neutron / dex module bindings', () => {
           {
             limit_order_tranche: {
               pair_id: 'uibcusdc<>untrn',
-              tick_index: -200,
+              tick_index: -1999,
               token_in: 'untrn',
               tranche_key: activeTrancheKey,
             },
@@ -579,7 +608,7 @@ describe('Neutron / dex module bindings', () => {
           {
             limit_order_tranche: {
               pair_id: 'untrn<>notadenom',
-              tick_index: 1,
+              tick_index: -1999,
               token_in: 'untrn',
               tranche_key: activeTrancheKey,
             },
@@ -647,7 +676,7 @@ describe('Neutron / dex module bindings', () => {
         {
           inactive_limit_order_tranche: {
             pair_id: 'uibcusdc<>untrn',
-            tick_index: 2000,
+            tick_index: 19991,
             token_in: 'untrn',
             tranche_key: inactiveTrancheKey,
           },
