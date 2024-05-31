@@ -94,7 +94,9 @@ describe('Neutron / dex module (stargate contract)', () => {
               },
             }),
           ),
-        ).rejects.toThrowError(/untrn<>untrn: Invalid token pair/);
+        ).rejects.toThrowError(
+          /tokenA cannot equal tokenB: Invalid token denom/,
+        );
       });
       test('Valid pair', async () => {
         // pool denom - 'neutron/pool/0'
