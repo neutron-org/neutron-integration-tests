@@ -15,7 +15,6 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import cosmosclient from '@cosmos-client/core';
 import { DecCoin } from '@neutron-org/neutronjsplus/dist/proto/neutron/cosmos/base/v1beta1/coin_pb';
 import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
 
