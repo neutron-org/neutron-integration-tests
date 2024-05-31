@@ -100,7 +100,7 @@ describe('Neutron / dex module bindings', () => {
             }),
           ),
         ).rejects.toThrowError(
-          /failed to execute \*types.MsgDeposit: untrn<>untrn: Invalid token pair/,
+          /failed to execute \*types.MsgDeposit: failed to validate MsgDeposit: tokenA cannot equal tokenB: Invalid token denom/,
         );
       });
       test('Valid pair', async () => {
