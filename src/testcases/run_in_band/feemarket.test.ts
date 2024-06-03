@@ -61,10 +61,6 @@ describe('Neutron / Fee Market', () => {
     });
   });
 
-  // afterAll(async () => {
-  //   await daoMember.unbondFunds('10000');
-  // });
-
   let counter = 1;
 
   const executeSwitchFeemarket = async (
@@ -124,8 +120,7 @@ describe('Neutron / Fee Market', () => {
     counter++;
   };
 
-  test('check globalfee params before proposal execution', async () => {
-    /* Делаем тарнзакцию с gasprice из query (0.0025untrn) */
+  test('success tx', async () => {
     const res = await neutronAccount.msgSend(
       daoMain.contracts.core.address,
       '1000',
@@ -140,8 +135,7 @@ describe('Neutron / Fee Market', () => {
     expect(res.code).toEqual(0);
   });
 
-  test('change minimum gas price parameter', async () => {
-    // Делаем неудачную транзакцию с gas price < query (0.001untrn)
+  test('failed: insufficient fee', async () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
@@ -152,8 +146,7 @@ describe('Neutron / Fee Market', () => {
     );
   });
 
-  test('check globalfee minimum param changed', async () => {
-    // добавляем uibcatom как fee, в 5 раз дороже untrn, проряем через квери
+  test('additional ibc denom', async () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
@@ -163,7 +156,7 @@ describe('Neutron / Fee Market', () => {
       /unable to get min gas price for denom uibcatom: unknown denom/,
     );
 
-    // // 5 ntrn per ATOM, gives gas price 5 times lower,  0.0005 IBC_ATOM_DENOM and 0.0025 NTRN
+    // 5 ntrn per ATOM, gives atom gas price 5 times lower,  0.0005 IBC_ATOM_DENOM and 0.0025 NTRN
 
     await executeChangeGasPrices(daoMember, 'dynamicfees gasprices', {
       ntrn_prices: [DecCoin.fromJson({ denom: IBC_ATOM_DENOM, amount: '5' })],
@@ -192,8 +185,7 @@ describe('Neutron / Fee Market', () => {
     expect(res.code).toEqual(0);
   });
 
-  test('check minumum global fees with bank send command', async () => {
-    // Делаем транзакцию с 0.0125uibcatom
+  test('enable/disable feemarket module', async () => {
     await executeSwitchFeemarket(daoMember, 'disable feemarket', false);
 
     const res = await neutronAccount.msgSend(
@@ -221,8 +213,7 @@ describe('Neutron / Fee Market', () => {
       /error checking fee: got: 0untrn required: 500untrn, minGasPrice: 0.002500000000000000untrn/,
     );
   });
-  test('change minimum gas price parameter', async () => {
-    // Делаем неудачную транзакцию с gas price < query (0.001untrn)
+  test('gas price gets up and down', async () => {
     const msgSend = new MsgSend({
       fromAddress: neutronAccount.wallet.address.toString(),
       toAddress: daoMain.contracts.core.address,
@@ -232,11 +223,13 @@ describe('Neutron / Fee Market', () => {
       (await neutronChain.getGasPrice('untrn')).price.amount,
     );
     const requiredGas = '30000000';
+    // due to rounding poor accuracy, it's recommended pay a little bit more fees
     const priceAdjustment = 1.05;
     for (let i = 0; i < 15; i++) {
       const fees = Math.floor(
         Number(requiredGas) * ntrnGasPrice * priceAdjustment,
       ).toString();
+      // 1200msgs consume ~27m gas
       const res = await neutronAccount.execTx(
         {
           gas_limit: Long.fromString(requiredGas),
@@ -250,6 +243,7 @@ describe('Neutron / Fee Market', () => {
       const currNtrnGasPrice = Number(
         (await neutronChain.getGasPrice('untrn')).price.amount,
       );
+      // gas price constantly grows on 95% full blocks
       expect(currNtrnGasPrice).toBeGreaterThan(ntrnGasPrice);
       ntrnGasPrice = currNtrnGasPrice;
       const prices = await neutronChain.getGasPrices();
@@ -261,6 +255,7 @@ describe('Neutron / Fee Market', () => {
       const currNtrnGasPrice = Number(
         (await neutronChain.getGasPrice('untrn')).price.amount,
       );
+      // gas price constantly get down when blocks are empty
       expect(currNtrnGasPrice).toBeLessThan(ntrnGasPrice);
       ntrnGasPrice = currNtrnGasPrice;
       const prices = await neutronChain.getGasPrices();
