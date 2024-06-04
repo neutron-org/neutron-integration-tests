@@ -25,6 +25,7 @@
     "test:ibc_hooks": "jest -b src/testcases/run_in_band/ibc_hooks",
     "test:parameters": "jest -b src/testcases/run_in_band/parameters",
     "test:chain_manager": "jest -b src/testcases/run_in_band/chain_manager",
+    "test:flashloans": "jest -b src/testcases/run_in_band/flashloans",
     "test:tokenfactory": "jest -b src/testcases/parallel/tokenfactory",
     "test:overrule": "jest -b src/testcases/parallel/overrule",
     "test:tge:vesting_lp_vault": "jest -b src/testcases/parallel/tge.vesting_lp_vault",
