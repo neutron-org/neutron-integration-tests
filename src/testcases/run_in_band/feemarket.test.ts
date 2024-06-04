@@ -185,25 +185,26 @@ describe('Neutron / Fee Market', () => {
     expect(res.code).toEqual(0);
   });
 
-  test('enable/disable feemarket module', async () => {
+  test('disable/enable feemarket module', async () => {
     await executeSwitchFeemarket(daoMember, 'disable feemarket', false);
 
-    const res = await neutronAccount.msgSend(
-      daoMain.contracts.core.address,
-      '1000',
-      {
+    // feemarket disabled
+    // with a zero fee we fail due to default cosmos ante handler check
+    await expect(
+      neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
         amount: [{ denom: IBC_ATOM_DENOM, amount: '0' }],
-      },
+      }),
+    ).rejects.toThrowError(
+      /insufficient fees; got: 0uibcatom required: 500ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2,500untrn: insufficient fee/,
     );
 
     await neutronChain.blockWaiter.waitBlocks(2);
 
-    // works with zero fee
-    expect(res.code).toEqual(0);
-
     await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
 
+    // feemarket enabled
+    // with a zero fee we fail due to feemarket ante handler check
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
