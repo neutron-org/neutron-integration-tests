@@ -12,6 +12,7 @@ services:
     environment:
       - RUN_BACKGROUND=0
       - ORACLE_ADDRESS=oracle:8080
+      - FEEMARKET_ENABLED=false
     networks:
       - neutron-testing
 
