@@ -59,6 +59,7 @@ describe('Neutron / Fee Market', () => {
       gas_limit: Long.fromString('200000'),
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
     });
+    await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
   });
 
   let counter = 1;
