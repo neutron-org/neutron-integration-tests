@@ -194,10 +194,10 @@ describe('Neutron / Fee Market', () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
         gas_limit: Long.fromString('200000'),
-        amount: [{ denom: IBC_ATOM_DENOM, amount: '0' }],
+        amount: [{ denom: 'untrn', amount: '0' }],
       }),
     ).rejects.toThrowError(
-      /insufficient fees; got: 0uibcatom required: 500ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2,500untrn: insufficient fee/,
+      /insufficient fees; got: 0untrn required: 500ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2,500untrn: insufficient fee/,
     );
 
     await neutronChain.blockWaiter.waitBlocks(2);
