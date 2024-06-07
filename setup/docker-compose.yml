@@ -83,8 +83,7 @@ services:
     image: skip-mev/slinky-e2e-oracle
     entrypoint: [
       "slinky",
-      "--update-market-config-path", "/oracle/market.json",
-      "--market-map-endpoint", "neutron-node:8090",
+      "--market-map-endpoint", "neutron-node:9090",
       ]
     ports:
       - "8080:8080" # main oracle port
