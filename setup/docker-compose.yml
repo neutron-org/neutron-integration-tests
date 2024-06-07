@@ -84,7 +84,7 @@ services:
     entrypoint: [
       "slinky",
       "--update-market-config-path", "/oracle/market.json",
-      "--market-map-endpoint", "blockchain:9090",
+      "--market-map-endpoint", "neutron-node:8090",
       ]
     ports:
       - "8080:8080" # main oracle port
