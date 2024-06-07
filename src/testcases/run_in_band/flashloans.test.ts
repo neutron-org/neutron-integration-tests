@@ -140,7 +140,7 @@ describe('Neutron / Flashloans', () => {
       proposalId = await mainDaoMember.submitSingleChoiceProposal(
         '',
         'Grant authz generic authorization from the DAO core contract' +
-        ' to the flashloan contract for bank.MsgSend',
+          ' to the flashloan contract for bank.MsgSend',
         [stargateMsg],
         '1000',
       );
