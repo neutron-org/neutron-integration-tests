@@ -415,10 +415,11 @@ describe('Neutron / Parameters', () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsTransferProposal(
         chainManagerAddress,
-        'Proposal #7',
-        'Update interchaintxs params',
+        'Proposal #8',
+        'Update transfer params',
         updateTransferParamsProposal({
-          receive_enabled: false, send_enabled: false,
+          receive_enabled: false,
+          send_enabled: false,
         }),
         '1000',
       );
