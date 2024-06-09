@@ -1575,9 +1575,9 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#73fb81f86c4b9847a25abc0fc41255953b3d4e93":
+"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#fe7e18ef70a6d2cc3ceefdb50080cbd9fdf145cd":
   version "0.4.0-rc19"
-  resolved "https://github.com/neutron-org/neutronjsplus.git#73fb81f86c4b9847a25abc0fc41255953b3d4e93"
+  resolved "https://github.com/neutron-org/neutronjsplus.git#fe7e18ef70a6d2cc3ceefdb50080cbd9fdf145cd"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
@@ -2814,9 +2814,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.668:
-  version "1.4.792"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.792.tgz#738712f99d02f70c5754ca4264782915fa946849"
-  integrity sha512-rkg5/N3L+Y844JyfgPUyuKK0Hk0efo3JNxUDKvz3HgP6EmN4rNGhr2D8boLsfTV/hGo7ZGAL8djw+jlg99zQyA==
+  version "1.4.795"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.795.tgz#25d05961c529bc32435e5e4abdd8f9dabcbc9dc5"
+  integrity sha512-hHo4lK/8wb4NUa+NJYSFyJ0xedNHiR6ylilDtb8NUW9d4dmBFmGiecYEKCEbti1wTNzbKXLfl4hPWEkAFbHYlw==
 
 elliptic@^6.4.0, elliptic@^6.5.3, elliptic@^6.5.4:
   version "6.5.5"
