@@ -14,7 +14,7 @@ build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
 
 build-slinky:
-		@docker buildx build --load --build-context app=$(APP_DIR)/slinky -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
+		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.0.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-slinky
 
