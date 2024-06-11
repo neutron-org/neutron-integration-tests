@@ -16,6 +16,7 @@ import {
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfacoryParamsProposal,
+  updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
@@ -401,6 +402,44 @@ describe('Neutron / Parameters', () => {
         const paramAfter = await neutronChain.queryMaxTxsAllowed();
         expect(paramAfter).not.toEqual(paramBefore);
         expect(paramAfter).toEqual('11');
+      });
+    });
+  });
+
+  describe('Transfer params proposal', () => {
+    test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      await daoMember1.submitUpdateParamsTransferProposal(
+        chainManagerAddress,
+        'Proposal #8',
+        'Update transfer params',
+        updateTransferParamsProposal({
+          receive_enabled: false,
+          send_enabled: false,
+        }),
+        '1000',
+      );
+    });
+
+    describe('vote for proposal', () => {
+      const proposalId = 8;
+      test('vote YES', async () => {
+        await daoMember1.voteYes(proposalId);
+      });
+    });
+
+    describe('execute proposal', () => {
+      const proposalId = 8;
+      test('check if proposal is passed', async () => {
+        await dao.checkPassedProposal(proposalId);
+      });
+      test('execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+      });
+      test('check if params changed after proposal execution', async () => {
+        const paramsRes = await neutronChain.queryTransferParams();
+        expect(paramsRes.params.send_enabled).toEqual(false);
+        expect(paramsRes.params.receive_enabled).toEqual(false);
       });
     });
   });

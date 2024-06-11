@@ -139,6 +139,16 @@ describe('Neutron / Chain Manager', () => {
             strategy: {
               allow_only: [
                 {
+                  param_change_permission: {
+                    params: [
+                      {
+                        subspace: 'globalfee',
+                        key: 'MaxTotalBypassMinFeeMsgGasUsage',
+                      },
+                    ],
+                  },
+                },
+                {
                   update_params_permission: {
                     cron_update_params_permission: {
                       security_address: true,

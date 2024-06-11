@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "vitest --run src/testcases/parallel --bail 1 --reporter=basic",
-    "test:run_in_band": "yarn test:globalfee && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:dex_bindings && yarn test:slinky && yarn test:chain_manager",
+    "test:run_in_band": "yarn test:globalfee && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:dex_bindings && yarn test:slinky && yarn test:chain_manager && yarn test:feemarket",
     "test:simple": "vitest --run src/testcases/parallel/simple --bail 1",
     "test:slinky": "vitest --run src/testcases/run_in_band/slinky --bail 1",
     "test:stargate_queries": "vitest --run src/testcases/parallel/stargate_queries --bail 1",
@@ -34,6 +34,7 @@
     "test:dex_stargate": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/dex_stargate --bail 1",
     "test:dex_bindings": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/dex_bindings --bail 1",
     "test:chain_manager": "vitest --run src/testcases/run_in_band/chain_manager --bail 1",
+    "test:feemarket": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/feemarket --bail 1",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
     "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json"
@@ -42,11 +43,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@cosmjs/cosmwasm-stargate": "^0.32.3",
-    "@cosmjs/stargate": "^0.32.3",
-    "@cosmjs/tendermint-rpc": "^0.32.3",
-    "@neutron-org/cosmjs-types": "^0.9.0",
-    "@neutron-org/neutronjsplus": "neutron-org/neutronjsplus#feat/cosmjs",
+    "@cosmos-client/core": "^0.47.4",
+    "@cosmos-client/cosmwasm": "^0.40.3",
+    "@cosmos-client/ibc": "^1.2.1",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#4878d33ba10e481dad26feb5eb75ba81c227a295",
     "@types/lodash": "^4.14.182",
     "axios": "^0.27.2",
     "commander": "^10.0.0",

@@ -153,18 +153,18 @@ export const getQueryDelegatorDelegationsResult = (
     },
   });
 
-export const registerBalanceQuery = async (
+export const registerBalancesQuery = async (
   cm: WalletWrapper,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  denom: string,
+  denoms: string[],
   addr: string,
 ) => {
   const txResult = await cm.executeContract(contractAddress, {
-    register_balance_query: {
+    register_balances_query: {
       connection_id: connectionId,
-      denom: denom,
+      denoms: denoms,
       addr: addr,
       update_period: updatePeriod,
     },

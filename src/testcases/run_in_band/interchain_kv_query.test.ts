@@ -29,9 +29,10 @@ import {
   getKvCallbackStatus,
   getProposalsResult,
   getProposalVotesResult,
+  getQueryBalanceResult,
   getQueryDelegatorDelegationsResult,
   getValidatorsSigningInfosResult,
-  registerBalanceQuery,
+  registerBalancesQuery,
   registerDelegatorDelegationsQuery,
   registerGovProposalsQuery,
   registerProposalVotesQuery,
@@ -51,6 +52,7 @@ describe('Neutron / Interchain KV Query', () => {
     2: 3,
     3: 4,
     4: 3,
+    5: 4,
   };
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
@@ -119,9 +121,9 @@ describe('Neutron / Interchain KV Query', () => {
 
         try {
           await neutronAccount.executeContract(contractAddress, {
-            register_balance_query: {
+            register_balances_query: {
               connection_id: connectionId,
-              denom: gaiaChain.denom,
+              denoms: [gaiaChain.denom],
               addr: testState.wallets.cosmos.demo2.address,
               update_period: 10,
             },
@@ -171,12 +173,12 @@ describe('Neutron / Interchain KV Query', () => {
         let balances = await neutronChain.queryBalances(contractAddress);
         expect(balances[0].amount).toEqual('1000000');
 
-        await registerBalanceQuery(
+        await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           10,
-          gaiaChain.denom,
+          [gaiaChain.denom],
           testState.wallets.cosmos.demo2.address,
         );
 
@@ -192,23 +194,23 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #2: balance', async () => {
-        await registerBalanceQuery(
+        await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           updatePeriods[2],
-          gaiaChain.denom,
+          [gaiaChain.denom],
           testState.wallets.cosmos.demo2.address,
         );
       });
 
       test('register icq #3: balance', async () => {
-        await registerBalanceQuery(
+        await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           updatePeriods[3],
-          gaiaChain.denom,
+          [gaiaChain.denom],
           testState.wallets.cosmos.val1.address,
         );
       });
@@ -221,6 +223,17 @@ describe('Neutron / Interchain KV Query', () => {
           updatePeriods[4],
           testState.wallets.cosmos.demo2.address,
           [testState.wallets.cosmos.val1.valAddress],
+        );
+      });
+
+      test('register icq #5: multiple balances', async () => {
+        await registerBalancesQuery(
+          neutronAccount,
+          contractAddress,
+          connectionId,
+          updatePeriods[5],
+          [gaiaChain.denom, 'nonexistentdenom'],
+          testState.wallets.cosmos.val1.address,
         );
       });
     });
@@ -283,8 +296,34 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("registered icq #5 doesn't exist", async () => {
+    test('get registered icq #5: multiple balances', async () => {
       const queryId = 5;
+      const queryResult = await getRegisteredQuery(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      expect(queryResult.registered_query.keys.length).toEqual(2);
+      expect(queryResult.registered_query.keys[0].path).toEqual('bank');
+      expect(queryResult.registered_query.keys[0].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.keys[1].path).toEqual('bank');
+      expect(queryResult.registered_query.keys[1].key.length).toBeGreaterThan(
+        0,
+      );
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+      expect(queryResult.registered_query.update_period).toEqual(
+        updatePeriods[queryId],
+      );
+    });
+
+    test("registered icq #6 doesn't exist", async () => {
+      const queryId = 6;
       await expect(
         getRegisteredQuery(neutronChain, contractAddress, queryId),
       ).rejects.toThrow();
@@ -362,6 +401,52 @@ describe('Neutron / Interchain KV Query', () => {
       expect(interchainQueryResult.delegations[0].amount.amount).toEqual(
         (1500000).toString(),
       );
+    });
+
+    test('perform icq #5: multiple balances', async () => {
+      const queryId = 5;
+      await waitForICQResultWithRemoteHeight(
+        neutronChain,
+        contractAddress,
+        queryId,
+        await gaiaChain.getHeight(),
+      );
+
+      const interchainQueryResult = await getQueryBalanceResult(
+        neutronChain,
+        contractAddress,
+        queryId,
+      );
+      const directQueryResult = await gaiaChain.queryBalances(
+        testState.wallets.cosmos.val1.address,
+      );
+
+      expect(interchainQueryResult.balances.coins.length).toEqual(2);
+      expect(
+        interchainQueryResult.balances.coins.find(
+          (c) => c.denom == gaiaChain.denom,
+        ),
+      ).toBeDefined();
+      expect(
+        interchainQueryResult.balances.coins.find(
+          (c) => c.denom == gaiaChain.denom,
+        )?.amount,
+      ).toEqual(
+        directQueryResult?.find((c) => c.denom == gaiaChain.denom)?.amount,
+      );
+      expect(
+        directQueryResult?.find((c) => c.denom == 'nonexistentdenom'),
+      ).toEqual(undefined);
+      expect(
+        interchainQueryResult.balances.coins.find(
+          (c) => c.denom == 'nonexistentdenom',
+        ),
+      ).toBeDefined();
+      expect(
+        interchainQueryResult.balances.coins.find(
+          (c) => c.denom == 'nonexistentdenom',
+        )?.amount,
+      ).toEqual('0');
     });
   });
 
@@ -455,12 +540,12 @@ describe('Neutron / Interchain KV Query', () => {
       test('should check query creation with governance parameters', async () => {
         const params = await neutronChain.queryInterchainqueriesParams();
 
-        const queryId = await registerBalanceQuery(
+        const queryId = await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           2,
-          gaiaChain.denom,
+          [gaiaChain.denom],
           gaiaAccount.wallet.address,
         );
 
@@ -514,12 +599,12 @@ describe('Neutron / Interchain KV Query', () => {
           JSON.stringify(queryDepositParam),
         );
 
-        const queryId = await registerBalanceQuery(
+        const queryId = await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           10,
-          gaiaChain.denom,
+          [gaiaChain.denom],
           testState.wallets.cosmos.demo2.address,
         );
 
@@ -570,12 +655,12 @@ describe('Neutron / Interchain KV Query', () => {
           balancesBeforeRegistration,
         );
 
-        const queryId = await registerBalanceQuery(
+        const queryId = await registerBalancesQuery(
           neutronAccount,
           contractAddress,
           connectionId,
           15,
-          gaiaChain.denom,
+          [gaiaChain.denom],
           testState.wallets.cosmos.demo2.address,
         );
 

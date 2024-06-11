@@ -74,8 +74,8 @@ describe('Neutron / Slinky', () => {
           {
             ticker: {
               currency_pair: {
-                Base: 'ETH',
-                Quote: 'USDT',
+                Base: 'TIA',
+                Quote: 'USD',
               },
               decimals: 8,
               min_provider_count: 1,
@@ -84,12 +84,8 @@ describe('Neutron / Slinky', () => {
             },
             provider_configs: [
               {
-                name: 'kucoin_ws',
-                off_chain_ticker: 'eth-usdt',
-                normalize_by_pair: {
-                  Base: 'ETH',
-                  Quote: 'USDT',
-                },
+                name: 'kraken_api',
+                off_chain_ticker: 'TIAUSD',
                 invert: false,
                 metadata_JSON: '{}',
               },
@@ -119,20 +115,20 @@ describe('Neutron / Slinky', () => {
   describe('module fetches prices', () => {
     test('currency pairs not empty', async () => {
       // wait to make sure we updated the price in oracle module
-      await neutronChain.waitBlocks(5);
+      await neutronChain.waitBlocks(30);
       // check
       const res = await neutronChain.queryOracleAllCurrencyPairs();
-      expect(res.currency_pairs[0].Base).toBe('ETH');
-      expect(res.currency_pairs[0].Quote).toBe('USDT');
+      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Quote).toBe('USD');
     });
 
     test('prices not empty', async () => {
-      const res = await neutronChain.queryOraclePrices(['ETH/USDT']);
+      const res = await neutronChain.queryOraclePrices(['TIA/USD']);
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
-    test('eth price present', async () => {
-      const res = await neutronChain.queryOraclePrice('ETH', 'USDT');
+    test('tia/usd price present', async () => {
+      const res = await neutronChain.queryOraclePrice('TIA', 'USD');
       expect(+res.price.price).toBeGreaterThan(0);
     });
   });
@@ -156,7 +152,7 @@ describe('Neutron / Slinky', () => {
         contractAddress,
         {
           get_prices: {
-            currency_pair_ids: ['ETH/USDT'],
+            currency_pair_ids: ['TIA/USD'],
           },
         },
       );
@@ -168,7 +164,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<GetPriceResponse>(
         contractAddress,
         {
-          get_price: { currency_pair: { Base: 'ETH', Quote: 'USDT' } },
+          get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
         },
       );
       expect(+res.price.price).toBeGreaterThan(0);
@@ -181,8 +177,8 @@ describe('Neutron / Slinky', () => {
           get_all_currency_pairs: {},
         },
       );
-      expect(res.currency_pairs[0].Base).toBe('ETH');
-      expect(res.currency_pairs[0].Quote).toBe('USDT');
+      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Quote).toBe('USD');
     });
   });
   describe('wasmbindings marketmap', () => {
@@ -213,7 +209,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<MarketResponse>(
         contractAddress,
         {
-          market: { currency_pair: { Base: 'ETH', Quote: 'USDT' } },
+          market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
