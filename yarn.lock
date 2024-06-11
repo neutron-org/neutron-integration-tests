@@ -1322,7 +1322,7 @@
   resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.0.tgz#43e267066cf2fabffa73bfbc7d3152e70c3818a2"
   integrity sha512-+J7cRkQmtDzO/SSa45xC7iiWZhEUplP2Rm2l2LnEyvU6ABNdzaXStSOx8nM7R3SeW4abKoTmzi/tht4lvJit6w==
 
-"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/cosmjs":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#c3804b835702ba8c0276b6b143e25b5086e9f701":
   version "0.4.0-rc21"
   resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/c3804b835702ba8c0276b6b143e25b5086e9f701"
   dependencies:
