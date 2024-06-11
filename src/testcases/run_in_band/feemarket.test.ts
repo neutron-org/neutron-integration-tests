@@ -1,43 +1,39 @@
-import Long from 'long';
+import { MsgSendEncodeObject } from '@cosmjs/stargate';
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-  IBC_ATOM_DENOM,
-  packAnyMsg,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import { DecCoin } from '@neutron-org/neutronjsplus/dist/proto/neutron/cosmos/base/v1beta1/coin_pb';
-import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { Suite, inject } from 'vitest';
+import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 
 describe('Neutron / Fee Market', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let daoMember: DaoMember;
   let daoMain: Dao;
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+  beforeAll(async (suite: Suite) => {
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+
+    neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      await testState.walletWithOffset('neutron'),
     );
 
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
@@ -45,8 +41,7 @@ describe('Neutron / Fee Market', () => {
     daoMain = new Dao(neutronChain, daoContracts);
     daoMember = new DaoMember(neutronAccount, daoMain);
     await daoMember.bondFunds('10000');
-    await getWithAttempts(
-      neutronChain.blockWaiter,
+    await neutronChain.getWithAttempts(
       async () =>
         await daoMain.queryVotingPower(
           daoMember.user.wallet.address.toString(),
@@ -56,7 +51,7 @@ describe('Neutron / Fee Market', () => {
     );
 
     await daoMember.user.msgSend(daoMain.contracts.core.address, '1000', {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
     });
     await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
@@ -82,12 +77,12 @@ describe('Neutron / Fee Market', () => {
     );
 
     await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
+      gas: '4000000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
     await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
+      gas: '4000000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
 
@@ -109,12 +104,12 @@ describe('Neutron / Fee Market', () => {
     );
 
     await daoMember.voteYes(proposalId, 'single', {
-      gas_limit: Long.fromString('4000000'),
+      gas: '4000000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
     await daoMain.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
-      gas_limit: Long.fromString('4000000'),
+      gas: '4000000',
       amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
     });
 
@@ -126,12 +121,12 @@ describe('Neutron / Fee Market', () => {
       daoMain.contracts.core.address,
       '1000',
       {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '500' }], // 0.0025
       },
     );
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
@@ -139,7 +134,7 @@ describe('Neutron / Fee Market', () => {
   test('failed: insufficient fee', async () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '200' }], // 0.001
       }),
     ).rejects.toThrowError(
@@ -150,7 +145,7 @@ describe('Neutron / Fee Market', () => {
   test('additional ibc denom', async () => {
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: IBC_ATOM_DENOM, amount: '200' }],
       }),
     ).rejects.toThrowError(
@@ -160,12 +155,12 @@ describe('Neutron / Fee Market', () => {
     // 5 ntrn per ATOM, gives atom gas price 5 times lower,  0.0005 IBC_ATOM_DENOM and 0.0025 NTRN
 
     await executeChangeGasPrices(daoMember, 'dynamicfees gasprices', {
-      ntrn_prices: [DecCoin.fromJson({ denom: IBC_ATOM_DENOM, amount: '5' })],
+      ntrn_prices: [{ denom: IBC_ATOM_DENOM, amount: '5' }],
     });
 
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: IBC_ATOM_DENOM, amount: '50' }], // 0.00025
       }),
     ).rejects.toThrowError(
@@ -176,12 +171,12 @@ describe('Neutron / Fee Market', () => {
       daoMain.contracts.core.address,
       '1000',
       {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: IBC_ATOM_DENOM, amount: '100' }], // 0.0005
       },
     );
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
@@ -193,14 +188,14 @@ describe('Neutron / Fee Market', () => {
     // with a zero fee we fail due to default cosmos ante handler check
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: 'untrn', amount: '0' }],
       }),
     ).rejects.toThrowError(
       /Insufficient fees; got: 0untrn required: 500ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2,500untrn: insufficient fee/,
     );
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
 
@@ -208,7 +203,7 @@ describe('Neutron / Fee Market', () => {
     // with a zero fee we fail due to feemarket ante handler check
     await expect(
       neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
-        gas_limit: Long.fromString('200000'),
+        gas: '200000',
         amount: [{ denom: daoMember.user.chain.denom, amount: '0' }],
       }),
     ).rejects.toThrowError(
@@ -216,11 +211,15 @@ describe('Neutron / Fee Market', () => {
     );
   });
   test('gas price gets up and down', async () => {
-    const msgSend = new MsgSend({
-      fromAddress: neutronAccount.wallet.address.toString(),
-      toAddress: daoMain.contracts.core.address,
-      amount: [{ denom: neutronAccount.chain.denom, amount: '1000' }],
-    });
+    const msgSend: MsgSendEncodeObject = {
+      typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+      value: {
+        fromAddress: neutronAccount.wallet.address,
+        toAddress: daoMain.contracts.core.address,
+        amount: [{ denom: neutronAccount.chain.denom, amount: '1000' }],
+      },
+    };
+
     let ntrnGasPrice = Number(
       (await neutronChain.getGasPrice('untrn')).price.amount,
     );
@@ -234,14 +233,12 @@ describe('Neutron / Fee Market', () => {
       // 1200msgs consume ~27m gas
       const res = await neutronAccount.execTx(
         {
-          gas_limit: Long.fromString(requiredGas),
+          gas: requiredGas,
           amount: [{ denom: daoMember.user.chain.denom, amount: fees }],
         },
-        new Array(1200).fill(
-          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', msgSend),
-        ),
+        new Array(1200).fill(msgSend),
       );
-      expect(res?.tx_response.code).toEqual(0);
+      expect(res?.code).toEqual(0);
       const currNtrnGasPrice = Number(
         (await neutronChain.getGasPrice('untrn')).price.amount,
       );
@@ -253,7 +250,7 @@ describe('Neutron / Fee Market', () => {
     }
     console.log('------');
     for (;;) {
-      await neutronChain.blockWaiter.waitBlocks(1);
+      await neutronChain.waitBlocks(1);
       const currNtrnGasPrice = Number(
         (await neutronChain.getGasPrice('untrn')).price.amount,
       );
