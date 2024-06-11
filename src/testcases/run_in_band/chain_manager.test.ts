@@ -219,43 +219,4 @@ describe('Neutron / Chain Manager', () => {
       expect(cronParams.params.limit).toEqual('42');
     });
   });
-
-  describe('ALLOW_ONLY: change legacy (global fee) parameters', () => {
-    let proposalId: number;
-    beforeAll(async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      proposalId = await subdaoMember1.submitParameterChangeProposal(
-        chainManagerAddress,
-        'Proposal #2',
-        'Globalfee param update proposal. Will pass',
-        'globalfee',
-        'MaxTotalBypassMinFeeMsgGasUsage',
-        '"42000"',
-        '1000',
-      );
-
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
-
-      expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('timelocked');
-      expect(timelockedProp.msgs).toHaveLength(1);
-    });
-
-    test('execute timelocked: success', async () => {
-      await waitSeconds(10);
-
-      await subdaoMember1.executeTimelockedProposal(proposalId);
-      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
-      expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('executed');
-      expect(timelockedProp.msgs).toHaveLength(1);
-
-      const globalFeeParams = await neutronChain.queryGlobalfeeParams();
-      expect(globalFeeParams.max_total_bypass_min_fee_msg_gas_usage).toEqual(
-        '42000',
-      );
-    });
-  });
 });

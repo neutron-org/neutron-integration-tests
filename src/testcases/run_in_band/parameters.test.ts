@@ -19,6 +19,7 @@ import {
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfacoryParamsProposal,
+  updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 
 const config = require('../../config.json');
@@ -127,6 +128,7 @@ describe('Neutron / Parameters', () => {
         'Proposal #2',
         'Tokenfactory params proposal',
         updateTokenfacoryParamsProposal({
+          fee_collector_address: await neutronChain.getNeutronDAOCore(),
           denom_creation_fee: null,
           denom_creation_gas_consume: 100000,
         }),
@@ -219,8 +221,18 @@ describe('Neutron / Parameters', () => {
         updateFeerefunderParamsProposal({
           min_fee: {
             recv_fee: [],
-            ack_fee: [],
-            timeout_fee: [],
+            ack_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
+            timeout_fee: [
+              {
+                amount: '1',
+                denom: NEUTRON_DENOM,
+              },
+            ],
           },
         }),
         '1000',
@@ -257,8 +269,19 @@ describe('Neutron / Parameters', () => {
         );
         // toHaveLength(0) equals fee struct is '[]'
         expect(paramsAfter.params.min_fee.recv_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.ack_fee).toHaveLength(0);
-        expect(paramsAfter.params.min_fee.timeout_fee).toHaveLength(0);
+
+        expect(paramsAfter.params.min_fee.ack_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
+        expect(paramsAfter.params.min_fee.timeout_fee).toEqual([
+          {
+            amount: '1',
+            denom: NEUTRON_DENOM,
+          },
+        ]);
       });
     });
   });
@@ -383,6 +406,44 @@ describe('Neutron / Parameters', () => {
         const paramAfter = await neutronChain.queryMaxTxsAllowed();
         expect(paramAfter).not.toEqual(paramBefore);
         expect(paramAfter).toEqual('11');
+      });
+    });
+  });
+
+  describe('Transfer params proposal', () => {
+    test('create proposal', async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      await daoMember1.submitUpdateParamsTransferProposal(
+        chainManagerAddress,
+        'Proposal #8',
+        'Update transfer params',
+        updateTransferParamsProposal({
+          receive_enabled: false,
+          send_enabled: false,
+        }),
+        '1000',
+      );
+    });
+
+    describe('vote for proposal', () => {
+      const proposalId = 8;
+      test('vote YES', async () => {
+        await daoMember1.voteYes(proposalId);
+      });
+    });
+
+    describe('execute proposal', () => {
+      const proposalId = 8;
+      test('check if proposal is passed', async () => {
+        await dao.checkPassedProposal(proposalId);
+      });
+      test('execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+      });
+      test('check if params changed after proposal execution', async () => {
+        const paramsRes = await neutronChain.queryTransferParams();
+        expect(paramsRes.params.send_enabled).toEqual(false);
+        expect(paramsRes.params.receive_enabled).toEqual(false);
       });
     });
   });

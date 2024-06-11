@@ -327,7 +327,8 @@ describe('Neutron / Tokenfactory', () => {
           },
         }),
       );
-      denom = res.logs[0].events
+      console.log(JSON.stringify(res.events));
+      denom = res.events
         ?.find((event) => event.type == 'create_denom')
         ?.attributes?.find(
           (attribute) => attribute.key == 'new_token_denom',

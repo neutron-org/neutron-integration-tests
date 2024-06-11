@@ -538,7 +538,7 @@ describe('Neutron / Interchain KV Query', () => {
         } catch (err) {
           const error = err as Error;
           expect(error.message).toMatch(
-            /spendable balance {2}is smaller than 1000000untrn/i,
+            /spendable balance 0untrn is smaller than 1000000untrn/i,
           );
         }
       });

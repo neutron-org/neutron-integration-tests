@@ -5,7 +5,6 @@ import {
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { InlineResponse20071TxResponseEvents } from '@cosmos-client/ibc/cjs/openapi/api';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import cosmosclient from '@cosmos-client/core';
 
@@ -327,17 +326,17 @@ describe('Neutron / Treasury', () => {
           }),
         );
         expect(res.code).toEqual(0);
-        const [{ events }] = JSON.parse(res.raw_log || '[]') as {
-          events: InlineResponse20071TxResponseEvents[];
-        }[];
-        const attrs = events.find((e) => e.type === 'transfer')?.attributes;
-        expect(attrs).toEqual([
+        const events = res.events;
+        const attrs = events.filter((e) => e.type === 'transfer');
+        expect(attrs[1].attributes).toEqual([
           {
+            index: true,
             key: 'recipient',
             value: holder1Addr.toString(),
           },
-          { key: 'sender', value: dsc },
-          { key: 'amount', value: `14005${NEUTRON_DENOM}` },
+          { index: true, key: 'sender', value: dsc },
+          { index: true, key: 'amount', value: `14005${NEUTRON_DENOM}` },
+          { index: true, key: 'msg_index', value: '0' },
         ]);
 
         const balanceAfter = await neutronChain.queryDenomBalance(

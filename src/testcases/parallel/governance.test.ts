@@ -150,7 +150,7 @@ describe('Neutron / Governance', () => {
   });
 
   describe('create several proposals', () => {
-    test('create proposal #1, will pass', async () => {
+    test('create proposal #1, will be rejected', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
@@ -216,13 +216,12 @@ describe('Neutron / Governance', () => {
 
     test('create proposal #6, will pass', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      await daoMember1.submitClientUpdateProposal(
+      await daoMember1.submitRecoverIBCClient(
         chainManagerAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
         '07-tendermint-2',
         '07-tendermint-1',
-        '1000',
       );
     });
 
@@ -368,7 +367,7 @@ describe('Neutron / Governance', () => {
       );
     });
 
-    test('create proposal #16, will pass', async () => {
+    test('create proposal #16, will be rejected', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
@@ -480,7 +479,7 @@ describe('Neutron / Governance', () => {
     });
   });
 
-  describe('vote for proposal #1 (no, yes, yes)', () => {
+  describe('vote for proposal #1 (no, yes, no)', () => {
     const proposalId = 1;
     test('vote NO from wallet 1', async () => {
       await daoMember1.voteNo(proposalId);
@@ -488,24 +487,27 @@ describe('Neutron / Governance', () => {
     test('vote YES from wallet 2', async () => {
       await daoMember2.voteYes(proposalId);
     });
-    test('vote YES from wallet 3', async () => {
-      await daoMember3.voteYes(proposalId);
+    test('vote NO from wallet 3', async () => {
+      await daoMember3.voteNo(proposalId);
     });
   });
 
   describe('execute proposal #1', () => {
-    const proposalId = 1;
-    test('check if proposal is passed', async () => {
-      await mainDao.checkPassedProposal(proposalId);
-    });
-    test('execute passed proposal', async () => {
-      const host = await neutronChain.queryHostEnabled();
-      expect(host).toEqual(true);
-      await daoMember1.executeProposalWithAttempts(proposalId);
-    });
-    test('check if host is not enabled after proposal execution', async () => {
-      const host = await neutronChain.queryHostEnabled();
-      expect(host).toEqual(false);
+    test('check if proposal is rejected', async () => {
+      const proposalId = 1;
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes("proposal is not in 'passed' state"));
+      await getWithAttempts(
+        neutronChain.blockWaiter,
+        async () => await mainDao.queryProposal(proposalId),
+        async (response) => response.proposal.status === 'rejected',
+        20,
+      );
     });
   });
 
@@ -581,11 +583,15 @@ describe('Neutron / Governance', () => {
     test('check if proposal is passed', async () => {
       await mainDao.checkPassedMultiChoiceProposal(proposalId);
     });
-    test('execute passed proposal', async () => {
-      await daoMember1.executeMultiChoiceProposalWithAttempts(proposalId);
-    });
-    test('check if proposal is executed', async () => {
-      await mainDao.checkExecutedMultiChoiceProposal(proposalId);
+    test('execute passed proposal, should fail on neutron side', async () => {
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeMultiChoiceProposal(proposalId))
+          .raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes('proposal content is not whitelisted'));
     });
   });
 
@@ -1027,12 +1033,15 @@ describe('Neutron / Governance', () => {
   });
 
   describe('try to execute proposal #16', () => {
-    const proposalId = 16;
-    test('check if proposal is passed', async () => {
-      await mainDao.checkPassedProposal(proposalId);
-    });
-    test('execute passed proposal', async () => {
-      await daoMember1.executeProposalWithAttempts(proposalId);
+    test('check if proposal is failed', async () => {
+      const proposalId = 1;
+      let rawLog: any;
+      try {
+        rawLog = (await daoMember1.executeProposal(proposalId)).raw_log;
+      } catch (e) {
+        rawLog = e.message;
+      }
+      expect(rawLog.includes('proposal content is not whitelisted'));
     });
   });
 
@@ -1147,11 +1156,11 @@ describe('Neutron / Governance', () => {
       const res = await daoMember1.user.msgSendDirectProposal(
         'icahost',
         'HostEnabled',
-        'true',
+        'false',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
       const afterProposalHostStatus = await neutronChain.queryHostEnabled();
-      expect(afterProposalHostStatus).toEqual(false);
+      expect(afterProposalHostStatus).toEqual(true);
     });
   });
 });

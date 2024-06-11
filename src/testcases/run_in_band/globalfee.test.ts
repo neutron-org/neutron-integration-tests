@@ -12,6 +12,8 @@ import {
   DaoMember,
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import cosmosclient from '@cosmos-client/core';
 
 const config = require('../../config.json');
 
@@ -34,6 +36,7 @@ describe('Neutron / Global Fee', () => {
       neutronChain,
       testState.wallets.qaNeutron.genQaWal1,
     );
+
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
     daoMain = new Dao(neutronChain, daoContracts);
@@ -64,20 +67,36 @@ describe('Neutron / Global Fee', () => {
   const executeParamChange = async (
     daoMember: DaoMember,
     kind: string,
-    value: string,
+    bypassMinFeeMsgTypes: string[],
+    minimumGasPrices: cosmosclient.proto.cosmos.base.v1beta1.ICoin[],
+    maxTotalBypassMinFeesgGasUsage: string,
   ) => {
+    const params = await neutronChain.queryGlobalfeeParams();
+    if (bypassMinFeeMsgTypes == null) {
+      bypassMinFeeMsgTypes = params.bypass_min_fee_msg_types;
+    }
+    if (minimumGasPrices == null) {
+      minimumGasPrices = params.minimum_gas_prices;
+    }
+    if (maxTotalBypassMinFeesgGasUsage == null) {
+      maxTotalBypassMinFeesgGasUsage =
+        params.max_total_bypass_min_fee_msg_gas_usage;
+    }
+
     const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-    const proposalId = await daoMember.submitParameterChangeProposal(
+    const proposalId = await daoMember.submitUpdateParamsGlobalfeeProposal(
       chainManagerAddress,
       'Change Proposal - ' + kind + ' #' + counter,
       'Param change proposal. It will change the bypass min fee msg types of the global fee module to use MsgSend.',
-      'globalfee',
-      kind,
-      value,
+      updateGlobalFeeParamsProposal({
+        bypass_min_fee_msg_types: bypassMinFeeMsgTypes,
+        max_total_bypass_min_fee_msg_gas_usage: maxTotalBypassMinFeesgGasUsage,
+        minimum_gas_prices: minimumGasPrices,
+      }),
       '1000',
       {
         gas_limit: Long.fromString('4000000'),
-        amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+        amount: [{ denom: neutronChain.denom, amount: '100000' }],
       },
     );
 
@@ -116,7 +135,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MinimumGasPricesParam',
-      '[{"denom": "untrn", "amount": "0.01"}]',
+      null,
+      [{ denom: 'untrn', amount: '0.01' }],
+      null,
     );
   });
 
@@ -142,7 +163,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'BypassMinFeeMsgTypes',
-      '["/cosmos.bank.v1beta1.MsgSend"]',
+      ['/cosmos.bank.v1beta1.MsgSend'],
+      null,
+      null,
     );
   });
 
@@ -172,7 +195,9 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MaxTotalBypassMinFeeMsgGasUsage',
-      '"50"',
+      null,
+      null,
+      '50',
     );
   });
 
@@ -197,7 +222,16 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'MinimumGasPricesParam',
-      '[{"denom":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","amount":"0"},{"denom":"untrn","amount":"0"}]',
+      null,
+      [
+        {
+          denom:
+            'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+          amount: '0',
+        },
+        { denom: 'untrn', amount: '0' },
+      ],
+      null,
     );
   });
 
@@ -205,7 +239,13 @@ describe('Neutron / Global Fee', () => {
     await executeParamChange(
       daoMember,
       'BypassMinFeeMsgTypes',
-      '["/ibc.core.channel.v1.Msg/RecvPacket", "/ibc.core.channel.v1.Msg/Acknowledgement", "/ibc.core.client.v1.Msg/UpdateClient"]',
+      [
+        '/ibc.core.channel.v1.Msg/RecvPacket',
+        '/ibc.core.channel.v1.Msg/Acknowledgement',
+        '/ibc.core.client.v1.Msg/UpdateClient',
+      ],
+      null,
+      null,
     );
   });
 
