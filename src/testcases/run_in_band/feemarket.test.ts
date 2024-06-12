@@ -33,7 +33,7 @@ describe('Neutron / Fee Market', () => {
 
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      testState.wallets.neutron.demo1,
     );
 
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
