@@ -236,14 +236,18 @@ describe('Neutron / Fee Market', () => {
         Number(requiredGas) * baseNtrnGasPrice * priceAdjustment,
       ).toString();
       // 1200msgs consume ~27m gas
-      await neutronAccount.wasmClient.signAndBroadcastSync(
-        neutronAccount.wallet.address,
-        new Array(1200).fill(msgSend),
-        {
-          gas: requiredGas,
-          amount: [{ denom: daoMember.user.chain.denom, amount: fees }],
-        },
-      );
+      try {
+        await neutronAccount.wasmClient.signAndBroadcastSync(
+          neutronAccount.wallet.address,
+          new Array(1200).fill(msgSend),
+          {
+            gas: requiredGas,
+            amount: [{ denom: daoMember.user.chain.denom, amount: fees }],
+          },
+        );
+      } catch {
+        // do nothing if called with same sequence
+      }
       await neutronChain.waitBlocks(1);
     }
 
