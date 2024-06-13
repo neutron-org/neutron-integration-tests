@@ -214,7 +214,7 @@ describe('Neutron / Fee Market', () => {
   });
 
   test('gas price gets up and down', async () => {
-    await executeSwitchFeemarket(daoMember, 'enable feemarket', true, 3);
+    await executeSwitchFeemarket(daoMember, 'enable feemarket', true, 1);
 
     const msgSend: MsgSendEncodeObject = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
@@ -225,7 +225,7 @@ describe('Neutron / Fee Market', () => {
       },
     };
 
-    let ntrnGasPrice = Number(
+    const baseNtrnGasPrice = Number(
       (await neutronChain.getGasPrice('untrn')).price.amount,
     );
     const requiredGas = '30000000';
@@ -233,7 +233,7 @@ describe('Neutron / Fee Market', () => {
     const priceAdjustment = 1.55;
     for (let i = 0; i < 5; i++) {
       const fees = Math.floor(
-        Number(requiredGas) * ntrnGasPrice * priceAdjustment,
+        Number(requiredGas) * baseNtrnGasPrice * priceAdjustment,
       ).toString();
       // 1200msgs consume ~27m gas
       await neutronAccount.wasmClient.signAndBroadcastSync(
@@ -245,33 +245,21 @@ describe('Neutron / Fee Market', () => {
         },
       );
       await neutronChain.waitBlocks(1);
-
-      const currNtrnGasPrice = Number(
-        (await neutronChain.getGasPrice('untrn')).price.amount,
-      );
-      // gas price constantly grows on 95% full blocks
-      expect(currNtrnGasPrice).toBeGreaterThan(ntrnGasPrice);
-      ntrnGasPrice = currNtrnGasPrice;
-      const prices = await neutronChain.getGasPrices();
-      console.log(prices);
     }
-    console.log('------');
 
-    await neutronChain.waitBlocks(2);
+    const inflatedNtrnGasPrice = Number(
+      (await neutronChain.getGasPrice('untrn')).price.amount,
+    );
+    // gas price should be higher after big transactions
+    expect(inflatedNtrnGasPrice).toBeGreaterThan(baseNtrnGasPrice);
 
-    for (;;) {
-      await neutronChain.waitBlocks(1);
-      const currNtrnGasPrice = Number(
-        (await neutronChain.getGasPrice('untrn')).price.amount,
-      );
-      // gas price constantly get down when blocks are empty
-      expect(currNtrnGasPrice).toBeLessThan(ntrnGasPrice);
-      ntrnGasPrice = currNtrnGasPrice;
-      const prices = await neutronChain.getGasPrices();
-      console.log(prices);
-      if (currNtrnGasPrice == 0.0025) {
-        break;
-      }
-    }
+    await neutronChain.waitBlocks(10);
+
+    const newNtrnGasPrice = Number(
+      (await neutronChain.getGasPrice('untrn')).price.amount,
+    );
+    expect(newNtrnGasPrice).toBeLessThan(inflatedNtrnGasPrice);
+    // expect gas price to fall to the base after some amount of blocks passed
+    expect(newNtrnGasPrice).toBe(0.0025);
   });
 });
