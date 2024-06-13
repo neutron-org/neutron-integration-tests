@@ -63,9 +63,11 @@ describe('Neutron / Fee Market', () => {
     daoMember: DaoMember,
     kind: string,
     enabled: boolean,
+    window = 1,
   ) => {
     const params = (await neutronChain.getFeemarketParams()).params;
     params.enabled = enabled;
+    params.window = window;
 
     const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
     const proposalId = await daoMember.submitFeeMarketChangeParamsProposal(
@@ -210,7 +212,10 @@ describe('Neutron / Fee Market', () => {
       /error checking fee: got: 0untrn required: 500untrn, minGasPrice: 0.002500000000000000untrn/,
     );
   });
+
   test('gas price gets up and down', async () => {
+    await executeSwitchFeemarket(daoMember, 'enable feemarket', true, 3);
+
     const msgSend: MsgSendEncodeObject = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: {
@@ -225,20 +230,22 @@ describe('Neutron / Fee Market', () => {
     );
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
-    const priceAdjustment = 1.05;
-    for (let i = 0; i < 15; i++) {
+    const priceAdjustment = 1.55;
+    for (let i = 0; i < 5; i++) {
       const fees = Math.floor(
         Number(requiredGas) * ntrnGasPrice * priceAdjustment,
       ).toString();
       // 1200msgs consume ~27m gas
-      const res = await neutronAccount.execTx(
+      await neutronAccount.wasmClient.signAndBroadcastSync(
+        neutronAccount.wallet.address,
+        new Array(1200).fill(msgSend),
         {
           gas: requiredGas,
           amount: [{ denom: daoMember.user.chain.denom, amount: fees }],
         },
-        new Array(1200).fill(msgSend),
       );
-      expect(res?.code).toEqual(0);
+      await neutronChain.waitBlocks(1);
+
       const currNtrnGasPrice = Number(
         (await neutronChain.getGasPrice('untrn')).price.amount,
       );
@@ -249,6 +256,9 @@ describe('Neutron / Fee Market', () => {
       console.log(prices);
     }
     console.log('------');
+
+    await neutronChain.waitBlocks(2);
+
     for (;;) {
       await neutronChain.waitBlocks(1);
       const currNtrnGasPrice = Number(
