@@ -142,7 +142,7 @@ describe('Neutron / Slinky', () => {
 
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'oracle',
       );
     });
@@ -190,7 +190,7 @@ describe('Neutron / Slinky', () => {
 
       contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'marketmap',
       );
     });
