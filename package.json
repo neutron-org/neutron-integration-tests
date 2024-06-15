@@ -82,7 +82,9 @@
     "./**/src/**/*.{ts,tsx}": [
       "eslint --max-warnings=0"
     ],
-    "./**/*.{ts,tsx,js,jsx,md,json}": ["prettier --write"]
+    "./**/*.{ts,tsx,js,jsx,md,json}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=20.0"
