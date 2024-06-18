@@ -111,6 +111,7 @@ describe('Neutron / Tokenfactory', () => {
         },
       );
       console.log('mintRes: ' + JSON.stringify(mintRes.rawLog));
+      console.log(JSON.stringify(mintRes.events));
       expect(mintRes.code).toBe(0);
 
       const balanceBefore = await neutronChain.queryDenomBalance(
