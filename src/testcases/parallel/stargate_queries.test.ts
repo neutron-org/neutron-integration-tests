@@ -70,6 +70,10 @@ describe('Neutron / Simple', () => {
         neutronAccount,
         neutronAccount.wallet.address,
         denom,
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
       newTokenDenom = getEventAttribute(
         data.events,

@@ -49,14 +49,20 @@ describe('Neutron / Tokenfactory', () => {
   describe('Module itself', () => {
     test('create denoms and check list', async () => {
       const denom = 'test1';
-      const data = await msgCreateDenom(
+      const createRes = await msgCreateDenom(
         neutronAccount,
         ownerWallet.address,
         'test1',
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
 
+      expect(createRes.code).toBe(0);
+
       const newTokenDenom = getEventAttribute(
-        data.events,
+        createRes.events,
         'create_denom',
         'new_token_denom',
       );
@@ -80,6 +86,10 @@ describe('Neutron / Tokenfactory', () => {
         neutronAccount,
         ownerWallet.address,
         denom,
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
       const newTokenDenom = getEventAttribute(
         data.events,
@@ -87,15 +97,20 @@ describe('Neutron / Tokenfactory', () => {
         'new_token_denom',
       );
 
-      await msgMintDenom(
+      const mintRes = await msgMintDenom(
         neutronAccount,
         ownerWallet.address,
         {
           denom: newTokenDenom,
           amount: '10000',
         },
-        ownerWallet.address,
+        '',
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
+      expect(mintRes.code).toBe(0);
 
       const balanceBefore = await neutronChain.queryDenomBalance(
         ownerWallet.address,
@@ -112,6 +127,10 @@ describe('Neutron / Tokenfactory', () => {
         neutronAccount,
         ownerWallet.address,
         denom,
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
       const newTokenDenom = getEventAttribute(
         data.events,
@@ -155,6 +174,10 @@ describe('Neutron / Tokenfactory', () => {
         neutronAccount,
         ownerWallet.address,
         denom,
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
       const newTokenDenom = getEventAttribute(
         data.events,
@@ -178,13 +201,18 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceBefore).toEqual(10000);
 
-      await msgBurn(
+      const burnRes = await msgBurn(
         neutronAccount,
         ownerWallet.address,
         newTokenDenom,
         '100',
-        ownerWallet.address,
+        '',
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
+      expect(burnRes.code).toBe(0);
 
       const balanceAfter = await neutronChain.queryDenomBalance(
         ownerWallet.address,
@@ -211,6 +239,10 @@ describe('Neutron / Tokenfactory', () => {
         neutronAccount,
         ownerWallet.address,
         denom,
+        {
+          gas: '500000',
+          amount: [{ denom: 'untrn', amount: '1250' }],
+        },
       );
       const newTokenDenom = getEventAttribute(
         data.events,
