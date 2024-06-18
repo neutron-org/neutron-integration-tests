@@ -1324,7 +1324,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/cosmjs":
   version "0.4.0-rc21"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/2a856982ea2b82c18efb7ad2d0e538a7b74f4e77"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/40095edfbad2f0b4b95e28bdbcf25bc00766b099"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.3"
     "@cosmjs/proto-signing" "^0.32.3"
