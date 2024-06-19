@@ -15,7 +15,10 @@ import {
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import cosmosclient from '@cosmos-client/core';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import {
+  updateCronParamsProposal,
+  updateDexParamsProposal,
+} from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
 
@@ -128,7 +131,7 @@ describe('Neutron / Chain Manager', () => {
     });
   });
 
-  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, legacy param changes)', () => {
+  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, dex_module_params, legacy param changes)', () => {
     let proposalId: number;
     test('create proposal', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
@@ -141,16 +144,6 @@ describe('Neutron / Chain Manager', () => {
             address: subDao.contracts.core.address,
             strategy: {
               allow_only: [
-                {
-                  param_change_permission: {
-                    params: [
-                      {
-                        subspace: 'globalfee',
-                        key: 'MaxTotalBypassMinFeeMsgGasUsage',
-                      },
-                    ],
-                  },
-                },
                 {
                   update_params_permission: {
                     cron_update_params_permission: {
@@ -197,9 +190,8 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
+      const timelockedProp =
+        await subdaoMember1.supportAndExecuteProposal(proposalId);
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
@@ -217,6 +209,45 @@ describe('Neutron / Chain Manager', () => {
 
       const cronParams = await neutronChain.queryCronParams();
       expect(cronParams.params.limit).toEqual('42');
+    });
+  });
+  describe('ALLOW_ONLY: change DEX parameters', () => {
+    let proposalId: number;
+    const newParams = {
+      fee_tiers: [1, 2, 99],
+      paused: true,
+      max_jits_per_block: 11,
+      good_til_purge_allowance: 50000,
+    };
+    beforeAll(async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      proposalId = await subdaoMember1.submitUpdateParamsDexProposal(
+        chainManagerAddress,
+        'Proposal #1',
+        'dex update params proposal. Will pass',
+        updateDexParamsProposal(newParams),
+        '1000',
+      );
+
+      const timelockedProp =
+        await subdaoMember1.supportAndExecuteProposal(proposalId);
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const dexParams = await neutronChain.queryDexParams();
+      expect(dexParams.params).toEqual(newParams);
     });
   });
 });
