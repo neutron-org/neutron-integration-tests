@@ -86,7 +86,9 @@
       "eslint --max-warnings=0",
       "jest --bail --findRelatedTests"
     ],
-    "./**/*.{ts,tsx,js,jsx,md,json}": ["prettier --write"]
+    "./**/*.{ts,tsx,js,jsx,md,json}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=16.0 <17"
