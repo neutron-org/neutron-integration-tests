@@ -145,10 +145,30 @@ describe('Neutron / Chain Manager', () => {
             strategy: {
               allow_only: [
                 {
+                  param_change_permission: {
+                    params: [
+                      {
+                        subspace: 'globalfee',
+                        key: 'MaxTotalBypassMinFeeMsgGasUsage',
+                      },
+                    ],
+                  },
+                },
+                {
                   update_params_permission: {
                     cron_update_params_permission: {
                       security_address: true,
                       limit: true,
+                    },
+                  },
+                },
+                {
+                  update_params_permission: {
+                    dex_update_params_permission: {
+                      fee_tiers: true,
+                      paused: true,
+                      max_jits_per_block: true,
+                      good_til_purge_allowance: true,
                     },
                   },
                 },
@@ -247,7 +267,10 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const dexParams = await neutronChain.queryDexParams();
-      expect(dexParams.params).toEqual(newParams);
+      expect(dexParams.params.fee_tiers).toEqual(['1', '2', '99']);
+      expect(dexParams.params.paused).toEqual(true);
+      expect(dexParams.params.max_jits_per_block).toEqual('11');
+      expect(dexParams.params.good_til_purge_allowance).toEqual('50000');
     });
   });
 });
