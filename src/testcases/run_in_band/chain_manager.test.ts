@@ -155,21 +155,17 @@ describe('Neutron / Chain Manager', () => {
                   },
                 },
                 {
-                  update_params_permission: {
-                    cron_update_params_permission: {
-                      security_address: true,
-                      limit: true,
-                    },
+                  update_cron_params_permission: {
+                    security_address: true,
+                    limit: true,
                   },
                 },
                 {
-                  update_params_permission: {
-                    tokenfactory_update_params_permission: {
-                      denom_creation_fee: true,
-                      denom_creation_gas_consume: true,
-                      fee_collector_address: true,
-                      whitelisted_hooks: true,
-                    },
+                  update_tokenfactory_params_permission: {
+                    denom_creation_fee: true,
+                    denom_creation_gas_consume: true,
+                    fee_collector_address: true,
+                    whitelisted_hooks: true,
                   },
                 },
               ],
@@ -241,11 +237,11 @@ describe('Neutron / Chain Manager', () => {
         'Proposal #2',
         'Cron update params proposal. Will pass',
         updateTokenfactoryParamsProposal({
-          denom_creation_fee: [{ denom: 'untrn', amount: 1 }],
+          denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
           denom_creation_gas_consume: 20,
           fee_collector_address:
             'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
-          whitelisted_denoms: [
+          whitelisted_hooks: [
             {
               code_id: 1,
               denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
@@ -274,7 +270,7 @@ describe('Neutron / Chain Manager', () => {
 
       const tokenfactoryParams = await neutronChain.queryTokenfactoryParams();
       expect(tokenfactoryParams.params.denom_creation_fee).toEqual([
-        { denom: 'untrn', amount: 1 },
+        { denom: 'untrn', amount: '1' },
       ]);
       expect(tokenfactoryParams.params.denom_creation_gas_consume).toEqual(
         '20',
@@ -282,7 +278,7 @@ describe('Neutron / Chain Manager', () => {
       expect(tokenfactoryParams.params.fee_collector_address).toEqual(
         'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       );
-      expect(tokenfactoryParams.params.whitelisted_denoms).toEqual([
+      expect(tokenfactoryParams.params.whitelisted_hooks).toEqual([
         {
           code_id: '1',
           denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',

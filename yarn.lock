@@ -1570,7 +1570,7 @@
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#feat/whitelist-tf-hooks":
   version "0.4.0-rc19"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/0d7f29f1f77df8dd2ee730ca4bcac7047500a88b"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/31730ea4456a95530c4b2967719fc1cfc7cba13e"
   dependencies:
     "@bufbuild/protobuf" "^1.4.2"
     "@cosmos-client/core" "^0.47.4"
