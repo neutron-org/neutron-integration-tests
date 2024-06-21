@@ -12,11 +12,9 @@ import {
   msgChangeAdmin,
   msgCreateDenom,
   msgMintDenom,
-  msgSetBeforeSendHook,
   getDenomsFromCreator,
   checkTokenfactoryParams,
   getAuthorityMetadata,
-  getBeforeSendHook,
 } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 
 const config = require('../../config.json');
