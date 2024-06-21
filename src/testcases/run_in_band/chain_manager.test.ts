@@ -206,8 +206,9 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp =
-        await subdaoMember1.supportAndExecuteProposal(proposalId);
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
@@ -251,8 +252,9 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp =
-        await subdaoMember1.supportAndExecuteProposal(proposalId);
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
