@@ -10,7 +10,12 @@ import { Coin, Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 
 // creates a wasm wrapper
-export async function wasm(rpc: string, wallet: Wallet, denom: string, registry: Registry) {
+export async function wasm(
+  rpc: string,
+  wallet: Wallet,
+  denom: string,
+  registry: Registry,
+) {
   const cosmjsClient = await SigningCosmWasmClient.connectWithSigner(
     rpc,
     wallet.directwallet,
