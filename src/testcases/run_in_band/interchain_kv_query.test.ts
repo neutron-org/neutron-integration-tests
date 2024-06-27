@@ -60,6 +60,7 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronAccount: WalletWrapper;
   let otherNeutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
+  // TODO: why is it preinstantiated here, even though assigned later?
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
