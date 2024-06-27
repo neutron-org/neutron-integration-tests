@@ -1,3 +1,4 @@
+import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
 import {
   cosmosWrapper,
@@ -11,9 +12,13 @@ import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WasmClient, wasm } from '../../helpers/wasmClient';
 import { MsgTransfer } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/tx';
-import { QueryClientImpl, QueryFailuresRequest } from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
+import {
+  QueryClientImpl,
+  QueryFailuresResponse,
+} from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { QueryClient, createProtobufRpcClient } from '@cosmjs/stargate';
+import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 
 const config = require('../../config.json');
 
@@ -45,10 +50,12 @@ describe('Neutron / Simple', () => {
       testState.rest1,
       testState.rpc1,
     );
+    neutronAccount = await testState.walletWithOffset('neutron');
     neutronClient = await wasm(
       testState.rpc1,
-      await testState.walletWithOffset('neutron'),
+      neutronAccount,
       NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
     gaiaChain = new cosmosWrapper.CosmosWrapper(
       COSMOS_DENOM,
@@ -57,7 +64,12 @@ describe('Neutron / Simple', () => {
     );
     gaiaAccount = await testState.walletWithOffset('cosmos');
     gaiaAccount2 = await testState.walletWithOffset('cosmos');
-    gaiaClient = await wasm(testState.rpc2, gaiaAccount, COSMOS_DENOM);
+    gaiaClient = await wasm(
+      testState.rpc2,
+      gaiaAccount,
+      COSMOS_DENOM,
+      new Registry(neutronTypes), // TODO: gaia types;
+    );
 
     const client = await connectComet(testState.rpc1);
     const queryClient = new QueryClient(client);
@@ -116,7 +128,10 @@ describe('Neutron / Simple', () => {
           neutronAccount.address,
           ibcContract,
           [{ denom: NEUTRON_DENOM, amount: '50000' }],
-          'auto',
+          {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          },
         );
         expect(res.code).toEqual(0);
       });
@@ -195,6 +210,7 @@ describe('Neutron / Simple', () => {
         expect(balance.amount).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
+        // TODO: change
         const denomTrace = await neutronChain.queryDenomTrace(
           '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
@@ -339,15 +355,15 @@ describe('Neutron / Simple', () => {
           sender,
           COSMOS_DENOM,
         );
-        expect(senderNTRNBalanceAfter.amount).toEqual(
+        expect(+senderNTRNBalanceAfter.amount).toEqual(
           +senderNTRNBalanceBefore.amount - transferAmount - 1000, // original balance - transfer amount - fee
         );
 
-        const receiverNTRNBalanceAfter = await gaiaChain.queryDenomBalance(
+        const receiverNTRNBalanceAfter = await gaiaClient.cosm.getBalance(
           receiver,
           COSMOS_DENOM,
         );
-        expect(receiverNTRNBalanceAfter).toEqual(
+        expect(+receiverNTRNBalanceAfter.amount).toEqual(
           +receiverNTRNBalanceBefore.amount + transferAmount,
         );
       });
@@ -504,7 +520,7 @@ describe('Neutron / Simple', () => {
         });
 
         const failuresAfterCall =
-          await neutronChain.getWithAttempts<types.AckFailuresResponse>(
+          await neutronChain.getWithAttempts<QueryFailuresResponse>(
             async () =>
               contractManagerQuery.AddressFailures({
                 failureId: BigInt(0), // bug
@@ -517,56 +533,44 @@ describe('Neutron / Simple', () => {
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
             address: ibcContract,
-            id: '0',
+            id: BigInt(0),
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: '1',
+            id: BigInt(1),
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: '2',
+            id: BigInt(2),
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: '3',
+            id: BigInt(3),
             error: 'codespace: wasm, code: 5',
           }),
         ]);
 
         expect(
           JSON.parse(
-            Buffer.from(
-              failuresAfterCall.failures[0].sudo_payload,
-              'base64',
-            ).toString(),
+            Buffer.from(failuresAfterCall.failures[0].sudoPayload).toString(),
           ),
         ).toHaveProperty('response');
         expect(
           JSON.parse(
-            Buffer.from(
-              failuresAfterCall.failures[1].sudo_payload,
-              'base64',
-            ).toString(),
+            Buffer.from(failuresAfterCall.failures[1].sudoPayload).toString(),
           ),
         ).toHaveProperty('response');
         expect(
           JSON.parse(
-            Buffer.from(
-              failuresAfterCall.failures[2].sudo_payload,
-              'base64',
-            ).toString(),
+            Buffer.from(failuresAfterCall.failures[2].sudoPayload).toString(),
           ),
         ).toHaveProperty('timeout');
         expect(
           JSON.parse(
-            Buffer.from(
-              failuresAfterCall.failures[3].sudo_payload,
-              'base64',
-            ).toString(),
+            Buffer.from(failuresAfterCall.failures[3].sudoPayload).toString(),
           ),
         ).toHaveProperty('timeout');
 
@@ -595,16 +599,15 @@ describe('Neutron / Simple', () => {
 
         await neutronChain.waitBlocks(5);
 
-        const res =
-          await neutronChain.getWithAttempts<types.AckFailuresResponse>(
-            async () =>
-              contractManagerQuery.AddressFailures({
-                failureId: BigInt(0), // bug
-                address: ibcContract,
-              }),
-            // Wait until there 6 failures in the list
-            async (data) => data.failures.length == 6,
-          );
+        const res = await neutronChain.getWithAttempts<QueryFailuresResponse>(
+          async () =>
+            contractManagerQuery.AddressFailures({
+              failureId: BigInt(0), // bug
+              address: ibcContract,
+            }),
+          // Wait until there 6 failures in the list
+          async (data) => data.failures.length == 6,
+        );
         expect(res.failures.length).toEqual(6);
       });
 
@@ -675,9 +678,12 @@ describe('Neutron / Simple', () => {
 
     describe('Failures limit test', () => {
       it("failures with small limit doesn't return an error", async () => {
-        const pagination: types.PageRequest = {
-          'pagination.limit': '1',
-          'pagination.offset': '0',
+        const pagination = {
+          limit: BigInt(1),
+          offset: BigInt(0),
+          key: null,
+          countTotal: null,
+          reverse: false,
         };
         const failures = await contractManagerQuery.AddressFailures({
           failureId: BigInt(0), // bug
@@ -687,9 +693,12 @@ describe('Neutron / Simple', () => {
         expect(failures.failures.length).toEqual(1);
       });
       test('failures with big limit returns an error', async () => {
-        const pagination: types.PageRequest = {
-          'pagination.limit': '10000',
-          'pagination.offset': '0',
+        const pagination = {
+          limit: BigInt(10000),
+          offset: BigInt(0),
+          key: null,
+          countTotal: null,
+          reverse: false,
         };
         await expect(
           contractManagerQuery.AddressFailures({

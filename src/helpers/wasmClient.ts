@@ -3,7 +3,6 @@ import { IndexedTx } from '@cosmjs/stargate';
 import {
   MigrateResult,
   SigningCosmWasmClient,
-  wasmTypes,
 } from '@cosmjs/cosmwasm-stargate';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
@@ -11,8 +10,7 @@ import { Coin, Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 
 // creates a wasm wrapper
-export async function wasm(rpc: string, wallet: Wallet, denom: string) {
-  const registry = new Registry(wasmTypes);
+export async function wasm(rpc: string, wallet: Wallet, denom: string, registry: Registry) {
   const cosmjsClient = await SigningCosmWasmClient.connectWithSigner(
     rpc,
     wallet.directwallet,
