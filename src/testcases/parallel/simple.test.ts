@@ -1,12 +1,5 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
-import {
-  cosmosWrapper,
-  COSMOS_DENOM,
-  IBC_RELAYER_NEUTRON_ADDRESS,
-  NEUTRON_DENOM,
-  types,
-} from '@neutron-org/neutronjsplus';
 import { createLocalState, LocalState } from '../../helpers/localState';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WasmWrapper, wasm } from '../../helpers/wasmClient';
@@ -20,6 +13,13 @@ import { QueryClientImpl as IbcQuery } from '@neutron-org/cosmjs-types/ibc/appli
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { waitBlocks } from '../../helpers/wait';
 import { getWithAttempts } from '../../helpers/getWithAttempts';
+import {
+  COSMOS_DENOM,
+  IBC_RELAYER_NEUTRON_ADDRESS,
+  NEUTRON_CONTRACT,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
+import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 
 const config = require('../../config.json');
 
@@ -75,9 +75,7 @@ describe('Neutron / Simple', () => {
 
   describe('Contracts', () => {
     test('instantiate contract', async () => {
-      const codeId = await neutronClient.upload(
-        types.NeutronContract.IBC_TRANSFER,
-      );
+      const codeId = await neutronClient.upload(NEUTRON_CONTRACT.IBC_TRANSFER);
       expect(codeId).toBeGreaterThan(0);
       ibcContract = await neutronClient.instantiate(codeId, {});
     });
@@ -85,9 +83,7 @@ describe('Neutron / Simple', () => {
 
   describe('Staking', () => {
     test('store and instantiate mgs receiver contract', async () => {
-      const codeId = await neutronClient.upload(
-        types.NeutronContract.MSG_RECEIVER,
-      );
+      const codeId = await neutronClient.upload(NEUTRON_CONTRACT.MSG_RECEIVER);
       expect(codeId).toBeGreaterThan(0);
 
       receiverContract = await neutronClient.instantiate(codeId, {});
@@ -367,11 +363,7 @@ describe('Neutron / Simple', () => {
     describe('Fee in wrong denom', () => {
       const portName = 'transfer';
       const channelName = TRANSFER_CHANNEL;
-      const uatomIBCDenom = cosmosWrapper.getIBCDenom(
-        portName,
-        channelName,
-        'uatom',
-      );
+      const uatomIBCDenom = getIBCDenom(portName, channelName, 'uatom');
       expect(uatomIBCDenom).toEqual(UATOM_IBC_TO_NEUTRON_DENOM);
 
       test('transfer some atoms to contract', async () => {
