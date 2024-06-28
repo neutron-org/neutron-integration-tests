@@ -16,19 +16,19 @@ export async function wasm(
   denom: string,
   registry: Registry,
 ) {
-  const cosmjsClient = await SigningCosmWasmClient.connectWithSigner(
+  const client = await SigningCosmWasmClient.connectWithSigner(
     rpc,
     wallet.directwallet,
     { registry },
   );
-  return new WasmClient(wallet, cosmjsClient, registry, CONTRACTS_PATH, denom);
+  return new WasmWrapper(wallet, client, registry, CONTRACTS_PATH, denom);
 }
 
-// WasmClient simplifies cosmwasm operations for tests
-export class WasmClient {
+// WasmWrapper simplifies cosmwasm operations for tests
+export class WasmWrapper {
   constructor(
     public wallet: Wallet,
-    public cosm: SigningCosmWasmClient,
+    public client: SigningCosmWasmClient,
     public registry: Registry,
     public contractsPath: string,
     public denom: string,
@@ -43,7 +43,7 @@ export class WasmClient {
   ): Promise<CodeId> {
     const sender = this.wallet.address;
     const wasmCode = await this.getContract(fileName);
-    const res = await this.cosm.upload(sender, wasmCode, fee);
+    const res = await this.client.upload(sender, wasmCode, fee);
     return res.codeId;
   }
 
@@ -57,7 +57,7 @@ export class WasmClient {
     },
     admin: string = this.wallet.address,
   ): Promise<string> {
-    const res = await this.cosm.instantiate(
+    const res = await this.client.instantiate(
       this.wallet.address,
       codeId,
       msg,
@@ -78,7 +78,7 @@ export class WasmClient {
     },
   ): Promise<MigrateResult> {
     const sender = this.wallet.address;
-    return await this.cosm.migrate(sender, contract, codeId, msg, fee);
+    return await this.client.migrate(sender, contract, codeId, msg, fee);
   }
 
   async execute(
@@ -91,8 +91,15 @@ export class WasmClient {
     },
   ): Promise<IndexedTx> {
     const sender = this.wallet.address;
-    const res = await this.cosm.execute(sender, contract, msg, fee, '', funds);
-    return await this.cosm.getTx(res.transactionHash);
+    const res = await this.client.execute(
+      sender,
+      contract,
+      msg,
+      fee,
+      '',
+      funds,
+    );
+    return await this.client.getTx(res.transactionHash);
   }
 
   async getContract(fileName: string): Promise<Buffer> {

@@ -36,7 +36,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      await testState.nextWallet('neutron'),
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,

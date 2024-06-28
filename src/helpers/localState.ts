@@ -5,24 +5,44 @@ import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { CONTRACTS_PATH, DEBUG_SUBMIT_TX } from './setup';
-import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import {
+  createProtobufRpcClient,
+  defaultRegistryTypes,
+  ProtobufRpcClient,
+  QueryClient,
+  SigningStargateClient,
+} from '@cosmjs/stargate';
 import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
+import { connectComet } from '@cosmjs/tendermint-rpc';
 
 // limit of wallets precreated for one test
 const LIMIT_PER_TEST = 20;
 
+export const createLocalState = async (
+  config: any,
+  mnemonics: string[],
+  suite?: Suite,
+): Promise<LocalState> => {
+  const res = new LocalState(config, mnemonics, suite);
+  await res.init();
+  return res;
+};
+
 export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
   icqWebHost: string;
+
   rpc1: string;
   rpc2: string;
+
   rest1: string;
   rest2: string;
+
+  suite: Suite | null;
   taken: any;
   currentIdx: any;
-  suite: Suite | null;
   offset: number;
 
   constructor(private config: any, private mnemonics: string[], suite?: Suite) {
@@ -79,9 +99,9 @@ export class LocalState {
     return mnemonicToWallet(this.mnemonics[idx], prefix);
   }
 
-  async walletWithOffset(prefix: string): Promise<Wallet> {
+  async nextWallet(prefix: string): Promise<Wallet> {
     if (!this.suite) {
-      throw 'no suite provided to use walletWithOffset';
+      throw 'no suite provided to use nextWallet';
     }
     if (this.offset === null) {
       this.offset = await testOffset(this.suite);
@@ -92,7 +112,7 @@ export class LocalState {
     this.currentIdx[prefix] += 1;
 
     if (this.taken[prefix][resultIdx]) {
-      return this.walletWithOffset(prefix);
+      return this.nextWallet(prefix);
     }
 
     this.taken[prefix][resultIdx] = true;
@@ -137,6 +157,18 @@ export class LocalState {
     }
     const wal = await mnemonicToWallet(mnemonic, prefix);
     return { qa: wal };
+  }
+
+  async rpcClient(network: string): Promise<ProtobufRpcClient> {
+    let rpc: string;
+    if (network === 'neutron') {
+      rpc = this.rpc1;
+    } else if (network === 'gaia') {
+      rpc = this.rpc2;
+    }
+    const client = await connectComet(rpc);
+    const queryClient = new QueryClient(client);
+    return createProtobufRpcClient(queryClient);
   }
 }
 

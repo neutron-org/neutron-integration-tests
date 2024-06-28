@@ -50,11 +50,11 @@ describe('Neutron / Voting Registry', () => {
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      await testState.nextWallet('neutron'),
     );
     cmDaoMember = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      await testState.nextWallet('neutron'),
     );
     contractAddresses = await deployContracts(neutronChain, cmInstantiator);
     votingRegistryAddr = contractAddresses[VOTING_REGISTRY_CONTRACT_KEY];

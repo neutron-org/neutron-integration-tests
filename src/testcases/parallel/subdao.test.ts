@@ -52,9 +52,9 @@ describe('Neutron / Subdao', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    demo1Wallet = await testState.walletWithOffset('neutron');
-    securityDaoWallet = await testState.walletWithOffset('neutron');
-    demo2Wallet = await testState.walletWithOffset('neutron');
+    demo1Wallet = await testState.nextWallet('neutron');
+    securityDaoWallet = await testState.nextWallet('neutron');
+    demo2Wallet = await testState.nextWallet('neutron');
     demo1Addr = demo1Wallet.address;
     securityDaoAddr = securityDaoWallet.address;
     demo2Addr = demo2Wallet.address;

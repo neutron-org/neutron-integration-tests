@@ -28,9 +28,9 @@ describe('Neutron / Credits Vault', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    daoWallet = await testState.walletWithOffset('neutron');
-    airdropWallet = await testState.walletWithOffset('neutron');
-    lockdropWallet = await testState.walletWithOffset('neutron');
+    daoWallet = await testState.nextWallet('neutron');
+    airdropWallet = await testState.nextWallet('neutron');
+    lockdropWallet = await testState.nextWallet('neutron');
 
     lockdropAddr = lockdropWallet.address;
 

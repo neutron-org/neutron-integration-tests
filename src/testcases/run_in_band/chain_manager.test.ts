@@ -28,8 +28,8 @@ describe('Neutron / Chain Manager', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    const demo1Wallet = await testState.walletWithOffset('neutron');
-    const securityDaoWallet = await testState.walletWithOffset('neutron');
+    const demo1Wallet = await testState.nextWallet('neutron');
+    const securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

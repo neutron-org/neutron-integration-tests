@@ -34,7 +34,7 @@ describe('Neutron / Simple', () => {
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      await testState.nextWallet('neutron'),
     );
 
     gaiaChain = new CosmosWrapper(
