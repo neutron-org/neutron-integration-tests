@@ -158,8 +158,8 @@ describe.skip('Neutron / TGE / Auction', () => {
     reserveAddress = testState.wallets.qaNeutronThree.qa.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
@@ -204,7 +204,7 @@ describe.skip('Neutron / TGE / Auction', () => {
             'neutron',
             testState.wallets.neutron.demo1,
             NEUTRON_DENOM,
-            testState.rpc1,
+            testState.rpcNeutron,
             [
               {
                 denom: NEUTRON_DENOM,

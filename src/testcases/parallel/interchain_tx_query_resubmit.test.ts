@@ -31,17 +31,17 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.walletWithOffset('neutron'),
+      await testState.nextWallet('neutron'),
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
-      testState.rest2,
-      testState.rpc2,
+      testState.restGaia,
+      testState.rpcGaia,
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,

@@ -35,8 +35,8 @@ describe('Neutron / TGE / Credits', () => {
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount1 = await createWalletWrapper(
       neutronChain,

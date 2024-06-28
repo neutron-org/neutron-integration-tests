@@ -32,11 +32,11 @@ describe('Neutron / Tokenfactory', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    ownerWallet = await testState.walletWithOffset('neutron');
+    ownerWallet = await testState.nextWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(neutronChain, ownerWallet);
   });

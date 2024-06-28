@@ -60,6 +60,7 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronAccount: WalletWrapper;
   let otherNeutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
+  // TODO: why is it preinstantiated here, even though assigned later?
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
@@ -69,8 +70,8 @@ describe('Neutron / Interchain KV Query', () => {
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
@@ -82,8 +83,8 @@ describe('Neutron / Interchain KV Query', () => {
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
-      testState.rest2,
-      testState.rpc2,
+      testState.restGaia,
+      testState.rpcGaia,
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
