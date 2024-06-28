@@ -36,8 +36,8 @@ describe('Neutron / Credits Vault', () => {
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
 
     daoAccount = await createWalletWrapper(neutronChain, daoWallet);

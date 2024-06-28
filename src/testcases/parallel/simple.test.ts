@@ -53,7 +53,7 @@ describe('Neutron / Simple', () => {
 
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
-      testState.rpc1,
+      testState.rpcNeutron,
       neutronAccount,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
@@ -61,7 +61,7 @@ describe('Neutron / Simple', () => {
     gaiaAccount = await testState.nextWallet('cosmos');
     gaiaAccount2 = await testState.nextWallet('cosmos');
     gaiaClient = await wasm(
-      testState.rpc2,
+      testState.rpcGaia,
       gaiaAccount,
       COSMOS_DENOM,
       new Registry(neutronTypes), // TODO: gaia types

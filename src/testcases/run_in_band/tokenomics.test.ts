@@ -26,8 +26,8 @@ describe('Neutron / Tokenomics', () => {
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
@@ -35,8 +35,8 @@ describe('Neutron / Tokenomics', () => {
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
-      testState.rest2,
-      testState.rpc2,
+      testState.restGaia,
+      testState.rpcGaia,
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,

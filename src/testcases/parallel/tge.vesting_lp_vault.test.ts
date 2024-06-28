@@ -54,8 +54,8 @@ describe('Neutron / TGE / Vesting LP vault', () => {
     await testState.init();
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,

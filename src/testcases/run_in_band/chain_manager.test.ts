@@ -33,8 +33,8 @@ describe('Neutron / Chain Manager', () => {
     securityDaoAddr = securityDaoWallet.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     const neutronAccount1 = await createWalletWrapper(
       neutronChain,

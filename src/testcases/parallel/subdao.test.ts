@@ -60,8 +60,8 @@ describe('Neutron / Subdao', () => {
     demo2Addr = demo2Wallet.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount1 = await createWalletWrapper(neutronChain, demo1Wallet);
     neutronAccount2 = await createWalletWrapper(neutronChain, demo2Wallet);

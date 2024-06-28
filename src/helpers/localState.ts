@@ -34,11 +34,11 @@ export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
   icqWebHost: string;
 
-  rpc1: string;
-  rpc2: string;
+  rpcNeutron: string;
+  rpcGaia: string;
 
-  rest1: string;
-  rest2: string;
+  restNeutron: string;
+  restGaia: string;
 
   suite: Suite | null;
   taken: any;
@@ -65,11 +65,11 @@ export class LocalState {
     const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
     const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
 
-    this.rpc1 = rpcNeutron;
-    this.rpc2 = rpcGaia;
+    this.rpcNeutron = rpcNeutron;
+    this.rpcGaia = rpcGaia;
 
-    this.rest1 = restNeutron;
-    this.rest2 = restGaia;
+    this.restNeutron = restNeutron;
+    this.restGaia = restGaia;
 
     this.icqWebHost = 'http://localhost:9999';
 
@@ -162,9 +162,9 @@ export class LocalState {
   async rpcClient(network: string): Promise<ProtobufRpcClient> {
     let rpc: string;
     if (network === 'neutron') {
-      rpc = this.rpc1;
+      rpc = this.rpcNeutron;
     } else if (network === 'gaia') {
-      rpc = this.rpc2;
+      rpc = this.rpcGaia;
     }
     const client = await connectComet(rpc);
     const queryClient = new QueryClient(client);
