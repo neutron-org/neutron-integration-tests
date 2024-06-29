@@ -56,8 +56,9 @@ async function whitelistTokenfactoryHook(
     '1000',
   );
 
-  let timelockedProp =
-    await subdaoMember1.supportAndExecuteProposal(proposalId);
+  let timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+    proposalId,
+  );
   await waitSeconds(10);
 
   await subdaoMember1.executeTimelockedProposal(proposalId);
