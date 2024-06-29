@@ -38,7 +38,7 @@ async function whitelistTokenfactoryHook(
   denomCreator: string,
 ) {
   const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-  let proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
+  const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
     chainManagerAddress,
     'Proposal #2',
     'Cron update params proposal. Will pass',
@@ -56,8 +56,9 @@ async function whitelistTokenfactoryHook(
     '1000',
   );
 
-  let timelockedProp =
-    await subdaoMember1.supportAndExecuteProposal(proposalId);
+  let timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+    proposalId,
+  );
   await waitSeconds(10);
 
   await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -109,29 +110,30 @@ describe('Neutron / Tokenfactory', () => {
     subdaoMember1 = new DaoMember(neutronAccount, subDao);
 
     const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-    let proposalId = await mainDaoMember.submitAddChainManagerStrategyProposal(
-      chainManagerAddress,
-      'Proposal #1',
-      'Add strategy proposal. It will pass',
-      {
-        add_strategy: {
-          address: subDao.contracts.core.address,
-          strategy: {
-            allow_only: [
-              {
-                update_tokenfactory_params_permission: {
-                  denom_creation_fee: true,
-                  denom_creation_gas_consume: true,
-                  fee_collector_address: true,
-                  whitelisted_hooks: true,
+    const proposalId =
+      await mainDaoMember.submitAddChainManagerStrategyProposal(
+        chainManagerAddress,
+        'Proposal #1',
+        'Add strategy proposal. It will pass',
+        {
+          add_strategy: {
+            address: subDao.contracts.core.address,
+            strategy: {
+              allow_only: [
+                {
+                  update_tokenfactory_params_permission: {
+                    denom_creation_fee: true,
+                    denom_creation_gas_consume: true,
+                    fee_collector_address: true,
+                    whitelisted_hooks: true,
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         },
-      },
-      '1000',
-    );
+        '1000',
+      );
 
     await mainDaoMember.voteYes(proposalId);
     await mainDao.checkPassedProposal(proposalId);
@@ -185,17 +187,11 @@ describe('Neutron / Tokenfactory', () => {
         'create_denom',
         'new_token_denom',
       );
-      console.log(`denom ${newTokenDenom}`);
-      let resp = await msgMintDenom(
-        neutronAccount,
-        ownerWallet.address.toString(),
-        {
-          denom: newTokenDenom,
-          amount: '10000',
-        },
-      );
-      console.log(JSON.stringify(resp));
-      console.log(`tokenholder: ${ownerWallet.address.toString()}`);
+
+      await msgMintDenom(neutronAccount, ownerWallet.address.toString(), {
+        denom: newTokenDenom,
+        amount: '10000',
+      });
 
       const balanceBefore = await neutronChain.queryDenomBalance(
         ownerWallet.address.toString(),
@@ -439,7 +435,6 @@ describe('Neutron / Tokenfactory', () => {
           },
         }),
       );
-      console.log(JSON.stringify(res.events));
       denom = res.events
         ?.find((event) => event.type == 'create_denom')
         ?.attributes?.find(
