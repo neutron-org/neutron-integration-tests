@@ -48,7 +48,7 @@
     "@cosmos-client/cosmwasm": "^0.40.3",
     "@cosmos-client/ibc": "^1.2.1",
     "@neutron-org/neutronjsplus": "0.4.1",
-    "@types/lodash": "^4.14.182",
+    "@types/lodash": "^4.17.5",
     "@types/long": "^5.0.0",
     "axios": "^0.27.2",
     "babel-jest": "^29.3.1",
