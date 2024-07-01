@@ -346,59 +346,69 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(queryTrack.track.received).toEqual(false);
       expect(queryBlock.block.received).toEqual(false);
-
-      await whitelistTokenfactoryHook(
-        neutronChain,
-        subDao,
-        subdaoMember1,
-        codeId,
-        ownerWallet.address.toString(),
-      );
-
-      await msgSetBeforeSendHook(
-        neutronAccount,
-        ownerWallet.address.toString(),
-        newTokenDenom,
-        contractAddress,
-      );
-
-      const hookAfter = await getBeforeSendHook(
-        neutronChain.sdk.url,
-        newTokenDenom,
-      );
-      expect(hookAfter.contract_addr).toEqual(contractAddress);
-
-      await neutronAccount.msgSend(contractAddress, {
-        amount: '1',
-        denom: newTokenDenom,
+      test('set non-whitelisted hook fails  ', async () => {
+        const res = await msgSetBeforeSendHook(
+          neutronAccount,
+          ownerWallet.address.toString(),
+          newTokenDenom,
+          contractAddress,
+        );
+        expect(res.code).not.toEqual(0); // set hook fails
       });
+      test('set whitelisted hook success  ', async () => {
+        await whitelistTokenfactoryHook(
+          neutronChain,
+          subDao,
+          subdaoMember1,
+          codeId,
+          ownerWallet.address.toString(),
+        );
 
-      const contractBalanceAfter = await neutronChain.queryDenomBalance(
-        contractAddress,
-        newTokenDenom,
-      );
-      expect(contractBalanceAfter).toEqual(667);
+        await msgSetBeforeSendHook(
+          neutronAccount,
+          ownerWallet.address.toString(),
+          newTokenDenom,
+          contractAddress,
+        );
 
-      const balanceAfter = await neutronChain.queryDenomBalance(
-        ownerWallet.address.toString(),
-        newTokenDenom,
-      );
-      expect(balanceAfter).toEqual(9333);
+        const hookAfter = await getBeforeSendHook(
+          neutronChain.sdk.url,
+          newTokenDenom,
+        );
+        expect(hookAfter.contract_addr).toEqual(contractAddress);
 
-      queryBlock = await neutronChain.queryContract<{
-        block: { received: boolean };
-      }>(contractAddress, {
-        sudo_result_block_before: {},
+        await neutronAccount.msgSend(contractAddress, {
+          amount: '1',
+          denom: newTokenDenom,
+        });
+
+        const contractBalanceAfter = await neutronChain.queryDenomBalance(
+          contractAddress,
+          newTokenDenom,
+        );
+        expect(contractBalanceAfter).toEqual(667);
+
+        const balanceAfter = await neutronChain.queryDenomBalance(
+          ownerWallet.address.toString(),
+          newTokenDenom,
+        );
+        expect(balanceAfter).toEqual(9333);
+
+        queryBlock = await neutronChain.queryContract<{
+          block: { received: boolean };
+        }>(contractAddress, {
+          sudo_result_block_before: {},
+        });
+
+        queryTrack = await neutronChain.queryContract<{
+          track: { received: boolean };
+        }>(contractAddress, {
+          sudo_result_track_before: {},
+        });
+
+        expect(queryTrack.track.received).toEqual(true);
+        expect(queryBlock.block.received).toEqual(true);
       });
-
-      queryTrack = await neutronChain.queryContract<{
-        track: { received: boolean };
-      }>(contractAddress, {
-        sudo_result_track_before: {},
-      });
-
-      expect(queryTrack.track.received).toEqual(true);
-      expect(queryBlock.block.received).toEqual(true);
     });
   });
 
