@@ -7,10 +7,10 @@ import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
   getDaoContracts,
-  getTreasuryContract,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/cosmjs-types/neutron/feeburner/query';
 
 const config = require('../../config.json');
 
@@ -27,6 +27,7 @@ describe('DAO / Check', () => {
   let votingModuleAddress: string;
   let votingVaultsNtrnAddress: string;
   let treasuryContract: string;
+  let feeburnerQuery: FeeburnerQueryClient;
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
@@ -52,7 +53,11 @@ describe('DAO / Check', () => {
     votingModuleAddress = daoContracts.voting.address;
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
       .neutron.address;
-    treasuryContract = await getTreasuryContract(neutronChain);
+
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
+
+    treasuryContract = (await feeburnerQuery.Params()).params.treasuryAddress;
   });
 
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
@@ -128,7 +133,8 @@ describe('DAO / Check', () => {
       expect(propContract).toEqual(proposalOverruleAddress);
     });
     test('Treasury is correct', async () => {
-      const treasuryAddress = await getTreasuryContract(neutronChain);
+      const treasuryAddress = (await feeburnerQuery.Params()).params
+        .treasuryAddress;
       expect(treasuryAddress.length).toBeGreaterThan(0);
     });
   });

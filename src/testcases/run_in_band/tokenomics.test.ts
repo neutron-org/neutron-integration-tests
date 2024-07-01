@@ -3,12 +3,12 @@ import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
-import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/types';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/cosmjs-types/neutron/feeburner/query';
 
 const config = require('../../config.json');
 
@@ -43,7 +43,11 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.qa,
     );
 
-    treasuryContractAddress = await getTreasuryContract(neutronChain);
+
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
+    treasuryContractAddress = (await feeburnerQuery.Params()).params
+      .treasuryAddress;
   });
 
   describe('75% of Neutron fees are burned', () => {
