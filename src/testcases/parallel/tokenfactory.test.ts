@@ -40,8 +40,8 @@ async function whitelistTokenfactoryHook(
   const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
   const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
     chainManagerAddress,
-    'Proposal #2',
-    'Cron update params proposal. Will pass',
+    'whitelist proposal',
+    'whitelist tokenfactory hook. Will pass',
     updateTokenfactoryParamsProposal({
       denom_creation_fee: [],
       denom_creation_gas_consume: 0,
