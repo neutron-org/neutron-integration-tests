@@ -7,11 +7,21 @@ import {
   Dao,
   DaoMember,
   getDaoContracts,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/query';
 import { waitForICQResultWithRemoteHeight } from '@neutron-org/neutronjsplus/dist/icq';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import axios from 'axios';
+import { getWithAttempts } from './getWithAttempts';
+import {
+  CosmWasmClient,
+  SigningCosmWasmClient,
+} from '@cosmjs/cosmwasm-stargate';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { ProtobufRpcClient } from '@cosmjs/stargate';
 
 export const getKvCallbackStatus = (
   cm: CosmosWrapper,
@@ -227,17 +237,22 @@ export const registerUnbondingDelegationsQuery = async (
 };
 
 export const acceptInterchainqueriesParamsChangeProposal = async (
-  cm: WalletWrapper,
+  user: string,
+  client: SigningCosmWasmClient,
+  rpcClient: ProtobufRpcClient,
   title: string,
   description: string,
   key: string,
   value: string,
 ) => {
-  const daoCoreAddress = await cm.chain.getNeutronDAOCore();
-  const daoContracts = await getDaoContracts(cm.chain, daoCoreAddress);
-  const dao = new Dao(cm.chain, daoContracts);
-  const daoMember = new DaoMember(cm, dao);
-  const chainManagerAddress = (await cm.chain.getChainAdmins())[0];
+  const daoCoreAddress = await getNeutronDAOCore(client, rpcClient);
+  const daoContracts = await getDaoContracts(client, daoCoreAddress);
+  const dao = new Dao(client, daoContracts);
+  const daoMember = new DaoMember(dao, client, user, NEUTRON_DENOM);
+
+  const queryClient = new AdminQueryClient(rpcClient);
+  const admins = await queryClient.Admins();
+  const chainManagerAddress = admins[0];
   const message = paramChangeProposal(
     {
       title,
@@ -248,12 +263,46 @@ export const acceptInterchainqueriesParamsChangeProposal = async (
     },
     chainManagerAddress,
   );
-  await dao.makeSingleChoiceProposalPass(
+  await makeSingleChoiceProposalPass(
+    client,
+    dao,
     [daoMember],
     title,
     description,
     [message],
     '1000',
+  );
+};
+
+// TODO: move somewhere
+// TODO: move to neutron-integration-tests dao helpers
+const makeSingleChoiceProposalPass = async (
+  client: CosmWasmClient,
+  dao: Dao,
+  loyalVoters: DaoMember[],
+  title: string,
+  description: string,
+  msgs: any[],
+  deposit: string,
+) => {
+  const proposalId = await loyalVoters[0].submitSingleChoiceProposal(
+    title,
+    description,
+    msgs,
+    deposit,
+  );
+  await waitBlocks(1, client);
+
+  for (const voter of loyalVoters) {
+    await voter.voteYes(proposalId);
+  }
+  await loyalVoters[0].executeProposal(proposalId);
+
+  await getWithAttempts(
+    client,
+    async () => await dao.queryProposal(proposalId),
+    async (response) => response.proposal.status === 'executed',
+    20,
   );
 };
 

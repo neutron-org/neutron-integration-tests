@@ -7,10 +7,12 @@ import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
   getDaoContracts,
+  getNeutronDAOCore,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/cosmjs-types/neutron/feeburner/query';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 const config = require('../../config.json');
 
@@ -39,8 +41,15 @@ describe('DAO / Check', () => {
       testState.restNeutron,
       testState.rpcNeutron,
     );
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore(); //add assert for some addresses
-    daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
+    const neutronClient = await CosmWasmClient.connect(testState.rpcNeutron);
+
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient,
+      neutronRpcClient,
+    ); //add assert for some addresses
+    daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
     proposalSingleAddress = daoContracts.proposals.single.address;
     preProposalSingleAddress =
       daoContracts.proposals.single.pre_propose.address;
@@ -53,9 +62,6 @@ describe('DAO / Check', () => {
     votingModuleAddress = daoContracts.voting.address;
     votingVaultsNtrnAddress = (daoContracts.voting as VotingVaultsModule).vaults
       .neutron.address;
-
-    const neutronRpcClient = await testState.rpcClient('neutron');
-    feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
 
     treasuryContract = (await feeburnerQuery.Params()).params.treasuryAddress;
   });

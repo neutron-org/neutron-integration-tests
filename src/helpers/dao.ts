@@ -1,31 +1,36 @@
-import { wrapMsg } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   Dao,
+  DaoContractLabels,
   DaoContracts,
+  DaoMember,
   getDaoContracts,
   getSubDaoContracts,
+  wrapMsg,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { WasmWrapper } from './wasmClient';
 import { NEUTRON_CONTRACT } from './constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { addSubdaoProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 export const deploySubdao = async (
-  client: WasmWrapper,
+  wasm: WasmWrapper,
   mainDaoCoreAddress: string,
   overrulePreProposeAddress: string,
   securityDaoAddr: string,
   closeProposalOnExecutionFailure = true,
 ): Promise<Dao> => {
-  const coreCodeId = await client.upload(NEUTRON_CONTRACT.SUBDAO_CORE);
-  const cw4VotingCodeId = await client.upload(NEUTRON_CONTRACT.CW4_VOTING);
-  const cw4GroupCodeId = await client.upload(NEUTRON_CONTRACT.CW4_GROUP);
-  const proposeCodeId = await client.upload(NEUTRON_CONTRACT.SUBDAO_PROPOSAL);
-  const preProposeTimelockedCodeId = await client.upload(
+  const coreCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_CORE);
+  const cw4VotingCodeId = await wasm.upload(NEUTRON_CONTRACT.CW4_VOTING);
+  const cw4GroupCodeId = await wasm.upload(NEUTRON_CONTRACT.CW4_GROUP);
+  const proposeCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_PROPOSAL);
+  const preProposeTimelockedCodeId = await wasm.upload(
     NEUTRON_CONTRACT.SUBDAO_PREPROPOSE,
   );
-  const preProposeNonTimelockedPauseCodeId = await client.upload(
+  const preProposeNonTimelockedPauseCodeId = await wasm.upload(
     NEUTRON_CONTRACT.SUBDAO_PREPROPOSE_NO_TIMELOCK,
   );
-  const timelockCodeId = await client.upload(NEUTRON_CONTRACT.SUBDAO_TIMELOCK);
+  const timelockCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_TIMELOCK);
   const votingModuleInstantiateInfo = {
     code_id: cw4VotingCodeId,
     label: 'subDAO_Neutron_voting_module',
@@ -33,7 +38,7 @@ export const deploySubdao = async (
       cw4_group_code_id: cw4GroupCodeId,
       initial_members: [
         {
-          addr: client.wallet.address,
+          addr: wasm.wallet.address,
           weight: 1,
         },
       ],
@@ -137,33 +142,42 @@ export const deploySubdao = async (
     main_dao: mainDaoCoreAddress,
     security_dao: securityDaoAddr,
   };
-  const coreDaoContract = await client.instantiate(
+  const coreDaoContract = await wasm.instantiate(
     coreCodeId,
     coreInstantiateMessage,
     'neutron.subdaos.test.core',
   );
 
-  return new Dao(client.client, await getSubDaoContracts(client, coreDaoContract));
+  return new Dao(
+    wasm.client,
+    await getSubDaoContracts(wasm.client, coreDaoContract),
+  );
 };
 
 export const setupSubDaoTimelockSet = async (
-  client: WasmWrapper,
+  user: string,
+  wasm: WasmWrapper,
   mainDaoAddress: string,
   securityDaoAddr: string,
   mockMainDao: boolean,
   closeProposalOnExecutionFailure = true,
 ): Promise<Dao> => {
-  const daoContracts = await getDaoContracts(cm.chain, mainDaoAddress);
+  const daoContracts = await getDaoContracts(wasm.client, mainDaoAddress);
   const subDao = await deploySubdao(
-    cm,
-    mockMainDao ? cm.wallet.address : daoContracts.core.address,
+    wasm,
+    mockMainDao ? user : daoContracts.core.address,
     daoContracts.proposals.overrule.pre_propose.address,
     securityDaoAddr,
     closeProposalOnExecutionFailure,
   );
 
-  const mainDaoMember = new DaoMember(cm, new Dao(cm.chain, daoContracts));
-  await mainDaoMember.addSubdaoToDao(subDao.contracts.core.address);
+  const mainDaoMember = new DaoMember(
+    new Dao(wasm.client, daoContracts),
+    wasm.client,
+    user,
+    NEUTRON_DENOM,
+  );
+  await addSubdaoToDao(mainDaoMember, subDao.contracts.core.address);
 
   return subDao;
 };
@@ -173,37 +187,38 @@ export const setupSubDaoTimelockSet = async (
  * @deprecated since version 0.5.0
  */
 export const deployNeutronDao = async (
-  // cm: WalletWrapper,
+  user: string,
+  wasm: WasmWrapper,
 ): Promise<DaoContracts> => {
-  const coreCodeId = await client.upload(NEUTRON_CONTRACT.DAO_CORE);
-  const proposeSingleCodeId = await client.upload(
+  const coreCodeId = await wasm.upload(NEUTRON_CONTRACT.DAO_CORE);
+  const proposeSingleCodeId = await wasm.upload(
     NEUTRON_CONTRACT.DAO_PROPOSAL_SINGLE,
   );
-  const preProposeSingleCodeId = await client.upload(
+  const preProposeSingleCodeId = await wasm.upload(
     NEUTRON_CONTRACT.DAO_PREPROPOSAL_SINGLE,
   );
-  const proposeMultipleCodeId = await client.upload(
+  const proposeMultipleCodeId = await wasm.upload(
     NEUTRON_CONTRACT.DAO_PROPOSAL_MULTI,
   );
-  const preProposeMultipleCodeId = await client.upload(
+  const preProposeMultipleCodeId = await wasm.upload(
     NEUTRON_CONTRACT.DAO_PREPROPOSAL_MULTI,
   );
-  const preProposeOverruleCodeId = await client.upload(
+  const preProposeOverruleCodeId = await wasm.upload(
     NEUTRON_CONTRACT.DAO_PREPROPOSAL_OVERRULE,
   );
-  const votingRegistryCodeId = await client.upload(
+  const votingRegistryCodeId = await wasm.upload(
     NEUTRON_CONTRACT.VOTING_REGISTRY,
   );
 
-  const neutronVaultCodeId = await client.upload(NEUTRON_CONTRACT.NEUTRON_VAULT);
+  const neutronVaultCodeId = await wasm.upload(NEUTRON_CONTRACT.NEUTRON_VAULT);
   const neutronVaultInitMsg = {
-    owner: cm.wallet.address,
+    owner: user,
     name: 'voting vault',
-    denom: cm.chain.denom,
+    denom: NEUTRON_DENOM,
     description: 'a simple voting vault for testing purposes',
   };
 
-  const neutronVaultAddress = await cm.instantiateContract(
+  const neutronVaultAddress = await wasm.instantiate(
     neutronVaultCodeId,
     neutronVaultInitMsg,
     DaoContractLabels.NEUTRON_VAULT,
@@ -216,7 +231,7 @@ export const deployNeutronDao = async (
     code_id: votingRegistryCodeId,
     label: DaoContractLabels.DAO_VOTING_REGISTRY,
     msg: wrapMsg({
-      owner: cm.wallet.address,
+      owner: user,
       voting_vaults: [neutronVaultAddress],
     }),
   };
@@ -225,7 +240,7 @@ export const deployNeutronDao = async (
       denom: {
         token: {
           denom: {
-            native: cm.chain.denom,
+            native: NEUTRON_DENOM,
           },
         },
       },
@@ -353,12 +368,22 @@ export const deployNeutronDao = async (
       },
     ],
   };
-  const daoCoreContract = await cm.instantiateContract(
+  const daoCoreContract = await wasm.instantiate(
     coreCodeId,
     coreInstantiateMessage,
     DaoContractLabels.DAO_CORE,
   );
-  await cm.chain.waitBlocks(1);
-  return getDaoContracts(cm.chain, daoCoreContract);
+  await waitBlocks(1, wasm.client);
+  return getDaoContracts(wasm.client, daoCoreContract);
 };
 
+export const addSubdaoToDao = async (member: DaoMember, subDaoCore: string) => {
+  const p = await member.submitSingleChoiceProposal(
+    'add subdao',
+    '',
+    [addSubdaoProposal(member.dao.contracts.core.address, subDaoCore)],
+    '1000',
+  );
+  await member.voteYes(p);
+  await member.executeProposalWithAttempts(p);
+};

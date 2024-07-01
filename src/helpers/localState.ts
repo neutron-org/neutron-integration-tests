@@ -40,18 +40,20 @@ export class LocalState {
   restNeutron: string;
   restGaia: string;
 
-  suite: Suite | null;
   taken: any;
   currentIdx: any;
   offset: number;
 
-  constructor(private config: any, private mnemonics: string[], suite?: Suite) {
+  constructor(
+    private config: any,
+    private mnemonics: string[],
+    private suite?: Suite,
+  ) {
     this.taken = {
       cosmos: {},
       neutron: {},
     };
     this.currentIdx = { neutron: 0, cosmos: 0 };
-    this.suite = suite;
     this.offset = null;
   }
 

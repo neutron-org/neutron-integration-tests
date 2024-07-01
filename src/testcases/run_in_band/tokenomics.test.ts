@@ -43,7 +43,6 @@ describe('Neutron / Tokenomics', () => {
       testState.wallets.qaCosmos.qa,
     );
 
-
     const neutronRpcClient = await testState.rpcClient('neutron');
     const feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
     treasuryContractAddress = (await feeburnerQuery.Params()).params

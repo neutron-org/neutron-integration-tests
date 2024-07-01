@@ -15,7 +15,7 @@ export async function wasm(
   wallet: Wallet,
   denom: string,
   registry: Registry,
-) {
+): Promise<WasmWrapper> {
   const client = await SigningCosmWasmClient.connectWithSigner(
     rpc,
     wallet.directwallet,

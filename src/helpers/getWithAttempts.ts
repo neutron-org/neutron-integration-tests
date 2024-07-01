@@ -1,6 +1,6 @@
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { waitBlocks } from './wait';
 import { StargateClient } from '@cosmjs/stargate';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 
 export const getWithAttempts = async <T>(
   client: StargateClient | CosmWasmClient,
