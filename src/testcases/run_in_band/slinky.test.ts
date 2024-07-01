@@ -94,6 +94,26 @@ describe('Neutron / Slinky', () => {
               },
             ],
           },
+          {
+            ticker: {
+              currency_pair: {
+                Base: 'USDT',
+                Quote: 'USD',
+              },
+              decimals: 6,
+              min_provider_count: 1,
+              enabled: false,
+              metadata_JSON: '',
+            },
+            provider_configs: [
+              {
+                name: 'kraken_api',
+                off_chain_ticker: 'USDTUSD',
+                invert: false,
+                metadata_JSON: '',
+              },
+            ],
+          },
         ],
       );
     });
@@ -215,6 +235,16 @@ describe('Neutron / Slinky', () => {
         contractAddress,
         {
           market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
+        },
+      );
+      expect(res.market).toBeDefined();
+    });
+
+    test('query market with empty metadata_JSON', async () => {
+      const res = await neutronChain.queryContract<MarketResponse>(
+        contractAddress,
+        {
+          market: { currency_pair: { Base: 'USDT', Quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
