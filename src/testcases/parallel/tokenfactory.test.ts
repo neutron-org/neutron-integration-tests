@@ -56,13 +56,10 @@ async function whitelistTokenfactoryHook(
     '1000',
   );
 
-  let timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-    proposalId,
-  );
-  await waitSeconds(10);
-
-  await subdaoMember1.executeTimelockedProposal(proposalId);
-  timelockedProp = await subDao.getTimelockedProposal(proposalId);
+  await subdaoMember1.voteYes(proposalId);
+  await subDao.checkPassedProposal(proposalId);
+  await subdaoMember1.executeProposalWithAttempts(proposalId);
+  let timelockedProp = await subDao.getTimelockedProposal(proposalId);
   expect(timelockedProp.id).toEqual(proposalId);
   expect(timelockedProp.status).toEqual('executed');
 }
@@ -110,35 +107,81 @@ describe('Neutron / Tokenfactory', () => {
     subdaoMember1 = new DaoMember(neutronAccount, subDao);
 
     const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-    const proposalId =
-      await mainDaoMember.submitAddChainManagerStrategyProposal(
-        chainManagerAddress,
-        'Proposal #1',
-        'Add strategy proposal. It will pass',
+
+    // shorten subdao voting period
+    const currentOverruleProposalConfig = await neutronChain.queryContract(
+      mainDao.contracts.proposals['overrule'].address,
+      {
+        config: {},
+      },
+    );
+    currentOverruleProposalConfig['max_voting_period']['time'] = 5;
+    let proposalId = await mainDaoMember.submitSingleChoiceProposal(
+      'Proposal',
+      'Update the max voting period. It will pass',
+      [
         {
-          add_strategy: {
-            address: subDao.contracts.core.address,
-            strategy: {
-              allow_only: [
-                {
-                  update_tokenfactory_params_permission: {
-                    denom_creation_fee: true,
-                    denom_creation_gas_consume: true,
-                    fee_collector_address: true,
-                    whitelisted_hooks: true,
+          wasm: {
+            execute: {
+              contract_addr: mainDao.contracts.proposals['overrule'].address,
+              msg: Buffer.from(
+                JSON.stringify({
+                  update_config: {
+                    threshold: currentOverruleProposalConfig['threshold'],
+                    max_voting_period:
+                      currentOverruleProposalConfig['max_voting_period'],
+                    allow_revoting:
+                      currentOverruleProposalConfig['allow_revoting'],
+                    dao: currentOverruleProposalConfig['dao'],
+                    close_proposal_on_execution_failure:
+                      currentOverruleProposalConfig[
+                        'close_proposal_on_execution_failure'
+                      ],
                   },
-                },
-              ],
+                }),
+              ).toString('base64'),
+              funds: [],
             },
           },
         },
-        '1000',
-      );
-
+      ],
+      '1000',
+    );
     await mainDaoMember.voteYes(proposalId);
     await mainDao.checkPassedProposal(proposalId);
-    await waitSeconds(10);
     await mainDaoMember.executeProposalWithAttempts(proposalId);
+    const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+
+    expect(timelockedProp.status).toEqual('executed');
+
+    let proposalId2 = await mainDaoMember.submitAddChainManagerStrategyProposal(
+      chainManagerAddress,
+      'Proposal #1',
+      'Add strategy proposal. It will pass',
+      {
+        add_strategy: {
+          address: subDao.contracts.core.address,
+          strategy: {
+            allow_only: [
+              {
+                update_tokenfactory_params_permission: {
+                  denom_creation_fee: true,
+                  denom_creation_gas_consume: true,
+                  fee_collector_address: true,
+                  whitelisted_hooks: true,
+                },
+              },
+            ],
+          },
+        },
+      },
+      '1000',
+    );
+
+    await mainDaoMember.voteYes(proposalId2);
+    await mainDao.checkPassedProposal(proposalId2);
+    await waitSeconds(10);
+    await mainDaoMember.executeProposalWithAttempts(proposalId2);
   });
 
   test('tokenfactory module is added', async () => {
@@ -284,7 +327,7 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceAfter).toEqual(9900);
     });
-    test('create denom, set before send hook', async () => {
+    test('set non-whitlisted hook fails', async () => {
       const codeId = await neutronAccount.storeWasm(
         NeutronContract.BEFORE_SEND_HOOK_TEST,
       );
@@ -298,6 +341,39 @@ describe('Neutron / Tokenfactory', () => {
       const contractAddress = res[0]._contract_address;
 
       const denom = `test5`;
+
+      const data = await msgCreateDenom(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        denom,
+      );
+      const newTokenDenom = getEventAttribute(
+        (data as any).events,
+        'create_denom',
+        'new_token_denom',
+      );
+      let res2 = await msgSetBeforeSendHook(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        newTokenDenom,
+        contractAddress,
+      );
+      expect(res2.code).toEqual(14); // "beforeSendHook is not whitelisted"
+    });
+    test('create denom, set before send hook', async () => {
+      const codeId = await neutronAccount.storeWasm(
+        NeutronContract.BEFORE_SEND_HOOK_TEST,
+      );
+      expect(codeId).toBeGreaterThan(0);
+
+      const res = await neutronAccount.instantiateContract(
+        codeId,
+        '{}',
+        'before_send_hook_test',
+      );
+      const contractAddress = res[0]._contract_address;
+
+      const denom = `test6`;
 
       const data = await msgCreateDenom(
         neutronAccount,
@@ -346,69 +422,59 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(queryTrack.track.received).toEqual(false);
       expect(queryBlock.block.received).toEqual(false);
-      test('set non-whitelisted hook fails  ', async () => {
-        const res = await msgSetBeforeSendHook(
-          neutronAccount,
-          ownerWallet.address.toString(),
-          newTokenDenom,
-          contractAddress,
-        );
-        expect(res.code).not.toEqual(0); // set hook fails
+
+      await whitelistTokenfactoryHook(
+        neutronChain,
+        subDao,
+        subdaoMember1,
+        codeId,
+        ownerWallet.address.toString(),
+      );
+
+      await msgSetBeforeSendHook(
+        neutronAccount,
+        ownerWallet.address.toString(),
+        newTokenDenom,
+        contractAddress,
+      );
+
+      const hookAfter = await getBeforeSendHook(
+        neutronChain.sdk.url,
+        newTokenDenom,
+      );
+      expect(hookAfter.contract_addr).toEqual(contractAddress);
+
+      await neutronAccount.msgSend(contractAddress, {
+        amount: '1',
+        denom: newTokenDenom,
       });
-      test('set whitelisted hook success  ', async () => {
-        await whitelistTokenfactoryHook(
-          neutronChain,
-          subDao,
-          subdaoMember1,
-          codeId,
-          ownerWallet.address.toString(),
-        );
 
-        await msgSetBeforeSendHook(
-          neutronAccount,
-          ownerWallet.address.toString(),
-          newTokenDenom,
-          contractAddress,
-        );
+      const contractBalanceAfter = await neutronChain.queryDenomBalance(
+        contractAddress,
+        newTokenDenom,
+      );
+      expect(contractBalanceAfter).toEqual(667);
 
-        const hookAfter = await getBeforeSendHook(
-          neutronChain.sdk.url,
-          newTokenDenom,
-        );
-        expect(hookAfter.contract_addr).toEqual(contractAddress);
+      const balanceAfter = await neutronChain.queryDenomBalance(
+        ownerWallet.address.toString(),
+        newTokenDenom,
+      );
+      expect(balanceAfter).toEqual(9333);
 
-        await neutronAccount.msgSend(contractAddress, {
-          amount: '1',
-          denom: newTokenDenom,
-        });
-
-        const contractBalanceAfter = await neutronChain.queryDenomBalance(
-          contractAddress,
-          newTokenDenom,
-        );
-        expect(contractBalanceAfter).toEqual(667);
-
-        const balanceAfter = await neutronChain.queryDenomBalance(
-          ownerWallet.address.toString(),
-          newTokenDenom,
-        );
-        expect(balanceAfter).toEqual(9333);
-
-        queryBlock = await neutronChain.queryContract<{
-          block: { received: boolean };
-        }>(contractAddress, {
-          sudo_result_block_before: {},
-        });
-
-        queryTrack = await neutronChain.queryContract<{
-          track: { received: boolean };
-        }>(contractAddress, {
-          sudo_result_track_before: {},
-        });
-
-        expect(queryTrack.track.received).toEqual(true);
-        expect(queryBlock.block.received).toEqual(true);
+      queryBlock = await neutronChain.queryContract<{
+        block: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_block_before: {},
       });
+
+      queryTrack = await neutronChain.queryContract<{
+        track: { received: boolean };
+      }>(contractAddress, {
+        sudo_result_track_before: {},
+      });
+
+      expect(queryTrack.track.received).toEqual(true);
+      expect(queryBlock.block.received).toEqual(true);
     });
   });
 
