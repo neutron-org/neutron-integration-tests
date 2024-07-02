@@ -1,11 +1,8 @@
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { inject } from 'vitest';
 import {
   Dao,
   DaoMember,
@@ -21,27 +18,29 @@ import {
   updateTokenfacoryParamsProposal,
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
 const config = require('../../config.json');
 
 describe('Neutron / Parameters', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let daoMember1: DaoMember;
   let dao: Dao;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      testState.wallets.qaNeutron.qa,
     );
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
@@ -53,17 +52,14 @@ describe('Neutron / Parameters', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronChain.blockWaiter,
-        async () =>
-          await dao.queryVotingPower(daoMember1.user.wallet.address.toString()),
+      await neutronChain.getWithAttempts(
+        async () => await dao.queryVotingPower(daoMember1.user.wallet.address),
         async (response) => response.power == 10000,
         20,
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronChain.getWithAttempts(
         async () => await dao.queryTotalVotingPower(),
         async (response) => response.power == 11000,
         20,

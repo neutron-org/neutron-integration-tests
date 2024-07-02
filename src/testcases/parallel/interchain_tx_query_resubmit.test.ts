@@ -1,11 +1,7 @@
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
@@ -15,11 +11,13 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '@neutron-org/neutronjsplus/dist/icq';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let gaiaChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -27,26 +25,27 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   let contractAddress: string;
   const connectionId = 'connection-0';
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+  beforeAll(async (suite: Suite) => {
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      await testState.walletWithOffset('neutron'),
     );
     gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
       COSMOS_DENOM,
+      testState.rest2,
+      testState.rpc2,
     );
-    gaiaAccount = new WalletWrapper(
+    gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+      await testState.randomWallet('cosmos'),
     );
   });
 
@@ -59,24 +58,19 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(
-          codeId,
-          '{}',
-          'neutron_interchain_queries',
-        )
-      )[0]._contract_address;
+      contractAddress = await neutronAccount.instantiateContract(
+        codeId,
+        {},
+        'neutron_interchain_queries',
+      );
     });
   });
 
   describe('prepare ICQ for failing', () => {
     test('enable mock', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          integration_tests_set_query_mock: {},
-        }),
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_set_query_mock: {},
+      });
     });
   });
 
@@ -123,27 +117,24 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         expect(res.code).toEqual(0);
       }
 
-      await neutronChain.blockWaiter.waitBlocks(5);
+      await neutronChain.waitBlocks(5);
 
-      const txs = await getUnsuccessfulTxs(testState.icq_web_host);
+      const txs = await getUnsuccessfulTxs(testState.icqWebHost);
       expect(txs.length).toEqual(5);
     });
 
     test('resubmit failed tx', async () => {
-      await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          integration_tests_unset_query_mock: {},
-        }),
-      );
+      await neutronAccount.executeContract(contractAddress, {
+        integration_tests_unset_query_mock: {},
+      });
 
-      const resubmitTxs = (
-        await getUnsuccessfulTxs(testState.icq_web_host)
-      ).map((tx) => ({ query_id: tx.query_id, hash: tx.submitted_tx_hash }));
-      const resp = await postResubmitTxs(testState.icq_web_host, resubmitTxs);
+      const resubmitTxs = (await getUnsuccessfulTxs(testState.icqWebHost)).map(
+        (tx) => ({ query_id: tx.query_id, hash: tx.submitted_tx_hash }),
+      );
+      const resp = await postResubmitTxs(testState.icqWebHost, resubmitTxs);
       expect(resp.status).toEqual(200);
 
-      await neutronChain.blockWaiter.waitBlocks(20);
+      await neutronChain.waitBlocks(20);
 
       await waitForTransfersAmount(
         neutronChain,
@@ -152,7 +143,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         query1UpdatePeriod * 2,
       );
 
-      const txs = await getUnsuccessfulTxs(testState.icq_web_host);
+      const txs = await getUnsuccessfulTxs(testState.icqWebHost);
       expect(txs.length).toEqual(0);
 
       const deposits = await queryRecipientTxs(
@@ -165,7 +156,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('resubmit nonexistent failed tx', async () => {
       await expect(
-        postResubmitTxs(testState.icq_web_host, [
+        postResubmitTxs(testState.icqWebHost, [
           { query_id: 1, hash: 'nonexistent' },
         ]).catch((e) => {
           throw new Error(e.response.data);

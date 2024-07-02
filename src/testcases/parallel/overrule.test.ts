@@ -1,23 +1,22 @@
+import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 
-import { BroadcastTx200ResponseTxResponse } from '@cosmos-client/core/cjs/openapi/api';
 import {
   Dao,
   DaoMember,
   deployNeutronDao,
   deploySubdao,
 } from '@neutron-org/neutronjsplus/dist/dao';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
 describe('Neutron / Subdao Overrule', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount1: WalletWrapper;
   let neutronAccount2: WalletWrapper;
@@ -27,21 +26,22 @@ describe('Neutron / Subdao Overrule', () => {
   let subDao: Dao;
   let mainDao: Dao;
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+  beforeAll(async (suite: Suite) => {
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount1 = new WalletWrapper(
+    neutronAccount1 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
+      await testState.walletWithOffset('neutron'),
     );
-    neutronAccount2 = new WalletWrapper(
+    neutronAccount2 = await createWalletWrapper(
       neutronChain,
-      testState.wallets.qaNeutronThree.genQaWal1,
+      await testState.walletWithOffset('neutron'),
     );
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
@@ -59,13 +59,13 @@ describe('Neutron / Subdao Overrule', () => {
       neutronAccount1,
       daoContracts.core.address,
       daoContracts.proposals.overrule?.pre_propose?.address || '',
-      neutronAccount1.wallet.address.toString(),
+      neutronAccount1.wallet.address,
       false, // do not close proposal on failure since otherwise we wont get an error exception from submsgs
     );
 
     subdaoMember1 = new DaoMember(neutronAccount1, subDao);
 
-    await neutronChain.blockWaiter.waitBlocks(2);
+    await neutronChain.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
@@ -79,7 +79,7 @@ describe('Neutron / Subdao Overrule', () => {
         'send',
         [
           {
-            recipient: neutronAccount2.wallet.address.toString(),
+            recipient: neutronAccount2.wallet.address,
             amount: 2000,
             denom: neutronChain.denom,
           },
@@ -121,7 +121,7 @@ describe('Neutron / Subdao Overrule', () => {
         'send',
         [
           {
-            recipient: neutronAccount2.wallet.address.toString(),
+            recipient: neutronAccount2.wallet.address,
             amount: 2000,
             denom: neutronChain.denom,
           },
@@ -181,13 +181,13 @@ async function voteAgainstOverrule(
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<BroadcastTx200ResponseTxResponse> {
+): Promise<IndexedTx> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,
   );
   return await member.user.executeContract(
     member.dao.contracts.proposals.overrule?.address || '',
-    JSON.stringify({ vote: { proposal_id: propId, vote: 'no' } }),
+    { vote: { proposal_id: propId, vote: 'no' } },
   );
 }

@@ -1,28 +1,30 @@
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
+import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import {
   CosmosWrapper,
-  WalletWrapper,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { inject } from 'vitest';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 
 const config = require('../../config.json');
 
 describe('Float operations support', () => {
-  let testState: TestStateLocalCosmosTestNet;
+  let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
   let contractAddress: string;
 
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
+    const mnemonics = inject('mnemonics');
+    testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
       NEUTRON_DENOM,
+      testState.rest1,
+      testState.rpc1,
     );
-    neutronAccount = new WalletWrapper(
+    neutronAccount = await createWalletWrapper(
       neutronChain,
       testState.wallets.neutron.demo1,
     );
@@ -34,12 +36,11 @@ describe('Float operations support', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
-      const res = await neutronAccount.instantiateContract(
+      contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'floaty',
       );
-      contractAddress = res[0]._contract_address;
     });
   });
   describe('instructions', () => {
