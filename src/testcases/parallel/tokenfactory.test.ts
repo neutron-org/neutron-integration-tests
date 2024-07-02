@@ -40,12 +40,13 @@ async function whitelistTokenfactoryHook(
   const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
   const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
     chainManagerAddress,
-    'whitelist proposal',
+    'whitelist TF hook proposal',
     'whitelist tokenfactory hook. Will pass',
     updateTokenfactoryParamsProposal({
-      denom_creation_fee: [],
+      // TEMP: Validation on neutron is broken and we cannot submit an empty fee_collector_address
+      denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
       denom_creation_gas_consume: 0,
-      fee_collector_address: '',
+      fee_collector_address: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       whitelisted_hooks: [
         {
           code_id: codeID,
@@ -56,10 +57,11 @@ async function whitelistTokenfactoryHook(
     '1000',
   );
 
-  await subdaoMember1.voteYes(proposalId);
-  await subDao.checkPassedProposal(proposalId);
-  await subdaoMember1.executeProposalWithAttempts(proposalId);
-  let timelockedProp = await subDao.getTimelockedProposal(proposalId);
+  let timelockedProp =
+    await subdaoMember1.supportAndExecuteProposal(proposalId);
+  await waitSeconds(10);
+  await subdaoMember1.executeTimelockedProposal(proposalId);
+  timelockedProp = await subDao.getTimelockedProposal(proposalId);
   expect(timelockedProp.id).toEqual(proposalId);
   expect(timelockedProp.status).toEqual('executed');
 }
@@ -150,9 +152,6 @@ describe('Neutron / Tokenfactory', () => {
     await mainDaoMember.voteYes(proposalId);
     await mainDao.checkPassedProposal(proposalId);
     await mainDaoMember.executeProposalWithAttempts(proposalId);
-    const timelockedProp = await subDao.getTimelockedProposal(proposalId);
-
-    expect(timelockedProp.status).toEqual('executed');
 
     let proposalId2 = await mainDaoMember.submitAddChainManagerStrategyProposal(
       chainManagerAddress,
