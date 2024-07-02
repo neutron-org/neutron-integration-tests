@@ -24,6 +24,12 @@ import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
+import { QueryClientImpl as UpgradeQuery } from '@neutron-org/cosmjs-types/cosmos/upgrade/v1beta1/query';
+import { QueryClientImpl as IbcClientQuery } from '@neutron-org/cosmjs-types/ibc/core/client/v1/query';
+import { QueryClientImpl as WasmQuery } from '@neutron-org/cosmjs-types/cosmwasm/wasm/v1/query';
+import { QueryClientImpl as CronQuery } from '@neutron-org/cosmjs-types/neutron/cron/query';
+import { QueryClientImpl as InterchainTxQuery } from '@neutron-org/cosmjs-types/neutron/interchaintxs/v1/query';
+import { QueryClientImpl as InterchainAccounts } from '@neutron-org/cosmjs-types/ibc/applications/interchain_accounts/host/v1/query';
 
 const config = require('../../config.json');
 
@@ -41,6 +47,13 @@ describe('Neutron / Governance', () => {
   let neutronClient: WasmWrapper;
 
   let chainManagerAddress: string;
+
+  let upgradeQuery: UpgradeQuery;
+  let ibcClientQuery: IbcClientQuery;
+  let wasmQuery: WasmQuery;
+  let cronQuery: CronQuery;
+  let interchaintxQuery: InterchainTxQuery;
+  let interchainAccounts: InterchainAccounts;
 
   beforeAll(async (suite: Suite) => {
     testState = await createLocalState(config, inject('mnemonics'), suite);
@@ -99,6 +112,13 @@ describe('Neutron / Governance', () => {
     const queryClient = new AdminQueryClient(neutronRpcClient);
     const admins = await queryClient.Admins();
     chainManagerAddress = admins[0];
+
+    upgradeQuery = new UpgradeQuery(neutronRpcClient);
+    ibcClientQuery = new IbcClientQuery(neutronRpcClient);
+    wasmQuery = new WasmQuery(neutronRpcClient);
+    cronQuery = new CronQuery(neutronRpcClient);
+    interchaintxQuery = new InterchainTxQuery(neutronRpcClient);
+    interchainAccounts = new InterchainAccounts(neutronRpcClient);
 
     const contractCodeId = await neutronClient.upload(
       NeutronContract.IBC_TRANSFER,
@@ -677,7 +697,7 @@ describe('Neutron / Governance', () => {
 
   describe('check state change from proposal #4 execution', () => {
     test('check if software current plan was created', async () => {
-      const currentPlan = await neutronChain.queryCurrentUpgradePlan();
+      const currentPlan = await upgradeQuery.CurrentPlan();
       expect(currentPlan.plan?.height).toEqual('100000');
       expect(currentPlan.plan?.name).toEqual('Plan #1');
       expect(currentPlan.plan?.info).toEqual('Plan info');
@@ -709,7 +729,7 @@ describe('Neutron / Governance', () => {
 
   describe('check state change from proposal #5 execution', () => {
     test('check if software current plan was removed', async () => {
-      const currentPlan = await neutronChain.queryCurrentUpgradePlan();
+      const currentPlan = await upgradeQuery.CurrentPlan();
       expect(currentPlan.plan).toBeNull();
     });
   });
@@ -729,10 +749,12 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #6', () => {
     test('check client statuses before update', async () => {
       expect(
-        (await neutronChain.getIBCClientStatus('07-tendermint-2')).status,
+        (await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-2' }))
+          .status,
       ).toBe('Expired');
       expect(
-        (await neutronChain.getIBCClientStatus('07-tendermint-1')).status,
+        (await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-1' }))
+          .status,
       ).toBe('Active');
     });
 
@@ -746,10 +768,10 @@ describe('Neutron / Governance', () => {
 
     test('check client statuses after update', async () => {
       expect(
-        (await neutronChain.getIBCClientStatus('07-tendermint-2')).status,
+        await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-2' }),
       ).toBe('Active');
       expect(
-        (await neutronChain.getIBCClientStatus('07-tendermint-1')).status,
+        await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-1' }),
       ).toBe('Active');
     });
   });
@@ -775,8 +797,8 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that codes were pinned', async () => {
-      const res = await neutronChain.queryPinnedCodes();
-      expect(res.code_ids).toEqual(['1', '2']);
+      const res = await wasmQuery.PinnedCodes();
+      expect(res.codeIds).toEqual(['1', '2']);
     });
   });
 
@@ -801,8 +823,8 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that codes were unpinned', async () => {
-      const res = await neutronChain.queryPinnedCodes();
-      expect(res.code_ids.length).toEqual(0);
+      const res = await wasmQuery.PinnedCodes();
+      expect(res.codeIds.length).toEqual(0);
     });
   });
 
@@ -827,10 +849,10 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that admin was changed', async () => {
-      const admin = await neutronChain.queryContractAdmin(
+      const contract = await neutronClient.client.getContract(
         contractAddressForAdminMigration,
       );
-      expect(admin).toEqual(daoMember1.user);
+      expect(contract.admin).toEqual(daoMember1.user);
     });
   });
 
@@ -855,10 +877,10 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that admin was changed', async () => {
-      const admin = await neutronChain.queryContractAdmin(
+      const contract = await neutronClient.client.getContract(
         contractAddressForAdminMigration,
       );
-      expect(admin).toEqual('');
+      expect(contract.admin).toEqual('');
     });
   });
 
@@ -887,18 +909,16 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await neutronChain.querySchedules();
+      const res = await cronQuery.Schedules();
       expect(res.schedules.length).toEqual(1);
     });
 
     test('check that msg from schedule was executed', async () => {
       await waitBlocks(15, neutronClient.client);
-      const queryResult = await neutronChain.queryContract<TestArgResponse>(
-        contractAddress,
-        {
+      const queryResult: TestArgResponse =
+        await neutronClient.client.queryContractSmart(contractAddress, {
           test_msg: { arg: 'proposal_11' },
-        },
-      );
+        });
 
       expect(queryResult.sender).toEqual(
         'neutron1cd6wafvehv79pm2yxth40thpyc7dc0yrqkyk95',
@@ -910,8 +930,8 @@ describe('Neutron / Governance', () => {
       expect(beforeCount).toBeGreaterThan(0);
 
       await waitBlocks(10, neutronClient.client);
-      const queryResultLater =
-        await neutronChain.queryContract<TestArgResponse>(contractAddress, {
+      const queryResultLater: TestArgResponse =
+        await neutronClient.client.queryContractSmart(contractAddress, {
           test_msg: { arg: 'proposal_11' },
         });
       expect(beforeCount).toBeLessThan(queryResultLater.count);
@@ -934,7 +954,7 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #12', () => {
     const proposalId = 12;
     test('check that schedule exists before removing', async () => {
-      const res = await neutronChain.querySchedules();
+      const res = await cronQuery.Schedules();
       expect(res.schedules.length).toEqual(1);
     });
     test('check if proposal is passed', async () => {
@@ -947,7 +967,7 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was removed', () => {
     test('check that schedule was removed', async () => {
-      const res = await neutronChain.querySchedules();
+      const res = await cronQuery.Schedules();
       expect(res.schedules.length).toEqual(0);
     });
   });
@@ -977,7 +997,7 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await neutronChain.querySchedules();
+      const res = await cronQuery.Schedules();
       expect(res.schedules.length).toEqual(1);
     });
 
@@ -1071,18 +1091,16 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await neutronChain.querySchedules();
+      const res = await cronQuery.Schedules();
       expect(res.schedules.length).toEqual(2);
     });
 
     test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
       await waitBlocks(15, neutronClient.client);
-      const queryResult: TestArgResponse = await neutronClient.client.queryContractSmart(
-        contractAddress,
-        {
+      const queryResult: TestArgResponse =
+        await neutronClient.client.queryContractSmart(contractAddress, {
           test_msg: { arg: 'correct_msg' },
-        },
-      );
+        });
 
       expect(queryResult).toEqual(null);
     });
@@ -1174,8 +1192,8 @@ describe('Neutron / Governance', () => {
     });
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
-      const paramAfter = await neutronChain.queryMaxTxsAllowed();
-      expect(paramAfter).toEqual('11');
+      const paramAfter = await interchaintxQuery.Params();
+      expect(paramAfter.params.msgSubmitTxMaxMessages).toEqual('11');
     });
   });
 
@@ -1193,8 +1211,8 @@ describe('Neutron / Governance', () => {
         'false',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
-      const afterProposalHostStatus = await neutronChain.queryHostEnabled();
-      expect(afterProposalHostStatus).toEqual(true);
+      const resAfter = await interchainAccounts.Params();
+      expect(resAfter.params.hostEnabled).toEqual(true);
     });
   });
 });

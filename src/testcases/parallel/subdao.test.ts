@@ -57,15 +57,14 @@ describe('Neutron / Subdao', () => {
     securityDaoWallet = await testState.nextWallet('neutron');
     neutronAccount2 = await testState.nextWallet('neutron');
     demo1Addr = neutronAccount1.address;
-    securityDaoAddr = securityDaoWallet.address;
     demo2Addr = neutronAccount2.address;
+    securityDaoAddr = securityDaoWallet.address;
     neutronClient1 = await wasm(
       testState.rpcNeutron,
       neutronAccount1,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
-
     neutronClient2 = await wasm(
       testState.rpcNeutron,
       neutronAccount2,
