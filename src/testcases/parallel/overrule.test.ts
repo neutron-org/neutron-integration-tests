@@ -4,12 +4,7 @@ import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
 
-import {
-  Dao,
-  DaoMember,
-  deployNeutronDao,
-  deploySubdao,
-} from '@neutron-org/neutronjsplus/dist/dao';
+import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Suite, inject } from 'vitest';
 

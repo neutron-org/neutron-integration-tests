@@ -182,10 +182,6 @@ export const setupSubDaoTimelockSet = async (
   return subDao;
 };
 
-// TODO: optional: move to neutron-integration-tests helpers
-/**
- * @deprecated since version 0.5.0
- */
 export const deployNeutronDao = async (
   user: string,
   wasm: WasmWrapper,

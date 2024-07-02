@@ -11,7 +11,6 @@ import {
 import { QueryClientImpl as BankQuery } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as IbcQuery } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { waitBlocks } from '../../helpers/wait';
 import { getWithAttempts } from '../../helpers/getWithAttempts';
 import {
   COSMOS_DENOM,
@@ -20,6 +19,7 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 
