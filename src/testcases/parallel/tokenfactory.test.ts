@@ -43,10 +43,9 @@ async function whitelistTokenfactoryHook(
     'whitelist TF hook proposal',
     'whitelist tokenfactory hook. Will pass',
     updateTokenfactoryParamsProposal({
-      // TEMP: Validation on neutron is broken and we cannot submit an empty fee_collector_address
-      denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
+      denom_creation_fee: [],
       denom_creation_gas_consume: 0,
-      fee_collector_address: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+      fee_collector_address: '',
       whitelisted_hooks: [
         {
           code_id: codeID,
