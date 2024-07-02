@@ -1,12 +1,13 @@
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/query';
 import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createLocalState } from '../../helpers/localState';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateInterchaintxsParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { Suite, inject } from 'vitest';
@@ -19,12 +20,15 @@ import { wasm, WasmWrapper } from '../../helpers/wasmClient';
 import { ParameterChangeProposal } from '@neutron-org/cosmjs-types/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/tx';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
+import {
+  getWithAttempts,
+  waitBlocks,
+} from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
   let neutronAccount: Wallet;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
@@ -36,27 +40,22 @@ describe('Neutron / Governance', () => {
 
   let neutronClient: WasmWrapper;
 
+  let chainManagerAddress: string;
+
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
-      testState.rpcNeutron,
-    );
+    testState = await createLocalState(config, inject('mnemonics'), suite);
     neutronAccount = await testState.nextWallet('neutron');
-    // neutronAccount = await createWalletWrapper(
-    //   neutronChain,
-    //   await testState.nextWallet('neutron'),
-    // );
     neutronClient = await wasm(
       testState.rpcNeutron,
       neutronAccount,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient.client,
+      neutronRpcClient,
+    ); //add assert for some addresses
     const daoContracts = await getDaoContracts(
       neutronClient.client,
       daoCoreAddress,
@@ -69,43 +68,42 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
 
-    const neutronAccount2 = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
+    const neutronAccount2 = await testState.nextWallet('neutron');
     const neutronClient2 = await wasm(
       testState.rpcNeutron,
-      neutronAccount2.wallet,
+      neutronAccount2,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
-      neutronAccount2.wallet.address,
+      neutronAccount2.address,
       NEUTRON_DENOM,
     );
 
-    const neutronAccount3 = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
+    const neutronAccount3 = await testState.nextWallet('neutron');
     const neutronClient3 = await wasm(
       testState.rpcNeutron,
-      neutronAccount3.wallet,
+      neutronAccount3,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,
-      neutronAccount3.wallet.address,
+      neutronAccount3.address,
       NEUTRON_DENOM,
     );
+
+    const queryClient = new AdminQueryClient(neutronRpcClient);
+    const admins = await queryClient.Admins();
+    chainManagerAddress = admins[0];
 
     const contractCodeId = await neutronClient.upload(
       NeutronContract.IBC_TRANSFER,
     );
+
     expect(contractCodeId).toBeGreaterThan(0);
     contractAddressForAdminMigration = await neutronClient.instantiate(
       contractCodeId,
@@ -135,7 +133,8 @@ describe('Neutron / Governance', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
@@ -143,7 +142,8 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 2', async () => {
       await daoMember2.bondFunds('10000');
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
@@ -151,14 +151,16 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 3 ', async () => {
       await daoMember3.bondFunds('10000');
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
       );
     });
     test('check voting power', async () => {
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryTotalVotingPower(),
         // 3x10000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
         async (response) => response.power == 31000,
@@ -189,7 +191,6 @@ describe('Neutron / Governance', () => {
 
   describe('create several proposals', () => {
     test('create proposal #1, will be rejected', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
         'Proposal #1',
@@ -202,7 +203,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #2, will be rejected', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
         'Proposal #2',
@@ -222,7 +222,7 @@ describe('Neutron / Governance', () => {
           {
             recipient: mainDao.contracts.core.address,
             amount: 1000,
-            denom: neutronChain.denom,
+            denom: NEUTRON_DENOM,
           },
         ],
         '1000',
@@ -230,7 +230,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #4, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitSoftwareUpgradeProposal(
         chainManagerAddress,
         'Proposal #4',
@@ -243,7 +242,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #5, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitCancelSoftwareUpgradeProposal(
         chainManagerAddress,
         'Proposal #5',
@@ -253,7 +251,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #6, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitRecoverIBCClient(
         chainManagerAddress,
         'Proposal #6',
@@ -264,7 +261,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #7, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitPinCodesProposal(
         chainManagerAddress,
         'Proposal #7',
@@ -275,7 +271,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #8, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUnpinCodesProposal(
         chainManagerAddress,
         'Proposal #8',
@@ -286,7 +281,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #9, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateAdminProposal(
         chainManagerAddress,
         'Proposal #9',
@@ -299,7 +293,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #10, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitClearAdminProposal(
         chainManagerAddress,
         'Proposal #10',
@@ -312,7 +305,6 @@ describe('Neutron / Governance', () => {
 
     // add schedule with valid message format
     test('create proposal #11, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitAddSchedule(
         chainManagerAddress,
         'Proposal #11',
@@ -331,7 +323,6 @@ describe('Neutron / Governance', () => {
 
     // remove schedule
     test('create proposal #12, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitRemoveSchedule(
         chainManagerAddress,
         'Proposal #12',
@@ -343,7 +334,6 @@ describe('Neutron / Governance', () => {
 
     // add schedule with 3 messages, first returns error, second in incorrect format, third is valid
     test('create proposal #13, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitAddSchedule(
         chainManagerAddress,
         'Proposal #13',
@@ -370,7 +360,6 @@ describe('Neutron / Governance', () => {
 
     // add schedule with 3 messages, first is valid, second returns error
     test('create proposal #14, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitAddSchedule(
         chainManagerAddress,
         'Proposal #14',
@@ -395,7 +384,6 @@ describe('Neutron / Governance', () => {
       for (let i = 0; i < 40; i++)
         await neutronClient.upload(NeutronContract.RESERVE);
       const codeids = Array.from({ length: 40 }, (_, i) => i + 1);
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitPinCodesProposal(
         chainManagerAddress,
         'Proposal #15',
@@ -406,7 +394,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #16, will be rejected', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
         'Proposal #16',
@@ -430,7 +417,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #18, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitPinCodesCustomAuthorityProposal(
         chainManagerAddress,
         'Proposal #18',
@@ -442,7 +428,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #19, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitBankSendProposal(
         chainManagerAddress,
         'Proposal #19',
@@ -452,7 +437,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create multi-choice proposal #1, will be picked choice 1', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         chainManagerAddress,
         [
@@ -478,7 +462,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create proposal #20, will pass', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitUpdateParamsInterchaintxsProposal(
         chainManagerAddress,
         'Proposal #20',
@@ -491,7 +474,6 @@ describe('Neutron / Governance', () => {
     });
 
     test('create multi-choice proposal #2, will be rejected', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       await daoMember1.submitMultiChoiceParameterChangeProposal(
         chainManagerAddress,
         [
@@ -542,7 +524,8 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -575,7 +558,8 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -659,7 +643,8 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await neutronChain.getWithAttempts(
+      await getWithAttempts(
+        neutronClient.client,
         async () => await mainDao.queryMultiChoiceProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -907,7 +892,7 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that msg from schedule was executed', async () => {
-      await neutronChain.waitBlocks(15);
+      await waitBlocks(15, neutronClient.client);
       const queryResult = await neutronChain.queryContract<TestArgResponse>(
         contractAddress,
         {
@@ -924,7 +909,7 @@ describe('Neutron / Governance', () => {
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
-      await neutronChain.waitBlocks(10);
+      await waitBlocks(10, neutronClient.client);
       const queryResultLater =
         await neutronChain.queryContract<TestArgResponse>(contractAddress, {
           test_msg: { arg: 'proposal_11' },
@@ -997,13 +982,11 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that last msg from schedule was not executed because there was error in other messages', async () => {
-      await neutronChain.waitBlocks(15);
-      const queryResult = await neutronChain.queryContract<TestArgResponse>(
-        contractAddress,
-        {
+      await waitBlocks(15, neutronClient.client);
+      const queryResult: TestArgResponse =
+        await neutronClient.client.queryContractSmart(contractAddress, {
           test_msg: { arg: 'three_messages' },
-        },
-      );
+        });
 
       expect(queryResult).toEqual(null);
     });
@@ -1093,8 +1076,8 @@ describe('Neutron / Governance', () => {
     });
 
     test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
-      await neutronChain.waitBlocks(15);
-      const queryResult = await neutronChain.queryContract<TestArgResponse>(
+      await waitBlocks(15, neutronClient.client);
+      const queryResult: TestArgResponse = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           test_msg: { arg: 'correct_msg' },

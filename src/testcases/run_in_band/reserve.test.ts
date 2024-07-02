@@ -522,7 +522,12 @@ async function testExecControl(
   actionCheck: () => Promise<void>,
 ) {
   // check contract's pause info before pausing
-  let pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  let pauseInfo = await neutronClient.client.queryContractSmart(
+    testingContract,
+    {
+      pause_info: {},
+    },
+  );
   expect(pauseInfo).toEqual({ unpaused: {} });
   expect(pauseInfo.paused).toEqual(undefined);
 
@@ -535,7 +540,9 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+    pause_info: {},
+  });
   expect(pauseInfo.unpaused).toEqual(undefined);
   expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
@@ -549,7 +556,9 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after unpausing
-  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+    pause_info: {},
+  });
   expect(pauseInfo).toEqual({ unpaused: {} });
   expect(pauseInfo.paused).toEqual(undefined);
 
@@ -568,13 +577,17 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+    pause_info: {},
+  });
   expect(pauseInfo.unpaused).toEqual(undefined);
   expect(pauseInfo.paused.until_height).toBeGreaterThan(0);
 
   // wait and check contract's pause info after unpausing
   await account.chain.waitBlocks(shortPauseDuration);
-  pauseInfo = await account.chain.queryPausedInfo(testingContract);
+  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+    pause_info: {},
+  });
   expect(pauseInfo).toEqual({ unpaused: {} });
   expect(pauseInfo.paused).toEqual(undefined);
 }
