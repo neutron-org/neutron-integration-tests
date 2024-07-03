@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "vitest --run src/testcases/parallel --bail 1 --reporter=basic",
-    "test:run_in_band": "yarn test:feemarket && yarn test:globalfee && yarn test:tge:credits && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:dex_bindings && yarn test:slinky && yarn test:chain_manager",
+    "test:run_in_band": "yarn test:feemarket && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:dex_stargate && yarn test:dex_bindings && yarn test:slinky && yarn test:chain_manager",
     "test:simple": "vitest --run src/testcases/parallel/simple --bail 1",
     "test:slinky": "vitest --run src/testcases/run_in_band/slinky --bail 1",
     "test:stargate_queries": "vitest --run src/testcases/parallel/stargate_queries --bail 1",

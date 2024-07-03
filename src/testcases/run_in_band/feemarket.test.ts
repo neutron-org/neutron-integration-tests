@@ -23,6 +23,8 @@ import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosm
 
 const config = require('../../config.json');
 
+const DEC = 1_000_000_000_000_000_000.0;
+
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;
   let neutronAccount: Wallet;
@@ -78,17 +80,24 @@ describe('Neutron / Fee Market', () => {
         amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
       },
     );
-    await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
 
     feemarketQuery = new FeemarketQuery(neutronRpcClient);
     const adminQuery = new AdminQueryClient(neutronRpcClient);
     const admins = await adminQuery.Admins();
     chainManagerAddress = admins.admins[0];
+
+    await executeSwitchFeemarket(
+      feemarketQuery,
+      daoMember,
+      'enable feemarket',
+      true,
+    );
   });
 
   let counter = 1;
 
   const executeSwitchFeemarket = async (
+    feemarketQuery: FeemarketQuery,
     daoMember: DaoMember,
     kind: string,
     enabled: boolean,
@@ -104,14 +113,14 @@ describe('Neutron / Fee Market', () => {
       'Param change proposal. It will change enabled params of feemarket module.',
       '1000',
       {
-        alpha: params.alpha,
-        beta: params.beta,
-        delta: params.delta,
-        min_base_gas_price: params.minBaseGasPrice,
-        min_learning_rate: params.minLearningRate,
-        max_learning_rate: params.maxLearningRate,
-        max_block_utilization: +params.maxBlockUtilization.toString(),
-        window: +params.window.toString(),
+        alpha: (+params.alpha / DEC).toString(),
+        beta: (+params.beta / DEC).toString(),
+        delta: (+params.delta / DEC).toString(),
+        min_base_gas_price: (+params.minBaseGasPrice / DEC).toString(),
+        min_learning_rate: (+params.minLearningRate / DEC).toString(),
+        max_learning_rate: (+params.maxLearningRate / DEC).toString(),
+        max_block_utilization: Number(params.maxBlockUtilization),
+        window: Number(params.window),
         fee_denom: params.feeDenom,
         enabled: params.enabled,
         distribute_fees: params.distributeFees,
@@ -123,10 +132,7 @@ describe('Neutron / Fee Market', () => {
       amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
     });
     await mainDao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId, {
-      gas: '4000000',
-      amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
-    });
+    await daoMember.executeProposalWithAttempts(proposalId);
 
     counter++;
   };
@@ -149,10 +155,7 @@ describe('Neutron / Fee Market', () => {
       amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
     });
     await mainDao.checkPassedProposal(proposalId);
-    await daoMember.executeProposalWithAttempts(proposalId, {
-      gas: '4000000',
-      amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
-    });
+    await daoMember.executeProposalWithAttempts(proposalId);
 
     counter++;
   };
@@ -240,7 +243,12 @@ describe('Neutron / Fee Market', () => {
   });
 
   test('disable/enable feemarket module', async () => {
-    await executeSwitchFeemarket(daoMember, 'disable feemarket', false);
+    await executeSwitchFeemarket(
+      feemarketQuery,
+      daoMember,
+      'disable feemarket',
+      false,
+    );
 
     // feemarket disabled
     // with a zero fee we fail due to default cosmos ante handler check
@@ -260,7 +268,12 @@ describe('Neutron / Fee Market', () => {
 
     await waitBlocks(2, neutronClient.client);
 
-    await executeSwitchFeemarket(daoMember, 'enable feemarket', true);
+    await executeSwitchFeemarket(
+      feemarketQuery,
+      daoMember,
+      'enable feemarket',
+      true,
+    );
 
     // feemarket enabled
     // with a zero fee we fail due to feemarket ante handler check
@@ -281,10 +294,11 @@ describe('Neutron / Fee Market', () => {
 
   test('gas price gets up and down', async () => {
     await executeSwitchFeemarket(
+      feemarketQuery,
       daoMember,
       'enable feemarket',
       true,
-      BigInt(1),
+      1n,
     );
 
     const msgSend: MsgSendEncodeObject = {
@@ -296,15 +310,15 @@ describe('Neutron / Fee Market', () => {
       },
     };
 
-    const baseNtrnGasPrice = +(
-      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
-    ).price.amount;
+    const baseGasPrice =
+      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount /
+      DEC;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
     const priceAdjustment = 1.55;
     for (let i = 0; i < 5; i++) {
       const fees = Math.floor(
-        +requiredGas * +baseNtrnGasPrice * priceAdjustment,
+        +requiredGas * baseGasPrice * priceAdjustment,
       ).toString();
       // 1200msgs consume ~27m gas
       try {
@@ -316,26 +330,27 @@ describe('Neutron / Fee Market', () => {
             amount: [{ denom: NEUTRON_DENOM, amount: fees }],
           },
         );
-      } catch {
+      } catch (e) {
         // do nothing if called with same sequence
       }
       await waitBlocks(1, neutronClient.client);
     }
 
-    const inflatedNtrnGasPrice = await feemarketQuery.GasPrice({
-      denom: NEUTRON_DENOM,
-    });
+    const inflatedGasPrice =
+      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount /
+      DEC;
     // gas price should be higher after big transactions
-    expect(inflatedNtrnGasPrice).toBeGreaterThan(baseNtrnGasPrice);
+    expect(inflatedGasPrice).toBeGreaterThan(baseGasPrice);
 
     await waitBlocks(10, neutronClient.client);
 
-    const newNtrnGasPrice = await feemarketQuery.GasPrice({
-      denom: NEUTRON_DENOM,
-    });
-    expect(+newNtrnGasPrice.price.amount).toBeLessThan(
-      +inflatedNtrnGasPrice.price.amount,
-    );
+    const newNtrnGasPrice =
+      +(
+        await feemarketQuery.GasPrice({
+          denom: NEUTRON_DENOM,
+        })
+      ).price.amount / DEC;
+    expect(newNtrnGasPrice).toBeLessThan(inflatedGasPrice);
     // expect gas price to fall to the base after some amount of blocks passed
     expect(newNtrnGasPrice).toBe(0.0025);
   });

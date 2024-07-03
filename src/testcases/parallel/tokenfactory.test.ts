@@ -294,12 +294,13 @@ describe('Neutron / Tokenfactory', () => {
       expect(queryTrack.track.received).toEqual(false);
       expect(queryBlock.block.received).toEqual(false);
 
-      await msgSetBeforeSendHook(
+      const res = await msgSetBeforeSendHook(
         neutronAccount,
         ownerWallet.address,
         newTokenDenom,
         contractAddress,
       );
+      expect(res.code).toBe(0);
 
       const hookAfter = await getBeforeSendHook(
         neutronChain.rest,
