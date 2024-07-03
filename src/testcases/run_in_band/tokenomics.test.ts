@@ -8,7 +8,7 @@ import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/types';
-import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/cosmjs-types/neutron/feeburner/query';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query';
 
 const config = require('../../config.json');
 

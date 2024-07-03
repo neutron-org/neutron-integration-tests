@@ -1,3 +1,4 @@
+import { acceptInterchainqueriesParamsChangeProposal } from './../../helpers/kvQuery';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
@@ -23,7 +24,6 @@ import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
 import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
 import {
-  acceptInterchainqueriesParamsChangeProposal,
   getCosmosSigningInfosResult,
   getDelegatorUnbondingDelegationsResult,
   getKvCallbackStatus,

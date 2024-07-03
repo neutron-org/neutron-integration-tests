@@ -11,7 +11,7 @@ import {
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/cosmjs-types/neutron/feeburner/query';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 const config = require('../../config.json');

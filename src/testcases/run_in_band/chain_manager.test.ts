@@ -1,67 +1,94 @@
+import { Registry } from '@cosmjs/proto-signing';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
-  setupSubDaoTimelockSet,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState } from '../../helpers/localState';
 import { Suite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
+import { WasmWrapper, wasm } from '../../helpers/wasmClient';
+import { setupSubDaoTimelockSet } from '../../helpers/dao';
+import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
+  let neutronClient: WasmWrapper;
   let subdaoMember1: DaoMember;
   let mainDaoMember: DaoMember;
   let securityDaoAddr: string;
   let subDao: Dao;
   let mainDao: Dao;
+  let cronQuery: CronQuery;
+  let chainManagerAddress: string;
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    const demo1Wallet = await testState.nextWallet('neutron');
+    const neutronAccount1 = await testState.nextWallet('neutron');
+    neutronClient = await wasm(
+      testState.rpcNeutron,
+      neutronAccount1,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
+    );
     const securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
-    neutronChain = new CosmosWrapper(
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient.client,
+      neutronRpcClient,
+    );
+    const daoContracts = await getDaoContracts(
+      neutronClient.client,
+      daoCoreAddress,
+    );
+
+    mainDao = new Dao(neutronClient.client, daoContracts);
+    mainDaoMember = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronAccount1.address,
       NEUTRON_DENOM,
-      testState.restNeutron,
-      testState.rpcNeutron,
     );
-    const neutronAccount1 = await createWalletWrapper(
-      neutronChain,
-      demo1Wallet,
-    );
-
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-
-    mainDao = new Dao(neutronChain, daoContracts);
-    mainDaoMember = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember.bondFunds('10000');
 
     subDao = await setupSubDaoTimelockSet(
-      neutronAccount1,
+      neutronAccount1.address,
+      neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
       true,
     );
 
-    subdaoMember1 = new DaoMember(neutronAccount1, subDao);
+    subdaoMember1 = new DaoMember(
+      subDao,
+      neutronClient.client,
+      neutronAccount1.address,
+      NEUTRON_DENOM,
+    );
 
     const subDaosList = await mainDao.getSubDaoList();
     expect(subDaosList).toContain(subDao.contracts.core.address);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');
+
+    const queryClient = new AdminQueryClient(neutronRpcClient);
+    const admins = await queryClient.Admins();
+    chainManagerAddress = admins[0];
+
+    cronQuery = new CronQuery(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -70,12 +97,13 @@ describe('Neutron / Chain Manager', () => {
   describe('Change the overrule proposal voting period', () => {
     let proposalId: number;
     test('create proposal', async () => {
-      const currentOverruleProposalConfig = await neutronChain.queryContract(
-        mainDao.contracts.proposals['overrule'].address,
-        {
-          config: {},
-        },
-      );
+      const currentOverruleProposalConfig =
+        await neutronClient.client.queryContractSmart(
+          mainDao.contracts.proposals['overrule'].address,
+          {
+            config: {},
+          },
+        );
       currentOverruleProposalConfig['max_voting_period']['time'] = 5;
       proposalId = await mainDaoMember.submitSingleChoiceProposal(
         'Proposal',
@@ -128,7 +156,6 @@ describe('Neutron / Chain Manager', () => {
   describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, legacy param changes)', () => {
     let proposalId: number;
     test('create proposal', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       proposalId = await mainDaoMember.submitAddChainManagerStrategyProposal(
         chainManagerAddress,
         'Proposal #2',
@@ -182,7 +209,6 @@ describe('Neutron / Chain Manager', () => {
   describe('ALLOW_ONLY: change CRON parameters', () => {
     let proposalId: number;
     beforeAll(async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       proposalId = await subdaoMember1.submitUpdateParamsCronProposal(
         chainManagerAddress,
         'Proposal #1',
@@ -212,8 +238,8 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const cronParams = await neutronChain.queryCronParams();
-      expect(cronParams.params.limit).toEqual('42');
+      const cronParams = await cronQuery.Params();
+      expect(cronParams.params.limit).toEqual(BigInt(42));
     });
   });
 });

@@ -9,7 +9,7 @@ import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
-import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
+import { QueryClientImpl } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,
   AcknowledgementResult,

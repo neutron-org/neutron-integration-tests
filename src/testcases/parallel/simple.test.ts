@@ -3,13 +3,13 @@ import { Suite, inject } from 'vitest';
 import { createLocalState, LocalState } from '../../helpers/localState';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WasmWrapper, wasm } from '../../helpers/wasmClient';
-import { MsgTransfer } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import {
   QueryClientImpl as ContractManagerQuery,
   QueryFailuresResponse,
-} from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
-import { QueryClientImpl as BankQuery } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
-import { QueryClientImpl as IbcQuery } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query';
+} from '@neutron-org/neutronjs/neutron/contractmanager/query';
+import { QueryClientImpl as BankQuery } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as IbcQuery } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { getWithAttempts } from '../../helpers/getWithAttempts';
 import {
@@ -128,7 +128,10 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const res = await bankQuery.AllBalances({ address: ibcContract });
+        const res = await bankQuery.AllBalances({
+          address: ibcContract,
+          resolveDenom: false,
+        });
         expect(res.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);

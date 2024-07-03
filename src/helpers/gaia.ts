@@ -1,14 +1,14 @@
 import { walletWrapper } from '@neutron-org/neutronjsplus';
-import { TextProposal } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
+import { TextProposal } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
 import {
   MsgDelegate,
   MsgUndelegate,
-} from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/tx';
+} from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
 import {
   MsgSubmitProposal,
   MsgVote,
-} from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/tx';
-import { VoteOption } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
+} from '@neutron-org/neutronjs/cosmos/gov/v1beta1/tx';
+import { VoteOption } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 
 export const msgDelegate = async (

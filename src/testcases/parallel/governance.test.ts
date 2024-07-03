@@ -1,4 +1,4 @@
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
 import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
 import { LocalState, createLocalState } from '../../helpers/localState';
@@ -17,19 +17,19 @@ import {
 } from '@neutron-org/neutronjsplus';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { wasm, WasmWrapper } from '../../helpers/wasmClient';
-import { ParameterChangeProposal } from '@neutron-org/cosmjs-types/cosmos/params/v1beta1/params';
-import { MsgSubmitProposalLegacy } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/tx';
+import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
+import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
 import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as UpgradeQuery } from '@neutron-org/cosmjs-types/cosmos/upgrade/v1beta1/query';
-import { QueryClientImpl as IbcClientQuery } from '@neutron-org/cosmjs-types/ibc/core/client/v1/query';
-import { QueryClientImpl as WasmQuery } from '@neutron-org/cosmjs-types/cosmwasm/wasm/v1/query';
-import { QueryClientImpl as CronQuery } from '@neutron-org/cosmjs-types/neutron/cron/query';
-import { QueryClientImpl as InterchainTxQuery } from '@neutron-org/cosmjs-types/neutron/interchaintxs/v1/query';
-import { QueryClientImpl as InterchainAccounts } from '@neutron-org/cosmjs-types/ibc/applications/interchain_accounts/host/v1/query';
+import { QueryClientImpl as UpgradeQuery } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query';
+import { QueryClientImpl as IbcClientQuery } from '@neutron-org/neutronjs/ibc/core/client/v1/query';
+import { QueryClientImpl as WasmQuery } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query';
+import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query';
+import { QueryClientImpl as InterchainTxQuery } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query';
+import { QueryClientImpl as InterchainAccounts } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query';
 
 const config = require('../../config.json');
 
@@ -1193,7 +1193,7 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
       const paramAfter = await interchaintxQuery.Params();
-      expect(paramAfter.params.msgSubmitTxMaxMessages).toEqual('11');
+      expect(paramAfter.params.msgSubmitTxMaxMessages).toEqual(BigInt(11));
     });
   });
 

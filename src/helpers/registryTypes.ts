@@ -1,17 +1,17 @@
 import { wasmTypes } from '@cosmjs/cosmwasm-stargate';
 import { GeneratedType } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
-import { MsgSubmitProposalLegacy } from '@neutron-org/cosmjs-types/cosmos/adminmodule/adminmodule/tx';
-import { ParameterChangeProposal } from '@neutron-org/cosmjs-types/cosmos/params/v1beta1/params';
-import { MsgRemoveInterchainQueryRequest } from '@neutron-org/cosmjs-types/neutron/interchainqueries/tx';
+import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
+import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
+import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 import {
   MsgBurn,
   MsgChangeAdmin,
   MsgCreateDenom,
   MsgMint,
   MsgSetBeforeSendHook,
-} from '@neutron-org/cosmjs-types/osmosis/tokenfactory/v1beta1/tx';
-import { MsgAuctionBid } from '@neutron-org/cosmjs-types/sdk/auction/v1/tx';
+} from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+import { MsgAuctionBid } from '@neutron-org/neutronjs/sdk/auction/v1/tx';
 
 // TODO: use all types from @neutron-org/neutronjs library
 export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
