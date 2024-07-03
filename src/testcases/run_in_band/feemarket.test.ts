@@ -83,7 +83,7 @@ describe('Neutron / Fee Market', () => {
     feemarketQuery = new FeemarketQuery(neutronRpcClient);
     const adminQuery = new AdminQueryClient(neutronRpcClient);
     const admins = await adminQuery.Admins();
-    chainManagerAddress = admins[0];
+    chainManagerAddress = admins.admins[0];
   });
 
   let counter = 1;
@@ -296,15 +296,15 @@ describe('Neutron / Fee Market', () => {
       },
     };
 
-    const baseNtrnGasPrice = Number(
-      (await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount,
-    );
+    const baseNtrnGasPrice = +(
+      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+    ).price.amount;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
     const priceAdjustment = 1.55;
     for (let i = 0; i < 5; i++) {
       const fees = Math.floor(
-        Number(requiredGas) * baseNtrnGasPrice * priceAdjustment,
+        +requiredGas * +baseNtrnGasPrice * priceAdjustment,
       ).toString();
       // 1200msgs consume ~27m gas
       try {

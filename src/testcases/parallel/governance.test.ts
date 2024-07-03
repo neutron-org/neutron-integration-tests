@@ -111,7 +111,7 @@ describe('Neutron / Governance', () => {
 
     const queryClient = new AdminQueryClient(neutronRpcClient);
     const admins = await queryClient.Admins();
-    chainManagerAddress = admins[0];
+    chainManagerAddress = admins.admins[0];
 
     upgradeQuery = new UpgradeQuery(neutronRpcClient);
     ibcClientQuery = new IbcClientQuery(neutronRpcClient);
@@ -211,6 +211,7 @@ describe('Neutron / Governance', () => {
 
   describe('create several proposals', () => {
     test('create proposal #1, will be rejected', async () => {
+      console.log('chainManagerAddress: ' + chainManagerAddress);
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
         'Proposal #1',
@@ -698,7 +699,7 @@ describe('Neutron / Governance', () => {
   describe('check state change from proposal #4 execution', () => {
     test('check if software current plan was created', async () => {
       const currentPlan = await upgradeQuery.CurrentPlan();
-      expect(currentPlan.plan?.height).toEqual('100000');
+      expect(currentPlan.plan?.height).toEqual(BigInt(100000));
       expect(currentPlan.plan?.name).toEqual('Plan #1');
       expect(currentPlan.plan?.info).toEqual('Plan info');
     });
@@ -798,7 +799,7 @@ describe('Neutron / Governance', () => {
     });
     test('check that codes were pinned', async () => {
       const res = await wasmQuery.PinnedCodes();
-      expect(res.codeIds).toEqual(['1', '2']);
+      expect(res.codeIds).toEqual([BigInt(1), BigInt(2)]);
     });
   });
 

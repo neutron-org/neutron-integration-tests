@@ -1,35 +1,35 @@
+import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState } from '../../helpers/localState';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { wasm, WasmWrapper } from '../../helpers/wasmClient';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import {
-  GetAllCurrencyPairsResponse,
-  GetPriceResponse,
-  GetPricesResponse,
-} from '@neutron-org/neutronjsplus/dist/oracle';
-import {
-  ParamsResponse,
-  MarketResponse,
-  MarketMapResponse,
-  LastUpdatedResponse,
-} from '@neutron-org/neutronjsplus/dist/marketmap';
+  getWithAttempts,
+  waitBlocks,
+} from '@neutron-org/neutronjsplus/dist/wait';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/module/v1/query';
 
 const config = require('../../config.json');
 
 describe('Neutron / Slinky', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
   let daoMember1: DaoMember;
-  let dao: Dao;
+  let mainDao: Dao;
+  let neutronAccount: Wallet;
+  let neutronClient: WasmWrapper;
+  let chainManagerAddress: string;
+  let adminQuery: AdminQueryClient;
+  let oracleQuery: OracleQueryClient;
 
   let proposalId: number;
 
@@ -37,26 +37,40 @@ describe('Neutron / Slinky', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    neutronAccount = testState.wallets.qaNeutron.qa;
+    neutronClient = await wasm(
       testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      testState.wallets.qaNeutron.qa,
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient.client,
+      neutronRpcClient,
     );
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    dao = new Dao(neutronChain, daoContracts);
-    daoMember1 = new DaoMember(neutronAccount, dao);
+    const daoContracts = await getDaoContracts(
+      neutronClient.client,
+      daoCoreAddress,
+    );
+    mainDao = new Dao(neutronClient.client, daoContracts);
+    daoMember1 = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronAccount.address,
+      NEUTRON_DENOM,
+    );
+    adminQuery = new AdminQueryClient(await testState.rpcClient('neutron'));
+    chainManagerAddress = (await adminQuery.Admins())[0];
+    oracleQuery = new OracleQueryClient(neutronRpcClient);
   });
 
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await neutronChain.getWithAttempts(
-        async () => await dao.queryVotingPower(daoMember1.user),
+      await getWithAttempts(
+        neutronClient.client,
+        async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
       );
@@ -65,7 +79,6 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
       proposalId = await daoMember1.submitCreateMarketMap(
         chainManagerAddress,
         'Proposal for update marketmap',
@@ -103,8 +116,8 @@ describe('Neutron / Slinky', () => {
 
     describe('execute proposal', () => {
       test('check if proposal is passed', async () => {
-        await neutronChain.waitBlocks(5);
-        await dao.checkPassedProposal(proposalId);
+        await waitBlocks(5, neutronClient.client);
+        await mainDao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
@@ -115,7 +128,7 @@ describe('Neutron / Slinky', () => {
   describe('module fetches prices', () => {
     test('currency pairs not empty', async () => {
       // wait to make sure we updated the price in oracle module
-      await neutronChain.waitBlocks(30);
+      await waitBlocks(30, neutronClient.client);
       // check
       const res = await neutronChain.queryOracleAllCurrencyPairs();
       expect(res.currency_pairs[0].Base).toBe('TIA');
@@ -137,18 +150,14 @@ describe('Neutron / Slinky', () => {
     let contractAddress: string;
 
     test('setup contract', async () => {
-      const codeId = await neutronAccount.storeWasm(NeutronContract.ORACLE);
+      const codeId = await neutronClient.upload(NeutronContract.ORACLE);
       expect(codeId).toBeGreaterThan(0);
 
-      contractAddress = await neutronAccount.instantiateContract(
-        codeId,
-        {},
-        'oracle',
-      );
+      contractAddress = await neutronClient.instantiate(codeId, {}, 'oracle');
     });
 
     test('query prices', async () => {
-      const res = await neutronChain.queryContract<GetPricesResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           get_prices: {
@@ -161,7 +170,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query price', async () => {
-      const res = await neutronChain.queryContract<GetPriceResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
@@ -171,7 +180,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query currencies', async () => {
-      const res = await neutronChain.queryContract<GetAllCurrencyPairsResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           get_all_currency_pairs: {},
@@ -185,10 +194,10 @@ describe('Neutron / Slinky', () => {
     let contractAddress: string;
 
     test('setup contract', async () => {
-      const codeId = await neutronAccount.storeWasm(NeutronContract.MARKETMAP);
+      const codeId = await neutronClient.upload(NeutronContract.MARKETMAP);
       expect(codeId).toBeGreaterThan(0);
 
-      contractAddress = await neutronAccount.instantiateContract(
+      contractAddress = await neutronClient.instantiate(
         codeId,
         {},
         'marketmap',
@@ -196,7 +205,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query last', async () => {
-      const res = await neutronChain.queryContract<LastUpdatedResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           last_updated: {},
@@ -206,7 +215,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query market', async () => {
-      const res = await neutronChain.queryContract<MarketResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
@@ -216,7 +225,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query market map', async () => {
-      const res = await neutronChain.queryContract<MarketMapResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           market_map: {},
@@ -229,7 +238,7 @@ describe('Neutron / Slinky', () => {
     });
 
     test('query params', async () => {
-      const res = await neutronChain.queryContract<ParamsResponse>(
+      const res = await neutronClient.client.queryContractSmart(
         contractAddress,
         {
           params: {},

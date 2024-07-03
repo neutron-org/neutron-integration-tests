@@ -252,7 +252,7 @@ export const acceptInterchainqueriesParamsChangeProposal = async (
 
   const queryClient = new AdminQueryClient(rpcClient);
   const admins = await queryClient.Admins();
-  const chainManagerAddress = admins[0];
+  const chainManagerAddress = admins.admins[0];
   const message = paramChangeProposal(
     {
       title,

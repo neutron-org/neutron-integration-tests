@@ -28,6 +28,7 @@ describe('Neutron / Treasury', () => {
   let securityDaoAddr: string;
   let holder1Addr: string;
   let holder2Addr: string;
+
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);

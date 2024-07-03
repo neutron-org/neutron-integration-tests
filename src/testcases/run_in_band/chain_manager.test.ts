@@ -86,7 +86,7 @@ describe('Neutron / Chain Manager', () => {
 
     const queryClient = new AdminQueryClient(neutronRpcClient);
     const admins = await queryClient.Admins();
-    chainManagerAddress = admins[0];
+    chainManagerAddress = admins.admins[0];
 
     cronQuery = new CronQuery(neutronRpcClient);
   });

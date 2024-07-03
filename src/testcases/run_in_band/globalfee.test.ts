@@ -47,7 +47,7 @@ describe('Neutron / Global Fee', () => {
 
     const adminQuery = new AdminQueryClient(neutronRpcClient);
     const admins = await adminQuery.Admins();
-    chainManagerAddress = admins[0];
+    chainManagerAddress = admins.admins[0];
 
     globalfeeQuery = new GlobalfeeQuery(neutronRpcClient);
 
