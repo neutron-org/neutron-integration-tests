@@ -20,10 +20,9 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as FeemarketQuery } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { DEC } from '../../helpers/constants';
 
 const config = require('../../config.json');
-
-const DEC = 1_000_000_000_000_000_000.0;
 
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;

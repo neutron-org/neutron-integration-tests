@@ -19,13 +19,12 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as GlobalfeeQuery } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { DEC } from '../../helpers/constants';
 
 const config = require('../../config.json');
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
-  // let neutronChain: CosmosWrapper;
-  // let neutronAccount: WalletWrapper;
   let daoMember: DaoMember;
   let mainDao: Dao;
   let neutronAccount: Wallet;
@@ -103,7 +102,10 @@ describe('Neutron / Global Fee', () => {
       bypassMinFeeMsgTypes = res.params.bypassMinFeeMsgTypes;
     }
     if (minimumGasPrices == null) {
-      minimumGasPrices = res.params.minimumGasPrices;
+      minimumGasPrices = res.params.minimumGasPrices.map((p) => ({
+        denom: p.denom,
+        amount: (Number(p.amount) / DEC).toString(),
+      }));
     }
     if (maxTotalBypassMinFeesgGasUsage == null) {
       maxTotalBypassMinFeesgGasUsage =
@@ -146,9 +148,9 @@ describe('Neutron / Global Fee', () => {
       {
         denom:
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-        amount: '0.000000000000000000',
+        amount: '0',
       },
-      { denom: 'untrn', amount: '0.000000000000000000' },
+      { denom: 'untrn', amount: '0' },
     ]);
     expect(res.params.bypassMinFeeMsgTypes).toEqual([
       '/ibc.core.channel.v1.Msg/RecvPacket',
@@ -171,7 +173,7 @@ describe('Neutron / Global Fee', () => {
   test('check globalfee minimum param changed', async () => {
     const res = await globalfeeQuery.Params();
     expect(res.params.minimumGasPrices).toEqual([
-      { denom: 'untrn', amount: '0.010000000000000000' },
+      { denom: 'untrn', amount: '10000000000000000' },
     ]);
   });
 
