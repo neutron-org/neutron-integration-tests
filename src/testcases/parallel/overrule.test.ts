@@ -216,7 +216,7 @@ async function voteAgainstOverrule(
     { vote: { proposal_id: propId, vote: 'no' } },
     {
       gas: '4000000',
-      amount: [{ denom: this.denom, amount: '10000' }],
+      amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
     },
   );
 }
