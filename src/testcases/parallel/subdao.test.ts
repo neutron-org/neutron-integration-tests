@@ -108,7 +108,7 @@ describe('Neutron / Subdao', () => {
     );
 
     adminQuery = new AdminQueryClient(await testState.rpcClient('neutron'));
-    chainManagerAddress = (await adminQuery.Admins())[0];
+    chainManagerAddress = (await adminQuery.Admins()).admins[0];
 
     const subDaosList = await mainDao.getSubDaoList();
     expect(subDaosList).toContain(subDao.contracts.core.address);
@@ -187,7 +187,6 @@ describe('Neutron / Subdao', () => {
 
     let proposalId2: number;
     test('proposal timelock 2 with two messages, one of them fails', async () => {
-      const chainManagerAddress = (await adminQuery.Admins()).admins[0];
       // pack two messages in one proposal
       const failMessage = paramChangeProposal(
         {

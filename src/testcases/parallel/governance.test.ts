@@ -211,7 +211,6 @@ describe('Neutron / Governance', () => {
 
   describe('create several proposals', () => {
     test('create proposal #1, will be rejected', async () => {
-      console.log('chainManagerAddress: ' + chainManagerAddress);
       await daoMember1.submitParameterChangeProposal(
         chainManagerAddress,
         'Proposal #1',
@@ -731,7 +730,7 @@ describe('Neutron / Governance', () => {
   describe('check state change from proposal #5 execution', () => {
     test('check if software current plan was removed', async () => {
       const currentPlan = await upgradeQuery.CurrentPlan();
-      expect(currentPlan.plan).toBeNull();
+      expect(currentPlan.plan).toBeUndefined();
     });
   });
 
@@ -769,10 +768,12 @@ describe('Neutron / Governance', () => {
 
     test('check client statuses after update', async () => {
       expect(
-        await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-2' }),
+        (await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-2' }))
+          .status,
       ).toBe('Active');
       expect(
-        await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-1' }),
+        (await ibcClientQuery.ClientStatus({ clientId: '07-tendermint-1' }))
+          .status,
       ).toBe('Active');
     });
   });
@@ -881,7 +882,7 @@ describe('Neutron / Governance', () => {
       const contract = await neutronClient.client.getContract(
         contractAddressForAdminMigration,
       );
-      expect(contract.admin).toEqual('');
+      expect(contract.admin).toBeUndefined();
     });
   });
 
@@ -1205,6 +1206,7 @@ describe('Neutron / Governance', () => {
         await SigningStargateClient.connectWithSigner(
           testState.rpcNeutron,
           neutronAccount.directwallet,
+          { registry: neutronClient.registry },
         ),
         neutronClient.registry,
         'icahost',
