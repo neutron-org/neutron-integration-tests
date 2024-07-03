@@ -1,6 +1,6 @@
 import { neutronTypes } from './../../helpers/registryTypes';
 import { Registry } from '@cosmjs/proto-signing';
-import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
+import { ExecuteResult } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/localState';
@@ -173,6 +173,7 @@ describe('Neutron / Subdao Overrule', () => {
         subDao.contracts.proposals.single.pre_propose.timelock?.address || '';
       // we vote No from user with significant voting power to test if proposal is executed anyway
       await voteAgainstOverrule(
+        neutronClient1,
         mainDaoMember1,
         timelockAddress,
         timelockedPropId,
@@ -200,16 +201,22 @@ describe('Neutron / Subdao Overrule', () => {
 
 // this function isn't in the DaoMember class since it makes no sense in general but in a very specific test
 async function voteAgainstOverrule(
+  wasm: WasmWrapper,
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,
-): Promise<IndexedTx> {
+): Promise<ExecuteResult> {
   const propId = await member.dao.getOverruleProposalId(
     timelockAddress,
     proposalId,
   );
-  return await member.user.executeContract(
+  return await wasm.client.execute(
+    wasm.wallet.address,
     member.dao.contracts.proposals.overrule?.address || '',
     { vote: { proposal_id: propId, vote: 'no' } },
+    {
+      gas: '4000000',
+      amount: [{ denom: this.denom, amount: '10000' }],
+    },
   );
 }

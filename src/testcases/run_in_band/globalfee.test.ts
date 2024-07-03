@@ -1,57 +1,76 @@
-import { Coin } from '@cosmjs/proto-signing';
+import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
+import { Coin, Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import {
   Dao,
   DaoMember,
   getDaoContracts,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState } from '../../helpers/localState';
+import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { WasmWrapper, wasm } from '../../helpers/wasmClient';
+import { getWithAttempts, waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { QueryClientImpl as InterchainAccounts } from '@neutron-org/cosmjs-types/neutron/gaia/';
 
 const config = require('../../config.json');
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
+  // let neutronChain: CosmosWrapper;
+  // let neutronAccount: WalletWrapper;
   let daoMember: DaoMember;
-  let daoMain: Dao;
+  let mainDao: Dao;
+  let neutronAccount: Wallet;
+  let neutronClient: WasmWrapper;
 
   beforeAll(async () => {
     testState = new LocalState(config, inject('mnemonics'));
     await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    neutronAccount = await testState.randomWallet('neutron');
+    neutronClient = await wasm(
       testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      await testState.randomWallet('neutron'),
-    );
+    const neutronRpcClient = await testState.rpcClient('neutron');
 
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    daoMain = new Dao(neutronChain, daoContracts);
-    daoMember = new DaoMember(neutronAccount, daoMain);
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient.client,
+      neutronRpcClient,
+    );
+    const daoContracts = await getDaoContracts(
+      neutronClient.client,
+      daoCoreAddress,
+    );
+    mainDao = new Dao(neutronClient.client, daoContracts);
+    daoMember = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronAccount.address,
+      NEUTRON_DENOM,
+    );
     await daoMember.bondFunds('10000');
-    await neutronChain.getWithAttempts(
-      async () =>
-        await daoMain.queryVotingPower(
-          daoMember.user.wallet.address.toString(),
-        ),
+    await getWithAttempts(
+      neutronClient.client,
+      async () => await mainDao.queryVotingPower(daoMember.user),
       async (response) => response.power == 10000,
       20,
     );
 
-    await daoMember.user.msgSend(daoMain.contracts.core.address, '1000', {
-      gas: '200000',
-      amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
-    });
+    await neutronClient.client.sendTokens(
+      neutronAccount.address,
+      mainDao.contracts.core.address,
+      [{ denom: NEUTRON_DENOM, amount: '1000' }],
+      {
+        gas: '200000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
+      },
+    );
   });
 
   afterAll(async () => {
@@ -98,12 +117,12 @@ describe('Neutron / Global Fee', () => {
 
     await daoMember.voteYes(proposalId, 'single', {
       gas: '4000000',
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+      amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
     });
-    await daoMain.checkPassedProposal(proposalId);
+    await mainDao.checkPassedProposal(proposalId);
     await daoMember.executeProposalWithAttempts(proposalId, {
       gas: '4000000',
-      amount: [{ denom: daoMember.user.chain.denom, amount: '100000' }],
+      amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
     });
 
     counter++;
@@ -146,9 +165,9 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command', async () => {
     await expect(
-      neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
+      neutronAccount.msgSend(mainDao.contracts.core.address, '1000', {
         gas: '200000',
-        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
       }),
     ).rejects.toThrowError(
       /Insufficient fees; got: 500untrn required: 2000untrn: insufficient fee/,
@@ -174,15 +193,15 @@ describe('Neutron / Global Fee', () => {
 
   test('check that MsgSend passes check for allowed messages - now works with only validator fees', async () => {
     const res = await neutronAccount.msgSend(
-      daoMain.contracts.core.address,
+      mainDao.contracts.core.address,
       '1000',
       {
         gas: '200000',
-        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
       },
     );
 
-    await neutronChain.waitBlocks(2);
+    await waitBlocks(2, neutronClient.client);
 
     expect(res.code).toEqual(0);
   });
@@ -205,9 +224,9 @@ describe('Neutron / Global Fee', () => {
   test('check that MsgSend does not work without minimal fees now', async () => {
     await neutronChain.waitBlocks(2);
     await expect(
-      neutronAccount.msgSend(daoMain.contracts.core.address, '1000', {
+      neutronAccount.msgSend(mainDao.contracts.core.address, '1000', {
         gas: '200000',
-        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
       }),
     ).rejects.toThrowError(
       /Insufficient fees; bypass-min-fee-msg-types with gas consumption 200000 exceeds the maximum allowed gas value of 50.: insufficient fee/,
@@ -247,11 +266,11 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command after revert with zero value (only validator min fee settings applied)', async () => {
     const res = await neutronAccount.msgSend(
-      daoMain.contracts.core.address,
+      mainDao.contracts.core.address,
       '1000',
       {
         gas: '200000',
-        amount: [{ denom: daoMember.user.chain.denom, amount: '500' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }],
       },
     );
 
