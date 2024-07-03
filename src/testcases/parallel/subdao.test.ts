@@ -230,7 +230,10 @@ describe('Neutron / Subdao', () => {
         neutronAccount1.address,
         subDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '100000' }],
-        'auto',
+        {
+          gas: '4000000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+        },
       ); // fund the subdao treasury
       const balance2 = await neutronClient2.client.getBalance(
         neutronAccount2.address,
@@ -344,7 +347,10 @@ describe('Neutron / Subdao', () => {
         neutronAccount1.address,
         subDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '300000' }],
-        'auto',
+        {
+          gas: '4000000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+        },
       );
 
       // now that we have funds should execute without problems
@@ -390,7 +396,10 @@ describe('Neutron / Subdao', () => {
         neutronAccount1.address,
         subDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '20000' }],
-        'auto',
+        {
+          gas: '4000000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+        },
       ); // fund the subdao treasury
       const balance2 = await neutronClient2.client.getBalance(
         neutronAccount2.address,
@@ -823,7 +832,10 @@ describe('Neutron / Subdao', () => {
         neutronAccount1.address,
         subDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '10000' }],
-        'auto',
+        {
+          gas: '4000000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+        },
       );
       const beforeExecBalance = await neutronClient1.client.getBalance(
         securityDaoAddr,
