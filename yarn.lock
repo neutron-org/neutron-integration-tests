@@ -1568,7 +1568,7 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#bcad3b0dc674ad54a63556863515e6832cebed5d":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus.git#bcad3b0dc674ad54a63556863515e6832cebed5d":
   version "0.4.0-rc19"
   resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/bcad3b0dc674ad54a63556863515e6832cebed5d"
   dependencies:
