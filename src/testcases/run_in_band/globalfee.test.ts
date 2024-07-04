@@ -172,7 +172,7 @@ describe('Neutron / Global Fee', () => {
   test('check globalfee minimum param changed', async () => {
     const res = await globalfeeQuery.Params();
     expect(res.params.minimumGasPrices).toEqual([
-      { denom: 'untrn', amount: '10000000000000000' },
+      { denom: 'untrn', amount: '0.01' },
     ]);
   });
 
