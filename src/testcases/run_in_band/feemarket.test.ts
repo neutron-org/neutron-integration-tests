@@ -308,7 +308,9 @@ describe('Neutron / Fee Market', () => {
       },
     };
 
-    const baseGasPrice = +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount;
+    const baseGasPrice = +(
+      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+    ).price.amount;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
     const priceAdjustment = 1.55;
@@ -332,19 +334,19 @@ describe('Neutron / Fee Market', () => {
       await waitBlocks(1, neutronClient.client);
     }
 
-    const inflatedGasPrice =
-      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount;
+    const inflatedGasPrice = +(
+      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+    ).price.amount;
     // gas price should be higher after big transactions
     expect(inflatedGasPrice).toBeGreaterThan(baseGasPrice);
 
     await waitBlocks(10, neutronClient.client);
 
-    const newNtrnGasPrice =
-      +(
-        await feemarketQuery.GasPrice({
-          denom: NEUTRON_DENOM,
-        })
-      ).price.amount;
+    const newNtrnGasPrice = +(
+      await feemarketQuery.GasPrice({
+        denom: NEUTRON_DENOM,
+      })
+    ).price.amount;
     expect(newNtrnGasPrice).toBeLessThan(inflatedGasPrice);
     // expect gas price to fall to the base after some amount of blocks passed
     expect(newNtrnGasPrice).toBe(0.0025);

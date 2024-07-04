@@ -462,7 +462,7 @@ describe('Neutron / Simple', () => {
       });
       test('execute contract with failing sudo', async () => {
         const failuresBeforeCall = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresBeforeCall.failures.length).toEqual(0);
@@ -512,7 +512,7 @@ describe('Neutron / Simple', () => {
           neutronClient.client,
           async () =>
             contractManagerQuery.AddressFailures({
-              failureId: 0), // bug: should not be in queny
+              failureId: 0n, // bug: should not be in queny
               address: ibcContract,
             }),
           // Wait until there 4 failures in the list
@@ -592,7 +592,7 @@ describe('Neutron / Simple', () => {
           neutronClient.client,
           async () =>
             contractManagerQuery.AddressFailures({
-              failureId: 0), // bug: should not be in queny
+              failureId: 0n, // bug: should not be in queny
               address: ibcContract,
             }),
           // Wait until there 6 failures in the list
@@ -613,7 +613,7 @@ describe('Neutron / Simple', () => {
 
         // Try to resubmit failure
         const failuresResBefore = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
 
@@ -629,7 +629,7 @@ describe('Neutron / Simple', () => {
 
         // check that failures count is the same
         const failuresResAfter = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
@@ -644,7 +644,7 @@ describe('Neutron / Simple', () => {
       test('successful resubmit failure', async () => {
         // Resubmit failure
         const failuresResBefore = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
@@ -659,7 +659,7 @@ describe('Neutron / Simple', () => {
 
         // check that failures count is changed
         const failuresResAfter = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
@@ -676,7 +676,7 @@ describe('Neutron / Simple', () => {
           reverse: false,
         };
         const res = await contractManagerQuery.AddressFailures({
-          failureId: 0), // bug: should not be in queny
+          failureId: 0n, // bug: should not be in queny
           address: ibcContract,
           pagination,
         });
@@ -692,7 +692,7 @@ describe('Neutron / Simple', () => {
         };
         await expect(
           contractManagerQuery.AddressFailures({
-            failureId: 0), // bug: should not be in queny
+            failureId: 0n, // bug: should not be in queny
             address: ibcContract,
             pagination,
           }),

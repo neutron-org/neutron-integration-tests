@@ -523,7 +523,7 @@ async function testExecControl(
   actionCheck: () => Promise<void>,
 ) {
   // check contract's pause info before pausing
-  let pauseInfo = await neutronClient.client.queryContractSmart(
+  let pauseInfo = await account.chain.queryContract<{ paused: boolean }>(
     testingContract,
     {
       pause_info: {},
@@ -541,7 +541,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+  pauseInfo = await account.chain.queryContract(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo.unpaused).toEqual(undefined);
@@ -557,7 +557,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after unpausing
-  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+  pauseInfo = await account.chain.queryContract(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo).toEqual({ unpaused: {} });
@@ -578,7 +578,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+  pauseInfo = await account.chain.queryContract(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo.unpaused).toEqual(undefined);
@@ -586,7 +586,7 @@ async function testExecControl(
 
   // wait and check contract's pause info after unpausing
   await account.chain.waitBlocks(shortPauseDuration);
-  pauseInfo = await neutronClient.client.queryContractSmart(testingContract, {
+  pauseInfo = await account.chain.queryContract(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo).toEqual({ unpaused: {} });
