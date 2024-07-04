@@ -36,9 +36,6 @@ describe('Neutron / Simple', () => {
 
   let neutronClient: WasmWrapper;
   let gaiaClient: WasmWrapper;
-
-  let neutronAccount: Wallet;
-  let gaiaAccount: Wallet;
   let gaiaAccount2: Wallet;
 
   let ibcContract: string;
@@ -51,14 +48,14 @@ describe('Neutron / Simple', () => {
   beforeAll(async (suite: Suite) => {
     testState = await createLocalState(config, inject('mnemonics'), suite);
 
-    neutronAccount = await testState.nextWallet('neutron');
+    const neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,
       neutronAccount,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
-    gaiaAccount = await testState.nextWallet('cosmos');
+    const gaiaAccount = await testState.nextWallet('cosmos');
     gaiaAccount2 = await testState.nextWallet('cosmos');
     gaiaClient = await wasm(
       testState.rpcGaia,
@@ -117,7 +114,7 @@ describe('Neutron / Simple', () => {
       });
       test('transfer to contract', async () => {
         const res = await neutronClient.client.sendTokens(
-          neutronAccount.address,
+          neutronClient.wallet.address,
           ibcContract,
           [{ denom: NEUTRON_DENOM, amount: '50000' }],
           {
@@ -142,7 +139,7 @@ describe('Neutron / Simple', () => {
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
         const res = await neutronClient.client.signAndBroadcast(
-          neutronAccount.address,
+          neutronClient.wallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -150,8 +147,8 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000' },
-                sender: neutronAccount.address,
-                receiver: gaiaAccount.address,
+                sender: neutronClient.wallet.address,
+                receiver: gaiaClient.wallet.address,
                 timeoutHeight: {
                   revisionNumber: BigInt(2),
                   revisionHeight: BigInt(100000000),
@@ -166,14 +163,14 @@ describe('Neutron / Simple', () => {
       test('check IBC token balance', async () => {
         await waitBlocks(10, neutronClient.client);
         const balance = await gaiaClient.client.getBalance(
-          gaiaAccount.address,
+          gaiaClient.wallet.address,
           IBC_TOKEN_DENOM,
         );
         expect(balance.amount).toEqual('1000');
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
         const res = await gaiaClient.client.signAndBroadcast(
-          gaiaAccount.address,
+          gaiaClient.wallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -181,8 +178,8 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: '1000' },
-                sender: gaiaAccount.address,
-                receiver: neutronAccount.address,
+                sender: gaiaClient.wallet.address,
+                receiver: neutronClient.wallet.address,
                 timeoutHeight: {
                   revisionNumber: BigInt(2),
                   revisionHeight: BigInt(100000000),
@@ -200,7 +197,7 @@ describe('Neutron / Simple', () => {
       test('check uatom token balance transfered via IBC on Neutron', async () => {
         await waitBlocks(10, neutronClient.client);
         const balance = await neutronClient.client.getBalance(
-          neutronAccount.address,
+          neutronClient.wallet.address,
           UATOM_IBC_TO_NEUTRON_DENOM,
         );
         expect(balance.amount).toEqual('1000');
@@ -227,7 +224,7 @@ describe('Neutron / Simple', () => {
         const res = await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaAccount.address,
+            to: gaiaClient.wallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
@@ -238,7 +235,7 @@ describe('Neutron / Simple', () => {
       test('check wallet balance', async () => {
         await waitBlocks(10, neutronClient.client);
         const balance = await gaiaClient.client.getBalance(
-          gaiaAccount.address,
+          gaiaClient.wallet.address,
           IBC_TOKEN_DENOM,
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
@@ -279,7 +276,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaAccount.address,
+              to: gaiaClient.wallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -296,8 +293,8 @@ describe('Neutron / Simple', () => {
       // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
       // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
       test('IBC transfer from a usual account', async () => {
-        const sender = gaiaAccount.address;
-        const middlehop = neutronAccount.address;
+        const sender = gaiaClient.wallet.address;
+        const middlehop = neutronClient.wallet.address;
         const receiver = gaiaAccount2.address;
         const senderNTRNBalanceBefore = await gaiaClient.client.getBalance(
           sender,
@@ -312,7 +309,7 @@ describe('Neutron / Simple', () => {
         const transferAmount = 333333;
 
         const res = await gaiaClient.client.signAndBroadcast(
-          gaiaAccount.address,
+          gaiaClient.wallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -320,7 +317,7 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: transferAmount + '' },
-                sender: gaiaAccount.address,
+                sender: gaiaClient.wallet.address,
                 receiver: middlehop,
                 timeoutHeight: {
                   revisionNumber: BigInt(2),
@@ -373,7 +370,7 @@ describe('Neutron / Simple', () => {
         const uatomAmount = '1000';
 
         const res = await gaiaClient.client.signAndBroadcast(
-          gaiaAccount.address,
+          gaiaClient.wallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -381,7 +378,7 @@ describe('Neutron / Simple', () => {
                 sourcePort: portName,
                 sourceChannel: channelName,
                 token: { denom: COSMOS_DENOM, amount: uatomAmount },
-                sender: gaiaAccount.address,
+                sender: gaiaClient.wallet.address,
                 receiver: ibcContract,
                 timeoutHeight: {
                   revisionNumber: BigInt(2),
@@ -419,7 +416,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaAccount.address,
+              to: gaiaClient.wallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -443,7 +440,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaAccount.address,
+              to: gaiaClient.wallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -480,7 +477,7 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaAccount.address,
+            to: gaiaClient.wallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
@@ -504,7 +501,7 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaAccount.address,
+            to: gaiaClient.wallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
             timeout_height: currentHeight + 5,
@@ -583,7 +580,7 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaAccount.address,
+            to: gaiaClient.wallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
