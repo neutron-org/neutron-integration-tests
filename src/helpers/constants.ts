@@ -77,5 +77,3 @@ export const NEUTRON_CONTRACT = {
   MARKETMAP: 'marketmap.wasm',
   ORACLE: 'oracle.wasm',
 };
-
-export const DEC = 1_000_000_000_000_000_000.0;

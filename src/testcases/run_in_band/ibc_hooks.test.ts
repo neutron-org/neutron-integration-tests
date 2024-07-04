@@ -78,8 +78,8 @@ describe('Neutron / IBC hooks', () => {
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
         );
         expect(res.code).toEqual(0);
@@ -106,8 +106,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
@@ -153,8 +153,8 @@ describe('Neutron / IBC hooks', () => {
           { denom: NEUTRON_DENOM, amount: transferAmount.toString() },
           testState.wallets.cosmos.demo2.address,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
         );
         expect(res.code).toEqual(0);
@@ -182,8 +182,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );
@@ -226,8 +226,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
           `{"othermemohook": {}}`,
         );
@@ -259,8 +259,8 @@ describe('Neutron / IBC hooks', () => {
           },
           contractAddress,
           {
-            revisionNumber: BigInt(2),
-            revisionHeight: BigInt(100000000),
+            revisionNumber: 2n,
+            revisionHeight: 100000000n,
           },
           `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
         );

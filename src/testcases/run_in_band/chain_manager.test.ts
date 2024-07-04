@@ -239,7 +239,7 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.msgs).toHaveLength(1);
 
       const cronParams = await cronQuery.Params();
-      expect(cronParams.params.limit).toEqual(BigInt(42));
+      expect(cronParams.params.limit).toEqual(42n);
     });
   });
 });

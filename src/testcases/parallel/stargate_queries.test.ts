@@ -56,8 +56,8 @@ describe('Neutron / Simple', () => {
         { denom: COSMOS_DENOM, amount: '1000' },
         neutronAccount.wallet.address,
         {
-          revisionNumber: BigInt(2),
-          revisionHeight: BigInt(100000000),
+          revisionNumber: 2n,
+          revisionHeight: 100000000n,
         },
       );
       expect(res.code).toEqual(0);

@@ -19,7 +19,6 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as GlobalfeeQuery } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
-import { DEC } from '../../helpers/constants';
 
 const config = require('../../config.json');
 
@@ -104,7 +103,7 @@ describe('Neutron / Global Fee', () => {
     if (minimumGasPrices == null) {
       minimumGasPrices = res.params.minimumGasPrices.map((p) => ({
         denom: p.denom,
-        amount: (Number(p.amount) / DEC).toString(),
+        amount: p.amount,
       }));
     }
     if (maxTotalBypassMinFeesgGasUsage == null) {
@@ -157,7 +156,7 @@ describe('Neutron / Global Fee', () => {
       '/ibc.core.channel.v1.Msg/Acknowledgement',
       '/ibc.core.client.v1.Msg/UpdateClient',
     ]);
-    expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(BigInt(1000000));
+    expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(1000000n);
   });
 
   test('change minimum gas price parameter', async () => {
@@ -232,13 +231,13 @@ describe('Neutron / Global Fee', () => {
       'MaxTotalBypassMinFeeMsgGasUsage',
       null,
       null,
-      BigInt(50),
+      50n,
     );
   });
 
   test('check globalfee params after setting max_total_bypass_min_fee_msg_gas_usage', async () => {
     const res = await globalfeeQuery.Params();
-    expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(BigInt(50));
+    expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(50n);
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {

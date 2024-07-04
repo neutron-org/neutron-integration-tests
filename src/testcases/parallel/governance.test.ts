@@ -698,7 +698,7 @@ describe('Neutron / Governance', () => {
   describe('check state change from proposal #4 execution', () => {
     test('check if software current plan was created', async () => {
       const currentPlan = await upgradeQuery.CurrentPlan();
-      expect(currentPlan.plan?.height).toEqual(BigInt(100000));
+      expect(currentPlan.plan?.height).toEqual(100000n);
       expect(currentPlan.plan?.name).toEqual('Plan #1');
       expect(currentPlan.plan?.info).toEqual('Plan info');
     });
@@ -800,7 +800,7 @@ describe('Neutron / Governance', () => {
     });
     test('check that codes were pinned', async () => {
       const res = await wasmQuery.PinnedCodes();
-      expect(res.codeIds).toEqual([BigInt(1), BigInt(2)]);
+      expect(res.codeIds).toEqual([1n, 2n]);
     });
   });
 
@@ -1195,7 +1195,7 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
       const paramAfter = await interchaintxQuery.Params();
-      expect(paramAfter.params.msgSubmitTxMaxMessages).toEqual(BigInt(11));
+      expect(paramAfter.params.msgSubmitTxMaxMessages).toEqual(11n);
     });
   });
 

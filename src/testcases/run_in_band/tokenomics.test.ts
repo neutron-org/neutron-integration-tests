@@ -165,7 +165,7 @@ describe('Neutron / Tokenomics', () => {
           amount: '100000',
         },
         testState.wallets.qaNeutron.qa.address,
-        { revisionNumber: BigInt(2), revisionHeight: BigInt(100000000) },
+        { revisionNumber: 2n, revisionHeight: 100000000n },
       );
       await neutronChain.getWithAttempts(
         async () =>

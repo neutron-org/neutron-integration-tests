@@ -408,7 +408,6 @@ describe('Neutron / Interchain TXs', () => {
               timeout: 1,
             },
           });
-          // FIXME
           rawLog = res.rawLog;
         } catch (e) {
           rawLog = e.message;

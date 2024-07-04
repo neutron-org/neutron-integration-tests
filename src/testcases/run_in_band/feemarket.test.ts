@@ -20,7 +20,6 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as FeemarketQuery } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
-import { DEC } from '../../helpers/constants';
 
 const config = require('../../config.json');
 
@@ -100,7 +99,7 @@ describe('Neutron / Fee Market', () => {
     daoMember: DaoMember,
     kind: string,
     enabled: boolean,
-    window = BigInt(1),
+    window = 1n,
   ) => {
     const params = (await feemarketQuery.Params()).params;
     params.enabled = enabled;
@@ -112,12 +111,12 @@ describe('Neutron / Fee Market', () => {
       'Param change proposal. It will change enabled params of feemarket module.',
       '1000',
       {
-        alpha: (+params.alpha / DEC).toString(),
-        beta: (+params.beta / DEC).toString(),
-        delta: (+params.delta / DEC).toString(),
-        min_base_gas_price: (+params.minBaseGasPrice / DEC).toString(),
-        min_learning_rate: (+params.minLearningRate / DEC).toString(),
-        max_learning_rate: (+params.maxLearningRate / DEC).toString(),
+        alpha: params.alpha,
+        beta: params.beta,
+        delta: params.delta,
+        min_base_gas_price: params.minBaseGasPrice,
+        min_learning_rate: params.minLearningRate,
+        max_learning_rate: params.maxLearningRate,
         max_block_utilization: Number(params.maxBlockUtilization),
         window: Number(params.window),
         fee_denom: params.feeDenom,
@@ -309,9 +308,7 @@ describe('Neutron / Fee Market', () => {
       },
     };
 
-    const baseGasPrice =
-      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount /
-      DEC;
+    const baseGasPrice = +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
     const priceAdjustment = 1.55;
@@ -336,8 +333,7 @@ describe('Neutron / Fee Market', () => {
     }
 
     const inflatedGasPrice =
-      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount /
-      DEC;
+      +(await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })).price.amount;
     // gas price should be higher after big transactions
     expect(inflatedGasPrice).toBeGreaterThan(baseGasPrice);
 
@@ -348,7 +344,7 @@ describe('Neutron / Fee Market', () => {
         await feemarketQuery.GasPrice({
           denom: NEUTRON_DENOM,
         })
-      ).price.amount / DEC;
+      ).price.amount;
     expect(newNtrnGasPrice).toBeLessThan(inflatedGasPrice);
     // expect gas price to fall to the base after some amount of blocks passed
     expect(newNtrnGasPrice).toBe(0.0025);

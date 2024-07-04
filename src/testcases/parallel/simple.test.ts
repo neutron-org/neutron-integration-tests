@@ -150,8 +150,8 @@ describe('Neutron / Simple', () => {
                 sender: neutronClient.wallet.address,
                 receiver: gaiaClient.wallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -181,8 +181,8 @@ describe('Neutron / Simple', () => {
                 sender: gaiaClient.wallet.address,
                 receiver: neutronClient.wallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -320,8 +320,8 @@ describe('Neutron / Simple', () => {
                 sender: gaiaClient.wallet.address,
                 receiver: middlehop,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
               }),
@@ -381,8 +381,8 @@ describe('Neutron / Simple', () => {
                 sender: gaiaClient.wallet.address,
                 receiver: ibcContract,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -462,7 +462,7 @@ describe('Neutron / Simple', () => {
       });
       test('execute contract with failing sudo', async () => {
         const failuresBeforeCall = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresBeforeCall.failures.length).toEqual(0);
@@ -512,7 +512,7 @@ describe('Neutron / Simple', () => {
           neutronClient.client,
           async () =>
             contractManagerQuery.AddressFailures({
-              failureId: BigInt(0), // bug: should not be in query
+              failureId: 0), // bug: should not be in queny
               address: ibcContract,
             }),
           // Wait until there 4 failures in the list
@@ -522,22 +522,22 @@ describe('Neutron / Simple', () => {
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(0),
+            id: 0n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(1),
+            id: 1n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(2),
+            id: 2n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(3),
+            id: 3n,
             error: 'codespace: wasm, code: 5',
           }),
         ]);
@@ -592,7 +592,7 @@ describe('Neutron / Simple', () => {
           neutronClient.client,
           async () =>
             contractManagerQuery.AddressFailures({
-              failureId: BigInt(0), // bug: should not be in query
+              failureId: 0), // bug: should not be in queny
               address: ibcContract,
             }),
           // Wait until there 6 failures in the list
@@ -613,7 +613,7 @@ describe('Neutron / Simple', () => {
 
         // Try to resubmit failure
         const failuresResBefore = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
         });
 
@@ -629,7 +629,7 @@ describe('Neutron / Simple', () => {
 
         // check that failures count is the same
         const failuresResAfter = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
@@ -644,7 +644,7 @@ describe('Neutron / Simple', () => {
       test('successful resubmit failure', async () => {
         // Resubmit failure
         const failuresResBefore = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
@@ -659,7 +659,7 @@ describe('Neutron / Simple', () => {
 
         // check that failures count is changed
         const failuresResAfter = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
@@ -669,14 +669,14 @@ describe('Neutron / Simple', () => {
     describe('Failures limit test', () => {
       it('failures with small limit does not return an error', async () => {
         const pagination = {
-          limit: BigInt(1),
-          offset: BigInt(0),
+          limit: 1n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,
         };
         const res = await contractManagerQuery.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0), // bug: should not be in queny
           address: ibcContract,
           pagination,
         });
@@ -684,15 +684,15 @@ describe('Neutron / Simple', () => {
       });
       test('failures with big limit returns an error', async () => {
         const pagination = {
-          limit: BigInt(10000),
-          offset: BigInt(0),
+          limit: 10000n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,
         };
         await expect(
           contractManagerQuery.AddressFailures({
-            failureId: BigInt(0), // bug: should not be in query
+            failureId: 0), // bug: should not be in queny
             address: ibcContract,
             pagination,
           }),
