@@ -18,7 +18,7 @@ import {
   updateFeerefunderParamsProposal,
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
-  updateTokenfacoryParamsProposal,
+  updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 
@@ -127,10 +127,11 @@ describe('Neutron / Parameters', () => {
         chainManagerAddress,
         'Proposal #2',
         'Tokenfactory params proposal',
-        updateTokenfacoryParamsProposal({
+        updateTokenfactoryParamsProposal({
           fee_collector_address: await neutronChain.getNeutronDAOCore(),
           denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
           denom_creation_gas_consume: 100000,
+          whitelisted_hooks: [],
         }),
         '1000',
       );
