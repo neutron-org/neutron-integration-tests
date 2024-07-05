@@ -42,6 +42,7 @@ describe('Neutron / Parameters', () => {
   let chainManagerAddress: string;
 
   let neutronRpcClient: ProtobufRpcClient;
+
   let client: NeutronType;
   let ibcClient: IbcType;
   let osmosisClient: OsmosisType;
@@ -75,16 +76,6 @@ describe('Neutron / Parameters', () => {
     osmosisClient = await createOsmosisClient({
       rpcEndpoint: testState.rpcNeutron,
     });
-
-    // interchainQueriesQuery = new InterchainQueriesQuery(neutronRpcClient);
-    // interchainAccountsQuery = new InterchainAccountsQuery(neutronRpcClient);
-    // interchainTxsQuery = new InterchainTxQuery(neutronRpcClient);
-    // tokenfactoryQuery = new TokenfactoryQuery(neutronRpcClient);
-    // feeburnerQuery = new FeeburnerQuery(neutronRpcClient);
-    // feerefunderQuery = new FeerefunderQuery(neutronRpcClient);
-    // cronQuery = new CronQuery(neutronRpcClient);
-    // contractmanagerQuery = new ContractManagerQuery(neutronRpcClient);
-    // ibcQuery = new IbcQuery(neutronRpcClient);
 
     // const queryClient = new AdminQueryClient(neutronRpcClient);
     const admins = await client.cosmos.adminmodule.adminmodule.admins();
