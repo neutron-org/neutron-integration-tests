@@ -1,11 +1,9 @@
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
-import {
-  CosmosWrapper,
-  NEUTRON_DENOM,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 
