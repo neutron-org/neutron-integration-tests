@@ -523,12 +523,12 @@ async function testExecControl(
   actionCheck: () => Promise<void>,
 ) {
   // check contract's pause info before pausing
-  let pauseInfo = await account.chain.queryContract<{ paused: boolean }>(
-    testingContract,
-    {
-      pause_info: {},
-    },
-  );
+  let pauseInfo = await account.chain.queryContract<{
+    paused: boolean | { until_height: number };
+    unpaused: boolean;
+  }>(testingContract, {
+    pause_info: {},
+  });
   expect(pauseInfo).toEqual({ unpaused: {} });
   expect(pauseInfo.paused).toEqual(undefined);
 

@@ -8,7 +8,7 @@ import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse,
 } from '@neutron-org/neutronjsplus/dist/types';
-import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 
 const config = require('../../config.json');
 
@@ -45,7 +45,7 @@ describe('Neutron / Tokenomics', () => {
 
     const neutronRpcClient = await testState.rpcClient('neutron');
     const feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
-    treasuryContractAddress = (await feeburnerQuery.Params()).params
+    treasuryContractAddress = (await feeburnerQuery.params()).params
       .treasuryAddress;
   });
 

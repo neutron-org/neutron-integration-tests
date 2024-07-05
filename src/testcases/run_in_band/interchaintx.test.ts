@@ -9,7 +9,7 @@ import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
-import { QueryClientImpl } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query';
+import { QueryClientImpl } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import {
   AckFailuresResponse,
   AcknowledgementResult,
@@ -197,7 +197,7 @@ describe('Neutron / Interchain TXs', () => {
       test('check validator state', async () => {
         const res1 = await gaiaChain.getWithAttempts(
           () =>
-            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+            stakingService.delegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
@@ -213,7 +213,7 @@ describe('Neutron / Interchain TXs', () => {
         ]);
         const res2 = await gaiaChain.getWithAttempts(
           () =>
-            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress2 }),
+            stakingService.delegatorDelegations({ delegatorAddr: icaAddress2 }),
           async (delegations) => delegations.delegationResponses?.length == 0,
         );
         expect(res2.delegationResponses).toEqual([]);
@@ -262,7 +262,7 @@ describe('Neutron / Interchain TXs', () => {
       test('check validator state', async () => {
         const res1 = await gaiaChain.getWithAttempts(
           () =>
-            stakingService.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+            stakingService.delegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
@@ -276,7 +276,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await stakingService.DelegatorDelegations({
+        const res2 = await stakingService.delegatorDelegations({
           delegatorAddr: icaAddress2,
         });
         expect(res2.delegationResponses).toEqual([]);
@@ -521,7 +521,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
-        const res = await stakingService.DelegatorDelegations({
+        const res = await stakingService.delegatorDelegations({
           delegatorAddr: icaAddress1,
         });
         expect(res.delegationResponses).toEqual([

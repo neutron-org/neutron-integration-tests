@@ -4,7 +4,7 @@ import { Suite, inject } from 'vitest';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/localState';
 import {
@@ -108,7 +108,7 @@ describe('Neutron / Subdao', () => {
     );
 
     adminQuery = new AdminQueryClient(await testState.rpcClient('neutron'));
-    chainManagerAddress = (await adminQuery.Admins()).admins[0];
+    chainManagerAddress = (await adminQuery.admins()).admins[0];
 
     const subDaosList = await mainDao.getSubDaoList();
     expect(subDaosList).toContain(subDao.contracts.core.address);

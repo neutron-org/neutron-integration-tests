@@ -16,8 +16,8 @@ import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
-import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
 
 const config = require('../../config.json');
 
@@ -61,7 +61,7 @@ describe('Neutron / Slinky', () => {
       NEUTRON_DENOM,
     );
     adminQuery = new AdminQueryClient(await testState.rpcClient('neutron'));
-    chainManagerAddress = (await adminQuery.Admins()).admins[0];
+    chainManagerAddress = (await adminQuery.admins()).admins[0];
     oracleQuery = new OracleQueryClient(neutronRpcClient);
   });
 
@@ -130,18 +130,18 @@ describe('Neutron / Slinky', () => {
       // wait to make sure we updated the price in oracle module
       await waitBlocks(30, neutronClient.client);
       // check
-      const res = await oracleQuery.GetAllCurrencyPairs();
+      const res = await oracleQuery.getAllCurrencyPairs();
       expect(res.currencyPairs[0].base).toBe('TIA');
       expect(res.currencyPairs[0].quote).toBe('USD');
     });
 
     test('prices not empty', async () => {
-      const res = await oracleQuery.GetPrices({ currencyPairIds: ['TIA/USD'] });
+      const res = await oracleQuery.getPrices({ currencyPairIds: ['TIA/USD'] });
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
     test('tia/usd price present', async () => {
-      const res = await oracleQuery.GetPrice({
+      const res = await oracleQuery.getPrice({
         currencyPair: { base: 'TIA', quote: 'USD' },
       });
       expect(+res.price.price).toBeGreaterThan(0);

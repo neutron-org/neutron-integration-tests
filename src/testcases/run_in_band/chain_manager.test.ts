@@ -17,8 +17,8 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { WasmWrapper, wasm } from '../../helpers/wasmClient';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
-import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -85,7 +85,7 @@ describe('Neutron / Chain Manager', () => {
     expect(votingPower.power).toEqual('1');
 
     const queryClient = new AdminQueryClient(neutronRpcClient);
-    const admins = await queryClient.Admins();
+    const admins = await queryClient.admins();
     chainManagerAddress = admins.admins[0];
 
     cronQuery = new CronQuery(neutronRpcClient);
@@ -238,7 +238,7 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const cronParams = await cronQuery.Params();
+      const cronParams = await cronQuery.params();
       expect(cronParams.params.limit).toEqual(42n);
     });
   });

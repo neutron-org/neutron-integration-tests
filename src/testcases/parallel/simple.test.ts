@@ -4,12 +4,10 @@ import { createLocalState, LocalState } from '../../helpers/localState';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WasmWrapper, wasm } from '../../helpers/wasmClient';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
-import {
-  QueryClientImpl as ContractManagerQuery,
-  QueryFailuresResponse,
-} from '@neutron-org/neutronjs/neutron/contractmanager/query';
-import { QueryClientImpl as BankQuery } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
-import { QueryClientImpl as IbcQuery } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query';
+import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
+import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';
+import { QueryClientImpl as BankQuery } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
+import { QueryClientImpl as IbcQuery } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { getWithAttempts } from '../../helpers/getWithAttempts';
 import {
@@ -125,7 +123,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const res = await bankQuery.AllBalances({
+        const res = await bankQuery.allBalances({
           address: ibcContract,
           resolveDenom: false,
         });
@@ -203,7 +201,7 @@ describe('Neutron / Simple', () => {
         expect(balance.amount).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const res = await ibcQuery.DenomTrace({
+        const res = await ibcQuery.denomTrace({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
         expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
@@ -461,7 +459,7 @@ describe('Neutron / Simple', () => {
         });
       });
       test('execute contract with failing sudo', async () => {
-        const failuresBeforeCall = await contractManagerQuery.AddressFailures({
+        const failuresBeforeCall = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
@@ -511,7 +509,7 @@ describe('Neutron / Simple', () => {
         const failuresAfterCall = await getWithAttempts<QueryFailuresResponse>(
           neutronClient.client,
           async () =>
-            contractManagerQuery.AddressFailures({
+            contractManagerQuery.addressFailures({
               failureId: 0n, // bug: should not be in queny
               address: ibcContract,
             }),
@@ -591,7 +589,7 @@ describe('Neutron / Simple', () => {
         const res = await getWithAttempts<QueryFailuresResponse>(
           neutronClient.client,
           async () =>
-            contractManagerQuery.AddressFailures({
+            contractManagerQuery.addressFailures({
               failureId: 0n, // bug: should not be in queny
               address: ibcContract,
             }),
@@ -612,7 +610,7 @@ describe('Neutron / Simple', () => {
         await waitBlocks(2, neutronClient.client);
 
         // Try to resubmit failure
-        const failuresResBefore = await contractManagerQuery.AddressFailures({
+        const failuresResBefore = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
@@ -628,7 +626,7 @@ describe('Neutron / Simple', () => {
         await waitBlocks(5, neutronClient.client);
 
         // check that failures count is the same
-        const failuresResAfter = await contractManagerQuery.AddressFailures({
+        const failuresResAfter = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
@@ -643,7 +641,7 @@ describe('Neutron / Simple', () => {
 
       test('successful resubmit failure', async () => {
         // Resubmit failure
-        const failuresResBefore = await contractManagerQuery.AddressFailures({
+        const failuresResBefore = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
@@ -658,7 +656,7 @@ describe('Neutron / Simple', () => {
         await waitBlocks(5, neutronClient.client);
 
         // check that failures count is changed
-        const failuresResAfter = await contractManagerQuery.AddressFailures({
+        const failuresResAfter = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
         });
@@ -675,7 +673,7 @@ describe('Neutron / Simple', () => {
           countTotal: false,
           reverse: false,
         };
-        const res = await contractManagerQuery.AddressFailures({
+        const res = await contractManagerQuery.addressFailures({
           failureId: 0n, // bug: should not be in queny
           address: ibcContract,
           pagination,
@@ -691,7 +689,7 @@ describe('Neutron / Simple', () => {
           reverse: false,
         };
         await expect(
-          contractManagerQuery.AddressFailures({
+          contractManagerQuery.addressFailures({
             failureId: 0n, // bug: should not be in queny
             address: ibcContract,
             pagination,

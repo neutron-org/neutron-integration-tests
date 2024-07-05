@@ -17,8 +17,8 @@ import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as GlobalfeeQuery } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as GlobalfeeQuery } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
 const config = require('../../config.json');
 
@@ -44,7 +44,7 @@ describe('Neutron / Global Fee', () => {
     const neutronRpcClient = await testState.rpcClient('neutron');
 
     const adminQuery = new AdminQueryClient(neutronRpcClient);
-    const admins = await adminQuery.Admins();
+    const admins = await adminQuery.admins();
     chainManagerAddress = admins.admins[0];
 
     globalfeeQuery = new GlobalfeeQuery(neutronRpcClient);
@@ -96,7 +96,7 @@ describe('Neutron / Global Fee', () => {
     minimumGasPrices: Coin[] | null,
     maxTotalBypassMinFeesgGasUsage: bigint | null,
   ) => {
-    const res = await globalfeeQuery.Params();
+    const res = await globalfeeQuery.params();
     if (bypassMinFeeMsgTypes == null) {
       bypassMinFeeMsgTypes = res.params.bypassMinFeeMsgTypes;
     }
@@ -142,7 +142,7 @@ describe('Neutron / Global Fee', () => {
   };
 
   test('check globalfee params before proposal execution', async () => {
-    const res = await globalfeeQuery.Params();
+    const res = await globalfeeQuery.params();
     expect(res.params.minimumGasPrices).toEqual([
       {
         denom:
@@ -170,7 +170,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee minimum param changed', async () => {
-    const res = await globalfeeQuery.Params();
+    const res = await globalfeeQuery.params();
     expect(res.params.minimumGasPrices).toEqual([
       { denom: 'untrn', amount: '0.01' },
     ]);
@@ -203,7 +203,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee params after setting bypass_min_fee_msg_types', async () => {
-    const res = await globalfeeQuery.Params();
+    const res = await globalfeeQuery.params();
     expect(res.params.bypassMinFeeMsgTypes).toEqual([
       '/cosmos.bank.v1beta1.MsgSend',
     ]);
@@ -236,7 +236,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee params after setting max_total_bypass_min_fee_msg_gas_usage', async () => {
-    const res = await globalfeeQuery.Params();
+    const res = await globalfeeQuery.params();
     expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(50n);
   });
 
