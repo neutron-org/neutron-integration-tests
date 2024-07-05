@@ -8,7 +8,10 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { updateCronParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import {
+  updateCronParamsProposal,
+  updateTokenfactoryParamsProposal,
+} from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
 import { LocalState } from '../../helpers/localState';
@@ -153,7 +156,7 @@ describe('Neutron / Chain Manager', () => {
     });
   });
 
-  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, legacy param changes)', () => {
+  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, Tokenfactory module parameter updates, legacy param changes)', () => {
     let proposalId: number;
     test('create proposal', async () => {
       proposalId = await mainDaoMember.submitAddChainManagerStrategyProposal(
@@ -176,11 +179,17 @@ describe('Neutron / Chain Manager', () => {
                   },
                 },
                 {
-                  update_params_permission: {
-                    cron_update_params_permission: {
-                      security_address: true,
-                      limit: true,
-                    },
+                  update_cron_params_permission: {
+                    security_address: true,
+                    limit: true,
+                  },
+                },
+                {
+                  update_tokenfactory_params_permission: {
+                    denom_creation_fee: true,
+                    denom_creation_gas_consume: true,
+                    fee_collector_address: true,
+                    whitelisted_hooks: true,
                   },
                 },
               ],
@@ -240,6 +249,66 @@ describe('Neutron / Chain Manager', () => {
 
       const cronParams = await cronQuery.params();
       expect(cronParams.params.limit).toEqual(42n);
+    });
+  });
+
+  describe('ALLOW_ONLY: change TOKENFACTORY parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
+        chainManagerAddress,
+        'Proposal #2',
+        'Cron update params proposal. Will pass',
+        updateTokenfactoryParamsProposal({
+          denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
+          denom_creation_gas_consume: 20,
+          fee_collector_address:
+            'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+          whitelisted_hooks: [
+            {
+              code_id: 1,
+              denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+            },
+          ],
+        }),
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const tokenfactoryParams = await neutronChain.queryTokenfactoryParams();
+      expect(tokenfactoryParams.params.denom_creation_fee).toEqual([
+        { denom: 'untrn', amount: '1' },
+      ]);
+      expect(tokenfactoryParams.params.denom_creation_gas_consume).toEqual(
+        '20',
+      );
+      expect(tokenfactoryParams.params.fee_collector_address).toEqual(
+        'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+      );
+      expect(tokenfactoryParams.params.whitelisted_hooks).toEqual([
+        {
+          code_id: '1',
+          denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+        },
+      ]);
     });
   });
 });

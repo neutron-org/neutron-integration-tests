@@ -13,7 +13,7 @@ import { getWithAttempts } from '../../helpers/getWithAttempts';
 import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
-  NEUTRON_CONTRACT,
+  NEUTRON_CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -70,7 +70,7 @@ describe('Neutron / Simple', () => {
 
   describe('Contracts', () => {
     test('instantiate contract', async () => {
-      const codeId = await neutronClient.upload(NEUTRON_CONTRACT.IBC_TRANSFER);
+      const codeId = await neutronClient.upload(NEUTRON_CONTRACTS.IBC_TRANSFER);
       expect(codeId).toBeGreaterThan(0);
       ibcContract = await neutronClient.instantiate(codeId, {});
     });
@@ -78,7 +78,7 @@ describe('Neutron / Simple', () => {
 
   describe('Staking', () => {
     test('store and instantiate mgs receiver contract', async () => {
-      const codeId = await neutronClient.upload(NEUTRON_CONTRACT.MSG_RECEIVER);
+      const codeId = await neutronClient.upload(NEUTRON_CONTRACTS.MSG_RECEIVER);
       expect(codeId).toBeGreaterThan(0);
 
       receiverContract = await neutronClient.instantiate(codeId, {});

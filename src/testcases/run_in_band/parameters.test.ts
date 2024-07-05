@@ -16,7 +16,7 @@ import {
   updateFeerefunderParamsProposal,
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
-  updateTokenfacoryParamsProposal,
+  updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
@@ -27,8 +27,8 @@ import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutro
 import { createRPCQueryClient as createIbcClient } from '@neutron-org/neutronjs/ibc/rpc.query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { ProtobufRpcClient } from '@cosmjs/stargate';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import { IbcType, NeutronType, OsmosisType } from '../../helpers/clientTypes';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 
 const config = require('../../config.json');
 
@@ -166,13 +166,14 @@ describe('Neutron / Parameters', () => {
         chainManagerAddress,
         'Proposal #2',
         'Tokenfactory params proposal',
-        updateTokenfacoryParamsProposal({
+        updateTokenfactoryParamsProposal({
           fee_collector_address: await getNeutronDAOCore(
             neutronClient.client,
             neutronRpcClient,
           ),
-          denom_creation_fee: null,
+          denom_creation_fee: [{ denom: NEUTRON_DENOM, amount: '1' }],
           denom_creation_gas_consume: 100000,
+          whitelisted_hooks: [],
         }),
         '1000',
       );
@@ -200,13 +201,19 @@ describe('Neutron / Parameters', () => {
         const paramsAfter =
           await osmosisClient.osmosis.tokenfactory.v1beta1.params();
 
-        expect(paramsAfter.params.denomCreationFee).toEqual(
+        expect(paramsAfter.params.denomCreationFee).not.toEqual(
           paramsBefore.params.denomCreationFee,
         );
         expect(paramsAfter.params.denomCreationGasConsume).not.toEqual(
           paramsBefore.params.denomCreationGasConsume,
         );
-        expect(paramsAfter.params.denomCreationFee).toHaveLength(0);
+        expect(paramsAfter.params.denomCreationFee).toEqual([
+          {
+            denom: 'untrn',
+            amount: '1',
+          },
+        ]);
+        expect(paramsAfter.params.denomCreationFee).toHaveLength(1);
         expect(paramsAfter.params.denomCreationGasConsume).toEqual(100000n);
       });
     });

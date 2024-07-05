@@ -1,3 +1,4 @@
+import { LastUpdatedResponse } from './../../../.yalc/@neutron-org/neutronjsplus/dist/marketmap.d';
 import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
@@ -32,6 +33,9 @@ describe('Neutron / Slinky', () => {
   let oracleQuery: OracleQueryClient;
 
   let proposalId: number;
+
+  let oracleContract: string;
+  let marketmapContract: string;
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
@@ -77,6 +81,32 @@ describe('Neutron / Slinky', () => {
     });
   });
 
+  describe('prepare: deploy contract', () => {
+    test('setup oracle contract', async () => {
+      const codeId = await neutronClient.upload(NeutronContract.ORACLE);
+      expect(codeId).toBeGreaterThan(0);
+
+      oracleContract = await neutronClient.instantiate(codeId, {});
+    });
+
+    test('setup marketmap contract', async () => {
+      const codeId = await neutronClient.upload(NeutronContract.MARKETMAP);
+      expect(codeId).toBeGreaterThan(0);
+
+      marketmapContract = await neutronClient.instantiate(codeId, {});
+    });
+  });
+
+  describe('before create market map', () => {
+    test('query last should return null', async () => {
+      const res: LastUpdatedResponse =
+        await neutronClient.client.queryContractSmart(marketmapContract, {
+          last_updated: {},
+        });
+      expect(res.last_updated).toBe(null);
+    });
+  });
+
   describe('submit proposal', () => {
     test('create proposal', async () => {
       proposalId = await daoMember1.submitCreateMarketMap(
@@ -101,6 +131,26 @@ describe('Neutron / Slinky', () => {
                 off_chain_ticker: 'TIAUSD',
                 invert: false,
                 metadata_JSON: '{}',
+              },
+            ],
+          },
+          {
+            ticker: {
+              currency_pair: {
+                Base: 'USDT',
+                Quote: 'USD',
+              },
+              decimals: 6,
+              min_provider_count: 1,
+              enabled: false,
+              metadata_JSON: '',
+            },
+            provider_configs: [
+              {
+                name: 'kraken_api',
+                off_chain_ticker: 'USDTUSD',
+                invert: false,
+                metadata_JSON: '',
               },
             ],
           },
@@ -149,76 +199,46 @@ describe('Neutron / Slinky', () => {
   });
 
   describe('wasmbindings oracle', () => {
-    let contractAddress: string;
-
-    test('setup contract', async () => {
-      const codeId = await neutronClient.upload(NeutronContract.ORACLE);
-      expect(codeId).toBeGreaterThan(0);
-
-      contractAddress = await neutronClient.instantiate(codeId, {}, 'oracle');
-    });
-
     test('query prices', async () => {
-      const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
-        {
+      const res: GetPricesResponse =
+        await neutronClient.client.queryContractSmart(oracleContract, {
           get_prices: {
             currency_pair_ids: ['TIA/USD'],
           },
-        },
-      );
+        });
       expect(res.prices).toHaveLength(1);
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
     test('query price', async () => {
-      const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
-        {
+      const res: GetPriceResponse =
+        await neutronClient.client.queryContractSmart(oracleContract, {
           get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
-        },
-      );
+        });
       expect(+res.price.price).toBeGreaterThan(0);
     });
 
     test('query currencies', async () => {
-      const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
-        {
+      const res: GetAllCurrencyPairsResponse =
+        await neutronClient.client.queryContractSmart(oracleContract, {
           get_all_currency_pairs: {},
-        },
-      );
+        });
       expect(res.currency_pairs[0].Base).toBe('TIA');
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
   });
   describe('wasmbindings marketmap', () => {
-    let contractAddress: string;
-
-    test('setup contract', async () => {
-      const codeId = await neutronClient.upload(NeutronContract.MARKETMAP);
-      expect(codeId).toBeGreaterThan(0);
-
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'marketmap',
-      );
-    });
-
     test('query last', async () => {
-      const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
-        {
+      const res: LastUpdatedResponse =
+        await neutronClient.client.queryContractSmart(marketmapContract, {
           last_updated: {},
-        },
-      );
+        });
       expect(res.last_updated).toBeGreaterThan(0);
     });
 
     test('query market', async () => {
-      const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
+      const res: MarketResponse = await neutronClient.client.queryContractSmart(
+        marketmapContract,
         {
           market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
         },
@@ -226,9 +246,19 @@ describe('Neutron / Slinky', () => {
       expect(res.market).toBeDefined();
     });
 
+    test('query market with empty metadata_JSON', async () => {
+      const res: MarketResponse = await neutronClient.client.queryContractSmart(
+        marketmapContract,
+        {
+          market: { currency_pair: { Base: 'USDT', Quote: 'USD' } },
+        },
+      );
+      expect(res.market).toBeDefined();
+    });
+
     test('query market map', async () => {
       const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
+        marketmapContract,
         {
           market_map: {},
         },
@@ -241,7 +271,7 @@ describe('Neutron / Slinky', () => {
 
     test('query params', async () => {
       const res = await neutronClient.client.queryContractSmart(
-        contractAddress,
+        marketmapContract,
         {
           params: {},
         },
