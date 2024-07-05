@@ -33,6 +33,9 @@ describe('Neutron / Slinky', () => {
 
   let proposalId: number;
 
+  let oracleContract: string;
+  let marketmapContract: string;
+
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
@@ -63,6 +66,42 @@ describe('Neutron / Slinky', () => {
     });
   });
 
+  describe('prepare: deploy contract', () => {
+    test('setup oracle contract', async () => {
+      const codeId = await neutronAccount.storeWasm(NeutronContract.ORACLE);
+      expect(codeId).toBeGreaterThan(0);
+
+      oracleContract = await neutronAccount.instantiateContract(
+        codeId,
+        {},
+        'oracle',
+      );
+    });
+
+    test('setup marketmap contract', async () => {
+      const codeId = await neutronAccount.storeWasm(NeutronContract.MARKETMAP);
+      expect(codeId).toBeGreaterThan(0);
+
+      marketmapContract = await neutronAccount.instantiateContract(
+        codeId,
+        {},
+        'marketmap',
+      );
+    });
+  });
+
+  describe('before create market map', () => {
+    test('query last should return null', async () => {
+      const res = await neutronChain.queryContract<LastUpdatedResponse>(
+        marketmapContract,
+        {
+          last_updated: {},
+        },
+      );
+      expect(res.last_updated).toBe(null);
+    });
+  });
+
   describe('submit proposal', () => {
     test('create proposal', async () => {
       const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
@@ -88,6 +127,26 @@ describe('Neutron / Slinky', () => {
                 off_chain_ticker: 'TIAUSD',
                 invert: false,
                 metadata_JSON: '{}',
+              },
+            ],
+          },
+          {
+            ticker: {
+              currency_pair: {
+                Base: 'USDT',
+                Quote: 'USD',
+              },
+              decimals: 6,
+              min_provider_count: 1,
+              enabled: false,
+              metadata_JSON: '',
+            },
+            provider_configs: [
+              {
+                name: 'kraken_api',
+                off_chain_ticker: 'USDTUSD',
+                invert: false,
+                metadata_JSON: '',
               },
             ],
           },
@@ -134,22 +193,9 @@ describe('Neutron / Slinky', () => {
   });
 
   describe('wasmbindings oracle', () => {
-    let contractAddress: string;
-
-    test('setup contract', async () => {
-      const codeId = await neutronAccount.storeWasm(NeutronContract.ORACLE);
-      expect(codeId).toBeGreaterThan(0);
-
-      contractAddress = await neutronAccount.instantiateContract(
-        codeId,
-        {},
-        'oracle',
-      );
-    });
-
     test('query prices', async () => {
       const res = await neutronChain.queryContract<GetPricesResponse>(
-        contractAddress,
+        oracleContract,
         {
           get_prices: {
             currency_pair_ids: ['TIA/USD'],
@@ -162,7 +208,7 @@ describe('Neutron / Slinky', () => {
 
     test('query price', async () => {
       const res = await neutronChain.queryContract<GetPriceResponse>(
-        contractAddress,
+        oracleContract,
         {
           get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
         },
@@ -172,7 +218,7 @@ describe('Neutron / Slinky', () => {
 
     test('query currencies', async () => {
       const res = await neutronChain.queryContract<GetAllCurrencyPairsResponse>(
-        contractAddress,
+        oracleContract,
         {
           get_all_currency_pairs: {},
         },
@@ -182,22 +228,9 @@ describe('Neutron / Slinky', () => {
     });
   });
   describe('wasmbindings marketmap', () => {
-    let contractAddress: string;
-
-    test('setup contract', async () => {
-      const codeId = await neutronAccount.storeWasm(NeutronContract.MARKETMAP);
-      expect(codeId).toBeGreaterThan(0);
-
-      contractAddress = await neutronAccount.instantiateContract(
-        codeId,
-        {},
-        'marketmap',
-      );
-    });
-
     test('query last', async () => {
       const res = await neutronChain.queryContract<LastUpdatedResponse>(
-        contractAddress,
+        marketmapContract,
         {
           last_updated: {},
         },
@@ -207,7 +240,7 @@ describe('Neutron / Slinky', () => {
 
     test('query market', async () => {
       const res = await neutronChain.queryContract<MarketResponse>(
-        contractAddress,
+        marketmapContract,
         {
           market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
         },
@@ -215,9 +248,19 @@ describe('Neutron / Slinky', () => {
       expect(res.market).toBeDefined();
     });
 
+    test('query market with empty metadata_JSON', async () => {
+      const res = await neutronChain.queryContract<MarketResponse>(
+        marketmapContract,
+        {
+          market: { currency_pair: { Base: 'USDT', Quote: 'USD' } },
+        },
+      );
+      expect(res.market).toBeDefined();
+    });
+
     test('query market map', async () => {
       const res = await neutronChain.queryContract<MarketMapResponse>(
-        contractAddress,
+        marketmapContract,
         {
           market_map: {},
         },
@@ -230,7 +273,7 @@ describe('Neutron / Slinky', () => {
 
     test('query params', async () => {
       const res = await neutronChain.queryContract<ParamsResponse>(
-        contractAddress,
+        marketmapContract,
         {
           params: {},
         },

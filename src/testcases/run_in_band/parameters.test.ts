@@ -15,7 +15,7 @@ import {
   updateFeerefunderParamsProposal,
   updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
-  updateTokenfacoryParamsProposal,
+  updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
@@ -123,10 +123,11 @@ describe('Neutron / Parameters', () => {
         chainManagerAddress,
         'Proposal #2',
         'Tokenfactory params proposal',
-        updateTokenfacoryParamsProposal({
+        updateTokenfactoryParamsProposal({
           fee_collector_address: await neutronChain.getNeutronDAOCore(),
-          denom_creation_fee: null,
+          denom_creation_fee: [{ denom: 'untrn', amount: '1' }],
           denom_creation_gas_consume: 100000,
+          whitelisted_hooks: [],
         }),
         '1000',
       );
@@ -152,13 +153,18 @@ describe('Neutron / Parameters', () => {
       test('check if params changed after proposal execution', async () => {
         const paramsAfter = await neutronChain.queryTokenfactoryParams();
 
-        expect(paramsAfter.params.denom_creation_fee).toEqual(
+        expect(paramsAfter.params.denom_creation_fee).not.toEqual(
           paramsBefore.params.denom_creation_fee,
         );
         expect(paramsAfter.params.denom_creation_gas_consume).not.toEqual(
           paramsBefore.params.denom_creation_gas_consume,
         );
-        expect(paramsAfter.params.denom_creation_fee).toHaveLength(0);
+        expect(paramsAfter.params.denom_creation_fee).toEqual([
+          {
+            denom: 'untrn',
+            amount: '1',
+          },
+        ]);
         expect(paramsAfter.params.denom_creation_gas_consume).toEqual('100000');
       });
     });
