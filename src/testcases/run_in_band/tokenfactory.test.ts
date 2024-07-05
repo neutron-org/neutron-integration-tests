@@ -409,7 +409,7 @@ describe('Neutron / Tokenfactory', () => {
 
       const contractAddress = await neutronAccount.instantiateContract(
         codeId,
-        '{}',
+        {},
         'before_send_hook_test',
       );
 
