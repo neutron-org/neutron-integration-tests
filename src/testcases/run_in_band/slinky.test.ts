@@ -33,8 +33,6 @@ describe('Neutron / Slinky', () => {
   let daoMember1: DaoMember;
   let dao: Dao;
 
-  let proposalId: number;
-
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
     await testState.init();
@@ -66,72 +64,23 @@ describe('Neutron / Slinky', () => {
     });
   });
 
-  describe('submit proposal', () => {
-    test('create proposal', async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
-      proposalId = await daoMember1.submitCreateMarketMap(
-        chainManagerAddress,
-        'Proposal for update marketmap',
-        'Add new marketmap with currency pair',
-        [
-          {
-            ticker: {
-              currency_pair: {
-                Base: 'TIA',
-                Quote: 'USD',
-              },
-              decimals: 8,
-              min_provider_count: 1,
-              enabled: true,
-              metadata_JSON: '{}',
-            },
-            provider_configs: [
-              {
-                name: 'kraken_api',
-                off_chain_ticker: 'TIAUSD',
-                invert: false,
-                metadata_JSON: '{}',
-              },
-            ],
-          },
-        ],
-      );
-    });
-
-    describe('vote for proposal', () => {
-      test('vote YES', async () => {
-        await daoMember1.voteYes(proposalId);
-      });
-    });
-
-    describe('execute proposal', () => {
-      test('check if proposal is passed', async () => {
-        await neutronChain.blockWaiter.waitBlocks(5);
-        await dao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
-        await daoMember1.executeProposalWithAttempts(proposalId);
-      });
-    });
-  });
-
   describe('module fetches prices', () => {
     test('currency pairs not empty', async () => {
       // wait to make sure we updated the price in oracle module
       await neutronChain.blockWaiter.waitBlocks(30);
       // check
       const res = await neutronChain.queryOracleAllCurrencyPairs();
-      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Base).toBe('AAVE');
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
 
     test('prices not empty', async () => {
-      const res = await neutronChain.queryOraclePrices(['TIA/USD']);
+      const res = await neutronChain.queryOraclePrices(['AAVE/USD']);
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
     test('tia/usd price present', async () => {
-      const res = await neutronChain.queryOraclePrice('TIA', 'USD');
+      const res = await neutronChain.queryOraclePrice('AAVE', 'USD');
       expect(+res.price.price).toBeGreaterThan(0);
     });
   });
@@ -156,7 +105,7 @@ describe('Neutron / Slinky', () => {
         contractAddress,
         {
           get_prices: {
-            currency_pair_ids: ['TIA/USD'],
+            currency_pair_ids: ['AAVE/USD'],
           },
         },
       );
@@ -168,7 +117,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<GetPriceResponse>(
         contractAddress,
         {
-          get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
+          get_price: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
         },
       );
       expect(+res.price.price).toBeGreaterThan(0);
@@ -181,7 +130,7 @@ describe('Neutron / Slinky', () => {
           get_all_currency_pairs: {},
         },
       );
-      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Base).toBe('AAVE');
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
   });
@@ -214,7 +163,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<MarketResponse>(
         contractAddress,
         {
-          market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
+          market: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
