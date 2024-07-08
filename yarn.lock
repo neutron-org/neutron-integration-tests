@@ -1317,11 +1317,14 @@
   resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.2-rc1.tgz#ca1fc1dc9566858dbd765e8f82c8a70097bcc84b"
   integrity sha512-ju2AqJ14yO4+JF8RwY4ZVy7f2HVjhdf66SfhS6y4ucBZm997/E/yYVMnpWmUncVg8ARooISOKaOYNagqz0am6Q==
 
-"@neutron-org/neutronjs@file:.yalc/@neutron-org/neutronjs":
-  version "0.1.0"
+"@neutron-org/neutronjs@0.1.0-rc2":
+  version "0.1.0-rc2"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-0.1.0-rc2.tgz#f1c66de897f503f30313fb55d72877a9ade7704f"
+  integrity sha512-p6T8et9GCNmIKTSEMonoiR3YgxEZtvqheEi+T0ucyae/wteYonLYrfFEV8ps072P325ICDyzCsnLxgO/XZdJuw==
 
-"@neutron-org/neutronjsplus@file:.yalc/@neutron-org/neutronjsplus":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#d0b765e8c3635b09dd864ad7352e48bc5ab7e66c":
   version "0.4.0-rc21"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/d0b765e8c3635b09dd864ad7352e48bc5ab7e66c"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.4"
     "@cosmjs/proto-signing" "^0.32.4"
