@@ -20,7 +20,12 @@ import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
-import { executeMsgSubmitProposal, executeMsgVote, executeMsgDelegate, executeMsgUndelegate } from '../../helpers/gaia';
+import {
+  executeMsgSubmitProposal,
+  executeMsgVote,
+  executeMsgDelegate,
+  executeMsgUndelegate,
+} from '../../helpers/gaia';
 import {
   acceptInterchainqueriesParamsChangeProposal,
   getCosmosSigningInfosResult,

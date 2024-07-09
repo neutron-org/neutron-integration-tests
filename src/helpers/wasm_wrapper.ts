@@ -6,22 +6,16 @@ import {
 } from '@cosmjs/cosmwasm-stargate';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
-import { Coin, Registry } from '@cosmjs/proto-signing';
+import { Coin } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 
 // creates a wasm wrapper
 export async function wasmWrapper(
-  rpc: string,
+  client: SigningCosmWasmClient,
   wallet: Wallet,
   denom: string,
-  registry: Registry,
 ) {
-  const client = await SigningCosmWasmClient.connectWithSigner(
-    rpc,
-    wallet.directwallet,
-    { registry },
-  );
-  return new WasmWrapper(wallet, client, registry, CONTRACTS_PATH, denom);
+  return new WasmWrapper(wallet, client, CONTRACTS_PATH, denom);
 }
 
 // WasmWrapper simplifies cosmwasm operations for tests
@@ -29,7 +23,6 @@ export class WasmWrapper {
   constructor(
     public wallet: Wallet,
     public client: SigningCosmWasmClient,
-    public registry: Registry,
     public contractsPath: string,
     public denom: string,
   ) {}
