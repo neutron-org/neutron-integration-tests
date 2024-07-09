@@ -2,7 +2,7 @@ import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
 import { createLocalState, LocalState } from '../../helpers/localState';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WasmWrapper, wasmWrapper } from '../../helpers/wasm_wrapper';
+import { WasmWrapper, wasm } from '../../helpers/wasmClient';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import {
@@ -53,7 +53,7 @@ describe('Neutron / Simple', () => {
     testState = await createLocalState(config, inject('mnemonics'), suite);
 
     neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasmWrapper(
+    neutronClient = await wasm(
       testState.rpcNeutron,
       neutronAccount,
       NEUTRON_DENOM,
