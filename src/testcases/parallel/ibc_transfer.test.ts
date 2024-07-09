@@ -27,14 +27,12 @@ import { SigningStargateClient } from '@cosmjs/stargate';
 import config from '../../config.json';
 
 const TRANSFER_CHANNEL = 'channel-0';
-
 const IBC_TOKEN_DENOM =
   'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
-
 const UATOM_IBC_TO_NEUTRON_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-describe('Neutron / Simple', () => {
+describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
   let neutronClient: SigningNeutronClient;

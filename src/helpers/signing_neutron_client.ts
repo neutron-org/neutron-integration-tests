@@ -1,9 +1,4 @@
-import {
-  DeliverTxResponse,
-  IndexedTx,
-  StargateClient,
-  StdFee,
-} from '@cosmjs/stargate';
+import { DeliverTxResponse, IndexedTx, StdFee } from '@cosmjs/stargate';
 import {
   CosmWasmClient,
   MigrateResult,

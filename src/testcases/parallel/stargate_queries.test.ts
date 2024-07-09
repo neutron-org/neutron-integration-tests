@@ -12,7 +12,7 @@ import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
-describe('Neutron / Simple', () => {
+describe('Neutron / Stargate Queries', () => {
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;

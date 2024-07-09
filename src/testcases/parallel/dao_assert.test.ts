@@ -14,7 +14,7 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 
-describe('DAO / Check', () => {
+describe('Neutron / DAO check', () => {
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let daoContracts: DaoContracts;
