@@ -27,25 +27,7 @@ describe('Neutron / Simple', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
-      testState.rpcNeutron,
-    );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
 
-    gaiaChain = new CosmosWrapper(
-      COSMOS_DENOM,
-      testState.restGaia,
-      testState.rpcGaia,
-    );
-    gaiaAccount = await createWalletWrapper(
-      gaiaChain,
-      await testState.randomWallet('cosmos'),
-    );
   });
 
   describe('Prepare for queries', () => {

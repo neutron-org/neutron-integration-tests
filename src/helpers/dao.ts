@@ -8,7 +8,7 @@ import {
   wrapMsg,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { WasmWrapper } from './wasmClient';
-import { NEUTRON_CONTRACT } from './constants';
+import { NEUTRON_CONTRACTS } from './constants';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { addSubdaoProposal } from '@neutron-org/neutronjsplus/dist/proposal';
@@ -20,17 +20,17 @@ export const deploySubdao = async (
   securityDaoAddr: string,
   closeProposalOnExecutionFailure = true,
 ): Promise<Dao> => {
-  const coreCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_CORE);
-  const cw4VotingCodeId = await wasm.upload(NEUTRON_CONTRACT.CW4_VOTING);
-  const cw4GroupCodeId = await wasm.upload(NEUTRON_CONTRACT.CW4_GROUP);
-  const proposeCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_PROPOSAL);
+  const coreCodeId = await wasm.upload(NEUTRON_CONTRACTS.SUBDAO_CORE);
+  const cw4VotingCodeId = await wasm.upload(NEUTRON_CONTRACTS.CW4_VOTING);
+  const cw4GroupCodeId = await wasm.upload(NEUTRON_CONTRACTS.CW4_GROUP);
+  const proposeCodeId = await wasm.upload(NEUTRON_CONTRACTS.SUBDAO_PROPOSAL);
   const preProposeTimelockedCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.SUBDAO_PREPROPOSE,
+    NEUTRON_CONTRACTS.SUBDAO_PREPROPOSE,
   );
   const preProposeNonTimelockedPauseCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.SUBDAO_PREPROPOSE_NO_TIMELOCK,
+    NEUTRON_CONTRACTS.SUBDAO_PREPROPOSE_NO_TIMELOCK,
   );
-  const timelockCodeId = await wasm.upload(NEUTRON_CONTRACT.SUBDAO_TIMELOCK);
+  const timelockCodeId = await wasm.upload(NEUTRON_CONTRACTS.SUBDAO_TIMELOCK);
   const votingModuleInstantiateInfo = {
     code_id: cw4VotingCodeId,
     label: 'subDAO_Neutron_voting_module',
@@ -186,27 +186,27 @@ export const deployNeutronDao = async (
   user: string,
   wasm: WasmWrapper,
 ): Promise<DaoContracts> => {
-  const coreCodeId = await wasm.upload(NEUTRON_CONTRACT.DAO_CORE);
+  const coreCodeId = await wasm.upload(NEUTRON_CONTRACTS.DAO_CORE);
   const proposeSingleCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.DAO_PROPOSAL_SINGLE,
+    NEUTRON_CONTRACTS.DAO_PROPOSAL_SINGLE,
   );
   const preProposeSingleCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.DAO_PREPROPOSAL_SINGLE,
+    NEUTRON_CONTRACTS.DAO_PREPROPOSAL_SINGLE,
   );
   const proposeMultipleCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.DAO_PROPOSAL_MULTI,
+    NEUTRON_CONTRACTS.DAO_PROPOSAL_MULTI,
   );
   const preProposeMultipleCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.DAO_PREPROPOSAL_MULTI,
+    NEUTRON_CONTRACTS.DAO_PREPROPOSAL_MULTI,
   );
   const preProposeOverruleCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.DAO_PREPROPOSAL_OVERRULE,
+    NEUTRON_CONTRACTS.DAO_PREPROPOSAL_OVERRULE,
   );
   const votingRegistryCodeId = await wasm.upload(
-    NEUTRON_CONTRACT.VOTING_REGISTRY,
+    NEUTRON_CONTRACTS.VOTING_REGISTRY,
   );
 
-  const neutronVaultCodeId = await wasm.upload(NEUTRON_CONTRACT.NEUTRON_VAULT);
+  const neutronVaultCodeId = await wasm.upload(NEUTRON_CONTRACTS.NEUTRON_VAULT);
   const neutronVaultInitMsg = {
     owner: user,
     name: 'voting vault',

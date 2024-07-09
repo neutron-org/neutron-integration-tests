@@ -23,9 +23,16 @@ import { Suite, inject } from 'vitest';
 import {
   Dao,
   DaoMember,
-  getDaoContracts,
+  getDaoContracts, getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {wasm, WasmWrapper} from "../../helpers/wasmClient";
+import {Registry} from "@cosmjs/proto-signing";
+import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
+import {setupSubDaoTimelockSet} from "../../helpers/dao";
+import {
+  QueryClientImpl as AdminQueryClient
+} from "@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query";
 
 const config = require('../../config.json');
 
@@ -67,8 +74,9 @@ async function whitelistTokenfactoryHook(
 
 describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
+  let neutronClient: WasmWrapper;
+
+  let neutronAccount: Wallet;
   let ownerWallet: Wallet;
   let subDao: Dao;
   let mainDao: Dao;
@@ -82,36 +90,58 @@ describe('Neutron / Tokenfactory', () => {
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
     ownerWallet = await testState.nextWallet('neutron');
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    neutronAccount = await testState.nextWallet('neutron');
+    neutronClient = await wasm(
       testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
-    neutronAccount = await createWalletWrapper(neutronChain, ownerWallet);
-
     // Setup subdao with update tokenfactory params
-    const daoCoreAddress = await neutronChain.getNeutronDAOCore();
-    const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient.client,
+      neutronRpcClient,
+    );
+
+    const daoContracts = await getDaoContracts(
+      neutronClient.client,
+      daoCoreAddress,
+    );
+
     securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
 
-    mainDao = new Dao(neutronChain, daoContracts);
-    mainDaoMember = new DaoMember(neutronAccount, mainDao);
+    mainDao = new Dao(neutronClient.client, daoContracts);
+    mainDaoMember = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronAccount.address,
+      NEUTRON_DENOM,
+    );
     await mainDaoMember.bondFunds('10000');
 
     subDao = await setupSubDaoTimelockSet(
-      neutronAccount,
+      neutronAccount.address,
+      neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
       true,
     );
 
-    subdaoMember1 = new DaoMember(neutronAccount, subDao);
+    subdaoMember1 = new DaoMember(
+      subDao,
+      neutronClient.client,
+      neutronAccount.address,
+      NEUTRON_DENOM,
+    );
 
-    const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+    const queryClient = new AdminQueryClient(neutronRpcClient);
+    const admins = await queryClient.admins();
+    const chainManagerAddress = admins.admins[0];
 
     // shorten subdao voting period
-    const currentOverruleProposalConfig = await neutronChain.queryContract(
+    const currentOverruleProposalConfig = await neutronClient.client.queryContractSmart(
       mainDao.contracts.proposals['overrule'].address,
       {
         config: {},
