@@ -170,13 +170,11 @@ describe('Neutron / Chain Manager', () => {
                   },
                 },
                 {
-                  update_params_permission: {
-                    dex_update_params_permission: {
-                      fee_tiers: true,
-                      paused: true,
-                      max_jits_per_block: true,
-                      good_til_purge_allowance: true,
-                    },
+                  dex_update_params_permission: {
+                    fee_tiers: true,
+                    paused: true,
+                    max_jits_per_block: true,
+                    good_til_purge_allowance: true,
                   },
                 },
               ],
