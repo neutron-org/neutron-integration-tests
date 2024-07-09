@@ -22,8 +22,7 @@ describe('Neutron / Global Fee', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new LocalState(config, inject('mnemonics'));
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

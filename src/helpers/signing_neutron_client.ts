@@ -6,45 +6,49 @@ import {
 } from '@cosmjs/cosmwasm-stargate';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
-import { Coin, EncodeObject, Registry } from '@cosmjs/proto-signing';
+import {
+  Coin,
+  DirectSecp256k1HdWallet,
+  EncodeObject,
+  Registry,
+} from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 import { CometClient, connectComet } from '@cosmjs/tendermint-rpc';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { NEUTRON_DENOM } from './constants';
 import { getWithAttempts, waitBlocks } from './misc';
-
-// creates a wasm wrapper
-export async function createSigningNeutronClient(
-  rpc: string,
-  wallet: Wallet,
-  sender: string,
-) {
-  const neutronClient = await SigningCosmWasmClient.connectWithSigner(
-    rpc,
-    wallet.directwallet,
-    {
-      registry: new Registry(neutronTypes),
-      gasPrice: GasPrice.fromString('0.05untrn'),
-    },
-  );
-  const cometClient = await connectComet(rpc);
-  return new SigningNeutronClient(
-    rpc,
-    sender,
-    neutronClient,
-    NEUTRON_DENOM,
-    CONTRACTS_PATH,
-    cometClient,
-  );
-}
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
 // and also for basic queries, like getHeight, getBlock, or getTx
 export class SigningNeutronClient extends CosmWasmClient {
-  constructor(
+  // creates a SigningNeutronClient
+  static async connectWithSigner(
+    rpc: string,
+    wallet: DirectSecp256k1HdWallet,
+    signer: string,
+  ) {
+    const neutronClient = await SigningCosmWasmClient.connectWithSigner(
+      rpc,
+      wallet,
+      {
+        registry: new Registry(neutronTypes),
+        gasPrice: GasPrice.fromString('0.05untrn'),
+      },
+    );
+    const cometClient = await connectComet(rpc);
+    return new SigningNeutronClient(
+      rpc,
+      signer,
+      neutronClient,
+      NEUTRON_DENOM,
+      CONTRACTS_PATH,
+      cometClient,
+    );
+  }
+
+  protected constructor(
     public rpc: string,
     public sender: string,
     public client: SigningCosmWasmClient,

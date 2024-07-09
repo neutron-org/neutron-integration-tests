@@ -20,16 +20,6 @@ import { connectComet } from '@cosmjs/tendermint-rpc';
 // limit of wallets precreated for one test
 const LIMIT_PER_TEST = 20;
 
-export const createLocalState = async (
-  config: any,
-  mnemonics: string[],
-  suite?: Suite,
-): Promise<LocalState> => {
-  const res = new LocalState(config, mnemonics, suite);
-  await res.init();
-  return res;
-};
-
 export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
   icqWebHost: string;
@@ -45,7 +35,21 @@ export class LocalState {
   currentIdx: any;
   offset: number;
 
-  constructor(private config: any, private mnemonics: string[], suite?: Suite) {
+  static async create(
+    config: any,
+    mnemonics: string[],
+    suite?: Suite,
+  ): Promise<LocalState> {
+    const res = new LocalState(config, mnemonics, suite);
+    await res.init();
+    return res;
+  }
+
+  protected constructor(
+    private config: any,
+    private mnemonics: string[],
+    suite?: Suite,
+  ) {
     this.taken = {
       cosmos: {},
       neutron: {},
@@ -93,7 +97,7 @@ export class LocalState {
   async randomWallet(prefix: string): Promise<Wallet> {
     const idx = Math.floor(Math.random() * this.mnemonics.length);
     if (this.taken[prefix][idx]) {
-      return this.randomWallet(prefix);
+      return this.nextWallet(prefix);
     }
     this.taken[prefix][idx] = true;
     return mnemonicToWallet(this.mnemonics[idx], prefix);

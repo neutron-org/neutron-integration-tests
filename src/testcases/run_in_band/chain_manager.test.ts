@@ -29,8 +29,7 @@ describe('Neutron / Chain Manager', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     const demo1Wallet = await testState.nextWallet('neutron');
     const securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;

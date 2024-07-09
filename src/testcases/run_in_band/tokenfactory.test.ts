@@ -80,8 +80,7 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     ownerWallet = await testState.nextWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
@@ -93,7 +92,7 @@ describe('Neutron / Tokenfactory', () => {
     // Setup subdao with update tokenfactory params
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    securityDaoWallet = await testState.walletWithOffset('neutron');
+    securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
 
     mainDao = new Dao(neutronChain, daoContracts);

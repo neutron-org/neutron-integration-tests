@@ -44,8 +44,7 @@ describe('Neutron / dex module bindings', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

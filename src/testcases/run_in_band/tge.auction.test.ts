@@ -153,8 +153,7 @@ describe.skip('Neutron / TGE / Auction', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new LocalState(config, inject('mnemonics'));
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     reserveAddress = testState.wallets.qaNeutronThree.qa.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

@@ -27,8 +27,7 @@ describe('Neutron / TGE / Investors vesting vault', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

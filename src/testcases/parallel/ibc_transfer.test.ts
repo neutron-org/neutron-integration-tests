@@ -1,11 +1,8 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
-import { createLocalState, LocalState } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import {
-  createSigningNeutronClient,
-  SigningNeutronClient,
-} from '../../helpers/signing_neutron_client';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import {
@@ -49,12 +46,12 @@ describe('Neutron / IBC transfer', () => {
   let ibcQuerier: IbcQueryClient;
 
   beforeAll(async (suite: Suite) => {
-    testState = await createLocalState(config, inject('mnemonics'), suite);
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await createSigningNeutronClient(
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet,
+      neutronWallet.directwallet,
       neutronWallet.address,
     );
     gaiaWallet = await testState.nextWallet('cosmos');

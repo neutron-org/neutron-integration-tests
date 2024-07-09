@@ -50,8 +50,7 @@ describe('Neutron / Subdao', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     demo1Wallet = await testState.nextWallet('neutron');
     securityDaoWallet = await testState.nextWallet('neutron');
     demo2Wallet = await testState.nextWallet('neutron');
