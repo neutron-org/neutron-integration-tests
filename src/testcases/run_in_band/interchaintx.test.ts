@@ -8,7 +8,7 @@ import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { QueryClientImpl } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
 import {
   AckFailuresResponse,

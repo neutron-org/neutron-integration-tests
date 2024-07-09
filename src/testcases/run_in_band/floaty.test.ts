@@ -1,4 +1,4 @@
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';

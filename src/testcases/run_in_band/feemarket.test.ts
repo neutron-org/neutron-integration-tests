@@ -7,7 +7,7 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Suite, inject } from 'vitest';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';

@@ -5,7 +5,7 @@ import {
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { createWalletWrapper, LocalState } from '../../helpers/localState';
+import { createWalletWrapper, LocalState } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgBurn,

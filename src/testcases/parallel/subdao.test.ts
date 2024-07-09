@@ -7,7 +7,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import {
   Dao,
   DaoMember,

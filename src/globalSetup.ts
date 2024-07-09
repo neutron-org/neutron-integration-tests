@@ -29,8 +29,8 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
-  const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
+  const neutronPrefix = 'neutron';
+  const cosmosPrefix = 'cosmos';
   const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
   const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
   await fundWallets(mnemonics, rpcNeutron, neutronPrefix, NEUTRON_DENOM);

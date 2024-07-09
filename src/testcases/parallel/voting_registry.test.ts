@@ -4,7 +4,7 @@ import {
   types,
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');

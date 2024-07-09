@@ -2,7 +2,7 @@ import { inject } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,

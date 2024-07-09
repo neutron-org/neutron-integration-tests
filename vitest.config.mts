@@ -12,6 +12,6 @@ export default defineConfig({
     hookTimeout: 500_000,
     testTimeout: 500_000,
     watchExclude: ['**/node_modules/**', '**/*.yml'],
-    setupFiles: ['./src/helpers/setupMatchers.ts'],
+    setupFiles: ['./src/helpers/setup_matchers.ts'],
   },
 });

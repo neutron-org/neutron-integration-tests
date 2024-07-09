@@ -1,6 +1,6 @@
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,

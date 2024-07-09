@@ -10,7 +10,7 @@ import {
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 
 const config = require('../../config.json');
 

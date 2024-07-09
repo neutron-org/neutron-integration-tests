@@ -17,7 +17,7 @@ import {
   waitForICQResultWithRemoteHeight,
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
 import {

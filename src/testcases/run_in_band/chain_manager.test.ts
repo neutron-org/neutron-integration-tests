@@ -14,7 +14,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 

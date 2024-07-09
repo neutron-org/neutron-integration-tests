@@ -2,7 +2,7 @@ import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';

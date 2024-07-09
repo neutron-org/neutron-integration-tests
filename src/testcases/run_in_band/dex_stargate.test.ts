@@ -23,7 +23,7 @@ import {
   PoolReservesResponse,
   PoolResponse,
 } from '@neutron-org/neutronjsplus/dist/dex';
-import { createWalletWrapper, LocalState } from '../../helpers/localState';
+import { createWalletWrapper, LocalState } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 

@@ -5,7 +5,7 @@ import {
   getEventAttributesFromTx,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   AllInactiveLimitOrderTrancheResponse,

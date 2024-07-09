@@ -7,7 +7,7 @@ import {
   walletWrapper,
 } from '@neutron-org/neutronjsplus';
 
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { inject, Suite } from 'vitest';
 
 const INVESTORS_VESTING_CONTRACT_KEY = 'VESTING_INVESTORS';

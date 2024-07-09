@@ -974,7 +974,7 @@
     "@cosmjs/math" "^0.32.4"
     "@cosmjs/utils" "^0.32.4"
 
-"@cosmjs/cosmwasm-stargate@^0.32.3", "@cosmjs/cosmwasm-stargate@^0.32.4":
+"@cosmjs/cosmwasm-stargate@^0.32.3":
   version "0.32.4"
   resolved "https://registry.yarnpkg.com/@cosmjs/cosmwasm-stargate/-/cosmwasm-stargate-0.32.4.tgz#2ee93f2cc0b1c146ac369b2bf8ef9ee2e159fd50"
   integrity sha512-Fuo9BGEiB+POJ5WeRyBGuhyKR1ordvxZGLPuPosFJOH9U0gKMgcjwKMCgAlWFkMlHaTB+tNdA8AifWiHrI7VgA==
@@ -1027,7 +1027,7 @@
   dependencies:
     bn.js "^5.2.0"
 
-"@cosmjs/proto-signing@^0.32.4":
+"@cosmjs/proto-signing@^0.32.3", "@cosmjs/proto-signing@^0.32.4":
   version "0.32.4"
   resolved "https://registry.yarnpkg.com/@cosmjs/proto-signing/-/proto-signing-0.32.4.tgz#5a06e087c6d677439c8c9b25b5223d5e72c4cd93"
   integrity sha512-QdyQDbezvdRI4xxSlyM1rSVBO2st5sqtbEIl3IX03uJ7YiZIQHyv6vaHVf1V4mapusCqguiHJzm4N4gsFdLBbQ==
@@ -1049,7 +1049,7 @@
     ws "^7"
     xstream "^11.14.0"
 
-"@cosmjs/stargate@0.32.4", "@cosmjs/stargate@^0.32.3", "@cosmjs/stargate@^0.32.4":
+"@cosmjs/stargate@^0.32.3", "@cosmjs/stargate@^0.32.4":
   version "0.32.4"
   resolved "https://registry.yarnpkg.com/@cosmjs/stargate/-/stargate-0.32.4.tgz#bd0e4d3bf613b629addbf5f875d3d3b50f640af1"
   integrity sha512-usj08LxBSsPRq9sbpCeVdyLx2guEcOHfJS9mHGCLCXpdAPEIEQEtWLDpEUc0LEhWOx6+k/ChXTc5NpFkdrtGUQ==
@@ -1317,13 +1317,13 @@
   resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.2-rc1.tgz#ca1fc1dc9566858dbd765e8f82c8a70097bcc84b"
   integrity sha512-ju2AqJ14yO4+JF8RwY4ZVy7f2HVjhdf66SfhS6y4ucBZm997/E/yYVMnpWmUncVg8ARooISOKaOYNagqz0am6Q==
 
-"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#d0b765e8c3635b09dd864ad7352e48bc5ab7e66c":
+"@neutron-org/neutronjsplus@neutron-org/neutronjsplus#0c58f51c3e0c9be04e05c356986ce5f2cf372f34":
   version "0.4.0-rc21"
-  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/d0b765e8c3635b09dd864ad7352e48bc5ab7e66c"
+  resolved "https://codeload.github.com/neutron-org/neutronjsplus/tar.gz/0c58f51c3e0c9be04e05c356986ce5f2cf372f34"
   dependencies:
-    "@cosmjs/cosmwasm-stargate" "^0.32.4"
-    "@cosmjs/proto-signing" "^0.32.4"
-    "@cosmjs/stargate" "0.32.4"
+    "@cosmjs/cosmwasm-stargate" "^0.32.3"
+    "@cosmjs/proto-signing" "^0.32.3"
+    "@cosmjs/stargate" "^0.32.3"
     "@neutron-org/cosmjs-types" "0.9.2-rc1"
     axios "^0.27.2"
     bip39 "^3.1.0"
@@ -3183,9 +3183,9 @@ levn@^0.4.1:
     type-check "~0.4.0"
 
 libsodium-sumo@^0.7.13:
-  version "0.7.13"
-  resolved "https://registry.yarnpkg.com/libsodium-sumo/-/libsodium-sumo-0.7.13.tgz#533b97d2be44b1277e59c1f9f60805978ac5542d"
-  integrity sha512-zTGdLu4b9zSNLfovImpBCbdAA4xkpkZbMnSQjP8HShyOutnGjRHmSOKlsylh1okao6QhLiz7nG98EGn+04cZjQ==
+  version "0.7.14"
+  resolved "https://registry.yarnpkg.com/libsodium-sumo/-/libsodium-sumo-0.7.14.tgz#9a53e09944f092f603a1e1d4446414de0b3fb0fc"
+  integrity sha512-2nDge6qlAjcwyslAhWfVumlkeSNK5+WCfKa2/VEq9prvlT5vP2FR0m0o5hmKaYqfsZ4TQVj5czQsimZvXDB1CQ==
 
 libsodium-wrappers-sumo@^0.7.11:
   version "0.7.13"

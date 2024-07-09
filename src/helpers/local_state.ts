@@ -126,7 +126,7 @@ export class LocalState {
     denom: string,
     rpc: string,
     balances: Coin[] = [],
-  ) {
+  ): Promise<{ qa: Wallet }> {
     if (balances.length === 0) {
       balances = [
         {
