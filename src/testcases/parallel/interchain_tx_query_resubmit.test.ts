@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
@@ -11,10 +11,7 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/icq';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Suite, inject } from 'vitest';
-import {QueryClientImpl as FeeburnerQueryClient} from "@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query";
-import {CosmWasmClient} from "@cosmjs/cosmwasm-stargate";
 import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
 import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
@@ -41,12 +38,12 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
-    const neutronRpcClient = await testState.rpcClient('neutron');
 
-    gaiaChain = new CosmosWrapper(
-      COSMOS_DENOM,
-      testState.restGaia,
+    gaiaClient = await new wasm(
       testState.rpcGaia,
+      gaiaAccount,
+      COSMOS_DENOM,
+      new Registry(neutronTypes)
     );
     gaiaAccount = await testState.nextWallet('cosmos');
   });
@@ -60,7 +57,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await neutronAccount.instantiateContract(
+      contractAddress = await neutronClient.instantiate(
         codeId,
         {},
         'neutron_interchain_queries',
@@ -70,7 +67,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
   describe('prepare ICQ for failing', () => {
     test('enable mock', async () => {
-      await neutronAccount.executeContract(contractAddress, {
+      await neutronClient.execute(contractAddress, {
         integration_tests_set_query_mock: {},
       });
     });
@@ -87,7 +84,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query1UpdatePeriod,
@@ -96,7 +93,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 1);
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
       expect(query.registered_query.id).toEqual(1);
       expect(query.registered_query.owner).toEqual(contractAddress);
       expect(query.registered_query.keys.length).toEqual(0);
@@ -136,11 +133,11 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icqWebHost, resubmitTxs);
       expect(resp.status).toEqual(200);
 
-      await waitBlocks(20);
+      await waitBlocks(20, neutronClient.client);
 
       await waitForTransfersAmount(
-        wasm(),
         neutronClient,
+        contractAddress,
         expectedIncomingTransfers,
         query1UpdatePeriod * 2,
       );

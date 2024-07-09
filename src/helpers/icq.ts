@@ -8,11 +8,11 @@ import {getWithAttempts} from "./getWithAttempts";
  * queryId.
  */
 export const getRegisteredQuery = (
-  cm: WasmWrapper,
+  ww: WasmWrapper,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.client.queryContractSmart<{
+  ww.client.queryContractSmart<{
     registered_query: {
       id: number;
       owner: string;
@@ -47,16 +47,15 @@ export const getRegisteredQuery = (
  * reflect data corresponding to remote height `>= targetHeight`
  */
 export const waitForICQResultWithRemoteHeight = (
-  client: CosmWasmClient,
-  cm: WasmWrapper,
+  ww: WasmWrapper,
   contractAddress: string,
   queryId: number,
   targetHeight: number,
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    client,
-    () => getRegisteredQuery(cm, contractAddress, queryId),
+    ww.client,
+    () => getRegisteredQuery(ww, contractAddress, queryId),
     async (query) =>
       query.registered_query.last_submitted_result_remote_height
         .revision_height >= targetHeight,
@@ -67,10 +66,10 @@ export const waitForICQResultWithRemoteHeight = (
  * queryTransfersNumber queries the contract for recorded transfers number.
  */
 export const queryTransfersNumber = (
-  cm: WasmWrapper,
+  ww: WasmWrapper,
   contractAddress: string,
 ) =>
-  cm.client.queryContractSmart<{
+  ww.client.queryContractSmart<{
     transfers_number: number;
   }>(contractAddress, {
     get_transfers_number: {},
@@ -81,16 +80,15 @@ export const queryTransfersNumber = (
  * number of incoming transfers stored.
  */
 export const waitForTransfersAmount = (
-  client: CosmWasmClient,
-  cm: WasmWrapper,
+  ww: WasmWrapper,
   contractAddress: string,
   expectedTransfersAmount: number,
   numAttempts = 50,
 ) =>
   getWithAttempts(
-    client,
+    ww.client,
     async () =>
-      (await queryTransfersNumber(cm, contractAddress)).transfers_number,
+      (await queryTransfersNumber(ww, contractAddress)).transfers_number,
     async (amount) => amount == expectedTransfersAmount,
     numAttempts,
   );

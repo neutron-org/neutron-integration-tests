@@ -2,7 +2,7 @@ import {
   NEUTRON_DENOM,
   cosmosWrapper,
   types,
-  walletWrapper,
+  walletWrapper, COSMOS_DENOM, wait,
 } from '@neutron-org/neutronjsplus';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { Suite, inject } from 'vitest';
@@ -24,7 +24,7 @@ const NEUTRON_VAULT_3_CONTRACT_KEY = 'NEUTRON_VAULT_3';
 
 describe('Neutron / Voting Registry', () => {
   let testState: LocalState;
-  let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronClient: WasmWrapper;
   let neutronAccount: Wallet;
   let cmInstantiator: walletWrapper.WalletWrapper;
   let cmDaoMember: walletWrapper.WalletWrapper;
@@ -56,10 +56,19 @@ describe('Neutron / Voting Registry', () => {
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
+
+    neutronAccount = await testState.nextWallet('neutron');
+    neutronClient = await wasm(
+      testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
+    );
+
     cmInstantiator = await testState.nextWallet('neutron');
     cmDaoMember = await testState.nextWallet('neutron');
 
-    contractAddresses = await deployContracts(neutronChain, cmInstantiator);
+    contractAddresses = await deployContracts(neutronClient, cmInstantiator);
     votingRegistryAddr = contractAddresses[VOTING_REGISTRY_CONTRACT_KEY];
     vault1Addr = contractAddresses[NEUTRON_VAULT_1_CONTRACT_KEY];
     vault2Addr = contractAddresses[NEUTRON_VAULT_2_CONTRACT_KEY];
@@ -71,7 +80,7 @@ describe('Neutron / Voting Registry', () => {
   describe('assert init state', () => {
     test('check voting vaults', async () => {
       const votingVaults = await getVotingVaults(
-        neutronChain,
+        neutronClient,
         votingRegistryAddr,
       );
       // initially there are only vault1 and vault2 in the registry, vault3 is to be added later
@@ -91,7 +100,7 @@ describe('Neutron / Voting Registry', () => {
     });
     test('check voting power', async () => {
       const vpInfo = await getVotingPowerInfo(
-        neutronChain,
+        neutronClient,
         cmDaoMember.wallet.address,
         contractAddresses,
       );
@@ -108,11 +117,11 @@ describe('Neutron / Voting Registry', () => {
 
   describe('accrue init voting power', () => {
     test('bond funds', async () => {
-      await bondFunds(cmDaoMember, vault1Addr, vault1Bonding.toString());
-      await bondFunds(cmDaoMember, vault2Addr, vault2Bonding.toString());
+      await bondFunds(neutronClient, vault1Addr, vault1Bonding.toString());
+      await bondFunds(neutronClient, vault2Addr, vault2Bonding.toString());
       // we bond to vault3 in advance regardless of this is not in the registry yet
-      await bondFunds(cmDaoMember, vault3Addr, vault3Bonding.toString());
-      await neutronChain.waitBlocks(1);
+      await bondFunds(neutronClient, vault3Addr, vault3Bonding.toString());
+      await wait(1);
     });
 
     test('check accrued voting power', async () => {
@@ -397,7 +406,7 @@ describe('Neutron / Voting Registry', () => {
     });
 
     test('activate vault', async () => {
-      await activateVotingVault(cmInstantiator, votingRegistryAddr, vault2Addr);
+      await activateVotingVault(neutronClient, votingRegistryAddr, vault2Addr);
       await neutronChain.waitBlocks(1);
 
       const votingVaults = await getVotingVaults(
@@ -426,7 +435,7 @@ describe('Neutron / Voting Registry', () => {
     });
     test('check voting power after activation', async () => {
       const vpInfo = await getVotingPowerInfo(
-        neutronChain,
+        neutronClient,
         cmDaoMember.wallet.address,
         contractAddresses,
       );
@@ -465,7 +474,7 @@ describe('Neutron / Voting Registry', () => {
     // expect VP infos taken from heights in the past to be the same as they were at that points
     test('check historical voting power', async () => {
       const initVpInfo = await getVotingPowerInfo(
-        neutronChain,
+        neutronClient,
         cmDaoMember.wallet.address,
         contractAddresses,
         vpHistory.init.height,
@@ -552,19 +561,19 @@ const deployContracts = async (
 
   const contractAddresses: Record<string, string> = {};
   await deployNeutronVault(
-    instantiator,
+    wasmWrapper,
     NEUTRON_VAULT_1_CONTRACT_KEY,
     codeIds,
     contractAddresses,
   );
   await deployNeutronVault(
-    instantiator,
+    wasmWrapper,
     NEUTRON_VAULT_2_CONTRACT_KEY,
     codeIds,
     contractAddresses,
   );
   await deployVotingRegistry(
-    instantiator,
+    wasmWrapper,
     [
       contractAddresses[NEUTRON_VAULT_1_CONTRACT_KEY],
       contractAddresses[NEUTRON_VAULT_2_CONTRACT_KEY],
@@ -575,7 +584,7 @@ const deployContracts = async (
 
   // just deploy for later use
   await deployNeutronVault(
-    instantiator,
+    wasmWrapper,
     NEUTRON_VAULT_3_CONTRACT_KEY,
     codeIds,
     contractAddresses,
@@ -589,7 +598,7 @@ const deployVotingRegistry = async (
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
-  const res = await instantiator.instantiateContract(
+  const res = await instantiator.instantiate(
     codeIds[VOTING_REGISTRY_CONTRACT_KEY],
     {
       owner: instantiator.wallet.address,
@@ -607,7 +616,7 @@ const deployNeutronVault = async (
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
 ) => {
-  const res = await instantiator.instantiateContract(
+  const res = await instantiator.instantiate(
     codeIds[NEUTRON_VAULT_CONTRACT_KEY],
     {
       owner: instantiator.wallet.address,
@@ -698,13 +707,12 @@ const addVotingVault = async (
  */
 const getVotingPowerInfo = async (
   wasmWrapper: WasmWrapper,
-  client: SigningStargateClient,
   address: string,
   contractAddresses: Record<string, string>,
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
-    height = await client.getHeight();
+    height = await wasmWrapper.client.getHeight();
   }
   const vault1Power = getVotingPowerAtHeight(
     wasmWrapper,

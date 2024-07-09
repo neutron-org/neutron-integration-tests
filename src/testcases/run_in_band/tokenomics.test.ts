@@ -3,25 +3,26 @@ import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import {
   TotalBurnedNeutronsAmountResponse,
   TotalSupplyByDenomResponse, Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
-import {WasmWrapper} from "../../helpers/wasmClient";
+import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
 import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
 import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
+import {getWithAttempts} from "../../helpers/getWithAttempts";
 
 const config = require('../../config.json');
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
   let neutronClient: WasmWrapper;
-  let gaiaChain: Wallet;
+  let neutronSigningClient: SigningStargateClient;
+  let gaiaClient: SigningStargateClient;
   let neutronAccount: Wallet;
-  let gaiaAccount: WalletWrapper;
+  let gaiaAccount: Wallet;
   let treasuryContractAddress: string;
 
   beforeAll(async () => {
@@ -29,12 +30,19 @@ describe('Neutron / Tokenomics', () => {
     testState = new LocalState(config, mnemonics);
     await testState.init();
     neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasmWrapper(
+    neutronClient = await wasm(
       testState.rpcNeutron,
       neutronAccount,
       NEUTRON_DENOM,
       new Registry(neutronTypes),
     );
+
+    neutronSigningClient = await SigningStargateClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronAccount.directwallet,
+      { registry:new Registry(neutronTypes)},
+    );
+
 
     gaiaAccount = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
@@ -168,9 +176,10 @@ describe('Neutron / Tokenomics', () => {
         testState.wallets.qaNeutron.qa.address,
         { revisionNumber: 2n, revisionHeight: 100000000n },
       );
-      await neutronClient.getWithAttempts(
+      await getWithAttempts(
+        neutronSigningClient,
         async () =>
-          neutronClient.queryBalances(testState.wallets.qaNeutron.qa.address),
+          neutronClient.client.getBalance(testState.wallets.qaNeutron.qa.address),
         async (balances) =>
           balances.find((balance) => balance.denom === ibcUatomDenom) !==
           undefined,
@@ -178,10 +187,10 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Read Treasury balance', async () => {
-      balanceBefore = await neutronClient.queryDenomBalance(
+      balanceBefore = parseInt((await neutronClient.client.getBalance(
         treasuryContractAddress,
         ibcUatomDenom,
-      );
+      )).amount, 10);
     });
 
     test('Perform any tx and pay with uatom fee', async () => {
@@ -193,10 +202,10 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Balance of Treasury in uatoms has been increased', async () => {
-      const balanceAfter = await neutronClient.queryDenomBalance(
+      const balanceAfter = parseInt((await neutronClient.client.getBalance(
         treasuryContractAddress,
         ibcUatomDenom,
-      );
+      )).amount, 10);
       const diff = balanceAfter - balanceBefore;
       expect(diff).toBeGreaterThanOrEqual(+fee.amount[0].amount * 0.75);
     });
