@@ -28,24 +28,24 @@ describe('Neutron / Interchain TX Query', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
-      testState.rpcNeutron,
-    );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      testState.wallets.neutron.demo1,
-    );
-    gaiaChain = new CosmosWrapper(
-      COSMOS_DENOM,
-      testState.restGaia,
-      testState.rpcGaia,
-    );
-    gaiaAccount = await createWalletWrapper(
-      gaiaChain,
-      testState.wallets.cosmos.demo2,
-    );
+    // neutronChain = new CosmosWrapper(
+    //   NEUTRON_DENOM,
+    //   testState.restNeutron,
+    //   testState.rpcNeutron,
+    // );
+    // neutronAccount = await createWalletWrapper(
+    //   neutronChain,
+    //   testState.wallets.neutron.demo1,
+    // );
+    // gaiaChain = new CosmosWrapper(
+    //   COSMOS_DENOM,
+    //   testState.restGaia,
+    //   testState.rpcGaia,
+    // );
+    // gaiaAccount = await createWalletWrapper(
+    //   gaiaChain,
+    //   testState.wallets.cosmos.demo2,
+    // );
   });
 
   describe('deploy contract', () => {

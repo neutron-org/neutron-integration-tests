@@ -6,6 +6,10 @@ import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import {Registry} from "@cosmjs/proto-signing";
+import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
+import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
+import {wasm, WasmWrapper, wasmWrapper} from "../../helpers/wasmClient";
 
 const config = require('../../config.json');
 
@@ -17,9 +21,9 @@ interface ReserveStats {
 
 describe('Neutron / Treasury', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount1: walletWrapper.WalletWrapper;
-  let neutronAccount2: walletWrapper.WalletWrapper;
+  let neutronClient: WasmWrapper;
+  let neutronAccount1: Wallet;
+  let neutronAccount2: Wallet;
   let mainDaoWallet: Wallet;
   let securityDaoWallet: Wallet;
   let holder1Wallet: Wallet;
@@ -33,18 +37,13 @@ describe('Neutron / Treasury', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics);
     await testState.init();
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    neutronAccount1 = await testState.nextWallet('neutron');
+    neutronAccount2 = await testState.nextWallet('neutron');
+    neutronClient = await wasm(
       testState.rpcNeutron,
-    );
-    neutronAccount1 = await createWalletWrapper(
-      neutronChain,
-      testState.wallets.neutron.demo1,
-    );
-    neutronAccount2 = await createWalletWrapper(
-      neutronChain,
-      testState.wallets.neutron.demo2,
+      neutronAccount1,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
     mainDaoWallet = testState.wallets.neutron.demo1;
     securityDaoWallet = testState.wallets.neutron.icq;
@@ -61,14 +60,14 @@ describe('Neutron / Treasury', () => {
     let reserve: string;
     let treasury: string;
     beforeAll(async () => {
-      dsc = await setupDSC(neutronAccount1, mainDaoAddr, securityDaoAddr);
+      dsc = await setupDSC(neutronClient, mainDaoAddr, securityDaoAddr);
       treasury = await neutronChain.getNeutronDAOCore();
     });
 
     describe('some corner cases', () => {
       let reserveStats: ReserveStats;
       beforeEach(async () => {
-        reserve = await setupReserve(neutronAccount1, {
+        reserve = await setupReserve(, {
           mainDaoAddress: mainDaoAddr,
           securityDaoAddress: securityDaoAddr,
           distributionRate: '0.0',
@@ -400,7 +399,7 @@ describe('Neutron / Treasury', () => {
     test('reserve', async () => {
       await neutronAccount1.msgSend(reserve, '10000000');
       await testExecControl(
-        neutronAccount1,
+        neutronChain,
         reserve,
         async () => {
           const res = await neutronAccount1.executeContract(reserve, {
@@ -424,12 +423,12 @@ describe('Neutron / Treasury', () => {
 });
 
 const setupDSC = async (
-  cm: WalletWrapper,
+  cm: WasmWrapper,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.DISTRIBUTION);
-  return await cm.instantiateContract(
+  const codeId = await cm.upload(NeutronContract.DISTRIBUTION);
+  return await cm.instantiate(
     codeId,
     {
       main_dao_address: mainDaoAddress,
@@ -444,7 +443,7 @@ const setupDSC = async (
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
 const normalizeReserveBurnedCoins = async (
-  cm: WalletWrapper,
+  cm: WasmWrapper,
   reserveAddress: string,
 ): Promise<ReserveStats> => {
   // Normalize state
@@ -511,6 +510,7 @@ const setupReserve = async (
 
 /**
  * Tests a pausable contract execution control.
+ * @param account from
  * @param testingContract is the contract the method tests;
  * @param execAction is an executable action to be called during a pause and after unpausing
  * as the main part of the test. Should return the execution response code;

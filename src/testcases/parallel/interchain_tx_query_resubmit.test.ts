@@ -139,7 +139,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       await waitBlocks(20);
 
       await waitForTransfersAmount(
-        neutronClient,
+        wasm(),
         neutronClient,
         expectedIncomingTransfers,
         query1UpdatePeriod * 2,
@@ -149,7 +149,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       expect(txs.length).toEqual(0);
 
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr1,
       );

@@ -255,7 +255,9 @@ describe('Neutron / Chain Manager', () => {
   describe('ALLOW_ONLY: change TOKENFACTORY parameters', () => {
     let proposalId: number;
     beforeAll(async () => {
-      const chainManagerAddress = (await neutronChain.getChainAdmins())[0];
+      const queryClient = new AdminQueryClient(neutronRpcClient);
+      const admins = await queryClient.admins();
+      const chainManagerAddress = admins.admins[0];
       proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
         chainManagerAddress,
         'Proposal #2',

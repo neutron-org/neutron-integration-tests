@@ -6,6 +6,11 @@ import {
 } from '@neutron-org/neutronjsplus';
 import { LocalState, createWalletWrapper } from '../../helpers/localState';
 import { Suite, inject } from 'vitest';
+import {wasm, WasmWrapper} from "../../helpers/wasmClient";
+import {Registry} from "@cosmjs/proto-signing";
+import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
+import {Wallet} from "@neutron-org/neutronjsplus/dist/types";
+import {SigningStargateClient} from "@cosmjs/stargate";
 
 const config = require('../../config.json');
 
@@ -20,6 +25,7 @@ const NEUTRON_VAULT_3_CONTRACT_KEY = 'NEUTRON_VAULT_3';
 describe('Neutron / Voting Registry', () => {
   let testState: LocalState;
   let neutronChain: cosmosWrapper.CosmosWrapper;
+  let neutronAccount: Wallet;
   let cmInstantiator: walletWrapper.WalletWrapper;
   let cmDaoMember: walletWrapper.WalletWrapper;
   let contractAddresses: Record<string, string> = {};
@@ -43,19 +49,16 @@ describe('Neutron / Voting Registry', () => {
     const mnemonics = inject('mnemonics');
     testState = new LocalState(config, mnemonics, suite);
     await testState.init();
-    neutronChain = new cosmosWrapper.CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    neutronAccount = await testState.nextWallet('neutron');
+    neutronClient = await wasm(
       testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
     );
-    cmInstantiator = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
-    cmDaoMember = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
+    cmInstantiator = await testState.nextWallet('neutron');
+    cmDaoMember = await testState.nextWallet('neutron');
+
     contractAddresses = await deployContracts(neutronChain, cmInstantiator);
     votingRegistryAddr = contractAddresses[VOTING_REGISTRY_CONTRACT_KEY];
     vault1Addr = contractAddresses[NEUTRON_VAULT_1_CONTRACT_KEY];
@@ -532,7 +535,7 @@ describe('Neutron / Voting Registry', () => {
 });
 
 const deployContracts = async (
-  chain: cosmosWrapper.CosmosWrapper,
+  wasmWrapper: WasmWrapper,
   instantiator: walletWrapper.WalletWrapper,
 ): Promise<Record<string, string>> => {
   const codeIds: Record<string, number> = {};
@@ -540,7 +543,7 @@ const deployContracts = async (
     VOTING_REGISTRY_CONTRACT_KEY,
     NEUTRON_VAULT_CONTRACT_KEY,
   ]) {
-    const codeId = await instantiator.storeWasm(
+    const codeId = await wasmWrapper.upload(
       types.NeutronContract[contract],
     );
     expect(codeId).toBeGreaterThan(0);
@@ -581,7 +584,7 @@ const deployContracts = async (
 };
 
 const deployVotingRegistry = async (
-  instantiator: walletWrapper.WalletWrapper,
+  instantiator: WasmWrapper,
   vaults: string[],
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
@@ -599,7 +602,7 @@ const deployVotingRegistry = async (
 };
 
 const deployNeutronVault = async (
-  instantiator: walletWrapper.WalletWrapper,
+  instantiator: WasmWrapper,
   vaultKey: string,
   codeIds: Record<string, number>,
   contractAddresses: Record<string, string>,
@@ -619,11 +622,11 @@ const deployNeutronVault = async (
 };
 
 const bondFunds = async (
-  cm: walletWrapper.WalletWrapper,
+  cm: WasmWrapper,
   vault: string,
   amount: string,
 ) =>
-  cm.executeContract(
+  cm.execute(
     vault,
     {
       bond: {},
@@ -632,11 +635,11 @@ const bondFunds = async (
   );
 
 const unbondFunds = async (
-  cm: walletWrapper.WalletWrapper,
+  cm: WasmWrapper,
   vault: string,
   amount: string,
 ) =>
-  cm.executeContract(
+  cm.execute(
     vault,
     {
       unbond: { amount: amount },
@@ -645,11 +648,11 @@ const unbondFunds = async (
   );
 
 const activateVotingVault = async (
-  cm: walletWrapper.WalletWrapper,
+  cm: WasmWrapper,
   registry: string,
   vault: string,
 ) =>
-  cm.executeContract(
+  cm.execute(
     registry,
     {
       activate_voting_vault: {
@@ -660,11 +663,11 @@ const activateVotingVault = async (
   );
 
 const deactivateVotingVault = async (
-  cm: walletWrapper.WalletWrapper,
+  cm: WasmWrapper,
   registry: string,
   vault: string,
 ) =>
-  cm.executeContract(
+  cm.execute(
     registry,
     {
       deactivate_voting_vault: {
@@ -675,11 +678,11 @@ const deactivateVotingVault = async (
   );
 
 const addVotingVault = async (
-  cm: walletWrapper.WalletWrapper,
+  cm: WasmWrapper,
   registry: string,
   vault: string,
 ) =>
-  cm.executeContract(
+  cm.execute(
     registry,
     {
       add_voting_vault: {
@@ -694,55 +697,56 @@ const addVotingVault = async (
  * retrieves total voting powerdata  from the same contracts.
  */
 const getVotingPowerInfo = async (
-  chain: cosmosWrapper.CosmosWrapper,
+  wasmWrapper: WasmWrapper,
+  client: SigningStargateClient,
   address: string,
   contractAddresses: Record<string, string>,
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
-    height = await chain.getHeight();
+    height = await client.getHeight();
   }
   const vault1Power = getVotingPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_1_CONTRACT_KEY],
     address,
     height,
   );
   const vault1TotalPower = getTotalPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_1_CONTRACT_KEY],
     height,
   );
   const vault2Power = getVotingPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_2_CONTRACT_KEY],
     address,
     height,
   );
   const vault2TotalPower = getTotalPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_2_CONTRACT_KEY],
     height,
   );
   const vault3Power = getVotingPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_3_CONTRACT_KEY],
     address,
     height,
   );
   const vault3TotalPower = getTotalPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[NEUTRON_VAULT_3_CONTRACT_KEY],
     height,
   );
   const registryPower = getVotingPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[VOTING_REGISTRY_CONTRACT_KEY],
     address,
     height,
   );
   const registryTotalPower = getTotalPowerAtHeight(
-    chain,
+    wasmWrapper,
     contractAddresses[VOTING_REGISTRY_CONTRACT_KEY],
     height,
   );
@@ -761,22 +765,22 @@ const getVotingPowerInfo = async (
 };
 
 const getTotalPowerAtHeight = async (
-  chain: cosmosWrapper.CosmosWrapper,
+  chain: WasmWrapper,
   contract: string,
   height?: number,
 ): Promise<VotingPowerResponse> =>
-  chain.queryContract<VotingPowerResponse>(contract, {
+  chain.client.queryContractSmart<VotingPowerResponse>(contract, {
     total_power_at_height:
       typeof height === 'undefined' ? {} : { height: height },
   });
 
 const getVotingPowerAtHeight = async (
-  chain: cosmosWrapper.CosmosWrapper,
+  chain: WasmWrapper,
   contract: string,
   address: string,
   height?: number,
 ): Promise<VotingPowerResponse> =>
-  chain.queryContract<VotingPowerResponse>(contract, {
+  chain.client.queryContractSmart<VotingPowerResponse>(contract, {
     voting_power_at_height:
       typeof height === 'undefined'
         ? {
@@ -789,11 +793,11 @@ const getVotingPowerAtHeight = async (
   });
 
 const getVotingVaults = async (
-  chain: cosmosWrapper.CosmosWrapper,
+  chain: WasmWrapper,
   registry: string,
   height?: number,
 ): Promise<VotingVault[]> =>
-  chain.queryContract<VotingVault[]>(registry, {
+  chain.client.queryContractSmart<VotingVault[]>(registry, {
     voting_vaults: typeof height === 'undefined' ? {} : { height: height },
   });
 
