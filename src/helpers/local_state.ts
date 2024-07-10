@@ -16,6 +16,7 @@ import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { connectComet } from '@cosmjs/tendermint-rpc';
+import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 
 // limit of wallets precreated for one test
 const LIMIT_PER_TEST = 20;
@@ -60,9 +61,6 @@ export class LocalState {
   }
 
   async init() {
-    const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
-    const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
-
     const restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
     const restGaia = process.env.NODE2_URL || 'http://localhost:1316';
 
@@ -78,18 +76,18 @@ export class LocalState {
     this.icqWebHost = 'http://localhost:9999';
 
     this.wallets = {};
-    const neutron = await genesisWalletSet(neutronPrefix, this.config);
-    const cosmos = await genesisWalletSet(cosmosPrefix, this.config);
+    const neutron = await genesisWalletSet(NEUTRON_PREFIX, this.config);
+    const cosmos = await genesisWalletSet(COSMOS_PREFIX, this.config);
 
     this.wallets = {
       cosmos,
       neutron,
-      qaNeutron: { qa: await this.randomWallet(neutronPrefix) },
-      qaCosmos: { qa: await this.randomWallet(cosmosPrefix) },
-      qaCosmosTwo: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronThree: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronFour: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronFive: { qa: await this.randomWallet(neutronPrefix) },
+      qaNeutron: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaCosmos: { qa: await this.nextWallet(COSMOS_PREFIX) },
+      qaCosmosTwo: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronThree: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronFour: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronFive: { qa: await this.nextWallet(NEUTRON_PREFIX) },
     };
     return this.wallets;
   }

@@ -77,3 +77,6 @@ export const CONTRACTS = {
   MARKETMAP: 'marketmap.wasm',
   ORACLE: 'oracle.wasm',
 };
+
+export const NEUTRON_PREFIX = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
+export const COSMOS_PREFIX = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
