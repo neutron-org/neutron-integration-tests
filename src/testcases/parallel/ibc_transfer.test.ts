@@ -62,7 +62,7 @@ describe('Neutron / IBC transfer', () => {
       { registry: new Registry(defaultRegistryTypes) },
     );
 
-    const neutronRpcClient = await testState.rpcClient('neutron');
+    const neutronRpcClient = await testState.neutronRpcClient();
     contractManagerQuerier = new ContractManagerQuery(neutronRpcClient);
     bankQuerier = new BankQueryClient(neutronRpcClient);
     ibcQuerier = new IbcQueryClient(neutronRpcClient);

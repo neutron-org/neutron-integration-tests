@@ -151,14 +151,26 @@ export class LocalState {
     return await mnemonicToWallet(mnemonic, prefix);
   }
 
+  async neutronRpcClient() {
+    const client = await connectComet(this.rpcNeutron);
+    const queryClient = new QueryClient(client);
+    return createProtobufRpcClient(queryClient);
+  }
+
+  async gaiaRpcClient(): Promise<ProtobufRpcClient> {
+    const client = await connectComet(this.rpcGaia);
+    const queryClient = new QueryClient(client);
+    return createProtobufRpcClient(queryClient);
+  }
+
   // Returns protobuf rpc client.
   // Usually used to construct querier for specific module
   async rpcClient(network: string): Promise<ProtobufRpcClient> {
     let rpc: string;
     if (network === 'neutron') {
-      rpc = this.rpcNeutron;
+      return this.neutronRpcClient();
     } else if (network === 'gaia') {
-      rpc = this.rpcGaia;
+      return this.gaiaRpcClient();
     }
     const client = await connectComet(rpc);
     const queryClient = new QueryClient(client);
