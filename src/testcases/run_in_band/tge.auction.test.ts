@@ -198,28 +198,26 @@ describe.skip('Neutron / TGE / Auction', () => {
     ]) {
       tgeWallets[v] = await createWalletWrapper(
         neutronChain,
-        (
-          await testState.createQaWallet(
-            'neutron',
-            testState.wallets.neutron.demo1,
-            NEUTRON_DENOM,
-            testState.rpcNeutron,
-            [
-              {
-                denom: NEUTRON_DENOM,
-                amount: '1000000',
-              },
-              {
-                denom: IBC_ATOM_DENOM,
-                amount: '1000000',
-              },
-              {
-                denom: IBC_USDC_DENOM,
-                amount: '1000000',
-              },
-            ],
-          )
-        ).qa,
+        await testState.createQaWallet(
+          'neutron',
+          testState.wallets.neutron.demo1,
+          NEUTRON_DENOM,
+          testState.rpcNeutron,
+          [
+            {
+              denom: NEUTRON_DENOM,
+              amount: '1000000',
+            },
+            {
+              denom: IBC_ATOM_DENOM,
+              amount: '1000000',
+            },
+            {
+              denom: IBC_USDC_DENOM,
+              amount: '1000000',
+            },
+          ],
+        ),
       );
     }
 

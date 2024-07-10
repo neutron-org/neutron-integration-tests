@@ -96,8 +96,11 @@ docker-compose build
 
 ```env
 CONTRACTS_PATH - path to contracts that are used in the tests
-NODE1_URL - url to the first node
-NODE2_URL - url to the second node
+NODE1_URL - REST url to the Neutron node
+NODE2_URL - REST url to the Gaia node
+NODE1_RPC - RPC endpoint to Neutron node
+NODE2_RPC - RPC endpoint to Gaia node
+ICQ_WEB_HOST - interchain query relayer web endpoint
 START_BLOCK_HEIGHT - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
 NO_PRINT_VERSIONS - do not print contract versions in console

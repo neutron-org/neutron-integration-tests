@@ -8,10 +8,10 @@ export default defineConfig({
     },
     maxConcurrency: 4,
     globals: true,
-    globalSetup: ['./src/globalSetup.ts'],
+    globalSetup: ['./src/global_setup.ts'],
     hookTimeout: 500_000,
     testTimeout: 500_000,
-    watchExclude: ['**/node_modules/**', '**/*.yml'],
+    exclude: ['**/node_modules/**', '**/*.yml'],
     setupFiles: ['./src/helpers/setup_matchers.ts'],
   },
 });

@@ -1,4 +1,4 @@
-import { inject } from 'vitest';
+import { inject, Suite } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -28,9 +28,9 @@ describe('Neutron / DAO check', () => {
   let votingVaultsNtrnAddress: string;
   let treasuryContract: string;
 
-  beforeAll(async () => {
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics);
+    testState = await LocalState.create(config, mnemonics, suite);
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

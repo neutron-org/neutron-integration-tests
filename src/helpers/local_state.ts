@@ -31,7 +31,6 @@ export class LocalState {
   restNeutron: string;
   restGaia: string;
 
-  suite: Suite | null;
   taken: any;
   currentIdx: any;
   offset: number;
@@ -49,33 +48,28 @@ export class LocalState {
   protected constructor(
     private config: any,
     private mnemonics: string[],
-    suite?: Suite,
+    private suite?: Suite | undefined,
   ) {
     this.taken = {
       cosmos: {},
       neutron: {},
     };
     this.currentIdx = { neutron: 0, cosmos: 0 };
-    this.suite = suite;
     this.offset = null;
   }
 
   async init() {
-    const restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
-    const restGaia = process.env.NODE2_URL || 'http://localhost:1316';
+    this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
+    this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
 
-    const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
-    const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
+    this.restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
+    this.restGaia = process.env.NODE2_URL || 'http://localhost:1316';
 
-    this.rpcNeutron = rpcNeutron;
-    this.rpcGaia = rpcGaia;
-
-    this.restNeutron = restNeutron;
-    this.restGaia = restGaia;
-
-    this.icqWebHost = 'http://localhost:9999';
+    this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 
     this.wallets = {};
+
+    // Do not use these in parallel tests to avoid overlapping of wallets
     const neutron = await genesisWalletSet(NEUTRON_PREFIX, this.config);
     const cosmos = await genesisWalletSet(COSMOS_PREFIX, this.config);
 
@@ -92,34 +86,31 @@ export class LocalState {
     return this.wallets;
   }
 
-  async randomWallet(prefix: string): Promise<Wallet> {
-    const idx = Math.floor(Math.random() * this.mnemonics.length);
-    if (this.taken[prefix][idx]) {
-      return this.nextWallet(prefix);
-    }
-    this.taken[prefix][idx] = true;
-    return mnemonicToWallet(this.mnemonics[idx], prefix);
-  }
-
-  async nextWallet(prefix: string): Promise<Wallet> {
+  // Returns new wallet for a given `network`.
+  // The wallet is prefunded in a globalSetup.
+  // That way we can safely use these wallets in a parallel tests
+  // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
+  async nextWallet(network: string): Promise<Wallet> {
     if (!this.suite) {
       throw 'no suite provided to use nextWallet';
     }
-    if (this.offset === null) {
-      this.offset = await testOffset(this.suite);
+    if (this.offset === null && this.suite) {
+      this.offset = await testFilePosition(this.suite);
+    } else {
+      this.offset = 0;
     }
 
-    const resultIdx = this.offset * LIMIT_PER_TEST + this.currentIdx[prefix];
+    const resultIdx = this.offset * LIMIT_PER_TEST + this.currentIdx[network];
 
-    this.currentIdx[prefix] += 1;
+    this.currentIdx[network] += 1;
 
-    if (this.taken[prefix][resultIdx]) {
-      return this.nextWallet(prefix);
+    if (this.taken[network][resultIdx]) {
+      return this.nextWallet(network);
     }
 
-    this.taken[prefix][resultIdx] = true;
+    this.taken[network][resultIdx] = true;
 
-    return mnemonicToWallet(this.mnemonics[resultIdx], prefix);
+    return mnemonicToWallet(this.mnemonics[resultIdx], network);
   }
 
   async createQaWallet(
@@ -128,7 +119,7 @@ export class LocalState {
     denom: string,
     rpc: string,
     balances: Coin[] = [],
-  ): Promise<{ qa: Wallet }> {
+  ): Promise<Wallet> {
     if (balances.length === 0) {
       balances = [
         {
@@ -157,10 +148,11 @@ export class LocalState {
         },
       );
     }
-    const wal = await mnemonicToWallet(mnemonic, prefix);
-    return { qa: wal };
+    return await mnemonicToWallet(mnemonic, prefix);
   }
 
+  // Returns protobuf rpc client.
+  // Usually used to construct querier for specific module
   async rpcClient(network: string): Promise<ProtobufRpcClient> {
     let rpc: string;
     if (network === 'neutron') {
@@ -192,21 +184,21 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
-async function testOffset(s: Suite): Promise<number> {
+async function testFilePosition(s: Suite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
   const filename = splitted.pop().trim();
   const dir = splitted.join('/');
 
-  return testIdxForNameDir(dir, filename);
+  return testFilePositionForName(dir, filename);
 }
 
 // takes all files in directory, sorts them and finds the index of the current file in the array
-async function testIdxForNameDir(
+async function testFilePositionForName(
   dir: string,
   filename: string,
 ): Promise<number> {
-  const files = await listFilenames(dir);
+  const files = await listFilenamesInDir(dir);
   const idx = files.findIndex((f) => f === filename);
 
   if (idx === -1) {
@@ -215,13 +207,12 @@ async function testIdxForNameDir(
   return idx;
 }
 
-async function listFilenames(dir: string): Promise<string[]> {
+async function listFilenamesInDir(dir: string): Promise<string[]> {
   const res = [];
   try {
     const files = await fs.readdir(dir, { withFileTypes: true });
     files.forEach((file) => {
       if (file.isFile()) {
-        // console.log('list filename: ' + file.name + ' file.path: ' + file.path);
         res.push(file.name.trim());
       }
     });

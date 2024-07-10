@@ -43,7 +43,7 @@ describe('Neutron / Stargate Queries', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet('cosmos'),
+      await testState.nextWallet('cosmos'),
     );
   });
 
