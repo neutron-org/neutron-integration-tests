@@ -19,7 +19,7 @@ import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 
 // limit of wallets precreated for one test
-const LIMIT_PER_TEST = 20;
+const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
@@ -31,8 +31,14 @@ export class LocalState {
   restNeutron: string;
   restGaia: string;
 
-  taken: any;
-  currentIdx: any;
+  currentIndexes: {
+    neutron: {
+      [offset: number]: number;
+    };
+    cosmos: {
+      [offset: number]: number;
+    };
+  };
   offset: number;
 
   static async create(
@@ -50,15 +56,6 @@ export class LocalState {
     private mnemonics: string[],
     private suite?: Suite | undefined,
   ) {
-    this.taken = {
-      cosmos: {},
-      neutron: {},
-    };
-    this.currentIdx = { neutron: 0, cosmos: 0 };
-    this.offset = null;
-  }
-
-  async init() {
     this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
     this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
 
@@ -67,12 +64,21 @@ export class LocalState {
 
     this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 
-    this.wallets = {};
+    this.currentIndexes = { neutron: {}, cosmos: {} };
+  }
 
-    // Do not use these in parallel tests to avoid overlapping of wallets
-    const neutron = await genesisWalletSet(NEUTRON_PREFIX, this.config);
-    const cosmos = await genesisWalletSet(COSMOS_PREFIX, this.config);
+  async init() {
+    if (this.suite) {
+      this.offset = await testFilePosition(this.suite);
+    } else {
+      this.offset = 0;
+    }
 
+    const neutron = await getGenesisWallets(NEUTRON_PREFIX, this.config);
+    const cosmos = await getGenesisWallets(COSMOS_PREFIX, this.config);
+
+    // TODO: simplify structure here. Can be just wallets: { name: Wallet }
+    // TODO: use only neutron / cosmos wallets, others can be generated with nextWallet on the fly
     this.wallets = {
       cosmos,
       neutron,
@@ -83,7 +89,6 @@ export class LocalState {
       qaNeutronFour: { qa: await this.nextWallet(NEUTRON_PREFIX) },
       qaNeutronFive: { qa: await this.nextWallet(NEUTRON_PREFIX) },
     };
-    return this.wallets;
   }
 
   // Returns new wallet for a given `network`.
@@ -91,24 +96,10 @@ export class LocalState {
   // That way we can safely use these wallets in a parallel tests
   // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
   async nextWallet(network: string): Promise<Wallet> {
-    if (!this.suite) {
-      throw 'no suite provided to use nextWallet';
-    }
-    if (this.offset === null && this.suite) {
-      this.offset = await testFilePosition(this.suite);
-    } else {
-      this.offset = 0;
-    }
+    const currentOffset = this.currentIndexes[network][this.offset] || 0;
+    const resultIdx = this.offset * WALLETS_PER_TEST_FILE + currentOffset;
 
-    const resultIdx = this.offset * LIMIT_PER_TEST + this.currentIdx[network];
-
-    this.currentIdx[network] += 1;
-
-    if (this.taken[network][resultIdx]) {
-      return this.nextWallet(network);
-    }
-
-    this.taken[network][resultIdx] = true;
+    this.currentIndexes[network][this.offset] = currentOffset + 1;
 
     return mnemonicToWallet(this.mnemonics[resultIdx], network);
   }
@@ -132,7 +123,9 @@ export class LocalState {
     const client = await SigningStargateClient.connectWithSigner(
       rpc,
       wallet.directwallet,
-      { registry: new Registry(defaultRegistryTypes) },
+      {
+        registry: new Registry(defaultRegistryTypes),
+      },
     );
     const mnemonic = generateMnemonic();
 
@@ -166,15 +159,13 @@ export class LocalState {
   // Returns protobuf rpc client.
   // Usually used to construct querier for specific module
   async rpcClient(network: string): Promise<ProtobufRpcClient> {
-    let rpc: string;
     if (network === 'neutron') {
       return this.neutronRpcClient();
     } else if (network === 'gaia') {
       return this.gaiaRpcClient();
+    } else {
+      throw new Error('rpcClient() called non existent network: ' + network);
     }
-    const client = await connectComet(rpc);
-    const queryClient = new QueryClient(client);
-    return createProtobufRpcClient(queryClient);
   }
 }
 
@@ -234,7 +225,7 @@ async function listFilenamesInDir(dir: string): Promise<string[]> {
   return res.sort();
 }
 
-const genesisWalletSet = async (
+const getGenesisWallets = async (
   prefix: string,
   config: any,
 ): Promise<Record<string, Wallet>> => ({
