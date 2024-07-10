@@ -1,87 +1,82 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
-import { createLocalState, LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WasmWrapper, wasm } from '../../helpers/wasmClient';
-import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
-import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
-import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';
-import { QueryClientImpl as BankQuery } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
-import { QueryClientImpl as IbcQuery } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { getWithAttempts } from '../../helpers/getWithAttempts';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { defaultRegistryTypes } from '@cosmjs/stargate';
+import {
+  QueryClientImpl as ContractManagerQuery,
+  QueryFailuresResponse,
+} from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query';
 import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
-  NEUTRON_CONTRACTS,
+  CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { SigningStargateClient } from '@cosmjs/stargate';
+
+import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 
-const config = require('../../config.json');
-
 const TRANSFER_CHANNEL = 'channel-0';
-
 const IBC_TOKEN_DENOM =
   'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
-
 const UATOM_IBC_TO_NEUTRON_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-describe('Neutron / Simple', () => {
+describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
-  let neutronClient: WasmWrapper;
-  let gaiaClient: WasmWrapper;
-  let gaiaAccount2: Wallet;
+  let neutronClient: SigningNeutronClient;
+  let gaiaClient: SigningStargateClient;
+  let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
+  let gaiaWallet2: Wallet;
 
   let ibcContract: string;
   let receiverContract: string;
 
-  let contractManagerQuery: ContractManagerQuery;
-  let bankQuery: BankQuery;
-  let ibcQuery: IbcQuery;
+  let contractManagerQuerier: ContractManagerQuery;
+  let bankQuerier: BankQueryClient;
+  let ibcQuerier: IbcQueryClient;
 
   beforeAll(async (suite: Suite) => {
-    testState = await createLocalState(config, inject('mnemonics'), suite);
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    const neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-    const gaiaAccount = await testState.nextWallet('cosmos');
-    gaiaAccount2 = await testState.nextWallet('cosmos');
-    gaiaClient = await wasm(
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet2 = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaAccount,
-      COSMOS_DENOM,
-      new Registry(neutronTypes), // TODO: gaia types
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
     );
 
-    const neutronRpcClient = await testState.rpcClient('neutron');
-    contractManagerQuery = new ContractManagerQuery(neutronRpcClient);
-    bankQuery = new BankQuery(neutronRpcClient);
-    ibcQuery = new IbcQuery(neutronRpcClient);
+    const neutronRpcClient = await testState.neutronRpcClient();
+    contractManagerQuerier = new ContractManagerQuery(neutronRpcClient);
+    bankQuerier = new BankQueryClient(neutronRpcClient);
+    ibcQuerier = new IbcQueryClient(neutronRpcClient);
   });
 
   describe('Contracts', () => {
     test('instantiate contract', async () => {
-      const codeId = await neutronClient.upload(NEUTRON_CONTRACTS.IBC_TRANSFER);
-      expect(codeId).toBeGreaterThan(0);
-      ibcContract = await neutronClient.instantiate(codeId, {});
+      ibcContract = await neutronClient.create(CONTRACTS.IBC_TRANSFER, {});
     });
   });
 
   describe('Staking', () => {
     test('store and instantiate mgs receiver contract', async () => {
-      const codeId = await neutronClient.upload(NEUTRON_CONTRACTS.MSG_RECEIVER);
-      expect(codeId).toBeGreaterThan(0);
-
-      receiverContract = await neutronClient.instantiate(codeId, {});
+      receiverContract = await neutronClient.create(CONTRACTS.MSG_RECEIVER, {});
     });
     test('staking queries must fail since we have no staking module in Neutron', async () => {
       let exceptionThrown = false;
@@ -103,16 +98,15 @@ describe('Neutron / Simple', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
       beforeAll(async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await neutronClient.client.getBalance(
+        await neutronClient.waitBlocks(10);
+        const balance = await neutronClient.getBalance(
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
         relayerBalance = parseInt(balance.amount || '0', 10);
       });
       test('transfer to contract', async () => {
-        const res = await neutronClient.client.sendTokens(
-          neutronClient.wallet.address,
+        const res = await neutronClient.sendTokens(
           ibcContract,
           [{ denom: NEUTRON_DENOM, amount: '50000' }],
           {
@@ -123,10 +117,7 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const res = await bankQuery.allBalances({
-          address: ibcContract,
-          resolveDenom: false,
-        });
+        const res = await bankQuerier.AllBalances({ address: ibcContract });
         expect(res.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);
@@ -136,8 +127,7 @@ describe('Neutron / Simple', () => {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
-        const res = await neutronClient.client.signAndBroadcast(
-          neutronClient.wallet.address,
+        const res = await neutronClient.signAndBroadcast(
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -145,8 +135,8 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000' },
-                sender: neutronClient.wallet.address,
-                receiver: gaiaClient.wallet.address,
+                sender: neutronWallet.address,
+                receiver: gaiaWallet.address,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -159,16 +149,16 @@ describe('Neutron / Simple', () => {
         expect(res.code).toEqual(0);
       });
       test('check IBC token balance', async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await gaiaClient.client.getBalance(
-          gaiaClient.wallet.address,
+        await neutronClient.waitBlocks(10);
+        const balance = await gaiaClient.getBalance(
+          gaiaWallet.address,
           IBC_TOKEN_DENOM,
         );
         expect(balance.amount).toEqual('1000');
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
-        const res = await gaiaClient.client.signAndBroadcast(
-          gaiaClient.wallet.address,
+        const res = await gaiaClient.signAndBroadcast(
+          gaiaWallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -176,8 +166,8 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: '1000' },
-                sender: gaiaClient.wallet.address,
-                receiver: neutronClient.wallet.address,
+                sender: gaiaWallet.address,
+                receiver: neutronWallet.address,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -192,16 +182,16 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
       });
-      test('check uatom token balance transfered via IBC on Neutron', async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await neutronClient.client.getBalance(
-          neutronClient.wallet.address,
+      test('check uatom token balance transferred via IBC on Neutron', async () => {
+        await neutronClient.waitBlocks(10);
+        const balance = await neutronClient.getBalance(
+          neutronWallet.address,
           UATOM_IBC_TO_NEUTRON_DENOM,
         );
         expect(balance.amount).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const res = await ibcQuery.denomTrace({
+        const res = await ibcQuerier.DenomTrace({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
         expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
@@ -222,7 +212,7 @@ describe('Neutron / Simple', () => {
         const res = await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaClient.wallet.address,
+            to: gaiaWallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
@@ -231,17 +221,17 @@ describe('Neutron / Simple', () => {
       });
 
       test('check wallet balance', async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await gaiaClient.client.getBalance(
-          gaiaClient.wallet.address,
+        await neutronClient.waitBlocks(10);
+        const balance = await gaiaClient.getBalance(
+          gaiaWallet.address,
           IBC_TOKEN_DENOM,
         );
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(balance.amount).toEqual('4000');
       });
       test('relayer must receive fee', async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await neutronClient.client.getBalance(
+        await neutronClient.waitBlocks(10);
+        const balance = await neutronClient.getBalance(
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
@@ -250,8 +240,8 @@ describe('Neutron / Simple', () => {
         expect(resBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
       test('contract should be refunded', async () => {
-        await waitBlocks(10, neutronClient.client);
-        const balance = await neutronClient.client.getBalance(
+        await neutronClient.waitBlocks(10);
+        const balance = await neutronClient.getBalance(
           ibcContract,
           NEUTRON_DENOM,
         );
@@ -274,7 +264,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaClient.wallet.address,
+              to: gaiaWallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -291,23 +281,23 @@ describe('Neutron / Simple', () => {
       // 6. Check Balance of Account 1 on Chain 1, confirm it is original minus x tokens
       // 7. Check Balance of Account 2 on Chain 1, confirm it is original plus x tokens
       test('IBC transfer from a usual account', async () => {
-        const sender = gaiaClient.wallet.address;
-        const middlehop = neutronClient.wallet.address;
-        const receiver = gaiaAccount2.address;
-        const senderNTRNBalanceBefore = await gaiaClient.client.getBalance(
+        const sender = gaiaWallet.address;
+        const middlehop = neutronWallet.address;
+        const receiver = gaiaWallet2.address;
+        const senderNTRNBalanceBefore = await gaiaClient.getBalance(
           sender,
           COSMOS_DENOM,
         );
 
-        const receiverNTRNBalanceBefore = await gaiaClient.client.getBalance(
+        const receiverNTRNBalanceBefore = await gaiaClient.getBalance(
           receiver,
           COSMOS_DENOM,
         );
 
         const transferAmount = 333333;
 
-        const res = await gaiaClient.client.signAndBroadcast(
-          gaiaClient.wallet.address,
+        const res = await gaiaClient.signAndBroadcast(
+          gaiaWallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -315,7 +305,7 @@ describe('Neutron / Simple', () => {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: transferAmount + '' },
-                sender: gaiaClient.wallet.address,
+                sender: gaiaWallet.address,
                 receiver: middlehop,
                 timeoutHeight: {
                   revisionNumber: 2n,
@@ -333,15 +323,15 @@ describe('Neutron / Simple', () => {
 
         expect(res.code).toEqual(0);
 
-        await waitBlocks(20, neutronClient.client);
+        await neutronClient.waitBlocks(20);
 
-        const middlehopNTRNBalanceAfter = await neutronClient.client.getBalance(
+        const middlehopNTRNBalanceAfter = await neutronClient.getBalance(
           middlehop,
           UATOM_IBC_TO_NEUTRON_DENOM,
         );
         expect(+middlehopNTRNBalanceAfter.amount).toEqual(1000);
 
-        const senderNTRNBalanceAfter = await gaiaClient.client.getBalance(
+        const senderNTRNBalanceAfter = await gaiaClient.getBalance(
           sender,
           COSMOS_DENOM,
         );
@@ -349,7 +339,7 @@ describe('Neutron / Simple', () => {
           +senderNTRNBalanceBefore.amount - transferAmount - 1000, // original balance - transfer amount - fee
         );
 
-        const receiverNTRNBalanceAfter = await gaiaClient.client.getBalance(
+        const receiverNTRNBalanceAfter = await gaiaClient.getBalance(
           receiver,
           COSMOS_DENOM,
         );
@@ -367,8 +357,8 @@ describe('Neutron / Simple', () => {
       test('transfer some atoms to contract', async () => {
         const uatomAmount = '1000';
 
-        const res = await gaiaClient.client.signAndBroadcast(
-          gaiaClient.wallet.address,
+        const res = await gaiaClient.signAndBroadcast(
+          gaiaWallet.address,
           [
             {
               typeUrl: MsgTransfer.typeUrl,
@@ -376,7 +366,7 @@ describe('Neutron / Simple', () => {
                 sourcePort: portName,
                 sourceChannel: channelName,
                 token: { denom: COSMOS_DENOM, amount: uatomAmount },
-                sender: gaiaClient.wallet.address,
+                sender: gaiaWallet.address,
                 receiver: ibcContract,
                 timeoutHeight: {
                   revisionNumber: 2n,
@@ -392,8 +382,8 @@ describe('Neutron / Simple', () => {
         );
         expect(res.code).toEqual(0);
 
-        await waitBlocks(10, neutronClient.client);
-        const balance = await neutronClient.client.getBalance(
+        await neutronClient.waitBlocks(10);
+        const balance = await neutronClient.getBalance(
           ibcContract,
           uatomIBCDenom,
         );
@@ -414,7 +404,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaClient.wallet.address,
+              to: gaiaWallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -438,7 +428,7 @@ describe('Neutron / Simple', () => {
           neutronClient.execute(ibcContract, {
             send: {
               channel: TRANSFER_CHANNEL,
-              to: gaiaClient.wallet.address,
+              to: gaiaWallet.address,
               denom: NEUTRON_DENOM,
               amount: '1000',
             },
@@ -459,10 +449,12 @@ describe('Neutron / Simple', () => {
         });
       });
       test('execute contract with failing sudo', async () => {
-        const failuresBeforeCall = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
-          address: ibcContract,
-        });
+        const failuresBeforeCall = await contractManagerQuerier.AddressFailures(
+          {
+            failureId: 0n, // bug: should not be in query
+            address: ibcContract,
+          },
+        );
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
         // Mock sudo handler to fail
@@ -475,7 +467,7 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaClient.wallet.address,
+            to: gaiaWallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
@@ -492,30 +484,29 @@ describe('Neutron / Simple', () => {
         current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
         hermes checks height on remote chain and Timeout error occurs.
         */
-        const currentHeight = (await gaiaClient.client.getBlock()).header
-          .height;
-        await waitBlocks(15, gaiaClient.client);
+        const currentHeight = await gaiaClient.getHeight();
+        await waitBlocks(15, gaiaClient);
 
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaClient.wallet.address,
+            to: gaiaWallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
             timeout_height: currentHeight + 5,
           },
         });
 
-        const failuresAfterCall = await getWithAttempts<QueryFailuresResponse>(
-          neutronClient.client,
-          async () =>
-            contractManagerQuery.addressFailures({
-              failureId: 0n, // bug: should not be in queny
-              address: ibcContract,
-            }),
-          // Wait until there 4 failures in the list
-          async (data) => data.failures.length == 4,
-        );
+        const failuresAfterCall =
+          await neutronClient.getWithAttempts<QueryFailuresResponse>(
+            async () =>
+              contractManagerQuerier.AddressFailures({
+                failureId: 0n, // bug: should not be in query
+                address: ibcContract,
+              }),
+            // Wait until there 4 failures in the list
+            async (data) => data.failures.length == 4,
+          );
 
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
@@ -578,19 +569,18 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           send: {
             channel: TRANSFER_CHANNEL,
-            to: gaiaClient.wallet.address,
+            to: gaiaWallet.address,
             denom: NEUTRON_DENOM,
             amount: '1000',
           },
         });
 
-        await waitBlocks(5, neutronClient.client);
+        await neutronClient.waitBlocks(5);
 
-        const res = await getWithAttempts<QueryFailuresResponse>(
-          neutronClient.client,
+        const res = await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuery.addressFailures({
-              failureId: 0n, // bug: should not be in queny
+            contractManagerQuerier.AddressFailures({
+              failureId: 0n, // bug: should not be in query
               address: ibcContract,
             }),
           // Wait until there 6 failures in the list
@@ -607,11 +597,11 @@ describe('Neutron / Simple', () => {
           },
         });
 
-        await waitBlocks(2, neutronClient.client);
+        await neutronClient.waitBlocks(2);
 
         // Try to resubmit failure
-        const failuresResBefore = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
+        const failuresResBefore = await contractManagerQuerier.AddressFailures({
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
 
@@ -623,11 +613,11 @@ describe('Neutron / Simple', () => {
           }),
         ).rejects.toThrowError();
 
-        await waitBlocks(5, neutronClient.client);
+        await neutronClient.waitBlocks(5);
 
         // check that failures count is the same
-        const failuresResAfter = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
+        const failuresResAfter = await contractManagerQuerier.AddressFailures({
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
@@ -636,13 +626,13 @@ describe('Neutron / Simple', () => {
         await neutronClient.execute(ibcContract, {
           integration_tests_unset_sudo_failure_mock: {},
         });
-        await waitBlocks(5, neutronClient.client);
+        await neutronClient.waitBlocks(5);
       });
 
       test('successful resubmit failure', async () => {
         // Resubmit failure
-        const failuresResBefore = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
+        const failuresResBefore = await contractManagerQuerier.AddressFailures({
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
@@ -653,11 +643,11 @@ describe('Neutron / Simple', () => {
         });
         expect(res.code).toBe(0);
 
-        await waitBlocks(5, neutronClient.client);
+        await neutronClient.waitBlocks(5);
 
         // check that failures count is changed
-        const failuresResAfter = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
+        const failuresResAfter = await contractManagerQuerier.AddressFailures({
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
@@ -673,8 +663,8 @@ describe('Neutron / Simple', () => {
           countTotal: false,
           reverse: false,
         };
-        const res = await contractManagerQuery.addressFailures({
-          failureId: 0n, // bug: should not be in queny
+        const res = await contractManagerQuerier.AddressFailures({
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
           pagination,
         });
@@ -689,8 +679,8 @@ describe('Neutron / Simple', () => {
           reverse: false,
         };
         await expect(
-          contractManagerQuery.addressFailures({
-            failureId: 0n, // bug: should not be in queny
+          contractManagerQuerier.AddressFailures({
+            failureId: 0n, // bug: should not be in query
             address: ibcContract,
             pagination,
           }),

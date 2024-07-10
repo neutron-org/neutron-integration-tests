@@ -16,19 +16,10 @@ import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { connectComet } from '@cosmjs/tendermint-rpc';
+import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 
 // limit of wallets precreated for one test
-const LIMIT_PER_TEST = 20;
-
-export const createLocalState = async (
-  config: any,
-  mnemonics: string[],
-  suite?: Suite,
-): Promise<LocalState> => {
-  const res = new LocalState(config, mnemonics, suite);
-  await res.init();
-  return res;
-};
+const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
   wallets: Record<string, Record<string, Wallet>>;
@@ -40,86 +31,80 @@ export class LocalState {
   restNeutron: string;
   restGaia: string;
 
-  taken: any;
-  currentIdx: any;
-  offset: number;
+  walletIndexes: {
+    neutron: number;
+    cosmos: number;
+  };
+  testFilePosition: number;
 
-  constructor(
+  static async create(
+    config: any,
+    mnemonics: string[],
+    suite?: Suite,
+  ): Promise<LocalState> {
+    const res = new LocalState(config, mnemonics, suite);
+    await res.init();
+    return res;
+  }
+
+  protected constructor(
     private config: any,
     private mnemonics: string[],
-    private suite?: Suite,
+    private suite?: Suite | undefined,
   ) {
-    this.taken = {
-      cosmos: {},
-      neutron: {},
-    };
-    this.currentIdx = { neutron: 0, cosmos: 0 };
-    this.offset = null;
+    this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
+    this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
+
+    this.restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
+    this.restGaia = process.env.NODE2_URL || 'http://localhost:1316';
+
+    this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
+
+    this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
 
   async init() {
-    const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
-    const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
+    if (this.suite) {
+      this.testFilePosition = await testFilePosition(this.suite);
+    } else {
+      this.testFilePosition = 0;
+    }
 
-    const restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
-    const restGaia = process.env.NODE2_URL || 'http://localhost:1316';
+    const neutron = await getGenesisWallets(NEUTRON_PREFIX, this.config);
+    const cosmos = await getGenesisWallets(COSMOS_PREFIX, this.config);
 
-    const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
-    const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
-
-    this.rpcNeutron = rpcNeutron;
-    this.rpcGaia = rpcGaia;
-
-    this.restNeutron = restNeutron;
-    this.restGaia = restGaia;
-
-    this.icqWebHost = 'http://localhost:9999';
-
-    this.wallets = {};
-    const neutron = await genesisWalletSet(neutronPrefix, this.config);
-    const cosmos = await genesisWalletSet(cosmosPrefix, this.config);
-
+    // TODO: simplify structure here. Can be just wallets: { name: Wallet }
+    // TODO: use only neutron / cosmos wallets, others can be generated with nextWallet on the fly
     this.wallets = {
       cosmos,
       neutron,
-      qaNeutron: { qa: await this.randomWallet(neutronPrefix) },
-      qaCosmos: { qa: await this.randomWallet(cosmosPrefix) },
-      qaCosmosTwo: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronThree: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronFour: { qa: await this.randomWallet(neutronPrefix) },
-      qaNeutronFive: { qa: await this.randomWallet(neutronPrefix) },
+      qaNeutron: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaCosmos: { qa: await this.nextWallet(COSMOS_PREFIX) },
+      qaCosmosTwo: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronThree: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronFour: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      qaNeutronFive: { qa: await this.nextWallet(NEUTRON_PREFIX) },
     };
-    return this.wallets;
   }
 
-  async randomWallet(prefix: string): Promise<Wallet> {
-    const idx = Math.floor(Math.random() * this.mnemonics.length);
-    if (this.taken[prefix][idx]) {
-      return this.randomWallet(prefix);
+  // Returns new wallet for a given `network`.
+  // The wallet is prefunded in a globalSetup.
+  // That way we can safely use these wallets in a parallel tests
+  // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
+  async nextWallet(network: string): Promise<Wallet> {
+    const currentOffsetInTestFile = this.walletIndexes[network];
+    if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
+      return Promise.reject(
+        'cannot give next wallet: current offset is greater than ' +
+          WALLETS_PER_TEST_FILE,
+      );
     }
-    this.taken[prefix][idx] = true;
-    return mnemonicToWallet(this.mnemonics[idx], prefix);
-  }
+    const nextWalletIndex =
+      this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
 
-  async nextWallet(prefix: string): Promise<Wallet> {
-    if (!this.suite) {
-      throw 'no suite provided to use nextWallet';
-    }
-    if (this.offset === null) {
-      this.offset = await testOffset(this.suite);
-    }
+    this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
-    const resultIdx = this.offset * LIMIT_PER_TEST + this.currentIdx[prefix];
-
-    this.currentIdx[prefix] += 1;
-
-    if (this.taken[prefix][resultIdx]) {
-      return this.nextWallet(prefix);
-    }
-
-    this.taken[prefix][resultIdx] = true;
-
-    return mnemonicToWallet(this.mnemonics[resultIdx], prefix);
+    return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
   }
 
   async createQaWallet(
@@ -128,7 +113,7 @@ export class LocalState {
     denom: string,
     rpc: string,
     balances: Coin[] = [],
-  ) {
+  ): Promise<Wallet> {
     if (balances.length === 0) {
       balances = [
         {
@@ -141,7 +126,9 @@ export class LocalState {
     const client = await SigningStargateClient.connectWithSigner(
       rpc,
       wallet.directwallet,
-      { registry: new Registry(defaultRegistryTypes) },
+      {
+        registry: new Registry(defaultRegistryTypes),
+      },
     );
     const mnemonic = generateMnemonic();
 
@@ -157,20 +144,31 @@ export class LocalState {
         },
       );
     }
-    const wal = await mnemonicToWallet(mnemonic, prefix);
-    return { qa: wal };
+    return await mnemonicToWallet(mnemonic, prefix);
   }
 
-  async rpcClient(network: string): Promise<ProtobufRpcClient> {
-    let rpc: string;
-    if (network === 'neutron') {
-      rpc = this.rpcNeutron;
-    } else if (network === 'gaia') {
-      rpc = this.rpcGaia;
-    }
-    const client = await connectComet(rpc);
+  async neutronRpcClient() {
+    const client = await connectComet(this.rpcNeutron);
     const queryClient = new QueryClient(client);
     return createProtobufRpcClient(queryClient);
+  }
+
+  async gaiaRpcClient(): Promise<ProtobufRpcClient> {
+    const client = await connectComet(this.rpcGaia);
+    const queryClient = new QueryClient(client);
+    return createProtobufRpcClient(queryClient);
+  }
+
+  // Returns protobuf rpc client.
+  // Usually used to construct querier for specific module
+  async rpcClient(network: string): Promise<ProtobufRpcClient> {
+    if (network === 'neutron') {
+      return this.neutronRpcClient();
+    } else if (network === 'gaia') {
+      return this.gaiaRpcClient();
+    } else {
+      throw new Error('rpcClient() called non existent network: ' + network);
+    }
   }
 }
 
@@ -192,21 +190,21 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
-async function testOffset(s: Suite): Promise<number> {
+async function testFilePosition(s: Suite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
   const filename = splitted.pop().trim();
   const dir = splitted.join('/');
 
-  return testIdxForNameDir(dir, filename);
+  return testFilePositionForName(dir, filename);
 }
 
 // takes all files in directory, sorts them and finds the index of the current file in the array
-async function testIdxForNameDir(
+async function testFilePositionForName(
   dir: string,
   filename: string,
 ): Promise<number> {
-  const files = await listFilenames(dir);
+  const files = await listFilenamesInDir(dir);
   const idx = files.findIndex((f) => f === filename);
 
   if (idx === -1) {
@@ -215,13 +213,12 @@ async function testIdxForNameDir(
   return idx;
 }
 
-async function listFilenames(dir: string): Promise<string[]> {
+async function listFilenamesInDir(dir: string): Promise<string[]> {
   const res = [];
   try {
     const files = await fs.readdir(dir, { withFileTypes: true });
     files.forEach((file) => {
       if (file.isFile()) {
-        // console.log('list filename: ' + file.name + ' file.path: ' + file.path);
         res.push(file.name.trim());
       }
     });
@@ -231,7 +228,7 @@ async function listFilenames(dir: string): Promise<string[]> {
   return res.sort();
 }
 
-const genesisWalletSet = async (
+const getGenesisWallets = async (
   prefix: string,
   config: any,
 ): Promise<Record<string, Wallet>> => ({

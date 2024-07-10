@@ -8,7 +8,7 @@ import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { Tendermint37Client } from '@cosmjs/tendermint-rpc';
 import { createProtobufRpcClient, QueryClient } from '@cosmjs/stargate';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { QueryClientImpl } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import {
   AckFailuresResponse,
@@ -36,9 +36,7 @@ describe('Neutron / Interchain TXs', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

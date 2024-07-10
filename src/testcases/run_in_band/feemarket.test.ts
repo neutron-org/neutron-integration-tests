@@ -1,4 +1,3 @@
-import { Registry } from '@cosmjs/proto-signing';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 import '@neutron-org/neutronjsplus';
 import {
@@ -8,43 +7,33 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WasmWrapper, wasm } from '../../helpers/wasmClient';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as FeemarketQuery } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;
   let neutronAccount: Wallet;
-  let neutronClient: WasmWrapper;
+  let neutronClient: SigningNeutronClient;
   let daoMember: DaoMember;
   let mainDao: Dao;
-  let feemarketQuery: FeemarketQuery;
+  let feemarketQuerier: FeemarketQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-
-    neutronAccount = testState.wallets.neutron.demo1;
-    neutronClient = await wasm(
-      testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
-    );
-    const neutronRpcClient = await testState.rpcClient('neutron');
+    testState = await LocalState.create(config, mnemonics, suite);
+    const neutronRpcClient = await testState.neutronRpcClient();
 
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient.client,
@@ -79,13 +68,13 @@ describe('Neutron / Fee Market', () => {
       },
     );
 
-    feemarketQuery = new FeemarketQuery(neutronRpcClient);
+    feemarketQuerier = new FeemarketQueryClient(neutronRpcClient);
     const adminQuery = new AdminQueryClient(neutronRpcClient);
-    const admins = await adminQuery.Admins();
+    const admins = await adminQuery.admins();
     chainManagerAddress = admins.admins[0];
 
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -95,13 +84,13 @@ describe('Neutron / Fee Market', () => {
   let counter = 1;
 
   const executeSwitchFeemarket = async (
-    feemarketQuery: FeemarketQuery,
+    feemarketQuery: FeemarketQueryClient,
     daoMember: DaoMember,
     kind: string,
     enabled: boolean,
     window = 1n,
   ) => {
-    const params = (await feemarketQuery.Params()).params;
+    const params = (await feemarketQuery.params()).params;
     params.enabled = enabled;
     params.window = window;
 
@@ -242,7 +231,7 @@ describe('Neutron / Fee Market', () => {
 
   test('disable/enable feemarket module', async () => {
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'disable feemarket',
       false,
@@ -267,7 +256,7 @@ describe('Neutron / Fee Market', () => {
     await waitBlocks(2, neutronClient.client);
 
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -292,7 +281,7 @@ describe('Neutron / Fee Market', () => {
 
   test('gas price gets up and down', async () => {
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -309,7 +298,7 @@ describe('Neutron / Fee Market', () => {
     };
 
     const baseGasPrice = +(
-      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+      await feemarketQuerier.gasPrice({ denom: NEUTRON_DENOM })
     ).price.amount;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
@@ -335,7 +324,7 @@ describe('Neutron / Fee Market', () => {
     }
 
     const inflatedGasPrice = +(
-      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+      await feemarketQuerier.gasPrice({ denom: NEUTRON_DENOM })
     ).price.amount;
     // gas price should be higher after big transactions
     expect(inflatedGasPrice).toBeGreaterThan(baseGasPrice);
@@ -343,7 +332,7 @@ describe('Neutron / Fee Market', () => {
     await waitBlocks(10, neutronClient.client);
 
     const newNtrnGasPrice = +(
-      await feemarketQuery.GasPrice({
+      await feemarketQuerier.gasPrice({
         denom: NEUTRON_DENOM,
       })
     ).price.amount;

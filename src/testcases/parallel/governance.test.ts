@@ -1,6 +1,6 @@
 import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { LocalState, createLocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   Dao,
@@ -14,8 +14,6 @@ import {
   ADMIN_MODULE_ADDRESS,
   NEUTRON_DENOM,
 } from '@neutron-org/neutronjsplus';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { wasm, WasmWrapper } from '../../helpers/wasmClient';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
@@ -23,19 +21,21 @@ import {
   getWithAttempts,
   waitBlocks,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as UpgradeQuery } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
-import { QueryClientImpl as IbcClientQuery } from '@neutron-org/neutronjs/ibc/core/client/v1/query.rpc.Query';
-import { QueryClientImpl as WasmQuery } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
-import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
-import { QueryClientImpl as InterchainTxQuery } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query.rpc.Query';
-import { QueryClientImpl as InterchainAccounts } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
+import { QueryClientImpl as UpgradeQuerier } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
+import { QueryClientImpl as IbcClientQuerier } from '@neutron-org/neutronjs/ibc/core/client/v1/query.rpc.Query';
+import { QueryClientImpl as WasmQuerier } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
+import { QueryClientImpl as CronQuerier } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
+import { QueryClientImpl as InterchainTxQuerier } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query.rpc.Query';
+import { QueryClientImpl as InterchainAccountsQuerier } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { neutronTypes } from '../../helpers/registry_types';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
-  let neutronAccount: Wallet;
+  let neutronWallet: Wallet;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
   let daoMember3: DaoMember;
@@ -44,31 +44,30 @@ describe('Neutron / Governance', () => {
   let contractAddress: string;
   let contractAddressForAdminMigration: string;
 
-  let neutronClient: WasmWrapper;
+  let neutronClient: SigningNeutronClient;
 
   let chainManagerAddress: string;
 
-  let upgradeQuery: UpgradeQuery;
-  let ibcClientQuery: IbcClientQuery;
-  let wasmQuery: WasmQuery;
-  let cronQuery: CronQuery;
-  let interchaintxQuery: InterchainTxQuery;
-  let interchainAccounts: InterchainAccounts;
+  let upgradeQuerier: UpgradeQuerier;
+  let ibcClientQuerier: IbcClientQuerier;
+  let wasmQuery: WasmQuerier;
+  let cronQuery: CronQuerier;
+  let interchaintxQuery: InterchainTxQuerier;
+  let interchainAccountsQuerier: InterchainAccountsQuerier;
 
   beforeAll(async (suite: Suite) => {
-    testState = await createLocalState(config, inject('mnemonics'), suite);
-    neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-    const neutronRpcClient = await testState.rpcClient('neutron');
+    const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient.client,
       neutronRpcClient,
-    ); //add assert for some addresses
+    ); // add assert for some addresses
     const daoContracts = await getDaoContracts(
       neutronClient.client,
       daoCoreAddress,
@@ -77,35 +76,33 @@ describe('Neutron / Governance', () => {
     daoMember1 = new DaoMember(
       mainDao,
       neutronClient.client,
-      neutronAccount.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
 
-    const neutronAccount2 = await testState.nextWallet('neutron');
-    const neutronClient2 = await wasm(
+    const neutronWallet2 = await testState.nextWallet('neutron');
+    const neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount2,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet2.directwallet,
+      neutronWallet2.address,
     );
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
-      neutronAccount2.address,
+      neutronWallet2.address,
       NEUTRON_DENOM,
     );
 
-    const neutronAccount3 = await testState.nextWallet('neutron');
-    const neutronClient3 = await wasm(
+    const neutronWallet3 = await testState.nextWallet('neutron');
+    const neutronClient3 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount3,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet3.directwallet,
+      neutronWallet3.address,
     );
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,
-      neutronAccount3.address,
+      neutronWallet3.address,
       NEUTRON_DENOM,
     );
 
@@ -113,12 +110,12 @@ describe('Neutron / Governance', () => {
     const admins = await queryClient.admins();
     chainManagerAddress = admins.admins[0];
 
-    upgradeQuery = new UpgradeQuery(neutronRpcClient);
-    ibcClientQuery = new IbcClientQuery(neutronRpcClient);
-    wasmQuery = new WasmQuery(neutronRpcClient);
-    cronQuery = new CronQuery(neutronRpcClient);
-    interchaintxQuery = new InterchainTxQuery(neutronRpcClient);
-    interchainAccounts = new InterchainAccounts(neutronRpcClient);
+    upgradeQuerier = new UpgradeQuerier(neutronRpcClient);
+    ibcClientQuerier = new IbcClientQuerier(neutronRpcClient);
+    wasmQuery = new WasmQuerier(neutronRpcClient);
+    cronQuery = new CronQuerier(neutronRpcClient);
+    interchaintxQuery = new InterchainTxQuerier(neutronRpcClient);
+    interchainAccountsQuerier = new InterchainAccountsQuerier(neutronRpcClient);
 
     const contractCodeId = await neutronClient.upload(
       NeutronContract.IBC_TRANSFER,
@@ -192,7 +189,7 @@ describe('Neutron / Governance', () => {
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
       const res = await neutronClient.client.sendTokens(
-        neutronAccount.address,
+        neutronWallet.address,
         mainDao.contracts.core.address,
         [
           {
@@ -697,7 +694,7 @@ describe('Neutron / Governance', () => {
 
   describe('check state change from proposal #4 execution', () => {
     test('check if software current plan was created', async () => {
-      const currentPlan = await upgradeQuery.currentPlan();
+      const currentPlan = await upgradeQuerier.currentPlan();
       expect(currentPlan.plan?.height).toEqual(100000n);
       expect(currentPlan.plan?.name).toEqual('Plan #1');
       expect(currentPlan.plan?.info).toEqual('Plan info');
@@ -729,7 +726,7 @@ describe('Neutron / Governance', () => {
 
   describe('check state change from proposal #5 execution', () => {
     test('check if software current plan was removed', async () => {
-      const currentPlan = await upgradeQuery.currentPlan();
+      const currentPlan = await upgradeQuerier.currentPlan();
       expect(currentPlan.plan).toBeUndefined();
     });
   });
@@ -749,11 +746,11 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #6', () => {
     test('check client statuses before update', async () => {
       expect(
-        (await ibcClientQuery.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
           .status,
       ).toBe('Expired');
       expect(
-        (await ibcClientQuery.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Active');
     });
@@ -768,11 +765,11 @@ describe('Neutron / Governance', () => {
 
     test('check client statuses after update', async () => {
       expect(
-        (await ibcClientQuery.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
           .status,
       ).toBe('Active');
       expect(
-        (await ibcClientQuery.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Active');
     });
@@ -1205,16 +1202,16 @@ describe('Neutron / Governance', () => {
         daoMember1.user,
         await SigningStargateClient.connectWithSigner(
           testState.rpcNeutron,
-          neutronAccount.directwallet,
-          { registry: neutronClient.registry },
+          neutronWallet.directwallet,
+          { registry: new Registry(neutronTypes) },
         ),
-        neutronClient.registry,
+        new Registry(neutronTypes),
         'icahost',
         'HostEnabled',
         'false',
       );
       expect(res.code).toEqual(1); // must be admin to submit proposals to admin-module
-      const resAfter = await interchainAccounts.params();
+      const resAfter = await interchainAccountsQuerier.params();
       expect(resAfter.params.hostEnabled).toEqual(true);
     });
   });

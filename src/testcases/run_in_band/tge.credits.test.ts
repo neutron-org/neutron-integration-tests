@@ -2,7 +2,7 @@ import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
@@ -26,8 +26,7 @@ describe('Neutron / TGE / Credits', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     airdropAddress = testState.wallets.qaNeutronThree.qa.address;
     lockdropAddress = testState.wallets.qaNeutronFour.qa.address;
 

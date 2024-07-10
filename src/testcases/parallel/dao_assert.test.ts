@@ -1,8 +1,8 @@
-import { inject } from 'vitest';
+import { inject, Suite } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
@@ -14,9 +14,9 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
-describe('DAO / Check', () => {
+describe('Neutron / DAO check', () => {
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let daoContracts: DaoContracts;
@@ -31,10 +31,8 @@ describe('DAO / Check', () => {
   let treasuryContract: string;
   let feeburnerQuery: FeeburnerQueryClient;
 
-  beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+  beforeAll(async (suite: Suite) => {
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

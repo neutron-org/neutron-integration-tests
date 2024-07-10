@@ -1,4 +1,4 @@
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
@@ -15,8 +15,7 @@ describe('Float operations support', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

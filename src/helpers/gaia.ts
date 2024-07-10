@@ -11,7 +11,7 @@ import {
 import { VoteOption } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 
-export const msgDelegate = async (
+export const executeMsgDelegate = async (
   wallet: walletWrapper.WalletWrapper,
   delegatorAddress: string,
   validatorAddress: string,
@@ -33,7 +33,7 @@ export const msgDelegate = async (
   return res;
 };
 
-export const msgUndelegate = async (
+export const executeMsgUndelegate = async (
   wallet: walletWrapper.WalletWrapper,
   delegatorAddress: string,
   validatorAddress: string,
@@ -56,7 +56,7 @@ export const msgUndelegate = async (
   return res;
 };
 
-export const msgSubmitProposal = async (
+export const executeMsgSubmitProposal = async (
   wallet: walletWrapper.WalletWrapper,
   proposer: string,
   amount = '0',
@@ -90,7 +90,7 @@ export const msgSubmitProposal = async (
   return res;
 };
 
-export const msgVote = async (
+export const executeMsgVote = async (
   wallet: walletWrapper.WalletWrapper,
   voter: string,
   proposalId: number,

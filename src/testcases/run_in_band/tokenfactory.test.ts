@@ -5,7 +5,7 @@ import {
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { createWalletWrapper, LocalState } from '../../helpers/localState';
+import { createWalletWrapper, LocalState } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgBurn,
@@ -79,8 +79,7 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     ownerWallet = await testState.nextWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

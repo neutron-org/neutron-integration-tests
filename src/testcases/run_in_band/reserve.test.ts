@@ -5,7 +5,7 @@ import { inject } from 'vitest';
 import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 
 const config = require('../../config.json');
 
@@ -31,8 +31,7 @@ describe('Neutron / Treasury', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,
@@ -524,7 +523,7 @@ async function testExecControl(
 ) {
   // check contract's pause info before pausing
   let pauseInfo = await account.chain.queryContract<{
-    paused: boolean | { until_height: number };
+    paused: { until_height: number } | undefined;
     unpaused: boolean;
   }>(testingContract, {
     pause_info: {},

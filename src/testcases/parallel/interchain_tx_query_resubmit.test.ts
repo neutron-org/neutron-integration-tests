@@ -1,7 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
@@ -27,8 +27,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,
@@ -45,7 +44,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
-      await testState.randomWallet('cosmos'),
+      await testState.nextWallet('cosmos'),
     );
   });
 
