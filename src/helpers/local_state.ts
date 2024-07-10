@@ -31,15 +31,11 @@ export class LocalState {
   restNeutron: string;
   restGaia: string;
 
-  currentIndexes: {
-    neutron: {
-      [offset: number]: number;
-    };
-    cosmos: {
-      [offset: number]: number;
-    };
+  walletIndexes: {
+    neutron: number;
+    cosmos: number;
   };
-  offset: number;
+  testFilePosition: number;
 
   static async create(
     config: any,
@@ -64,14 +60,14 @@ export class LocalState {
 
     this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 
-    this.currentIndexes = { neutron: {}, cosmos: {} };
+    this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
 
   async init() {
     if (this.suite) {
-      this.offset = await testFilePosition(this.suite);
+      this.testFilePosition = await testFilePosition(this.suite);
     } else {
-      this.offset = 0;
+      this.testFilePosition = 0;
     }
 
     const neutron = await getGenesisWallets(NEUTRON_PREFIX, this.config);
@@ -96,12 +92,19 @@ export class LocalState {
   // That way we can safely use these wallets in a parallel tests
   // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
   async nextWallet(network: string): Promise<Wallet> {
-    const currentOffset = this.currentIndexes[network][this.offset] || 0;
-    const resultIdx = this.offset * WALLETS_PER_TEST_FILE + currentOffset;
+    const currentOffsetInTestFile = this.walletIndexes[network];
+    if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
+      return Promise.reject(
+        'cannot give next wallet: current offset is greater than ' +
+          WALLETS_PER_TEST_FILE,
+      );
+    }
+    const nextWalletIndex =
+      this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
 
-    this.currentIndexes[network][this.offset] = currentOffset + 1;
+    this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
-    return mnemonicToWallet(this.mnemonics[resultIdx], network);
+    return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
   }
 
   async createQaWallet(
