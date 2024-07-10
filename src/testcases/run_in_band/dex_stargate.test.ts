@@ -38,8 +38,7 @@ describe('Neutron / dex module (stargate contract)', () => {
   let inactiveTrancheKey: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics, suite);
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,

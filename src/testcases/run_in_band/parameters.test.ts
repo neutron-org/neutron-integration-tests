@@ -29,7 +29,6 @@ import {
   NeutronQuerier,
   OsmosisQuerier,
 } from '../../helpers/client_types';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
@@ -59,13 +58,10 @@ describe('Neutron / Parameters', () => {
     );
     neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
 
     neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
@@ -80,7 +76,7 @@ describe('Neutron / Parameters', () => {
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
 
-    dao = new Dao(neutronClient.client, daoContracts);
+    dao = new Dao(neutronClient, daoContracts);
     daoMember1 = new DaoMember(
       dao,
       neutronClient.client,
@@ -92,16 +88,14 @@ describe('Neutron / Parameters', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await dao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await dao.queryTotalVotingPower(),
         async (response) => response.power == 11000,
         20,
@@ -168,7 +162,7 @@ describe('Neutron / Parameters', () => {
         'Tokenfactory params proposal',
         updateTokenfactoryParamsProposal({
           fee_collector_address: await getNeutronDAOCore(
-            neutronClient.client,
+            neutronClient,
             neutronRpcClient,
           ),
           denom_creation_fee: [{ denom: NEUTRON_DENOM, amount: '1' }],
@@ -378,12 +372,12 @@ describe('Neutron / Parameters', () => {
     });
   });
 
-  describe('Contractanager params proposal', () => {
+  describe('Contractmanager params proposal', () => {
     test('create proposal', async () => {
       await daoMember1.submitUpdateParamsContractmanagerProposal(
         chainManagerAddress,
         'Proposal #6',
-        'Contractanager params proposal',
+        'Contractmanager params proposal',
         updateContractmanagerParamsProposal({
           sudo_call_gas_limit: '1000',
         }),

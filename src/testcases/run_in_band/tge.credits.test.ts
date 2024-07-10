@@ -25,8 +25,7 @@ describe('Neutron / TGE / Credits', () => {
   let neutronAccount2Address: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics);
+    testState = await LocalState.create(config, inject('mnemonics'));
     airdropAddress = testState.wallets.qaNeutronThree.qa.address;
     lockdropAddress = testState.wallets.qaNeutronFour.qa.address;
 

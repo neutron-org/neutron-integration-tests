@@ -19,6 +19,7 @@ import { GasPrice } from '@cosmjs/stargate/build/fee';
 import {
   waitBlocks,
   getWithAttempts,
+  queryContractWithWait,
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { CodeId } from '@neutron-org/neutronjsplus/dist/types';
 
@@ -154,6 +155,21 @@ export class SigningNeutronClient extends CosmWasmClient {
     );
   }
 
+  async signAndBroadcastSync(
+    messages: readonly EncodeObject[],
+    fee: StdFee | 'auto' | number = 'auto',
+    memo?: string,
+    timeoutHeight?: bigint,
+  ): Promise<string> {
+    return this.client.signAndBroadcastSync(
+      this.sender,
+      messages,
+      fee,
+      memo,
+      timeoutHeight,
+    );
+  }
+
   async getNeutronContract(fileName: string): Promise<Buffer> {
     return fsPromise.readFile(path.resolve(this.contractsPath, fileName));
   }
@@ -183,5 +199,13 @@ export class SigningNeutronClient extends CosmWasmClient {
     numAttempts = 20,
   ): Promise<T> {
     return getWithAttempts(this.client, getFunc, readyFunc, numAttempts);
+  }
+
+  async queryContractWithWait<T>(
+    contract: string,
+    query: any,
+    numAttempts = 20,
+  ): Promise<T> {
+    return queryContractWithWait(this.client, contract, query, numAttempts);
   }
 }

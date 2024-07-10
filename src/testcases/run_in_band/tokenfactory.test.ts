@@ -78,8 +78,7 @@ describe('Neutron / Tokenfactory', () => {
   let securityDaoAddr: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics, suite);
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
     ownerWallet = await testState.nextWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,

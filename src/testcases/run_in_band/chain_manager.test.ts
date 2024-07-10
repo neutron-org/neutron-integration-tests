@@ -11,7 +11,6 @@ import {
   updateCronParamsProposal,
   updateTokenfactoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-
 import config from '../../config.json';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
@@ -36,7 +35,6 @@ describe('Neutron / Chain Manager', () => {
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    await testState.init();
     const neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -47,15 +45,12 @@ describe('Neutron / Chain Manager', () => {
     securityDaoAddr = securityDaoWallet.address;
     const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
 
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    mainDao = new Dao(neutronClient, daoContracts);
     mainDaoMember = new DaoMember(
       mainDao,
       neutronClient.client,
@@ -101,7 +96,7 @@ describe('Neutron / Chain Manager', () => {
     let proposalId: number;
     test('create proposal', async () => {
       const currentOverruleProposalConfig =
-        await neutronClient.client.queryContractSmart(
+        await neutronClient.queryContractSmart(
           mainDao.contracts.proposals['overrule'].address,
           {
             config: {},
@@ -302,7 +297,7 @@ describe('Neutron / Chain Manager', () => {
       );
       expect(tokenfactoryParams.params.whitelistedHooks).toEqual([
         {
-          code_id: '1',
+          code_id: 1n,
           denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);

@@ -9,10 +9,6 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import {
-  getWithAttempts,
-  waitBlocks,
-} from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
@@ -35,9 +31,7 @@ describe('Neutron / Slinky', () => {
   let marketmapContract: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = testState.wallets.qaNeutron.qa;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -46,14 +40,11 @@ describe('Neutron / Slinky', () => {
     );
     const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
     daoMember1 = new DaoMember(
       mainDao,
       neutronClient.client,
@@ -68,8 +59,7 @@ describe('Neutron / Slinky', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
@@ -95,10 +85,12 @@ describe('Neutron / Slinky', () => {
 
   describe('before create market map', () => {
     test('query last should return null', async () => {
-      const res: LastUpdatedResponse =
-        await neutronClient.client.queryContractSmart(marketmapContract, {
+      const res: LastUpdatedResponse = await neutronClient.queryContractSmart(
+        marketmapContract,
+        {
           last_updated: {},
-        });
+        },
+      );
       expect(res.last_updated).toBe(null);
     });
   });
@@ -162,7 +154,7 @@ describe('Neutron / Slinky', () => {
 
     describe('execute proposal', () => {
       test('check if proposal is passed', async () => {
-        await waitBlocks(5, neutronClient.client);
+        await neutronClient.waitBlocks(5);
         await mainDao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
@@ -174,7 +166,7 @@ describe('Neutron / Slinky', () => {
   describe('module fetches prices', () => {
     test('currency pairs not empty', async () => {
       // wait to make sure we updated the price in oracle module
-      await waitBlocks(30, neutronClient.client);
+      await neutronClient.waitBlocks(30);
       // check
       const res = await oracleQuery.getAllCurrencyPairs();
       expect(res.currencyPairs[0].base).toBe('TIA');

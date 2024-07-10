@@ -63,7 +63,7 @@ export class LocalState {
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
 
-  async init() {
+  protected async init() {
     if (this.suite) {
       this.testFilePosition = await testFilePosition(this.suite);
     } else {

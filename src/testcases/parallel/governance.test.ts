@@ -17,16 +17,12 @@ import {
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
-import {
-  getWithAttempts,
-  waitBlocks,
-} from '@neutron-org/neutronjsplus/dist/wait';
 import { QueryClientImpl as UpgradeQuerier } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as IbcClientQuerier } from '@neutron-org/neutronjs/ibc/core/client/v1/query.rpc.Query';
-import { QueryClientImpl as WasmQuerier } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
-import { QueryClientImpl as CronQuerier } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
-import { QueryClientImpl as InterchainTxQuerier } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query.rpc.Query';
-import { QueryClientImpl as InterchainAccountsQuerier } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
+import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
+import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
+import { QueryClientImpl as InterchainTxQueryClient } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query.rpc.Query';
+import { QueryClientImpl as InterchainAccountsQueryClient } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
@@ -36,6 +32,7 @@ import { neutronTypes } from '../../helpers/registry_types';
 describe('Neutron / Governance', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
+  let neutronClient: SigningNeutronClient;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
   let daoMember3: DaoMember;
@@ -44,16 +41,14 @@ describe('Neutron / Governance', () => {
   let contractAddress: string;
   let contractAddressForAdminMigration: string;
 
-  let neutronClient: SigningNeutronClient;
-
   let chainManagerAddress: string;
 
   let upgradeQuerier: UpgradeQuerier;
   let ibcClientQuerier: IbcClientQuerier;
-  let wasmQuery: WasmQuerier;
-  let cronQuery: CronQuerier;
-  let interchaintxQuery: InterchainTxQuerier;
-  let interchainAccountsQuerier: InterchainAccountsQuerier;
+  let wasmQuerier: WasmQueryClient;
+  let cronQuerier: CronQueryClient;
+  let interchaintxQuery: InterchainTxQueryClient;
+  let interchainAccountsQuerier: InterchainAccountsQueryClient;
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
@@ -65,14 +60,11 @@ describe('Neutron / Governance', () => {
     );
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     ); // add assert for some addresses
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
     daoMember1 = new DaoMember(
       mainDao,
       neutronClient.client,
@@ -112,10 +104,12 @@ describe('Neutron / Governance', () => {
 
     upgradeQuerier = new UpgradeQuerier(neutronRpcClient);
     ibcClientQuerier = new IbcClientQuerier(neutronRpcClient);
-    wasmQuery = new WasmQuerier(neutronRpcClient);
-    cronQuery = new CronQuerier(neutronRpcClient);
-    interchaintxQuery = new InterchainTxQuerier(neutronRpcClient);
-    interchainAccountsQuerier = new InterchainAccountsQuerier(neutronRpcClient);
+    wasmQuerier = new WasmQueryClient(neutronRpcClient);
+    cronQuerier = new CronQueryClient(neutronRpcClient);
+    interchaintxQuery = new InterchainTxQueryClient(neutronRpcClient);
+    interchainAccountsQuerier = new InterchainAccountsQueryClient(
+      neutronRpcClient,
+    );
 
     const contractCodeId = await neutronClient.upload(
       NeutronContract.IBC_TRANSFER,
@@ -150,8 +144,7 @@ describe('Neutron / Governance', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
@@ -159,8 +152,7 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 2', async () => {
       await daoMember2.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
@@ -168,16 +160,14 @@ describe('Neutron / Governance', () => {
     });
     test('bond from wallet 3 ', async () => {
       await daoMember3.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryTotalVotingPower(),
         // 3x10000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
         async (response) => response.power == 31000,
@@ -188,8 +178,7 @@ describe('Neutron / Governance', () => {
 
   describe('send a bit funds to core contracts', () => {
     test('send funds from wallet 1', async () => {
-      const res = await neutronClient.client.sendTokens(
-        neutronWallet.address,
+      const res = await neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [
           {
@@ -535,14 +524,13 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         const executeRes = await daoMember1.executeProposal(proposalId);
-        const tx = await neutronClient.client.getTx(executeRes.transactionHash);
+        const tx = await neutronClient.getTx(executeRes.transactionHash);
         rawLog = JSON.stringify(tx.rawLog);
       } catch (e) {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -569,14 +557,13 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         const executeRes = await daoMember1.executeProposal(proposalId);
-        const tx = await neutronClient.client.getTx(executeRes.transactionHash);
+        const tx = await neutronClient.getTx(executeRes.transactionHash);
         rawLog = JSON.stringify(tx.rawLog);
       } catch (e) {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -660,8 +647,7 @@ describe('Neutron / Governance', () => {
         rawLog = e.message;
       }
       expect(rawLog.includes("proposal is not in 'passed' state"));
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await mainDao.queryMultiChoiceProposal(proposalId),
         async (response) => response.proposal.status === 'rejected',
         20,
@@ -796,7 +782,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that codes were pinned', async () => {
-      const res = await wasmQuery.pinnedCodes();
+      const res = await wasmQuerier.pinnedCodes();
       expect(res.codeIds).toEqual([1n, 2n]);
     });
   });
@@ -822,7 +808,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that codes were unpinned', async () => {
-      const res = await wasmQuery.pinnedCodes();
+      const res = await wasmQuerier.pinnedCodes();
       expect(res.codeIds.length).toEqual(0);
     });
   });
@@ -848,7 +834,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that admin was changed', async () => {
-      const contract = await neutronClient.client.getContract(
+      const contract = await neutronClient.getContract(
         contractAddressForAdminMigration,
       );
       expect(contract.admin).toEqual(daoMember1.user);
@@ -876,7 +862,7 @@ describe('Neutron / Governance', () => {
       await daoMember1.executeProposalWithAttempts(proposalId);
     });
     test('check that admin was changed', async () => {
-      const contract = await neutronClient.client.getContract(
+      const contract = await neutronClient.getContract(
         contractAddressForAdminMigration,
       );
       expect(contract.admin).toBeUndefined();
@@ -908,14 +894,14 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cronQuery.schedules();
+      const res = await cronQuerier.schedules();
       expect(res.schedules.length).toEqual(1);
     });
 
     test('check that msg from schedule was executed', async () => {
-      await waitBlocks(15, neutronClient.client);
+      await neutronClient.waitBlocks(15);
       const queryResult: TestArgResponse =
-        await neutronClient.client.queryContractSmart(contractAddress, {
+        await neutronClient.queryContractSmart(contractAddress, {
           test_msg: { arg: 'proposal_11' },
         });
 
@@ -928,9 +914,9 @@ describe('Neutron / Governance', () => {
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
-      await waitBlocks(10, neutronClient.client);
+      await neutronClient.waitBlocks(10);
       const queryResultLater: TestArgResponse =
-        await neutronClient.client.queryContractSmart(contractAddress, {
+        await neutronClient.queryContractSmart(contractAddress, {
           test_msg: { arg: 'proposal_11' },
         });
       expect(beforeCount).toBeLessThan(queryResultLater.count);
@@ -953,7 +939,7 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #12', () => {
     const proposalId = 12;
     test('check that schedule exists before removing', async () => {
-      const res = await cronQuery.schedules();
+      const res = await cronQuerier.schedules();
       expect(res.schedules.length).toEqual(1);
     });
     test('check if proposal is passed', async () => {
@@ -966,7 +952,7 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was removed', () => {
     test('check that schedule was removed', async () => {
-      const res = await cronQuery.schedules();
+      const res = await cronQuerier.schedules();
       expect(res.schedules.length).toEqual(0);
     });
   });
@@ -996,14 +982,14 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cronQuery.schedules();
+      const res = await cronQuerier.schedules();
       expect(res.schedules.length).toEqual(1);
     });
 
     test('check that last msg from schedule was not executed because there was error in other messages', async () => {
-      await waitBlocks(15, neutronClient.client);
+      await neutronClient.waitBlocks(15);
       const queryResult: TestArgResponse =
-        await neutronClient.client.queryContractSmart(contractAddress, {
+        await neutronClient.queryContractSmart(contractAddress, {
           test_msg: { arg: 'three_messages' },
         });
 
@@ -1079,7 +1065,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         const executeRes = await daoMember1.executeProposal(proposalId);
-        const tx = await neutronClient.client.getTx(executeRes.transactionHash);
+        const tx = await neutronClient.getTx(executeRes.transactionHash);
         rawLog = JSON.stringify(tx.rawLog);
       } catch (e) {
         rawLog = e.message;
@@ -1090,14 +1076,14 @@ describe('Neutron / Governance', () => {
 
   describe('check that schedule was added and executed later', () => {
     test('check that schedule was added', async () => {
-      const res = await cronQuery.schedules();
+      const res = await cronQuerier.schedules();
       expect(res.schedules.length).toEqual(2);
     });
 
     test('check that first msg from schedule was not committed because there was error in the last msg', async () => {
-      await waitBlocks(15, neutronClient.client);
+      await neutronClient.waitBlocks(15);
       const queryResult: TestArgResponse =
-        await neutronClient.client.queryContractSmart(contractAddress, {
+        await neutronClient.queryContractSmart(contractAddress, {
           test_msg: { arg: 'correct_msg' },
         });
 
@@ -1127,7 +1113,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         const executeRes = await daoMember1.executeProposal(proposalId);
-        const tx = await neutronClient.client.getTx(executeRes.transactionHash);
+        const tx = await neutronClient.getTx(executeRes.transactionHash);
         rawLog = JSON.stringify(tx.rawLog);
       } catch (e) {
         rawLog = e.message;
@@ -1162,7 +1148,7 @@ describe('Neutron / Governance', () => {
       let rawLog: any;
       try {
         const executeRes = await daoMember1.executeProposal(proposalId);
-        const tx = await neutronClient.client.getTx(executeRes.transactionHash);
+        const tx = await neutronClient.getTx(executeRes.transactionHash);
         rawLog = JSON.stringify(tx.rawLog);
       } catch (e) {
         rawLog = e.message;

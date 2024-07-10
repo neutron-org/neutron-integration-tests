@@ -10,7 +10,6 @@ import {
   deployNeutronDao,
   deploySubdao,
 } from '../../helpers/dao';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
@@ -50,7 +49,7 @@ describe('Neutron / Subdao Overrule', () => {
     if (!daoContracts || !daoContracts.core || !daoContracts.proposals) {
       throw new Error('Failed to deploy dao');
     }
-    mainDao = new Dao(neutronClient1.client, daoContracts);
+    mainDao = new Dao(neutronClient1, daoContracts);
     mainDaoMember1 = new DaoMember(
       mainDao,
       neutronClient1.client,
@@ -82,7 +81,7 @@ describe('Neutron / Subdao Overrule', () => {
       NEUTRON_DENOM,
     );
 
-    await waitBlocks(2, neutronClient1.client);
+    await neutronClient1.waitBlocks(2);
 
     const votingPower = await subdaoMember1.queryVotingPower();
     expect(votingPower.power).toEqual('1');

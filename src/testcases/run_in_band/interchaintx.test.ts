@@ -72,6 +72,7 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
       test('init client', async () => {
+        // TODO: should be CometClient.connect()
         const tendermint = await Tendermint37Client.connect(gaiaChain.rpc);
         const queryClient = new QueryClient(tendermint);
         const rpcClient = createProtobufRpcClient(queryClient);

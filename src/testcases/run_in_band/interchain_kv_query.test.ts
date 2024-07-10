@@ -69,8 +69,7 @@ describe('Neutron / Interchain KV Query', () => {
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics);
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
       testState.restNeutron,
