@@ -52,6 +52,7 @@ describe('Neutron / Subdao', () => {
   let demo2Addr: cosmosclient.AccAddress | cosmosclient.ValAddress;
   let subDao: Dao;
   let mainDao: Dao;
+  let pausableMock: string;
 
   beforeAll(async () => {
     testState = new TestStateLocalCosmosTestNet(config);
@@ -71,6 +72,16 @@ describe('Neutron / Subdao', () => {
     neutronAccount2 = new WalletWrapper(neutronChain, demo2Wallet);
 
     const daoContracts = await deployNeutronDao(neutronAccount1);
+    const pausableCodeId = await neutronAccount1.storeWasm('pausable.wasm');
+
+    pausableMock = (
+      await neutronAccount1.instantiateContract(
+        pausableCodeId,
+        '{}',
+        'pausable',
+      )
+    )[0]._contract_address;
+
     mainDao = new Dao(neutronChain, daoContracts);
     mainDaoMember = new DaoMember(neutronAccount1, mainDao);
     await mainDaoMember.bondFunds('10000');
@@ -629,6 +640,39 @@ describe('Neutron / Subdao', () => {
           'single_nt_pause',
         ),
       ).rejects.toThrow(/Proposal is malformed/);
+    });
+  });
+
+  describe.only('Non-timelock Drop pause proposal: Succeed creation', () => {
+    let proposalId: number;
+    test('Non-timelock pause proposal: Succeed execution', async () => {
+      proposalId = await subdaoMember1.submitDropPauseProposal(
+        pausableMock,
+        'single_nt_pause_drop',
+      );
+      console.log('proposalId', proposalId);
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause_drop');
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause_drop'),
+      ).resolves.not.toThrow();
+      const pausedState = await neutronChain.queryContract(pausableMock, {
+        state: {},
+      });
+      expect(pausedState).toEqual(true);
+    });
+    test('Non-timelock unpause proposal: Succeed execution', async () => {
+      proposalId = await subdaoMember1.submitDropUnpauseProposal(
+        pausableMock,
+        'single_nt_pause_drop',
+      );
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause_drop');
+      await expect(
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause_drop'),
+      ).resolves.not.toThrow();
+      const pausedState = await neutronChain.queryContract(pausableMock, {
+        state: {},
+      });
+      expect(pausedState).toEqual(false);
     });
   });
 
