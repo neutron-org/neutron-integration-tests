@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { execSync } from 'child_process';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
@@ -12,8 +12,8 @@ import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 export const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
 export const DEBUG_SUBMIT_TX: boolean = !!process.env.DEBUG_SUBMIT_TX || false;
 
-const BLOCKS_COUNT_BEFORE_START = process.env.BLOCKS_COUNT_BEFORE_START
-  ? parseInt(process.env.BLOCKS_COUNT_BEFORE_START, 10)
+const START_BLOCK_HEIGHT = process.env.START_BLOCK_HEIGHT
+  ? parseInt(process.env.START_BLOCK_HEIGHT, 10)
   : 10;
 
 let alreadySetUp = false;
@@ -47,12 +47,7 @@ export const setup = async (host1: string, host2: string) => {
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
-  if (process.env.NO_REBUILD) {
-    console.log('NO_REBUILD ENV provided. do not rebuild docker images');
-    execSync(`cd setup && make start-cosmopark-no-rebuild`);
-  } else {
-    execSync(`cd setup && make start-cosmopark`);
-  }
+  execSync(`cd setup && make start-cosmopark`);
 
   if (!process.env.NO_PRINT_VERSIONS) {
     await showContractsHashes();
@@ -81,13 +76,14 @@ const showContractsHashes = async () => {
 
 const waitForHTTP = async (
   host = 'http://127.0.0.1:1317',
-  path = `cosmos/base/tendermint/v1beta1/blocks/${BLOCKS_COUNT_BEFORE_START}`,
+  path = `cosmos/base/tendermint/v1beta1/blocks/${START_BLOCK_HEIGHT}`,
   timeout = 280000,
 ) => {
   const start = Date.now();
+  let r: AxiosResponse<any, any>;
   while (Date.now() < start + timeout) {
     try {
-      const r = await axios.get(`${host}/${path}`, {
+      r = await axios.get(`${host}/${path}`, {
         timeout: 1000,
       });
       if (r.status === 200) {
@@ -97,7 +93,10 @@ const waitForHTTP = async (
     } catch (e) {}
     await waitSeconds(1);
   }
-  throw new Error('No port opened');
+  if (r) {
+    console.log('Response status code: ' + r.status);
+  }
+  throw new Error('Chain did not start');
 };
 
 export const waitForChannel = async (

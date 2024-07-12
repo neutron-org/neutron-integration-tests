@@ -17,11 +17,15 @@ import {
   waitForICQResultWithRemoteHeight,
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
-import { msgDelegate, msgUndelegate } from '../../helpers/gaia';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
-import { msgSubmitProposal, msgVote } from '../../helpers/gaia';
+import {
+  executeMsgSubmitProposal,
+  executeMsgVote,
+  executeMsgDelegate,
+  executeMsgUndelegate,
+} from '../../helpers/gaia';
 import {
   acceptInterchainqueriesParamsChangeProposal,
   getCosmosSigningInfosResult,
@@ -42,7 +46,7 @@ import {
   removeQueryViaTx,
   validateBalanceQuery,
   watchForKvCallbackUpdates,
-} from '../../helpers/kvQuery';
+} from '../../helpers/interchainqueries';
 
 const config = require('../../config.json');
 
@@ -60,17 +64,17 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronAccount: WalletWrapper;
   let otherNeutronAccount: WalletWrapper;
   let gaiaAccount: WalletWrapper;
+  // TODO: why is it preinstantiated here, even though assigned later?
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
@@ -82,8 +86,8 @@ describe('Neutron / Interchain KV Query', () => {
     );
     gaiaChain = new CosmosWrapper(
       COSMOS_DENOM,
-      testState.rest2,
-      testState.rpc2,
+      testState.restGaia,
+      testState.rpcGaia,
     );
     gaiaAccount = await createWalletWrapper(
       gaiaChain,
@@ -381,7 +385,7 @@ describe('Neutron / Interchain KV Query', () => {
     //       because we only have one node per network in cosmopark
     test('perform icq #4: delegator delegations', async () => {
       const queryId = 4;
-      await msgDelegate(
+      await executeMsgDelegate(
         gaiaAccount,
         testState.wallets.cosmos.demo2.address,
         testState.wallets.cosmos.val1.valAddress,
@@ -728,7 +732,7 @@ describe('Neutron / Interchain KV Query', () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
 
-      const proposalResp = await msgSubmitProposal(
+      const proposalResp = await executeMsgSubmitProposal(
         gaiaAccount,
         testState.wallets.cosmos.demo2.address,
         '1250',
@@ -744,7 +748,7 @@ describe('Neutron / Interchain KV Query', () => {
         ),
       );
 
-      await msgVote(
+      await executeMsgVote(
         gaiaAccount,
         testState.wallets.cosmos.demo2.address,
         proposalId,
@@ -817,7 +821,7 @@ describe('Neutron / Interchain KV Query', () => {
       // Top up contract address before running query
       await neutronAccount.msgSend(contractAddress, '1000000');
 
-      const proposalResp = await msgSubmitProposal(
+      const proposalResp = await executeMsgSubmitProposal(
         gaiaAccount,
         testState.wallets.cosmos.demo2.address,
         '1250',
@@ -994,13 +998,13 @@ describe('Neutron / Interchain KV Query', () => {
       validatorAddress = testState.wallets.cosmos.val1.valAddress;
       delegatorAddress = testState.wallets.cosmos.demo2.address;
 
-      await msgDelegate(
+      await executeMsgDelegate(
         gaiaAccount,
         delegatorAddress,
         validatorAddress,
         '3000',
       );
-      await msgUndelegate(
+      await executeMsgUndelegate(
         gaiaAccount,
         delegatorAddress,
         validatorAddress,

@@ -10,7 +10,7 @@ import {
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 
 const config = require('../../config.json');
 
@@ -22,16 +22,15 @@ describe('Neutron / Global Fee', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new LocalState(config, inject('mnemonics'));
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,
-      await testState.randomWallet('neutron'),
+      await testState.nextWallet('neutron'),
     );
 
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();

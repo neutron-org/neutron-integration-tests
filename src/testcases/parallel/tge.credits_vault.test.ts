@@ -2,7 +2,7 @@ import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { CreditsVaultConfig } from '@neutron-org/neutronjsplus/dist/dao';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
@@ -26,18 +26,17 @@ describe('Neutron / Credits Vault', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-    daoWallet = await testState.walletWithOffset('neutron');
-    airdropWallet = await testState.walletWithOffset('neutron');
-    lockdropWallet = await testState.walletWithOffset('neutron');
+    testState = await LocalState.create(config, mnemonics, suite);
+    daoWallet = await testState.nextWallet('neutron');
+    airdropWallet = await testState.nextWallet('neutron');
+    lockdropWallet = await testState.nextWallet('neutron');
 
     lockdropAddr = lockdropWallet.address;
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
 
     daoAccount = await createWalletWrapper(neutronChain, daoWallet);

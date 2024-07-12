@@ -27,7 +27,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM } from '@neutron-org/neutronjsplus';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { inject } from 'vitest';
 
 const config = require('../../config.json');
@@ -153,13 +153,12 @@ describe.skip('Neutron / TGE / Auction', () => {
   let daoMain: Dao;
 
   beforeAll(async () => {
-    testState = new LocalState(config, inject('mnemonics'));
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     reserveAddress = testState.wallets.qaNeutronThree.qa.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     cmInstantiator = await createWalletWrapper(
       neutronChain,
@@ -199,28 +198,26 @@ describe.skip('Neutron / TGE / Auction', () => {
     ]) {
       tgeWallets[v] = await createWalletWrapper(
         neutronChain,
-        (
-          await testState.createQaWallet(
-            'neutron',
-            testState.wallets.neutron.demo1,
-            NEUTRON_DENOM,
-            testState.rpc1,
-            [
-              {
-                denom: NEUTRON_DENOM,
-                amount: '1000000',
-              },
-              {
-                denom: IBC_ATOM_DENOM,
-                amount: '1000000',
-              },
-              {
-                denom: IBC_USDC_DENOM,
-                amount: '1000000',
-              },
-            ],
-          )
-        ).qa,
+        await testState.createQaWallet(
+          'neutron',
+          testState.wallets.neutron.demo1,
+          NEUTRON_DENOM,
+          testState.rpcNeutron,
+          [
+            {
+              denom: NEUTRON_DENOM,
+              amount: '1000000',
+            },
+            {
+              denom: IBC_ATOM_DENOM,
+              amount: '1000000',
+            },
+            {
+              denom: IBC_USDC_DENOM,
+              amount: '1000000',
+            },
+          ],
+        ),
       );
     }
 

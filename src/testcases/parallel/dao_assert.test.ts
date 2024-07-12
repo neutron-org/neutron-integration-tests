@@ -1,8 +1,8 @@
-import { inject } from 'vitest';
+import { inject, Suite } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
   DaoContracts,
@@ -14,7 +14,7 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
 const config = require('../../config.json');
 
-describe('DAO / Check', () => {
+describe('Neutron / DAO check', () => {
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let daoContracts: DaoContracts;
@@ -28,15 +28,14 @@ describe('DAO / Check', () => {
   let votingVaultsNtrnAddress: string;
   let treasuryContract: string;
 
-  beforeAll(async () => {
+  beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
 
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     const daoCoreAddress = await neutronChain.getNeutronDAOCore(); //add assert for some addresses
     daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);

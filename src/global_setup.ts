@@ -1,4 +1,4 @@
-import { SigningStargateClient, defaultRegistryTypes } from '@cosmjs/stargate';
+import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
 import { generateMnemonic } from 'bip39';
 import { setup } from './helpers/setup';
@@ -10,12 +10,13 @@ import {
 } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/bank';
 import ch from 'child_process';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { COSMOS_PREFIX, NEUTRON_PREFIX } from './helpers/constants';
+
+import config from './config.json';
 
 let teardownHappened = false;
 
 const WALLET_COUNT = 1000;
-
-const config = require('./config.json');
 
 export default async function ({ provide }: GlobalSetupContext) {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
@@ -29,12 +30,11 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  const neutronPrefix = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
-  const cosmosPrefix = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
   const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
   const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
-  await fundWallets(mnemonics, rpcNeutron, neutronPrefix, NEUTRON_DENOM);
-  await fundWallets(mnemonics, rpcGaia, cosmosPrefix, COSMOS_DENOM);
+  // fund a lot or preallocated wallets for testing purposes
+  await fundWallets(mnemonics, rpcNeutron, NEUTRON_PREFIX, NEUTRON_DENOM);
+  await fundWallets(mnemonics, rpcGaia, COSMOS_PREFIX, COSMOS_DENOM);
 
   provide('mnemonics', mnemonics);
 
@@ -49,6 +49,7 @@ export default async function ({ provide }: GlobalSetupContext) {
   };
 }
 
+// Funds a lots of new wallets from one wallet.
 async function fundWallets(
   mnemonics: string[],
   rpc: string,
@@ -67,8 +68,8 @@ async function fundWallets(
 
   const richguy = (await directwallet.getAccounts())[0].address;
   const pooramount = '10000000000';
-  const values: Promise<Output>[] = mnemonics.map((mnemonic) => {
-    const promiseFunc = DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+  const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
+    DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
       prefix: prefix,
     })
       .then((directwallet) => directwallet.getAccounts())
@@ -76,9 +77,8 @@ async function fundWallets(
       .then((account) => ({
         address: account.address,
         coins: [{ denom: denom, amount: pooramount }],
-      }));
-    return promiseFunc;
-  });
+      })),
+  );
   const outputs: Output[] = await Promise.all(values);
   const inputs: Input[] = [
     {

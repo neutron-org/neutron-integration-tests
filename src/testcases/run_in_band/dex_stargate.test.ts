@@ -23,7 +23,7 @@ import {
   PoolReservesResponse,
   PoolResponse,
 } from '@neutron-org/neutronjsplus/dist/dex';
-import { createWalletWrapper, LocalState } from '../../helpers/localState';
+import { createWalletWrapper, LocalState } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
@@ -39,12 +39,11 @@ describe('Neutron / dex module (stargate contract)', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,

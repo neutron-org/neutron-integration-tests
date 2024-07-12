@@ -7,7 +7,7 @@ import {
   getDaoContracts,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Suite, inject } from 'vitest';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
@@ -23,12 +23,11 @@ describe('Neutron / Fee Market', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
 
     neutronAccount = await createWalletWrapper(

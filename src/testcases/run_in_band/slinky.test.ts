@@ -2,7 +2,7 @@ import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import {
   Dao,
   DaoMember,
@@ -38,12 +38,11 @@ describe('Neutron / Slinky', () => {
 
   beforeAll(async () => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics);
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(
       neutronChain,

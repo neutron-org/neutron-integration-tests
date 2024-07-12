@@ -5,7 +5,7 @@ import {
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { createWalletWrapper, LocalState } from '../../helpers/localState';
+import { createWalletWrapper, LocalState } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgBurn,
@@ -80,20 +80,19 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-    ownerWallet = await testState.walletWithOffset('neutron');
+    testState = await LocalState.create(config, mnemonics, suite);
+    ownerWallet = await testState.nextWallet('neutron');
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     neutronAccount = await createWalletWrapper(neutronChain, ownerWallet);
 
     // Setup subdao with update tokenfactory params
     const daoCoreAddress = await neutronChain.getNeutronDAOCore();
     const daoContracts = await getDaoContracts(neutronChain, daoCoreAddress);
-    securityDaoWallet = await testState.walletWithOffset('neutron');
+    securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
 
     mainDao = new Dao(neutronChain, daoContracts);

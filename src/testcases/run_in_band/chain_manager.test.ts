@@ -14,7 +14,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/proposal';
 
 import config from '../../config.json';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 
@@ -29,15 +29,14 @@ describe('Neutron / Chain Manager', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-    const demo1Wallet = await testState.walletWithOffset('neutron');
-    const securityDaoWallet = await testState.walletWithOffset('neutron');
+    testState = await LocalState.create(config, mnemonics, suite);
+    const demo1Wallet = await testState.nextWallet('neutron');
+    const securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
     neutronChain = new CosmosWrapper(
       NEUTRON_DENOM,
-      testState.rest1,
-      testState.rpc1,
+      testState.restNeutron,
+      testState.rpcNeutron,
     );
     const neutronAccount1 = await createWalletWrapper(
       neutronChain,
