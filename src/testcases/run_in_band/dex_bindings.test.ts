@@ -4,7 +4,7 @@ import {
   getEventAttributesFromTx,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
 import {
   msgCreateDenom,
@@ -37,9 +37,7 @@ describe('Neutron / dex module bindings', () => {
   let inactiveTrancheKey: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,

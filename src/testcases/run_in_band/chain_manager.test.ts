@@ -1,4 +1,3 @@
-import { Registry } from '@cosmjs/proto-signing';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import {
@@ -12,62 +11,56 @@ import {
   updateCronParamsProposal,
   updateTokenfactoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-
 import config from '../../config.json';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { WasmWrapper, wasm } from '../../helpers/wasmClient';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
-import { QueryClientImpl as CronQuery } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
+import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
+  let neutronClient: SigningNeutronClient;
   let subdaoMember1: DaoMember;
   let mainDaoMember: DaoMember;
   let securityDaoAddr: string;
   let subDao: Dao;
   let mainDao: Dao;
-  let cronQuery: CronQuery;
+  let cronQuery: CronQueryClient;
+  let tokenfactoryClient: TokenfactoryQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
-    const neutronAccount1 = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
+    const neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount1,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
     const securityDaoWallet = await testState.nextWallet('neutron');
     securityDaoAddr = securityDaoWallet.address;
     const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
 
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    mainDao = new Dao(neutronClient, daoContracts);
     mainDaoMember = new DaoMember(
       mainDao,
       neutronClient.client,
-      neutronAccount1.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
     await mainDaoMember.bondFunds('10000');
 
     subDao = await setupSubDaoTimelockSet(
-      neutronAccount1.address,
+      neutronWallet.address,
       neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
@@ -77,7 +70,7 @@ describe('Neutron / Chain Manager', () => {
     subdaoMember1 = new DaoMember(
       subDao,
       neutronClient.client,
-      neutronAccount1.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
 
@@ -91,7 +84,9 @@ describe('Neutron / Chain Manager', () => {
     const admins = await queryClient.admins();
     chainManagerAddress = admins.admins[0];
 
-    cronQuery = new CronQuery(neutronRpcClient);
+    tokenfactoryClient = new TokenfactoryQueryClient(neutronRpcClient);
+
+    cronQuery = new CronQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -101,7 +96,7 @@ describe('Neutron / Chain Manager', () => {
     let proposalId: number;
     test('create proposal', async () => {
       const currentOverruleProposalConfig =
-        await neutronClient.client.queryContractSmart(
+        await neutronClient.queryContractSmart(
           mainDao.contracts.proposals['overrule'].address,
           {
             config: {},
@@ -255,9 +250,6 @@ describe('Neutron / Chain Manager', () => {
   describe('ALLOW_ONLY: change TOKENFACTORY parameters', () => {
     let proposalId: number;
     beforeAll(async () => {
-      const queryClient = new AdminQueryClient(neutronRpcClient);
-      const admins = await queryClient.admins();
-      const chainManagerAddress = admins.admins[0];
       proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
         chainManagerAddress,
         'Proposal #2',
@@ -295,19 +287,17 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const tokenfactoryParams = await neutronChain.queryTokenfactoryParams();
-      expect(tokenfactoryParams.params.denom_creation_fee).toEqual([
+      const tokenfactoryParams = await tokenfactoryClient.params();
+      expect(tokenfactoryParams.params.denomCreationFee).toEqual([
         { denom: 'untrn', amount: '1' },
       ]);
-      expect(tokenfactoryParams.params.denom_creation_gas_consume).toEqual(
-        '20',
-      );
-      expect(tokenfactoryParams.params.fee_collector_address).toEqual(
+      expect(tokenfactoryParams.params.denomCreationGasConsume).toEqual(20n);
+      expect(tokenfactoryParams.params.feeCollectorAddress).toEqual(
         'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
       );
-      expect(tokenfactoryParams.params.whitelisted_hooks).toEqual([
+      expect(tokenfactoryParams.params.whitelistedHooks).toEqual([
         {
-          code_id: '1',
+          code_id: 1n,
           denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);

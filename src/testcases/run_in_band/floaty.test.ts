@@ -1,4 +1,4 @@
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { inject } from 'vitest';
 import {CodeId, NeutronContract, Wallet} from '@neutron-org/neutronjsplus/dist/types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
@@ -15,9 +15,7 @@ describe('Float operations support', () => {
   let contractAddress: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,

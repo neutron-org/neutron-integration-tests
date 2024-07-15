@@ -1,5 +1,4 @@
-import { Registry } from '@cosmjs/proto-signing';
-import { LocalState, createLocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import '@neutron-org/neutronjsplus';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
@@ -20,72 +19,68 @@ import {
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { wasm, WasmWrapper } from '../../helpers/wasmClient';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { QueryParamsResponse } from '@neutron-org/neutronjs/neutron/interchainqueries/query';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { createRPCQueryClient as createIbcClient } from '@neutron-org/neutronjs/ibc/rpc.query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { ProtobufRpcClient } from '@cosmjs/stargate';
-import { IbcType, NeutronType, OsmosisType } from '../../helpers/clientTypes';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  IbcQuerier,
+  NeutronQuerier,
+  OsmosisQuerier,
+} from '../../helpers/client_types';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Parameters', () => {
   let testState: LocalState;
 
-  let neutronAccount: Wallet;
-  let neutronClient: WasmWrapper;
+  let neutronWallet: Wallet;
+  let neutronClient: SigningNeutronClient;
   let daoMember1: DaoMember;
   let dao: Dao;
   let chainManagerAddress: string;
 
   let neutronRpcClient: ProtobufRpcClient;
 
-  let client: NeutronType;
-  let ibcClient: IbcType;
-  let osmosisClient: OsmosisType;
+  let neutronQuerier: NeutronQuerier;
+  let ibcQuerier: IbcQuerier;
+  let osmosisQuerier: OsmosisQuerier;
 
   beforeAll(async () => {
-    testState = await createLocalState(config, inject('mnemonics'));
-    neutronAccount = testState.wallets.qaNeutron.qa;
-    neutronClient = await wasm(
+    testState = await LocalState.create(config, inject('mnemonics'));
+    neutronWallet = testState.wallets.qaNeutron.qa;
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-
     neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
 
-    client = await createNeutronClient({
+    neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
     });
-    ibcClient = await createIbcClient({
+    ibcQuerier = await createIbcClient({
       rpcEndpoint: testState.rpcNeutron,
     });
-    osmosisClient = await createOsmosisClient({
+    osmosisQuerier = await createOsmosisClient({
       rpcEndpoint: testState.rpcNeutron,
     });
 
-    // const queryClient = new AdminQueryClient(neutronRpcClient);
-    const admins = await client.cosmos.adminmodule.adminmodule.admins();
+    const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
 
-    dao = new Dao(neutronClient.client, daoContracts);
+    dao = new Dao(neutronClient, daoContracts);
     daoMember1 = new DaoMember(
       dao,
       neutronClient.client,
-      neutronAccount.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
   });
@@ -93,16 +88,14 @@ describe('Neutron / Parameters', () => {
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
       await daoMember1.bondFunds('10000');
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await dao.queryVotingPower(daoMember1.user),
         async (response) => response.power == 10000,
         20,
       );
     });
     test('check voting power', async () => {
-      await getWithAttempts(
-        neutronClient.client,
+      await neutronClient.getWithAttempts(
         async () => await dao.queryTotalVotingPower(),
         async (response) => response.power == 11000,
         20,
@@ -139,15 +132,16 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.interchainqueries.params();
+        paramsBefore = await neutronQuerier.neutron.interchainqueries.params();
         const host = (
-          await ibcClient.ibc.applications.interchain_accounts.host.v1.params()
+          await ibcQuerier.ibc.applications.interchain_accounts.host.v1.params()
         ).params.hostEnabled;
         expect(host).toEqual(true);
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.interchainqueries.params();
+        const paramsAfter =
+          await neutronQuerier.neutron.interchainqueries.params();
         expect(paramsAfter.params.querySubmitTimeout).not.toEqual(
           paramsBefore.params.querySubmitTimeout,
         );
@@ -168,7 +162,7 @@ describe('Neutron / Parameters', () => {
         'Tokenfactory params proposal',
         updateTokenfactoryParamsProposal({
           fee_collector_address: await getNeutronDAOCore(
-            neutronClient.client,
+            neutronClient,
             neutronRpcClient,
           ),
           denom_creation_fee: [{ denom: NEUTRON_DENOM, amount: '1' }],
@@ -194,12 +188,12 @@ describe('Neutron / Parameters', () => {
       });
       test('execute passed proposal', async () => {
         paramsBefore =
-          await osmosisClient.osmosis.tokenfactory.v1beta1.params();
+          await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
         const paramsAfter =
-          await osmosisClient.osmosis.tokenfactory.v1beta1.params();
+          await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
 
         expect(paramsAfter.params.denomCreationFee).not.toEqual(
           paramsBefore.params.denomCreationFee,
@@ -246,11 +240,11 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.feeburner.params();
+        paramsBefore = await neutronQuerier.neutron.feeburner.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.feeburner.params();
+        const paramsAfter = await neutronQuerier.neutron.feeburner.params();
         expect(paramsAfter.params.treasuryAddress).not.toEqual(
           paramsBefore.params.treasuryAddress,
         );
@@ -302,11 +296,11 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.feerefunder.params();
+        paramsBefore = await neutronQuerier.neutron.feerefunder.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.feerefunder.params();
+        const paramsAfter = await neutronQuerier.neutron.feerefunder.params();
         expect(paramsAfter.params.minFee.recvFee).toEqual(
           paramsBefore.params.minFee.recvFee,
         );
@@ -363,11 +357,11 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.cron.params();
+        paramsBefore = await neutronQuerier.neutron.cron.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.cron.params();
+        const paramsAfter = await neutronQuerier.neutron.cron.params();
         expect(paramsAfter.params.securityAddress).not.toEqual(
           paramsBefore.params.securityAddress,
         );
@@ -378,12 +372,12 @@ describe('Neutron / Parameters', () => {
     });
   });
 
-  describe('Contractanager params proposal', () => {
+  describe('Contractmanager params proposal', () => {
     test('create proposal', async () => {
       await daoMember1.submitUpdateParamsContractmanagerProposal(
         chainManagerAddress,
         'Proposal #6',
-        'Contractanager params proposal',
+        'Contractmanager params proposal',
         updateContractmanagerParamsProposal({
           sudo_call_gas_limit: '1000',
         }),
@@ -405,11 +399,12 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.contractmanager.params();
+        paramsBefore = await neutronQuerier.neutron.contractmanager.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.contractmanager.params();
+        const paramsAfter =
+          await neutronQuerier.neutron.contractmanager.params();
         expect(paramsAfter.params.sudoCallGasLimit).not.toEqual(
           paramsBefore.params.sudoCallGasLimit,
         );
@@ -445,11 +440,12 @@ describe('Neutron / Parameters', () => {
         await dao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
-        paramsBefore = await client.neutron.interchaintxs.v1.params();
+        paramsBefore = await neutronQuerier.neutron.interchaintxs.v1.params();
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsAfter = await client.neutron.interchaintxs.v1.params();
+        const paramsAfter =
+          await neutronQuerier.neutron.interchaintxs.v1.params();
         expect(paramsAfter.params.msgSubmitTxMaxMessages).not.toEqual(
           paramsBefore.params.msgSubmitTxMaxMessages,
         );
@@ -488,7 +484,8 @@ describe('Neutron / Parameters', () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
       test('check if params changed after proposal execution', async () => {
-        const paramsRes = await ibcClient.ibc.applications.transfer.v1.params();
+        const paramsRes =
+          await ibcQuerier.ibc.applications.transfer.v1.params();
         expect(paramsRes.params.sendEnabled).toEqual(false);
         expect(paramsRes.params.receiveEnabled).toEqual(false);
       });

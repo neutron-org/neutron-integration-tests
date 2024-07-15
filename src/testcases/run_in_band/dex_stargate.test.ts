@@ -3,7 +3,7 @@ import {
   getEventAttributesFromTx,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
@@ -35,9 +35,7 @@ describe('Neutron / dex module (stargate contract)', () => {
   let inactiveTrancheKey: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,

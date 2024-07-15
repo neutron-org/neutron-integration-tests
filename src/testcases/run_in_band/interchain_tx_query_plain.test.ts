@@ -10,7 +10,7 @@ import {
   waitForTransfersAmount,
 } from '@neutron-org/neutronjsplus/dist/icq';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 
 const config = require('../../config.json');
@@ -25,9 +25,7 @@ describe('Neutron / Interchain TX Query', () => {
   const connectionId = 'connection-0';
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     // neutronChain = new CosmosWrapper(
     //   NEUTRON_DENOM,
     //   testState.restNeutron,

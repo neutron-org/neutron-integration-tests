@@ -4,7 +4,7 @@ import {
   getEventAttribute,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
 import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
@@ -12,7 +12,7 @@ import { Suite, inject } from 'vitest';
 
 const config = require('../../config.json');
 
-describe('Neutron / Simple', () => {
+describe('Neutron / Stargate Queries', () => {
   let testState: LocalState;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -25,9 +25,26 @@ describe('Neutron / Simple', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
+    neutronChain = new CosmosWrapper(
+      NEUTRON_DENOM,
+      testState.restNeutron,
+      testState.rpcNeutron,
+    );
+    neutronAccount = await createWalletWrapper(
+      neutronChain,
+      await testState.nextWallet('neutron'),
+    );
 
+    gaiaChain = new CosmosWrapper(
+      COSMOS_DENOM,
+      testState.restGaia,
+      testState.rpcGaia,
+    );
+    gaiaAccount = await createWalletWrapper(
+      gaiaChain,
+      await testState.nextWallet('cosmos'),
+    );
   });
 
   describe('Prepare for queries', () => {

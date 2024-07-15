@@ -5,7 +5,7 @@ import { inject } from 'vitest';
 import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import {Registry} from "@cosmjs/proto-signing";
 import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
 import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
@@ -34,9 +34,7 @@ describe('Neutron / Treasury', () => {
   let holder2Addr: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronAccount1 = await testState.nextWallet('neutron');
     neutronAccount2 = await testState.nextWallet('neutron');
     neutronClient = await wasm(
@@ -524,7 +522,7 @@ async function testExecControl(
 ) {
   // check contract's pause info before pausing
   let pauseInfo = await account.chain.queryContract<{
-    paused: boolean | { until_height: number };
+    paused: { until_height: number } | undefined;
     unpaused: boolean;
   }>(testingContract, {
     pause_info: {},

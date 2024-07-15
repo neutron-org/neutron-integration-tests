@@ -1,7 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
@@ -33,9 +33,7 @@ describe('Neutron / Tokenomics', () => {
   let feeburnerQuerier: FeeburnerQueryClient;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'));
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,

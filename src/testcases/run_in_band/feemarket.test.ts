@@ -1,4 +1,3 @@
-import { Registry } from '@cosmjs/proto-signing';
 import { MsgSendEncodeObject } from '@cosmjs/stargate';
 import '@neutron-org/neutronjsplus';
 import {
@@ -8,69 +7,56 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WasmWrapper, wasm } from '../../helpers/wasmClient';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import {
-  getWithAttempts,
-  waitBlocks,
-} from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as FeemarketQuery } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;
-  let neutronAccount: Wallet;
-  let neutronClient: WasmWrapper;
+  let neutronWallet: Wallet;
+  let neutronClient: SigningNeutronClient;
   let daoMember: DaoMember;
   let mainDao: Dao;
-  let feemarketQuery: FeemarketQuery;
+  let feemarketQuerier: FeemarketQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
+    const neutronRpcClient = await testState.neutronRpcClient();
 
-    neutronAccount = testState.wallets.neutron.demo1;
-    neutronClient = await wasm(
+    neutronWallet = testState.wallets.neutron.demo1;
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-    const neutronRpcClient = await testState.rpcClient('neutron');
 
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
     daoMember = new DaoMember(
       mainDao,
       neutronClient.client,
-      neutronAccount.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
     await daoMember.bondFunds('10000');
-    await getWithAttempts(
-      neutronClient.client,
+    await neutronClient.getWithAttempts(
       async () => await mainDao.queryVotingPower(daoMember.user),
       async (response) => response.power >= 10000,
       20,
     );
 
-    await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -79,13 +65,13 @@ describe('Neutron / Fee Market', () => {
       },
     );
 
-    feemarketQuery = new FeemarketQuery(neutronRpcClient);
+    feemarketQuerier = new FeemarketQueryClient(neutronRpcClient);
     const adminQuery = new AdminQueryClient(neutronRpcClient);
-    const admins = await adminQuery.Admins();
+    const admins = await adminQuery.admins();
     chainManagerAddress = admins.admins[0];
 
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -95,13 +81,13 @@ describe('Neutron / Fee Market', () => {
   let counter = 1;
 
   const executeSwitchFeemarket = async (
-    feemarketQuery: FeemarketQuery,
+    feemarketQuery: FeemarketQueryClient,
     daoMember: DaoMember,
     kind: string,
     enabled: boolean,
     window = 1n,
   ) => {
-    const params = (await feemarketQuery.Params()).params;
+    const params = (await feemarketQuery.params()).params;
     params.enabled = enabled;
     params.window = window;
 
@@ -159,8 +145,7 @@ describe('Neutron / Fee Market', () => {
   };
 
   test('success tx', async () => {
-    const res = await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    const res = await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -169,15 +154,14 @@ describe('Neutron / Fee Market', () => {
       },
     );
 
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
 
   test('failed: insufficient fee', async () => {
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -192,8 +176,7 @@ describe('Neutron / Fee Market', () => {
 
   test('additional ibc denom', async () => {
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -212,8 +195,7 @@ describe('Neutron / Fee Market', () => {
     });
 
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -225,8 +207,7 @@ describe('Neutron / Fee Market', () => {
       /error checking fee: got: 50uibcatom required: 100uibcatom, minGasPrice: 0.000500000000000000uibcatom/,
     );
 
-    const res = await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    const res = await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -235,14 +216,14 @@ describe('Neutron / Fee Market', () => {
       },
     );
 
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
 
   test('disable/enable feemarket module', async () => {
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'disable feemarket',
       false,
@@ -251,8 +232,7 @@ describe('Neutron / Fee Market', () => {
     // feemarket disabled
     // with a zero fee we fail due to default cosmos ante handler check
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -264,10 +244,10 @@ describe('Neutron / Fee Market', () => {
       /Insufficient fees; got: 0untrn required: 500ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2,500untrn: insufficient fee/,
     );
 
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
 
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -276,8 +256,7 @@ describe('Neutron / Fee Market', () => {
     // feemarket enabled
     // with a zero fee we fail due to feemarket ante handler check
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -292,7 +271,7 @@ describe('Neutron / Fee Market', () => {
 
   test('gas price gets up and down', async () => {
     await executeSwitchFeemarket(
-      feemarketQuery,
+      feemarketQuerier,
       daoMember,
       'enable feemarket',
       true,
@@ -302,14 +281,14 @@ describe('Neutron / Fee Market', () => {
     const msgSend: MsgSendEncodeObject = {
       typeUrl: '/cosmos.bank.v1beta1.MsgSend',
       value: {
-        fromAddress: neutronAccount.address,
+        fromAddress: neutronWallet.address,
         toAddress: mainDao.contracts.core.address,
         amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
       },
     };
 
     const baseGasPrice = +(
-      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+      await feemarketQuerier.gasPrice({ denom: NEUTRON_DENOM })
     ).price.amount;
     const requiredGas = '30000000';
     // due to rounding poor accuracy, it's recommended pay a little bit more fees
@@ -320,8 +299,7 @@ describe('Neutron / Fee Market', () => {
       ).toString();
       // 1200msgs consume ~27m gas
       try {
-        await neutronClient.client.signAndBroadcastSync(
-          neutronAccount.address,
+        await neutronClient.signAndBroadcastSync(
           new Array(1200).fill(msgSend),
           {
             gas: requiredGas,
@@ -331,19 +309,19 @@ describe('Neutron / Fee Market', () => {
       } catch (e) {
         // do nothing if called with same sequence
       }
-      await waitBlocks(1, neutronClient.client);
+      await neutronClient.waitBlocks(1);
     }
 
     const inflatedGasPrice = +(
-      await feemarketQuery.GasPrice({ denom: NEUTRON_DENOM })
+      await feemarketQuerier.gasPrice({ denom: NEUTRON_DENOM })
     ).price.amount;
     // gas price should be higher after big transactions
     expect(inflatedGasPrice).toBeGreaterThan(baseGasPrice);
 
-    await waitBlocks(10, neutronClient.client);
+    await neutronClient.waitBlocks(10);
 
     const newNtrnGasPrice = +(
-      await feemarketQuery.GasPrice({
+      await feemarketQuerier.gasPrice({
         denom: NEUTRON_DENOM,
       })
     ).price.amount;

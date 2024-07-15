@@ -9,12 +9,11 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { waitForICQResultWithRemoteHeight } from '@neutron-org/neutronjsplus/dist/icq';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import axios from 'axios';
-import { getWithAttempts } from './getWithAttempts';
 import {
   CosmWasmClient,
   SigningCosmWasmClient,
@@ -22,6 +21,7 @@ import {
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { ProtobufRpcClient } from '@cosmjs/stargate';
+import { getWithAttempts } from './misc';
 
 export const getKvCallbackStatus = (
   cm: CosmosWrapper,
@@ -251,7 +251,7 @@ export const acceptInterchainqueriesParamsChangeProposal = async (
   const daoMember = new DaoMember(dao, client, user, NEUTRON_DENOM);
 
   const queryClient = new AdminQueryClient(rpcClient);
-  const admins = await queryClient.Admins();
+  const admins = await queryClient.admins();
   const chainManagerAddress = admins.admins[0];
   const message = paramChangeProposal(
     {

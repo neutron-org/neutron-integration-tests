@@ -4,7 +4,7 @@ import {
   types,
   walletWrapper, COSMOS_DENOM, wait,
 } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
@@ -49,8 +49,7 @@ describe('Neutron / Voting Registry', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,

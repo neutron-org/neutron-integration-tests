@@ -8,6 +8,6 @@ export type PromisedNeutronType = ReturnType<typeof createNeutronClient>;
 export type PromisedIbcType = ReturnType<typeof createIbcClient>;
 export type PromisedOsmosisType = ReturnType<typeof createOsmosisClient>;
 
-export type NeutronType = UnwrapPromise<PromisedNeutronType>;
-export type IbcType = UnwrapPromise<PromisedIbcType>;
-export type OsmosisType = UnwrapPromise<PromisedOsmosisType>;
+export type NeutronQuerier = UnwrapPromise<PromisedNeutronType>;
+export type IbcQuerier = UnwrapPromise<PromisedIbcType>;
+export type OsmosisQuerier = UnwrapPromise<PromisedOsmosisType>;

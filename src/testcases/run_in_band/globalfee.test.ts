@@ -1,5 +1,4 @@
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import { Coin, Registry } from '@cosmjs/proto-signing';
+import { Coin } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import {
@@ -10,36 +9,30 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { inject } from 'vitest';
-import { LocalState } from '../../helpers/localState';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WasmWrapper, wasm } from '../../helpers/wasmClient';
-import {
-  getWithAttempts,
-  waitBlocks,
-} from '@neutron-org/neutronjsplus/dist/wait';
-import { QueryClientImpl as GlobalfeeQuery } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
+import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
   let daoMember: DaoMember;
   let mainDao: Dao;
-  let neutronAccount: Wallet;
-  let neutronClient: WasmWrapper;
-  let globalfeeQuery: GlobalfeeQuery;
+  let neutronWallet: Wallet;
+  let neutronClient: SigningNeutronClient;
+  let globalfeeQuerier: GlobalfeeQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async () => {
-    testState = new LocalState(config, inject('mnemonics'));
-    await testState.init();
-    neutronAccount = await testState.randomWallet('neutron');
-    neutronClient = await wasm(
+    testState = await LocalState.create(config, inject('mnemonics'));
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
     const neutronRpcClient = await testState.rpcClient('neutron');
 
@@ -47,7 +40,7 @@ describe('Neutron / Global Fee', () => {
     const admins = await adminQuery.admins();
     chainManagerAddress = admins.admins[0];
 
-    globalfeeQuery = new GlobalfeeQuery(neutronRpcClient);
+    globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
 
     neutronClient = await wasm(
       testState.rpcNeutron,
@@ -57,31 +50,26 @@ describe('Neutron / Global Fee', () => {
     );
     const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
+      neutronClient,
       neutronRpcClient,
     ); //add assert for some addresses
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
-    mainDao = new Dao(neutronClient.client, daoContracts);
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
     daoMember = new DaoMember(
       mainDao,
       neutronClient.client,
-      neutronAccount.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
 
     await daoMember.bondFunds('10000');
-    await getWithAttempts(
-      neutronClient.client,
+    await neutronClient.getWithAttempts(
       async () => await mainDao.queryVotingPower(daoMember.user),
       async (response) => response.power == 10000,
       20,
     );
 
-    await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -104,7 +92,7 @@ describe('Neutron / Global Fee', () => {
     minimumGasPrices: Coin[] | null,
     maxTotalBypassMinFeesgGasUsage: bigint | null,
   ) => {
-    const res = await globalfeeQuery.params();
+    const res = await globalfeeQuerier.params();
     if (bypassMinFeeMsgTypes == null) {
       bypassMinFeeMsgTypes = res.params.bypassMinFeeMsgTypes;
     }
@@ -150,7 +138,7 @@ describe('Neutron / Global Fee', () => {
   };
 
   test('check globalfee params before proposal execution', async () => {
-    const res = await globalfeeQuery.params();
+    const res = await globalfeeQuerier.params();
     expect(res.params.minimumGasPrices).toEqual([
       {
         denom:
@@ -178,7 +166,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee minimum param changed', async () => {
-    const res = await globalfeeQuery.params();
+    const res = await globalfeeQuerier.params();
     expect(res.params.minimumGasPrices).toEqual([
       { denom: 'untrn', amount: '0.01' },
     ]);
@@ -186,8 +174,7 @@ describe('Neutron / Global Fee', () => {
 
   test('check minumum global fees with bank send command', async () => {
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -211,15 +198,14 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee params after setting bypass_min_fee_msg_types', async () => {
-    const res = await globalfeeQuery.params();
+    const res = await globalfeeQuerier.params();
     expect(res.params.bypassMinFeeMsgTypes).toEqual([
       '/cosmos.bank.v1beta1.MsgSend',
     ]);
   });
 
   test('check that MsgSend passes check for allowed messages - now works with only validator fees', async () => {
-    const res = await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    const res = await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -228,7 +214,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });
@@ -244,15 +230,14 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check globalfee params after setting max_total_bypass_min_fee_msg_gas_usage', async () => {
-    const res = await globalfeeQuery.params();
+    const res = await globalfeeQuerier.params();
     expect(res.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(50n);
   });
 
   test('check that MsgSend does not work without minimal fees now', async () => {
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
     await expect(
-      neutronClient.client.sendTokens(
-        neutronAccount.address,
+      neutronClient.sendTokens(
         mainDao.contracts.core.address,
         [{ denom: NEUTRON_DENOM, amount: '1000' }],
         {
@@ -297,8 +282,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   test('check minumum global fees with bank send command after revert with zero value (only validator min fee settings applied)', async () => {
-    const res = await neutronClient.client.sendTokens(
-      neutronAccount.address,
+    const res = await neutronClient.sendTokens(
       mainDao.contracts.core.address,
       [{ denom: NEUTRON_DENOM, amount: '1000' }],
       {
@@ -307,7 +291,7 @@ describe('Neutron / Global Fee', () => {
       },
     );
 
-    await waitBlocks(2, neutronClient.client);
+    await neutronClient.waitBlocks(2);
 
     expect(res.code).toEqual(0);
   });

@@ -1,7 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/localState';
+import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
@@ -29,8 +29,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
   beforeAll(async (suite: Suite) => {
     const mnemonics = inject('mnemonics');
-    testState = new LocalState(config, mnemonics, suite);
-    await testState.init();
+    testState = await LocalState.create(config, mnemonics, suite);
     neutronAccount = await testState.nextWallet('neutron');
     neutronClient = await wasm(
       testState.rpcNeutron,
