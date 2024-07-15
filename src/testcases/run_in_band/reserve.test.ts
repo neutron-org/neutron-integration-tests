@@ -458,7 +458,7 @@ const normalizeReserveBurnedCoins = async (
     await cm.executeContract(reserveAddress, {
       distribute: {},
     });
-    reserveStats = await cm.chain.queryContract<ReserveStats>(reserveAddress, {
+    reserveStats = await cm.client.queryContractSmart<ReserveStats>(reserveAddress, {
       stats: {},
     });
 
@@ -480,7 +480,7 @@ const getBurnedCoinsAmount = async (
 };
 
 const setupReserve = async (
-  cm: WalletWrapper,
+  cm: WasmWrapper,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
@@ -491,8 +491,8 @@ const setupReserve = async (
     vestingDenominator: string;
   },
 ) => {
-  const codeId = await cm.storeWasm(NeutronContract.RESERVE);
-  return await cm.instantiateContract(
+  const codeId = await cm.upload(NeutronContract.RESERVE);
+  return await cm.instantiate(
     codeId,
     {
       main_dao_address: opts.mainDaoAddress,

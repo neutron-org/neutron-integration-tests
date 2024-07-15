@@ -49,10 +49,17 @@ describe('Neutron / Global Fee', () => {
 
     globalfeeQuery = new GlobalfeeQuery(neutronRpcClient);
 
+    neutronClient = await wasm(
+      testState.rpcNeutron,
+      neutronAccount,
+      NEUTRON_DENOM,
+      new Registry(neutronTypes),
+    );
+    const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient.client,
       neutronRpcClient,
-    );
+    ); //add assert for some addresses
     const daoContracts = await getDaoContracts(
       neutronClient.client,
       daoCoreAddress,
@@ -64,6 +71,7 @@ describe('Neutron / Global Fee', () => {
       neutronAccount.address,
       NEUTRON_DENOM,
     );
+
     await daoMember.bondFunds('10000');
     await getWithAttempts(
       neutronClient.client,
