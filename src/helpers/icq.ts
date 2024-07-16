@@ -2,13 +2,14 @@ import axios, { AxiosResponse } from 'axios';
 import {WasmWrapper} from "./wasmClient";
 import {CosmWasmClient} from "@cosmjs/cosmwasm-stargate";
 import {getWithAttempts} from "./getWithAttempts";
+import {SigningNeutronClient} from "./signing_neutron_client";
 
 /**
  * getRegisteredQuery queries the contract for a registered query details registered by the given
  * queryId.
  */
 export const getRegisteredQuery = (
-  ww: WasmWrapper,
+  ww: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
@@ -66,7 +67,7 @@ export const waitForICQResultWithRemoteHeight = (
  * queryTransfersNumber queries the contract for recorded transfers number.
  */
 export const queryTransfersNumber = (
-  ww: WasmWrapper,
+  ww: SigningNeutronClient,
   contractAddress: string,
 ) =>
   ww.client.queryContractSmart<{
@@ -80,7 +81,7 @@ export const queryTransfersNumber = (
  * number of incoming transfers stored.
  */
 export const waitForTransfersAmount = (
-  ww: WasmWrapper,
+  ww:  SigningNeutronClient,
   contractAddress: string,
   expectedTransfersAmount: number,
   numAttempts = 50,
@@ -139,7 +140,7 @@ export const postResubmitTxs = async (
  * the given parameters and checks the tx result to be successful.
  */
 export const registerTransfersQuery = async (
-  cm: WasmWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -162,7 +163,7 @@ export const registerTransfersQuery = async (
  * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
  */
 export const queryRecipientTxs = (
-  cm: WasmWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   recipient: string,
 ) =>

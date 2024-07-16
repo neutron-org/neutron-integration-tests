@@ -18,7 +18,6 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { SigningStargateClient } from '@cosmjs/stargate';
 
 import config from '../../config.json';
 import { SigningStargateClient } from '@cosmjs/stargate';

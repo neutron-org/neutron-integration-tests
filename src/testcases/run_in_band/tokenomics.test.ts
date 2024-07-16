@@ -3,11 +3,8 @@ import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
-import {wasm, WasmWrapper} from "../../helpers/wasmClient";
 import {Registry} from "@cosmjs/proto-signing";
-import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
 import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {getWithAttempts} from "../../helpers/getWithAttempts";
 import {QueryClientImpl as ContractManagerQuery} from "@neutron-org/cosmjs-types/neutron/contractmanager/query";
 import {QueryClientImpl as BankQueryClient} from "@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query";
 import {QueryClientImpl as IbcQueryClient} from "@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query";
@@ -15,16 +12,17 @@ import {Wallet} from "@neutron-org/neutronjsplus/dist/types";
 import {QueryTotalBurnedNeutronsAmountResponse} from "@neutron-org/neutronjs/neutron/feeburner/query";
 import {QueryTotalSupplyResponse} from "@neutron-org/neutronjs/cosmos/bank/v1beta1/query";
 import {waitBlocks} from "@neutron-org/neutronjsplus/dist/wait";
+import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
+import {MsgTransfer} from "cosmjs-types/ibc/applications/transfer/v1/tx";
 
 const config = require('../../config.json');
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
-  let neutronSigningClient: SigningStargateClient;
+  let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
-  let neutronAccount: Wallet;
-  let gaiaAccount: Wallet;
+  let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
   let treasuryContractAddress: string;
 
   let contractManagerQuery: ContractManagerQuery;
@@ -34,25 +32,18 @@ describe('Neutron / Tokenomics', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
-    );
-
-    neutronSigningClient = await SigningStargateClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronAccount.directwallet,
-      { registry:new Registry(neutronTypes)},
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
 
 
-    gaiaAccount = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaAccount.directwallet,
+      gaiaWallet.directwallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -80,9 +71,14 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address,
-        '1000',
+       await neutronClient.sendTokens(
+         testState.wallets.neutron.rly1.address,
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         bigFee,
       );
     });
@@ -109,9 +105,14 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await neutronAccount.msgSend(
+      await neutronClient.sendTokens(
         testState.wallets.neutron.rly1.address,
-        '1000',
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         bigFee,
       );
     });
@@ -141,15 +142,20 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Perform any tx and pay with neutron fee', async () => {
-      await neutronAccount.msgSend(
+      await neutronClient.sendTokens(
         testState.wallets.neutron.rly1.address,
-        '1000',
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         fee,
       );
     });
 
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
-      await waitBlocks(1, neutronClient.client);
+      await neutronClient.waitBlocks(1);
       const balanceAfter = parseInt((await neutronClient.client.getBalance(
         treasuryContractAddress,
         NEUTRON_DENOM,
@@ -174,18 +180,27 @@ describe('Neutron / Tokenomics', () => {
     };
 
     test('obtain uatom tokens', async () => {
-      await gaiaAccount.msgIBCTransfer(
-        'transfer',
-        'channel-0',
-        {
-          denom: COSMOS_DENOM,
-          amount: '100000',
-        },
-        testState.wallets.qaNeutron.qa.address,
-        { revisionNumber: 2n, revisionHeight: 100000000n },
+       await gaiaClient.signAndBroadcast(
+         gaiaWallet.address,
+        [
+          {
+            typeUrl: MsgTransfer.typeUrl,
+            value: MsgTransfer.fromPartial({
+              sourcePort: 'transfer',
+              sourceChannel: 'channel-0',
+              token: { denom: COSMOS_DENOM, amount: '100000'},
+              sender: gaiaWallet.address,
+              receiver: testState.wallets.qaNeutron.qa.address,
+              timeoutHeight: {
+                revisionNumber: BigInt(2),
+                revisionHeight: BigInt(100000000),
+              },
+            }),
+          },
+        ],
+        fee,
       );
-      await getWithAttempts(
-        neutronSigningClient,
+      await neutronClient.getWithAttempts(
         async () =>
           neutronClient.client.getBalance(testState.wallets.qaNeutron.qa.address, ibcUatomDenom),
         async (balance) =>
@@ -201,9 +216,14 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Perform any tx and pay with uatom fee', async () => {
-      await neutronAccount.msgSend(
+      await neutronClient.sendTokens(
         testState.wallets.neutron.rly1.address,
-        '1000',
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         fee,
       );
     });

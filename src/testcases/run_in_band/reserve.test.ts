@@ -10,6 +10,8 @@ import {Registry} from "@cosmjs/proto-signing";
 import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
 import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
 import {wasm, WasmWrapper, wasmWrapper} from "../../helpers/wasmClient";
+import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
+import {QueryClientImpl as BankQueryClient} from "@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query";
 
 const config = require('../../config.json');
 
@@ -21,7 +23,8 @@ interface ReserveStats {
 
 describe('Neutron / Treasury', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
+  let neutronClient: SigningNeutronClient;
+  let neutronClient2: SigningNeutronClient;
   let neutronAccount1: Wallet;
   let neutronAccount2: Wallet;
   let mainDaoWallet: Wallet;
@@ -32,17 +35,25 @@ describe('Neutron / Treasury', () => {
   let securityDaoAddr: string;
   let holder1Addr: string;
   let holder2Addr: string;
+  let bankQuerier: BankQueryClient;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronAccount1 = await testState.nextWallet('neutron');
     neutronAccount2 = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount1,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronAccount1.directwallet,
+      neutronAccount1.address,
     );
+
+    neutronClient2 = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronAccount2.directwallet,
+      neutronAccount2.address,
+    );
+
+
     mainDaoWallet = testState.wallets.neutron.demo1;
     securityDaoWallet = testState.wallets.neutron.icq;
     holder1Wallet = testState.wallets.neutron.demo2;
@@ -51,6 +62,8 @@ describe('Neutron / Treasury', () => {
     securityDaoAddr = securityDaoWallet.address;
     holder1Addr = holder1Wallet.address;
     holder2Addr = holder2Wallet.address;
+    const neutronRpcClient = await testState.neutronRpcClient();
+    bankQuerier = new BankQueryClient(neutronRpcClient);
   });
 
   describe('Treasury', () => {
@@ -59,13 +72,13 @@ describe('Neutron / Treasury', () => {
     let treasury: string;
     beforeAll(async () => {
       dsc = await setupDSC(neutronClient, mainDaoAddr, securityDaoAddr);
-      treasury = await neutronChain.getNeutronDAOCore();
+      treasury = await m.getNeutronDAOCore();
     });
 
     describe('some corner cases', () => {
       let reserveStats: ReserveStats;
       beforeEach(async () => {
-        reserve = await setupReserve(, {
+        reserve = await setupReserve(neutronClient, {
           mainDaoAddress: mainDaoAddr,
           securityDaoAddress: securityDaoAddr,
           distributionRate: '0.0',
@@ -82,13 +95,13 @@ describe('Neutron / Treasury', () => {
       });
       test('zero distribution rate', async () => {
         await neutronAccount1.msgSend(reserve, '100000');
-        const res = await neutronAccount1.executeContract(reserve, {
+        const res = await neutronClient.execute(reserve, {
           distribute: {},
         });
 
         expect(res.code).toEqual(0);
 
-        const stats = (await neutronChain.queryContract(reserve, {
+        const stats = (await neutronClient.client.queryContractSmart(reserve, {
           stats: {},
         })) as any;
         expect(parseInt(stats.total_distributed)).toEqual(0);
@@ -421,7 +434,7 @@ describe('Neutron / Treasury', () => {
 });
 
 const setupDSC = async (
-  cm: WasmWrapper,
+  cm: SigningNeutronClient,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
@@ -441,7 +454,7 @@ const setupDSC = async (
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
 const normalizeReserveBurnedCoins = async (
-  cm: WasmWrapper,
+  cm: SigningNeutronClient,
   reserveAddress: string,
 ): Promise<ReserveStats> => {
   // Normalize state
@@ -452,8 +465,15 @@ const normalizeReserveBurnedCoins = async (
     total_distributed: '0',
   };
   while (normalize) {
-    await cm.msgSend(reserveAddress, '1');
-    await cm.executeContract(reserveAddress, {
+    await cm.sendTokens(
+      reserveAddress,
+      [{ denom: NEUTRON_DENOM, amount: '1' }],
+      {
+        gas: '200000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+      },
+    );
+    await cm.execute(reserveAddress, {
       distribute: {},
     });
     reserveStats = await cm.client.queryContractSmart<ReserveStats>(reserveAddress, {
@@ -478,7 +498,7 @@ const getBurnedCoinsAmount = async (
 };
 
 const setupReserve = async (
-  cm: WasmWrapper,
+  cm: SigningNeutronClient,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
@@ -515,7 +535,7 @@ const setupReserve = async (
  * @param actionCheck is called after unpausing to make sure the executable action worked.
  */
 async function testExecControl(
-  account: WalletWrapper,
+  account: SigningNeutronClient,
   testingContract: string,
   execAction: () => Promise<number | undefined>,
   actionCheck: () => Promise<void>,

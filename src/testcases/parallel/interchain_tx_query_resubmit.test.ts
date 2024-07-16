@@ -1,7 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
@@ -12,39 +12,37 @@ import {
   waitForTransfersAmount,
 } from '../../helpers/icq';
 import { Suite, inject } from 'vitest';
-import {wasm, WasmWrapper} from "../../helpers/wasmClient";
+import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
+import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
 import {Registry} from "@cosmjs/proto-signing";
-import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
 
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
-  let gaiaClient: WasmWrapper;
-  let neutronAccount: Wallet;
-  let gaiaAccount: Wallet;
+  let neutronClient: SigningNeutronClient;
+  let gaiaClient: SigningStargateClient;
+  let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics, suite);
-    neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
+
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
 
-    gaiaClient = await new wasm(
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaAccount,
-      COSMOS_DENOM,
-      new Registry(neutronTypes)
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
     );
-    gaiaAccount = await testState.nextWallet('cosmos');
   });
 
   describe('deploy contract', () => {
@@ -81,7 +79,14 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
-      await neutronAccount.msgSend(contractAddress, '1000000');
+       await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
       await registerTransfersQuery(
         neutronClient,
         contractAddress,
@@ -108,9 +113,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('check failed txs', async () => {
       for (let i = 0; i < 5; i++) {
-        const res = await gaiaAccount.msgSend(
+        const res = await neutronClient.sendTokens(
           watchedAddr1,
-          amountToAddrFirst1.toString(),
+          [{ denom: NEUTRON_DENOM, amount: amountToAddrFirst1.toString() }],
+          {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          },
         );
         expect(res.code).toEqual(0);
       }
