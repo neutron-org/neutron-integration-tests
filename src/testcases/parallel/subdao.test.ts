@@ -663,11 +663,11 @@ describe('Neutron / Subdao', () => {
     test('Non-timelock unpause proposal: Succeed execution', async () => {
       proposalId = await subdaoMember1.submitDropUnpauseProposal(
         pausableMock,
-        'single_nt_pause_drop',
+        'single_nt_unpause_drop',
       );
-      await subdaoMember1.voteYes(proposalId, 'single_nt_pause_drop');
+      await subdaoMember1.voteYes(proposalId, 'single_nt_unpause_drop');
       await expect(
-        subdaoMember1.executeProposal(proposalId, 'single_nt_pause_drop'),
+        subdaoMember1.executeProposal(proposalId, 'single_nt_unpause_drop'),
       ).resolves.not.toThrow();
       const pausedState = await neutronChain.queryContract(pausableMock, {
         state: {},
