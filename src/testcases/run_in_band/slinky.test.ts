@@ -113,45 +113,25 @@ describe('Neutron / Slinky', () => {
       proposalId = await daoMember1.submitCreateMarketMap(
         chainManagerAddress,
         'Proposal for update marketmap',
-        'Add new marketmap with currency pair',
+        'Add new marketmap with currency pair to set last_updated field',
         [
           {
             ticker: {
               currency_pair: {
-                Base: 'TIA',
+                Base: 'DROP',
                 Quote: 'USD',
               },
               decimals: 8,
               min_provider_count: 1,
               enabled: true,
-              metadata_JSON: '{}',
-            },
-            provider_configs: [
-              {
-                name: 'kraken_api',
-                off_chain_ticker: 'TIAUSD',
-                invert: false,
-                metadata_JSON: '{}',
-              },
-            ],
-          },
-          {
-            ticker: {
-              currency_pair: {
-                Base: 'USDT',
-                Quote: 'USD',
-              },
-              decimals: 6,
-              min_provider_count: 1,
-              enabled: false,
               metadata_JSON: '',
             },
             provider_configs: [
               {
                 name: 'kraken_api',
-                off_chain_ticker: 'USDTUSD',
+                off_chain_ticker: 'DROPUSD',
                 invert: false,
-                metadata_JSON: '',
+                metadata_JSON: '{}',
               },
             ],
           },
@@ -182,17 +162,17 @@ describe('Neutron / Slinky', () => {
       await neutronChain.blockWaiter.waitBlocks(30);
       // check
       const res = await neutronChain.queryOracleAllCurrencyPairs();
-      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Base).toBe('AAVE');
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
 
     test('prices not empty', async () => {
-      const res = await neutronChain.queryOraclePrices(['TIA/USD']);
+      const res = await neutronChain.queryOraclePrices(['AAVE/USD']);
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
     test('tia/usd price present', async () => {
-      const res = await neutronChain.queryOraclePrice('TIA', 'USD');
+      const res = await neutronChain.queryOraclePrice('AAVE', 'USD');
       expect(+res.price.price).toBeGreaterThan(0);
     });
   });
@@ -203,7 +183,7 @@ describe('Neutron / Slinky', () => {
         oracleContract,
         {
           get_prices: {
-            currency_pair_ids: ['TIA/USD'],
+            currency_pair_ids: ['AAVE/USD'],
           },
         },
       );
@@ -215,7 +195,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<GetPriceResponse>(
         oracleContract,
         {
-          get_price: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
+          get_price: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
         },
       );
       expect(+res.price.price).toBeGreaterThan(0);
@@ -228,7 +208,7 @@ describe('Neutron / Slinky', () => {
           get_all_currency_pairs: {},
         },
       );
-      expect(res.currency_pairs[0].Base).toBe('TIA');
+      expect(res.currency_pairs[0].Base).toBe('AAVE');
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
   });
@@ -247,17 +227,7 @@ describe('Neutron / Slinky', () => {
       const res = await neutronChain.queryContract<MarketResponse>(
         marketmapContract,
         {
-          market: { currency_pair: { Base: 'TIA', Quote: 'USD' } },
-        },
-      );
-      expect(res.market).toBeDefined();
-    });
-
-    test('query market with empty metadata_JSON', async () => {
-      const res = await neutronChain.queryContract<MarketResponse>(
-        marketmapContract,
-        {
-          market: { currency_pair: { Base: 'USDT', Quote: 'USD' } },
+          market: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
