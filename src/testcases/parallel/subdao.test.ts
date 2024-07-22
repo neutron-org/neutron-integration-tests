@@ -643,14 +643,13 @@ describe('Neutron / Subdao', () => {
     });
   });
 
-  describe.only('Non-timelock Drop pause proposal: Succeed creation', () => {
+  describe('Non-timelock Drop pause proposal: Succeed creation', () => {
     let proposalId: number;
     test('Non-timelock pause proposal: Succeed execution', async () => {
       proposalId = await subdaoMember1.submitDropPauseProposal(
         pausableMock,
         'single_nt_pause_drop',
       );
-      console.log('proposalId', proposalId);
       await subdaoMember1.voteYes(proposalId, 'single_nt_pause_drop');
       await expect(
         subdaoMember1.executeProposal(proposalId, 'single_nt_pause_drop'),
@@ -663,11 +662,11 @@ describe('Neutron / Subdao', () => {
     test('Non-timelock unpause proposal: Succeed execution', async () => {
       proposalId = await subdaoMember1.submitDropUnpauseProposal(
         pausableMock,
-        'single_nt_unpause_drop',
+        'single_nt_pause_drop',
       );
-      await subdaoMember1.voteYes(proposalId, 'single_nt_unpause_drop');
+      await subdaoMember1.voteYes(proposalId, 'single_nt_pause_drop');
       await expect(
-        subdaoMember1.executeProposal(proposalId, 'single_nt_unpause_drop'),
+        subdaoMember1.executeProposal(proposalId, 'single_nt_pause_drop'),
       ).resolves.not.toThrow();
       const pausedState = await neutronChain.queryContract(pausableMock, {
         state: {},
