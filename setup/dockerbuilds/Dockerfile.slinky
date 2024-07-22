@@ -1,11 +1,13 @@
-FROM golang:1.22-bullseye AS builder
+FROM ubuntu:rolling AS git-cloner
+RUN apt-get update && apt-get install -y git
+WORKDIR /src
+RUN git clone --branch v1.0.0 https://github.com/skip-mev/slinky.git .
 
+FROM golang:1.22-bullseye AS builder
 WORKDIR /src/slinky
-COPY --from=app go.mod .
+COPY --from=git-cloner /src .
 
 RUN go mod download
-
-COPY --from=app . .
 
 RUN make build
 
