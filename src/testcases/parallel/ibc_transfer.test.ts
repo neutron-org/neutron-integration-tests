@@ -3,7 +3,8 @@ import { Suite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import {
   QueryClientImpl as ContractManagerQuery,
@@ -130,8 +131,8 @@ describe('Neutron / IBC transfer', () => {
         const res = await neutronClient.signAndBroadcast(
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: NeutronMsgTransfer.typeUrl,
+              value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000' },
@@ -161,8 +162,8 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: '1000' },
@@ -300,8 +301,8 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: transferAmount + '' },
@@ -361,8 +362,8 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: portName,
                 sourceChannel: channelName,
                 token: { denom: COSMOS_DENOM, amount: uatomAmount },

@@ -1325,10 +1325,10 @@
   resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.2-rc1.tgz#ca1fc1dc9566858dbd765e8f82c8a70097bcc84b"
   integrity sha512-ju2AqJ14yO4+JF8RwY4ZVy7f2HVjhdf66SfhS6y4ucBZm997/E/yYVMnpWmUncVg8ARooISOKaOYNagqz0am6Q==
 
-"@neutron-org/neutronjs@0.1.0-rc2":
-  version "0.1.0-rc2"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-0.1.0-rc2.tgz#f1c66de897f503f30313fb55d72877a9ade7704f"
-  integrity sha512-p6T8et9GCNmIKTSEMonoiR3YgxEZtvqheEi+T0ucyae/wteYonLYrfFEV8ps072P325ICDyzCsnLxgO/XZdJuw==
+"@neutron-org/neutronjs@0.1.0-rc4":
+  version "0.1.0-rc4"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-0.1.0-rc4.tgz#5e6e56dcc3ffdc5a6421674195a6c15010fdd4f5"
+  integrity sha512-LXK+OkrwD81bApE8KBv6F7f7kMM28w5cfnuZmz8b4r7KrROZrxlWxsd7vzTlBhO8Dzups0LdUo1NYBoNc9oY2Q==
 
 "@neutron-org/neutronjsplus@neutron-org/neutronjsplus#e53a0200c1ebf281ba7e900c71ef4b50f70ad1c9":
   version "0.4.0-rc21"
@@ -2368,9 +2368,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.820:
-  version "1.4.832"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.832.tgz#d25882ce0a9237577b039bffa124ecef1822003b"
-  integrity sha512-cTen3SB0H2SGU7x467NRe1eVcQgcuS6jckKfWJHia2eo0cHIGOqHoAxevIYZD4eRHcWjkvFzo93bi3vJ9W+1lA==
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.5.0.tgz#0d3123a9f09189b9c7ab4b5d6848d71b3c1fd0e8"
+  integrity sha512-Vb3xHHYnLseK8vlMJQKJYXJ++t4u1/qJ3vykuVrVjvdiOEhYyT1AuP4x03G8EnPmYvYOhe9T+dADTmthjRQMkA==
 
 elliptic@^6.5.4:
   version "6.5.6"
@@ -4277,9 +4277,9 @@ type-is@~1.6.18:
     mime-types "~2.1.24"
 
 typescript@^5.1.6:
-  version "5.5.3"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.3.tgz#e1b0a3c394190838a0b168e771b0ad56a0af0faa"
-  integrity sha512-/hreyEujaB0w76zKo6717l3L0o/qEUtRgdvUBvlkhoWeOVMjMuHNHk0BRBzikzuGDqNmPQbg5ifMEqsHLiIUcQ==
+  version "5.5.4"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.5.4.tgz#d9852d6c82bad2d2eda4fd74a5762a8f5909e9ba"
+  integrity sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==
 
 undici-types@~5.26.4:
   version "5.26.5"
