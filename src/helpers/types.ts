@@ -1,7 +1,5 @@
-
 // DenomTraceResponse is the response model for the ibc transfer denom trace query.
-import {Coin} from "@cosmjs/proto-signing";
-
+import { Coin } from '@cosmjs/proto-signing';
 
 export type CodeId = number;
 
@@ -38,8 +36,6 @@ export type DenomMetadataResponse = {
     total: string;
   };
 };
-
-
 
 export type AcknowledgementResult =
   | { success: string[] }
@@ -293,14 +289,11 @@ export type VestingSchedulePoint = {
   amount: string;
 };
 
-
-
 export type ContractAdminResponse = {
   contract_info: {
     admin: string;
   };
 };
-
 
 // TotalBurnedNeutronsAmountResponse is the response model for the feeburner's total-burned-neutrons.
 export type TotalBurnedNeutronsAmountResponse = {

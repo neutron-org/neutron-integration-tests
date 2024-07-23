@@ -1,4 +1,4 @@
-import { acceptInterchainqueriesParamsChangeProposal } from './../../helpers/interchainqueries';
+import { acceptInterchainqueriesParamsChangeProposal } from '../../helpers/interchainqueries';
 import '@neutron-org/neutronjsplus';
 import {
   CosmosWrapper,
@@ -17,7 +17,11 @@ import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '@neutron-org/neutronjsplus/dist/icq';
-import {CodeId, NeutronContract, Wallet} from '@neutron-org/neutronjsplus/dist/types';
+import {
+  CodeId,
+  NeutronContract,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState, createWalletWrapper } from '../../helpers/local_state';
 import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import { Coin } from '@cosmjs/proto-signing';
@@ -47,8 +51,8 @@ import {
   validateBalanceQuery,
   watchForKvCallbackUpdates,
 } from '../../helpers/interchainqueries';
-import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
-import {SigningStargateClient} from "@cosmjs/stargate";
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 const config = require('../../config.json');
 

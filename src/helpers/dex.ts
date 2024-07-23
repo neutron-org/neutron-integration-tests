@@ -7,7 +7,6 @@ export type ParamsResponse = {
   params: Params;
 };
 
-
 export type LimitOrderTrancheUserResponse = {
   limit_order_tranche_user?: LimitOrderTrancheUser;
   withdrawable_shares?: string;
@@ -23,11 +22,9 @@ export type AllUserLimitOrdersResponse = {
   pagination?: PageResponse;
 };
 
-
 export type LimitOrderTrancheResponse = {
   limit_order_tranche?: LimitOrderTranche;
 };
-
 
 export type AllLimitOrderTrancheResponse = {
   limit_order_tranche: LimitOrderTranche[];
@@ -47,7 +44,6 @@ export type AllTickLiquidityResponse = {
 export type InactiveLimitOrderTrancheResponse = {
   inactive_limit_order_tranche: LimitOrderTranche;
 };
-
 
 export type AllInactiveLimitOrderTrancheResponse = {
   inactive_limit_order_tranche: LimitOrderTranche[];
@@ -79,11 +75,9 @@ export type EstimatePlaceLimitOrderResponse = {
   swap_out_coin: Coin;
 };
 
-
 export type PoolResponse = {
   pool: Pool;
 };
-
 
 export type PoolMetadataResponse = {
   pool_metadata: PoolMetadata;
@@ -103,7 +97,6 @@ export enum LimitOrderType {
   JustInTime = 3,
   GoodTilTime = 4,
 }
-
 
 export type MultiHopRoute = {
   hops: string[];

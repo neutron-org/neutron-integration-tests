@@ -1,8 +1,12 @@
 import '@neutron-org/neutronjsplus';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
-import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
+import {
+  NeutronContract,
+  CodeId,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -10,20 +14,15 @@ import {
   queryRecipientTxs,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '../../helpers/icq';
+} from '../../helpers/interchainqueries';
 import { Suite, inject } from 'vitest';
-import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
-import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {Registry} from "@cosmjs/proto-signing";
-
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
-  let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
@@ -36,21 +35,12 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       neutronWallet.directwallet,
       neutronWallet.address,
     );
-
-    gaiaWallet = await testState.nextWallet('cosmos');
-    gaiaClient = await SigningStargateClient.connectWithSigner(
-      testState.rpcGaia,
-      gaiaWallet.directwallet,
-      { registry: new Registry(defaultRegistryTypes) },
-    );
   });
 
   describe('deploy contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await neutronClient.upload(
-        NeutronContract.INTERCHAIN_QUERIES,
-      );
+      codeId = await neutronClient.upload(NeutronContract.INTERCHAIN_QUERIES);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
@@ -79,7 +69,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
-       await neutronClient.sendTokens(
+      await neutronClient.sendTokens(
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '1000000' }],
         {

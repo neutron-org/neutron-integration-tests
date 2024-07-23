@@ -1,4 +1,8 @@
-import {AckFailuresResponse, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
+import {
+  AckFailuresResponse,
+  CodeId,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/stargate';
 import {
   MigrateResult,
@@ -8,7 +12,7 @@ import { promises as fsPromise } from 'fs';
 import path from 'path';
 import { Coin, Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
-import {DenomTraceResponse} from "./types";
+import { DenomTraceResponse } from './types';
 
 // creates a wasm wrapper
 export async function wasm(

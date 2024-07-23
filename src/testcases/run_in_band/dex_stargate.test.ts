@@ -1,28 +1,34 @@
 import { inject, Suite } from 'vitest';
+import { getEventAttributesFromTx } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
-  getEventAttributesFromTx,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
+  NeutronContract,
+  CodeId,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import {wasm, WasmWrapper} from "../../helpers/wasmClient";
-import {Registry} from "@cosmjs/proto-signing";
-import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
+import { wasm, WasmWrapper } from '../../helpers/wasmClient';
+import { Registry } from '@cosmjs/proto-signing';
+import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import {
   QueryAllInactiveLimitOrderTrancheResponse,
   QueryAllLimitOrderTrancheResponse,
-  QueryAllLimitOrderTrancheUserByAddressResponse, QueryAllLimitOrderTrancheUserResponse,
+  QueryAllLimitOrderTrancheUserByAddressResponse,
+  QueryAllLimitOrderTrancheUserResponse,
   QueryAllPoolMetadataResponse,
   QueryAllPoolReservesResponse,
   QueryAllTickLiquidityResponse,
   QueryAllUserDepositsResponse,
   QueryEstimatePlaceLimitOrderResponse,
   QueryGetInactiveLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheResponse, QueryGetLimitOrderTrancheUserResponse,
-  QueryGetPoolMetadataResponse, QueryParamsResponse, QueryPoolResponse
-} from "@neutron-org/neutronjs/neutron/dex/query";
-import {waitBlocks} from "@neutron-org/neutronjsplus/dist/wait";
-import {LimitOrderType} from "../../helpers/dex";
+  QueryGetLimitOrderTrancheResponse,
+  QueryGetLimitOrderTrancheUserResponse,
+  QueryGetPoolMetadataResponse,
+  QueryParamsResponse,
+  QueryPoolResponse,
+} from '@neutron-org/neutronjs/neutron/dex/query';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { LimitOrderType } from '../../helpers/dex';
 
 const config = require('../../config.json');
 
@@ -52,27 +58,22 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'dex_dev',
-      );
+      contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
 
       await neutronClient.client.sendTokens(
         neutronAccount.address,
         contractAddress,
-        [{ denom: NEUTRON_DENOM, amount:  '100000000' }],
+        [{ denom: NEUTRON_DENOM, amount: '100000000' }],
         {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         },
       );
 
-
       await neutronClient.client.sendTokens(
         neutronAccount.address,
         contractAddress,
-        [{ denom: 'uibcusdc', amount:  '100000000' }],
+        [{ denom: 'uibcusdc', amount: '100000000' }],
         {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -477,7 +478,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllUserDeposits', async () => {
       const resp =
-      await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
+        await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
           contractAddress,
           {
             all_user_deposits: {
@@ -591,14 +592,20 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
     });
     test('Pool', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(contractAddress, {
-        pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
-      });
+      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+        contractAddress,
+        {
+          pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
+        },
+      );
     });
     test('PoolByID', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(contractAddress, {
-        pool_by_id: { pool_id: 0 },
-      });
+      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+        contractAddress,
+        {
+          pool_by_id: { pool_id: 0 },
+        },
+      );
     });
     test('PoolMetadata', async () => {
       await neutronClient.client.queryContractSmart<QueryGetPoolMetadataResponse>(

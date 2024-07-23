@@ -1,6 +1,4 @@
-import {
-  Event as CosmosEvent,
-} from '@cosmjs/stargate';
+import { Event as CosmosEvent } from '@cosmjs/stargate';
 
 export const getEventAttributesFromTx = (
   data: any,
@@ -8,7 +6,7 @@ export const getEventAttributesFromTx = (
   attributes: string[],
 ): Array<
   Record<(typeof attributes)[number], string> | Record<string, never>
-  > => {
+> => {
   const events = data?.tx_response.events;
   const resp = [];
   for (const e of events) {

@@ -4,46 +4,54 @@ import {
   getEventAttributesFromTx,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
-import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
+import { LocalState } from '../../helpers/local_state';
 import {
-  msgCreateDenom,
-  msgMintDenom,
-} from '@neutron-org/neutronjsplus/dist/tokenfactory';
-import {wasm, WasmWrapper} from "../../helpers/wasmClient";
-import {Registry} from "@cosmjs/proto-signing";
-import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
-import {waitBlocks} from "@neutron-org/neutronjsplus/dist/wait";
+  NeutronContract,
+  CodeId,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   QueryAllInactiveLimitOrderTrancheResponse,
   QueryAllLimitOrderTrancheResponse,
   QueryAllLimitOrderTrancheUserByAddressResponse,
-  QueryAllLimitOrderTrancheUserResponse, QueryAllPoolMetadataResponse, QueryAllPoolReservesResponse,
+  QueryAllLimitOrderTrancheUserResponse,
+  QueryAllPoolMetadataResponse,
+  QueryAllPoolReservesResponse,
   QueryAllTickLiquidityResponse,
-  QueryAllUserDepositsResponse, QueryEstimatePlaceLimitOrderResponse, QueryGetInactiveLimitOrderTrancheResponse,
+  QueryAllUserDepositsResponse,
+  QueryEstimatePlaceLimitOrderResponse,
+  QueryGetInactiveLimitOrderTrancheResponse,
   QueryGetLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheUserResponse, QueryGetPoolMetadataResponse,
-  QueryParamsResponse, QueryPoolResponse
-} from "@neutron-org/neutronjs/neutron/dex/query";
+  QueryGetLimitOrderTrancheUserResponse,
+  QueryGetPoolMetadataResponse,
+  QueryParamsResponse,
+  QueryPoolResponse,
+} from '@neutron-org/neutronjs/neutron/dex/query';
+import {
+  MsgCreateDenom,
+  MsgMint,
+} from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { LimitOrderType } from '@neutron-org/neutronjs/neutron/dex/tx';
 
 const config = require('../../config.json');
 
 describe('Neutron / dex module bindings', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
-  let neutronAccount: Wallet;
+  let neutronClient: SigningNeutronClient;
+  let neutronWallet: Wallet;
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
   });
 
@@ -54,13 +62,9 @@ describe('Neutron / dex module bindings', () => {
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'dex_dev',
-      );
+      contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
       await neutronClient.client.sendTokens(
-        neutronAccount.address,
+        neutronWallet.address,
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],
         {
@@ -70,7 +74,7 @@ describe('Neutron / dex module bindings', () => {
       );
 
       await neutronClient.client.sendTokens(
-        neutronAccount.address,
+        neutronWallet.address,
         contractAddress,
         [{ denom: 'uibcusdc', amount: '100000000' }],
         {
@@ -160,7 +164,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.221390545',
             amount_in: '1000000',
-            order_type: LimitOrderType.GoodTilCancelled,
+            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
           },
         });
         expect(res.code).toEqual(0);
@@ -175,7 +179,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '0.74',
             tick_index_in_to_out: 0,
             amount_in: '100',
-            order_type: LimitOrderType.FillOrKill,
+            order_type: LimitOrderType.FILL_OR_KILL,
             max_amount_out: '100',
           },
         });
@@ -191,7 +195,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.98',
             amount_in: '1000000',
-            order_type: LimitOrderType.ImmediateOrCancel,
+            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
           },
         });
         expect(res.code).toEqual(0);
@@ -206,7 +210,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '7.38',
             amount_in: '1000000',
-            order_type: LimitOrderType.JustInTime,
+            order_type: LimitOrderType.JUST_IN_TIME,
           },
         });
         expect(res.code).toEqual(0);
@@ -221,7 +225,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '1.002',
             amount_in: '10000000',
             expiration_time: Math.ceil(Date.now() / 1000) + 1000,
-            order_type: LimitOrderType.GoodTilTime,
+            order_type: LimitOrderType.GOOD_TIL_TIME,
           },
         });
         expect(res.code).toEqual(0);
@@ -237,7 +241,7 @@ describe('Neutron / dex module bindings', () => {
               limit_sell_price: '0.998',
               amount_in: '10000000',
               expiration_time: 1,
-              order_type: LimitOrderType.GoodTilTime,
+              order_type: LimitOrderType.GOOD_TIL_TIME,
             },
           }),
         ).rejects.toThrowError(
@@ -271,7 +275,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.4564654E-4',
             amount_in: '100000',
-            order_type: LimitOrderType.GoodTilCancelled,
+            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
           },
         });
         expect(res.code).toEqual(0);
@@ -288,7 +292,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.8188125757',
             amount_in: '1000000',
-            order_type: LimitOrderType.GoodTilCancelled,
+            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
           },
         });
         expect(res1.code).toEqual(0);
@@ -348,11 +352,22 @@ describe('Neutron / dex module bindings', () => {
       const denoms: any[] = [];
       test('successfull multihops', async () => {
         const numberDenoms = 10;
+        const fee = {
+          gas: '500000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1250' }],
+        };
         for (let i = 0; i < numberDenoms; i++) {
-          const data = await msgCreateDenom(
-            neutronAccount,
-            neutronAccount.wallet.address,
-            String(i),
+          const data = await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: MsgCreateDenom.typeUrl,
+                value: MsgCreateDenom.fromPartial({
+                  sender: neutronWallet.address,
+                  subdenom: String(i),
+                }),
+              },
+            ],
+            fee,
           );
 
           const newTokenDenom = getEventAttribute(
@@ -361,20 +376,27 @@ describe('Neutron / dex module bindings', () => {
             'new_token_denom',
           );
 
-          await msgMintDenom(
-            neutronAccount,
-            neutronAccount.wallet.address,
-            {
-              denom: newTokenDenom,
-              amount: '1000000',
-            },
-            neutronAccount.wallet.address,
+          await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: MsgMint.typeUrl,
+                value: MsgMint.fromPartial({
+                  sender: neutronWallet.address,
+                  amount: {
+                    denom: newTokenDenom,
+                    amount: '1000000',
+                  },
+                  mintToAddress: neutronWallet.address,
+                }),
+              },
+            ],
+            fee,
           );
 
           await neutronClient.client.sendTokens(
-            neutronAccount.address,
+            neutronWallet.address,
             contractAddress,
-            [{ denom: newTokenDenom, amount:  '1000000' }],
+            [{ denom: newTokenDenom, amount: '1000000' }],
             {
               gas: '200000',
               amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -695,14 +717,20 @@ describe('Neutron / dex module bindings', () => {
       );
     });
     test('Pool', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(contractAddress, {
-        pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
-      });
+      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+        contractAddress,
+        {
+          pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
+        },
+      );
     });
     test('PoolByID', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(contractAddress, {
-        pool_by_id: { pool_id: 0 },
-      });
+      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+        contractAddress,
+        {
+          pool_by_id: { pool_id: 0 },
+        },
+      );
     });
     test('PoolMetadata', async () => {
       await neutronClient.client.queryContractSmart<QueryGetPoolMetadataResponse>(

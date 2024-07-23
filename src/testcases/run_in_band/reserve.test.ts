@@ -2,16 +2,10 @@ import '@neutron-org/neutronjsplus';
 import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { walletWrapper } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
-import {Registry} from "@cosmjs/proto-signing";
-import {neutronTypes} from "@neutron-org/neutronjsplus/dist/neutronTypes";
-import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {wasm, WasmWrapper, wasmWrapper} from "../../helpers/wasmClient";
-import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
-import {QueryClientImpl as BankQueryClient} from "@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query";
+import { LocalState } from '../../helpers/local_state';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
 
 const config = require('../../config.json');
 
@@ -52,7 +46,6 @@ describe('Neutron / Treasury', () => {
       neutronAccount2.directwallet,
       neutronAccount2.address,
     );
-
 
     mainDaoWallet = testState.wallets.neutron.demo1;
     securityDaoWallet = testState.wallets.neutron.icq;
@@ -476,9 +469,12 @@ const normalizeReserveBurnedCoins = async (
     await cm.execute(reserveAddress, {
       distribute: {},
     });
-    reserveStats = await cm.client.queryContractSmart<ReserveStats>(reserveAddress, {
-      stats: {},
-    });
+    reserveStats = await cm.client.queryContractSmart<ReserveStats>(
+      reserveAddress,
+      {
+        stats: {},
+      },
+    );
 
     const burnedCoins = await getBurnedCoinsAmount(cm.chain);
     expect(burnedCoins).not.toBeNull();

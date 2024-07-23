@@ -1,17 +1,18 @@
 import '@neutron-org/neutronjsplus';
-import {
-  CosmosWrapper,
-  getEventAttribute,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
-import {NeutronContract, CodeId, Wallet} from '@neutron-org/neutronjsplus/dist/types';
-import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { LocalState } from '../../helpers/local_state';
+import {
+  NeutronContract,
+  CodeId,
+  Wallet,
+} from '@neutron-org/neutronjsplus/dist/types';
 import { Suite, inject } from 'vitest';
-import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
-import {defaultRegistryTypes, SigningStargateClient} from "@cosmjs/stargate";
-import {Registry} from "@cosmjs/proto-signing";
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import { Registry } from '@cosmjs/proto-signing';
+import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 
 const config = require('../../config.json');
 
@@ -45,200 +46,220 @@ describe('Neutron / Stargate Queries', () => {
 
   describe('Prepare for queries', () => {
     test('uatom IBC transfer from a remote chain to Neutron', async () => {
-      const res = await gaiaWallet.msgIBCTransfer(
-        'transfer',
-        'channel-0',
-        { denom: COSMOS_DENOM, amount: '1000' },
-        neutronWallet.address,
-        {
-          revisionNumber: 2n,
-          revisionHeight: 100000000n,
-        },
-      );
-      expect(res.code).toEqual(0);
-    });
+      const fee = {
+        gas: '500000',
+        amount: [{ denom: COSMOS_DENOM, amount: '1250' }],
+      };
 
-    test('create denom, mint', async () => {
-      const denom = `teststargate`;
-
-      const data = await msgCreateDenom(
-        neutronWallet,
-        neutronWallet.address,
-        denom,
-        {
-          gas: '500000',
-          amount: [{ denom: 'untrn', amount: '1250' }],
-        },
-      );
-      newTokenDenom = getEventAttribute(
-        data.events,
-        'create_denom',
-        'new_token_denom',
-      );
-    });
-  });
-
-  describe('Contract instantiation', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.STARGATE_QUERIER);
-      expect(codeId).toBeGreaterThan(0);
-    });
-    test('instantiate', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'stargate_querier',
-      );
-    });
-  });
-
-  async function querySmart(query: any): Promise<string> {
-    return await neutronClient.client.queryContractSmart<string>(contractAddress, query);
-  }
-
-  describe('Stargate queries', () => {
-    test('bank balance should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          bank_balance: {
-            address: neutronWallet.address,
-            denom: NEUTRON_DENOM,
+      await gaiaClient.signAndBroadcast(
+        gaiaWallet.address,
+        [
+          {
+            typeUrl: MsgTransfer.typeUrl,
+            value: MsgTransfer.fromPartial({
+              sourcePort: 'transfer',
+              sourceChannel: 'channel-0',
+              token: { denom: COSMOS_DENOM, amount: '1000' },
+              sender: gaiaWallet.address,
+              receiver: neutronWallet.address,
+              timeoutHeight: {
+                revisionNumber: BigInt(2),
+                revisionHeight: BigInt(100000000),
+              },
+            }),
           },
-        }),
+        ],
+        fee,
       );
-      expect(res.balance.denom).toBe('untrn');
-      expect(+res.balance.amount).toBeGreaterThan(1000000);
-    });
 
-    test('bank denom metadata should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          bank_denom_metadata: { denom: newTokenDenom },
-        }),
-      );
-      expect(res.metadatas[0].denom_units[0].denom).toBe(newTokenDenom);
-    });
+      test('create denom, mint', async () => {
+        const denom = `teststargate`;
 
-    test('bank params should work', async () => {
-      const res = JSON.parse(await querySmart({ bank_params: {} }));
-      expect(res.params.default_send_enabled).toBe(true);
-    });
-
-    test('bank supply of should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          bank_supply_of: { denom: NEUTRON_DENOM },
-        }),
-      );
-      expect(res.amount.denom).toBe('untrn');
-      expect(+res.amount.amount).toBeGreaterThan(1000000);
-    });
-
-    test('auth account should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          auth_account: {
-            address: neutronWallet.address,
-          },
-        }),
-      );
-      expect(res.account.address).toBe(neutronWallet.address);
-    });
-
-    test('transfer denom trace should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          transfer_denom_trace: {
-            hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-          },
-        }),
-      );
-      expect(res.denom_trace.path).toBe('transfer/channel-0');
-      expect(res.denom_trace.base_denom).toBe('uatom');
-    });
-
-    test('ibc client state should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          ibc_client_state: {
-            client_id: '07-tendermint-1',
-          },
-        }),
-      );
-      expect(res.client_state['@type']).toBe(
-        '/ibc.lightclients.tendermint.v1.ClientState',
-      );
-      expect(res.client_state.chain_id).toBe('test-2');
-    });
-
-    test('ibc consensus state should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          ibc_consensus_state: {
-            client_id: '07-tendermint-1',
-            revision_number: 0,
-            revision_height: 0,
-            latest_height: true,
-          },
-        }),
-      );
-      expect(res.consensus_state['@type']).toBe(
-        '/ibc.lightclients.tendermint.v1.ConsensusState',
-      );
-      expect(+res.proof_height.revision_height).toBeGreaterThan(0);
-    });
-
-    test('ibc connection should work', async () => {
-      const res = JSON.parse(
-        await querySmart({
-          ibc_connection: {
-            connection_id: 'connection-0',
-          },
-        }),
-      );
-      expect(res.connection.client_id).toBe('07-tendermint-1');
-      expect(+res.proof_height.revision_height).toBeGreaterThan(0);
-    });
-
-    test('tokenfactory params should work', async () => {
-      const res = JSON.parse(await querySmart({ tokenfactory_params: {} }));
-      expect(res.params.denom_creation_gas_consume).toBe('0');
-    });
-
-    test('tokenfactory denom authority metadata should work', async () => {
-      const res = await querySmart({
-        tokenfactory_denom_authority_metadata: {
-          denom: newTokenDenom,
-        },
+        const data = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: MsgCreateDenom.typeUrl,
+              value: MsgCreateDenom.fromPartial({
+                sender: neutronWallet.address,
+                subdenom: denom,
+              }),
+            },
+          ],
+          fee,
+        );
+        newTokenDenom = getEventAttribute(
+          data.events,
+          'create_denom',
+          'new_token_denom',
+        );
       });
-      expect(res).toBe(`{"authority_metadata":{"Admin":""}}`);
     });
 
-    test('denoms from creator should work', async () => {
-      const res = await querySmart({
-        tokenfactory_denoms_from_creator: {
-          creator: neutronWallet.address,
-        },
+    describe('Contract instantiation', () => {
+      let codeId: CodeId;
+      test('store contract', async () => {
+        codeId = await neutronClient.upload(NeutronContract.STARGATE_QUERIER);
+        expect(codeId).toBeGreaterThan(0);
       });
-      expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);
+      test('instantiate', async () => {
+        contractAddress = await neutronClient.instantiate(
+          codeId,
+          {},
+          'stargate_querier',
+        );
+      });
     });
 
-    test('interchaintx params should work', async () => {
-      const res = JSON.parse(await querySmart({ interchaintx_params: {} }));
-      expect(+res.params.msg_submit_tx_max_messages).toBeGreaterThan(0);
-    });
-
-    test('interchainqueries params should work', async () => {
-      const res = JSON.parse(
-        await querySmart({ interchainqueries_params: {} }),
+    async function querySmart(query: any): Promise<string> {
+      return await neutronClient.client.queryContractSmart<string>(
+        contractAddress,
+        query,
       );
-      expect(+res.params.query_submit_timeout).toBeGreaterThan(0);
-    });
+    }
 
-    test('feeburner params should work', async () => {
-      const res = JSON.parse(await querySmart({ feeburner_params: {} }));
-      expect(res.params.neutron_denom).toBe('untrn');
+    describe('Stargate queries', () => {
+      test('bank balance should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            bank_balance: {
+              address: neutronWallet.address,
+              denom: NEUTRON_DENOM,
+            },
+          }),
+        );
+        expect(res.balance.denom).toBe('untrn');
+        expect(+res.balance.amount).toBeGreaterThan(1000000);
+      });
+
+      test('bank denom metadata should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            bank_denom_metadata: { denom: newTokenDenom },
+          }),
+        );
+        expect(res.metadatas[0].denom_units[0].denom).toBe(newTokenDenom);
+      });
+
+      test('bank params should work', async () => {
+        const res = JSON.parse(await querySmart({ bank_params: {} }));
+        expect(res.params.default_send_enabled).toBe(true);
+      });
+
+      test('bank supply of should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            bank_supply_of: { denom: NEUTRON_DENOM },
+          }),
+        );
+        expect(res.amount.denom).toBe('untrn');
+        expect(+res.amount.amount).toBeGreaterThan(1000000);
+      });
+
+      test('auth account should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            auth_account: {
+              address: neutronWallet.address,
+            },
+          }),
+        );
+        expect(res.account.address).toBe(neutronWallet.address);
+      });
+
+      test('transfer denom trace should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            transfer_denom_trace: {
+              hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+            },
+          }),
+        );
+        expect(res.denom_trace.path).toBe('transfer/channel-0');
+        expect(res.denom_trace.base_denom).toBe('uatom');
+      });
+
+      test('ibc client state should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            ibc_client_state: {
+              client_id: '07-tendermint-1',
+            },
+          }),
+        );
+        expect(res.client_state['@type']).toBe(
+          '/ibc.lightclients.tendermint.v1.ClientState',
+        );
+        expect(res.client_state.chain_id).toBe('test-2');
+      });
+
+      test('ibc consensus state should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            ibc_consensus_state: {
+              client_id: '07-tendermint-1',
+              revision_number: 0,
+              revision_height: 0,
+              latest_height: true,
+            },
+          }),
+        );
+        expect(res.consensus_state['@type']).toBe(
+          '/ibc.lightclients.tendermint.v1.ConsensusState',
+        );
+        expect(+res.proof_height.revision_height).toBeGreaterThan(0);
+      });
+
+      test('ibc connection should work', async () => {
+        const res = JSON.parse(
+          await querySmart({
+            ibc_connection: {
+              connection_id: 'connection-0',
+            },
+          }),
+        );
+        expect(res.connection.client_id).toBe('07-tendermint-1');
+        expect(+res.proof_height.revision_height).toBeGreaterThan(0);
+      });
+
+      test('tokenfactory params should work', async () => {
+        const res = JSON.parse(await querySmart({ tokenfactory_params: {} }));
+        expect(res.params.denom_creation_gas_consume).toBe('0');
+      });
+
+      test('tokenfactory denom authority metadata should work', async () => {
+        const res = await querySmart({
+          tokenfactory_denom_authority_metadata: {
+            denom: newTokenDenom,
+          },
+        });
+        expect(res).toBe(`{"authority_metadata":{"Admin":""}}`);
+      });
+
+      test('denoms from creator should work', async () => {
+        const res = await querySmart({
+          tokenfactory_denoms_from_creator: {
+            creator: neutronWallet.address,
+          },
+        });
+        expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);
+      });
+
+      test('interchaintx params should work', async () => {
+        const res = JSON.parse(await querySmart({ interchaintx_params: {} }));
+        expect(+res.params.msg_submit_tx_max_messages).toBeGreaterThan(0);
+      });
+
+      test('interchainqueries params should work', async () => {
+        const res = JSON.parse(
+          await querySmart({ interchainqueries_params: {} }),
+        );
+        expect(+res.params.query_submit_timeout).toBeGreaterThan(0);
+      });
+
+      test('feeburner params should work', async () => {
+        const res = JSON.parse(await querySmart({ feeburner_params: {} }));
+        expect(res.params.neutron_denom).toBe('untrn');
+      });
     });
   });
 });

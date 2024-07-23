@@ -11,24 +11,23 @@ import { Suite, inject } from 'vitest';
 import {
   Dao,
   DaoMember,
-  getDaoContracts, getNeutronDAOCore,
+  getDaoContracts,
+  getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import {setupSubDaoTimelockSet} from "../../helpers/dao";
-import {
-  QueryClientImpl as AdminQueryClient
-} from "@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query";
-import {SigningNeutronClient} from "../../helpers/signing_neutron_client";
+import { setupSubDaoTimelockSet } from '../../helpers/dao';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import {
   MsgBurn,
   MsgChangeAdmin,
   MsgCreateDenom,
   MsgMint,
-  MsgSetBeforeSendHook
-} from "@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx";
-import {QueryClientImpl as BankQueryClient} from "@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query";
-import {createRPCQueryClient as createOsmosisClient} from "@neutron-org/neutronjs/osmosis/rpc.query";
-import {OsmosisQuerier} from "../../helpers/client_types";
+  MsgSetBeforeSendHook,
+} from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
+import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
+import { OsmosisQuerier } from '../../helpers/client_types';
 
 const config = require('../../config.json');
 
@@ -143,12 +142,13 @@ describe('Neutron / Tokenfactory', () => {
     tfq = new BankQueryClient(neutronRpcClient);
 
     // shorten subdao voting period
-    const currentOverruleProposalConfig = await neutronClient.client.queryContractSmart(
-      mainDao.contracts.proposals['overrule'].address,
-      {
-        config: {},
-      },
-    );
+    const currentOverruleProposalConfig =
+      await neutronClient.client.queryContractSmart(
+        mainDao.contracts.proposals['overrule'].address,
+        {
+          config: {},
+        },
+      );
     currentOverruleProposalConfig['max_voting_period']['time'] = 5;
     const proposalId = await mainDaoMember.submitSingleChoiceProposal(
       'Proposal',
@@ -222,7 +222,8 @@ describe('Neutron / Tokenfactory', () => {
   });
 
   test('tokenfactory module is added', async () => {
-    const paramsPresent = await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
+    const paramsPresent =
+      await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
     expect(paramsPresent).toBeTruthy();
   });
 
@@ -252,7 +253,10 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(newTokenDenom).toEqual(`factory/${ownerWallet.address}/${denom}`);
 
-      const denomsAfter = await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomsFromCreator({creator:ownerWallet.address})
+      const denomsAfter =
+        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomsFromCreator({
+          creator: ownerWallet.address,
+        });
 
       expect(denomsAfter.denoms).toContainEqual(
         `factory/${ownerWallet.address}/${denom}`,
@@ -302,10 +306,15 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(mintRes.code).toBe(0);
 
-      const balanceBefore = parseInt((await neutronClient.client.getBalance(
-        ownerWallet.address,
-        newTokenDenom,
-      )).amount, 10);
+      const balanceBefore = parseInt(
+        (
+          await neutronClient.client.getBalance(
+            ownerWallet.address,
+            newTokenDenom,
+          )
+        ).amount,
+        10,
+      );
 
       expect(balanceBefore).toEqual(10000);
     });
@@ -331,15 +340,16 @@ describe('Neutron / Tokenfactory', () => {
         'new_token_denom',
       );
 
-      const authorityMetadataBefore = await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata({subdenom: newTokenDenom}
-      );
+      const authorityMetadataBefore =
+        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
+          { subdenom: newTokenDenom },
+        );
 
       expect(authorityMetadataBefore.authorityMetadata).toEqual({
         Admin: ownerWallet.address,
       });
 
       const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
-
 
       await neutronClient.signAndBroadcast(
         [
@@ -348,15 +358,17 @@ describe('Neutron / Tokenfactory', () => {
             value: MsgChangeAdmin.fromPartial({
               sender: ownerWallet.address,
               denom: denom,
-              newAdmin: newAdmin
+              newAdmin: newAdmin,
             }),
           },
         ],
         fee,
       );
 
-      const authorityMetadataAfter = await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata({subdenom: newTokenDenom}
-      );
+      const authorityMetadataAfter =
+        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
+          { subdenom: newTokenDenom },
+        );
 
       expect(authorityMetadataAfter.authorityMetadata).toEqual({
         Admin: newAdmin,
@@ -402,10 +414,15 @@ describe('Neutron / Tokenfactory', () => {
         fee,
       );
 
-      const balanceBefore = parseInt((await neutronClient.client.getBalance(
-        ownerWallet.address,
-        newTokenDenom,
-      )).amount, 10);
+      const balanceBefore = parseInt(
+        (
+          await neutronClient.client.getBalance(
+            ownerWallet.address,
+            newTokenDenom,
+          )
+        ).amount,
+        10,
+      );
       expect(balanceBefore).toEqual(10000);
 
       const burnRes = await neutronClient.signAndBroadcast(
@@ -427,11 +444,15 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(burnRes.code).toBe(0);
 
-
-      const balanceAfter = parseInt((await neutronClient.client.getBalance(
-        ownerWallet.address,
-        newTokenDenom,
-      )).amount, 10);
+      const balanceAfter = parseInt(
+        (
+          await neutronClient.client.getBalance(
+            ownerWallet.address,
+            newTokenDenom,
+          )
+        ).amount,
+        10,
+      );
 
       expect(balanceAfter).toEqual(9900);
     });
@@ -473,8 +494,8 @@ describe('Neutron / Tokenfactory', () => {
             typeUrl: MsgSetBeforeSendHook.typeUrl,
             value: MsgSetBeforeSendHook.fromPartial({
               sender: ownerWallet.address,
-              denom: denom,
-              contractAddr: contractAddress
+              denom: newTokenDenom,
+              contractAddr: contractAddress,
             }),
           },
         ],
@@ -531,10 +552,15 @@ describe('Neutron / Tokenfactory', () => {
         fee,
       );
 
-      const balanceBefore = parseInt( (await neutronClient.client.getBalance(
-        ownerWallet.address,
-        newTokenDenom,
-      )).amount, 10);
+      const balanceBefore = parseInt(
+        (
+          await neutronClient.client.getBalance(
+            ownerWallet.address,
+            newTokenDenom,
+          )
+        ).amount,
+        10,
+      );
 
       expect(balanceBefore).toEqual(10000);
 
@@ -547,10 +573,11 @@ describe('Neutron / Tokenfactory', () => {
         },
       );
 
-      const contractBalance = parseInt( (await neutronClient.client.getBalance(
-        contractAddress,
-        newTokenDenom,
-      )).amount, 10);
+      const contractBalance = parseInt(
+        (await neutronClient.client.getBalance(contractAddress, newTokenDenom))
+          .amount,
+        10,
+      );
       expect(contractBalance).toEqual(666);
 
       let queryBlock = await neutronClient.client.queryContractSmart<{
@@ -582,7 +609,7 @@ describe('Neutron / Tokenfactory', () => {
             value: MsgSetBeforeSendHook.fromPartial({
               sender: ownerWallet.address,
               denom: newTokenDenom,
-              contractAddr: contractAddress
+              contractAddr: contractAddress,
             }),
           },
         ],
@@ -590,11 +617,14 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res1.code).toBe(0);
 
-
-      const hookAfter = await osmosisQuerier.osmosis.tokenfactory.v1beta1.beforeSendHookAddress( {
-        creator: "", subdenom: "",
-        newTokenDenom}
-      );
+      const hookAfter =
+        await osmosisQuerier.osmosis.tokenfactory.v1beta1.beforeSendHookAddress(
+          {
+            creator: '',
+            subdenom: '',
+            newTokenDenom,
+          },
+        );
       expect(hookAfter.contract_addr).toEqual(contractAddress);
 
       await neutronClient.sendTokens(
@@ -606,18 +636,23 @@ describe('Neutron / Tokenfactory', () => {
         },
       );
 
-      const contractBalanceAfter = parseInt( (await neutronClient.client.getBalance(
-        contractAddress,
-        newTokenDenom,
-      )).amount, 10);
+      const contractBalanceAfter = parseInt(
+        (await neutronClient.client.getBalance(contractAddress, newTokenDenom))
+          .amount,
+        10,
+      );
 
       expect(contractBalanceAfter).toEqual(667);
 
-
-      const balanceAfter = parseInt( (await neutronClient.client.getBalance(
-        ownerWallet.address,
-        newTokenDenom,
-      )).amount, 10);
+      const balanceAfter = parseInt(
+        (
+          await neutronClient.client.getBalance(
+            ownerWallet.address,
+            newTokenDenom,
+          )
+        ).amount,
+        10,
+      );
 
       expect(balanceAfter).toEqual(9333);
 
@@ -664,7 +699,6 @@ describe('Neutron / Tokenfactory', () => {
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         },
       );
-
     });
 
     test('create denom', async () => {
@@ -700,8 +734,7 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
 
-
-      const metadata = await bankQuerier.DenomMetadata({denom: denom});
+      const metadata = await bankQuerier.DenomMetadata({ denom: denom });
       expect(metadata.metadata.base).toEqual(denom);
       expect(metadata.metadata.uri).toEqual(denom);
       expect(metadata.metadata.display).toEqual(denom);
@@ -721,10 +754,10 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
 
-      const balance = parseInt((await neutronClient.client.getBalance(
-        contractAddress,
-        denom,
-      )).amount, 10);
+      const balance = parseInt(
+        (await neutronClient.client.getBalance(contractAddress, denom)).amount,
+        10,
+      );
 
       expect(balance).toEqual(amount);
     });
@@ -738,32 +771,30 @@ describe('Neutron / Tokenfactory', () => {
       });
       amount -= toBurn;
 
-      const balance = parseInt((await neutronClient.client.getBalance(
-        contractAddress,
-        denom,
-      )).amount, 10);
+      const balance = parseInt(
+        (await neutronClient.client.getBalance(contractAddress, denom)).amount,
+        10,
+      );
       expect(balance).toEqual(amount);
     });
 
     test('full denom query', async () => {
-      const res = await neutronClient.client.queryContractSmart<{ denom: string }>(
-        contractAddress,
-        {
-          full_denom: { creator_addr: contractAddress, subdenom },
-        },
-      );
+      const res = await neutronClient.client.queryContractSmart<{
+        denom: string;
+      }>(contractAddress, {
+        full_denom: { creator_addr: contractAddress, subdenom },
+      });
       expect(res.denom).toEqual(denom);
     });
 
     test('denom admin query', async () => {
-      const res = await neutronClient.client.queryContractSmart<{ admin: string }>(
-        contractAddress,
-        {
-          denom_admin: {
-            subdenom: denom,
-          },
+      const res = await neutronClient.client.queryContractSmart<{
+        admin: string;
+      }>(contractAddress, {
+        denom_admin: {
+          subdenom: denom,
         },
-      );
+      });
       expect(res.admin).toEqual(contractAddress);
     });
     test('set_before_send_hook', async () => {
@@ -818,10 +849,10 @@ describe('Neutron / Tokenfactory', () => {
           amount: amount.toString(),
         },
       });
-      const balance = parseInt((await neutronClient.client.getBalance(
-        randomAccount,
-        denom,
-      )).amount, 10);
+      const balance = parseInt(
+        (await neutronClient.client.getBalance(randomAccount, denom)).amount,
+        10,
+      );
       expect(balance).toEqual(amount);
 
       await neutronClient.execute(contractAddress, {
@@ -832,10 +863,10 @@ describe('Neutron / Tokenfactory', () => {
           to: randomAccount2,
         },
       });
-      const balance2 = parseInt((await neutronClient.client.getBalance(
-        randomAccount2,
-        denom,
-      )).amount, 10);
+      const balance2 = parseInt(
+        (await neutronClient.client.getBalance(randomAccount2, denom)).amount,
+        10,
+      );
       expect(balance2).toEqual(amount);
     });
 
@@ -854,20 +885,20 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
 
-      const balance = parseInt((await neutronClient.client.getBalance(
-        neutronAccount.address,
-        denom,
-      )).amount, 10);
+      const balance = parseInt(
+        (await neutronClient.client.getBalance(neutronAccount.address, denom))
+          .amount,
+        10,
+      );
 
       expect(balance).toEqual(amount);
-      const res = await neutronClient.client.queryContractSmart<{ admin: string }>(
-        contractAddress,
-        {
-          denom_admin: {
-            subdenom: denom,
-          },
+      const res = await neutronClient.client.queryContractSmart<{
+        admin: string;
+      }>(contractAddress, {
+        denom_admin: {
+          subdenom: denom,
         },
-      );
+      });
       expect(res.admin).toEqual(neutronAccount.address);
     });
   });
