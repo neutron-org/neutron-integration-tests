@@ -23,12 +23,12 @@ import { QueryParamsResponse } from '@neutron-org/neutronjs/neutron/interchainqu
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { createRPCQueryClient as createIbcClient } from '@neutron-org/neutronjs/ibc/rpc.query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
-import { ProtobufRpcClient } from '@cosmjs/stargate';
 import {
   IbcQuerier,
   NeutronQuerier,
   OsmosisQuerier,
-} from '../../helpers/client_types';
+} from '@neutron-org/neutronjs/querier_types';
+import { ProtobufRpcClient } from '@cosmjs/stargate';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
