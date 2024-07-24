@@ -1,4 +1,3 @@
-import { NEUTRON_DENOM, COSMOS_DENOM } from '@neutron-org/neutronjsplus';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { inject, Suite } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
@@ -16,6 +15,7 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/interchainqueries';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 
 const config = require('../../config.json');
 

@@ -1,4 +1,5 @@
 import { Event as CosmosEvent } from '@cosmjs/stargate';
+import crypto from 'crypto';
 
 export const getEventAttributesFromTx = (
   data: any,
@@ -44,4 +45,13 @@ export const getEventAttribute = (
   }
 
   return attrValue;
+};
+
+export const getIBCDenom = (portName, channelName, denom: string): string => {
+  const uatomIBCHash = crypto
+    .createHash('sha256')
+    .update(`${portName}/${channelName}/${denom}`)
+    .digest('hex')
+    .toUpperCase();
+  return `ibc/${uatomIBCHash}`;
 };

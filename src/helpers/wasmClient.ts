@@ -1,7 +1,4 @@
-import {
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { CodeId, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/stargate';
 import {
   MigrateResult,

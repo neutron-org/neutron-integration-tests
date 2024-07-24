@@ -114,7 +114,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         expect(res.code).toEqual(0);
       }
 
-      await neutronChain.waitBlocks(5);
+      await neutronClient.waitBlocks(5);
 
       const txs = await getUnsuccessfulTxs(testState.icqWebHost);
       expect(txs.length).toEqual(5);

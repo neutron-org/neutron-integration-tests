@@ -1,7 +1,6 @@
 import { inject, Suite } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
 import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
@@ -10,15 +9,15 @@ import {
   getNeutronDAOCore,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 import config from '../../config.json';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 describe('Neutron / DAO check', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
+  let neutronClient: SigningNeutronClient;
   let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
   let preProposalSingleAddress: string;
@@ -34,14 +33,16 @@ describe('Neutron / DAO check', () => {
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    const neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
+
     const neutronRpcClient = await testState.rpcClient('neutron');
     feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
-    const neutronClient = await CosmWasmClient.connect(testState.rpcNeutron);
+    let neutronClient = await CosmWasmClient.connect(testState.rpcNeutron);
 
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -67,7 +68,7 @@ describe('Neutron / DAO check', () => {
   describe('Checking the association of proposal & preproposal modules with the Dao', () => {
     test('Proposal dao single', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         proposalSingleAddress,
       );
@@ -75,12 +76,12 @@ describe('Neutron / DAO check', () => {
 
     test('Preproposal dao single', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         preProposalSingleAddress,
       );
 
-      const propContract = await neutronChain.queryContract(
+      const propContract = await neutronClient.client.queryContractSmart(
         preProposalSingleAddress,
         {
           proposal_module: {},
@@ -91,7 +92,7 @@ describe('Neutron / DAO check', () => {
 
     test('Proposal dao multiple', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         proposalMultipleAddress,
       );
@@ -99,12 +100,12 @@ describe('Neutron / DAO check', () => {
 
     test('Preproposal dao multiple', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         preProposalMultipleAddress,
       );
 
-      const propContract = await neutronChain.queryContract(
+      const propContract = await neutronClient.client.queryContractSmart(
         preProposalMultipleAddress,
         {
           proposal_module: {},
@@ -115,7 +116,7 @@ describe('Neutron / DAO check', () => {
 
     test('Proposal dao overrule', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         proposalOverruleAddress,
       );
@@ -123,12 +124,12 @@ describe('Neutron / DAO check', () => {
 
     test('Preproposal dao overrule', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         preProposalOverruleAddress,
       );
 
-      const propContract = await neutronChain.queryContract(
+      const propContract = await neutronClient.client.queryContractSmart(
         preProposalOverruleAddress,
         {
           proposal_module: {},
@@ -146,7 +147,7 @@ describe('Neutron / DAO check', () => {
   describe('Checking the association of voting modules with the Dao', () => {
     test('voting module', async () => {
       await performCommonChecks(
-        neutronChain,
+        neutronClient,
         daoContracts,
         votingModuleAddress,
       );
@@ -154,27 +155,27 @@ describe('Neutron / DAO check', () => {
 
     test('Neutron voting vault', async () => {
       await verifyAdmin(
-        neutronChain,
+        neutronClient,
         votingVaultsNtrnAddress,
         daoContracts.core.address,
       );
-      await verifyLabel(neutronChain, daoContracts, votingVaultsNtrnAddress);
+      await verifyLabel(neutronClient, daoContracts, votingVaultsNtrnAddress);
     });
 
     test('Dao is the admin of himself', async () => {
       await verifyAdmin(
-        neutronChain,
+        neutronClient,
         daoContracts.core.address,
         daoContracts.core.address,
       );
-      await verifyLabel(neutronChain, daoContracts, daoContracts.core.address);
+      await verifyLabel(neutronClient, daoContracts, daoContracts.core.address);
     });
   });
 
   describe('Checking the validity of binary files', () => {
     test('Dao proposal single hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         proposalSingleAddress,
         NeutronContract.DAO_PROPOSAL_SINGLE,
       );
@@ -182,7 +183,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao proposal multiple hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         proposalMultipleAddress,
         NeutronContract.DAO_PROPOSAL_MULTI,
       );
@@ -190,7 +191,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao preproposal single hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         preProposalSingleAddress,
         NeutronContract.DAO_PREPROPOSAL_SINGLE,
       );
@@ -198,7 +199,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao preproposal multiple hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         preProposalMultipleAddress,
         NeutronContract.DAO_PREPROPOSAL_MULTI,
       );
@@ -206,7 +207,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao core hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         daoContracts.core.address,
         NeutronContract.DAO_CORE,
       );
@@ -214,7 +215,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao proposal overrule hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         proposalOverruleAddress,
         NeutronContract.DAO_PROPOSAL_SINGLE,
       );
@@ -222,7 +223,7 @@ describe('Neutron / DAO check', () => {
 
     test('Dao preproposal overrule hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         preProposalOverruleAddress,
         NeutronContract.DAO_PREPROPOSAL_OVERRULE,
       );
@@ -230,14 +231,14 @@ describe('Neutron / DAO check', () => {
 
     test('Treasury hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         treasuryContract,
         NeutronContract.DAO_CORE,
       );
     });
     test('Dao neutron vault hash assert', async () => {
       await checkContractHash(
-        neutronChain,
+        neutronClient,
         votingVaultsNtrnAddress,
         NeutronContract.NEUTRON_VAULT,
       );
@@ -265,11 +266,11 @@ describe('Neutron / DAO check', () => {
         }
         for (const contractAddress of contractsList) {
           await verifyAdmin(
-            neutronChain,
+            neutronClient,
             contractAddress,
             daoContracts.core.address,
           );
-          await verifyLabel(neutronChain, daoContracts, contractAddress);
+          await verifyLabel(neutronClient, daoContracts, contractAddress);
         }
       }
     });
@@ -277,7 +278,7 @@ describe('Neutron / DAO check', () => {
 });
 
 const performCommonChecks = async (
-  netronChain: CosmosWrapper,
+  netronChain: SigningNeutronClient,
   daoContracts: DaoContracts,
   contractAddress: string,
 ) => {
@@ -291,46 +292,47 @@ const performCommonChecks = async (
 };
 
 const verifyAdmin = async (
-  neutronChain: CosmosWrapper,
+  neutronClient: SigningNeutronClient,
   contractAddress: string,
   expectedAdmin: string,
 ) => {
-  const res = await neutronChain.getContractInfo(contractAddress);
-  expect(res.contract_info.admin).toEqual(expectedAdmin);
+  const res = await neutronClient.client.getContract(contractAddress);
+  expect(res.admin).toEqual(expectedAdmin);
 };
 
 const checkContractHash = async (
-  cm: CosmosWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   binaryName: string,
 ) => {
-  const contractInfo = await cm.getContractInfo(contractAddress);
+  const contractInfo = await client.getContract(contractAddress);
   const hashFromChain = (
-    await cm.getCodeDataHash(contractInfo.contract_info.code_id)
+    await client.getCodeDataHash(contractInfo.contract_info.code_id)
   ).toLowerCase();
   const hashFromBinary = (await getContractsHashes())[binaryName].toLowerCase();
   expect(hashFromChain).toEqual(hashFromBinary);
 };
 
 const checkDaoAddress = async (
-  cm: CosmosWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   expectedDao: string,
 ) => {
-  const daoFromContract = await cm.queryContract(contractAddress, {
-    dao: {},
-  });
+  const daoFromContract = await client.client.queryContractSmart(
+    contractAddress,
+    {
+      dao: {},
+    },
+  );
   expect(daoFromContract).toEqual(expectedDao);
 };
 
 const verifyLabel = async (
-  neutronChain: CosmosWrapper,
+  neutronClient: SigningNeutronClient,
   daoContracts: DaoContracts,
   address: string,
 ) => {
-  const label = (await neutronChain.getContractInfo(address))['contract_info'][
-    'label'
-  ];
+  const label = (await neutronClient.getContract(address)).label;
   const path = label.split('.');
   expect(path.length).toBeGreaterThan(1);
   expect(path[0]).toEqual('neutron');

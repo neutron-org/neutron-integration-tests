@@ -1,8 +1,4 @@
-import {
-  CosmosWrapper,
-  filterIBCDenoms,
-  getEventAttribute,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import {
   Dao,
   DaoMember,
@@ -10,27 +6,25 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { waitForICQResultWithRemoteHeight } from '@neutron-org/neutronjsplus/dist/icq';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
 import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from '@cosmjs/cosmwasm-stargate';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { ProtobufRpcClient } from '@cosmjs/stargate';
+import { ProtobufRpcClient, SigningStargateClient } from '@cosmjs/stargate';
 import { getWithAttempts } from './misc';
 import axios, { AxiosResponse } from 'axios';
-import { WasmWrapper } from './wasmClient';
 import { SigningNeutronClient } from './signing_neutron_client';
+import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
+import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 
 export const getKvCallbackStatus = (
-  cm: CosmosWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  cm.client.queryContractSmart<{
     last_update_height: number;
   }>(contractAddress, {
     kv_callback_stats: {
@@ -38,9 +32,15 @@ export const getKvCallbackStatus = (
     },
   });
 
+export const filterIBCDenoms = (list: Coin[]) =>
+  list.filter(
+    (coin) =>
+      coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
+  );
+
 export const watchForKvCallbackUpdates = async (
-  neutronCm: CosmosWrapper,
-  targetCm: CosmosWrapper,
+  neutronCm: SigningNeutronClient,
+  targetCm: SigningStargateClient,
   contractAddress: string,
   queryIds: number[],
 ) => {
@@ -69,11 +69,11 @@ export const watchForKvCallbackUpdates = async (
 };
 
 export const getQueryBalanceResult = (
-  cm: CosmosWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  client.queryContractSmart<{
     balances: {
       coins: {
         denom: string;
@@ -88,11 +88,11 @@ export const getQueryBalanceResult = (
   });
 
 export const getValidatorsSigningInfosResult = (
-  cm: CosmosWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  cm.client.queryContractSmart<{
     signing_infos: {
       signing_infos: {
         address: string;
@@ -111,11 +111,11 @@ export const getValidatorsSigningInfosResult = (
   });
 
 export const getDelegatorUnbondingDelegationsResult = (
-  cm: CosmosWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  cm.client.queryContractSmart<{
     unbonding_delegations: {
       unbonding_responses: {
         delegator_address: string;
@@ -145,11 +145,11 @@ export const getCosmosSigningInfosResult = async (sdkUrl: string) => {
 };
 
 export const getQueryDelegatorDelegationsResult = (
-  cm: CosmosWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  client.queryContractSmart<{
     delegations: {
       delegator: string;
       validator: string;
@@ -166,14 +166,14 @@ export const getQueryDelegatorDelegationsResult = (
   });
 
 export const registerBalancesQuery = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   denoms: string[],
   addr: string,
 ) => {
-  const txResult = await cm.executeContract(contractAddress, {
+  const txResult = await client.execute(contractAddress, {
     register_balances_query: {
       connection_id: connectionId,
       denoms: denoms,
@@ -191,13 +191,13 @@ export const registerBalancesQuery = async (
 };
 
 export const registerSigningInfoQuery = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   valcons: string,
 ) => {
-  const txResult = await cm.executeContract(contractAddress, {
+  const txResult = await client.execute(contractAddress, {
     register_validators_signing_info_query: {
       connection_id: connectionId,
       validators: [valcons],
@@ -214,14 +214,14 @@ export const registerSigningInfoQuery = async (
 };
 
 export const registerUnbondingDelegationsQuery = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   delegator: string,
   validator: string,
 ) => {
-  const txResult = await cm.executeContract(contractAddress, {
+  const txResult = await client.execute(contractAddress, {
     register_delegator_unbonding_delegations_query: {
       connection_id: connectionId,
       delegator,
@@ -309,11 +309,11 @@ const makeSingleChoiceProposalPass = async (
 };
 
 export const removeQuery = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  await cm.executeContract(
+  await client.execute(
     contractAddress,
     {
       remove_interchain_query: {
@@ -324,20 +324,20 @@ export const removeQuery = async (
   );
 
 export const removeQueryViaTx = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   queryId: bigint,
-  sender: string = cm.wallet.address,
-) => await cm.msgRemoveInterchainQuery(queryId, sender);
+  sender: string = client.sender,
+) => await client.msgRemoveInterchainQuery(queryId, sender);
 
 export const registerDelegatorDelegationsQuery = async (
-  cm: WalletWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   delegator: string,
   validators: string[],
 ) => {
-  await cm.executeContract(contractAddress, {
+  await client.execute(contractAddress, {
     register_delegator_delegations_query: {
       delegator: delegator,
       validators: validators,
@@ -348,28 +348,40 @@ export const registerDelegatorDelegationsQuery = async (
 };
 
 export const validateBalanceQuery = async (
-  neutronCm: CosmosWrapper,
-  targetCm: CosmosWrapper,
+  neutronClient: SigningNeutronClient,
+  targetClient: SigningStargateClient,
   contractAddress: string,
   queryId: number,
   address: string,
 ) => {
-  const res = await getQueryBalanceResult(neutronCm, contractAddress, queryId);
-  const directQueryResult = await targetCm.queryBalances(address);
+  const res = await getQueryBalanceResult(
+    neutronClient,
+    contractAddress,
+    queryId,
+  );
+  const directQueryResult1 = await targetClient.getBalance(
+    address,
+    IBC_ATOM_DENOM,
+  );
+  const directQueryResult2 = await targetClient.getBalance(
+    address,
+    IBC_USDC_DENOM,
+  );
+
   expect(filterIBCDenoms(res.balances.coins)).toEqual(
-    filterIBCDenoms(directQueryResult),
+    filterIBCDenoms([directQueryResult1, directQueryResult2]),
   );
 };
 
 export const registerProposalVotesQuery = async (
-  cm: WalletWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   proposalId: number,
   voters: string[],
 ) => {
-  const txResult = await cm.executeContract(contractAddress, {
+  const txResult = await cm.execute(contractAddress, {
     register_government_proposal_votes_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
@@ -387,11 +399,11 @@ export const registerProposalVotesQuery = async (
 };
 
 export const getProposalVotesResult = (
-  cm: CosmosWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  cm.client.queryContractSmart<{
     votes: {
       proposal_votes: {
         proposal_id: number;
@@ -407,13 +419,13 @@ export const getProposalVotesResult = (
   });
 
 export const registerGovProposalsQuery = async (
-  cm: WalletWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   proposalsIds: number[],
 ) => {
-  const txResult = await cm.executeContract(contractAddress, {
+  const txResult = await cm.execute(contractAddress, {
     register_government_proposals_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
@@ -430,11 +442,11 @@ export const registerGovProposalsQuery = async (
 };
 
 export const getProposalsResult = (
-  cm: CosmosWrapper,
+  cm: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
 ) =>
-  cm.queryContract<{
+  cm.client.queryContractSmart<{
     proposals: {
       proposals: any[];
     };
@@ -481,23 +493,16 @@ export const getRegisteredQuery = (
     },
   });
 
-// TODO: move to helpers for neutron_interchain_queries contract
-/**
- * @deprecated since version 0.5.0
- *
- * waitForICQResultWithRemoteHeight waits until ICQ gets updated to
- * reflect data corresponding to remote height `>= targetHeight`
- */
 export const waitForICQResultWithRemoteHeight = (
-  ww: WasmWrapper,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
   targetHeight: number,
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    ww.client,
-    () => getRegisteredQuery(ww, contractAddress, queryId),
+    client.client,
+    () => getRegisteredQuery(client, contractAddress, queryId),
     async (query) =>
       query.registered_query.last_submitted_result_remote_height
         .revision_height >= targetHeight,
@@ -508,10 +513,10 @@ export const waitForICQResultWithRemoteHeight = (
  * queryTransfersNumber queries the contract for recorded transfers number.
  */
 export const queryTransfersNumber = (
-  ww: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
 ) =>
-  ww.client.queryContractSmart<{
+  client.client.queryContractSmart<{
     transfers_number: number;
   }>(contractAddress, {
     get_transfers_number: {},
@@ -522,15 +527,15 @@ export const queryTransfersNumber = (
  * number of incoming transfers stored.
  */
 export const waitForTransfersAmount = (
-  ww: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   expectedTransfersAmount: number,
   numAttempts = 50,
 ) =>
   getWithAttempts(
-    ww.client,
+    client.client,
     async () =>
-      (await queryTransfersNumber(ww, contractAddress)).transfers_number,
+      (await queryTransfersNumber(client, contractAddress)).transfers_number,
     async (amount) => amount == expectedTransfersAmount,
     numAttempts,
   );
@@ -604,11 +609,11 @@ export const registerTransfersQuery = async (
  * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
  */
 export const queryRecipientTxs = (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   recipient: string,
 ) =>
-  cm.client.queryContractSmart<{
+  client.client.queryContractSmart<{
     transfers: [
       recipient: string,
       sender: string,

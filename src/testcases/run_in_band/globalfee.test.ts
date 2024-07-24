@@ -1,6 +1,5 @@
 import { Coin } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import {
   Dao,
   DaoMember,
@@ -16,6 +15,7 @@ import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosm
 
 import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
@@ -42,13 +42,12 @@ describe('Neutron / Global Fee', () => {
 
     globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
 
-    neutronClient = await wasm(
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-    const neutronRpcClient = await testState.rpcClient('neutron');
+
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
       neutronRpcClient,
