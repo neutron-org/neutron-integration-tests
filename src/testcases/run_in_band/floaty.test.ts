@@ -5,7 +5,7 @@ import {
   NeutronContract,
   Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { wasm, WasmWrapper } from '../../helpers/wasmClient';
 import { Registry } from '@cosmjs/proto-signing';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';

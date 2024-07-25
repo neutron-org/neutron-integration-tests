@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';

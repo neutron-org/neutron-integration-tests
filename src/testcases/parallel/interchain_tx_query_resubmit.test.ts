@@ -1,6 +1,5 @@
 import '@neutron-org/neutronjsplus';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
 import {
   NeutronContract,
@@ -17,12 +16,17 @@ import {
 } from '../../helpers/interchainqueries';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import { Registry } from '@cosmjs/proto-signing';
 const config = require('../../config.json');
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
+  let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
@@ -34,6 +38,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       testState.rpcNeutron,
       neutronWallet.directwallet,
       neutronWallet.address,
+    );
+
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
+      testState.rpcGaia,
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
     );
   });
 
@@ -103,12 +114,13 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('check failed txs', async () => {
       for (let i = 0; i < 5; i++) {
-        const res = await neutronClient.sendTokens(
+        const res = await gaiaClient.sendTokens(
+          gaiaWallet.address,
           watchedAddr1,
-          [{ denom: NEUTRON_DENOM, amount: amountToAddrFirst1.toString() }],
+          [{ denom: COSMOS_DENOM, amount: amountToAddrFirst1.toString() }],
           {
             gas: '200000',
-            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+            amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
           },
         );
         expect(res.code).toEqual(0);

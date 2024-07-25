@@ -3,7 +3,7 @@ import { Suite, inject } from 'vitest';
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import {
   Dao,
   DaoMember,

@@ -137,7 +137,7 @@ describe('Neutron / Treasury', () => {
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
       });
       test('drain reserve', async () => {
-        await neutronAccount1.simulateFeeBurning(1750);
+        await neutronClient.simulateFeeBurning(1750);
 
         await neutronClient.sendTokens(
           reserve,
@@ -196,7 +196,7 @@ describe('Neutron / Treasury', () => {
           },
         );
         // u32::MAX
-        await neutronAccount1.simulateFeeBurning(4_294_967_295);
+        await neutronClient.simulateFeeBurning(4_294_967_295);
 
         await neutronClient.execute(reserve, {
           distribute: {},
@@ -264,7 +264,7 @@ describe('Neutron / Treasury', () => {
         const burnedCoinsBefore = await getBurnedCoinsAmount(feeburnerQuerier);
         expect(burnedCoinsBefore).not.toBeNull();
 
-        await neutronAccount1.simulateFeeBurning(20_000_000);
+        await neutronClient.simulateFeeBurning(20_000_000);
         await neutronClient.sendTokens(
           reserve,
           [{ denom: NEUTRON_DENOM, amount: '1000000000' }],

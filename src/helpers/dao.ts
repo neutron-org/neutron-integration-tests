@@ -7,10 +7,9 @@ import {
   getSubDaoContracts,
   wrapMsg,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM, CONTRACTS } from './constants';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { addSubdaoProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { CONTRACTS } from './constants';
 import { SigningNeutronClient } from './signing_neutron_client';
 
 export const deploySubdao = async (

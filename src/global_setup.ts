@@ -6,8 +6,12 @@ import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
 import ch from 'child_process';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { COSMOS_PREFIX, NEUTRON_PREFIX } from './helpers/constants';
+import {
+  COSMOS_DENOM,
+  COSMOS_PREFIX,
+  NEUTRON_DENOM,
+  NEUTRON_PREFIX,
+} from './helpers/constants';
 
 import config from './config.json';
 

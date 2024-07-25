@@ -14,7 +14,7 @@ import {
 import config from '../../config.json';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
@@ -297,8 +297,8 @@ describe('Neutron / Chain Manager', () => {
       );
       expect(tokenfactoryParams.params.whitelistedHooks).toEqual([
         {
-          code_id: 1n,
-          denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
+          codeId: 1n,
+          denomCreator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);
     });

@@ -22,6 +22,7 @@ import {
   queryContractWithWait,
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { CodeId } from '@neutron-org/neutronjsplus/dist/types';
+import { NEUTRON_DENOM } from './constants';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -207,5 +208,24 @@ export class SigningNeutronClient extends CosmWasmClient {
     numAttempts = 20,
   ): Promise<T> {
     return queryContractWithWait(this.client, contract, query, numAttempts);
+  }
+
+  async simulateFeeBurning(amount: number): Promise<DeliverTxResponse> {
+    const fee = {
+      gas: '200000',
+      amount: [
+        {
+          denom: NEUTRON_DENOM,
+          amount: `${Math.ceil((1000 * amount) / 750)}`,
+        },
+      ],
+    };
+
+    return this.client.sendTokens(
+      this.sender,
+      this.sender,
+      [{ denom: NEUTRON_DENOM, amount: '1' }],
+      fee,
+    );
   }
 }

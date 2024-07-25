@@ -1,10 +1,10 @@
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { generateMnemonic } from 'bip39';
 import { promises as fs } from 'fs';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { CONTRACTS_PATH, DEBUG_SUBMIT_TX } from './setup';
+// import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+// import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+// import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+// import { CONTRACTS_PATH, DEBUG_SUBMIT_TX } from './setup';
 import {
   createProtobufRpcClient,
   defaultRegistryTypes,
@@ -14,7 +14,7 @@ import {
 } from '@cosmjs/stargate';
 import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
+// import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 
@@ -240,23 +240,23 @@ const getGenesisWallets = async (
   rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
 });
 
-export async function createWalletWrapper(
-  chain: CosmosWrapper,
-  wallet: Wallet,
-) {
-  const registry = new Registry(neutronTypes);
-
-  const wasmClient = await SigningCosmWasmClient.connectWithSigner(
-    chain.rpc,
-    wallet.directwallet,
-    { registry },
-  );
-  return new WalletWrapper(
-    chain,
-    wallet,
-    wasmClient,
-    registry,
-    CONTRACTS_PATH,
-    DEBUG_SUBMIT_TX,
-  );
-}
+// export async function createWalletWrapper(
+//   chain: CosmosWrapper,
+//   wallet: Wallet,
+// ) {
+//   const registry = new Registry(neutronTypes);
+//
+//   const wasmClient = await SigningCosmWasmClient.connectWithSigner(
+//     chain.rpc,
+//     wallet.directwallet,
+//     { registry },
+//   );
+//   return new WalletWrapper(
+//     chain,
+//     wallet,
+//     wasmClient,
+//     registry,
+//     CONTRACTS_PATH,
+//     DEBUG_SUBMIT_TX,
+//   );
+// }

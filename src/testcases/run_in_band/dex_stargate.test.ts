@@ -1,12 +1,12 @@
 import { inject, Suite } from 'vitest';
-import { getEventAttributesFromTx } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { getEventAttributesFromTx } from '../../helpers/cosmos';
 import {
   NeutronContract,
   CodeId,
   Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { wasm, WasmWrapper } from '../../helpers/wasmClient';
 import { Registry } from '@cosmjs/proto-signing';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';

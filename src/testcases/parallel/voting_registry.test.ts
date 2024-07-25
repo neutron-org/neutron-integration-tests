@@ -1,9 +1,10 @@
-import { NEUTRON_DENOM, types, wait } from '@neutron-org/neutronjsplus';
+import { types } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 
 const config = require('../../config.json');
 
@@ -108,7 +109,7 @@ describe('Neutron / Voting Registry', () => {
       await bondFunds(neutronClient, vault2Addr, vault2Bonding.toString());
       // we bond to vault3 in advance regardless of this is not in the registry yet
       await bondFunds(neutronClient, vault3Addr, vault3Bonding.toString());
-      await wait(1);
+      await waitBlocks(1, neutronClient.client);
     });
 
     test('check accrued voting power', async () => {
@@ -589,7 +590,7 @@ const deployVotingRegistry = async (
   const res = await instantiator.instantiate(
     codeIds[VOTING_REGISTRY_CONTRACT_KEY],
     {
-      owner: instantiator.wallet.address,
+      owner: instantiator.sender,
       voting_vaults: vaults,
     },
     'voting_registry',

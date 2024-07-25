@@ -2,8 +2,8 @@ import { inject } from 'vitest';
 import {
   getEventAttribute,
   getEventAttributesFromTx,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+} from '../../helpers/cosmos';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
 import {
   NeutronContract,
@@ -310,7 +310,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.1',
             amount_in: '1000',
-            order_type: LimitOrderType.ImmediateOrCancel,
+            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
           },
         });
         expect(res2.code).toEqual(0);

@@ -126,7 +126,7 @@ describe('Neutron / Interchain TX Query', () => {
       balance = await gaiaClient.getBalance(watchedAddr1, COSMOS_DENOM);
       expect(balance).toEqual({
         amount: addr1ExpectedBalance.toString(),
-        denom: gaiaClient.denom,
+        denom: COSMOS_DENOM,
       });
 
       await waitForTransfersAmount(

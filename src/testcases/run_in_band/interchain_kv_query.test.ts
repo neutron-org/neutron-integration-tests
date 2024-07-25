@@ -20,7 +20,7 @@ import {
   NeutronContract,
   Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Coin, Registry } from '@cosmjs/proto-signing';
 import {
   executeMsgSubmitProposal,
@@ -49,9 +49,14 @@ import {
   watchForKvCallbackUpdates,
 } from '../../helpers/interchainqueries';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import {
+  defaultRegistryTypes,
+  ProtobufRpcClient,
+  SigningStargateClient,
+} from '@cosmjs/stargate';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
+import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 const config = require('../../config.json');
 
@@ -65,26 +70,22 @@ describe('Neutron / Interchain KV Query', () => {
   };
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
+  let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let otherNeutronClient: SigningNeutronClient;
   let otherNeutronWallet: Wallet;
   let gaiaWallet: Wallet;
   let interchainqQuerier: InterchainqQuerier;
+  let bankQuerier: BankQuerier;
   // TODO: why is it preinstantiated here, even though assigned later?
   let contractAddress =
     'neutron14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s5c2epq';
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await createWalletWrapper(
-      neutronClient,
-      testState.wallets.neutron.demo1,
-    );
-    otherNeutronWallet = await createWalletWrapper(
-      neutronClient,
-      testState.wallets.qaNeutronThree.qa,
-    );
+    neutronWallet = await testState.nextWallet('neutron');
+    otherNeutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       otherNeutronWallet.directwallet,
@@ -96,12 +97,8 @@ describe('Neutron / Interchain KV Query', () => {
       gaiaWallet.directwallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
-    gaiaWallet = await createWalletWrapper(
-      gaiaClient,
-      testState.wallets.cosmos.demo2,
-    );
 
-    const neutronRpcClient = await testState.neutronRpcClient();
+    neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
       neutronRpcClient,
@@ -116,6 +113,7 @@ describe('Neutron / Interchain KV Query', () => {
     );
     await daoMember.bondFunds('10000000000');
     interchainqQuerier = new InterchainqQuerier(neutronRpcClient);
+    bankQuerier = new BankQuerier(neutronRpcClient);
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -195,10 +193,9 @@ describe('Neutron / Interchain KV Query', () => {
             amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
           },
         );
-        const balances = await neutronClient.getBalance(
-          contractAddress,
-          NEUTRON_DENOM,
-        );
+        let balances = await bankQuerier.AllBalances({
+          address: contractAddress,
+        });
         expect(balances[0].amount).toEqual('1000000');
 
         await registerBalancesQuery(
@@ -210,12 +207,9 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.demo2.address,
         );
 
-        const balance = await neutronClient.getBalance(
-          contractAddress,
-          NEUTRON_DENOM,
-        );
+        balances = await bankQuerier.AllBalances({ address: contractAddress });
 
-        expect(balance.amount).toEqual(0);
+        expect(balances[0].amount).toEqual(0);
       });
     });
 
@@ -474,15 +468,15 @@ describe('Neutron / Interchain KV Query', () => {
       expect(interchainQueryResult.balances.coins.length).toEqual(2);
       expect(
         interchainQueryResult.balances.coins.find(
-          (c) => c.denom == gaiaClient.denom,
+          (c) => c.denom == COSMOS_DENOM,
         ),
       ).toBeDefined();
       expect(
         interchainQueryResult.balances.coins.find(
-          (c) => c.denom == gaiaClient.denom,
+          (c) => c.denom == COSMOS_DENOM,
         )?.amount,
       ).toEqual(
-        directQueryResult?.find((c) => c.denom == gaiaClient.denom)?.amount,
+        directQueryResult?.find((c) => c.denom == COSMOS_DENOM)?.amount,
       );
       expect(
         directQueryResult?.find((c) => c.denom == 'nonexistentdenom'),
@@ -566,10 +560,10 @@ describe('Neutron / Interchain KV Query', () => {
     test('remove icq #1 using query owner address', async () => {
       await removeQuery(neutronClient, contractAddress, 1);
 
-      const balances = await neutronClient.getBalance(
-        contractAddress,
-        NEUTRON_DENOM,
-      );
+      const balances = await bankQuerier.AllBalances({
+        address: contractAddress,
+      });
+
       expect(balances[0].amount).toEqual('1000000');
     });
 
@@ -595,15 +589,15 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('should check query creation with governance parameters', async () => {
-        const params = await InterchainqQuerier.prototype();
+        const params = await interchainqQuerier.params();
 
         const queryId = await registerBalancesQuery(
           neutronClient,
           contractAddress,
           connectionId,
           2,
-          [gaiaClient.denom],
-          gaiaWallet.wallet.address,
+          [COSMOS_DENOM],
+          gaiaWallet.address,
         );
 
         await neutronClient.waitBlocks(1);
@@ -634,7 +628,9 @@ describe('Neutron / Interchain KV Query', () => {
         const querySubmitTimeoutParam = 1;
 
         await acceptInterchainqueriesParamsChangeProposal(
-          neutronWallet,
+          neutronWallet.address,
+          neutronClient.client,
+          neutronRpcClient,
           'Change query_submit_timeout parameter of the interchainqueries module',
           'Change query_submit_timeout parameter of the interchainqueries module',
           'QuerySubmitTimeout',
@@ -649,7 +645,9 @@ describe('Neutron / Interchain KV Query', () => {
         ];
 
         await acceptInterchainqueriesParamsChangeProposal(
-          neutronWallet,
+          neutronWallet.address,
+          neutronClient.client,
+          neutronRpcClient,
           'Change query_deposit parameter of the interchainqueries module',
           'Change query_deposit parameter of the interchainqueries module',
           'QueryDeposit',
@@ -704,9 +702,11 @@ describe('Neutron / Interchain KV Query', () => {
 
       // FIXME: enable after fix change params via proposal
       test.skip('should remove icq and check balances updates', async () => {
-        let balancesBeforeRegistration = await neutronClient.getBalance(
-          testState.wallets.neutron.demo1.address,
-        );
+        let balancesBeforeRegistration = (
+          await bankQuerier.AllBalances({
+            address: testState.wallets.neutron.demo1.address,
+          })
+        ).balances;
         balancesBeforeRegistration = filterIBCDenoms(
           balancesBeforeRegistration,
         );
@@ -729,18 +729,23 @@ describe('Neutron / Interchain KV Query', () => {
           20,
         );
 
-        let balancesAfterRegistration = await neutronClient.getBalance(
-          testState.wallets.neutron.demo1.address,
-        );
+        let balancesAfterRegistration = (
+          await bankQuerier.AllBalances({
+            address: testState.wallets.neutron.demo1.address,
+          })
+        ).balances;
+
         balancesAfterRegistration = filterIBCDenoms(balancesAfterRegistration);
 
         await removeQueryViaTx(neutronClient, BigInt(queryId));
 
         await neutronClient.getWithAttempts(
           async () =>
-            await neutronClient.getBalance(
-              testState.wallets.neutron.demo1.address,
-            ),
+            (
+              await bankQuerier.AllBalances({
+                address: testState.wallets.neutron.demo1.address,
+              })
+            ).balances,
           async (response) => {
             const balances = filterIBCDenoms(response);
             const beforeBalances = filterIBCDenoms(balancesAfterRegistration);
@@ -754,9 +759,12 @@ describe('Neutron / Interchain KV Query', () => {
           100,
         );
 
-        let balancesAfterRemoval = await neutronClient.queryBalances(
-          testState.wallets.neutron.demo1.address,
-        );
+        let balancesAfterRemoval = (
+          await bankQuerier.AllBalances({
+            address: testState.wallets.neutron.demo1.address,
+          })
+        ).balances;
+
         balancesAfterRemoval = filterIBCDenoms(balancesAfterRemoval);
         // Add fees (100) that was deducted during removeQueryViaTx call
         const balancesAfterRemovalWithFee = {
@@ -910,7 +918,7 @@ describe('Neutron / Interchain KV Query', () => {
       );
 
       queryId = await registerGovProposalsQuery(
-        neutronWallet,
+        neutronClient,
         contractAddress,
         connectionId,
         updatePeriods[2],
@@ -1011,7 +1019,7 @@ describe('Neutron / Interchain KV Query', () => {
         },
       );
 
-      const infos = await getCosmosSigningInfosResult('');
+      const infos = await getCosmosSigningInfosResult(neutronClient.rpc);
       expect(infos).not.toBeNull();
       const firstValidator = infos.info[0];
       indexOffset = parseInt(firstValidator.index_offset);
