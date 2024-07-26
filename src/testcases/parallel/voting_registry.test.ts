@@ -21,7 +21,7 @@ describe('Neutron / Voting Registry', () => {
   let neutronClient: SigningNeutronClient;
   let neutronWallet: Wallet;
   let daoMemberWallet: Wallet;
-  // let neutronDaoMemberClient: SigningNeutronClient;
+  let neutronDaoMemberClient: SigningNeutronClient;
   let contractAddresses: Record<string, string> = {};
   let votingRegistryAddr: string;
   let vault1Addr: string;
@@ -50,11 +50,11 @@ describe('Neutron / Voting Registry', () => {
     );
 
     daoMemberWallet = await testState.nextWallet('neutron');
-    // neutronDaoMemberClient = await SigningNeutronClient.connectWithSigner(
-    //   testState.rpcNeutron,
-    //   daoMemberWallet.directwallet,
-    //   daoMemberWallet.address,
-    // );
+    neutronDaoMemberClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      daoMemberWallet.directwallet,
+      daoMemberWallet.address,
+    );
 
     contractAddresses = await deployContracts(neutronClient);
     votingRegistryAddr = contractAddresses[VOTING_REGISTRY_CONTRACT_KEY];
@@ -105,19 +105,19 @@ describe('Neutron / Voting Registry', () => {
 
   describe('accrue init voting power', () => {
     test('bond funds', async () => {
-      await bondFunds(neutronClient, vault1Addr, vault1Bonding.toString());
-      await bondFunds(neutronClient, vault2Addr, vault2Bonding.toString());
+      await bondFunds(neutronDaoMemberClient, vault1Addr, vault1Bonding.toString());
+      await bondFunds(neutronDaoMemberClient, vault2Addr, vault2Bonding.toString());
       // we bond to vault3 in advance regardless of this is not in the registry yet
-      await bondFunds(neutronClient, vault3Addr, vault3Bonding.toString());
+      await bondFunds(neutronDaoMemberClient, vault3Addr, vault3Bonding.toString());
       await waitBlocks(2, neutronClient.client);
     });
 
     test('check accrued voting power', async () => {
-      // const vpInfo = await getVotingPowerInfo(
-      //   neutronClient,
-      //   daoMemberWallet.address,
-      //   contractAddresses,
-      // );
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
       // expect(vpInfo.vault1Power).toEqual(vault1Bonding);
       // expect(vpInfo.vault1TotalPower).toEqual(vault1Bonding);
       // expect(vpInfo.vault2Power).toEqual(vault2Bonding);

@@ -318,7 +318,7 @@ const checkContractHash = async (
   const codeId = (await client.getContract(contractAddress)).codeId;
   const hashFromChain = (
     await wasmQuery.code({ codeId: BigInt(codeId) })
-  ).codeInfo.dataHash.toString();
+  ).codeInfo.dataHash;
   const hashFromBinary = (await getContractsHashes())[binaryName].toLowerCase();
   // todo fix weird hashes
   expect(hashFromChain.length).toBeGreaterThan(hashFromBinary.length);

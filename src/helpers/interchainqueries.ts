@@ -18,6 +18,7 @@ import axios, { AxiosResponse } from 'axios';
 import { SigningNeutronClient } from './signing_neutron_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
+import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 export const getKvCallbackStatus = (
   cm: SigningNeutronClient,
@@ -349,7 +350,7 @@ export const registerDelegatorDelegationsQuery = async (
 
 export const validateBalanceQuery = async (
   neutronClient: SigningNeutronClient,
-  targetClient: SigningStargateClient,
+  bankQuerier: BankQuerier,
   contractAddress: string,
   queryId: number,
   address: string,
@@ -359,17 +360,13 @@ export const validateBalanceQuery = async (
     contractAddress,
     queryId,
   );
-  const directQueryResult1 = await targetClient.getBalance(
-    address,
-    IBC_ATOM_DENOM,
-  );
-  const directQueryResult2 = await targetClient.getBalance(
-    address,
-    IBC_USDC_DENOM,
-  );
+
+  const balances = await bankQuerier.AllBalances({
+    address: address,
+  });
 
   expect(filterIBCDenoms(res.balances.coins)).toEqual(
-    filterIBCDenoms([directQueryResult1, directQueryResult2]),
+    filterIBCDenoms(balances.balances),
   );
 };
 
