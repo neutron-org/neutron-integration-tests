@@ -456,9 +456,9 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      const directQueryResult = await bankQuerier.AllBalances(
-        {address: testState.wallets.cosmos.val1.address}
-      );
+      const directQueryResult = await bankQuerier.AllBalances({
+        address: testState.wallets.cosmos.val1.address,
+      });
       expect(interchainQueryResult.balances.coins.length).toEqual(2);
       expect(
         interchainQueryResult.balances.coins.find(
