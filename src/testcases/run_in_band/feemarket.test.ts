@@ -15,7 +15,7 @@ import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosm
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;

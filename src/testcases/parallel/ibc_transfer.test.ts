@@ -22,6 +22,7 @@ import { getIBCDenom } from '../../helpers/cosmos';
 
 import config from '../../config.json';
 import { SigningStargateClient } from '@cosmjs/stargate';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =
