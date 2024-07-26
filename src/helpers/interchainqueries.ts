@@ -19,6 +19,7 @@ import { SigningNeutronClient } from './signing_neutron_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
+import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 
 export const getKvCallbackStatus = (
   cm: SigningNeutronClient,
@@ -138,6 +139,7 @@ export const getDelegatorUnbondingDelegationsResult = (
 
 export const getCosmosSigningInfosResult = async (sdkUrl: string) => {
   try {
+    QuerySigningInfosRequest;
     return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
       .data;
   } catch (e) {
@@ -328,7 +330,22 @@ export const removeQueryViaTx = async (
   client: SigningNeutronClient,
   queryId: bigint,
   sender: string = client.sender,
-) => await client.msgRemoveInterchainQuery(queryId, sender);
+) =>
+  await client.signAndBroadcast(
+    [
+      {
+        typeUrl: MsgRemoveInterchainQueryRequest.typeUrl,
+        value: MsgRemoveInterchainQueryRequest.fromPartial({
+          queryId: queryId,
+          sender: sender,
+        }),
+      },
+    ],
+    {
+      gas: '200000',
+      amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+    },
+  );
 
 export const registerDelegatorDelegationsQuery = async (
   client: SigningNeutronClient,

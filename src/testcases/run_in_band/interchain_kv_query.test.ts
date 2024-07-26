@@ -29,7 +29,6 @@ import {
   executeMsgUndelegate,
 } from '../../helpers/gaia';
 import {
-  getCosmosSigningInfosResult,
   getDelegatorUnbondingDelegationsResult,
   getKvCallbackStatus,
   getProposalsResult,
@@ -57,7 +56,7 @@ import {
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
-
+import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
 const config = require('../../config.json');
 
 describe('Neutron / Interchain KV Query', () => {
@@ -72,11 +71,14 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronClient: SigningNeutronClient;
   let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
+  let gaiaClient2: SigningStargateClient;
+  let gaiaWallet: Wallet;
   let neutronWallet: Wallet;
   let otherNeutronClient: SigningNeutronClient;
   let interchainqQuerier: InterchainqQuerier;
   let bankQuerier: BankQuerier;
   let bankQuerierGaia: BankQuerier;
+  let slashingQuerier: SlashingQuerier;
   let contractAddress: string;
 
   beforeAll(async () => {
@@ -87,9 +89,22 @@ describe('Neutron / Interchain KV Query', () => {
       neutronWallet.directwallet,
       neutronWallet.address,
     );
+    const otherNutronWallet = await testState.nextWallet('neutron');
+    otherNeutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      otherNutronWallet.directwallet,
+      otherNutronWallet.address,
+    );
+    gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      testState.wallets.cosmos.demo2.directwallet,
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
+    );
+
+    gaiaClient2 = await SigningStargateClient.connectWithSigner(
+      testState.rpcGaia,
+      testState.wallets.cosmos.rly2.directwallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -110,6 +125,7 @@ describe('Neutron / Interchain KV Query', () => {
     interchainqQuerier = new InterchainqQuerier(neutronRpcClient);
     bankQuerier = new BankQuerier(neutronRpcClient);
     bankQuerierGaia = new BankQuerier(await testState.gaiaRpcClient());
+    slashingQuerier = new SlashingQuerier(await testState.gaiaRpcClient());
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -137,7 +153,7 @@ describe('Neutron / Interchain KV Query', () => {
             register_balances_query: {
               connection_id: connectionId,
               denoms: [COSMOS_DENOM],
-              addr: testState.wallets.cosmos.demo2.address,
+              addr: gaiaWallet.address,
               update_period: 10,
             },
           });
@@ -200,7 +216,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           10,
           [COSMOS_DENOM],
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
         );
 
         balances = await bankQuerier.AllBalances({ address: contractAddress });
@@ -229,7 +245,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           updatePeriods[2],
           [COSMOS_DENOM],
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
         );
       });
 
@@ -250,7 +266,7 @@ describe('Neutron / Interchain KV Query', () => {
           contractAddress,
           connectionId,
           updatePeriods[4],
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
           [testState.wallets.cosmos.val1.valAddress],
         );
       });
@@ -364,7 +380,7 @@ describe('Neutron / Interchain KV Query', () => {
       // reduce balance of 2nd wallet
       const queryId = 2;
       const res = await gaiaClient.sendTokens(
-        testState.wallets.cosmos.demo2.address,
+        gaiaWallet.address,
         testState.wallets.cosmos.rly2.address,
         [{ denom: COSMOS_DENOM, amount: '9000' }],
         {
@@ -384,7 +400,7 @@ describe('Neutron / Interchain KV Query', () => {
         bankQuerierGaia,
         contractAddress,
         queryId,
-        testState.wallets.cosmos.demo2.address,
+        gaiaWallet.address,
       );
     });
 
@@ -392,7 +408,7 @@ describe('Neutron / Interchain KV Query', () => {
       // increase balance of val2 wallet
       const queryId = 3;
       const res = await gaiaClient.sendTokens(
-        testState.wallets.cosmos.demo2.address,
+        gaiaWallet.address,
         testState.wallets.cosmos.val1.address,
         [{ denom: COSMOS_DENOM, amount: '9000' }],
         {
@@ -421,8 +437,8 @@ describe('Neutron / Interchain KV Query', () => {
     test('perform icq #4: delegator delegations', async () => {
       const queryId = 4;
       await executeMsgDelegate(
-        testState.wallets.cosmos.demo2,
-        testState.wallets.cosmos.demo2.address,
+        gaiaClient,
+        gaiaWallet,
         testState.wallets.cosmos.val1.valAddress,
         '1500000',
       );
@@ -456,7 +472,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      const directQueryResult = await bankQuerier.AllBalances({
+      const directQueryResult = await bankQuerierGaia.AllBalances({
         address: testState.wallets.cosmos.val1.address,
       });
       expect(interchainQueryResult.balances.coins.length).toEqual(2);
@@ -470,10 +486,11 @@ describe('Neutron / Interchain KV Query', () => {
           (c) => c.denom == COSMOS_DENOM,
         )?.amount,
       ).toEqual(
-        directQueryResult?.find((c) => c.denom == COSMOS_DENOM)?.amount,
+        directQueryResult?.balances.find((c) => c.denom == COSMOS_DENOM)
+          ?.amount,
       );
       expect(
-        directQueryResult?.find((c) => c.denom == 'nonexistentdenom'),
+        directQueryResult?.balances.find((c) => c.denom == 'nonexistentdenom'),
       ).toEqual(undefined);
       expect(
         interchainQueryResult.balances.coins.find(
@@ -558,7 +575,7 @@ describe('Neutron / Interchain KV Query', () => {
         address: contractAddress,
       });
 
-      expect(balances[0].amount).toEqual('1000000');
+      expect(balances.balances[0].amount).toEqual('1000000');
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
@@ -606,7 +623,7 @@ describe('Neutron / Interchain KV Query', () => {
           params.params.queryDeposit,
         );
         expect(queryResult.registered_query.submit_timeout.toString()).toEqual(
-          params.params.querySubmitTimeout,
+          params.params.querySubmitTimeout.toString(),
         );
       });
 
@@ -654,7 +671,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           10,
           [COSMOS_DENOM],
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
         );
 
         await neutronClient.waitBlocks(1);
@@ -711,7 +728,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           15,
           [COSMOS_DENOM],
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
         );
 
         await neutronClient.getWithAttempts(
@@ -802,8 +819,8 @@ describe('Neutron / Interchain KV Query', () => {
       );
 
       const proposalResp = await executeMsgSubmitProposal(
+        gaiaClient2,
         testState.wallets.cosmos.rly2,
-        testState.wallets.cosmos.demo2.address,
         '1250',
       );
 
@@ -817,12 +834,7 @@ describe('Neutron / Interchain KV Query', () => {
         ),
       );
 
-      await executeMsgVote(
-        testState.wallets.cosmos.rly2,
-        testState.wallets.cosmos.demo2.address,
-        proposalId,
-        '1250',
-      );
+      await executeMsgVote(gaiaClient, gaiaWallet, proposalId, '1250');
 
       queryId = await registerProposalVotesQuery(
         neutronClient,
@@ -831,7 +843,7 @@ describe('Neutron / Interchain KV Query', () => {
         updatePeriods[2],
         proposalId,
         [
-          testState.wallets.cosmos.demo2.address,
+          gaiaWallet.address,
           'cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw', // Random address to check absent vote behavior in the result
         ],
       );
@@ -874,7 +886,7 @@ describe('Neutron / Interchain KV Query', () => {
       expect(interchainQueryResult.votes.proposal_votes).toEqual([
         {
           proposal_id: proposalId,
-          voter: testState.wallets.cosmos.demo2.address,
+          voter: gaiaWallet.address,
           options: [{ option: 1, weight: '1.000000000000000000' }],
         },
         { proposal_id: 0, voter: '', options: [] }, // Absent vote for random address (see above, about address cosmos1fku9gl93dy3z4d2y58gza06un72ulmd8trruxw)
@@ -898,8 +910,8 @@ describe('Neutron / Interchain KV Query', () => {
       );
 
       const proposalResp = await executeMsgSubmitProposal(
-        testState.wallets.cosmos.rly2,
-        testState.wallets.cosmos.demo2.address,
+        gaiaClient,
+        gaiaWallet,
         '1250',
       );
 
@@ -1000,7 +1012,7 @@ describe('Neutron / Interchain KV Query', () => {
 
   describe('Signing info query', () => {
     let queryId: number;
-    let indexOffset: number;
+    let indexOffset: bigint;
     let cosmosvalconspub: string;
     beforeEach(async () => {
       // Top up contract address before running query
@@ -1013,10 +1025,10 @@ describe('Neutron / Interchain KV Query', () => {
         },
       );
 
-      const infos = await getCosmosSigningInfosResult(neutronClient.rpc);
+      const infos = await slashingQuerier.SigningInfos();
       expect(infos).not.toBeNull();
       const firstValidator = infos.info[0];
-      indexOffset = parseInt(firstValidator.index_offset);
+      indexOffset = firstValidator.indexOffset;
       cosmosvalconspub = firstValidator.address;
 
       queryId = await registerSigningInfoQuery(
@@ -1079,17 +1091,17 @@ describe('Neutron / Interchain KV Query', () => {
 
     beforeAll(async () => {
       validatorAddress = testState.wallets.cosmos.val1.valAddress;
-      delegatorAddress = testState.wallets.cosmos.demo2.address;
+      delegatorAddress = gaiaWallet.address;
 
       await executeMsgDelegate(
-        testState.wallets.cosmos.rly2,
-        delegatorAddress,
+        gaiaClient,
+        gaiaWallet,
         validatorAddress,
         '3000',
       );
       await executeMsgUndelegate(
-        testState.wallets.cosmos.rly2,
-        delegatorAddress,
+        gaiaClient,
+        gaiaWallet,
         validatorAddress,
         '2000',
       );

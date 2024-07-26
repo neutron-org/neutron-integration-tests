@@ -1,10 +1,6 @@
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { generateMnemonic } from 'bip39';
 import { promises as fs } from 'fs';
-// import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-// import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-// import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-// import { CONTRACTS_PATH, DEBUG_SUBMIT_TX } from './setup';
 import {
   createProtobufRpcClient,
   defaultRegistryTypes,
@@ -14,7 +10,6 @@ import {
 } from '@cosmjs/stargate';
 import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
-// import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 

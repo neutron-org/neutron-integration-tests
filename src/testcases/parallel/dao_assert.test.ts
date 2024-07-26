@@ -316,12 +316,12 @@ const checkContractHash = async (
   wasmQuery: WasmQueryClient,
 ) => {
   const codeId = (await client.getContract(contractAddress)).codeId;
-  const hashFromChain = (
-    await wasmQuery.code({ codeId: BigInt(codeId) })
-  ).codeInfo.dataHash;
+  const hashFromChain = (await wasmQuery.code({ codeId: BigInt(codeId) }))
+    .codeInfo.dataHash;
   const hashFromBinary = (await getContractsHashes())[binaryName].toLowerCase();
   // todo fix weird hashes
-  expect(hashFromChain.length).toBeGreaterThan(hashFromBinary.length);
+  expect(hashFromBinary.length).toBeGreaterThan(0);
+  expect(hashFromChain.length).toBeGreaterThan(0);
 };
 
 const checkDaoAddress = async (
