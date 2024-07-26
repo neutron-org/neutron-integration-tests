@@ -391,7 +391,7 @@ describe('Neutron / Interchain KV Query', () => {
     test('perform icq #3: balance', async () => {
       // increase balance of val2 wallet
       const queryId = 3;
-      await gaiaClient.sendTokens(
+      const res = await gaiaClient.sendTokens(
         testState.wallets.cosmos.demo2.address,
         testState.wallets.cosmos.val1.address,
         [{ denom: COSMOS_DENOM, amount: '9000' }],
@@ -456,11 +456,9 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      const directQueryResult = await gaiaClient.getBalance(
-        testState.wallets.cosmos.val1.address,
-        COSMOS_DENOM,
+      const directQueryResult = await bankQuerier.AllBalances(
+        {address: testState.wallets.cosmos.val1.address}
       );
-      // TODO fix this
       expect(interchainQueryResult.balances.coins.length).toEqual(2);
       expect(
         interchainQueryResult.balances.coins.find(
