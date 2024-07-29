@@ -88,6 +88,7 @@ describe('Neutron / Treasury', () => {
           feeburnerQuerier,
         );
       });
+
       test('zero distribution rate', async () => {
         await neutronClient.sendTokens(
           reserve,
@@ -100,12 +101,12 @@ describe('Neutron / Treasury', () => {
         const res = await neutronClient.execute(reserve, {
           distribute: {},
         });
-
         expect(res.code).toEqual(0);
 
         const stats = (await neutronClient.queryContractSmart(reserve, {
           stats: {},
         })) as any;
+
         expect(parseInt(stats.total_distributed)).toEqual(0);
         expect(parseInt(stats.total_reserved)).toBeGreaterThan(0);
       });
@@ -158,14 +159,14 @@ describe('Neutron / Treasury', () => {
           reserve,
           NEUTRON_DENOM,
         );
-        expect(reserveBalance).toEqual(1);
+        expect(reserveBalance.amount).toEqual(1);
 
         // Second distribution
         await neutronClient.execute(reserve, {
           distribute: {},
         });
         reserveBalance = await neutronClient.getBalance(reserve, NEUTRON_DENOM);
-        expect(reserveBalance).toEqual(0);
+        expect(reserveBalance.amount).toEqual(0);
 
         // Third distribution
         await expect(
@@ -220,7 +221,7 @@ describe('Neutron / Treasury', () => {
         const stats = (await neutronClient.queryContractSmart(reserve, {
           stats: {},
         })) as any;
-        expect(stats.total_processed_burned_coins).toEqual(`${burnedCoins}`);
+        expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
       });
     });
 
@@ -503,13 +504,21 @@ const normalizeReserveBurnedCoins = async (
       reserveAddress,
       [{ denom: NEUTRON_DENOM, amount: '1' }],
       {
-        gas: '200000',
-        amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        gas: '300000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '1500' }],
       },
     );
-    await client.execute(reserveAddress, {
-      distribute: {},
-    });
+    await client.execute(
+      reserveAddress,
+      {
+        distribute: {},
+      },
+      [],
+      {
+        gas: '4000000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+      },
+    );
     reserveStats = await client.queryContractSmart(reserveAddress, {
       stats: {},
     });
@@ -527,8 +536,8 @@ const normalizeReserveBurnedCoins = async (
 const getBurnedCoinsAmount = async (
   client: FeeburnerQueryClient,
 ): Promise<string | undefined | null> => {
-  const totalBurnedNeutrons = await client.totalBurnedNeutronsAmount();
-  return totalBurnedNeutrons.totalBurnedNeutronsAmount.coin.amount;
+  const res = await client.totalBurnedNeutronsAmount();
+  return res.totalBurnedNeutronsAmount.coin.amount;
 };
 
 const setupReserve = async (
@@ -542,23 +551,17 @@ const setupReserve = async (
     securityDaoAddress: string;
     vestingDenominator: string;
   },
-) => {
-  const codeId = await cm.upload(NeutronContract.RESERVE);
-  return await cm.instantiate(
-    codeId,
-    {
-      main_dao_address: opts.mainDaoAddress,
-      denom: NEUTRON_DENOM,
-      distribution_rate: opts.distributionRate,
-      min_period: opts.minPeriod,
-      distribution_contract: opts.distributionContract,
-      treasury_contract: opts.treasuryContract,
-      security_dao_address: opts.securityDaoAddress,
-      vesting_denominator: opts.vestingDenominator,
-    },
-    'reserve',
-  );
-};
+) =>
+  await cm.create(NeutronContract.RESERVE, {
+    main_dao_address: opts.mainDaoAddress,
+    denom: NEUTRON_DENOM,
+    distribution_rate: opts.distributionRate,
+    min_period: opts.minPeriod,
+    distribution_contract: opts.distributionContract,
+    treasury_contract: opts.treasuryContract,
+    security_dao_address: opts.securityDaoAddress,
+    vesting_denominator: opts.vestingDenominator,
+  });
 
 /**
  * Tests a pausable contract execution control.
