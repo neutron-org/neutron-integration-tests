@@ -7,47 +7,29 @@ import {
 } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '../../helpers/constants';
-import { wasm, WasmWrapper } from '../../helpers/wasmClient';
 import { Registry } from '@cosmjs/proto-signing';
 import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
-import {
-  QueryAllInactiveLimitOrderTrancheResponse,
-  QueryAllLimitOrderTrancheResponse,
-  QueryAllLimitOrderTrancheUserByAddressResponse,
-  QueryAllLimitOrderTrancheUserResponse,
-  QueryAllPoolMetadataResponse,
-  QueryAllPoolReservesResponse,
-  QueryAllTickLiquidityResponse,
-  QueryAllUserDepositsResponse,
-  QueryEstimatePlaceLimitOrderResponse,
-  QueryGetInactiveLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheUserResponse,
-  QueryGetPoolMetadataResponse,
-  QueryParamsResponse,
-  QueryPoolResponse,
-} from '@neutron-org/neutronjs/neutron/dex/query';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { LimitOrderType } from '../../helpers/dex';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 describe('Neutron / dex module (stargate contract)', () => {
   let testState: LocalState;
-  let neutronClient: WasmWrapper;
-  let neutronAccount: Wallet;
+  let neutronClient: SigningNeutronClient;
+  let neutronWallet: Wallet;
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronAccount = await testState.nextWallet('neutron');
-    neutronClient = await wasm(
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount,
-      NEUTRON_DENOM,
-      new Registry(neutronTypes),
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
   });
 
@@ -61,7 +43,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
 
       await neutronClient.client.sendTokens(
-        neutronAccount.address,
+        neutronWallet.address,
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],
         {
@@ -71,7 +53,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
 
       await neutronClient.client.sendTokens(
-        neutronAccount.address,
+        neutronWallet.address,
         contractAddress,
         [{ denom: 'uibcusdc', amount: '100000000' }],
         {
@@ -390,7 +372,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
 
     test('ParamsQuery', async () => {
-      await neutronClient.client.queryContractSmart<QueryParamsResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           params: {},
@@ -399,7 +381,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('LimitOrderTrancheUserQuery', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheUserResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             get_limit_order_tranche_user: {
@@ -413,7 +395,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('LimitOrderTrancheUserAllQuery', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheUserResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_limit_order_tranche_user: {},
@@ -423,7 +405,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('LimitOrderTrancheUserAllByAddressQuery', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheUserByAddressResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_limit_order_tranche_user_by_address: {
@@ -435,7 +417,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('LimitOrderTrancheQuery', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             get_limit_order_tranche: {
@@ -450,7 +432,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('invalid LimitOrderTrancheQuery', async () => {
       await expect(
-        neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheResponse>(
+        neutronClient.queryContractSmart(
           contractAddress,
           {
             get_limit_order_tranche: {
@@ -465,7 +447,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllLimitOrderTranche', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_limit_order_tranche: {
@@ -478,7 +460,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllUserDeposits', async () => {
       const resp =
-        await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_user_deposits: {
@@ -491,7 +473,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(Number(resp.deposits[0].pool.id)).toEqual(0);
 
       const respNoPoolData =
-        await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_user_deposits: {
@@ -505,7 +487,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllTickLiquidity', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllTickLiquidityResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_tick_liquidity: {
@@ -517,7 +499,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(res.tick_liquidity.length).toBeGreaterThan(0);
     });
     test('InactiveLimitOrderTranche', async () => {
-      await neutronClient.client.queryContractSmart<QueryGetInactiveLimitOrderTrancheResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           get_inactive_limit_order_tranche: {
@@ -531,7 +513,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllInactiveLimitOrderTranche', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllInactiveLimitOrderTrancheResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_inactive_limit_order_tranche: {},
@@ -541,7 +523,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllPoolReserves', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllPoolReservesResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_pool_reserves: {
@@ -553,7 +535,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       expect(res.pool_reserves.length).toBeGreaterThan(0);
     });
     test('PoolReserves', async () => {
-      await neutronClient.client.queryContractSmart<QueryAllPoolReservesResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           get_pool_reserves: {
@@ -567,7 +549,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test.skip('EstimateMultiHopSwap', async () => {
       // TODO
-      // await neutronClient.client.queryContractSmart<EstimateMultiHopSwapResponse>(
+      // await neutronClient.queryContractSmart(
       //   contractAddress,
       //   {
       //     params: {},
@@ -575,7 +557,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       // );
     });
     test('EstimatePlaceLimitOrder', async () => {
-      await neutronClient.client.queryContractSmart<QueryEstimatePlaceLimitOrderResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           estimate_place_limit_order: {
@@ -592,7 +574,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
     });
     test('Pool', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
@@ -600,7 +582,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
     });
     test('PoolByID', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           pool_by_id: { pool_id: 0 },
@@ -608,7 +590,7 @@ describe('Neutron / dex module (stargate contract)', () => {
       );
     });
     test('PoolMetadata', async () => {
-      await neutronClient.client.queryContractSmart<QueryGetPoolMetadataResponse>(
+      await neutronClient.queryContractSmart(
         contractAddress,
         {
           get_pool_metadata: { id: 0 },
@@ -617,7 +599,7 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
     test('AllPoolMetadata', async () => {
       const res =
-        await neutronClient.client.queryContractSmart<QueryAllPoolMetadataResponse>(
+        await neutronClient.queryContractSmart(
           contractAddress,
           {
             all_pool_metadata: {},
