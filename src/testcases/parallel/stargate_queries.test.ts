@@ -59,8 +59,8 @@ describe('Neutron / Stargate Queries', () => {
               sender: gaiaWallet.address,
               receiver: neutronWallet.address,
               timeoutHeight: {
-                revisionNumber: BigInt(2),
-                revisionHeight: BigInt(100000000),
+                revisionNumber: 2n,
+                revisionHeight: 100000000n,
               },
             }),
           },

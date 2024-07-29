@@ -87,8 +87,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -132,8 +132,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),
@@ -179,6 +179,10 @@ describe('Neutron / IBC hooks', () => {
     describe('Receive on neutron with incorrectly formatted message', () => {
       const transferAmount = '300000';
       test('IBC transfer from a usual account', async () => {
+        const fee = {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        };
         const res = await neutronClient.signAndBroadcast(
           [
             {
@@ -190,8 +194,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -231,8 +235,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),
@@ -286,8 +290,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -333,8 +337,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),

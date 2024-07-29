@@ -579,7 +579,7 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
-      const queryId = BigInt(2);
+      const queryId = 2n;
       const result = await removeQueryViaTx(otherNeutronClient, queryId);
       expect(JSON.stringify(result.rawLog)).toMatch(
         /only owner can remove a query within its service period: unauthorized/i,
