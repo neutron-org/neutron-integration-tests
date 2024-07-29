@@ -1,13 +1,8 @@
 import { inject, Suite } from 'vitest';
 import { getEventAttributesFromTx } from '../../helpers/cosmos';
-import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '../../helpers/constants';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { LimitOrderType } from '../../helpers/dex';
 
 import config from '../../config.json';
@@ -23,7 +18,7 @@ describe('Neutron / dex module (stargate contract)', () => {
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -32,14 +27,13 @@ describe('Neutron / dex module (stargate contract)', () => {
   });
 
   describe('Instantiate dex stargate contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.DEX_STARGATE);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
-
+      contractAddress = await neutronClient.create(
+        NeutronContract.DEX_STARGATE,
+        {},
+      );
+    });
+    test('send funds', async () => {
       await neutronClient.sendTokens(
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],

@@ -5,11 +5,7 @@ import {
 } from '../../helpers/cosmos';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   MsgCreateDenom,
   MsgMint,
@@ -29,7 +25,7 @@ describe('Neutron / dex module bindings', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -38,13 +34,10 @@ describe('Neutron / dex module bindings', () => {
   });
 
   describe('Instantiate dex binding contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.DEX_DEV);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
+      contractAddress = await neutronClient.create(NeutronContract.DEX_DEV, {});
+    });
+    test('send funds', async () => {
       await neutronClient.sendTokens(
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],
