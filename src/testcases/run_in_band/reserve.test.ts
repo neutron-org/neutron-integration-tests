@@ -159,14 +159,14 @@ describe('Neutron / Treasury', () => {
           reserve,
           NEUTRON_DENOM,
         );
-        expect(reserveBalance.amount).toEqual(1);
+        expect(reserveBalance.amount).toEqual('1');
 
         // Second distribution
         await neutronClient.execute(reserve, {
           distribute: {},
         });
         reserveBalance = await neutronClient.getBalance(reserve, NEUTRON_DENOM);
-        expect(reserveBalance.amount).toEqual(0);
+        expect(reserveBalance.amount).toEqual('0');
 
         // Third distribution
         await expect(
@@ -340,11 +340,11 @@ describe('Neutron / Treasury', () => {
           { key: 'msg_index', value: '0' },
         ]);
 
-        const balanceAfter = await neutronClient.getBalance(
+        const balanceAfter = parseInt((await neutronClient.getBalance(
           holder1Addr,
           NEUTRON_DENOM,
-        );
-        expect(+balanceAfter.amount - balanceBefore).toEqual(4005);
+        )).amount, 10);
+        expect(+balanceAfter - balanceBefore).toEqual(4005);
       });
     });
 
