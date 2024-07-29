@@ -28,6 +28,7 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 import { CodeId } from '../../helpers/types';
+import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query';
 
 async function whitelistTokenfactoryHook(
   chainManagerAddress: string,
@@ -54,12 +55,10 @@ async function whitelistTokenfactoryHook(
     '1000',
   );
 
-  let timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-    proposalId,
-  );
+  await subdaoMember1.supportAndExecuteProposal(proposalId);
   await waitSeconds(10);
   await subdaoMember1.executeTimelockedProposal(proposalId);
-  timelockedProp = await subDao.getTimelockedProposal(proposalId);
+  const timelockedProp = await subDao.getTimelockedProposal(proposalId);
   expect(timelockedProp.id).toEqual(proposalId);
   expect(timelockedProp.status).toEqual('executed');
 }
@@ -274,7 +273,7 @@ describe('Neutron / Tokenfactory', () => {
     test('create denom, mint', async () => {
       const denom = `test2`;
       const fee = {
-        gas: '200000',
+        gas: '500000',
         amount: [{ denom: NEUTRON_DENOM, amount: '1250' }],
       };
       const data = await neutronClient.signAndBroadcast(
@@ -350,12 +349,12 @@ describe('Neutron / Tokenfactory', () => {
         );
 
       expect(authorityMetadataBefore.authorityMetadata).toEqual({
-        Admin: ownerWallet.address,
+        admin: ownerWallet.address,
       });
 
       const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
 
-      await neutronClient.signAndBroadcast(
+      const changeAdminRes = await neutronClient.signAndBroadcast(
         [
           {
             typeUrl: MsgChangeAdmin.typeUrl,
@@ -368,14 +367,16 @@ describe('Neutron / Tokenfactory', () => {
         ],
         fee,
       );
+      expect(changeAdminRes.code).toEqual(0);
+      console.log('change admin res: ' + JSON.stringify(changeAdminRes.rawLog));
 
-      const authorityMetadataAfter =
+      const authorityMetadataAfter: QueryDenomAuthorityMetadataResponse =
         await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
           { subdenom: unpackedDenom.subdenom, creator: unpackedDenom.creator },
         );
 
       expect(authorityMetadataAfter.authorityMetadata).toEqual({
-        Admin: newAdmin,
+        admin: newAdmin,
       });
     });
 
@@ -401,7 +402,7 @@ describe('Neutron / Tokenfactory', () => {
         'new_token_denom',
       );
 
-      await neutronClient.signAndBroadcast(
+      const mintRes = await neutronClient.signAndBroadcast(
         [
           {
             typeUrl: MsgMint.typeUrl,
@@ -417,6 +418,7 @@ describe('Neutron / Tokenfactory', () => {
         ],
         fee,
       );
+      expect(mintRes.code).toEqual(0);
 
       const balanceBefore = parseInt(
         (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
@@ -441,7 +443,6 @@ describe('Neutron / Tokenfactory', () => {
         ],
         fee,
       );
-
       expect(burnRes.code).toBe(0);
 
       const balanceAfter = parseInt(
@@ -452,14 +453,9 @@ describe('Neutron / Tokenfactory', () => {
 
       expect(balanceAfter).toEqual(9900);
     });
-    test('set non-whitlisted hook fails', async () => {
-      const codeId = await neutronClient.upload(
+    test('set non-whitelisted hook fails', async () => {
+      const contractAddress = await neutronClient.create(
         NeutronContract.BEFORE_SEND_HOOK_TEST,
-      );
-      expect(codeId).toBeGreaterThan(0);
-
-      const contractAddress = await neutronClient.instantiate(
-        codeId,
         {},
         'before_send_hook_test',
       );

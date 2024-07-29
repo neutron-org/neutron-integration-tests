@@ -11,7 +11,6 @@ import {
   MsgMint,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { LimitOrderType } from '@neutron-org/neutronjs/neutron/dex/tx';
 
 import config from '../../config.json';
 
@@ -120,13 +119,6 @@ describe('Neutron / dex module bindings', () => {
       });
     });
     describe('LimitOrder', () => {
-      // enum LimitOrderType{
-      //   GOOD_TIL_CANCELLED = 0;
-      //   FILL_OR_KILL = 1;
-      //   IMMEDIATE_OR_CANCEL = 2;
-      //   JUST_IN_TIME = 3;
-      //   GOOD_TIL_TIME = 4;
-      // }
       test('GOOD_TIL_CANCELLED', async () => {
         // Place order deep in orderbook. Doesn't change existing liquidity
         const res = await neutronClient.execute(contractAddress, {
@@ -137,7 +129,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.221390545',
             amount_in: '1000000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res.code).toEqual(0);
@@ -152,7 +144,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '0.74',
             tick_index_in_to_out: 0,
             amount_in: '100',
-            order_type: LimitOrderType.FILL_OR_KILL,
+            order_type: 'FILL_OR_KILL',
             max_amount_out: '100',
           },
         });
@@ -168,7 +160,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.98',
             amount_in: '1000000',
-            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
+            order_type: 'IMMEDIATE_OR_CANCEL',
           },
         });
         expect(res.code).toEqual(0);
@@ -183,7 +175,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '7.38',
             amount_in: '1000000',
-            order_type: LimitOrderType.JUST_IN_TIME,
+            order_type: 'JUST_IN_TIME',
           },
         });
         expect(res.code).toEqual(0);
@@ -198,7 +190,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '1.002',
             amount_in: '10000000',
             expiration_time: Math.ceil(Date.now() / 1000) + 1000,
-            order_type: LimitOrderType.GOOD_TIL_TIME,
+            order_type: 'GOOD_TIL_TIME',
           },
         });
         expect(res.code).toEqual(0);
@@ -214,7 +206,7 @@ describe('Neutron / dex module bindings', () => {
               limit_sell_price: '0.998',
               amount_in: '10000000',
               expiration_time: 1,
-              order_type: LimitOrderType.GOOD_TIL_TIME,
+              order_type: 'GOOD_TIL_TIME',
             },
           }),
         ).rejects.toThrowError(
@@ -248,7 +240,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.4564654E-4',
             amount_in: '100000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res.code).toEqual(0);
@@ -265,7 +257,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.8188125757',
             amount_in: '1000000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res1.code).toEqual(0);
@@ -283,7 +275,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.1',
             amount_in: '1000',
-            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
+            order_type: 'IMMEDIATE_OR_CANCEL',
           },
         });
         expect(res2.code).toEqual(0);
@@ -457,7 +449,7 @@ describe('Neutron / dex module bindings', () => {
           tick_index_in_to_out: 0,
           limit_sell_price: '0.8188125757',
           amount_in: '1000000',
-          order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+          order_type: 'GOOD_TIL_CANCELLED',
         },
       });
       activeTrancheKey = getEventAttributesFromTx(
@@ -475,7 +467,7 @@ describe('Neutron / dex module bindings', () => {
           tick_index_in_to_out: 0,
           limit_sell_price: '7.3816756536',
           amount_in: '1000000',
-          order_type: LimitOrderType.JUST_IN_TIME,
+          order_type: 'JUST_IN_TIME',
         },
       });
       inactiveTrancheKey = getEventAttributesFromTx(
@@ -633,7 +625,7 @@ describe('Neutron / dex module bindings', () => {
           tick_index_in_to_out: 1,
           amount_in: '100000',
           expiration_time: Math.ceil(Date.now() / 1000) + 1000,
-          order_type: LimitOrderType.GOOD_TIL_TIME,
+          order_type: 'GOOD_TIL_TIME',
         },
       });
     });
