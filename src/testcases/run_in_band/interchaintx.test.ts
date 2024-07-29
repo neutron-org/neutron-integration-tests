@@ -29,7 +29,7 @@ import {
 } from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
 import { getWithAttempts } from '../../helpers/misc';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -942,6 +942,7 @@ describe('Neutron / Interchain TXs', () => {
         const acks = await getAcks(neutronClient, contractAddress);
         expect(acks.length).toEqual(1);
         expect(acks[0].sequence_id).toEqual(
+          // TODO: fix call
           +JSON.parse(Buffer.from(failure.sudoPayload, 'base64').toString())
             .response.request.sequence,
         );

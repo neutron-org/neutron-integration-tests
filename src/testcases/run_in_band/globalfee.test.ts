@@ -51,7 +51,7 @@ describe('Neutron / Global Fee', () => {
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
       neutronRpcClient,
-    ); //add assert for some addresses
+    ); // add assert for some addresses
     const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
     mainDao = new Dao(neutronClient, daoContracts);
     daoMember = new DaoMember(
@@ -171,7 +171,7 @@ describe('Neutron / Global Fee', () => {
     ]);
   });
 
-  test('check minumum global fees with bank send command', async () => {
+  test('check minimum global fees with bank send command', async () => {
     await expect(
       neutronClient.sendTokens(
         mainDao.contracts.core.address,

@@ -12,7 +12,7 @@ import { QueryTotalSupplyResponse } from '@neutron-org/neutronjs/cosmos/bank/v1b
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
@@ -47,6 +47,7 @@ describe('Neutron / Tokenomics', () => {
       .treasuryAddress;
 
     bankQuerier = new BankQueryClient(neutronRpcClient);
+    feeburnerQuerier = new FeeburnerQueryClient(neutronRpcClient);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -125,12 +126,8 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            NEUTRON_DENOM,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
         10,
       );
     });
@@ -151,12 +148,8 @@ describe('Neutron / Tokenomics', () => {
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
       await neutronClient.waitBlocks(1);
       const balanceAfter = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            NEUTRON_DENOM,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
         10,
       );
       const diff = balanceAfter - balanceBefore;
@@ -201,7 +194,7 @@ describe('Neutron / Tokenomics', () => {
       );
       await neutronClient.getWithAttempts(
         async () =>
-          neutronClient.client.getBalance(
+          neutronClient.getBalance(
             testState.wallets.qaNeutron.qa.address,
             ibcUatomDenom,
           ),
@@ -211,12 +204,8 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            ibcUatomDenom,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
         10,
       );
     });
@@ -236,12 +225,8 @@ describe('Neutron / Tokenomics', () => {
 
     test('Balance of Treasury in uatoms has been increased', async () => {
       const balanceAfter = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            ibcUatomDenom,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
         10,
       );
       const diff = balanceAfter - balanceBefore;

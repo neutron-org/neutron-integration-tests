@@ -10,7 +10,6 @@ import {
   CodeId,
   Wallet,
 } from '@neutron-org/neutronjsplus/dist/types';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   MsgCreateDenom,
   MsgMint,
@@ -46,8 +45,7 @@ describe('Neutron / dex module bindings', () => {
     });
     test('instantiate contract', async () => {
       contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
-      await neutronClient.client.sendTokens(
-        neutronWallet.address,
+      await neutronClient.sendTokens(
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],
         {
@@ -56,8 +54,7 @@ describe('Neutron / dex module bindings', () => {
         },
       );
 
-      await neutronClient.client.sendTokens(
-        neutronWallet.address,
+      await neutronClient.sendTokens(
         contractAddress,
         [{ denom: 'uibcusdc', amount: '100000000' }],
         {
@@ -333,7 +330,7 @@ describe('Neutron / dex module bindings', () => {
 
     describe('MultiHopSwap', () => {
       const denoms: any[] = [];
-      test('successfull multihops', async () => {
+      test('successful multihops', async () => {
         const numberDenoms = 10;
         const fee = {
           gas: '500000',
@@ -376,8 +373,7 @@ describe('Neutron / dex module bindings', () => {
             fee,
           );
 
-          await neutronClient.client.sendTokens(
-            neutronWallet.address,
+          await neutronClient.sendTokens(
             contractAddress,
             [{ denom: newTokenDenom, amount: '1000000' }],
             {
@@ -495,7 +491,7 @@ describe('Neutron / dex module bindings', () => {
         ['TrancheKey'],
       )[0]['TrancheKey'];
       // wait a few blocks to make sure JIT order expires
-      await waitBlocks(2, neutronClient.client);
+      await neutronClient.waitBlocks(2);
     });
     test('ParamsQuery', async () => {
       await neutronClient.queryContractSmart(contractAddress, {
@@ -627,7 +623,7 @@ describe('Neutron / dex module bindings', () => {
     });
     test.skip('EstimateMultiHopSwap', async () => {
       // TODO
-      // await neutronAccount.chain.queryContract<EstimateMultiHopSwapResponse>(
+      // await neutronWallet.queryContract(
       //   contractAddress,
       //   {
       //     params: {},

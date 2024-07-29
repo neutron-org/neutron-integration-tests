@@ -81,7 +81,7 @@ describe('Neutron / DAO check', () => {
         preProposalSingleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalSingleAddress,
         {
           proposal_module: {},
@@ -105,7 +105,7 @@ describe('Neutron / DAO check', () => {
         preProposalMultipleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalMultipleAddress,
         {
           proposal_module: {},
@@ -129,7 +129,7 @@ describe('Neutron / DAO check', () => {
         preProposalOverruleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalOverruleAddress,
         {
           proposal_module: {},
@@ -305,7 +305,7 @@ const verifyAdmin = async (
   contractAddress: string,
   expectedAdmin: string,
 ) => {
-  const res = await neutronClient.client.getContract(contractAddress);
+  const res = await neutronClient.getContract(contractAddress);
   expect(res.admin).toEqual(expectedAdmin);
 };
 
@@ -329,12 +329,9 @@ const checkDaoAddress = async (
   contractAddress: string,
   expectedDao: string,
 ) => {
-  const daoFromContract = await client.client.queryContractSmart(
-    contractAddress,
-    {
-      dao: {},
-    },
-  );
+  const daoFromContract = await client.queryContractSmart(contractAddress, {
+    dao: {},
+  });
   expect(daoFromContract).toEqual(expectedDao);
 };
 

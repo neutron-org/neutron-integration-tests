@@ -1,5 +1,4 @@
 import '@neutron-org/neutronjsplus';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { LocalState } from '../../helpers/local_state';
 import {
   NeutronContract,
@@ -19,7 +18,7 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
@@ -143,7 +142,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icqWebHost, resubmitTxs);
       expect(resp.status).toEqual(200);
 
-      await waitBlocks(20, neutronClient.client);
+      await neutronClient.waitBlocks(20);
 
       await waitForTransfersAmount(
         neutronClient,

@@ -18,7 +18,7 @@ import {
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: LocalState;
@@ -397,7 +397,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check second sending handling', async () => {
       addr3ExpectedBalance += amountToAddrThird2;
-      await gaiaClient.sendTokens(
+      const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr3,
         [{ denom: NEUTRON_DENOM, amount: amountToAddrThird2.toString() }],
@@ -640,7 +640,7 @@ describe('Neutron / Interchain TX Query', () => {
         address: watchedAddr5,
       });
       expect(balances).toEqual([]);
-      await gaiaClient.sendTokens(
+      const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr5,
         [{ denom: COSMOS_DENOM, amount: amountToAddrFifth1.toString() }],
@@ -854,7 +854,6 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     it('should handle callback on a sending to the new address', async () => {
-      const res = await gaiaWallet.msgSend(newWatchedAddr5, '10000');
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         newWatchedAddr5,

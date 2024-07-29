@@ -7,7 +7,7 @@ import { getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 interface ReserveStats {
   readonly total_distributed: string;
@@ -19,8 +19,8 @@ describe('Neutron / Treasury', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
-  let neutronAccount1: Wallet;
-  let neutronAccount2: Wallet;
+  let neutronWallet1: Wallet;
+  let neutronWallet2: Wallet;
   let mainDaoWallet: Wallet;
   let securityDaoWallet: Wallet;
   let holder1Wallet: Wallet;
@@ -34,18 +34,18 @@ describe('Neutron / Treasury', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronAccount1 = await testState.nextWallet('neutron');
-    neutronAccount2 = await testState.nextWallet('neutron');
+    neutronWallet1 = await testState.nextWallet('neutron');
+    neutronWallet2 = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount1.directwallet,
-      neutronAccount1.address,
+      neutronWallet1.directwallet,
+      neutronWallet1.address,
     );
 
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronAccount2.directwallet,
-      neutronAccount2.address,
+      neutronWallet2.directwallet,
+      neutronWallet2.address,
     );
 
     mainDaoWallet = testState.wallets.neutron.demo1;
@@ -85,6 +85,7 @@ describe('Neutron / Treasury', () => {
         reserveStats = await normalizeReserveBurnedCoins(
           neutronClient,
           reserve,
+          feeburnerQuerier,
         );
       });
       test('zero distribution rate', async () => {
@@ -102,7 +103,7 @@ describe('Neutron / Treasury', () => {
 
         expect(res.code).toEqual(0);
 
-        const stats = (await neutronClient.client.queryContractSmart(reserve, {
+        const stats = (await neutronClient.queryContractSmart(reserve, {
           stats: {},
         })) as any;
         expect(parseInt(stats.total_distributed)).toEqual(0);
@@ -122,7 +123,7 @@ describe('Neutron / Treasury', () => {
           distribute: {},
         });
 
-        let stats = (await neutronClient.client.queryContractSmart(reserve, {
+        let stats = (await neutronClient.queryContractSmart(reserve, {
           stats: {},
         })) as any;
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
@@ -131,7 +132,7 @@ describe('Neutron / Treasury', () => {
         await neutronClient.execute(reserve, {
           distribute: {},
         });
-        stats = await neutronClient.client.queryContractSmart(reserve, {
+        stats = await neutronClient.queryContractSmart(reserve, {
           stats: {},
         });
         expect(stats.total_processed_burned_coins).toEqual(burnedCoins);
@@ -153,7 +154,7 @@ describe('Neutron / Treasury', () => {
           distribute: {},
         });
 
-        let reserveBalance = await neutronClient.client.getBalance(
+        let reserveBalance = await neutronClient.getBalance(
           reserve,
           NEUTRON_DENOM,
         );
@@ -201,12 +202,9 @@ describe('Neutron / Treasury', () => {
         await neutronClient.execute(reserve, {
           distribute: {},
         });
-        const afterStats = (await neutronClient.client.queryContractSmart(
-          reserve,
-          {
-            stats: {},
-          },
-        )) as any;
+        const afterStats = (await neutronClient.queryContractSmart(reserve, {
+          stats: {},
+        })) as any;
 
         expect(
           parseInt(afterStats.total_processed_burned_coins) -
@@ -219,7 +217,7 @@ describe('Neutron / Treasury', () => {
           distribute: {},
         });
 
-        const stats = (await neutronClient.client.queryContractSmart(reserve, {
+        const stats = (await neutronClient.queryContractSmart(reserve, {
           stats: {},
         })) as any;
         expect(stats.total_processed_burned_coins).toEqual(`${burnedCoins}`);
@@ -260,6 +258,7 @@ describe('Neutron / Treasury', () => {
         reserveStats = await normalizeReserveBurnedCoins(
           neutronClient,
           reserve,
+          feeburnerQuerier,
         );
         const burnedCoinsBefore = await getBurnedCoinsAmount(feeburnerQuerier);
         expect(burnedCoinsBefore).not.toBeNull();
@@ -274,7 +273,7 @@ describe('Neutron / Treasury', () => {
           },
         );
 
-        const res = await neutronAccount1.executeContract(reserve, {
+        const res = await neutronClient.execute(reserve, {
           distribute: {},
         });
         expect(res.code).toEqual(0);
@@ -283,7 +282,7 @@ describe('Neutron / Treasury', () => {
         const burnedCoinsAfter = await getBurnedCoinsAmount(feeburnerQuerier);
         expect(burnedCoinsAfter).not.toBeNull();
 
-        const stats = await neutronClient.client.queryContractSmart(reserve, {
+        const stats = await neutronClient.queryContractSmart(reserve, {
           stats: {},
         });
         expect(stats).toEqual(
@@ -311,7 +310,7 @@ describe('Neutron / Treasury', () => {
         lastTreasuryBalance = treasuryBalance;
       });
       test('verify pendings', async () => {
-        const pending = await neutronClient.client.queryContractSmart(dsc, {
+        const pending = await neutronClient.queryContractSmart(dsc, {
           pending: {},
         });
         expect(pending).toEqual([
@@ -320,7 +319,7 @@ describe('Neutron / Treasury', () => {
         ]);
       });
       test('claim pending', async () => {
-        const balanceBefore = await neutronClient.client.queryContractSmart(
+        const balanceBefore = await neutronClient.queryContractSmart(
           holder1Addr,
           NEUTRON_DENOM,
         );
@@ -340,11 +339,11 @@ describe('Neutron / Treasury', () => {
           { key: 'msg_index', value: '0' },
         ]);
 
-        const balanceAfter = await neutronClient.client.getBalance(
+        const balanceAfter = await neutronClient.getBalance(
           holder1Addr,
           NEUTRON_DENOM,
         );
-        expect(balanceAfter - balanceBefore).toEqual(4005);
+        expect(+balanceAfter.amount - balanceBefore).toEqual(4005);
       });
     });
 
@@ -379,11 +378,7 @@ describe('Neutron / Treasury', () => {
           },
         });
         expect(res.code).toEqual(0);
-        const config = await neutronClient.client.queryContractSmart<{
-          distribution_rate: string;
-          min_period: number;
-          distribution_contract: string;
-        }>(reserve, {
+        const config = await neutronClient.queryContractSmart(reserve, {
           config: {},
         });
         expect(config.distribution_rate).toEqual('0.11');
@@ -427,12 +422,9 @@ describe('Neutron / Treasury', () => {
           return res.code;
         },
         async () => {
-          const shares = await neutronClient.client.queryContractSmart<[][]>(
-            dsc,
-            {
-              shares: {},
-            },
-          );
+          const shares = await neutronClient.queryContractSmart(dsc, {
+            shares: {},
+          });
           expect(shares).toEqual([
             [holder1Addr, '1'],
             [holder2Addr, '2'],
@@ -460,7 +452,7 @@ describe('Neutron / Treasury', () => {
           return res.code;
         },
         async () => {
-          const stats = await neutronClient.client.queryContractSmart(reserve, {
+          const stats = await neutronClient.queryContractSmart(reserve, {
             stats: {},
           });
           expect(stats).toEqual({
@@ -475,12 +467,12 @@ describe('Neutron / Treasury', () => {
 });
 
 const setupDSC = async (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
-  const codeId = await cm.upload(NeutronContract.DISTRIBUTION);
-  return await cm.instantiate(
+  const codeId = await client.upload(NeutronContract.DISTRIBUTION);
+  return await client.instantiate(
     codeId,
     {
       main_dao_address: mainDaoAddress,
@@ -497,6 +489,7 @@ const setupDSC = async (
 const normalizeReserveBurnedCoins = async (
   client: SigningNeutronClient,
   reserveAddress: string,
+  feeburnerQuerier: FeeburnerQueryClient,
 ): Promise<ReserveStats> => {
   // Normalize state
   let normalize = true;
@@ -517,14 +510,11 @@ const normalizeReserveBurnedCoins = async (
     await client.execute(reserveAddress, {
       distribute: {},
     });
-    reserveStats = await client.client.queryContractSmart<ReserveStats>(
-      reserveAddress,
-      {
-        stats: {},
-      },
-    );
+    reserveStats = await client.queryContractSmart(reserveAddress, {
+      stats: {},
+    });
 
-    const burnedCoins = await getBurnedCoinsAmount(client.chain);
+    const burnedCoins = await getBurnedCoinsAmount(feeburnerQuerier);
     expect(burnedCoins).not.toBeNull();
     normalize =
       parseInt(reserveStats.total_processed_burned_coins) + 7500 !==
@@ -535,9 +525,9 @@ const normalizeReserveBurnedCoins = async (
 };
 
 const getBurnedCoinsAmount = async (
-  cm: FeeburnerQueryClient,
+  client: FeeburnerQueryClient,
 ): Promise<string | undefined | null> => {
-  const totalBurnedNeutrons = await cm.totalBurnedNeutronsAmount();
+  const totalBurnedNeutrons = await client.totalBurnedNeutronsAmount();
   return totalBurnedNeutrons.totalBurnedNeutronsAmount.coin.amount;
 };
 
@@ -585,10 +575,7 @@ async function testExecControl(
   actionCheck: () => Promise<void>,
 ) {
   // check contract's pause info before pausing
-  let pauseInfo = await client.client.queryContractSmart<{
-    paused: { until_height: number } | undefined;
-    unpaused: boolean;
-  }>(testingContract, {
+  let pauseInfo = await client.queryContractSmart(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo).toEqual({ unpaused: {} });
@@ -603,7 +590,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await client.client.queryContractSmart(testingContract, {
+  pauseInfo = await client.queryContractSmart(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo.unpaused).toEqual(undefined);
@@ -619,7 +606,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after unpausing
-  pauseInfo = await client.client.queryContractSmart(testingContract, {
+  pauseInfo = await client.queryContractSmart(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo).toEqual({ unpaused: {} });
@@ -640,7 +627,7 @@ async function testExecControl(
   expect(res.code).toEqual(0);
 
   // check contract's pause info after pausing
-  pauseInfo = await client.client.queryContractSmart(testingContract, {
+  pauseInfo = await client.queryContractSmart(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo.unpaused).toEqual(undefined);
@@ -648,7 +635,7 @@ async function testExecControl(
 
   // wait and check contract's pause info after unpausing
   await client.waitBlocks(shortPauseDuration);
-  pauseInfo = await client.client.queryContractSmart(testingContract, {
+  pauseInfo = await client.queryContractSmart(testingContract, {
     pause_info: {},
   });
   expect(pauseInfo).toEqual({ unpaused: {} });

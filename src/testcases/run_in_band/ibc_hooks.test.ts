@@ -12,7 +12,7 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
@@ -147,13 +147,12 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was executed successfully', async () => {
         await neutronClient.waitBlocks(15);
-        const queryResult =
-          await neutronClient.client.queryContractSmart<TestArg>(
-            contractAddress,
-            {
-              test_msg: { arg: 'test' },
-            },
-          );
+        const queryResult = await neutronClient.queryContractSmart(
+          contractAddress,
+          {
+            test_msg: { arg: 'test' },
+          },
+        );
         // TODO: check that sender is Bech32(Hash("ibc-wasm-hook-intermediaryg" || channelID || sender))
         //  non-determined?
         // expect(queryResult.sender).toEqual(
@@ -169,12 +168,8 @@ describe('Neutron / IBC hooks', () => {
         await neutronClient.waitBlocks(10);
 
         const res = parseInt(
-          (
-            await neutronClient.client.getBalance(
-              contractAddress,
-              NEUTRON_DENOM,
-            )
-          ).amount,
+          (await neutronClient.getBalance(contractAddress, NEUTRON_DENOM))
+            .amount,
           10,
         );
         expect(res).toEqual(transferAmount);
@@ -252,20 +247,19 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was not executed successfully', async () => {
         await neutronClient.waitBlocks(15);
-        const queryResult =
-          await neutronClient.client.queryContractSmart<TestArg>(
-            contractAddress,
-            {
-              test_msg: { arg: 'incorrect_msg_arg' },
-            },
-          );
+        const queryResult = await neutronClient.queryContractSmart(
+          contractAddress,
+          {
+            test_msg: { arg: 'incorrect_msg_arg' },
+          },
+        );
         expect(queryResult).toEqual(null);
       });
 
       test('check contract token balance - it still has previous balance', async () => {
         await neutronClient.waitBlocks(10);
 
-        const res = await neutronClient.client.queryContractSmart(
+        const res = await neutronClient.queryContractSmart(
           contractAddress,
           COSMOS_DENOM,
         );
@@ -369,9 +363,3 @@ describe('Neutron / IBC hooks', () => {
     });
   });
 });
-
-type TestArg = {
-  sender: string | null;
-  funds: { denom: string; amount: string }[];
-  count: number;
-};

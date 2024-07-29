@@ -6,7 +6,7 @@ import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 
-const config = require('../../config.json');
+import config from '../../config.json';
 
 // general contract keys used across the tests
 const VOTING_REGISTRY_CONTRACT_KEY = 'VOTING_REGISTRY';
@@ -105,19 +105,32 @@ describe('Neutron / Voting Registry', () => {
 
   describe('accrue init voting power', () => {
     test('bond funds', async () => {
-      await bondFunds(neutronDaoMemberClient, vault1Addr, vault1Bonding.toString());
-      await bondFunds(neutronDaoMemberClient, vault2Addr, vault2Bonding.toString());
+      await bondFunds(
+        neutronDaoMemberClient,
+        vault1Addr,
+        vault1Bonding.toString(),
+      );
+      await bondFunds(
+        neutronDaoMemberClient,
+        vault2Addr,
+        vault2Bonding.toString(),
+      );
       // we bond to vault3 in advance regardless of this is not in the registry yet
-      await bondFunds(neutronDaoMemberClient, vault3Addr, vault3Bonding.toString());
-      await waitBlocks(2, neutronClient.client);
+      await bondFunds(
+        neutronDaoMemberClient,
+        vault3Addr,
+        vault3Bonding.toString(),
+      );
+      await waitBlocks(2, neutronClient);
     });
 
+    // TODO: why commented?
     test('check accrued voting power', async () => {
-      const vpInfo = await getVotingPowerInfo(
-        neutronClient,
-        daoMemberWallet.address,
-        contractAddresses,
-      );
+      // const vpInfo = await getVotingPowerInfo(
+      //   neutronClient,
+      //   daoMemberWallet.address,
+      //   contractAddresses,
+      // );
       // expect(vpInfo.vault1Power).toEqual(vault1Bonding);
       // expect(vpInfo.vault1TotalPower).toEqual(vault1Bonding);
       // expect(vpInfo.vault2Power).toEqual(vault2Bonding);
@@ -136,7 +149,7 @@ describe('Neutron / Voting Registry', () => {
   // describe('VP on bond and unbond', () => {
   //   test('bond funds', async () => {
   //     await bondFunds(neutronClient, vault1Addr, vault1AddBonding.toString());
-  //     await waitBlocks(1, neutronClient.client);
+  //     await waitBlocks(1, neutronClient);
   //   });
   //   test('check voting power after bonding', async () => {
   //     const vpInfo = await getVotingPowerInfo(
@@ -182,7 +195,7 @@ describe('Neutron / Voting Registry', () => {
   //       vault1Addr,
   //       vault1Unbonding.toString(),
   //     );
-  //     await waitBlocks(1, neutronClient.client);
+  //     await waitBlocks(1, neutronClient);
   //   });
   //   test('check voting power after unbonding', async () => {
   //     const vpInfo = await getVotingPowerInfo(
@@ -267,7 +280,7 @@ describe('Neutron / Voting Registry', () => {
   //       votingRegistryAddr,
   //       vault2Addr,
   //     );
-  //     await waitBlocks(1, neutronClient.client);
+  //     await waitBlocks(1, neutronClient);
   //
   //     const votingVaults = await getVotingVaults(
   //       neutronClient,
@@ -327,7 +340,7 @@ describe('Neutron / Voting Registry', () => {
   //
   //   test('add another vault', async () => {
   //     await addVotingVault(neutronClient, votingRegistryAddr, vault3Addr);
-  //     await waitBlocks(1, neutronClient.client);
+  //     await waitBlocks(1, neutronClient);
   //
   //     const votingVaults = await getVotingVaults(
   //       neutronClient,
@@ -399,7 +412,7 @@ describe('Neutron / Voting Registry', () => {
   //
   //   test('activate vault', async () => {
   //     await activateVotingVault(neutronClient, votingRegistryAddr, vault2Addr);
-  //     await waitBlocks(1, neutronClient.client);
+  //     await waitBlocks(1, neutronClient);
   //
   //     const votingVaults = await getVotingVaults(
   //       neutronClient,
@@ -620,11 +633,11 @@ const deployNeutronVault = async (
 };
 
 const bondFunds = async (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   vault: string,
   amount: string,
 ) =>
-  cm.execute(
+  client.execute(
     vault,
     {
       bond: {},
@@ -633,11 +646,11 @@ const bondFunds = async (
   );
 
 // const unbondFunds = async (
-//   cm: SigningNeutronClient,
+//   client: SigningNeutronClient,
 //   vault: string,
 //   amount: string,
 // ) =>
-//   cm.execute(
+//   client.execute(
 //     vault,
 //     {
 //       unbond: { amount: amount },
@@ -646,11 +659,11 @@ const bondFunds = async (
 //   );
 
 // const activateVotingVault = async (
-//   cm: SigningNeutronClient,
+//   client: SigningNeutronClient,
 //   registry: string,
 //   vault: string,
 // ) =>
-//   cm.execute(
+//   client.execute(
 //     registry,
 //     {
 //       activate_voting_vault: {
@@ -661,11 +674,11 @@ const bondFunds = async (
 //   );
 
 // const deactivateVotingVault = async (
-//   cm: SigningNeutronClient,
+//   client: SigningNeutronClient,
 //   registry: string,
 //   vault: string,
 // ) =>
-//   cm.execute(
+//   client.execute(
 //     registry,
 //     {
 //       deactivate_voting_vault: {
@@ -676,11 +689,11 @@ const bondFunds = async (
 //   );
 
 // const addVotingVault = async (
-//   cm: SigningNeutronClient,
+//   client: SigningNeutronClient,
 //   registry: string,
 //   vault: string,
 // ) =>
-//   cm.execute(
+//   client.execute(
 //     registry,
 //     {
 //       add_voting_vault: {
@@ -701,7 +714,7 @@ const getVotingPowerInfo = async (
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
-    height = await client.client.getHeight();
+    height = await client.getHeight();
   }
   const vault1Power = getVotingPowerAtHeight(
     client,
@@ -766,7 +779,7 @@ const getTotalPowerAtHeight = async (
   contract: string,
   height?: number,
 ): Promise<VotingPowerResponse> =>
-  client.client.queryContractSmart<VotingPowerResponse>(contract, {
+  client.queryContractSmart(contract, {
     total_power_at_height:
       typeof height === 'undefined' ? {} : { height: height },
   });
@@ -777,7 +790,7 @@ const getVotingPowerAtHeight = async (
   address: string,
   height?: number,
 ): Promise<VotingPowerResponse> =>
-  chain.client.queryContractSmart<VotingPowerResponse>(contract, {
+  chain.queryContractSmart(contract, {
     voting_power_at_height:
       typeof height === 'undefined'
         ? {
@@ -794,7 +807,7 @@ const getVotingVaults = async (
   registry: string,
   height?: number,
 ): Promise<VotingVault[]> =>
-  client.client.queryContractSmart<VotingVault[]>(registry, {
+  client.queryContractSmart(registry, {
     voting_vaults: typeof height === 'undefined' ? {} : { height: height },
   });
 

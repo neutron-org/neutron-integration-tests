@@ -116,25 +116,16 @@ export type LimitOrderTrancheUser = {
   order_type: LimitOrderType;
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type TradePairID = {
   maker_denom: string;
   taker_denom: string;
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type Params = {
   fee_tiers: string[]; // Uint64
   max_true_taker_spread: string; // PrecDec
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type LimitOrderTranche = {
   key: LimitOrderTrancheKey;
   reserves_maker_denom: string; // Int128
@@ -145,18 +136,12 @@ export type LimitOrderTranche = {
   price_taker_to_maker: string; // PrecDec
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type LimitOrderTrancheKey = {
   trade_pair_id: TradePairID;
   tick_index_taker_to_maker: string; // Int64
   tranche_key: string;
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type DepositRecord = {
   pair_id: PairID;
   shares_owned: string; // Int128
@@ -168,24 +153,15 @@ export type DepositRecord = {
   pool?: Pool; // Option<Pool>
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type PairID = {
   token0: string;
   token1: string;
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type TickLiquidity =
   | { pool_reserves: PoolReserves }
   | { limit_order_tranche: LimitOrderTranche };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type PoolReserves = {
   key: PoolReservesKey;
   reserves_maker_denom: string; // Int128
@@ -193,27 +169,18 @@ export type PoolReserves = {
   price_opposite_taker_to_maker: string; // PrecDec
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type PoolReservesKey = {
   trade_pair_id: TradePairID;
   tick_index_taker_to_maker: string; // Int64
   fee?: string; // Option<Uint64>
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type Pool = {
   id: string; // Uint64
   lower_tick0: PoolReserves;
   lower_tick1: PoolReserves;
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type PoolMetadata = {
   id: string; // Uint64
   tick: string; // Int64
