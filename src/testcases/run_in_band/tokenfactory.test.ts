@@ -27,6 +27,7 @@ import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
+import { CodeId } from '../../helpers/types';
 
 async function whitelistTokenfactoryHook(
   chainManagerAddress: string,
@@ -81,7 +82,6 @@ describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
 
-  let neutronWallet: Wallet;
   let ownerWallet: Wallet;
   let subDao: Dao;
   let mainDao: Dao;
@@ -97,7 +97,6 @@ describe('Neutron / Tokenfactory', () => {
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     ownerWallet = await testState.nextWallet('neutron');
-    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       ownerWallet.directwallet,
@@ -127,13 +126,13 @@ describe('Neutron / Tokenfactory', () => {
     mainDaoMember = new DaoMember(
       mainDao,
       neutronClient.client,
-      neutronWallet.address,
+      ownerWallet.address,
       NEUTRON_DENOM,
     );
     await mainDaoMember.bondFunds('10000');
 
     subDao = await setupSubDaoTimelockSet(
-      neutronWallet.address,
+      ownerWallet.address,
       neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
@@ -143,7 +142,7 @@ describe('Neutron / Tokenfactory', () => {
     subdaoMember1 = new DaoMember(
       subDao,
       neutronClient.client,
-      neutronWallet.address,
+      ownerWallet.address,
       NEUTRON_DENOM,
     );
     const queryClient = new AdminQueryClient(neutronRpcClient);
@@ -658,7 +657,7 @@ describe('Neutron / Tokenfactory', () => {
     let denom: string;
     let amount = 10000000;
     const toBurn = 1000000;
-    let codeId;
+    let codeId: CodeId;
 
     test('setup contract', async () => {
       codeId = await neutronClient.upload(NeutronContract.TOKENFACTORY);
@@ -846,7 +845,7 @@ describe('Neutron / Tokenfactory', () => {
     test('change admin', async () => {
       await neutronClient.execute(contractAddress, {
         send_tokens: {
-          recipient: neutronWallet.address,
+          recipient: ownerWallet.address,
           denom,
           amount: amount.toString(),
         },
@@ -854,12 +853,12 @@ describe('Neutron / Tokenfactory', () => {
       await neutronClient.execute(contractAddress, {
         change_admin: {
           denom,
-          new_admin_address: neutronWallet.address,
+          new_admin_address: ownerWallet.address,
         },
       });
 
       const balance = parseInt(
-        (await neutronClient.getBalance(neutronWallet.address, denom)).amount,
+        (await neutronClient.getBalance(ownerWallet.address, denom)).amount,
         10,
       );
 
@@ -869,7 +868,7 @@ describe('Neutron / Tokenfactory', () => {
           subdenom: denom,
         },
       });
-      expect(res.admin).toEqual(neutronWallet.address);
+      expect(res.admin).toEqual(ownerWallet.address);
     });
   });
 });
