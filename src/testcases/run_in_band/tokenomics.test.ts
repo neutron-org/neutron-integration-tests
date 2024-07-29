@@ -8,7 +8,7 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
-import { QueryTotalSupplyResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
+import { QuerySupplyOfResponse, QueryTotalSupplyResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
@@ -27,14 +27,14 @@ describe('Neutron / Tokenomics', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = testState.wallets.qaNeutron.qa;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
       neutronWallet.address,
     );
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = testState.wallets.qaCosmos.qa;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.directwallet,
@@ -88,10 +88,10 @@ describe('Neutron / Tokenomics', () => {
       gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let totalSupplyBefore: QueryTotalSupplyResponse;
+    let totalSupplyBefore: QuerySupplyOfResponse;
 
     test('Read total supply', async () => {
-      totalSupplyBefore = await bankQuerier.TotalSupply();
+      totalSupplyBefore = await bankQuerier.SupplyOf({ denom: NEUTRON_DENOM });
     });
 
     test('Perform tx with a very big neutron fee', async () => {
@@ -108,11 +108,12 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total supply of neutrons has decreased', async () => {
-      const totalSupplyAfter = await bankQuerier.TotalSupply();
-      // TODO types
+      const totalSupplyAfter = await bankQuerier.SupplyOf({
+        denom: NEUTRON_DENOM,
+      });
       const diff =
-        +(totalSupplyBefore.supply[0].amount || 0) -
-        +(totalSupplyAfter.supply[0].amount || 0);
+        +(totalSupplyBefore.amount.amount || 0) -
+        +(totalSupplyAfter.amount.amount || 0);
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
@@ -190,7 +191,10 @@ describe('Neutron / Tokenomics', () => {
             }),
           },
         ],
-        fee,
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       await neutronClient.getWithAttempts(
         async () =>
