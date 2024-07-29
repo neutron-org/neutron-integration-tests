@@ -4,7 +4,7 @@ import { Suite, inject } from 'vitest';
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 

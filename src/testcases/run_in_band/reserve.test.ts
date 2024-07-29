@@ -5,7 +5,7 @@ import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 

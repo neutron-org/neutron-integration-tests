@@ -24,7 +24,7 @@ import {
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 

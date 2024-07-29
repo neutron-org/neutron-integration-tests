@@ -1,6 +1,6 @@
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { Suite, inject } from 'vitest';

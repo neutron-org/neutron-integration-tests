@@ -31,7 +31,7 @@ import { ProtobufRpcClient } from '@cosmjs/stargate';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 describe('Neutron / Parameters', () => {
   let testState: LocalState;

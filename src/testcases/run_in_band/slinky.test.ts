@@ -8,7 +8,7 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';

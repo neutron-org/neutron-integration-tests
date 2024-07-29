@@ -14,7 +14,7 @@ import {
 import config from '../../config.json';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';

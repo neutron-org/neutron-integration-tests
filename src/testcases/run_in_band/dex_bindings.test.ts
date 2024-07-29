@@ -3,7 +3,7 @@ import {
   getEventAttribute,
   getEventAttributesFromTx,
 } from '../../helpers/cosmos';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {

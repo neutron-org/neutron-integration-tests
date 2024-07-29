@@ -3,7 +3,6 @@ import { Suite, inject } from 'vitest';
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { NEUTRON_DENOM } from '../../helpers/constants';
 import {
   Dao,
   DaoMember,
@@ -22,6 +21,7 @@ import {
 import { deployNeutronDao, setupSubDaoTimelockSet } from '../../helpers/dao';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 

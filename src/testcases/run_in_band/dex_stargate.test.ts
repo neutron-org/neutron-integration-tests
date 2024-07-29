@@ -2,7 +2,7 @@ import { inject, Suite } from 'vitest';
 import { getEventAttributesFromTx } from '../../helpers/cosmos';
 import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LimitOrderType } from '../../helpers/dex';
 
 import config from '../../config.json';
