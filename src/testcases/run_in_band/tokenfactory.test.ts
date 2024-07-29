@@ -30,7 +30,6 @@ import config from '../../config.json';
 
 async function whitelistTokenfactoryHook(
   chainManagerAddress: string,
-  neutronClient: SigningNeutronClient,
   subDao: Dao,
   subdaoMember1: DaoMember,
   codeID: number,
@@ -585,7 +584,6 @@ describe('Neutron / Tokenfactory', () => {
 
       await whitelistTokenfactoryHook(
         chainManagerAddress,
-        neutronClient,
         subDao,
         subdaoMember1,
         codeId,
@@ -777,7 +775,6 @@ describe('Neutron / Tokenfactory', () => {
     test('set_before_send_hook', async () => {
       await whitelistTokenfactoryHook(
         chainManagerAddress,
-        neutronClient,
         subDao,
         subdaoMember1,
         codeId,

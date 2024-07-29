@@ -102,9 +102,6 @@ export type MultiHopRoute = {
   hops: string[];
 };
 
-/**
- * @deprecated since version 0.5.0
- */
 export type LimitOrderTrancheUser = {
   trade_pair_id: TradePairID;
   tick_index_taker_to_maker: string; // Int64

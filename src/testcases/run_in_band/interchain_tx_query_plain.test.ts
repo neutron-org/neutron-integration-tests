@@ -115,7 +115,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await bankQuerierGaia.AllBalances({
         address: watchedAddr1,
       });
-      expect(balances).toEqual([]);
+      expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr1,
@@ -347,7 +347,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await bankQuerierGaia.AllBalances({
         address: watchedAddr1,
       });
-      expect(balances).toEqual([]);
+      expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr3,
@@ -360,7 +360,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await bankQuerierGaia.AllBalances({ address: watchedAddr1 });
-      expect(balances).toEqual([
+      expect(balances.balances).toEqual([
         {
           amount: addr3ExpectedBalance.toString(),
           denom: COSMOS_DENOM,
@@ -639,7 +639,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await bankQuerierGaia.AllBalances({
         address: watchedAddr5,
       });
-      expect(balances).toEqual([]);
+      expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr5,
@@ -652,7 +652,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await bankQuerierGaia.AllBalances({ address: watchedAddr5 });
-      expect(balances).toEqual([
+      expect(balances.balances).toEqual([
         {
           amount: addr5ExpectedBalance.toString(),
           denom: COSMOS_DENOM,
@@ -693,7 +693,7 @@ describe('Neutron / Interchain TX Query', () => {
       let balances = await bankQuerierGaia.AllBalances({
         address: watchedAddr4,
       });
-      expect(balances).toEqual([]);
+      expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr4,
@@ -706,7 +706,7 @@ describe('Neutron / Interchain TX Query', () => {
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       balances = await bankQuerierGaia.AllBalances({ address: watchedAddr4 });
-      expect(balances).toEqual([
+      expect(balances.balances).toEqual([
         {
           amount: addr4ExpectedBalance.toString(),
           denom: COSMOS_DENOM,

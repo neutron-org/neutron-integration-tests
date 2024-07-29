@@ -69,17 +69,14 @@ describe('Neutron / Slinky', () => {
 
   describe('prepare: deploy contract', () => {
     test('setup oracle contract', async () => {
-      const codeId = await neutronClient.upload(NeutronContract.ORACLE);
-      expect(codeId).toBeGreaterThan(0);
-
-      oracleContract = await neutronClient.instantiate(codeId, {});
+      oracleContract = await neutronClient.create(NeutronContract.ORACLE, {});
     });
 
     test('setup marketmap contract', async () => {
-      const codeId = await neutronClient.upload(NeutronContract.MARKETMAP);
-      expect(codeId).toBeGreaterThan(0);
-
-      marketmapContract = await neutronClient.instantiate(codeId, {});
+      marketmapContract = await neutronClient.create(
+        NeutronContract.MARKETMAP,
+        {},
+      );
     });
   });
 
