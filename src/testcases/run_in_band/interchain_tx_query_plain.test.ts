@@ -345,13 +345,13 @@ describe('Neutron / Interchain TX Query', () => {
     test('check first sending handling', async () => {
       addr3ExpectedBalance += amountToAddrThird1;
       let balances = await bankQuerierGaia.AllBalances({
-        address: watchedAddr1,
+        address: watchedAddr3,
       });
       expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr3,
-        [{ denom: COSMOS_DENOM, amount: amountToAddrFirst1.toString() }],
+        [{ denom: COSMOS_DENOM, amount: amountToAddrThird1.toString() }],
         {
           gas: '200000',
           amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
@@ -359,7 +359,7 @@ describe('Neutron / Interchain TX Query', () => {
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr1 });
+      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr3 });
       expect(balances.balances).toEqual([
         {
           amount: addr3ExpectedBalance.toString(),
@@ -400,10 +400,10 @@ describe('Neutron / Interchain TX Query', () => {
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         watchedAddr3,
-        [{ denom: NEUTRON_DENOM, amount: amountToAddrThird2.toString() }],
+        [{ denom: COSMOS_DENOM, amount: amountToAddrThird2.toString() }],
         {
           gas: '200000',
-          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
         },
       );
       expectedIncomingTransfers++;
