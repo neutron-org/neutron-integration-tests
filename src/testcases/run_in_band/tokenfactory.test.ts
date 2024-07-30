@@ -619,7 +619,6 @@ describe('Neutron / Tokenfactory', () => {
           amount: [{ denom: NEUTRON_DENOM, amount: '2000' }],
         },
       );
-      console.log('res: ' + JSON.stringify(res.rawLog));
       expect(res.code).toEqual(0);
 
       const contractBalanceAfter = parseInt(
