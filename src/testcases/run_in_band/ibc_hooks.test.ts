@@ -13,6 +13,7 @@ import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
 import config from '../../config.json';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
@@ -34,7 +35,7 @@ describe('Neutron / IBC hooks', () => {
       neutronWallet.directwallet,
       neutronWallet.address,
     );
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.directwallet,
@@ -177,7 +178,7 @@ describe('Neutron / IBC hooks', () => {
     });
 
     describe('Receive on neutron with incorrectly formatted message', () => {
-      const transferAmount = '300000';
+      const transferAmount = 300000;
       test('IBC transfer from a usual account', async () => {
         const fee = {
           gas: '200000',
@@ -190,9 +191,12 @@ describe('Neutron / IBC hooks', () => {
               value: MsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: 'channel-0',
-                token: { denom: NEUTRON_DENOM, amount: '1000' },
+                token: {
+                  denom: NEUTRON_DENOM,
+                  amount: transferAmount.toString(),
+                },
                 sender: neutronWallet.address,
-                receiver: gaiaWallet.address,
+                receiver: testState.wallets.cosmos.demo2.address,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -210,18 +214,18 @@ describe('Neutron / IBC hooks', () => {
       test('check IBC token balance', async () => {
         await neutronClient.waitBlocks(10);
         const balance = await gaiaClient.getBalance(
-          gaiaWallet.address,
+          testState.wallets.cosmos.demo2.address,
           transferDenom,
         );
-        expect(balance).toEqual(transferAmount);
+        expect(+balance.amount).toEqual(transferAmount);
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with incorrect wasm hook message', async () => {
         const msg =
           '{"incorrect_msg_kind": {"return_err": false, "arg": "incorrect_msg_arg"}}';
         fee = {
-          gas: '200000',
-          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+          gas: '400000',
+          amount: [{ denom: COSMOS_DENOM, amount: '2000' }],
         };
         const res = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
@@ -231,7 +235,10 @@ describe('Neutron / IBC hooks', () => {
               value: MsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: 'channel-0',
-                token: { denom: transferDenom, amount: transferAmount },
+                token: {
+                  denom: transferDenom,
+                  amount: transferAmount.toString(),
+                },
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
@@ -263,11 +270,11 @@ describe('Neutron / IBC hooks', () => {
       test('check contract token balance - it still has previous balance', async () => {
         await neutronClient.waitBlocks(10);
 
-        const res = await neutronClient.queryContractSmart(
+        const res = await neutronClient.getBalance(
           contractAddress,
-          COSMOS_DENOM,
+          NEUTRON_DENOM,
         );
-        expect(res).toEqual(1000000);
+        expect(+res.amount).toEqual(1000000);
       });
     });
 
@@ -309,7 +316,7 @@ describe('Neutron / IBC hooks', () => {
           contractAddress,
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
-        expect(res).toEqual(transferAmount);
+        expect(+res.amount).toEqual(transferAmount);
       });
     });
 
@@ -348,21 +355,16 @@ describe('Neutron / IBC hooks', () => {
         );
 
         expect(res.code).toEqual(0);
-        await neutronClient.waitBlocks(15);
+        await waitBlocks(15, gaiaClient);
       });
 
       test('check contract token balance', async () => {
         await neutronClient.waitBlocks(10);
-        const res = parseInt(
-          (
-            await neutronClient.getBalance(
-              contractAddress,
-              'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-            )
-          ).amount,
-          10,
+        const res = await neutronClient.getBalance(
+          contractAddress,
+          'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
-        expect(res).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
+        expect(+res.amount).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
       });
     });
   });
