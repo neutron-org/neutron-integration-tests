@@ -7,7 +7,8 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
@@ -69,14 +70,11 @@ describe('Neutron / Slinky', () => {
 
   describe('prepare: deploy contract', () => {
     test('setup oracle contract', async () => {
-      oracleContract = await neutronClient.create(NeutronContract.ORACLE, {});
+      oracleContract = await neutronClient.create(CONTRACTS.ORACLE, {});
     });
 
     test('setup marketmap contract', async () => {
-      marketmapContract = await neutronClient.create(
-        NeutronContract.MARKETMAP,
-        {},
-      );
+      marketmapContract = await neutronClient.create(CONTRACTS.MARKETMAP, {});
     });
   });
 

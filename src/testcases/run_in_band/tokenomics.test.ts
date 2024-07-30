@@ -6,13 +6,13 @@ import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/
 import { Registry } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;

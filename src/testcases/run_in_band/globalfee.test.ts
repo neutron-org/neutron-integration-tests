@@ -9,13 +9,14 @@ import {
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+
 import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
 import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;

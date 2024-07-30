@@ -1,6 +1,7 @@
 import { LocalState } from '../../helpers/local_state';
 import { inject } from 'vitest';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
@@ -22,7 +23,7 @@ describe('Float operations support', () => {
   });
   describe('Contracts: ', () => {
     test('instantiate', async () => {
-      contractAddress = await neutronClient.create(NeutronContract.FLOATY, {});
+      contractAddress = await neutronClient.create(CONTRACTS.FLOATY, {});
     });
   });
   describe('instructions', () => {

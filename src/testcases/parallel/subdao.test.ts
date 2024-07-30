@@ -3,15 +3,8 @@ import { Suite, inject } from 'vitest';
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import {
-  Dao,
-  DaoMember,
-  TimelockConfig,
-} from '@neutron-org/neutronjsplus/dist/dao';
-import {
-  SingleChoiceProposal,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
+import { SingleChoiceProposal } from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
@@ -24,6 +17,8 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { TimelockConfig } from '@neutron-org/neutronjsplus/dist/dao_types';
 
 describe('Neutron / Subdao', () => {
   let testState: LocalState;

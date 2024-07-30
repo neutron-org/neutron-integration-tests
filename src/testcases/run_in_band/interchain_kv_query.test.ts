@@ -15,11 +15,6 @@ import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '../../helpers/interchainqueries';
-import {
-  CodeId,
-  NeutronContract,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { Coin, Registry } from '@cosmjs/proto-signing';
 import {
@@ -53,11 +48,16 @@ import {
   ProtobufRpcClient,
   SigningStargateClient,
 } from '@cosmjs/stargate';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
@@ -129,9 +129,9 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Instantiate interchain queries contract', () => {
-    let codeId: CodeId;
+    let codeId: number;
     test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.INTERCHAIN_QUERIES);
+      codeId = await neutronClient.upload(CONTRACTS.INTERCHAIN_QUERIES);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {

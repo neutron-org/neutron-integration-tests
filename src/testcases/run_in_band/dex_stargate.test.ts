@@ -1,12 +1,13 @@
 import { inject, Suite } from 'vitest';
 import { getEventAttributesFromTx } from '../../helpers/cosmos';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-import { LimitOrderType } from '../../helpers/dex';
 
 import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
+import { LimitOrderType } from '../../helpers/dex';
 
 describe('Neutron / dex module (stargate contract)', () => {
   let testState: LocalState;
@@ -28,10 +29,7 @@ describe('Neutron / dex module (stargate contract)', () => {
 
   describe('Instantiate dex stargate contract', () => {
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.create(
-        NeutronContract.DEX_STARGATE,
-        {},
-      );
+      contractAddress = await neutronClient.create(CONTRACTS.DEX_STARGATE, {});
     });
     test('send funds', async () => {
       await neutronClient.sendTokens(

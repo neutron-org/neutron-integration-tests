@@ -10,7 +10,7 @@ import {
 import { VoteOption } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
 import { COSMOS_DENOM } from './constants';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from './wallet';
 
 export const executeMsgDelegate = async (
   client: SigningStargateClient,

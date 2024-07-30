@@ -1,6 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
@@ -599,7 +600,7 @@ const setupDSC = async (
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
-  const codeId = await client.upload(NeutronContract.DISTRIBUTION);
+  const codeId = await client.upload(CONTRACTS.DISTRIBUTION);
   return await client.instantiate(
     codeId,
     {
@@ -679,7 +680,7 @@ const setupReserve = async (
     vestingDenominator: string;
   },
 ) =>
-  await client.create(NeutronContract.RESERVE, {
+  await client.create(CONTRACTS.RESERVE, {
     main_dao_address: opts.mainDaoAddress,
     denom: NEUTRON_DENOM,
     distribution_rate: opts.distributionRate,

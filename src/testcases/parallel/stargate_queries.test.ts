@@ -1,7 +1,8 @@
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
@@ -98,7 +99,7 @@ describe('Neutron / Stargate Queries', () => {
   describe('Contract instantiation', () => {
     test('instantiate', async () => {
       contractAddress = await neutronClient.create(
-        NeutronContract.STARGATE_QUERIER,
+        CONTRACTS.STARGATE_QUERIER,
         {},
         'stargate_querier',
       );

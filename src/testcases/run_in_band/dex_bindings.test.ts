@@ -5,7 +5,6 @@ import {
 } from '../../helpers/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   MsgCreateDenom,
   MsgMint,
@@ -13,6 +12,8 @@ import {
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 
 describe('Neutron / dex module bindings', () => {
   let testState: LocalState;
@@ -34,7 +35,7 @@ describe('Neutron / dex module bindings', () => {
 
   describe('Instantiate dex binding contract', () => {
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.create(NeutronContract.DEX_DEV, {});
+      contractAddress = await neutronClient.create(CONTRACTS.DEX_DEV, {});
     });
     test('send funds', async () => {
       await neutronClient.sendTokens(

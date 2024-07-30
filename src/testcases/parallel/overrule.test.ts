@@ -4,7 +4,6 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { Suite, inject } from 'vitest';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   addSubdaoToDao,
   deployNeutronDao,
@@ -13,6 +12,7 @@ import {
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Subdao Overrule', () => {
   let testState: LocalState;

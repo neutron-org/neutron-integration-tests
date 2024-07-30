@@ -1,11 +1,10 @@
 import '@neutron-org/neutronjsplus';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
-import { LocalState } from '../../helpers/local_state';
 import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
+import { LocalState } from '../../helpers/local_state';
 import { inject, Suite } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
@@ -14,6 +13,7 @@ import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
@@ -52,14 +52,9 @@ describe('Neutron / IBC hooks', () => {
   });
 
   describe('Instantiate hooks ibc transfer contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.MSG_RECEIVER);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
+      contractAddress = await neutronClient.create(
+        CONTRACTS.MSG_RECEIVER,
         {},
         'msg_receiver',
       );

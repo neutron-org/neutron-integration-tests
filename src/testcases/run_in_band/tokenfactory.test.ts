@@ -2,7 +2,6 @@ import { updateTokenfactoryParamsProposal } from '@neutron-org/neutronjsplus/dis
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { Suite, inject } from 'vitest';
 import {
   Dao,
@@ -27,8 +26,9 @@ import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
-import { CodeId } from '../../helpers/types';
 import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query';
+import { CONTRACTS } from '../../helpers/constants';
+import { Wallet } from '../../helpers/wallet';
 
 async function whitelistTokenfactoryHook(
   chainManagerAddress: string,
@@ -456,7 +456,7 @@ describe('Neutron / Tokenfactory', () => {
     });
     test('set non-whitelisted hook fails', async () => {
       const contractAddress = await neutronClient.create(
-        NeutronContract.BEFORE_SEND_HOOK_TEST,
+        CONTRACTS.BEFORE_SEND_HOOK_TEST,
         {},
         'before_send_hook_test',
       );
@@ -498,7 +498,7 @@ describe('Neutron / Tokenfactory', () => {
     });
     test('create denom, set before send hook', async () => {
       const codeId = await neutronClient.upload(
-        NeutronContract.BEFORE_SEND_HOOK_TEST,
+        CONTRACTS.BEFORE_SEND_HOOK_TEST,
       );
       expect(codeId).toBeGreaterThan(0);
 
@@ -655,10 +655,10 @@ describe('Neutron / Tokenfactory', () => {
     let denom: string;
     let amount = 10000000;
     const toBurn = 1000000;
-    let codeId: CodeId;
+    let codeId: number;
 
     test('setup contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.TOKENFACTORY);
+      codeId = await neutronClient.upload(CONTRACTS.TOKENFACTORY);
       expect(codeId).toBeGreaterThan(0);
 
       contractAddress = await neutronClient.instantiate(

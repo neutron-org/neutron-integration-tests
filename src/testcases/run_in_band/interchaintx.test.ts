@@ -4,13 +4,8 @@ import '@neutron-org/neutronjsplus';
 import { getSequenceId } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import { CONTRACTS, COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import {
-  AcknowledgementResult,
-  NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/types';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
@@ -30,6 +25,8 @@ import {
 import { getWithAttempts } from '../../helpers/misc';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { AcknowledgementResult, cleanAckResults, getAck, getAcks, waitForAck } from '../../helpers/interchaintxs';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -76,7 +73,7 @@ describe('Neutron / Interchain TXs', () => {
     describe('Setup', () => {
       test('instantiate', async () => {
         contractAddress = await neutronClient.create(
-          NeutronContract.INTERCHAIN_TXS,
+          CONTRACTS.INTERCHAIN_TXS,
           {},
           'interchaintx',
         );
@@ -949,49 +946,3 @@ describe('Neutron / Interchain TXs', () => {
     });
   });
 });
-
-/**
- * cleanAckResults clears all ACK's from contract storage
- */
-const cleanAckResults = (cm: SigningNeutronClient, contractAddress: string) =>
-  cm.execute(contractAddress, { clean_ack_results: {} });
-
-/**
- * waitForAck waits until ACK appears in contract storage
- */
-const waitForAck = (
-  cm: SigningNeutronClient,
-  contractAddress: string,
-  icaId: string,
-  sequenceId: number,
-  numAttempts = 20,
-) =>
-  cm.getWithAttempts<JsonObject>(
-    () =>
-      cm.queryContractSmart(contractAddress, {
-        acknowledgement_result: {
-          interchain_account_id: icaId,
-          sequence_id: sequenceId,
-        },
-      }),
-    async (ack) => ack != null,
-    numAttempts,
-  );
-
-const getAck = (
-  cm: SigningNeutronClient,
-  contractAddress: string,
-  icaId: string,
-  sequenceId: number,
-) =>
-  cm.queryContractSmart(contractAddress, {
-    acknowledgement_result: {
-      interchain_account_id: icaId,
-      sequence_id: sequenceId,
-    },
-  });
-
-const getAcks = (cm: SigningNeutronClient, contractAddress: string) =>
-  cm.queryContractSmart(contractAddress, {
-    acknowledgement_results: {},
-  });

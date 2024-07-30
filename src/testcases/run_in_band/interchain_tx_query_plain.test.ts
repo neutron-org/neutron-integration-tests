@@ -1,4 +1,3 @@
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { inject, Suite } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import {
@@ -15,10 +14,15 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/interchainqueries';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: LocalState;
@@ -52,7 +56,7 @@ describe('Neutron / Interchain TX Query', () => {
   describe('deploy contract', () => {
     let codeId: number;
     test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.INTERCHAIN_QUERIES);
+      codeId = await neutronClient.upload(CONTRACTS.INTERCHAIN_QUERIES);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {

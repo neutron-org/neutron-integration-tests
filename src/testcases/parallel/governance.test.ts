@@ -1,7 +1,8 @@
 import { Registry } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
-import { NeutronContract, Wallet } from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import {
   Dao,
   DaoMember,
@@ -10,7 +11,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateInterchaintxsParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { Suite, inject } from 'vitest';
-import { ADMIN_MODULE_ADDRESS, NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
 import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
@@ -21,8 +22,8 @@ import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutr
 import { QueryClientImpl as InterchainTxQueryClient } from '@neutron-org/neutronjs/neutron/interchaintxs/v1/query.rpc.Query';
 import { QueryClientImpl as InterchainAccountsQueryClient } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
 import config from '../../config.json';
 import { neutronTypes } from '../../helpers/registry_types';
 
@@ -108,9 +109,7 @@ describe('Neutron / Governance', () => {
       neutronRpcClient,
     );
 
-    const contractCodeId = await neutronClient.upload(
-      NeutronContract.IBC_TRANSFER,
-    );
+    const contractCodeId = await neutronClient.upload(CONTRACTS.IBC_TRANSFER);
 
     expect(contractCodeId).toBeGreaterThan(0);
     contractAddressForAdminMigration = await neutronClient.instantiate(
@@ -130,7 +129,7 @@ describe('Neutron / Governance', () => {
   describe('Contracts', () => {
     let codeId: number;
     test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.MSG_RECEIVER);
+      codeId = await neutronClient.upload(CONTRACTS.MSG_RECEIVER);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate', async () => {
@@ -385,7 +384,7 @@ describe('Neutron / Governance', () => {
 
     test('create proposal #15, will pass', async () => {
       for (let i = 0; i < 40; i++)
-        await neutronClient.upload(NeutronContract.RESERVE);
+        await neutronClient.upload(CONTRACTS.RESERVE);
       const codeids = Array.from({ length: 40 }, (_, i) => i + 1);
       await daoMember1.submitPinCodesProposal(
         chainManagerAddress,

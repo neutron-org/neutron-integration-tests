@@ -1,12 +1,11 @@
-import { types } from '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 
 // general contract keys used across the tests
 const VOTING_REGISTRY_CONTRACT_KEY = 'VOTING_REGISTRY';
@@ -556,7 +555,7 @@ const deployContracts = async (
     VOTING_REGISTRY_CONTRACT_KEY,
     NEUTRON_VAULT_CONTRACT_KEY,
   ]) {
-    const codeId = await neutronClient.upload(types.NeutronContract[contract]);
+    const codeId = await neutronClient.upload(CONTRACTS[contract]);
     expect(codeId).toBeGreaterThan(0);
     codeIds[contract] = codeId;
   }

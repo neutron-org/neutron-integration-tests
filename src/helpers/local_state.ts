@@ -1,4 +1,3 @@
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { promises as fs } from 'fs';
 import {
   createProtobufRpcClient,
@@ -9,6 +8,7 @@ import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
+import { Wallet } from './wallet';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
