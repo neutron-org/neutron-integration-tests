@@ -81,7 +81,7 @@ describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
 
-  let ownerWallet: Wallet;
+  let neutronWallet: Wallet;
   let subDao: Dao;
   let mainDao: Dao;
   let subdaoMember1: DaoMember;
@@ -95,11 +95,11 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    ownerWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      ownerWallet.directwallet,
-      ownerWallet.address,
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
     // Setup subdao with update tokenfactory params
     const neutronRpcClient = await testState.rpcClient('neutron');
@@ -125,13 +125,13 @@ describe('Neutron / Tokenfactory', () => {
     mainDaoMember = new DaoMember(
       mainDao,
       neutronClient.client,
-      ownerWallet.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
     await mainDaoMember.bondFunds('10000');
 
     subDao = await setupSubDaoTimelockSet(
-      ownerWallet.address,
+      neutronWallet.address,
       neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
@@ -141,7 +141,7 @@ describe('Neutron / Tokenfactory', () => {
     subdaoMember1 = new DaoMember(
       subDao,
       neutronClient.client,
-      ownerWallet.address,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
     const queryClient = new AdminQueryClient(neutronRpcClient);
@@ -242,7 +242,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: 'test1',
             }),
           },
@@ -258,15 +258,17 @@ describe('Neutron / Tokenfactory', () => {
         'new_token_denom',
       );
 
-      expect(newTokenDenom).toEqual(`factory/${ownerWallet.address}/${denom}`);
+      expect(newTokenDenom).toEqual(
+        `factory/${neutronWallet.address}/${denom}`,
+      );
 
       const denomsAfter =
         await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomsFromCreator({
-          creator: ownerWallet.address,
+          creator: neutronWallet.address,
         });
 
       expect(denomsAfter.denoms).toContainEqual(
-        `factory/${ownerWallet.address}/${denom}`,
+        `factory/${neutronWallet.address}/${denom}`,
       );
     });
 
@@ -281,7 +283,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: denom,
             }),
           },
@@ -299,7 +301,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgMint.typeUrl,
             value: MsgMint.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
@@ -314,7 +316,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(mintRes.code).toBe(0);
 
       const balanceBefore = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
       );
@@ -330,7 +332,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: denom,
             }),
           },
@@ -349,7 +351,7 @@ describe('Neutron / Tokenfactory', () => {
         );
 
       expect(authorityMetadataBefore.authorityMetadata).toEqual({
-        admin: ownerWallet.address,
+        admin: neutronWallet.address,
       });
 
       const newAdmin = 'neutron1pyqyzrh6p4skmm43zrpt77wgrqq588vc8nhpfz';
@@ -359,8 +361,8 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgChangeAdmin.typeUrl,
             value: MsgChangeAdmin.fromPartial({
-              sender: ownerWallet.address,
-              denom: denom,
+              sender: neutronWallet.address,
+              denom: newTokenDenom,
               newAdmin: newAdmin,
             }),
           },
@@ -368,7 +370,6 @@ describe('Neutron / Tokenfactory', () => {
         fee,
       );
       expect(changeAdminRes.code).toEqual(0);
-      console.log('change admin res: ' + JSON.stringify(changeAdminRes.rawLog));
 
       const authorityMetadataAfter: QueryDenomAuthorityMetadataResponse =
         await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
@@ -389,7 +390,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: denom,
             }),
           },
@@ -407,7 +408,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgMint.typeUrl,
             value: MsgMint.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
@@ -421,7 +422,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(mintRes.code).toEqual(0);
 
       const balanceBefore = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
       );
@@ -432,10 +433,10 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgBurn.typeUrl,
             value: MsgBurn.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
-                amount: '10000',
+                amount: '100',
               },
               burnFromAddress: '',
             }),
@@ -446,7 +447,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(burnRes.code).toBe(0);
 
       const balanceAfter = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
       );
@@ -467,7 +468,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: denom,
             }),
           },
@@ -485,7 +486,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgSetBeforeSendHook.typeUrl,
             value: MsgSetBeforeSendHook.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               denom: newTokenDenom,
               contractAddr: contractAddress,
             }),
@@ -514,7 +515,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgCreateDenom.typeUrl,
             value: MsgCreateDenom.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               subdenom: denom,
             }),
           },
@@ -532,12 +533,12 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgMint.typeUrl,
             value: MsgMint.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
-              mintToAddress: ownerWallet.address,
+              mintToAddress: neutronWallet.address,
             }),
           },
         ],
@@ -545,7 +546,7 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       const balanceBefore = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
       );
@@ -582,7 +583,7 @@ describe('Neutron / Tokenfactory', () => {
         subDao,
         subdaoMember1,
         codeId,
-        ownerWallet.address.toString(),
+        neutronWallet.address,
       );
 
       const res1 = await neutronClient.signAndBroadcast(
@@ -590,7 +591,7 @@ describe('Neutron / Tokenfactory', () => {
           {
             typeUrl: MsgSetBeforeSendHook.typeUrl,
             value: MsgSetBeforeSendHook.fromPartial({
-              sender: ownerWallet.address,
+              sender: neutronWallet.address,
               denom: newTokenDenom,
               contractAddr: contractAddress,
             }),
@@ -610,14 +611,16 @@ describe('Neutron / Tokenfactory', () => {
         );
       expect(hookAfter.contractAddr).toEqual(contractAddress);
 
-      await neutronClient.sendTokens(
+      const res = await neutronClient.sendTokens(
         contractAddress,
         [{ denom: newTokenDenom, amount: '1' }],
         {
-          gas: '200000',
-          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          gas: '700000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '2000' }],
         },
       );
+      console.log('res: ' + JSON.stringify(res.rawLog));
+      expect(res.code).toEqual(0);
 
       const contractBalanceAfter = parseInt(
         (await neutronClient.getBalance(contractAddress, newTokenDenom)).amount,
@@ -627,7 +630,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(contractBalanceAfter).toEqual(667);
 
       const balanceAfter = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, newTokenDenom))
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
       );
@@ -841,7 +844,7 @@ describe('Neutron / Tokenfactory', () => {
     test('change admin', async () => {
       await neutronClient.execute(contractAddress, {
         send_tokens: {
-          recipient: ownerWallet.address,
+          recipient: neutronWallet.address,
           denom,
           amount: amount.toString(),
         },
@@ -849,12 +852,12 @@ describe('Neutron / Tokenfactory', () => {
       await neutronClient.execute(contractAddress, {
         change_admin: {
           denom,
-          new_admin_address: ownerWallet.address,
+          new_admin_address: neutronWallet.address,
         },
       });
 
       const balance = parseInt(
-        (await neutronClient.getBalance(ownerWallet.address, denom)).amount,
+        (await neutronClient.getBalance(neutronWallet.address, denom)).amount,
         10,
       );
 
@@ -864,7 +867,7 @@ describe('Neutron / Tokenfactory', () => {
           subdenom: denom,
         },
       });
-      expect(res.admin).toEqual(ownerWallet.address);
+      expect(res.admin).toEqual(neutronWallet.address);
     });
   });
 });
