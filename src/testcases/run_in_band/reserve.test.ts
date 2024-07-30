@@ -690,10 +690,6 @@ const setupReserve = async (
     security_dao_address: opts.securityDaoAddress,
     vesting_denominator: opts.vestingDenominator,
   });
-// {
-//   amount: [{ denom: NEUTRON_DENOM, amount: '2000000' }],
-//     gas: '600000000',
-// },
 
 /**
  * Tests a pausable contract execution control.
