@@ -1,8 +1,4 @@
 import { inject } from 'vitest';
-import {
-  getEventAttribute,
-  getEventAttributesFromTx,
-} from '../../helpers/cosmos';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import {
@@ -14,6 +10,10 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
+import {
+  getEventAttribute,
+  getEventAttributesFromTx,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
 
 describe('Neutron / dex module bindings', () => {
   let testState: LocalState;

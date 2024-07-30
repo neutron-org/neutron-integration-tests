@@ -17,12 +17,11 @@ import {
   CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { getIBCDenom } from '../../helpers/cosmos';
-
 import config from '../../config.json';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { Wallet } from '../../helpers/wallet';
+import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =

@@ -1,13 +1,12 @@
 import { inject, Suite } from 'vitest';
-import { getEventAttributesFromTx } from '../../helpers/cosmos';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-
 import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LimitOrderType } from '../../helpers/dex';
+import { getEventAttributesFromTx } from '@neutron-org/neutronjsplus/dist/cosmos';
 
 describe('Neutron / dex module (stargate contract)', () => {
   let testState: LocalState;
