@@ -288,17 +288,13 @@ describe('Neutron / DAO check', () => {
 });
 
 const performCommonChecks = async (
-  netronChain: SigningNeutronClient,
+  client: SigningNeutronClient,
   daoContracts: DaoContracts,
   contractAddress: string,
 ) => {
-  await checkDaoAddress(
-    netronChain,
-    contractAddress,
-    daoContracts.core.address,
-  );
-  await verifyAdmin(netronChain, contractAddress, daoContracts.core.address);
-  await verifyLabel(netronChain, daoContracts, contractAddress);
+  await checkDaoAddress(client, contractAddress, daoContracts.core.address);
+  await verifyAdmin(client, contractAddress, daoContracts.core.address);
+  await verifyLabel(client, daoContracts, contractAddress);
 };
 
 const verifyAdmin = async (

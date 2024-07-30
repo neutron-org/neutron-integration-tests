@@ -21,18 +21,20 @@ import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 
-export const getKvCallbackStatus = (
+export const getKvCallbackStatus = async (
   client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
+): Promise<{
+  last_update_height: number;
+}> =>
   client.queryContractSmart(contractAddress, {
     kv_callback_stats: {
       query_id: queryId,
     },
   });
 
-export const filterIBCDenoms = (list: Coin[]) =>
+export const filterIBCDenoms = (list: Coin[]): Coin[] =>
   list.filter(
     (coin) =>
       coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
@@ -144,7 +146,7 @@ export const getCosmosSigningInfosResult = async (sdkUrl: string) => {
   }
 };
 
-export const getQueryDelegatorDelegationsResult = (
+export const getQueryDelegatorDelegationsResult = async (
   client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
@@ -195,12 +197,12 @@ export const registerSigningInfoQuery = async (
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  valcons: string,
+  validatorCons: string,
 ) => {
   const txResult = await client.execute(contractAddress, {
     register_validators_signing_info_query: {
       connection_id: connectionId,
-      validators: [valcons],
+      validators: [validatorCons],
       update_period: updatePeriod,
     },
   });
