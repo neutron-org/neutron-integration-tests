@@ -1,14 +1,11 @@
 import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { generateMnemonic } from 'bip39';
 import { promises as fs } from 'fs';
 import {
   createProtobufRpcClient,
-  defaultRegistryTypes,
   ProtobufRpcClient,
   QueryClient,
-  SigningStargateClient,
 } from '@cosmjs/stargate';
-import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
@@ -100,46 +97,6 @@ export class LocalState {
     this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
     return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
-  }
-
-  async createQaWallet(
-    prefix: string,
-    wallet: Wallet,
-    denom: string,
-    rpc: string,
-    balances: Coin[] = [],
-  ): Promise<Wallet> {
-    if (balances.length === 0) {
-      balances = [
-        {
-          denom,
-          amount: '11500000000',
-        },
-      ];
-    }
-
-    const client = await SigningStargateClient.connectWithSigner(
-      rpc,
-      wallet.directwallet,
-      {
-        registry: new Registry(defaultRegistryTypes),
-      },
-    );
-    const mnemonic = generateMnemonic();
-
-    const newWallet = await mnemonicToWallet(mnemonic, prefix);
-    for (const balance of balances) {
-      await client.sendTokens(
-        wallet.account.address,
-        newWallet.account.address,
-        [{ amount: balance.amount, denom: balance.denom }],
-        {
-          gas: '200000',
-          amount: [{ denom: denom, amount: '1000' }],
-        },
-      );
-    }
-    return await mnemonicToWallet(mnemonic, prefix);
   }
 
   async neutronRpcClient() {
@@ -234,24 +191,3 @@ const getGenesisWallets = async (
   rly1: await mnemonicToWallet(config.RLY_MNEMONIC_1, prefix),
   rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
 });
-
-// export async function createWalletWrapper(
-//   chain: CosmosWrapper,
-//   wallet: Wallet,
-// ) {
-//   const registry = new Registry(neutronTypes);
-//
-//   const wasmClient = await SigningCosmWasmClient.connectWithSigner(
-//     chain.rpc,
-//     wallet.directwallet,
-//     { registry },
-//   );
-//   return new WalletWrapper(
-//     chain,
-//     wallet,
-//     wasmClient,
-//     registry,
-//     CONTRACTS_PATH,
-//     DEBUG_SUBMIT_TX,
-//   );
-// }

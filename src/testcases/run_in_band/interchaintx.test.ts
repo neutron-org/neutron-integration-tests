@@ -942,8 +942,7 @@ describe('Neutron / Interchain TXs', () => {
         const acks = await getAcks(neutronClient, contractAddress);
         expect(acks.length).toEqual(1);
         expect(acks[0].sequence_id).toEqual(
-          // TODO: fix call
-          +JSON.parse(Buffer.from(failure.sudoPayload, 'base64').toString())
+          +JSON.parse(Buffer.from(failure.sudoPayload).toString())
             .response.request.sequence,
         );
       });

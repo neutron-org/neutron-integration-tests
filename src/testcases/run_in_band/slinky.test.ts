@@ -151,7 +151,9 @@ describe('Neutron / Slinky', () => {
     });
 
     test('prices not empty', async () => {
-      const res = await oracleQuery.getPrices({ currencyPairIds: ['AAVE/USD'] });
+      const res = await oracleQuery.getPrices({
+        currencyPairIds: ['AAVE/USD'],
+      });
       expect(+res.prices[0].price.price).toBeGreaterThan(0);
     });
 
