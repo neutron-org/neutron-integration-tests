@@ -27,14 +27,14 @@ describe('Neutron / Voting Registry', () => {
   let vault2Addr: string;
   let vault3Addr: string;
 
-  // let vpHistory: VotingPowerInfoHistory;
+  let vpHistory: VotingPowerInfoHistory;
   // initial bondings
   const vault1Bonding = 1_000_000;
   const vault2Bonding = 500_000;
   // additional bonding amount
-  // const vault1AddBonding = 10_000;
+  const vault1AddBonding = 10_000;
   // partial unbonding amount
-  // const vault1Unbonding = 100_000;
+  const vault1Unbonding = 100_000;
   // bonding to an additional vault
   const vault3Bonding = 5_000_000;
 
@@ -61,7 +61,7 @@ describe('Neutron / Voting Registry', () => {
     vault2Addr = contractAddresses[NEUTRON_VAULT_2_CONTRACT_KEY];
     vault3Addr = contractAddresses[NEUTRON_VAULT_3_CONTRACT_KEY];
 
-    // vpHistory = initVotingPowerInfoHistory();
+    vpHistory = initVotingPowerInfoHistory();
   });
 
   describe('assert init state', () => {
@@ -123,428 +123,427 @@ describe('Neutron / Voting Registry', () => {
       await waitBlocks(2, neutronClient);
     });
 
-    // TODO: why commented?
     test('check accrued voting power', async () => {
-      // const vpInfo = await getVotingPowerInfo(
-      //   neutronClient,
-      //   daoMemberWallet.address,
-      //   contractAddresses,
-      // );
-      // expect(vpInfo.vault1Power).toEqual(vault1Bonding);
-      // expect(vpInfo.vault1TotalPower).toEqual(vault1Bonding);
-      // expect(vpInfo.vault2Power).toEqual(vault2Bonding);
-      // expect(vpInfo.vault2TotalPower).toEqual(vault2Bonding);
-      // expect(vpInfo.vault3Power).toEqual(vault3Bonding);
-      // expect(vpInfo.vault3TotalPower).toEqual(vault3Bonding);
-      // // no vault3 in the registry yet
-      // expect(vpInfo.votingRegistryPower).toEqual(vault1Bonding + vault2Bonding);
-      // expect(vpInfo.votingRegistryTotalPower).toEqual(
-      //   vault1Bonding + vault2Bonding,
-      // );
-      // vpHistory.init = vpInfo;
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
+      expect(vpInfo.vault1Power).toEqual(vault1Bonding);
+      expect(vpInfo.vault1TotalPower).toEqual(vault1Bonding);
+      expect(vpInfo.vault2Power).toEqual(vault2Bonding);
+      expect(vpInfo.vault2TotalPower).toEqual(vault2Bonding);
+      expect(vpInfo.vault3Power).toEqual(vault3Bonding);
+      expect(vpInfo.vault3TotalPower).toEqual(vault3Bonding);
+      // no vault3 in the registry yet
+      expect(vpInfo.votingRegistryPower).toEqual(vault1Bonding + vault2Bonding);
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vault1Bonding + vault2Bonding,
+      );
+      vpHistory.init = vpInfo;
     });
   });
 
-  // describe('VP on bond and unbond', () => {
-  //   test('bond funds', async () => {
-  //     await bondFunds(neutronClient, vault1Addr, vault1AddBonding.toString());
-  //     await waitBlocks(1, neutronClient);
-  //   });
-  //   test('check voting power after bonding', async () => {
-  //     const vpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //     );
-  //
-  //     // compare the new values to the prev state ones
-  //     // expect the vault1 VP to increase by bonding amount
-  //     expect(vpInfo.vault1Power).toEqual(
-  //       vpHistory.init.vault1Power + vault1AddBonding,
-  //     );
-  //     expect(vpInfo.vault1TotalPower).toEqual(
-  //       vpHistory.init.vault1TotalPower + vault1AddBonding,
-  //     );
-  //
-  //     // expect the vault2 VP to remain the same
-  //     expect(vpInfo.vault2Power).toEqual(vpHistory.init.vault2Power);
-  //     expect(vpInfo.vault2TotalPower).toEqual(vpHistory.init.vault2TotalPower);
-  //
-  //     // expect the vault3 VP to remain the same
-  //     expect(vpInfo.vault3Power).toEqual(vpHistory.init.vault3Power);
-  //     expect(vpInfo.vault3TotalPower).toEqual(vpHistory.init.vault3TotalPower);
-  //
-  //     // expect the registry VP to increase by bonding amount
-  //     expect(vpInfo.votingRegistryPower).toEqual(
-  //       vpHistory.init.vault1TotalPower +
-  //         vault1AddBonding +
-  //         vpHistory.init.vault2TotalPower,
-  //     );
-  //     expect(vpInfo.votingRegistryTotalPower).toEqual(
-  //       vpHistory.init.vault1TotalPower +
-  //         vault1AddBonding +
-  //         vpHistory.init.vault2TotalPower,
-  //     );
-  //     vpHistory.additionalBonding = vpInfo;
-  //   });
-  //
-  //   test('unbond funds', async () => {
-  //     await unbondFunds(
-  //       neutronDaoMemberClient,
-  //       vault1Addr,
-  //       vault1Unbonding.toString(),
-  //     );
-  //     await waitBlocks(1, neutronClient);
-  //   });
-  //   test('check voting power after unbonding', async () => {
-  //     const vpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //     );
-  //
-  //     // compare the new values to the prev state ones
-  //     // expect the vault1 VP to decrease by bonding amount
-  //     expect(vpInfo.vault1Power).toEqual(
-  //       vpHistory.additionalBonding.vault1Power - vault1Unbonding,
-  //     );
-  //     expect(vpInfo.vault1TotalPower).toEqual(
-  //       vpHistory.additionalBonding.vault1TotalPower - vault1Unbonding,
-  //     );
-  //
-  //     // expect the vault2 VP to remain the same
-  //     expect(vpInfo.vault2Power).toEqual(
-  //       vpHistory.additionalBonding.vault2Power,
-  //     );
-  //     expect(vpInfo.vault2TotalPower).toEqual(
-  //       vpHistory.additionalBonding.vault2TotalPower,
-  //     );
-  //
-  //     // expect the vault3 VP to remain the same
-  //     expect(vpInfo.vault3Power).toEqual(
-  //       vpHistory.additionalBonding.vault3Power,
-  //     );
-  //     expect(vpInfo.vault3TotalPower).toEqual(
-  //       vpHistory.additionalBonding.vault3TotalPower,
-  //     );
-  //
-  //     // expect the registry VP to decrease by unbonding amount
-  //     expect(vpInfo.votingRegistryPower).toEqual(
-  //       vpHistory.additionalBonding.vault1TotalPower -
-  //         vault1Unbonding +
-  //         vpHistory.additionalBonding.vault2TotalPower,
-  //     );
-  //     expect(vpInfo.votingRegistryTotalPower).toEqual(
-  //       vpHistory.additionalBonding.vault1TotalPower -
-  //         vault1Unbonding +
-  //         vpHistory.additionalBonding.vault2TotalPower,
-  //     );
-  //     vpHistory.unbonding = vpInfo;
-  //   });
-  //
-  //   // expect VP infos taken from heights in the past to be the same as they were at that points
-  //   test('check historical voting power', async () => {
-  //     const initVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.init.height,
-  //     );
-  //     expect(initVpInfo).toMatchObject(vpHistory.init);
-  //
-  //     const atAdditionalBondingVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.additionalBonding.height,
-  //     );
-  //     expect(atAdditionalBondingVpInfo).toMatchObject(
-  //       vpHistory.additionalBonding,
-  //     );
-  //
-  //     const atUnbondingVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.unbonding.height,
-  //     );
-  //     expect(atUnbondingVpInfo).toMatchObject(vpHistory.unbonding);
-  //   });
-  // });
+  describe('VP on bond and unbond', () => {
+    test('bond funds', async () => {
+      await bondFunds(neutronDaoMemberClient, vault1Addr, vault1AddBonding.toString());
+      await waitBlocks(1, neutronClient);
+    });
+    test('check voting power after bonding', async () => {
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
 
-  // describe('VP on vaults list mutation', () => {
-  //   test('deactivate vault', async () => {
-  //     await deactivateVotingVault(
-  //       neutronClient,
-  //       votingRegistryAddr,
-  //       vault2Addr,
-  //     );
-  //     await waitBlocks(1, neutronClient);
-  //
-  //     const votingVaults = await getVotingVaults(
-  //       neutronClient,
-  //       votingRegistryAddr,
-  //     );
-  //     expect(votingVaults.length).toBe(2);
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault1Addr,
-  //       description: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault2Addr,
-  //       description: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       state: 'Inactive',
-  //     });
-  //   });
-  //   test('check voting power after deactivation', async () => {
-  //     const vpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //     );
-  //
-  //     // compare the new values to the prev state ones
-  //     // expect the vault1 VP to remain the same
-  //     expect(vpInfo.vault1Power).toEqual(vpHistory.unbonding.vault1Power);
-  //     expect(vpInfo.vault1TotalPower).toEqual(
-  //       vpHistory.unbonding.vault1TotalPower,
-  //     );
-  //
-  //     // expect the vault2 VP to remain the same
-  //     expect(vpInfo.vault2Power).toEqual(vpHistory.unbonding.vault2Power);
-  //     expect(vpInfo.vault2TotalPower).toEqual(
-  //       vpHistory.unbonding.vault2TotalPower,
-  //     );
-  //
-  //     // expect the vault3 VP to remain the same
-  //     expect(vpInfo.vault3Power).toEqual(vpHistory.unbonding.vault3Power);
-  //     expect(vpInfo.vault3TotalPower).toEqual(
-  //       vpHistory.unbonding.vault3TotalPower,
-  //     );
-  //
-  //     // expect the registry VP to decrease by deactivated vault's power
-  //     expect(vpInfo.votingRegistryPower).toEqual(
-  //       vpHistory.unbonding.votingRegistryPower -
-  //         vpHistory.unbonding.vault2Power,
-  //     );
-  //     expect(vpInfo.votingRegistryTotalPower).toEqual(
-  //       vpHistory.unbonding.votingRegistryTotalPower -
-  //         vpHistory.unbonding.vault2TotalPower,
-  //     );
-  //     vpHistory.vaultDeactivation = vpInfo;
-  //   });
-  //
-  //   test('add another vault', async () => {
-  //     await addVotingVault(neutronClient, votingRegistryAddr, vault3Addr);
-  //     await waitBlocks(1, neutronClient);
-  //
-  //     const votingVaults = await getVotingVaults(
-  //       neutronClient,
-  //       votingRegistryAddr,
-  //     );
-  //     expect(votingVaults.length).toBe(3);
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault1Addr,
-  //       description: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault2Addr,
-  //       description: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       state: 'Inactive',
-  //     });
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault3Addr,
-  //       description: NEUTRON_VAULT_3_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_3_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //   });
-  //   test('check voting power after vault addition', async () => {
-  //     const vpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //     );
-  //
-  //     // compare the new values to the prev state ones
-  //     // expect the vault1 VP to remain the same
-  //     expect(vpInfo.vault1Power).toEqual(
-  //       vpHistory.vaultDeactivation.vault1Power,
-  //     );
-  //     expect(vpInfo.vault1TotalPower).toEqual(
-  //       vpHistory.vaultDeactivation.vault1TotalPower,
-  //     );
-  //
-  //     // expect the vault2 VP to remain the same
-  //     expect(vpInfo.vault2Power).toEqual(
-  //       vpHistory.vaultDeactivation.vault2Power,
-  //     );
-  //     expect(vpInfo.vault2TotalPower).toEqual(
-  //       vpHistory.vaultDeactivation.vault2TotalPower,
-  //     );
-  //
-  //     // expect the vault3 VP to remain the same
-  //     expect(vpInfo.vault3Power).toEqual(
-  //       vpHistory.vaultDeactivation.vault3Power,
-  //     );
-  //     expect(vpInfo.vault3TotalPower).toEqual(
-  //       vpHistory.vaultDeactivation.vault3TotalPower,
-  //     );
-  //
-  //     // expect the registry VP to increase by added vault's power
-  //     expect(vpInfo.votingRegistryPower).toEqual(
-  //       vpHistory.vaultDeactivation.votingRegistryPower +
-  //         vpHistory.vaultDeactivation.vault3Power,
-  //     );
-  //     expect(vpInfo.votingRegistryTotalPower).toEqual(
-  //       vpHistory.vaultDeactivation.votingRegistryTotalPower +
-  //         vpHistory.vaultDeactivation.vault3TotalPower,
-  //     );
-  //     vpHistory.vaultAdded = vpInfo;
-  //   });
-  //
-  //   test('activate vault', async () => {
-  //     await activateVotingVault(neutronClient, votingRegistryAddr, vault2Addr);
-  //     await waitBlocks(1, neutronClient);
-  //
-  //     const votingVaults = await getVotingVaults(
-  //       neutronClient,
-  //       votingRegistryAddr,
-  //     );
-  //     expect(votingVaults.length).toBe(3);
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault1Addr,
-  //       description: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_1_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault2Addr,
-  //       description: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_2_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //     expect(votingVaults).toContainEqual({
-  //       address: vault3Addr,
-  //       description: NEUTRON_VAULT_3_CONTRACT_KEY,
-  //       name: NEUTRON_VAULT_3_CONTRACT_KEY,
-  //       state: 'Active',
-  //     });
-  //   });
-  //   test('check voting power after activation', async () => {
-  //     const vpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //     );
-  //
-  //     // compare the new values to the prev state ones
-  //     // expect the vault1 VP to remain the same
-  //     expect(vpInfo.vault1Power).toEqual(vpHistory.vaultAdded.vault1Power);
-  //     expect(vpInfo.vault1TotalPower).toEqual(
-  //       vpHistory.vaultAdded.vault1TotalPower,
-  //     );
-  //
-  //     // expect the vault2 VP to remain the same
-  //     expect(vpInfo.vault2Power).toEqual(vpHistory.vaultAdded.vault2Power);
-  //     expect(vpInfo.vault2TotalPower).toEqual(
-  //       vpHistory.vaultAdded.vault2TotalPower,
-  //     );
-  //
-  //     // expect the vault3 VP to remain the same
-  //     expect(vpInfo.vault3Power).toEqual(vpHistory.vaultAdded.vault3Power);
-  //     expect(vpInfo.vault3TotalPower).toEqual(
-  //       vpHistory.vaultAdded.vault3TotalPower,
-  //     );
-  //
-  //     // expect the registry VP to increase by activated vault's power
-  //     expect(vpInfo.votingRegistryPower).toEqual(
-  //       vpHistory.vaultAdded.votingRegistryPower +
-  //         vpHistory.vaultAdded.vault2Power,
-  //     );
-  //     expect(vpInfo.votingRegistryTotalPower).toEqual(
-  //       vpHistory.vaultAdded.votingRegistryTotalPower +
-  //         vpHistory.vaultAdded.vault2TotalPower,
-  //     );
-  //     vpHistory.vaultActivation = vpInfo;
-  //   });
-  //
-  //   // expect VP infos taken from heights in the past to be the same as they were at that points
-  //   test('check historical voting power', async () => {
-  //     const initVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.init.height,
-  //     );
-  //     expect(initVpInfo).toMatchObject(vpHistory.init);
-  //
-  //     const atAdditionalBondingVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.additionalBonding.height,
-  //     );
-  //     expect(atAdditionalBondingVpInfo).toMatchObject(
-  //       vpHistory.additionalBonding,
-  //     );
-  //     expect(atAdditionalBondingVpInfo.height).toBeGreaterThan(
-  //       initVpInfo.height,
-  //     );
-  //
-  //     const atUnbondingVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.unbonding.height,
-  //     );
-  //     expect(atUnbondingVpInfo).toMatchObject(vpHistory.unbonding);
-  //     expect(atUnbondingVpInfo.height).toBeGreaterThan(
-  //       atAdditionalBondingVpInfo.height,
-  //     );
-  //
-  //     const atVaultDeactivationVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.vaultDeactivation.height,
-  //     );
-  //     expect(atVaultDeactivationVpInfo).toMatchObject(
-  //       vpHistory.vaultDeactivation,
-  //     );
-  //     expect(atVaultDeactivationVpInfo.height).toBeGreaterThan(
-  //       atUnbondingVpInfo.height,
-  //     );
-  //
-  //     const atVaultAddedVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.vaultAdded.height,
-  //     );
-  //     expect(atVaultAddedVpInfo).toMatchObject(vpHistory.vaultAdded);
-  //     expect(atVaultAddedVpInfo.height).toBeGreaterThan(
-  //       atVaultDeactivationVpInfo.height,
-  //     );
-  //
-  //     const atVaultActivationVpInfo = await getVotingPowerInfo(
-  //       neutronClient,
-  //       daoMemberWallet.address,
-  //       contractAddresses,
-  //       vpHistory.vaultActivation.height,
-  //     );
-  //     expect(atVaultActivationVpInfo).toMatchObject(vpHistory.vaultActivation);
-  //     expect(atVaultActivationVpInfo.height).toBeGreaterThan(
-  //       atVaultAddedVpInfo.height,
-  //     );
-  //   });
-  // });
+      // compare the new values to the prev state ones
+      // expect the vault1 VP to increase by bonding amount
+      expect(vpInfo.vault1Power).toEqual(
+        vpHistory.init.vault1Power + vault1AddBonding,
+      );
+      expect(vpInfo.vault1TotalPower).toEqual(
+        vpHistory.init.vault1TotalPower + vault1AddBonding,
+      );
+
+      // expect the vault2 VP to remain the same
+      expect(vpInfo.vault2Power).toEqual(vpHistory.init.vault2Power);
+      expect(vpInfo.vault2TotalPower).toEqual(vpHistory.init.vault2TotalPower);
+
+      // expect the vault3 VP to remain the same
+      expect(vpInfo.vault3Power).toEqual(vpHistory.init.vault3Power);
+      expect(vpInfo.vault3TotalPower).toEqual(vpHistory.init.vault3TotalPower);
+
+      // expect the registry VP to increase by bonding amount
+      expect(vpInfo.votingRegistryPower).toEqual(
+        vpHistory.init.vault1TotalPower +
+          vault1AddBonding +
+          vpHistory.init.vault2TotalPower,
+      );
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vpHistory.init.vault1TotalPower +
+          vault1AddBonding +
+          vpHistory.init.vault2TotalPower,
+      );
+      vpHistory.additionalBonding = vpInfo;
+    });
+
+    test('unbond funds', async () => {
+      await unbondFunds(
+        neutronDaoMemberClient,
+        vault1Addr,
+        vault1Unbonding.toString(),
+      );
+      await waitBlocks(1, neutronClient);
+    });
+    test('check voting power after unbonding', async () => {
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
+
+      // compare the new values to the prev state ones
+      // expect the vault1 VP to decrease by bonding amount
+      expect(vpInfo.vault1Power).toEqual(
+        vpHistory.additionalBonding.vault1Power - vault1Unbonding,
+      );
+      expect(vpInfo.vault1TotalPower).toEqual(
+        vpHistory.additionalBonding.vault1TotalPower - vault1Unbonding,
+      );
+
+      // expect the vault2 VP to remain the same
+      expect(vpInfo.vault2Power).toEqual(
+        vpHistory.additionalBonding.vault2Power,
+      );
+      expect(vpInfo.vault2TotalPower).toEqual(
+        vpHistory.additionalBonding.vault2TotalPower,
+      );
+
+      // expect the vault3 VP to remain the same
+      expect(vpInfo.vault3Power).toEqual(
+        vpHistory.additionalBonding.vault3Power,
+      );
+      expect(vpInfo.vault3TotalPower).toEqual(
+        vpHistory.additionalBonding.vault3TotalPower,
+      );
+
+      // expect the registry VP to decrease by unbonding amount
+      expect(vpInfo.votingRegistryPower).toEqual(
+        vpHistory.additionalBonding.vault1TotalPower -
+          vault1Unbonding +
+          vpHistory.additionalBonding.vault2TotalPower,
+      );
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vpHistory.additionalBonding.vault1TotalPower -
+          vault1Unbonding +
+          vpHistory.additionalBonding.vault2TotalPower,
+      );
+      vpHistory.unbonding = vpInfo;
+    });
+
+    // expect VP infos taken from heights in the past to be the same as they were at that points
+    test('check historical voting power', async () => {
+      const initVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.init.height,
+      );
+      expect(initVpInfo).toMatchObject(vpHistory.init);
+
+      const atAdditionalBondingVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.additionalBonding.height,
+      );
+      expect(atAdditionalBondingVpInfo).toMatchObject(
+        vpHistory.additionalBonding,
+      );
+
+      const atUnbondingVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.unbonding.height,
+      );
+      expect(atUnbondingVpInfo).toMatchObject(vpHistory.unbonding);
+    });
+  });
+
+  describe('VP on vaults list mutation', () => {
+    test('deactivate vault', async () => {
+      await deactivateVotingVault(
+        neutronClient,
+        votingRegistryAddr,
+        vault2Addr,
+      );
+      await waitBlocks(1, neutronClient);
+
+      const votingVaults = await getVotingVaults(
+        neutronClient,
+        votingRegistryAddr,
+      );
+      expect(votingVaults.length).toBe(2);
+      expect(votingVaults).toContainEqual({
+        address: vault1Addr,
+        description: NEUTRON_VAULT_1_CONTRACT_KEY,
+        name: NEUTRON_VAULT_1_CONTRACT_KEY,
+        state: 'Active',
+      });
+      expect(votingVaults).toContainEqual({
+        address: vault2Addr,
+        description: NEUTRON_VAULT_2_CONTRACT_KEY,
+        name: NEUTRON_VAULT_2_CONTRACT_KEY,
+        state: 'Inactive',
+      });
+    });
+    test('check voting power after deactivation', async () => {
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
+
+      // compare the new values to the prev state ones
+      // expect the vault1 VP to remain the same
+      expect(vpInfo.vault1Power).toEqual(vpHistory.unbonding.vault1Power);
+      expect(vpInfo.vault1TotalPower).toEqual(
+        vpHistory.unbonding.vault1TotalPower,
+      );
+
+      // expect the vault2 VP to remain the same
+      expect(vpInfo.vault2Power).toEqual(vpHistory.unbonding.vault2Power);
+      expect(vpInfo.vault2TotalPower).toEqual(
+        vpHistory.unbonding.vault2TotalPower,
+      );
+
+      // expect the vault3 VP to remain the same
+      expect(vpInfo.vault3Power).toEqual(vpHistory.unbonding.vault3Power);
+      expect(vpInfo.vault3TotalPower).toEqual(
+        vpHistory.unbonding.vault3TotalPower,
+      );
+
+      // expect the registry VP to decrease by deactivated vault's power
+      expect(vpInfo.votingRegistryPower).toEqual(
+        vpHistory.unbonding.votingRegistryPower -
+          vpHistory.unbonding.vault2Power,
+      );
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vpHistory.unbonding.votingRegistryTotalPower -
+          vpHistory.unbonding.vault2TotalPower,
+      );
+      vpHistory.vaultDeactivation = vpInfo;
+    });
+
+    test('add another vault', async () => {
+      await addVotingVault(neutronClient, votingRegistryAddr, vault3Addr);
+      await waitBlocks(1, neutronClient);
+
+      const votingVaults = await getVotingVaults(
+        neutronClient,
+        votingRegistryAddr,
+      );
+      expect(votingVaults.length).toBe(3);
+      expect(votingVaults).toContainEqual({
+        address: vault1Addr,
+        description: NEUTRON_VAULT_1_CONTRACT_KEY,
+        name: NEUTRON_VAULT_1_CONTRACT_KEY,
+        state: 'Active',
+      });
+      expect(votingVaults).toContainEqual({
+        address: vault2Addr,
+        description: NEUTRON_VAULT_2_CONTRACT_KEY,
+        name: NEUTRON_VAULT_2_CONTRACT_KEY,
+        state: 'Inactive',
+      });
+      expect(votingVaults).toContainEqual({
+        address: vault3Addr,
+        description: NEUTRON_VAULT_3_CONTRACT_KEY,
+        name: NEUTRON_VAULT_3_CONTRACT_KEY,
+        state: 'Active',
+      });
+    });
+    test('check voting power after vault addition', async () => {
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
+
+      // compare the new values to the prev state ones
+      // expect the vault1 VP to remain the same
+      expect(vpInfo.vault1Power).toEqual(
+        vpHistory.vaultDeactivation.vault1Power,
+      );
+      expect(vpInfo.vault1TotalPower).toEqual(
+        vpHistory.vaultDeactivation.vault1TotalPower,
+      );
+
+      // expect the vault2 VP to remain the same
+      expect(vpInfo.vault2Power).toEqual(
+        vpHistory.vaultDeactivation.vault2Power,
+      );
+      expect(vpInfo.vault2TotalPower).toEqual(
+        vpHistory.vaultDeactivation.vault2TotalPower,
+      );
+
+      // expect the vault3 VP to remain the same
+      expect(vpInfo.vault3Power).toEqual(
+        vpHistory.vaultDeactivation.vault3Power,
+      );
+      expect(vpInfo.vault3TotalPower).toEqual(
+        vpHistory.vaultDeactivation.vault3TotalPower,
+      );
+
+      // expect the registry VP to increase by added vault's power
+      expect(vpInfo.votingRegistryPower).toEqual(
+        vpHistory.vaultDeactivation.votingRegistryPower +
+          vpHistory.vaultDeactivation.vault3Power,
+      );
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vpHistory.vaultDeactivation.votingRegistryTotalPower +
+          vpHistory.vaultDeactivation.vault3TotalPower,
+      );
+      vpHistory.vaultAdded = vpInfo;
+    });
+
+    test('activate vault', async () => {
+      await activateVotingVault(neutronClient, votingRegistryAddr, vault2Addr);
+      await waitBlocks(1, neutronClient);
+
+      const votingVaults = await getVotingVaults(
+        neutronClient,
+        votingRegistryAddr,
+      );
+      expect(votingVaults.length).toBe(3);
+      expect(votingVaults).toContainEqual({
+        address: vault1Addr,
+        description: NEUTRON_VAULT_1_CONTRACT_KEY,
+        name: NEUTRON_VAULT_1_CONTRACT_KEY,
+        state: 'Active',
+      });
+      expect(votingVaults).toContainEqual({
+        address: vault2Addr,
+        description: NEUTRON_VAULT_2_CONTRACT_KEY,
+        name: NEUTRON_VAULT_2_CONTRACT_KEY,
+        state: 'Active',
+      });
+      expect(votingVaults).toContainEqual({
+        address: vault3Addr,
+        description: NEUTRON_VAULT_3_CONTRACT_KEY,
+        name: NEUTRON_VAULT_3_CONTRACT_KEY,
+        state: 'Active',
+      });
+    });
+    test('check voting power after activation', async () => {
+      const vpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+      );
+
+      // compare the new values to the prev state ones
+      // expect the vault1 VP to remain the same
+      expect(vpInfo.vault1Power).toEqual(vpHistory.vaultAdded.vault1Power);
+      expect(vpInfo.vault1TotalPower).toEqual(
+        vpHistory.vaultAdded.vault1TotalPower,
+      );
+
+      // expect the vault2 VP to remain the same
+      expect(vpInfo.vault2Power).toEqual(vpHistory.vaultAdded.vault2Power);
+      expect(vpInfo.vault2TotalPower).toEqual(
+        vpHistory.vaultAdded.vault2TotalPower,
+      );
+
+      // expect the vault3 VP to remain the same
+      expect(vpInfo.vault3Power).toEqual(vpHistory.vaultAdded.vault3Power);
+      expect(vpInfo.vault3TotalPower).toEqual(
+        vpHistory.vaultAdded.vault3TotalPower,
+      );
+
+      // expect the registry VP to increase by activated vault's power
+      expect(vpInfo.votingRegistryPower).toEqual(
+        vpHistory.vaultAdded.votingRegistryPower +
+          vpHistory.vaultAdded.vault2Power,
+      );
+      expect(vpInfo.votingRegistryTotalPower).toEqual(
+        vpHistory.vaultAdded.votingRegistryTotalPower +
+          vpHistory.vaultAdded.vault2TotalPower,
+      );
+      vpHistory.vaultActivation = vpInfo;
+    });
+
+    // expect VP infos taken from heights in the past to be the same as they were at that points
+    test('check historical voting power', async () => {
+      const initVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.init.height,
+      );
+      expect(initVpInfo).toMatchObject(vpHistory.init);
+
+      const atAdditionalBondingVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.additionalBonding.height,
+      );
+      expect(atAdditionalBondingVpInfo).toMatchObject(
+        vpHistory.additionalBonding,
+      );
+      expect(atAdditionalBondingVpInfo.height).toBeGreaterThan(
+        initVpInfo.height,
+      );
+
+      const atUnbondingVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.unbonding.height,
+      );
+      expect(atUnbondingVpInfo).toMatchObject(vpHistory.unbonding);
+      expect(atUnbondingVpInfo.height).toBeGreaterThan(
+        atAdditionalBondingVpInfo.height,
+      );
+
+      const atVaultDeactivationVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.vaultDeactivation.height,
+      );
+      expect(atVaultDeactivationVpInfo).toMatchObject(
+        vpHistory.vaultDeactivation,
+      );
+      expect(atVaultDeactivationVpInfo.height).toBeGreaterThan(
+        atUnbondingVpInfo.height,
+      );
+
+      const atVaultAddedVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.vaultAdded.height,
+      );
+      expect(atVaultAddedVpInfo).toMatchObject(vpHistory.vaultAdded);
+      expect(atVaultAddedVpInfo.height).toBeGreaterThan(
+        atVaultDeactivationVpInfo.height,
+      );
+
+      const atVaultActivationVpInfo = await getVotingPowerInfo(
+        neutronClient,
+        daoMemberWallet.address,
+        contractAddresses,
+        vpHistory.vaultActivation.height,
+      );
+      expect(atVaultActivationVpInfo).toMatchObject(vpHistory.vaultActivation);
+      expect(atVaultActivationVpInfo.height).toBeGreaterThan(
+        atVaultAddedVpInfo.height,
+      );
+    });
+  });
 });
 
 const deployContracts = async (
@@ -644,63 +643,63 @@ const bondFunds = async (
     [{ denom: NEUTRON_DENOM, amount: amount }],
   );
 
-// const unbondFunds = async (
-//   client: SigningNeutronClient,
-//   vault: string,
-//   amount: string,
-// ) =>
-//   client.execute(
-//     vault,
-//     {
-//       unbond: { amount: amount },
-//     },
-//     [],
-//   );
+const unbondFunds = async (
+  client: SigningNeutronClient,
+  vault: string,
+  amount: string,
+) =>
+  client.execute(
+    vault,
+    {
+      unbond: { amount: amount },
+    },
+    [],
+  );
 
-// const activateVotingVault = async (
-//   client: SigningNeutronClient,
-//   registry: string,
-//   vault: string,
-// ) =>
-//   client.execute(
-//     registry,
-//     {
-//       activate_voting_vault: {
-//         voting_vault_contract: vault,
-//       },
-//     },
-//     [],
-//   );
+const activateVotingVault = async (
+  client: SigningNeutronClient,
+  registry: string,
+  vault: string,
+) =>
+  client.execute(
+    registry,
+    {
+      activate_voting_vault: {
+        voting_vault_contract: vault,
+      },
+    },
+    [],
+  );
 
-// const deactivateVotingVault = async (
-//   client: SigningNeutronClient,
-//   registry: string,
-//   vault: string,
-// ) =>
-//   client.execute(
-//     registry,
-//     {
-//       deactivate_voting_vault: {
-//         voting_vault_contract: vault,
-//       },
-//     },
-//     [],
-//   );
+const deactivateVotingVault = async (
+  client: SigningNeutronClient,
+  registry: string,
+  vault: string,
+) =>
+  client.execute(
+    registry,
+    {
+      deactivate_voting_vault: {
+        voting_vault_contract: vault,
+      },
+    },
+    [],
+  );
 
-// const addVotingVault = async (
-//   client: SigningNeutronClient,
-//   registry: string,
-//   vault: string,
-// ) =>
-//   client.execute(
-//     registry,
-//     {
-//       add_voting_vault: {
-//         new_voting_vault_contract: vault,
-//       },
-//     },
-//     [],
-//   );
+const addVotingVault = async (
+  client: SigningNeutronClient,
+  registry: string,
+  vault: string,
+) =>
+  client.execute(
+    registry,
+    {
+      add_voting_vault: {
+        new_voting_vault_contract: vault,
+      },
+    },
+    [],
+  );
 
 /**
  * Retrieves voting power data for a given address from both vaults and voting registry. Also
@@ -832,41 +831,41 @@ type VotingPowerInfo = {
  * historical voting power queries are correct. Fields are placed in order of their occurrence
  * in the test.
  */
-// type VotingPowerInfoHistory = {
-//   /** initial voting power info */
-//   init: VotingPowerInfo;
-//   /** voting power info after making an additional bonding */
-//   additionalBonding: VotingPowerInfo;
-//   /** voting power info after making a partial unbonding */
-//   unbonding: VotingPowerInfo;
-//   /** voting power info after a vault deactivation */
-//   vaultDeactivation: VotingPowerInfo;
-//   /** voting power info after vault addition */
-//   vaultAdded: VotingPowerInfo;
-//   /** voting power info after the deactivated vault activation */
-//   vaultActivation: VotingPowerInfo;
-// };
+type VotingPowerInfoHistory = {
+  /** initial voting power info */
+  init: VotingPowerInfo;
+  /** voting power info after making an additional bonding */
+  additionalBonding: VotingPowerInfo;
+  /** voting power info after making a partial unbonding */
+  unbonding: VotingPowerInfo;
+  /** voting power info after a vault deactivation */
+  vaultDeactivation: VotingPowerInfo;
+  /** voting power info after vault addition */
+  vaultAdded: VotingPowerInfo;
+  /** voting power info after the deactivated vault activation */
+  vaultActivation: VotingPowerInfo;
+};
 
-// const initVotingPowerInfoHistory = (): VotingPowerInfoHistory => ({
-//   init: initVotingPowerInfo(),
-//   additionalBonding: initVotingPowerInfo(),
-//   unbonding: initVotingPowerInfo(),
-//   vaultDeactivation: initVotingPowerInfo(),
-//   vaultAdded: initVotingPowerInfo(),
-//   vaultActivation: initVotingPowerInfo(),
-// });
+const initVotingPowerInfoHistory = (): VotingPowerInfoHistory => ({
+  init: initVotingPowerInfo(),
+  additionalBonding: initVotingPowerInfo(),
+  unbonding: initVotingPowerInfo(),
+  vaultDeactivation: initVotingPowerInfo(),
+  vaultAdded: initVotingPowerInfo(),
+  vaultActivation: initVotingPowerInfo(),
+});
 
-// const initVotingPowerInfo = (): VotingPowerInfo => ({
-//   height: 0,
-//   vault1Power: 0,
-//   vault1TotalPower: 0,
-//   vault2Power: 0,
-//   vault2TotalPower: 0,
-//   vault3Power: 0,
-//   vault3TotalPower: 0,
-//   votingRegistryPower: 0,
-//   votingRegistryTotalPower: 0,
-// });
+const initVotingPowerInfo = (): VotingPowerInfo => ({
+  height: 0,
+  vault1Power: 0,
+  vault1TotalPower: 0,
+  vault2Power: 0,
+  vault2TotalPower: 0,
+  vault3Power: 0,
+  vault3TotalPower: 0,
+  votingRegistryPower: 0,
+  votingRegistryTotalPower: 0,
+});
 
 type VotingVault = {
   address: string;
