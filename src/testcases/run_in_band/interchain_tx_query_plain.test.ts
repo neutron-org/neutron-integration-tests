@@ -375,7 +375,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         watchedAddr3,
       );
-      // update time hasn't come yet despite the fact the sent funds are already on the account
+      // update time hasn't come yet despite the fact that sent funds are already on the account
       expect(deposits.transfers).toEqual([]);
 
       await waitForTransfersAmount(
@@ -424,7 +424,7 @@ describe('Neutron / Interchain TX Query', () => {
         denom: COSMOS_DENOM,
       });
       let deposits = await depositsPromise;
-      // update time hasn't come yet despite the fact the sent funds are already on the account
+      // update time hasn't come yet despite the fact that sent funds are already on the account
       console.log(
         'deposits.transfers: \n' + JSON.stringify(deposits.transfers),
       );

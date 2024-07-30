@@ -9,7 +9,7 @@ import { CONTRACTS } from './constants';
 export const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
 
 const START_BLOCK_HEIGHT = process.env.START_BLOCK_HEIGHT
-  ? parseInt(process.env.START_BLOCK_HEIGHT, 10)
+  ? +process.env.START_BLOCK_HEIGHT
   : 10;
 
 let alreadySetUp = false;

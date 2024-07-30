@@ -11,7 +11,6 @@ import {
   updateCronParamsProposal,
   updateTokenfactoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-import config from '../../config.json';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -20,6 +19,7 @@ import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutr
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import config from '../../config.json';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;

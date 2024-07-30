@@ -146,7 +146,11 @@ describe('Neutron / Voting Registry', () => {
 
   describe('VP on bond and unbond', () => {
     test('bond funds', async () => {
-      await bondFunds(neutronDaoMemberClient, vault1Addr, vault1AddBonding.toString());
+      await bondFunds(
+        neutronDaoMemberClient,
+        vault1Addr,
+        vault1AddBonding.toString(),
+      );
       await waitBlocks(1, neutronClient);
     });
     test('check voting power after bonding', async () => {

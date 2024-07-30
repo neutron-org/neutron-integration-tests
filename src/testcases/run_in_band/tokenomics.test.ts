@@ -10,9 +10,8 @@ import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/n
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-
-import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
+import config from '../../config.json';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
@@ -27,14 +26,14 @@ describe('Neutron / Tokenomics', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = testState.wallets.qaNeutron.qa;
+    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
       neutronWallet.address,
     );
 
-    gaiaWallet = testState.wallets.qaCosmos.qa;
+    gaiaWallet = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.directwallet,
@@ -183,7 +182,7 @@ describe('Neutron / Tokenomics', () => {
               sourceChannel: 'channel-0',
               token: { denom: COSMOS_DENOM, amount: '100000' },
               sender: gaiaWallet.address,
-              receiver: testState.wallets.qaNeutron.qa.address,
+              receiver: neutronWallet.address,
               timeoutHeight: {
                 revisionNumber: 2n,
                 revisionHeight: 100000000n,
@@ -198,10 +197,7 @@ describe('Neutron / Tokenomics', () => {
       );
       await neutronClient.getWithAttempts(
         async () =>
-          neutronClient.getBalance(
-            testState.wallets.qaNeutron.qa.address,
-            ibcUatomDenom,
-          ),
+          neutronClient.getBalance(neutronWallet.address, ibcUatomDenom),
         async (balance) => balance !== undefined,
       );
     });

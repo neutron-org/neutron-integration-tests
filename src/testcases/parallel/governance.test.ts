@@ -24,8 +24,8 @@ import { QueryClientImpl as InterchainAccountsQueryClient } from '@neutron-org/n
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import config from '../../config.json';
 import { neutronTypes } from '../../helpers/registry_types';
+import config from '../../config.json';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;

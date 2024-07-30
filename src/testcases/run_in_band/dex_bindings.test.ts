@@ -6,14 +6,13 @@ import {
   MsgMint,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
-import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import {
   getEventAttribute,
   getEventAttributesFromTx,
 } from '@neutron-org/neutronjsplus/dist/cosmos';
+import config from '../../config.json';
 
 describe('Neutron / dex module bindings', () => {
   let testState: LocalState;

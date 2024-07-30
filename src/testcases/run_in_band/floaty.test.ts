@@ -3,7 +3,6 @@ import { inject } from 'vitest';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
 import config from '../../config.json';
 
 describe('Float operations support', () => {

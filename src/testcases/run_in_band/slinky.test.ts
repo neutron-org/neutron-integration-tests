@@ -13,7 +13,6 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
 import config from '../../config.json';
 
 describe('Neutron / Slinky', () => {
@@ -33,7 +32,7 @@ describe('Neutron / Slinky', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = testState.wallets.qaNeutron.qa;
+    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,

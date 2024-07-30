@@ -24,11 +24,10 @@ import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/co
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-
-import config from '../../config.json';
 import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query';
 import { CONTRACTS } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
+import config from '../../config.json';
 
 async function whitelistTokenfactoryHook(
   chainManagerAddress: string,

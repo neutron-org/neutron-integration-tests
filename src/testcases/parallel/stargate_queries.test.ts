@@ -10,7 +10,6 @@ import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
-
 import config from '../../config.json';
 
 describe('Neutron / Stargate Queries', () => {

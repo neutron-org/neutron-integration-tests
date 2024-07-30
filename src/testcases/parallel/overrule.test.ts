@@ -10,9 +10,8 @@ import {
   deploySubdao,
 } from '../../helpers/dao';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
-import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
+import config from '../../config.json';
 
 describe('Neutron / Subdao Overrule', () => {
   let testState: LocalState;

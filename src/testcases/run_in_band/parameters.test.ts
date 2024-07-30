@@ -49,7 +49,7 @@ describe('Neutron / Parameters', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = testState.wallets.qaNeutron.qa;
+    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,

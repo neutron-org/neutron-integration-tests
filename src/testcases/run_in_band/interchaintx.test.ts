@@ -219,13 +219,13 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res);
         await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -283,19 +283,19 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId = getSequenceId(res);
 
         await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
 
         const ackSequenceId = sequenceId + 1;
         await waitForAck(neutronClient, contractAddress, icaId1, ackSequenceId);
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -347,13 +347,13 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId = getSequenceId(res);
 
         await waitForAck(neutronClient, contractAddress, icaId2, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId2,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           error: [
             'message',
             'ABCI code: 7: error handling packet: see events for details',
@@ -386,23 +386,23 @@ describe('Neutron / Interchain TXs', () => {
 
         const sequenceId2 = getSequenceId(res2);
 
-        const qres1 = await waitForAck(
+        const ackRes1 = await waitForAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId1,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(ackRes1).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgUndelegateResponse'],
         });
 
-        const qres2 = await waitForAck(
+        const ackRes2 = await waitForAck(
           neutronClient,
           contractAddress,
           icaId2,
           sequenceId2,
         );
-        expect(qres2).toMatchObject<AcknowledgementResult>({
+        expect(ackRes2).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -429,13 +429,13 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId,
           100,
         );
-        const qres1 = await getAck(
+        const ackRes1 = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(ackRes1).toMatchObject<AcknowledgementResult>({
           timeout: 'message',
         });
       });
@@ -554,13 +554,13 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res);
 
-        const qres = await waitForAck(
+        const ackRes = await waitForAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });

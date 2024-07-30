@@ -14,7 +14,10 @@ import { Wallet } from './wallet';
 const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
-  wallets: Record<string, Record<string, Wallet>>;
+  wallets: {
+    cosmos: Record<string, Wallet>;
+    neutron: Record<string, Wallet>;
+  };
   icqWebHost: string;
 
   rpcNeutron: string;
@@ -62,20 +65,9 @@ export class LocalState {
       this.testFilePosition = 0;
     }
 
-    const neutron = await getGenesisWallets(NEUTRON_PREFIX, this.config);
-    const cosmos = await getGenesisWallets(COSMOS_PREFIX, this.config);
-
-    // TODO: simplify structure here. Can be just wallets: { name: Wallet }
-    // TODO: use only neutron / cosmos wallets, others can be generated with nextWallet on the fly
     this.wallets = {
-      cosmos,
-      neutron,
-      qaNeutron: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaCosmos: { qa: await this.nextWallet(COSMOS_PREFIX) },
-      qaCosmosTwo: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronThree: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronFour: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronFive: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      cosmos: await getGenesisWallets(COSMOS_PREFIX, this.config),
+      neutron: await getGenesisWallets(NEUTRON_PREFIX, this.config),
     };
   }
 

@@ -8,13 +8,13 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
-import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import {
   DaoContracts,
   VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao_types';
 import { CONTRACTS } from '../../helpers/constants';
+import config from '../../config.json';
 
 describe('Neutron / DAO check', () => {
   let testState: LocalState;

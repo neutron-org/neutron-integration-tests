@@ -15,10 +15,9 @@ import { deployNeutronDao, setupSubDaoTimelockSet } from '../../helpers/dao';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-
-import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { TimelockConfig } from '@neutron-org/neutronjsplus/dist/dao_types';
+import config from '../../config.json';
 
 describe('Neutron / Subdao', () => {
   let testState: LocalState;

@@ -10,12 +10,6 @@ import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 
 import config from '../../config.json';
 
-interface ReserveStats {
-  readonly total_distributed: string;
-  readonly total_reserved: string;
-  readonly total_processed_burned_coins: string;
-}
-
 describe('Neutron / Treasury', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
@@ -611,6 +605,12 @@ const setupDSC = async (
     'dsc',
   );
 };
+
+interface ReserveStats {
+  readonly total_distributed: string;
+  readonly total_reserved: string;
+  readonly total_processed_burned_coins: string;
+}
 
 /**
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
