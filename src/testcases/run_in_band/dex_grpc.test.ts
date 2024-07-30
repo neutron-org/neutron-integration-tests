@@ -28,7 +28,7 @@ import {
 
 const config = require('../../config.json');
 
-describe('Neutron / dex module (stargate contract)', () => {
+describe('Neutron / dex module (grpc contract)', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -50,15 +50,15 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
   });
 
-  describe('Instantiate dex stargate contract', () => {
+  describe('Instantiate dex grpc contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_STARGATE);
+      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_GRPC);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await neutronAccount.instantiateContract(codeId, '{}', 'dex_dev')
+        await neutronAccount.instantiateContract(codeId, '{}', 'dex_grpc')
       )[0]._contract_address;
       await neutronAccount.msgSend(contractAddress, {
         amount: '100000000',
@@ -556,7 +556,7 @@ describe('Neutron / dex module (stargate contract)', () => {
             },
           },
         );
-      expect(respNoPoolData.deposits[0].total_shares).toBeNull();
+      expect(respNoPoolData.deposits[0].total_shares).toEqual('');
       expect(respNoPoolData.deposits[0].pool).toBeNull();
     });
     test('AllTickLiquidity', async () => {
@@ -645,6 +645,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               Math.ceil(Date.now() / 1000) + 1000,
             ),
             order_type: LimitOrderType.GoodTilTime,
+            max_amount_out: '',
           },
         },
       );
