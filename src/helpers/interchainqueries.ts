@@ -137,15 +137,6 @@ export const getDelegatorUnbondingDelegationsResult = async (
     },
   });
 
-export const getCosmosSigningInfosResult = async (sdkUrl: string) => {
-  try {
-    return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
-      .data;
-  } catch (e) {
-    return null;
-  }
-};
-
 export const getQueryDelegatorDelegationsResult = async (
   client: SigningNeutronClient,
   contractAddress: string,

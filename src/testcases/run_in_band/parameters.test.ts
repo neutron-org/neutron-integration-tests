@@ -17,7 +17,6 @@ import {
   updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-
 import { QueryParamsResponse } from '@neutron-org/neutronjs/neutron/interchainqueries/query';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { createRPCQueryClient as createIbcClient } from '@neutron-org/neutronjs/ibc/rpc.query';
@@ -29,7 +28,6 @@ import {
 } from '@neutron-org/neutronjs/querier_types';
 import { ProtobufRpcClient } from '@cosmjs/stargate';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
 import config from '../../config.json';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
