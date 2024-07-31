@@ -1,50 +1,35 @@
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { LocalState } from '../../helpers/local_state';
 import { inject } from 'vitest';
-import { CodeId, NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-
-const config = require('../../config.json');
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import config from '../../config.json';
 
 describe('Float operations support', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
+  let neutronClient: SigningNeutronClient;
+  let neutronWallet: Wallet;
   let contractAddress: string;
 
   beforeAll(async () => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics);
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
+    testState = await LocalState.create(config, inject('mnemonics'));
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-    );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      testState.wallets.neutron.demo1,
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
   });
   describe('Contracts: ', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.FLOATY);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate', async () => {
-      contractAddress = await neutronAccount.instantiateContract(
-        codeId,
-        {},
-        'floaty',
-      );
+      contractAddress = await neutronClient.create(CONTRACTS.FLOATY, {});
     });
   });
   describe('instructions', () => {
     test('autotests', async () => {
-      // do not check actual resuts here, only check
-      // retuns various supported float instrustions
-      const instructions = await neutronChain.queryContract<string[]>(
+      // do not check actual results here, only check
+      // returns various supported float instructions
+      const instructions = await neutronClient.queryContractSmart(
         contractAddress,
         {
           instructions: {},
@@ -52,13 +37,13 @@ describe('Float operations support', () => {
       );
       expect(instructions.length).toEqual(70);
       for (let i = 0; i < instructions.length; i++) {
-        // returns a random(seed) arguments for a given instrustion
-        const args = await neutronChain.queryContract<any[]>(contractAddress, {
+        // returns a random(seed) arguments for a given instruction
+        const args = await neutronClient.queryContractSmart(contractAddress, {
           random_args_for: { instruction: instructions[i], seed: 45 },
         });
 
         // returns a result of operation for a given instructions with supplied arguments
-        await neutronChain.queryContract<any>(contractAddress, {
+        await neutronClient.queryContractSmart(contractAddress, {
           run: { instruction: instructions[i], args: args },
         });
       }
@@ -76,22 +61,22 @@ describe('Float operations support', () => {
 
       let res: { u32: number };
 
-      res = await neutronChain.queryContract<{ u32: number }>(contractAddress, {
+      res = await neutronClient.queryContractSmart(contractAddress, {
         run: { instruction: 'f32.add', args: [f2, f2] },
       });
       expect(res.u32).toEqual(f4.f32);
 
-      res = await neutronChain.queryContract<{ u32: number }>(contractAddress, {
+      res = await neutronClient.queryContractSmart(contractAddress, {
         run: { instruction: 'f32.mul', args: [f2, f4] },
       });
       expect(res.u32).toEqual(f8.f32);
 
-      res = await neutronChain.queryContract<{ u32: number }>(contractAddress, {
+      res = await neutronClient.queryContractSmart(contractAddress, {
         run: { instruction: 'f32.sqrt', args: [f4] },
       });
       expect(res.u32).toEqual(f2.f32);
 
-      res = await neutronChain.queryContract<{ u32: number }>(contractAddress, {
+      res = await neutronClient.queryContractSmart(contractAddress, {
         run: { instruction: 'f32.sqrt', args: [f8] },
       });
       // 1077216499 = sqrt(8)

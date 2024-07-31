@@ -1,9 +1,9 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import {
   QueryClientImpl as ContractManagerQuery,
@@ -11,16 +11,16 @@ import {
 } from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query';
-import { waitBlocks } from '../../helpers/misc';
 import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
   CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { SigningStargateClient } from '@cosmjs/stargate';
-
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { Wallet } from '../../helpers/wallet';
+import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import config from '../../config.json';
 
 const TRANSFER_CHANNEL = 'channel-0';
@@ -70,16 +70,13 @@ describe('Neutron / IBC transfer', () => {
 
   describe('Contracts', () => {
     test('instantiate contract', async () => {
-      ibcContract = await neutronClient.instantiate(CONTRACTS.IBC_TRANSFER, {});
+      ibcContract = await neutronClient.create(CONTRACTS.IBC_TRANSFER, {});
     });
   });
 
   describe('Staking', () => {
     test('store and instantiate mgs receiver contract', async () => {
-      receiverContract = await neutronClient.instantiate(
-        CONTRACTS.MSG_RECEIVER,
-        {},
-      );
+      receiverContract = await neutronClient.create(CONTRACTS.MSG_RECEIVER, {});
     });
     test('staking queries must fail since we have no staking module in Neutron', async () => {
       let exceptionThrown = false;
@@ -133,16 +130,16 @@ describe('Neutron / IBC transfer', () => {
         const res = await neutronClient.signAndBroadcast(
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: NeutronMsgTransfer.typeUrl,
+              value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000' },
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -164,16 +161,16 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: '1000' },
                 sender: gaiaWallet.address,
                 receiver: neutronWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -303,16 +300,16 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: COSMOS_DENOM, amount: transferAmount + '' },
                 sender: gaiaWallet.address,
                 receiver: middlehop,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
               }),
@@ -364,16 +361,16 @@ describe('Neutron / IBC transfer', () => {
           gaiaWallet.address,
           [
             {
-              typeUrl: MsgTransfer.typeUrl,
-              value: MsgTransfer.fromPartial({
+              typeUrl: GaiaMsgTransfer.typeUrl,
+              value: GaiaMsgTransfer.fromPartial({
                 sourcePort: portName,
                 sourceChannel: channelName,
                 token: { denom: COSMOS_DENOM, amount: uatomAmount },
                 sender: gaiaWallet.address,
                 receiver: ibcContract,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -454,7 +451,7 @@ describe('Neutron / IBC transfer', () => {
       test('execute contract with failing sudo', async () => {
         const failuresBeforeCall = await contractManagerQuerier.AddressFailures(
           {
-            failureId: BigInt(0), // bug: should not be in query
+            failureId: 0n, // bug: should not be in query
             address: ibcContract,
           },
         );
@@ -504,7 +501,7 @@ describe('Neutron / IBC transfer', () => {
           await neutronClient.getWithAttempts<QueryFailuresResponse>(
             async () =>
               contractManagerQuerier.AddressFailures({
-                failureId: BigInt(0), // bug: should not be in query
+                failureId: 0n, // bug: should not be in query
                 address: ibcContract,
               }),
             // Wait until there 4 failures in the list
@@ -514,22 +511,22 @@ describe('Neutron / IBC transfer', () => {
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(0),
+            id: 0n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(1),
+            id: 1n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(2),
+            id: 2n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(3),
+            id: 3n,
             error: 'codespace: wasm, code: 5',
           }),
         ]);
@@ -583,7 +580,7 @@ describe('Neutron / IBC transfer', () => {
         const res = await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
             contractManagerQuerier.AddressFailures({
-              failureId: BigInt(0), // bug: should not be in query
+              failureId: 0n, // bug: should not be in query
               address: ibcContract,
             }),
           // Wait until there 6 failures in the list
@@ -604,7 +601,7 @@ describe('Neutron / IBC transfer', () => {
 
         // Try to resubmit failure
         const failuresResBefore = await contractManagerQuerier.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
 
@@ -620,7 +617,7 @@ describe('Neutron / IBC transfer', () => {
 
         // check that failures count is the same
         const failuresResAfter = await contractManagerQuerier.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
@@ -635,7 +632,7 @@ describe('Neutron / IBC transfer', () => {
       test('successful resubmit failure', async () => {
         // Resubmit failure
         const failuresResBefore = await contractManagerQuerier.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
@@ -650,7 +647,7 @@ describe('Neutron / IBC transfer', () => {
 
         // check that failures count is changed
         const failuresResAfter = await contractManagerQuerier.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
@@ -660,14 +657,14 @@ describe('Neutron / IBC transfer', () => {
     describe('Failures limit test', () => {
       it('failures with small limit does not return an error', async () => {
         const pagination = {
-          limit: BigInt(1),
-          offset: BigInt(0),
+          limit: 1n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,
         };
         const res = await contractManagerQuerier.AddressFailures({
-          failureId: BigInt(0), // bug: should not be in query
+          failureId: 0n, // bug: should not be in query
           address: ibcContract,
           pagination,
         });
@@ -675,15 +672,15 @@ describe('Neutron / IBC transfer', () => {
       });
       test('failures with big limit returns an error', async () => {
         const pagination = {
-          limit: BigInt(10000),
-          offset: BigInt(0),
+          limit: 10000n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,
         };
         await expect(
           contractManagerQuerier.AddressFailures({
-            failureId: BigInt(0), // bug: should not be in query
+            failureId: 0n, // bug: should not be in query
             address: ibcContract,
             pagination,
           }),

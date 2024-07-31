@@ -1,115 +1,109 @@
-import { walletWrapper } from '@neutron-org/neutronjsplus';
-import { TextProposal } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
+import { TextProposal } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
 import {
   MsgDelegate,
   MsgUndelegate,
-} from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/tx';
+} from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
 import {
   MsgSubmitProposal,
   MsgVote,
-} from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/tx';
-import { VoteOption } from '@neutron-org/cosmjs-types/cosmos/gov/v1beta1/gov';
-import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
+} from '@neutron-org/neutronjs/cosmos/gov/v1beta1/tx';
+import { VoteOption } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/gov';
+import { COSMOS_DENOM } from './constants';
+import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
+import { Wallet } from './wallet';
 
 export const executeMsgDelegate = async (
-  wallet: walletWrapper.WalletWrapper,
-  delegatorAddress: string,
+  client: SigningStargateClient,
+  wallet: Wallet,
   validatorAddress: string,
   amount: string,
-): Promise<IndexedTx> => {
+): Promise<DeliverTxResponse> => {
   const msgDelegate: MsgDelegate = {
-    delegatorAddress,
+    delegatorAddress: wallet.address,
     validatorAddress,
-    amount: { denom: wallet.chain.denom, amount: amount },
+    amount: { denom: COSMOS_DENOM, amount: amount },
   };
   const msg = { typeUrl: MsgDelegate.typeUrl, value: msgDelegate };
-  const res = await wallet.execTx(
-    {
-      gas: '500000',
-      amount: [{ denom: wallet.chain.denom, amount: '5000' }],
-    },
-    [msg],
-  );
+  const res = await client.signAndBroadcast(wallet.address, [msg], {
+    gas: '500000',
+    amount: [{ denom: COSMOS_DENOM, amount: '5000' }],
+  });
   return res;
 };
 
 export const executeMsgUndelegate = async (
-  wallet: walletWrapper.WalletWrapper,
-  delegatorAddress: string,
+  client: SigningStargateClient,
+  wallet: Wallet,
   validatorAddress: string,
   amount: string,
-): Promise<IndexedTx> => {
+): Promise<DeliverTxResponse> => {
   const msgUndelegate: MsgUndelegate = {
-    delegatorAddress,
+    delegatorAddress: wallet.address,
     validatorAddress,
-    amount: { denom: wallet.chain.denom, amount: amount },
+    amount: { denom: COSMOS_DENOM, amount: amount },
   };
   const msg = { typeUrl: MsgUndelegate.typeUrl, value: msgUndelegate };
-  const res = await wallet.execTx(
+  const res = await client.signAndBroadcast(
+    wallet.address,
+    [msg],
+
     {
       gas: '500000',
-      amount: [{ denom: wallet.chain.denom, amount: '5000' }],
+      amount: [{ denom: COSMOS_DENOM, amount: '5000' }],
     },
-    [msg],
   );
 
   return res;
 };
 
 export const executeMsgSubmitProposal = async (
-  wallet: walletWrapper.WalletWrapper,
-  proposer: string,
+  client: SigningStargateClient,
+  wallet: Wallet,
   amount = '0',
-): Promise<IndexedTx> => {
-  wallet.registry.register(TextProposal.typeUrl, TextProposal as any);
+): Promise<DeliverTxResponse> => {
+  client.registry.register(TextProposal.typeUrl, TextProposal as any);
   const textProposal: TextProposal = {
     title: 'mock',
     description: 'mock',
   };
-  const value = wallet.registry.encode({
+  const value = client.registry.encode({
     typeUrl: TextProposal.typeUrl,
     value: textProposal,
   });
   const msgSubmitProposal: MsgSubmitProposal = {
-    proposer,
+    proposer: wallet.address,
     content: {
       typeUrl: '/cosmos.gov.v1beta1.TextProposal',
       value: value,
     },
-    initialDeposit: [{ denom: wallet.chain.denom, amount: '10000000' }],
+    initialDeposit: [{ denom: COSMOS_DENOM, amount: '10000000' }],
   };
   const msg = { typeUrl: MsgSubmitProposal.typeUrl, value: msgSubmitProposal };
-  const res = await wallet.execTx(
-    {
-      gas: '500000',
-      amount: [{ denom: wallet.chain.denom, amount: amount }],
-    },
-    [msg],
-  );
+  const res = await client.signAndBroadcast(wallet.address, [msg], {
+    gas: '500000',
+    amount: [{ denom: COSMOS_DENOM, amount: amount }],
+  });
 
   return res;
 };
 
 export const executeMsgVote = async (
-  wallet: walletWrapper.WalletWrapper,
-  voter: string,
+  client: SigningStargateClient,
+  wallet: Wallet,
   proposalId: number,
   amount = '0',
-): Promise<IndexedTx> => {
+): Promise<DeliverTxResponse> => {
   const msgVote: MsgVote = {
-    voter,
+    voter: wallet.address,
     proposalId: BigInt(proposalId),
     option: VoteOption.VOTE_OPTION_YES,
   };
   const msg = { typeUrl: MsgVote.typeUrl, value: msgVote };
 
-  const res = await wallet.execTx(
-    {
-      gas: '500000',
-      amount: [{ denom: wallet.chain.denom, amount: amount }],
-    },
-    [msg],
-  );
+  const res = await client.signAndBroadcast(wallet.address, [msg], {
+    gas: '500000',
+    amount: [{ denom: COSMOS_DENOM, amount: amount }],
+  });
 
   return res;
 };

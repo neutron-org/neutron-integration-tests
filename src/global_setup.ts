@@ -2,15 +2,16 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
 import { generateMnemonic } from 'bip39';
 import { setup } from './helpers/setup';
-import { MsgMultiSend } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/tx';
+import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
-import {
-  Input,
-  Output,
-} from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/bank';
+import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
 import ch from 'child_process';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { COSMOS_PREFIX, NEUTRON_PREFIX } from './helpers/constants';
+import {
+  COSMOS_DENOM,
+  COSMOS_PREFIX,
+  NEUTRON_DENOM,
+  NEUTRON_PREFIX,
+} from './helpers/constants';
 
 import config from './config.json';
 

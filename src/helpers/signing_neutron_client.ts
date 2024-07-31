@@ -14,10 +14,14 @@ import {
 } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 import { CometClient, connectComet } from '@cosmjs/tendermint-rpc';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
+import {
+  waitBlocks,
+  getWithAttempts,
+  queryContractWithWait,
+} from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from './constants';
-import { getWithAttempts, waitBlocks } from './misc';
+import { neutronTypes } from './registry_types';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -29,11 +33,12 @@ export class SigningNeutronClient extends CosmWasmClient {
     wallet: DirectSecp256k1HdWallet,
     signer: string,
   ) {
+    const registry = new Registry(neutronTypes);
     const neutronClient = await SigningCosmWasmClient.connectWithSigner(
       rpc,
       wallet,
       {
-        registry: new Registry(neutronTypes),
+        registry: registry,
         gasPrice: GasPrice.fromString('0.05untrn'),
       },
     );
@@ -42,7 +47,6 @@ export class SigningNeutronClient extends CosmWasmClient {
       rpc,
       signer,
       neutronClient,
-      NEUTRON_DENOM,
       CONTRACTS_PATH,
       cometClient,
     );
@@ -52,14 +56,42 @@ export class SigningNeutronClient extends CosmWasmClient {
     public rpc: string,
     public sender: string,
     public client: SigningCosmWasmClient,
-    public denom: string,
     private contractsPath: string,
     cometClient: CometClient,
   ) {
     super(cometClient);
   }
 
+  async upload(
+    fileName: string,
+    fee: StdFee | 'auto' | number = 'auto',
+  ): Promise<number> {
+    // upload
+    const wasmCode = await this.getNeutronContract(fileName);
+    const uploadResult = await this.client.upload(this.sender, wasmCode, fee);
+    return uploadResult.codeId;
+  }
+
   async instantiate(
+    codeId: number,
+    msg: any,
+    label = 'unfilled',
+    fee: StdFee | 'auto' | number = 'auto',
+    admin: string = this.sender,
+  ): Promise<string> {
+    const res = await this.client.instantiate(
+      this.sender,
+      codeId,
+      msg,
+      label,
+      fee,
+      { admin },
+    );
+    return res.contractAddress;
+  }
+
+  // uploads and instantiates a contract in one
+  async create(
     fileName: string,
     msg: any,
     label = 'unfilled',
@@ -123,6 +155,21 @@ export class SigningNeutronClient extends CosmWasmClient {
     );
   }
 
+  async signAndBroadcastSync(
+    messages: readonly EncodeObject[],
+    fee: StdFee | 'auto' | number = 'auto',
+    memo?: string,
+    timeoutHeight?: bigint,
+  ): Promise<string> {
+    return this.client.signAndBroadcastSync(
+      this.sender,
+      messages,
+      fee,
+      memo,
+      timeoutHeight,
+    );
+  }
+
   async getNeutronContract(fileName: string): Promise<Buffer> {
     return fsPromise.readFile(path.resolve(this.contractsPath, fileName));
   }
@@ -152,5 +199,32 @@ export class SigningNeutronClient extends CosmWasmClient {
     numAttempts = 20,
   ): Promise<T> {
     return getWithAttempts(this.client, getFunc, readyFunc, numAttempts);
+  }
+
+  async queryContractWithWait<T>(
+    contract: string,
+    query: any,
+    numAttempts = 20,
+  ): Promise<T> {
+    return queryContractWithWait(this.client, contract, query, numAttempts);
+  }
+
+  async simulateFeeBurning(amount: number): Promise<DeliverTxResponse> {
+    const fee = {
+      gas: '200000',
+      amount: [
+        {
+          denom: NEUTRON_DENOM,
+          amount: `${Math.ceil((1000 * amount) / 750)}`,
+        },
+      ],
+    };
+
+    return this.client.sendTokens(
+      this.sender,
+      this.sender,
+      [{ denom: NEUTRON_DENOM, amount: '1' }],
+      fee,
+    );
   }
 }
