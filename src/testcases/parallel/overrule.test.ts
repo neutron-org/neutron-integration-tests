@@ -1,17 +1,16 @@
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { Suite, inject } from 'vitest';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import {
   addSubdaoToDao,
   deployNeutronDao,
   deploySubdao,
 } from '../../helpers/dao';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
+import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 
 describe('Neutron / Subdao Overrule', () => {

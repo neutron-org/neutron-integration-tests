@@ -1,7 +1,6 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
@@ -18,11 +17,11 @@ import {
   CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { SigningStargateClient } from '@cosmjs/stargate';
-
-import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { Wallet } from '../../helpers/wallet';
+import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
+import config from '../../config.json';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =

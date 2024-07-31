@@ -1,78 +1,91 @@
 import '@neutron-org/neutronjsplus';
-import {
-  CosmosWrapper,
-  getEventAttribute,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { LocalState, createWalletWrapper } from '../../helpers/local_state';
-import { NeutronContract, CodeId } from '@neutron-org/neutronjsplus/dist/types';
-import { msgCreateDenom } from '@neutron-org/neutronjsplus/dist/tokenfactory';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
+import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { LocalState } from '../../helpers/local_state';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { Suite, inject } from 'vitest';
-
-const config = require('../../config.json');
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import { Registry } from '@cosmjs/proto-signing';
+import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import config from '../../config.json';
 
 describe('Neutron / Stargate Queries', () => {
   let testState: LocalState;
-  let neutronChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
+  let neutronClient: SigningNeutronClient;
+  let neutronWallet: Wallet;
   let contractAddress: string;
 
-  let gaiaChain: CosmosWrapper;
-  let gaiaAccount: WalletWrapper;
+  let gaiaClient: SigningStargateClient;
+  let gaiaWallet: Wallet;
 
   let newTokenDenom: string;
 
   beforeAll(async (suite: Suite) => {
-    const mnemonics = inject('mnemonics');
-    testState = await LocalState.create(config, mnemonics, suite);
-    neutronChain = new CosmosWrapper(
-      NEUTRON_DENOM,
-      testState.restNeutron,
-      testState.rpcNeutron,
-    );
-    neutronAccount = await createWalletWrapper(
-      neutronChain,
-      await testState.nextWallet('neutron'),
-    );
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    gaiaChain = new CosmosWrapper(
-      COSMOS_DENOM,
-      testState.restGaia,
-      testState.rpcGaia,
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
-    gaiaAccount = await createWalletWrapper(
-      gaiaChain,
-      await testState.nextWallet('cosmos'),
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
+      testState.rpcGaia,
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
     );
   });
 
   describe('Prepare for queries', () => {
     test('uatom IBC transfer from a remote chain to Neutron', async () => {
-      const res = await gaiaAccount.msgIBCTransfer(
-        'transfer',
-        'channel-0',
-        { denom: COSMOS_DENOM, amount: '1000' },
-        neutronAccount.wallet.address,
-        {
-          revisionNumber: 2n,
-          revisionHeight: 100000000n,
-        },
+      const fee = {
+        gas: '500000',
+        amount: [{ denom: COSMOS_DENOM, amount: '1250' }],
+      };
+
+      await gaiaClient.signAndBroadcast(
+        gaiaWallet.address,
+        [
+          {
+            typeUrl: MsgTransfer.typeUrl,
+            value: MsgTransfer.fromPartial({
+              sourcePort: 'transfer',
+              sourceChannel: 'channel-0',
+              token: { denom: COSMOS_DENOM, amount: '1000' },
+              sender: gaiaWallet.address,
+              receiver: neutronWallet.address,
+              timeoutHeight: {
+                revisionNumber: 2n,
+                revisionHeight: 100000000n,
+              },
+            }),
+          },
+        ],
+        fee,
       );
-      expect(res.code).toEqual(0);
     });
 
     test('create denom, mint', async () => {
       const denom = `teststargate`;
-
-      const data = await msgCreateDenom(
-        neutronAccount,
-        neutronAccount.wallet.address,
-        denom,
-        {
-          gas: '500000',
-          amount: [{ denom: 'untrn', amount: '1250' }],
-        },
+      const fee = {
+        gas: '500000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '1250' }],
+      };
+      const data = await neutronClient.signAndBroadcast(
+        [
+          {
+            typeUrl: MsgCreateDenom.typeUrl,
+            value: MsgCreateDenom.fromPartial({
+              sender: neutronWallet.address,
+              subdenom: denom,
+            }),
+          },
+        ],
+        fee,
       );
       newTokenDenom = getEventAttribute(
         data.events,
@@ -83,22 +96,18 @@ describe('Neutron / Stargate Queries', () => {
   });
 
   describe('Contract instantiation', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.STARGATE_QUERIER);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate', async () => {
-      contractAddress = await neutronAccount.instantiateContract(
-        codeId,
+      contractAddress = await neutronClient.create(
+        CONTRACTS.STARGATE_QUERIER,
         {},
         'stargate_querier',
       );
     });
   });
 
+  // TODO: this function does not make much sense: remove it
   async function querySmart(query: any): Promise<string> {
-    return await neutronChain.queryContract<string>(contractAddress, query);
+    return await neutronClient.queryContractSmart(contractAddress, query);
   }
 
   describe('Stargate queries', () => {
@@ -106,7 +115,7 @@ describe('Neutron / Stargate Queries', () => {
       const res = JSON.parse(
         await querySmart({
           bank_balance: {
-            address: neutronAccount.wallet.address,
+            address: neutronWallet.address,
             denom: NEUTRON_DENOM,
           },
         }),
@@ -143,11 +152,11 @@ describe('Neutron / Stargate Queries', () => {
       const res = JSON.parse(
         await querySmart({
           auth_account: {
-            address: neutronAccount.wallet.address,
+            address: neutronWallet.address,
           },
         }),
       );
-      expect(res.account.address).toBe(neutronAccount.wallet.address);
+      expect(res.account.address).toBe(neutronWallet.address);
     });
 
     test('transfer denom trace should work', async () => {
@@ -222,7 +231,7 @@ describe('Neutron / Stargate Queries', () => {
     test('denoms from creator should work', async () => {
       const res = await querySmart({
         tokenfactory_denoms_from_creator: {
-          creator: neutronAccount.wallet.address,
+          creator: neutronWallet.address,
         },
       });
       expect(res).toBe(`{"denoms":["${newTokenDenom}"]}`);

@@ -3,16 +3,8 @@ import { Suite, inject } from 'vitest';
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import {
-  Dao,
-  DaoMember,
-  TimelockConfig,
-} from '@neutron-org/neutronjsplus/dist/dao';
-import {
-  SingleChoiceProposal,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
+import { SingleChoiceProposal } from '@neutron-org/neutronjsplus/dist/types';
 import { IndexedTx } from '@cosmjs/cosmwasm-stargate';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
@@ -22,7 +14,9 @@ import {
 import { deployNeutronDao, setupSubDaoTimelockSet } from '../../helpers/dao';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
+import { Wallet } from '../../helpers/wallet';
+import { TimelockConfig } from '@neutron-org/neutronjsplus/dist/dao_types';
 import config from '../../config.json';
 
 describe('Neutron / Subdao', () => {

@@ -1,6 +1,5 @@
 import { Coin } from '@cosmjs/proto-signing';
 import '@neutron-org/neutronjsplus';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
 import {
   Dao,
   DaoMember,
@@ -10,12 +9,14 @@ import {
 import { updateGlobalFeeParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+
 import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
 import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
@@ -42,10 +43,16 @@ describe('Neutron / Global Fee', () => {
 
     globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
 
+    neutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
+    );
+
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
       neutronRpcClient,
-    );
+    ); // add assert for some addresses
     const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
     mainDao = new Dao(neutronClient, daoContracts);
     daoMember = new DaoMember(
@@ -54,6 +61,7 @@ describe('Neutron / Global Fee', () => {
       neutronWallet.address,
       NEUTRON_DENOM,
     );
+
     await daoMember.bondFunds('10000');
     await neutronClient.getWithAttempts(
       async () => await mainDao.queryVotingPower(daoMember.user),
@@ -164,7 +172,7 @@ describe('Neutron / Global Fee', () => {
     ]);
   });
 
-  test('check minumum global fees with bank send command', async () => {
+  test('check minimum global fees with bank send command', async () => {
     await expect(
       neutronClient.sendTokens(
         mainDao.contracts.core.address,

@@ -6,16 +6,17 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/feemarket';
+import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
-import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
+
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 
 import config from '../../config.json';
+import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;

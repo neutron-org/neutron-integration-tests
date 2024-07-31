@@ -1,28 +1,23 @@
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
-import { generateMnemonic } from 'bip39';
 import { promises as fs } from 'fs';
-import { CosmosWrapper } from '@neutron-org/neutronjsplus/dist/cosmos';
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { WalletWrapper } from '@neutron-org/neutronjsplus/dist/walletWrapper';
-import { CONTRACTS_PATH, DEBUG_SUBMIT_TX } from './setup';
 import {
   createProtobufRpcClient,
-  defaultRegistryTypes,
   ProtobufRpcClient,
   QueryClient,
-  SigningStargateClient,
 } from '@cosmjs/stargate';
-import { Coin, Registry, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { Suite } from 'vitest';
-import { neutronTypes } from '@neutron-org/neutronjsplus/dist/neutronTypes';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
+import { Wallet } from './wallet';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
-  wallets: Record<string, Record<string, Wallet>>;
+  wallets: {
+    cosmos: Record<string, Wallet>;
+    neutron: Record<string, Wallet>;
+  };
   icqWebHost: string;
 
   rpcNeutron: string;
@@ -70,20 +65,9 @@ export class LocalState {
       this.testFilePosition = 0;
     }
 
-    const neutron = await getGenesisWallets(NEUTRON_PREFIX, this.config);
-    const cosmos = await getGenesisWallets(COSMOS_PREFIX, this.config);
-
-    // TODO: simplify structure here. Can be just wallets: { name: Wallet }
-    // TODO: use only neutron / cosmos wallets, others can be generated with nextWallet on the fly
     this.wallets = {
-      cosmos,
-      neutron,
-      qaNeutron: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaCosmos: { qa: await this.nextWallet(COSMOS_PREFIX) },
-      qaCosmosTwo: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronThree: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronFour: { qa: await this.nextWallet(NEUTRON_PREFIX) },
-      qaNeutronFive: { qa: await this.nextWallet(NEUTRON_PREFIX) },
+      cosmos: await getGenesisWallets(COSMOS_PREFIX, this.config),
+      neutron: await getGenesisWallets(NEUTRON_PREFIX, this.config),
     };
   }
 
@@ -105,46 +89,6 @@ export class LocalState {
     this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
     return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
-  }
-
-  async createQaWallet(
-    prefix: string,
-    wallet: Wallet,
-    denom: string,
-    rpc: string,
-    balances: Coin[] = [],
-  ): Promise<Wallet> {
-    if (balances.length === 0) {
-      balances = [
-        {
-          denom,
-          amount: '11500000000',
-        },
-      ];
-    }
-
-    const client = await SigningStargateClient.connectWithSigner(
-      rpc,
-      wallet.directwallet,
-      {
-        registry: new Registry(defaultRegistryTypes),
-      },
-    );
-    const mnemonic = generateMnemonic();
-
-    const newWallet = await mnemonicToWallet(mnemonic, prefix);
-    for (const balance of balances) {
-      await client.sendTokens(
-        wallet.account.address,
-        newWallet.account.address,
-        [{ amount: balance.amount, denom: balance.denom }],
-        {
-          gas: '200000',
-          amount: [{ denom: denom, amount: '1000' }],
-        },
-      );
-    }
-    return await mnemonicToWallet(mnemonic, prefix);
   }
 
   async neutronRpcClient() {
@@ -239,24 +183,3 @@ const getGenesisWallets = async (
   rly1: await mnemonicToWallet(config.RLY_MNEMONIC_1, prefix),
   rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
 });
-
-export async function createWalletWrapper(
-  chain: CosmosWrapper,
-  wallet: Wallet,
-) {
-  const registry = new Registry(neutronTypes);
-
-  const wasmClient = await SigningCosmWasmClient.connectWithSigner(
-    chain.rpc,
-    wallet.directwallet,
-    { registry },
-  );
-  return new WalletWrapper(
-    chain,
-    wallet,
-    wasmClient,
-    registry,
-    CONTRACTS_PATH,
-    DEBUG_SUBMIT_TX,
-  );
-}

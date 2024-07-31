@@ -1,16 +1,15 @@
 import {
   Dao,
   DaoContractLabels,
-  DaoContracts,
   DaoMember,
   getDaoContracts,
   getSubDaoContracts,
-  wrapMsg,
+  toBase64String,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus';
+import { DaoContracts } from '@neutron-org/neutronjsplus/dist/dao_types';
+import { NEUTRON_DENOM, CONTRACTS } from './constants';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { addSubdaoProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { CONTRACTS } from './constants';
 import { SigningNeutronClient } from './signing_neutron_client';
 
 export const deploySubdao = async (
@@ -34,7 +33,7 @@ export const deploySubdao = async (
   const votingModuleInstantiateInfo = {
     code_id: cw4VotingCodeId,
     label: 'subDAO_Neutron_voting_module',
-    msg: wrapMsg({
+    msg: toBase64String({
       cw4_group_code_id: cw4GroupCodeId,
       initial_members: [
         {
@@ -54,13 +53,13 @@ export const deploySubdao = async (
         info: {
           code_id: preProposeTimelockedCodeId,
           label: 'neutron.subdaos.test.proposal.single.pre_propose',
-          msg: wrapMsg({
+          msg: toBase64String({
             open_proposal_submission: true,
             timelock_module_instantiate_info: {
               code_id: timelockCodeId,
               label:
                 'neutron.subdaos.test.proposal.single.pre_propose.timelock',
-              msg: wrapMsg({
+              msg: toBase64String({
                 overrule_pre_propose: overrulePreProposeAddress,
               }),
             },
@@ -73,7 +72,7 @@ export const deploySubdao = async (
   const proposalModuleInstantiateInfo = {
     code_id: proposeCodeId,
     label: 'neutron.subdaos.test.proposal.single',
-    msg: wrapMsg(proposeInstantiateMessage),
+    msg: toBase64String(proposeInstantiateMessage),
   };
 
   const propose2InstantiateMessage = {
@@ -85,13 +84,13 @@ export const deploySubdao = async (
         info: {
           code_id: preProposeTimelockedCodeId,
           label: 'neutron.subdaos.test.proposal.single2.pre_propose',
-          msg: wrapMsg({
+          msg: toBase64String({
             open_proposal_submission: true,
             timelock_module_instantiate_info: {
               code_id: timelockCodeId,
               label:
                 'neutron.subdaos.test.proposal.single2.pre_propose.timelock',
-              msg: wrapMsg({
+              msg: toBase64String({
                 overrule_pre_propose: overrulePreProposeAddress,
               }),
             },
@@ -104,7 +103,7 @@ export const deploySubdao = async (
   const proposal2ModuleInstantiateInfo = {
     code_id: proposeCodeId,
     label: 'neutron.subdaos.test.proposal.single2',
-    msg: wrapMsg(propose2InstantiateMessage),
+    msg: toBase64String(propose2InstantiateMessage),
   };
 
   const nonTimelockedPauseProposeInstantiateMessage = {
@@ -116,7 +115,7 @@ export const deploySubdao = async (
         info: {
           code_id: preProposeNonTimelockedPauseCodeId,
           label: 'neutron.subdaos.test.proposal.single_nt_pause.pre_propose',
-          msg: wrapMsg({
+          msg: toBase64String({
             open_proposal_submission: true,
           }),
         },
@@ -127,7 +126,7 @@ export const deploySubdao = async (
   const nonTimelockedPauseProposalModuleInstantiateInfo = {
     code_id: proposeCodeId,
     label: 'neutron.subdaos.test.proposal.single_nt_pause',
-    msg: wrapMsg(nonTimelockedPauseProposeInstantiateMessage),
+    msg: toBase64String(nonTimelockedPauseProposeInstantiateMessage),
   };
 
   const coreInstantiateMessage = {
@@ -221,7 +220,7 @@ export const deployNeutronDao = async (
     },
     code_id: votingRegistryCodeId,
     label: DaoContractLabels.DAO_VOTING_REGISTRY,
-    msg: wrapMsg({
+    msg: toBase64String({
       owner: user,
       voting_vaults: [neutronVaultAddress],
     }),
@@ -249,7 +248,7 @@ export const deployNeutronDao = async (
             core_module: {},
           },
           code_id: preProposeSingleCodeId,
-          msg: wrapMsg(preProposeInitMsg),
+          msg: toBase64String(preProposeInitMsg),
           label: DaoContractLabels.DAO_PRE_PROPOSAL_SINGLE,
         },
       },
@@ -280,7 +279,7 @@ export const deployNeutronDao = async (
             core_module: {},
           },
           code_id: preProposeMultipleCodeId,
-          msg: wrapMsg(preProposeInitMsg),
+          msg: toBase64String(preProposeInitMsg),
           label: DaoContractLabels.DAO_PRE_PROPOSAL_MULTIPLE,
         },
       },
@@ -308,7 +307,7 @@ export const deployNeutronDao = async (
             core_module: {},
           },
           code_id: preProposeOverruleCodeId,
-          msg: wrapMsg({}),
+          msg: toBase64String({}),
           label: DaoContractLabels.DAO_PRE_PROPOSAL_OVERRULE,
         },
       },
@@ -339,7 +338,7 @@ export const deployNeutronDao = async (
         },
         code_id: proposeSingleCodeId,
         label: DaoContractLabels.DAO_PROPOSAL_SINGLE,
-        msg: wrapMsg(proposeSingleInitMsg),
+        msg: toBase64String(proposeSingleInitMsg),
       },
       {
         admin: {
@@ -347,7 +346,7 @@ export const deployNeutronDao = async (
         },
         code_id: proposeMultipleCodeId,
         label: DaoContractLabels.DAO_PROPOSAL_MULTIPLE,
-        msg: wrapMsg(proposeMultipleInitMsg),
+        msg: toBase64String(proposeMultipleInitMsg),
       },
       {
         admin: {
@@ -355,7 +354,7 @@ export const deployNeutronDao = async (
         },
         code_id: proposeSingleCodeId,
         label: DaoContractLabels.DAO_PROPOSAL_OVERRULE,
-        msg: wrapMsg(proposeOverruleInitMsg),
+        msg: toBase64String(proposeOverruleInitMsg),
       },
     ],
   };
