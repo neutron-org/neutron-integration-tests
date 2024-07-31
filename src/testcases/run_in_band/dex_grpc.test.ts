@@ -28,7 +28,7 @@ import {
 
 const config = require('../../config.json');
 
-describe('Neutron / dex module (stargate contract)', () => {
+describe('Neutron / dex module (grpc contract)', () => {
   let testState: TestStateLocalCosmosTestNet;
   let neutronChain: CosmosWrapper;
   let neutronAccount: WalletWrapper;
@@ -50,15 +50,15 @@ describe('Neutron / dex module (stargate contract)', () => {
     );
   });
 
-  describe('Instantiate dex stargate contract', () => {
+  describe('Instantiate dex grpc contract', () => {
     let codeId: CodeId;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_STARGATE);
+      codeId = await neutronAccount.storeWasm(NeutronContract.DEX_GRPC);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
       contractAddress = (
-        await neutronAccount.instantiateContract(codeId, '{}', 'dex_dev')
+        await neutronAccount.instantiateContract(codeId, '{}', 'dex_grpc')
       )[0]._contract_address;
       await neutronAccount.msgSend(contractAddress, {
         amount: '100000000',
@@ -89,6 +89,7 @@ describe('Neutron / dex module (stargate contract)', () => {
                 options: [
                   {
                     disable_autoswap: true,
+                    fail_tx_on_bel: false,
                   },
                 ],
               },
@@ -114,6 +115,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               options: [
                 {
                   disable_autoswap: true,
+                  fail_tx_on_bel: false,
                 },
               ],
             },
@@ -159,9 +161,10 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '1.22',
+              limit_sell_price: '1220000000000000000000000000',
               amount_in: '1000000',
               order_type: LimitOrderType.GoodTilCanceled,
+              max_amount_out: '',
             },
           }),
         );
@@ -177,7 +180,7 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '0.74',
+              limit_sell_price: '740000000000000000000000000',
               amount_in: '100',
               order_type: LimitOrderType.FillOrKill,
               max_amount_out: '100',
@@ -196,9 +199,10 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '0.998',
+              limit_sell_price: '998000000000000000000000000',
               amount_in: '1000000',
               order_type: LimitOrderType.ImmediateOrCancel,
+              max_amount_out: '',
             },
           }),
         );
@@ -214,9 +218,10 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '1.22',
+              limit_sell_price: '1220000000000000000000000000',
               amount_in: '1000000',
               order_type: LimitOrderType.JustInTime,
+              max_amount_out: '',
             },
           }),
         );
@@ -231,10 +236,13 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '1.002',
+              limit_sell_price: '1002000000000000000000000000',
               amount_in: '10000000',
-              expiration_time: Math.ceil(Date.now() / 1000) + 1000,
+              expiration_time: secondsToRFC3339(
+                Math.ceil(Date.now() / 1000) + 1000,
+              ),
               order_type: LimitOrderType.GoodTilTime,
+              max_amount_out: '',
             },
           }),
         );
@@ -250,10 +258,11 @@ describe('Neutron / dex module (stargate contract)', () => {
                 token_in: 'untrn',
                 token_out: 'uibcusdc',
                 tick_index_in_to_out: 0,
-                limit_sell_price: '0.998',
+                limit_sell_price: '998000000000000000000000000',
                 amount_in: '10000000',
-                expiration_time: 1,
+                expiration_time: secondsToRFC3339(1),
                 order_type: LimitOrderType.GoodTilTime,
+                max_amount_out: '',
               },
             }),
           ),
@@ -271,14 +280,17 @@ describe('Neutron / dex module (stargate contract)', () => {
                 token_in: 'untrn',
                 token_out: 'uibcusdc',
                 tick_index_in_to_out: 0,
-                limit_sell_price: '1.0001',
+                limit_sell_price: '1000100000000000000000000000',
                 amount_in: '10',
-                expiration_time: 1,
+                expiration_time: secondsToRFC3339(1),
                 order_type: 10,
+                max_amount_out: '',
               },
             }),
           ),
-        ).rejects.toThrowError(/invalid numeric value for LimitOrderType/); // checked on contract's level
+        ).rejects.toThrowError(
+          /Only Limit orders of type GOOD_TIL_TIME can supply an ExpirationTime/,
+        ); // checked on contract's level
       });
     });
     describe('Withdraw filled LO', () => {
@@ -291,9 +303,10 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'untrn',
               token_out: 'uibcusdc',
               tick_index_in_to_out: 0,
-              limit_sell_price: '0.8188125757',
+              limit_sell_price: '818812575700000000000000000',
               amount_in: '1000000',
               order_type: LimitOrderType.GoodTilCanceled,
+              max_amount_out: '',
             },
           }),
         );
@@ -312,9 +325,10 @@ describe('Neutron / dex module (stargate contract)', () => {
               token_in: 'uibcusdc',
               token_out: 'untrn',
               tick_index_in_to_out: 0,
-              limit_sell_price: '1.1',
+              limit_sell_price: '1100000000000000000000000000',
               amount_in: '1000',
               order_type: LimitOrderType.ImmediateOrCancel,
+              max_amount_out: '',
             },
           }),
         );
@@ -393,9 +407,10 @@ describe('Neutron / dex module (stargate contract)', () => {
             token_in: 'untrn',
             token_out: 'uibcusdc',
             tick_index_in_to_out: 0,
-            limit_sell_price: '0.8188125757',
+            limit_sell_price: '818812575700000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.GoodTilCanceled,
+            max_amount_out: '',
           },
         }),
       );
@@ -414,9 +429,10 @@ describe('Neutron / dex module (stargate contract)', () => {
             token_in: 'untrn',
             token_out: 'uibcusdc',
             tick_index_in_to_out: 0,
-            limit_sell_price: '7.3816756536',
+            limit_sell_price: '7381675653600000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.JustInTime,
+            max_amount_out: '',
           },
         }),
       );
@@ -540,7 +556,7 @@ describe('Neutron / dex module (stargate contract)', () => {
             },
           },
         );
-      expect(respNoPoolData.deposits[0].total_shares).toBeNull();
+      expect(respNoPoolData.deposits[0].total_shares).toEqual('');
       expect(respNoPoolData.deposits[0].pool).toBeNull();
     });
     test('AllTickLiquidity', async () => {
@@ -625,8 +641,11 @@ describe('Neutron / dex module (stargate contract)', () => {
             token_out: 'uibcusdc',
             tick_index_in_to_out: 1,
             amount_in: '1000000',
-            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
+            expiration_time: secondsToRFC3339(
+              Math.ceil(Date.now() / 1000) + 1000,
+            ),
             order_type: LimitOrderType.GoodTilTime,
+            max_amount_out: '',
           },
         },
       );
@@ -661,3 +680,22 @@ describe('Neutron / dex module (stargate contract)', () => {
     });
   });
 });
+
+function secondsToRFC3339(seconds: number): string {
+  // Convert seconds to milliseconds and create a Date object
+  const date = new Date(seconds * 1000);
+
+  // Get individual components of the date
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const hours = String(date.getUTCHours()).padStart(2, '0');
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+  const secondsString = String(date.getUTCSeconds()).padStart(2, '0');
+  const milliseconds = String(date.getUTCMilliseconds()).padStart(3, '0');
+
+  // Construct the RFC3339 string
+  const rfc3339 = `${year}-${month}-${day}T${hours}:${minutes}:${secondsString}.${milliseconds}Z`;
+
+  return rfc3339;
+}
