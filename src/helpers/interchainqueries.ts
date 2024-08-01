@@ -6,6 +6,7 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import {
   CosmWasmClient,
@@ -20,6 +21,46 @@ import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
+
+export const executeUpdateInterchainQueriesParams = async (
+  chainManagerAddress: string,
+  interchainQueriesQuerier: InterchainqQuerier,
+  mainDao: Dao,
+  daoMember: DaoMember,
+  maxKvQueryKeysCount?: number,
+  maxTransactionsFilters?: number,
+) => {
+  const params = (await interchainQueriesQuerier.params()).params;
+  if (maxKvQueryKeysCount != undefined) {
+    params.maxKvQueryKeysCount = BigInt(maxKvQueryKeysCount);
+  }
+
+  if (maxTransactionsFilters != undefined) {
+    params.maxTransactionsFilters = BigInt(maxTransactionsFilters);
+  }
+
+  const proposalId =
+    await daoMember.submitUpdateParamsInterchainqueriesProposal(
+      chainManagerAddress,
+      'Change Proposal - InterchainQueriesParams',
+      'Param change proposal. It will change enabled params of interchainquries module.',
+      {
+        query_submit_timeout: Number(params.querySubmitTimeout),
+        query_deposit: params.queryDeposit,
+        tx_query_removal_limit: Number(params.txQueryRemovalLimit),
+        max_kv_query_keys_count: Number(params.maxKvQueryKeysCount),
+        max_transactions_filters: Number(params.maxTransactionsFilters),
+      },
+      '1000',
+    );
+
+  await daoMember.voteYes(proposalId, 'single', {
+    gas: '4000000',
+    amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
+  });
+  await mainDao.checkPassedProposal(proposalId);
+  await daoMember.executeProposalWithAttempts(proposalId);
+};
 
 export const getKvCallbackStatus = async (
   client: SigningNeutronClient,

@@ -1,5 +1,6 @@
 import {
   acceptInterchainqueriesParamsChangeProposal,
+  executeUpdateInterchainQueriesParams,
   filterIBCDenoms,
 } from '../../helpers/interchainqueries';
 import '@neutron-org/neutronjsplus';
@@ -60,9 +61,6 @@ import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 
-let chainManagerAddress: string;
-let mainDao: Dao;
-
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
   const updatePeriods: { [key: number]: number } = {
@@ -86,6 +84,8 @@ describe('Neutron / Interchain KV Query', () => {
   let slashingQuerier: SlashingQuerier;
   let contractAddress: string;
   let daoMember: DaoMember;
+  let mainDao: Dao;
+  let chainManagerAddress: string;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
@@ -254,7 +254,9 @@ describe('Neutron / Interchain KV Query', () => {
           }),
         ).rejects.toThrowError(/keys count cannot be more than 32/);
         await executeUpdateInterchainQueriesParams(
+          chainManagerAddress,
           interchainqQuerier,
+          mainDao,
           daoMember,
           10,
           undefined,
@@ -331,7 +333,9 @@ describe('Neutron / Interchain KV Query', () => {
 
       test('register icq #6: 100 keys', async () => {
         await executeUpdateInterchainQueriesParams(
+          chainManagerAddress,
           interchainqQuerier,
+          mainDao,
           daoMember,
           100,
           undefined,
@@ -1268,41 +1272,3 @@ describe('Neutron / Interchain KV Query', () => {
     });
   });
 });
-
-const executeUpdateInterchainQueriesParams = async (
-  interchainQueriesQuerier: InterchainqQuerier,
-  daoMember: DaoMember,
-  maxKvQueryKeysCount?: number,
-  maxTransactionsFilters?: number,
-) => {
-  const params = (await interchainQueriesQuerier.params()).params;
-  if (maxKvQueryKeysCount != undefined) {
-    params.maxKvQueryKeysCount = BigInt(maxKvQueryKeysCount);
-  }
-
-  if (maxTransactionsFilters != undefined) {
-    params.maxTransactionsFilters = BigInt(maxTransactionsFilters);
-  }
-
-  const proposalId =
-    await daoMember.submitUpdateParamsInterchainqueriesProposal(
-      chainManagerAddress,
-      'Change Proposal - InterchainQueriesParams',
-      'Param change proposal. It will change enabled params of interchainquries module.',
-      {
-        query_submit_timeout: Number(params.querySubmitTimeout),
-        query_deposit: params.queryDeposit,
-        tx_query_removal_limit: Number(params.txQueryRemovalLimit),
-        max_kv_query_keys_count: Number(params.maxKvQueryKeysCount),
-        max_transactions_filters: Number(params.maxTransactionsFilters),
-      },
-      '1000',
-    );
-
-  await daoMember.voteYes(proposalId, 'single', {
-    gas: '4000000',
-    amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
-  });
-  await mainDao.checkPassedProposal(proposalId);
-  await daoMember.executeProposalWithAttempts(proposalId);
-};
