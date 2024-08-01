@@ -15,3 +15,5 @@ write-file-atomic*
 junit.xml
 
 contracts/*.wasm
+.yalc
+yalc.lock
