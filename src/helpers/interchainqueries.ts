@@ -21,39 +21,39 @@ import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 
-export const getKvCallbackStatus = (
-  cm: SigningNeutronClient,
+export const getKvCallbackStatus = async (
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
-  cm.client.queryContractSmart<{
-    last_update_height: number;
-  }>(contractAddress, {
+): Promise<{
+  last_update_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     kv_callback_stats: {
       query_id: queryId,
     },
   });
 
-export const filterIBCDenoms = (list: Coin[]) =>
+export const filterIBCDenoms = (list: Coin[]): Coin[] =>
   list.filter(
     (coin) =>
       coin.denom && ![IBC_ATOM_DENOM, IBC_USDC_DENOM].includes(coin.denom),
   );
 
 export const watchForKvCallbackUpdates = async (
-  neutronCm: SigningNeutronClient,
-  targetCm: SigningStargateClient,
+  neutronClient: SigningNeutronClient,
+  targetClient: SigningStargateClient,
   contractAddress: string,
   queryIds: number[],
 ) => {
   const statusPrev = await Promise.all(
-    queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
+    queryIds.map((i) => getKvCallbackStatus(neutronClient, contractAddress, i)),
   );
-  const targetHeight = await targetCm.getHeight();
+  const targetHeight = await targetClient.getHeight();
   await Promise.all(
     queryIds.map((i) =>
       waitForICQResultWithRemoteHeight(
-        neutronCm,
+        neutronClient,
         contractAddress,
         i,
         targetHeight,
@@ -61,7 +61,7 @@ export const watchForKvCallbackUpdates = async (
     ),
   );
   const status = await Promise.all(
-    queryIds.map((i) => getKvCallbackStatus(neutronCm, contractAddress, i)),
+    queryIds.map((i) => getKvCallbackStatus(neutronClient, contractAddress, i)),
   );
   for (const i in status) {
     expect(statusPrev[i].last_update_height).toBeLessThan(
@@ -70,99 +70,89 @@ export const watchForKvCallbackUpdates = async (
   }
 };
 
-export const getQueryBalanceResult = (
-  client: SigningNeutronClient,
+export const getQueryBalanceResult = async (
+  client: CosmWasmClient,
   contractAddress: string,
   queryId: number,
-) =>
-  client.queryContractSmart<{
-    balances: {
-      coins: {
-        denom: string;
-        amount: string;
-      }[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+): Promise<{
+  balances: {
+    coins: {
+      denom: string;
+      amount: string;
+    }[];
+  };
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     balance: {
       query_id: queryId,
     },
   });
 
-export const getValidatorsSigningInfosResult = (
-  cm: SigningNeutronClient,
+export const getValidatorsSigningInfosResult = async (
+  client: CosmWasmClient,
   contractAddress: string,
   queryId: number,
-) =>
-  cm.client.queryContractSmart<{
+): Promise<{
+  signing_infos: {
     signing_infos: {
-      signing_infos: {
-        address: string;
-        start_height: string;
-        index_offset: string;
-        jailed_until: string;
-        tombstoned: boolean;
-        missed_blocks_counter: number;
-      }[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+      address: string;
+      start_height: string;
+      index_offset: string;
+      jailed_until: string;
+      tombstoned: boolean;
+      missed_blocks_counter: number;
+    }[];
+  };
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     validators_signing_infos: {
       query_id: queryId,
     },
   });
 
-export const getDelegatorUnbondingDelegationsResult = (
-  cm: SigningNeutronClient,
+export const getDelegatorUnbondingDelegationsResult = async (
+  client: CosmWasmClient,
   contractAddress: string,
   queryId: number,
-) =>
-  cm.client.queryContractSmart<{
-    unbonding_delegations: {
-      unbonding_responses: {
-        delegator_address: string;
-        validator_address: string;
-        entries: {
-          balance: string;
-          completion_time: string | null;
-          creation_height: number;
-          initial_balance: string;
-        }[];
+): Promise<{
+  unbonding_delegations: {
+    unbonding_responses: {
+      delegator_address: string;
+      validator_address: string;
+      entries: {
+        balance: string;
+        completion_time: string | null;
+        creation_height: number;
+        initial_balance: string;
       }[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+    }[];
+  };
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     get_unbonding_delegations: {
       query_id: queryId,
     },
   });
 
-export const getCosmosSigningInfosResult = async (sdkUrl: string) => {
-  try {
-    QuerySigningInfosRequest;
-    return (await axios.get(`${sdkUrl}/cosmos/slashing/v1beta1/signing_infos`))
-      .data;
-  } catch (e) {
-    return null;
-  }
-};
-
-export const getQueryDelegatorDelegationsResult = (
+export const getQueryDelegatorDelegationsResult = async (
   client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
-  client.queryContractSmart<{
-    delegations: {
-      delegator: string;
-      validator: string;
-      amount: {
-        denom: string;
-        amount: string;
-      };
-    }[];
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+): Promise<{
+  delegations: {
+    delegator: string;
+    validator: string;
+    amount: {
+      denom: string;
+      amount: string;
+    };
+  }[];
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     get_delegations: {
       query_id: queryId,
     },
@@ -198,12 +188,12 @@ export const registerSigningInfoQuery = async (
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  valcons: string,
+  validatorCons: string,
 ) => {
   const txResult = await client.execute(contractAddress, {
     register_validators_signing_info_query: {
       connection_id: connectionId,
-      validators: [valcons],
+      validators: [validatorCons],
       update_period: updatePeriod,
     },
   });
@@ -388,14 +378,14 @@ export const validateBalanceQuery = async (
 };
 
 export const registerProposalVotesQuery = async (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   proposalId: number,
   voters: string[],
 ) => {
-  const txResult = await cm.execute(contractAddress, {
+  const txResult = await client.execute(contractAddress, {
     register_government_proposal_votes_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
@@ -413,33 +403,33 @@ export const registerProposalVotesQuery = async (
 };
 
 export const getProposalVotesResult = (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
-  cm.client.queryContractSmart<{
-    votes: {
-      proposal_votes: {
-        proposal_id: number;
-        voter: string;
-        options: any;
-      }[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+): Promise<{
+  votes: {
+    proposal_votes: {
+      proposal_id: number;
+      voter: string;
+      options: any;
+    }[];
+  };
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     government_proposal_votes: {
       query_id: queryId,
     },
   });
 
 export const registerGovProposalsQuery = async (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   proposalsIds: number[],
 ) => {
-  const txResult = await cm.execute(contractAddress, {
+  const txResult = await client.execute(contractAddress, {
     register_government_proposals_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
@@ -456,16 +446,16 @@ export const registerGovProposalsQuery = async (
 };
 
 export const getProposalsResult = (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
-  cm.client.queryContractSmart<{
-    proposals: {
-      proposals: any[];
-    };
-    last_submitted_local_height: number;
-  }>(contractAddress, {
+): Promise<{
+  proposals: {
+    proposals: any[];
+  };
+  last_submitted_local_height: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     government_proposals: {
       query_id: queryId,
     },
@@ -475,33 +465,33 @@ export const getProposalsResult = (
  * getRegisteredQuery queries the contract for a registered query details registered by the given
  * queryId.
  */
-export const getRegisteredQuery = (
-  ww: SigningNeutronClient,
+export const getRegisteredQuery = async (
+  client: SigningNeutronClient,
   contractAddress: string,
   queryId: number,
-) =>
-  ww.client.queryContractSmart<{
-    registered_query: {
-      id: number;
-      owner: string;
-      keys: {
-        path: string;
-        key: string;
-      }[];
-      query_type: string;
-      transactions_filter: string;
-      connection_id: string;
-      update_period: number;
-      last_submitted_result_local_height: number;
-      last_submitted_result_remote_height: {
-        revision_number: number;
-        revision_height: number;
-      };
-      deposit: { denom: string; amount: string }[];
-      submit_timeout: number;
-      registered_at_height: number;
+): Promise<{
+  registered_query: {
+    id: number;
+    owner: string;
+    keys: {
+      path: string;
+      key: string;
+    }[];
+    query_type: string;
+    transactions_filter: string;
+    connection_id: string;
+    update_period: number;
+    last_submitted_result_local_height: number;
+    last_submitted_result_remote_height: {
+      revision_number: number;
+      revision_height: number;
     };
-  }>(contractAddress, {
+    deposit: { denom: string; amount: string }[];
+    submit_timeout: number;
+    registered_at_height: number;
+  };
+}> =>
+  client.queryContractSmart(contractAddress, {
     get_registered_query: {
       query_id: queryId,
     },
@@ -515,7 +505,7 @@ export const waitForICQResultWithRemoteHeight = (
   numAttempts = 20,
 ) =>
   getWithAttempts(
-    client.client,
+    client,
     () => getRegisteredQuery(client, contractAddress, queryId),
     async (query) =>
       query.registered_query.last_submitted_result_remote_height
@@ -529,10 +519,10 @@ export const waitForICQResultWithRemoteHeight = (
 export const queryTransfersNumber = (
   client: SigningNeutronClient,
   contractAddress: string,
-) =>
-  client.client.queryContractSmart<{
-    transfers_number: number;
-  }>(contractAddress, {
+): Promise<{
+  transfers_number: number;
+}> =>
+  client.queryContractSmart(contractAddress, {
     get_transfers_number: {},
   });
 
@@ -547,7 +537,7 @@ export const waitForTransfersAmount = (
   numAttempts = 50,
 ) =>
   getWithAttempts(
-    client.client,
+    client,
     async () =>
       (await queryTransfersNumber(client, contractAddress)).transfers_number,
     async (amount) => amount == expectedTransfersAmount,
@@ -600,13 +590,13 @@ export const postResubmitTxs = async (
  * the given parameters and checks the tx result to be successful.
  */
 export const registerTransfersQuery = async (
-  cm: SigningNeutronClient,
+  client: SigningNeutronClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
   recipients: string[],
 ) => {
-  const res = await cm.execute(contractAddress, {
+  const res = await client.execute(contractAddress, {
     register_transfers_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
@@ -622,19 +612,14 @@ export const registerTransfersQuery = async (
 /**
  * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
  */
-export const queryRecipientTxs = (
+export const queryRecipientTxs = async (
   client: SigningNeutronClient,
   contractAddress: string,
   recipient: string,
-) =>
-  client.client.queryContractSmart<{
-    transfers: [
-      recipient: string,
-      sender: string,
-      denom: string,
-      amount: string,
-    ];
-  }>(contractAddress, {
+): Promise<{
+  transfers: [recipient: string, sender: string, denom: string, amount: string];
+}> =>
+  client.queryContractSmart(contractAddress, {
     get_recipient_txs: {
       recipient: recipient,
     },

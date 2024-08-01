@@ -2,18 +2,19 @@ import { inject, Suite } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
-import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
 import {
-  DaoContracts,
   getDaoContracts,
   getNeutronDAOCore,
-  VotingVaultsModule,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
-
-import config from '../../config.json';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import {
+  DaoContracts,
+  VotingVaultsModule,
+} from '@neutron-org/neutronjsplus/dist/dao_types';
+import { CONTRACTS } from '../../helpers/constants';
+import config from '../../config.json';
 
 describe('Neutron / DAO check', () => {
   let testState: LocalState;
@@ -81,7 +82,7 @@ describe('Neutron / DAO check', () => {
         preProposalSingleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalSingleAddress,
         {
           proposal_module: {},
@@ -105,7 +106,7 @@ describe('Neutron / DAO check', () => {
         preProposalMultipleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalMultipleAddress,
         {
           proposal_module: {},
@@ -129,7 +130,7 @@ describe('Neutron / DAO check', () => {
         preProposalOverruleAddress,
       );
 
-      const propContract = await neutronClient.client.queryContractSmart(
+      const propContract = await neutronClient.queryContractSmart(
         preProposalOverruleAddress,
         {
           proposal_module: {},
@@ -177,7 +178,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         proposalSingleAddress,
-        NeutronContract.DAO_PROPOSAL_SINGLE,
+        CONTRACTS.DAO_PROPOSAL_SINGLE,
         wasmQuery,
       );
     });
@@ -186,7 +187,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         proposalMultipleAddress,
-        NeutronContract.DAO_PROPOSAL_MULTI,
+        CONTRACTS.DAO_PROPOSAL_MULTI,
         wasmQuery,
       );
     });
@@ -195,7 +196,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         preProposalSingleAddress,
-        NeutronContract.DAO_PREPROPOSAL_SINGLE,
+        CONTRACTS.DAO_PREPROPOSAL_SINGLE,
         wasmQuery,
       );
     });
@@ -204,7 +205,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         preProposalMultipleAddress,
-        NeutronContract.DAO_PREPROPOSAL_MULTI,
+        CONTRACTS.DAO_PREPROPOSAL_MULTI,
         wasmQuery,
       );
     });
@@ -213,7 +214,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         daoContracts.core.address,
-        NeutronContract.DAO_CORE,
+        CONTRACTS.DAO_CORE,
         wasmQuery,
       );
     });
@@ -222,7 +223,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         proposalOverruleAddress,
-        NeutronContract.DAO_PROPOSAL_SINGLE,
+        CONTRACTS.DAO_PROPOSAL_SINGLE,
         wasmQuery,
       );
     });
@@ -231,7 +232,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         preProposalOverruleAddress,
-        NeutronContract.DAO_PREPROPOSAL_OVERRULE,
+        CONTRACTS.DAO_PREPROPOSAL_OVERRULE,
         wasmQuery,
       );
     });
@@ -240,7 +241,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         treasuryContract,
-        NeutronContract.DAO_CORE,
+        CONTRACTS.DAO_CORE,
         wasmQuery,
       );
     });
@@ -248,7 +249,7 @@ describe('Neutron / DAO check', () => {
       await checkContractHash(
         neutronClient,
         votingVaultsNtrnAddress,
-        NeutronContract.NEUTRON_VAULT,
+        CONTRACTS.NEUTRON_VAULT,
         wasmQuery,
       );
     });
@@ -287,17 +288,13 @@ describe('Neutron / DAO check', () => {
 });
 
 const performCommonChecks = async (
-  netronChain: SigningNeutronClient,
+  client: SigningNeutronClient,
   daoContracts: DaoContracts,
   contractAddress: string,
 ) => {
-  await checkDaoAddress(
-    netronChain,
-    contractAddress,
-    daoContracts.core.address,
-  );
-  await verifyAdmin(netronChain, contractAddress, daoContracts.core.address);
-  await verifyLabel(netronChain, daoContracts, contractAddress);
+  await checkDaoAddress(client, contractAddress, daoContracts.core.address);
+  await verifyAdmin(client, contractAddress, daoContracts.core.address);
+  await verifyLabel(client, daoContracts, contractAddress);
 };
 
 const verifyAdmin = async (
@@ -305,7 +302,7 @@ const verifyAdmin = async (
   contractAddress: string,
   expectedAdmin: string,
 ) => {
-  const res = await neutronClient.client.getContract(contractAddress);
+  const res = await neutronClient.getContract(contractAddress);
   expect(res.admin).toEqual(expectedAdmin);
 };
 
@@ -329,12 +326,9 @@ const checkDaoAddress = async (
   contractAddress: string,
   expectedDao: string,
 ) => {
-  const daoFromContract = await client.client.queryContractSmart(
-    contractAddress,
-    {
-      dao: {},
-    },
-  );
+  const daoFromContract = await client.queryContractSmart(contractAddress, {
+    dao: {},
+  });
   expect(daoFromContract).toEqual(expectedDao);
 };
 

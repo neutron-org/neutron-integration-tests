@@ -1,11 +1,8 @@
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
@@ -13,8 +10,7 @@ import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
-
-const config = require('../../config.json');
+import config from '../../config.json';
 
 describe('Neutron / Stargate Queries', () => {
   let testState: LocalState;
@@ -63,8 +59,8 @@ describe('Neutron / Stargate Queries', () => {
               sender: gaiaWallet.address,
               receiver: neutronWallet.address,
               timeoutHeight: {
-                revisionNumber: BigInt(2),
-                revisionHeight: BigInt(100000000),
+                revisionNumber: 2n,
+                revisionHeight: 100000000n,
               },
             }),
           },
@@ -100,25 +96,18 @@ describe('Neutron / Stargate Queries', () => {
   });
 
   describe('Contract instantiation', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.STARGATE_QUERIER);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
+      contractAddress = await neutronClient.create(
+        CONTRACTS.STARGATE_QUERIER,
         {},
         'stargate_querier',
       );
     });
   });
 
+  // TODO: this function does not make much sense: remove it
   async function querySmart(query: any): Promise<string> {
-    return await neutronClient.client.queryContractSmart<string>(
-      contractAddress,
-      query,
-    );
+    return await neutronClient.queryContractSmart(contractAddress, query);
   }
 
   describe('Stargate queries', () => {

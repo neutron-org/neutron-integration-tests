@@ -3,17 +3,13 @@ import { execSync } from 'child_process';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import {
-  ChannelsList,
-  NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/types';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { CONTRACTS } from './constants';
 
 export const CONTRACTS_PATH = process.env.CONTRACTS_PATH || './contracts';
-export const DEBUG_SUBMIT_TX: boolean = !!process.env.DEBUG_SUBMIT_TX || false;
 
 const START_BLOCK_HEIGHT = process.env.START_BLOCK_HEIGHT
-  ? parseInt(process.env.START_BLOCK_HEIGHT, 10)
+  ? +process.env.START_BLOCK_HEIGHT
   : 10;
 
 let alreadySetUp = false;
@@ -23,9 +19,9 @@ export const getContractBinary = async (fileName: string): Promise<Buffer> =>
 
 export const getContractsHashes = async (): Promise<Record<string, string>> => {
   const hashes = {};
-  for (const key of Object.keys(NeutronContract)) {
-    const binary = await getContractBinary(NeutronContract[key]);
-    hashes[NeutronContract[key]] = crypto
+  for (const key of Object.keys(CONTRACTS)) {
+    const binary = await getContractBinary(CONTRACTS[key]);
+    hashes[CONTRACTS[key]] = crypto
       .createHash('sha256')
       .update(binary)
       .digest('hex');
@@ -171,4 +167,19 @@ export const showVersions = () => {
       console.log(`Cannot get ${service[0]} version:\n${err}`);
     }
   }
+};
+
+export type ChannelsList = {
+  channels: {
+    state: string;
+    ordering: string;
+    counterparty: {
+      port_id: string;
+      channel_id: string;
+    };
+    connection_hops: string[];
+    version: string;
+    port_id: string;
+    channel_id: string;
+  }[];
 };

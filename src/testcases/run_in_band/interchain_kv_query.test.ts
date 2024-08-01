@@ -16,11 +16,6 @@ import {
   getRegisteredQuery,
   waitForICQResultWithRemoteHeight,
 } from '../../helpers/interchainqueries';
-import {
-  CodeId,
-  NeutronContract,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
 import { LocalState } from '../../helpers/local_state';
 import { Coin, Registry } from '@cosmjs/proto-signing';
 import {
@@ -54,11 +49,16 @@ import {
   ProtobufRpcClient,
   SigningStargateClient,
 } from '@cosmjs/stargate';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
-const config = require('../../config.json');
+import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 let chainManagerAddress: string;
 let mainDao: Dao;
@@ -95,11 +95,11 @@ describe('Neutron / Interchain KV Query', () => {
       neutronWallet.directwallet,
       neutronWallet.address,
     );
-    const otherNutronWallet = await testState.nextWallet('neutron');
+    const otherNeutronWallet = await testState.nextWallet('neutron');
     otherNeutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      otherNutronWallet.directwallet,
-      otherNutronWallet.address,
+      otherNeutronWallet.directwallet,
+      otherNeutronWallet.address,
     );
     gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
@@ -139,9 +139,9 @@ describe('Neutron / Interchain KV Query', () => {
   });
 
   describe('Instantiate interchain queries contract', () => {
-    let codeId: CodeId;
+    let codeId: number;
     test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.INTERCHAIN_QUERIES);
+      codeId = await neutronClient.upload(CONTRACTS.INTERCHAIN_QUERIES);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
@@ -668,7 +668,7 @@ describe('Neutron / Interchain KV Query', () => {
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {
-      const queryId = BigInt(2);
+      const queryId = 2n;
       const result = await removeQueryViaTx(otherNeutronClient, queryId);
       expect(JSON.stringify(result.rawLog)).toMatch(
         /only owner can remove a query within its service period: unauthorized/i,
@@ -913,8 +913,6 @@ describe('Neutron / Interchain KV Query', () => {
         '1250',
       );
 
-      testState.wallets.neutron.demo1;
-
       proposalId = parseInt(
         getEventAttribute(
           proposalResp.events,
@@ -1017,7 +1015,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         connectionId,
         updatePeriods[2],
-        [proposalId, proposalId + 1, proposalId + 2], // Send proposal Id as well as couple of non-existent proposals, to check result
+        [proposalId, proposalId + 1, proposalId + 2], // Send proposalId as well as a couple of non-existent proposals, to check result
       );
     });
 

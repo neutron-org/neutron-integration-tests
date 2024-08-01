@@ -1,11 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { LocalState } from '../../helpers/local_state';
-import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
 import {
   getRegisteredQuery,
   getUnsuccessfulTxs,
@@ -16,10 +10,15 @@ import {
 } from '../../helpers/interchainqueries';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
-const config = require('../../config.json');
+import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
@@ -49,14 +48,9 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   });
 
   describe('deploy contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.INTERCHAIN_QUERIES);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
+      contractAddress = await neutronClient.create(
+        CONTRACTS.INTERCHAIN_QUERIES,
         {},
         'neutron_interchain_queries',
       );
@@ -143,7 +137,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       const resp = await postResubmitTxs(testState.icqWebHost, resubmitTxs);
       expect(resp.status).toEqual(200);
 
-      await waitBlocks(20, neutronClient.client);
+      await neutronClient.waitBlocks(20);
 
       await waitForTransfersAmount(
         neutronClient,

@@ -6,13 +6,12 @@ import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/
 import { Registry } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
-import { QueryTotalSupplyResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
+import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-
-const config = require('../../config.json');
+import { Wallet } from '../../helpers/wallet';
+import config from '../../config.json';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
@@ -47,6 +46,7 @@ describe('Neutron / Tokenomics', () => {
       .treasuryAddress;
 
     bankQuerier = new BankQueryClient(neutronRpcClient);
+    feeburnerQuerier = new FeeburnerQueryClient(neutronRpcClient);
   });
 
   describe('75% of Neutron fees are burned', () => {
@@ -87,10 +87,10 @@ describe('Neutron / Tokenomics', () => {
       gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let totalSupplyBefore: QueryTotalSupplyResponse;
+    let totalSupplyBefore: QuerySupplyOfResponse;
 
     test('Read total supply', async () => {
-      totalSupplyBefore = await bankQuerier.TotalSupply();
+      totalSupplyBefore = await bankQuerier.SupplyOf({ denom: NEUTRON_DENOM });
     });
 
     test('Perform tx with a very big neutron fee', async () => {
@@ -107,11 +107,12 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total supply of neutrons has decreased', async () => {
-      const totalSupplyAfter = await bankQuerier.TotalSupply();
-      // TODO types
+      const totalSupplyAfter = await bankQuerier.SupplyOf({
+        denom: NEUTRON_DENOM,
+      });
       const diff =
-        +(totalSupplyBefore.supply[0].amount || 0) -
-        +(totalSupplyAfter.supply[0].amount || 0);
+        +(totalSupplyBefore.amount.amount || 0) -
+        +(totalSupplyAfter.amount.amount || 0);
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
@@ -125,12 +126,8 @@ describe('Neutron / Tokenomics', () => {
 
     test('Read Treasury balance', async () => {
       balanceBefore = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            NEUTRON_DENOM,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
         10,
       );
     });
@@ -151,12 +148,8 @@ describe('Neutron / Tokenomics', () => {
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
       await neutronClient.waitBlocks(1);
       const balanceAfter = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            NEUTRON_DENOM,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
         10,
       );
       const diff = balanceAfter - balanceBefore;
@@ -189,34 +182,30 @@ describe('Neutron / Tokenomics', () => {
               sourceChannel: 'channel-0',
               token: { denom: COSMOS_DENOM, amount: '100000' },
               sender: gaiaWallet.address,
-              receiver: testState.wallets.qaNeutron.qa.address,
+              receiver: neutronWallet.address,
               timeoutHeight: {
-                revisionNumber: BigInt(2),
-                revisionHeight: BigInt(100000000),
+                revisionNumber: 2n,
+                revisionHeight: 100000000n,
               },
             }),
           },
         ],
-        fee,
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       await neutronClient.getWithAttempts(
         async () =>
-          neutronClient.client.getBalance(
-            testState.wallets.qaNeutron.qa.address,
-            ibcUatomDenom,
-          ),
+          neutronClient.getBalance(neutronWallet.address, ibcUatomDenom),
         async (balance) => balance !== undefined,
       );
     });
 
     test('Read Treasury balance', async () => {
       balanceBefore = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            ibcUatomDenom,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
         10,
       );
     });
@@ -236,12 +225,8 @@ describe('Neutron / Tokenomics', () => {
 
     test('Balance of Treasury in uatoms has been increased', async () => {
       const balanceAfter = parseInt(
-        (
-          await neutronClient.client.getBalance(
-            treasuryContractAddress,
-            ibcUatomDenom,
-          )
-        ).amount,
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
         10,
       );
       const diff = balanceAfter - balanceBefore;

@@ -1,7 +1,6 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { Suite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
@@ -18,11 +17,11 @@ import {
   CONTRACTS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { getIBCDenom } from '../../helpers/cosmos';
-
-import config from '../../config.json';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { Wallet } from '../../helpers/wallet';
+import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
+import config from '../../config.json';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =
@@ -139,8 +138,8 @@ describe('Neutron / IBC transfer', () => {
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -170,8 +169,8 @@ describe('Neutron / IBC transfer', () => {
                 sender: gaiaWallet.address,
                 receiver: neutronWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -309,8 +308,8 @@ describe('Neutron / IBC transfer', () => {
                 sender: gaiaWallet.address,
                 receiver: middlehop,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"forward": {"receiver": "${receiver}", "port": "transfer", "channel": "channel-0"}}`,
               }),
@@ -370,8 +369,8 @@ describe('Neutron / IBC transfer', () => {
                 sender: gaiaWallet.address,
                 receiver: ibcContract,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -512,22 +511,22 @@ describe('Neutron / IBC transfer', () => {
         expect(failuresAfterCall.failures).toEqual([
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(0),
+            id: 0n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(1),
+            id: 1n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(2),
+            id: 2n,
             error: 'codespace: wasm, code: 5',
           }),
           expect.objectContaining({
             address: ibcContract,
-            id: BigInt(3),
+            id: 3n,
             error: 'codespace: wasm, code: 5',
           }),
         ]);
@@ -658,8 +657,8 @@ describe('Neutron / IBC transfer', () => {
     describe('Failures limit test', () => {
       it('failures with small limit does not return an error', async () => {
         const pagination = {
-          limit: BigInt(1),
-          offset: BigInt(0),
+          limit: 1n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,
@@ -673,8 +672,8 @@ describe('Neutron / IBC transfer', () => {
       });
       test('failures with big limit returns an error', async () => {
         const pagination = {
-          limit: BigInt(10000),
-          offset: BigInt(0),
+          limit: 10000n,
+          offset: 0n,
           key: new Uint8Array(),
           countTotal: false,
           reverse: false,

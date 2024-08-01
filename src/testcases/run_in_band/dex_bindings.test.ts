@@ -1,41 +1,18 @@
 import { inject } from 'vitest';
-import {
-  getEventAttribute,
-  getEventAttributesFromTx,
-} from '../../helpers/cosmos';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
-import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import {
-  QueryAllInactiveLimitOrderTrancheResponse,
-  QueryAllLimitOrderTrancheResponse,
-  QueryAllLimitOrderTrancheUserByAddressResponse,
-  QueryAllLimitOrderTrancheUserResponse,
-  QueryAllPoolMetadataResponse,
-  QueryAllPoolReservesResponse,
-  QueryAllTickLiquidityResponse,
-  QueryAllUserDepositsResponse,
-  QueryEstimatePlaceLimitOrderResponse,
-  QueryGetInactiveLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheResponse,
-  QueryGetLimitOrderTrancheUserResponse,
-  QueryGetPoolMetadataResponse,
-  QueryParamsResponse,
-  QueryPoolResponse,
-} from '@neutron-org/neutronjs/neutron/dex/query';
 import {
   MsgCreateDenom,
   MsgMint,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { LimitOrderType } from '@neutron-org/neutronjs/neutron/dex/tx';
-
-const config = require('../../config.json');
+import { Wallet } from '../../helpers/wallet';
+import { CONTRACTS } from '../../helpers/constants';
+import {
+  getEventAttribute,
+  getEventAttributesFromTx,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import config from '../../config.json';
 
 describe('Neutron / dex module bindings', () => {
   let testState: LocalState;
@@ -47,7 +24,7 @@ describe('Neutron / dex module bindings', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -56,15 +33,11 @@ describe('Neutron / dex module bindings', () => {
   });
 
   describe('Instantiate dex binding contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.DEX_DEV);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(codeId, {}, 'dex_dev');
-      await neutronClient.client.sendTokens(
-        neutronWallet.address,
+      contractAddress = await neutronClient.create(CONTRACTS.DEX_DEV, {});
+    });
+    test('send funds', async () => {
+      await neutronClient.sendTokens(
         contractAddress,
         [{ denom: NEUTRON_DENOM, amount: '100000000' }],
         {
@@ -73,8 +46,7 @@ describe('Neutron / dex module bindings', () => {
         },
       );
 
-      await neutronClient.client.sendTokens(
-        neutronWallet.address,
+      await neutronClient.sendTokens(
         contractAddress,
         [{ denom: 'uibcusdc', amount: '100000000' }],
         {
@@ -147,15 +119,8 @@ describe('Neutron / dex module bindings', () => {
       });
     });
     describe('LimitOrder', () => {
-      // enum LimitOrderType{
-      //   GOOD_TIL_CANCELLED = 0;
-      //   FILL_OR_KILL = 1;
-      //   IMMEDIATE_OR_CANCEL = 2;
-      //   JUST_IN_TIME = 3;
-      //   GOOD_TIL_TIME = 4;
-      // }
       test('GOOD_TIL_CANCELLED', async () => {
-        // Place order deep in orderbook. Doesn't change exisitng liquidity
+        // Place order deep in orderbook. Doesn't change existing liquidity
         const res = await neutronClient.execute(contractAddress, {
           place_limit_order: {
             receiver: contractAddress,
@@ -164,7 +129,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.221390545',
             amount_in: '1000000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res.code).toEqual(0);
@@ -179,7 +144,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '0.74',
             tick_index_in_to_out: 0,
             amount_in: '100',
-            order_type: LimitOrderType.FILL_OR_KILL,
+            order_type: 'FILL_OR_KILL',
             max_amount_out: '100',
           },
         });
@@ -195,7 +160,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.98',
             amount_in: '1000000',
-            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
+            order_type: 'IMMEDIATE_OR_CANCEL',
           },
         });
         expect(res.code).toEqual(0);
@@ -210,7 +175,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '7.38',
             amount_in: '1000000',
-            order_type: LimitOrderType.JUST_IN_TIME,
+            order_type: 'JUST_IN_TIME',
           },
         });
         expect(res.code).toEqual(0);
@@ -225,7 +190,7 @@ describe('Neutron / dex module bindings', () => {
             limit_sell_price: '1.002',
             amount_in: '10000000',
             expiration_time: Math.ceil(Date.now() / 1000) + 1000,
-            order_type: LimitOrderType.GOOD_TIL_TIME,
+            order_type: 'GOOD_TIL_TIME',
           },
         });
         expect(res.code).toEqual(0);
@@ -241,7 +206,7 @@ describe('Neutron / dex module bindings', () => {
               limit_sell_price: '0.998',
               amount_in: '10000000',
               expiration_time: 1,
-              order_type: LimitOrderType.GOOD_TIL_TIME,
+              order_type: 'GOOD_TIL_TIME',
             },
           }),
         ).rejects.toThrowError(
@@ -275,7 +240,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.4564654E-4',
             amount_in: '100000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res.code).toEqual(0);
@@ -292,7 +257,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '0.8188125757',
             amount_in: '1000000',
-            order_type: LimitOrderType.GOOD_TIL_CANCELLED,
+            order_type: 'GOOD_TIL_CANCELLED',
           },
         });
         expect(res1.code).toEqual(0);
@@ -310,7 +275,7 @@ describe('Neutron / dex module bindings', () => {
             tick_index_in_to_out: 0,
             limit_sell_price: '1.1',
             amount_in: '1000',
-            order_type: LimitOrderType.IMMEDIATE_OR_CANCEL,
+            order_type: 'IMMEDIATE_OR_CANCEL',
           },
         });
         expect(res2.code).toEqual(0);
@@ -350,7 +315,7 @@ describe('Neutron / dex module bindings', () => {
 
     describe('MultiHopSwap', () => {
       const denoms: any[] = [];
-      test('successfull multihops', async () => {
+      test('successful multihops', async () => {
         const numberDenoms = 10;
         const fee = {
           gas: '500000',
@@ -393,8 +358,7 @@ describe('Neutron / dex module bindings', () => {
             fee,
           );
 
-          await neutronClient.client.sendTokens(
-            neutronWallet.address,
+          await neutronClient.sendTokens(
             contractAddress,
             [{ denom: newTokenDenom, amount: '1000000' }],
             {
@@ -485,7 +449,7 @@ describe('Neutron / dex module bindings', () => {
           tick_index_in_to_out: 0,
           limit_sell_price: '0.8188125757',
           amount_in: '1000000',
-          order_type: LimitOrderType.GoodTilCancelled,
+          order_type: 'GOOD_TIL_CANCELLED',
         },
       });
       activeTrancheKey = getEventAttributesFromTx(
@@ -503,7 +467,7 @@ describe('Neutron / dex module bindings', () => {
           tick_index_in_to_out: 0,
           limit_sell_price: '7.3816756536',
           amount_in: '1000000',
-          order_type: LimitOrderType.JustInTime,
+          order_type: 'JUST_IN_TIME',
         },
       });
       inactiveTrancheKey = getEventAttributesFromTx(
@@ -512,187 +476,139 @@ describe('Neutron / dex module bindings', () => {
         ['TrancheKey'],
       )[0]['TrancheKey'];
       // wait a few blocks to make sure JIT order expires
-      await waitBlocks(2, neutronClient.client);
+      await neutronClient.waitBlocks(2);
     });
     test('ParamsQuery', async () => {
-      await neutronClient.client.queryContractSmart<QueryParamsResponse>(
-        contractAddress,
-        {
-          params: {},
-        },
-      );
+      await neutronClient.queryContractSmart(contractAddress, {
+        params: {},
+      });
     });
     test('LimitOrderTrancheUserQuery', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheUserResponse>(
-          contractAddress,
-          {
-            limit_order_tranche_user: {
-              address: contractAddress,
-              tranche_key: activeTrancheKey,
-            },
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        limit_order_tranche_user: {
+          address: contractAddress,
+          tranche_key: activeTrancheKey,
+        },
+      });
       expect(res.limit_order_tranche_user).toBeDefined();
     });
     test('LimitOrderTrancheUserAllQuery', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheUserResponse>(
-          contractAddress,
-          {
-            limit_order_tranche_user_all: {},
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        limit_order_tranche_user_all: {},
+      });
       expect(res.limit_order_tranche_user.length).toBeGreaterThan(0);
     });
     test('LimitOrderTrancheUserAllByAddressQuery', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheUserByAddressResponse>(
-          contractAddress,
-          {
-            limit_order_tranche_user_all_by_address: {
-              address: contractAddress,
-            },
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        limit_order_tranche_user_all_by_address: {
+          address: contractAddress,
+        },
+      });
       expect(res.limit_orders.length).toBeGreaterThan(0);
     });
     test('LimitOrderTrancheQuery', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheResponse>(
-          contractAddress,
-          {
-            limit_order_tranche: {
-              pair_id: 'uibcusdc<>untrn',
-              tick_index: -1999,
-              token_in: 'untrn',
-              tranche_key: activeTrancheKey,
-            },
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        limit_order_tranche: {
+          pair_id: 'uibcusdc<>untrn',
+          tick_index: -1999,
+          token_in: 'untrn',
+          tranche_key: activeTrancheKey,
+        },
+      });
       expect(res.limit_order_tranche).toBeDefined();
     });
     test('invalid LimitOrderTrancheQuery', async () => {
       await expect(
-        neutronClient.client.queryContractSmart<QueryGetLimitOrderTrancheResponse>(
-          contractAddress,
-          {
-            limit_order_tranche: {
-              pair_id: 'untrn<>notadenom',
-              tick_index: -1999,
-              token_in: 'untrn',
-              tranche_key: activeTrancheKey,
-            },
+        neutronClient.queryContractSmart(contractAddress, {
+          limit_order_tranche: {
+            pair_id: 'untrn<>notadenom',
+            tick_index: -1999,
+            token_in: 'untrn',
+            tranche_key: activeTrancheKey,
           },
-        ),
+        }),
       ).rejects.toThrowError();
     });
     test('AllLimitOrderTranche', async () => {
       // const res =
-      await neutronClient.client.queryContractSmart<QueryAllLimitOrderTrancheResponse>(
-        contractAddress,
-        {
-          limit_order_tranche_all: {
-            pair_id: 'uibcusdc<>untrn',
-            token_in: 'untrn',
-          },
+      await neutronClient.queryContractSmart(contractAddress, {
+        limit_order_tranche_all: {
+          pair_id: 'uibcusdc<>untrn',
+          token_in: 'untrn',
         },
-      );
+      });
       // TODO: add tranche for tests
       // expect(res.limit_order_tranche.length).toBeGreaterThan(0);
     });
     test('AllUserDeposits', async () => {
-      const resp =
-        await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
-          contractAddress,
-          {
-            user_deposit_all: {
-              address: contractAddress,
-              include_pool_data: true,
-            },
-          },
-        );
+      const resp = await neutronClient.queryContractSmart(contractAddress, {
+        user_deposit_all: {
+          address: contractAddress,
+          include_pool_data: true,
+        },
+      });
       expect(Number(resp.deposits[0].total_shares)).toBeGreaterThan(0);
       expect(Number(resp.deposits[0].pool.id)).toEqual(0);
 
-      const respNoPoolData =
-        await neutronClient.client.queryContractSmart<QueryAllUserDepositsResponse>(
-          contractAddress,
-          {
-            user_deposit_all: {
-              address: contractAddress,
-              include_pool_data: false,
-            },
+      const respNoPoolData = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
+          user_deposit_all: {
+            address: contractAddress,
+            include_pool_data: false,
           },
-        );
+        },
+      );
       expect(respNoPoolData.deposits[0].total_shares).toBeNull();
       expect(respNoPoolData.deposits[0].pool).toBeNull();
     });
     test('AllTickLiquidity', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllTickLiquidityResponse>(
-          contractAddress,
-          {
-            tick_liquidity_all: {
-              pair_id: 'uibcusdc<>untrn',
-              token_in: 'untrn',
-            },
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        tick_liquidity_all: {
+          pair_id: 'uibcusdc<>untrn',
+          token_in: 'untrn',
+        },
+      });
       expect(res.tick_liquidity.length).toBeGreaterThan(0);
     });
     test('InactiveLimitOrderTranche', async () => {
-      await neutronClient.client.queryContractSmart<QueryGetInactiveLimitOrderTrancheResponse>(
-        contractAddress,
-        {
-          inactive_limit_order_tranche: {
-            pair_id: 'uibcusdc<>untrn',
-            tick_index: 19991,
-            token_in: 'untrn',
-            tranche_key: inactiveTrancheKey,
-          },
+      await neutronClient.queryContractSmart(contractAddress, {
+        inactive_limit_order_tranche: {
+          pair_id: 'uibcusdc<>untrn',
+          tick_index: 19991,
+          token_in: 'untrn',
+          tranche_key: inactiveTrancheKey,
         },
-      );
+      });
     });
     test('AllInactiveLimitOrderTranche', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllInactiveLimitOrderTrancheResponse>(
-          contractAddress,
-          {
-            inactive_limit_order_tranche_all: {},
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        inactive_limit_order_tranche_all: {},
+      });
       expect(res.inactive_limit_order_tranche.length).toBeGreaterThan(0);
     });
     test('AllPoolReserves', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllPoolReservesResponse>(
-          contractAddress,
-          {
-            pool_reserves_all: {
-              pair_id: 'uibcusdc<>untrn',
-              token_in: 'untrn',
-            },
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        pool_reserves_all: {
+          pair_id: 'uibcusdc<>untrn',
+          token_in: 'untrn',
+        },
+      });
       expect(res.pool_reserves.length).toBeGreaterThan(0);
     });
     test('PoolReserves', async () => {
-      await neutronClient.client.queryContractSmart<QueryAllPoolReservesResponse>(
-        contractAddress,
-        {
-          pool_reserves: {
-            pair_id: 'uibcusdc<>untrn',
-            tick_index: -1,
-            token_in: 'untrn',
-            fee: 0,
-          },
+      await neutronClient.queryContractSmart(contractAddress, {
+        pool_reserves: {
+          pair_id: 'uibcusdc<>untrn',
+          tick_index: -1,
+          token_in: 'untrn',
+          fee: 0,
         },
-      );
+      });
     });
     test.skip('EstimateMultiHopSwap', async () => {
       // TODO
-      // await neutronAccount.chain.queryContract<EstimateMultiHopSwapResponse>(
+      // await neutronWallet.queryContract(
       //   contractAddress,
       //   {
       //     params: {},
@@ -700,54 +616,38 @@ describe('Neutron / dex module bindings', () => {
       // );
     });
     test('EstimatePlaceLimitOrder', async () => {
-      await neutronClient.client.queryContractSmart<QueryEstimatePlaceLimitOrderResponse>(
-        contractAddress,
-        {
-          estimate_place_limit_order: {
-            creator: contractAddress,
-            receiver: contractAddress,
-            token_in: 'untrn',
-            token_out: 'uibcusdc',
-            tick_index_in_to_out: 1,
-            amount_in: '100000',
-            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
-            order_type: LimitOrderType.GoodTilTime,
-          },
+      await neutronClient.queryContractSmart(contractAddress, {
+        estimate_place_limit_order: {
+          creator: contractAddress,
+          receiver: contractAddress,
+          token_in: 'untrn',
+          token_out: 'uibcusdc',
+          tick_index_in_to_out: 1,
+          amount_in: '100000',
+          expiration_time: Math.ceil(Date.now() / 1000) + 1000,
+          order_type: 'GOOD_TIL_TIME',
         },
-      );
+      });
     });
     test('Pool', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
-        contractAddress,
-        {
-          pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
-        },
-      );
+      await neutronClient.queryContractSmart(contractAddress, {
+        pool: { pair_id: 'uibcusdc<>untrn', tick_index: -1, fee: 0 },
+      });
     });
     test('PoolByID', async () => {
-      await neutronClient.client.queryContractSmart<QueryPoolResponse>(
-        contractAddress,
-        {
-          pool_by_id: { pool_id: 0 },
-        },
-      );
+      await neutronClient.queryContractSmart(contractAddress, {
+        pool_by_id: { pool_id: 0 },
+      });
     });
     test('PoolMetadata', async () => {
-      await neutronClient.client.queryContractSmart<QueryGetPoolMetadataResponse>(
-        contractAddress,
-        {
-          pool_metadata: { id: 0 },
-        },
-      );
+      await neutronClient.queryContractSmart(contractAddress, {
+        pool_metadata: { id: 0 },
+      });
     });
     test('AllPoolMetadata', async () => {
-      const res =
-        await neutronClient.client.queryContractSmart<QueryAllPoolMetadataResponse>(
-          contractAddress,
-          {
-            pool_metadata_all: {},
-          },
-        );
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        pool_metadata_all: {},
+      });
       expect(res.pool_metadata.length).toBeGreaterThan(0);
     });
   });

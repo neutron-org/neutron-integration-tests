@@ -1,18 +1,19 @@
 import '@neutron-org/neutronjsplus';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
-import { LocalState } from '../../helpers/local_state';
 import {
-  NeutronContract,
-  CodeId,
-  Wallet,
-} from '@neutron-org/neutronjsplus/dist/types';
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
+import { LocalState } from '../../helpers/local_state';
 import { inject, Suite } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
@@ -34,7 +35,7 @@ describe('Neutron / IBC hooks', () => {
       neutronWallet.directwallet,
       neutronWallet.address,
     );
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.directwallet,
@@ -51,14 +52,9 @@ describe('Neutron / IBC hooks', () => {
   });
 
   describe('Instantiate hooks ibc transfer contract', () => {
-    let codeId: CodeId;
-    test('store contract', async () => {
-      codeId = await neutronClient.upload(NeutronContract.MSG_RECEIVER);
-      expect(codeId).toBeGreaterThan(0);
-    });
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.instantiate(
-        codeId,
+      contractAddress = await neutronClient.create(
+        CONTRACTS.MSG_RECEIVER,
         {},
         'msg_receiver',
       );
@@ -87,8 +83,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -132,8 +128,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),
@@ -147,13 +143,12 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was executed successfully', async () => {
         await neutronClient.waitBlocks(15);
-        const queryResult =
-          await neutronClient.client.queryContractSmart<TestArg>(
-            contractAddress,
-            {
-              test_msg: { arg: 'test' },
-            },
-          );
+        const queryResult = await neutronClient.queryContractSmart(
+          contractAddress,
+          {
+            test_msg: { arg: 'test' },
+          },
+        );
         // TODO: check that sender is Bech32(Hash("ibc-wasm-hook-intermediaryg" || channelID || sender))
         //  non-determined?
         // expect(queryResult.sender).toEqual(
@@ -169,12 +164,8 @@ describe('Neutron / IBC hooks', () => {
         await neutronClient.waitBlocks(10);
 
         const res = parseInt(
-          (
-            await neutronClient.client.getBalance(
-              contractAddress,
-              NEUTRON_DENOM,
-            )
-          ).amount,
+          (await neutronClient.getBalance(contractAddress, NEUTRON_DENOM))
+            .amount,
           10,
         );
         expect(res).toEqual(transferAmount);
@@ -182,8 +173,12 @@ describe('Neutron / IBC hooks', () => {
     });
 
     describe('Receive on neutron with incorrectly formatted message', () => {
-      const transferAmount = '300000';
+      const transferAmount = 300000;
       test('IBC transfer from a usual account', async () => {
+        const fee = {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        };
         const res = await neutronClient.signAndBroadcast(
           [
             {
@@ -191,12 +186,15 @@ describe('Neutron / IBC hooks', () => {
               value: MsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: 'channel-0',
-                token: { denom: NEUTRON_DENOM, amount: '1000' },
+                token: {
+                  denom: NEUTRON_DENOM,
+                  amount: transferAmount.toString(),
+                },
                 sender: neutronWallet.address,
-                receiver: gaiaWallet.address,
+                receiver: testState.wallets.cosmos.demo2.address,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -211,18 +209,18 @@ describe('Neutron / IBC hooks', () => {
       test('check IBC token balance', async () => {
         await neutronClient.waitBlocks(10);
         const balance = await gaiaClient.getBalance(
-          gaiaWallet.address,
+          testState.wallets.cosmos.demo2.address,
           transferDenom,
         );
-        expect(balance).toEqual(transferAmount);
+        expect(+balance.amount).toEqual(transferAmount);
       });
 
       test('IBC transfer of Neutrons from a remote chain to Neutron with incorrect wasm hook message', async () => {
         const msg =
           '{"incorrect_msg_kind": {"return_err": false, "arg": "incorrect_msg_arg"}}';
         fee = {
-          gas: '200000',
-          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+          gas: '400000',
+          amount: [{ denom: COSMOS_DENOM, amount: '2000' }],
         };
         const res = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
@@ -232,12 +230,15 @@ describe('Neutron / IBC hooks', () => {
               value: MsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: 'channel-0',
-                token: { denom: transferDenom, amount: transferAmount },
+                token: {
+                  denom: transferDenom,
+                  amount: transferAmount.toString(),
+                },
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),
@@ -252,24 +253,23 @@ describe('Neutron / IBC hooks', () => {
 
       test('check hook was not executed successfully', async () => {
         await neutronClient.waitBlocks(15);
-        const queryResult =
-          await neutronClient.client.queryContractSmart<TestArg>(
-            contractAddress,
-            {
-              test_msg: { arg: 'incorrect_msg_arg' },
-            },
-          );
+        const queryResult = await neutronClient.queryContractSmart(
+          contractAddress,
+          {
+            test_msg: { arg: 'incorrect_msg_arg' },
+          },
+        );
         expect(queryResult).toEqual(null);
       });
 
       test('check contract token balance - it still has previous balance', async () => {
         await neutronClient.waitBlocks(10);
 
-        const res = await neutronClient.client.queryContractSmart(
+        const res = await neutronClient.getBalance(
           contractAddress,
-          COSMOS_DENOM,
+          NEUTRON_DENOM,
         );
-        expect(res).toEqual(1000000);
+        expect(+res.amount).toEqual(1000000);
       });
     });
 
@@ -292,8 +292,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
               }),
             },
@@ -311,7 +311,7 @@ describe('Neutron / IBC hooks', () => {
           contractAddress,
           'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
-        expect(res).toEqual(transferAmount);
+        expect(+res.amount).toEqual(transferAmount);
       });
     });
 
@@ -339,8 +339,8 @@ describe('Neutron / IBC hooks', () => {
                 sender: gaiaWallet.address,
                 receiver: contractAddress,
                 timeoutHeight: {
-                  revisionNumber: BigInt(2),
-                  revisionHeight: BigInt(100000000),
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
                 },
                 memo: `{"wasm": {"contract": "${contractAddress}", "msg": ${msg}}}`,
               }),
@@ -350,28 +350,17 @@ describe('Neutron / IBC hooks', () => {
         );
 
         expect(res.code).toEqual(0);
-        await neutronClient.waitBlocks(15);
+        await waitBlocks(15, gaiaClient);
       });
 
       test('check contract token balance', async () => {
         await neutronClient.waitBlocks(10);
-        const res = parseInt(
-          (
-            await neutronClient.getBalance(
-              contractAddress,
-              'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
-            )
-          ).amount,
-          10,
+        const res = await neutronClient.getBalance(
+          contractAddress,
+          'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         );
-        expect(res).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
+        expect(+res.amount).toEqual(transferAmount); // should equal to old balance since we returned error from the contract
       });
     });
   });
 });
-
-type TestArg = {
-  sender: string | null;
-  funds: { denom: string; amount: string }[];
-  count: number;
-};

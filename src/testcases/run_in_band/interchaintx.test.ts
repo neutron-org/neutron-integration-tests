@@ -4,13 +4,8 @@ import '@neutron-org/neutronjsplus';
 import { getSequenceId } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
-import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import { CONTRACTS, COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import {
-  AcknowledgementResult,
-  NeutronContract,
-} from '@neutron-org/neutronjsplus/dist/types';
-import { Wallet } from '@neutron-org/neutronjsplus/dist/types';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
@@ -29,7 +24,9 @@ import {
 } from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
 import { getWithAttempts } from '../../helpers/misc';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { AcknowledgementResult, cleanAckResults, getAck, getAcks, waitForAck } from '../../helpers/interchaintxs';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -76,7 +73,7 @@ describe('Neutron / Interchain TXs', () => {
     describe('Setup', () => {
       test('instantiate', async () => {
         contractAddress = await neutronClient.create(
-          NeutronContract.INTERCHAIN_TXS,
+          CONTRACTS.INTERCHAIN_TXS,
           {},
           'interchaintx',
         );
@@ -222,13 +219,13 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res);
         await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -286,19 +283,19 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId = getSequenceId(res);
 
         await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
 
         const ackSequenceId = sequenceId + 1;
         await waitForAck(neutronClient, contractAddress, icaId1, ackSequenceId);
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -350,13 +347,13 @@ describe('Neutron / Interchain TXs', () => {
         const sequenceId = getSequenceId(res);
 
         await waitForAck(neutronClient, contractAddress, icaId2, sequenceId);
-        const qres = await getAck(
+        const ackRes = await getAck(
           neutronClient,
           contractAddress,
           icaId2,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           error: [
             'message',
             'ABCI code: 7: error handling packet: see events for details',
@@ -389,23 +386,23 @@ describe('Neutron / Interchain TXs', () => {
 
         const sequenceId2 = getSequenceId(res2);
 
-        const qres1 = await waitForAck(
+        const ackRes1 = await waitForAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId1,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(ackRes1).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgUndelegateResponse'],
         });
 
-        const qres2 = await waitForAck(
+        const ackRes2 = await waitForAck(
           neutronClient,
           contractAddress,
           icaId2,
           sequenceId2,
         );
-        expect(qres2).toMatchObject<AcknowledgementResult>({
+        expect(ackRes2).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -432,13 +429,13 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId,
           100,
         );
-        const qres1 = await getAck(
+        const ackRes1 = await getAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres1).toMatchObject<AcknowledgementResult>({
+        expect(ackRes1).toMatchObject<AcknowledgementResult>({
           timeout: 'message',
         });
       });
@@ -557,13 +554,13 @@ describe('Neutron / Interchain TXs', () => {
         expect(res.code).toEqual(0);
         const sequenceId = getSequenceId(res);
 
-        const qres = await waitForAck(
+        const ackRes = await waitForAck(
           neutronClient,
           contractAddress,
           icaId1,
           sequenceId,
         );
-        expect(qres).toMatchObject<AcknowledgementResult>({
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
           success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
         });
       });
@@ -942,56 +939,10 @@ describe('Neutron / Interchain TXs', () => {
         const acks = await getAcks(neutronClient, contractAddress);
         expect(acks.length).toEqual(1);
         expect(acks[0].sequence_id).toEqual(
-          +JSON.parse(Buffer.from(failure.sudoPayload, 'base64').toString())
+          +JSON.parse(Buffer.from(failure.sudoPayload).toString())
             .response.request.sequence,
         );
       });
     });
   });
 });
-
-/**
- * cleanAckResults clears all ACK's from contract storage
- */
-const cleanAckResults = (cm: SigningNeutronClient, contractAddress: string) =>
-  cm.execute(contractAddress, { clean_ack_results: {} });
-
-/**
- * waitForAck waits until ACK appears in contract storage
- */
-const waitForAck = (
-  cm: SigningNeutronClient,
-  contractAddress: string,
-  icaId: string,
-  sequenceId: number,
-  numAttempts = 20,
-) =>
-  cm.getWithAttempts<JsonObject>(
-    () =>
-      cm.queryContractSmart(contractAddress, {
-        acknowledgement_result: {
-          interchain_account_id: icaId,
-          sequence_id: sequenceId,
-        },
-      }),
-    async (ack) => ack != null,
-    numAttempts,
-  );
-
-const getAck = (
-  cm: SigningNeutronClient,
-  contractAddress: string,
-  icaId: string,
-  sequenceId: number,
-) =>
-  cm.queryContractSmart(contractAddress, {
-    acknowledgement_result: {
-      interchain_account_id: icaId,
-      sequence_id: sequenceId,
-    },
-  });
-
-const getAcks = (cm: SigningNeutronClient, contractAddress: string) =>
-  cm.queryContractSmart(contractAddress, {
-    acknowledgement_results: {},
-  });

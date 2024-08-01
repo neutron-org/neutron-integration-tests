@@ -9,17 +9,19 @@ import {
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   updateCronParamsProposal,
+  updateDexParamsProposal,
   updateTokenfactoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-import config from '../../config.json';
 import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
+import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import config from '../../config.json';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -29,8 +31,9 @@ describe('Neutron / Chain Manager', () => {
   let securityDaoAddr: string;
   let subDao: Dao;
   let mainDao: Dao;
-  let cronQuery: CronQueryClient;
-  let tokenfactoryClient: TokenfactoryQueryClient;
+  let cronQuerier: CronQueryClient;
+  let tokenfactoryQuerier: TokenfactoryQueryClient;
+  let dexQuerier: DexQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async (suite: Suite) => {
@@ -84,9 +87,9 @@ describe('Neutron / Chain Manager', () => {
     const admins = await queryClient.admins();
     chainManagerAddress = admins.admins[0];
 
-    tokenfactoryClient = new TokenfactoryQueryClient(neutronRpcClient);
-
-    cronQuery = new CronQueryClient(neutronRpcClient);
+    tokenfactoryQuerier = new TokenfactoryQueryClient(neutronRpcClient);
+    cronQuerier = new CronQueryClient(neutronRpcClient);
+    dexQuerier = new DexQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -151,7 +154,7 @@ describe('Neutron / Chain Manager', () => {
     });
   });
 
-  describe('Add an ALLOW_ONLY strategy (Cron module parameter updates, Tokenfactory module parameter updates, legacy param changes)', () => {
+  describe('Add an ALLOW_ONLY strategy for module parameter updates (Cron, Tokenfactory, Dex), and legacy param changes)', () => {
     let proposalId: number;
     test('create proposal', async () => {
       proposalId = await mainDaoMember.submitAddChainManagerStrategyProposal(
@@ -185,6 +188,14 @@ describe('Neutron / Chain Manager', () => {
                     denom_creation_gas_consume: true,
                     fee_collector_address: true,
                     whitelisted_hooks: true,
+                  },
+                },
+                {
+                  update_dex_params_permission: {
+                    fee_tiers: true,
+                    paused: true,
+                    max_jits_per_block: true,
+                    good_til_purge_allowance: true,
                   },
                 },
               ],
@@ -242,7 +253,7 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const cronParams = await cronQuery.params();
+      const cronParams = await cronQuerier.params();
       expect(cronParams.params.limit).toEqual(42n);
     });
   });
@@ -287,7 +298,7 @@ describe('Neutron / Chain Manager', () => {
       expect(timelockedProp.status).toEqual('executed');
       expect(timelockedProp.msgs).toHaveLength(1);
 
-      const tokenfactoryParams = await tokenfactoryClient.params();
+      const tokenfactoryParams = await tokenfactoryQuerier.params();
       expect(tokenfactoryParams.params.denomCreationFee).toEqual([
         { denom: 'untrn', amount: '1' },
       ]);
@@ -301,6 +312,48 @@ describe('Neutron / Chain Manager', () => {
           denomCreator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);
+    });
+  });
+  describe('ALLOW_ONLY: change DEX parameters', () => {
+    let proposalId: number;
+    const newParams = {
+      fee_tiers: [1, 2, 99],
+      paused: true,
+      max_jits_per_block: 11,
+      good_til_purge_allowance: 50000,
+    };
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateParamsDexProposal(
+        chainManagerAddress,
+        'Proposal #1',
+        'dex update params proposal. Will pass',
+        updateDexParamsProposal(newParams),
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const dexParams = await dexQuerier.params();
+      expect(dexParams.params.feeTiers).toEqual([1n, 2n, 99n]);
+      expect(dexParams.params.paused).toEqual(true);
+      expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
+      expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
     });
   });
 });
