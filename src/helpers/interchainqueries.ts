@@ -604,13 +604,13 @@ export const registerTransfersQuery = async (
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
-  recipient: string,
+  recipients: string[],
 ) => {
   const res = await cm.execute(contractAddress, {
     register_transfers_query: {
       connection_id: connectionId,
       update_period: updatePeriod,
-      recipient: recipient,
+      recipients: recipients,
     },
   });
 

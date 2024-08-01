@@ -91,7 +91,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query1UpdatePeriod,
-        watchedAddr1,
+        [watchedAddr1],
       );
     });
 
@@ -254,7 +254,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query2UpdatePeriod,
-        watchedAddr2,
+        [watchedAddr2],
       );
     });
 
@@ -323,7 +323,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query3UpdatePeriod,
-        watchedAddr3,
+        [watchedAddr3],
       );
     });
 
@@ -622,14 +622,14 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query4UpdatePeriod,
-        watchedAddr4,
+        [watchedAddr4],
       );
       await registerTransfersQuery(
         neutronClient,
         contractAddress,
         connectionId,
         query5UpdatePeriod,
-        watchedAddr5,
+        [watchedAddr5],
       );
       await neutronClient.waitBlocks(2); // wait for queries handling on init
     });
@@ -854,7 +854,6 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     it('should handle callback on a sending to the new address', async () => {
-      const res = await gaiaWallet.msgSend(newWatchedAddr5, '10000');
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
         newWatchedAddr5,
