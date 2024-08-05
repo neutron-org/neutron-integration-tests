@@ -733,14 +733,12 @@ describe('Neutron / dex module bindings', () => {
         contractAddress,
         {
           estimate_place_limit_order: {
-            creator: contractAddress,
-            receiver: contractAddress,
             token_in: 'untrn',
             token_out: 'uibcusdc',
             tick_index_in_to_out: 1,
             amount_in: '100000',
-            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
             order_type: LimitOrderType.GoodTilTime,
+            expiration_time: Math.ceil(Date.now() / 1000) + 1000,
           },
         },
       );
