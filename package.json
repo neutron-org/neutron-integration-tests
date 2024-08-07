@@ -42,7 +42,7 @@
     "@cosmjs/stargate": "0.32.4",
     "@cosmjs/tendermint-rpc": "^0.32.4",
     "@neutron-org/neutronjs": "0.1.0-rc5",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#04cc73ea1fc9922cc3af774ccf6b16aeee26b7db",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#cf53a61bd7d4aa1e9204c41b2c2ea36cb024ae7d",
     "@types/lodash": "^4.14.182",
     "axios": "1.6.0",
     "commander": "^10.0.0",
