@@ -5,7 +5,7 @@ import {
   QueryClient,
 } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { Suite } from 'vitest';
+import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 import { Wallet } from './wallet';
@@ -35,7 +35,7 @@ export class LocalState {
   static async create(
     config: any,
     mnemonics: string[],
-    suite?: Suite,
+    suite?: RunnerTestSuite,
   ): Promise<LocalState> {
     const res = new LocalState(config, mnemonics, suite);
     await res.init();
@@ -45,7 +45,7 @@ export class LocalState {
   protected constructor(
     private config: any,
     private mnemonics: string[],
-    private suite?: Suite | undefined,
+    private suite?: RunnerTestSuite | undefined,
   ) {
     this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
     this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
@@ -134,7 +134,7 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
-async function testFilePosition(s: Suite): Promise<number> {
+async function testFilePosition(s: RunnerTestSuite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
   const filename = splitted.pop().trim();

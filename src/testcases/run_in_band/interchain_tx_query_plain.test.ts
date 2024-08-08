@@ -1,4 +1,4 @@
-import { inject, Suite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import {
   defaultRegistryTypes,
@@ -34,7 +34,7 @@ describe('Neutron / Interchain TX Query', () => {
   let bankQuerierGaia: BankQuerier;
   const connectionId = 'connection-0';
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');

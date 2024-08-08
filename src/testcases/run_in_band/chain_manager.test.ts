@@ -13,7 +13,7 @@ import {
   updateTokenfactoryParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
@@ -36,7 +36,7 @@ describe('Neutron / Chain Manager', () => {
   let dexQuerier: DexQueryClient;
   let chainManagerAddress: string;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     const neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(

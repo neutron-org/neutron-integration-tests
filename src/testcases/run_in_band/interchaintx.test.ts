@@ -6,7 +6,7 @@ import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS, COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
 
@@ -34,7 +34,7 @@ describe('Neutron / Interchain TXs', () => {
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
-  let stakingQuerier: StakingQueryClient;
+  let gaiaStakingQuerier: StakingQueryClient;
   let ibcQuerier: IbcQueryClient;
   let contractManagerQuerier: ContractManagerQuery;
 
@@ -47,7 +47,7 @@ describe('Neutron / Interchain TXs', () => {
   const icaId2 = 'test2';
   const connectionId = 'connection-0';
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
@@ -67,6 +67,8 @@ describe('Neutron / Interchain TXs', () => {
     const neutronRpcClient = await testState.neutronRpcClient();
     ibcQuerier = new IbcQueryClient(neutronRpcClient);
     contractManagerQuerier = new ContractManagerQuery(neutronRpcClient);
+    const gaiaRpcClient = await testState.gaiaRpcClient();
+    gaiaStakingQuerier = new StakingQueryClient(gaiaRpcClient);
   });
 
   describe('Interchain Tx with multiple ICAs', () => {
@@ -77,10 +79,6 @@ describe('Neutron / Interchain TXs', () => {
           {},
           'interchaintx',
         );
-      });
-      test('init client', async () => {
-        const gaiaRpcClient = await testState.gaiaRpcClient();
-        stakingQuerier = new StakingQueryClient(gaiaRpcClient);
       });
     });
     describe('Create ICAs and setup contract', () => {
@@ -233,7 +231,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({
+            gaiaStakingQuerier.DelegatorDelegations({
               delegatorAddr: icaAddress1,
             }),
           async (delegations) => delegations.delegationResponses?.length == 1,
@@ -252,7 +250,7 @@ describe('Neutron / Interchain TXs', () => {
         const res2 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({
+            gaiaStakingQuerier.DelegatorDelegations({
               delegatorAddr: icaAddress2,
             }),
           async (delegations) => delegations.delegationResponses?.length == 0,
@@ -303,7 +301,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+            gaiaStakingQuerier.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
@@ -317,7 +315,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await stakingQuerier.DelegatorDelegations({
+        const res2 = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: icaAddress2,
         });
         expect(res2.delegationResponses).toEqual([]);
@@ -565,7 +563,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
-        const res = await stakingQuerier.DelegatorDelegations({
+        const res = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: icaAddress1,
         });
         expect(res.delegationResponses).toEqual([
