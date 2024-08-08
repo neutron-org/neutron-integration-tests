@@ -116,11 +116,10 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle callback on a sending', async () => {
       addr1ExpectedBalance += amountToAddrFirst1;
-      let balances = await bankQuerierGaia.allBalances(
-        {
-          resolveDenom: false,
-          address: watchedAddr1
-        });
+      let balances = await bankQuerierGaia.allBalances({
+        resolveDenom: false,
+        address: watchedAddr1,
+      });
       expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,

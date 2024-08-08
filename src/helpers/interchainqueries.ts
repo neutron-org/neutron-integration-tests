@@ -370,7 +370,7 @@ export const validateBalanceQuery = async (
 
   const balances = await bankQuerier.allBalances({
     resolveDenom: false,
-    address: address
+    address: address,
   });
 
   expect(filterIBCDenoms(res.balances.coins)).toEqual(

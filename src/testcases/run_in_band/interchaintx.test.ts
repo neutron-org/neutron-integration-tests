@@ -126,7 +126,7 @@ describe('Neutron / Interchain TXs', () => {
       test('multiple IBC accounts created', async () => {
         const channels =
           await neutronClient.getWithAttempts<QueryChannelsResponse>(
-            () => ibcQuerier.Channels({}),
+            () => ibcQuerier.channels({}),
             // Wait until there are 3 channels:
             // - one exists already, it is open for IBC transfers;
             // - two more should appear soon since we are opening them implicitly

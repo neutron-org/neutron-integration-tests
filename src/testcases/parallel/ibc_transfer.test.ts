@@ -115,7 +115,10 @@ describe('Neutron / IBC transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const res = await bankQuerier.allBalances({resolveDenom: false, address: ibcContract });
+        const res = await bankQuerier.allBalances({
+          resolveDenom: false,
+          address: ibcContract,
+        });
         expect(res.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);

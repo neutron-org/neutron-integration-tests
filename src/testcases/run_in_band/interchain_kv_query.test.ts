@@ -207,7 +207,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
         let balances = await bankQuerier.allBalances({
           resolveDenom: false,
-          address: contractAddress
+          address: contractAddress,
         });
         expect(balances.balances[0].amount).toEqual('1000000');
 
@@ -220,7 +220,10 @@ describe('Neutron / Interchain KV Query', () => {
           gaiaWallet.address,
         );
 
-        balances = await bankQuerier.allBalances({resolveDenom: false, address: contractAddress });
+        balances = await bankQuerier.allBalances({
+          resolveDenom: false,
+          address: contractAddress,
+        });
 
         expect(balances.balances.length).toEqual(0);
       });
