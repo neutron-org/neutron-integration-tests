@@ -20,7 +20,7 @@ import {
   MsgMint,
   MsgSetBeforeSendHook,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
-import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -709,7 +709,7 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
 
-      const metadata = await bankQuerier.DenomMetadata({ denom: denom });
+      const metadata = await bankQuerier.denomMetadata({ denom: denom });
       expect(metadata.metadata.base).toEqual(denom);
       expect(metadata.metadata.uri).toEqual(denom);
       expect(metadata.metadata.display).toEqual(denom);

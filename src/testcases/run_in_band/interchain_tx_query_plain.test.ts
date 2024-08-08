@@ -19,7 +19,7 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as BankQuerier } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
@@ -116,9 +116,11 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle callback on a sending', async () => {
       addr1ExpectedBalance += amountToAddrFirst1;
-      let balances = await bankQuerierGaia.AllBalances({
-        address: watchedAddr1,
-      });
+      let balances = await bankQuerierGaia.allBalances(
+        {
+          resolveDenom: false,
+          address: watchedAddr1
+        });
       expect(balances.balances).toEqual([]);
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,

@@ -18,7 +18,7 @@ import axios, { AxiosResponse } from 'axios';
 import { SigningNeutronClient } from './signing_neutron_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
-import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as BankQuerier } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 
 export const getKvCallbackStatus = async (
@@ -368,8 +368,9 @@ export const validateBalanceQuery = async (
     queryId,
   );
 
-  const balances = await bankQuerier.AllBalances({
-    address: address,
+  const balances = await bankQuerier.allBalances({
+    resolveDenom: false,
+    address: address
   });
 
   expect(filterIBCDenoms(res.balances.coins)).toEqual(

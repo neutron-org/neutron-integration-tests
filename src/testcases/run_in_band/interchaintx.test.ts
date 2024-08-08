@@ -9,20 +9,23 @@ import { LocalState } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
-
 import {
-  QueryClientImpl as StakingQueryClient,
   QueryDelegatorDelegationsResponse,
-} from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
+} from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query';
+import {QueryClientImpl as StakingQueryClient} from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import {
-  QueryClientImpl as IbcQueryClient,
   QueryChannelsResponse,
-} from '@neutron-org/cosmjs-types/ibc/core/channel/v1/query';
+} from '@neutron-org/neutronjs/ibc/core/channel/v1/query';
+import {
+  QueryClientImpl as IbcQueryClient
+} from '@neutron-org/neutronjs/ibc/core/channel/v1/query.rpc.Query';
+import {
+  QueryFailuresResponse,
+} from '@neutron-org/neutronjs/neutron/contractmanager/query';
+import { getWithAttempts } from '../../helpers/misc';
 import {
   QueryClientImpl as ContractManagerQuery,
-  QueryFailuresResponse,
-} from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
-import { getWithAttempts } from '../../helpers/misc';
+} from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
@@ -233,7 +236,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({
+            stakingQuerier.delegatorDelegations({
               delegatorAddr: icaAddress1,
             }),
           async (delegations) => delegations.delegationResponses?.length == 1,
@@ -252,7 +255,7 @@ describe('Neutron / Interchain TXs', () => {
         const res2 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({
+            stakingQuerier.delegatorDelegations({
               delegatorAddr: icaAddress2,
             }),
           async (delegations) => delegations.delegationResponses?.length == 0,
@@ -303,7 +306,7 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaClient,
           () =>
-            stakingQuerier.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+            stakingQuerier.delegatorDelegations({ delegatorAddr: icaAddress1 }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
@@ -317,7 +320,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await stakingQuerier.DelegatorDelegations({
+        const res2 = await stakingQuerier.delegatorDelegations({
           delegatorAddr: icaAddress2,
         });
         expect(res2.delegationResponses).toEqual([]);
@@ -527,7 +530,7 @@ describe('Neutron / Interchain TXs', () => {
         });
         expect(res.code).toEqual(0);
         await neutronClient.getWithAttempts(
-          async () => ibcQuerier.Channels({}),
+          async () => ibcQuerier.channels({}),
           // Wait until there are 4 channels:
           // - one exists already, it is open for IBC transfers;
           // - two channels are already opened via ICA registration before
@@ -535,7 +538,7 @@ describe('Neutron / Interchain TXs', () => {
           async (channels) => channels.channels.length == 4,
         );
         await neutronClient.getWithAttempts(
-          () => ibcQuerier.Channels({}),
+          () => ibcQuerier.channels({}),
           async (channels) =>
             channels.channels.find((c) => c.channelId == 'channel-3')?.state ==
             3,
@@ -565,7 +568,7 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
       test('check validator state after ICA recreation', async () => {
-        const res = await stakingQuerier.DelegatorDelegations({
+        const res = await stakingQuerier.delegatorDelegations({
           delegatorAddr: icaAddress1,
         });
         expect(res.delegationResponses).toEqual([
@@ -586,9 +589,8 @@ describe('Neutron / Interchain TXs', () => {
       beforeAll(async () => {
         await cleanAckResults(neutronClient, contractAddress);
 
-        const failures = await contractManagerQuerier.AddressFailures({
+        const failures = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         expect(failures.failures.length).toEqual(0);
 
@@ -615,9 +617,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 1,
           100,
@@ -652,9 +653,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 2,
           100,
@@ -689,9 +689,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 3,
           100,
@@ -728,9 +727,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 4,
           100,
@@ -766,9 +764,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 5,
           100,
@@ -806,9 +803,8 @@ describe('Neutron / Interchain TXs', () => {
         // wait until sudo is called and processed and failure is recorder
         await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
+            contractManagerQuerier.failures({
               address: contractAddress,
-              failureId: 0n,
             }),
           async (data) => data.failures.length == 6,
           100,
@@ -825,9 +821,8 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('check stored failures and acks', async () => {
-        const failures = await contractManagerQuerier.AddressFailures({
+        const failures = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         // 4 ack failures, 2 timeout failure, just as described in the tests above
         expect(failures.failures).toEqual([
@@ -879,9 +874,8 @@ describe('Neutron / Interchain TXs', () => {
         await neutronClient.waitBlocks(5);
 
         // Try to resubmit failure
-        const failuresResBefore = await contractManagerQuerier.AddressFailures({
+        const failuresResBefore = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         await expect(
           neutronClient.execute(contractAddress, {
@@ -894,9 +888,8 @@ describe('Neutron / Interchain TXs', () => {
         await neutronClient.waitBlocks(5);
 
         // check that failures count is the same
-        const failuresResAfter = await contractManagerQuerier.AddressFailures({
+        const failuresResAfter = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
 
@@ -913,9 +906,8 @@ describe('Neutron / Interchain TXs', () => {
 
       test('successful resubmit failure', async () => {
         // Resubmit failure
-        const failuresResBefore = await contractManagerQuerier.AddressFailures({
+        const failuresResBefore = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         const failure = failuresResBefore.failures[0];
         const failureId = failure.id;
@@ -929,9 +921,8 @@ describe('Neutron / Interchain TXs', () => {
         await neutronClient.waitBlocks(5);
 
         // check that failures count is changed
-        const failuresResAfter = await contractManagerQuerier.AddressFailures({
+        const failuresResAfter = await contractManagerQuerier.failures({
           address: contractAddress,
-          failureId: 0n,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
 
