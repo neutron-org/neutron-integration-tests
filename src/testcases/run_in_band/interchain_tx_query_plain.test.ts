@@ -19,7 +19,7 @@ import {
   COSMOS_DENOM,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
-import { QueryClientImpl as BankQuerier } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
+import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
