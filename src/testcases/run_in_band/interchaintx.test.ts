@@ -1,15 +1,17 @@
-/* eslint-disable prettier/prettier */
 import { IndexedTx, JsonObject } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import { getSequenceId } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
-import { CONTRACTS, COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
-
 import {
   QueryClientImpl as StakingQueryClient,
   QueryDelegatorDelegationsResponse,
@@ -23,14 +25,18 @@ import {
   QueryFailuresResponse,
 } from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
 import { getWithAttempts } from '../../helpers/misc';
-
-import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
-import { AcknowledgementResult, cleanAckResults, getAck, getAcks, waitForAck } from '../../helpers/interchaintxs';
+import {
+  AcknowledgementResult,
+  cleanAckResults,
+  getAck,
+  getAcks,
+  waitForAck,
+} from '../../helpers/interchaintxs';
+import config from '../../config.json';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
-
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
@@ -301,7 +307,9 @@ describe('Neutron / Interchain TXs', () => {
         const res1 = await getWithAttempts(
           gaiaClient,
           () =>
-            gaiaStakingQuerier.DelegatorDelegations({ delegatorAddr: icaAddress1 }),
+            gaiaStakingQuerier.DelegatorDelegations({
+              delegatorAddr: icaAddress1,
+            }),
           async (delegations) => delegations.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
@@ -832,17 +840,17 @@ describe('Neutron / Interchain TXs', () => {
           expect.objectContaining({
             address: contractAddress,
             id: 0n,
-            error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            error: 'codespace: wasm, code: 5', // execute wasm contract failed
           }),
           expect.objectContaining({
             address: contractAddress,
             id: 1n,
-            error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            error: 'codespace: wasm, code: 5', // execute wasm contract failed
           }),
           expect.objectContaining({
             address: contractAddress,
             id: 2n,
-            error: 'codespace: wasm, code: 5', // execute wasm contract failer
+            error: 'codespace: wasm, code: 5', // execute wasm contract failed
           }),
           expect.objectContaining({
             address: contractAddress,
@@ -937,8 +945,8 @@ describe('Neutron / Interchain TXs', () => {
         const acks = await getAcks(neutronClient, contractAddress);
         expect(acks.length).toEqual(1);
         expect(acks[0].sequence_id).toEqual(
-          +JSON.parse(Buffer.from(failure.sudoPayload).toString())
-            .response.request.sequence,
+          +JSON.parse(Buffer.from(failure.sudoPayload).toString()).response
+            .request.sequence,
         );
       });
     });
