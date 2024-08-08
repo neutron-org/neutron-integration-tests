@@ -40,6 +40,7 @@ describe('Neutron / Interchain TXs', () => {
   let contractAddress: string;
   let icaAddress1: string;
   let icaAddress2: string;
+  let unorderedIcaAddress: string;
   let gaiaStakingQuerier: StakingQueryClient;
   let ibcQuerier: IbcQueryClient;
   let contractManagerQuerier: ContractManagerQuery;
@@ -51,6 +52,7 @@ describe('Neutron / Interchain TXs', () => {
 
   const icaId1 = 'test1';
   const icaId2 = 'test2';
+  const unorderedIcaId = 'test-unordered';
   const connectionId = 'connection-0';
 
   beforeAll(async (suite: RunnerTestSuite) => {
@@ -117,12 +119,22 @@ describe('Neutron / Interchain TXs', () => {
         });
         expect(res.code).toEqual(0);
       });
+      test('create unordered ICA', async () => {
+        const res = await neutronClient.execute(contractAddress, {
+          register: {
+            connection_id: connectionId,
+            interchain_account_id: unorderedIcaId,
+            ordering: 'ORDER_UNORDERED',
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
       test('check contract balance', async () => {
         const balance = await neutronClient.getBalance(
           contractAddress,
           NEUTRON_DENOM,
         );
-        expect(balance.amount).toEqual('8000000');
+        expect(balance.amount).toEqual('7000000');
       });
       test('multiple IBC accounts created', async () => {
         const channels =
@@ -132,7 +144,7 @@ describe('Neutron / Interchain TXs', () => {
             // - one exists already, it is open for IBC transfers;
             // - two more should appear soon since we are opening them implicitly
             //   through ICA creation.
-            async (channels) => channels.channels.length == 3,
+            async (channels) => channels.channels.length == 4,
           );
         expect(channels.channels).toBeArray();
         expect(channels.channels).toIncludeAllPartialMembers([
@@ -141,6 +153,9 @@ describe('Neutron / Interchain TXs', () => {
           },
           {
             portId: `icacontroller-${contractAddress}.test2`,
+          },
+          {
+            portId: `icacontroller-${contractAddress}.test-unordered`,
           },
         ]);
       });
@@ -173,6 +188,20 @@ describe('Neutron / Interchain TXs', () => {
         expect(ica2.interchain_account_address).toStartWith('cosmos');
         expect(ica2.interchain_account_address.length).toEqual(65);
         icaAddress2 = ica2.interchain_account_address;
+
+        const icaUnordered = await neutronClient.getWithAttempts<JsonObject>(
+          () =>
+            neutronClient.queryContractSmart(contractAddress, {
+              interchain_account_address: {
+                interchain_account_id: icaId2,
+                connection_id: connectionId,
+              },
+            }),
+          async (data) => data.interchain_account_address != null,
+        );
+        expect(icaUnordered.interchain_account_address).toStartWith('cosmos');
+        expect(icaUnordered.interchain_account_address.length).toEqual(65);
+        unorderedIcaAddress = icaUnordered.interchain_account_address;
       });
 
       test('set payer fees', async () => {
@@ -208,6 +237,17 @@ describe('Neutron / Interchain TXs', () => {
           },
         );
         expect(res2.code).toEqual(0);
+        // unordered ICA
+        const res3 = await gaiaClient.sendTokens(
+          gaiaWallet.address,
+          unorderedIcaAddress,
+          [{ denom: COSMOS_DENOM, amount: '10000' }],
+          {
+            gas: '200000',
+            amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+          },
+        );
+        expect(res3.code).toEqual(0);
       });
     });
     describe('Send Interchain TX', () => {
@@ -268,7 +308,7 @@ describe('Neutron / Interchain TXs', () => {
           contractAddress,
           NEUTRON_DENOM,
         );
-        expect(balance.amount).toEqual('7998000');
+        expect(balance.amount).toEqual('6998000');
       });
     });
 
@@ -334,7 +374,7 @@ describe('Neutron / Interchain TXs', () => {
           NEUTRON_DENOM,
         );
         // two interchain txs inside (2000 * 2 = 4000)
-        expect(balance.amount).toEqual('7994000');
+        expect(balance.amount).toEqual('6994000');
       });
     });
 
@@ -457,8 +497,7 @@ describe('Neutron / Interchain TXs', () => {
               timeout: 1,
             },
           });
-          // FIXME
-          rawLog = res.events.join('');
+          rawLog = res.rawLog;
         } catch (e) {
           rawLog = e.message;
         }
@@ -523,6 +562,62 @@ describe('Neutron / Interchain TXs', () => {
         });
       });
     });
+
+    describe('Unordered channel', () => {
+      test('delegate with timeout', async () => {
+        await cleanAckResults(neutronClient, contractAddress);
+        const res = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: unorderedIcaId,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            amount: '10',
+            denom: COSMOS_DENOM,
+            timeout: 1,
+          },
+        });
+        expect(res.code).toEqual(0);
+        console.log(
+          'unordered ica delegate log: ' + JSON.stringify(res.rawLog),
+        );
+        const sequenceId = getSequenceId(res);
+        console.log('unordered ica sequenceId: ' + sequenceId);
+
+        // timeout handling may be slow, hence we wait for up to 100 blocks here
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+          100,
+        );
+        const ackRes = await getAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+        );
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
+          timeout: 'message',
+        });
+      });
+
+      test('delegate after the timeout on unordered channel should work as channel should still be open', async () => {
+        const res = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            amount: '10',
+            denom: COSMOS_DENOM,
+            timeout: 1,
+          },
+        });
+        console.log(
+          'delegate after timeout rawLog: ' + JSON.stringify(res.rawLog),
+        );
+        expect(res.code).toBe(0);
+      });
+    });
+
     describe('Recreation', () => {
       test('recreate ICA1', async () => {
         const res = await neutronClient.execute(contractAddress, {
