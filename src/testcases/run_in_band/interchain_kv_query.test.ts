@@ -55,7 +55,7 @@ import {
 } from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
-import { QueryClientImpl as SlashingQuerier } from '@neutron-org/neutronjs/cosmos/slashing/v1beta1/query.rpc.Query';
+import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 
@@ -205,8 +205,7 @@ describe('Neutron / Interchain KV Query', () => {
             amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
           },
         );
-        let balances = await bankQuerier.allBalances({
-          resolveDenom: false,
+        let balances = await bankQuerier.AllBalances({
           address: contractAddress,
         });
         expect(balances.balances[0].amount).toEqual('1000000');
@@ -220,8 +219,7 @@ describe('Neutron / Interchain KV Query', () => {
           gaiaWallet.address,
         );
 
-        balances = await bankQuerier.allBalances({
-          resolveDenom: false,
+        balances = await bankQuerier.AllBalances({
           address: contractAddress,
         });
 
