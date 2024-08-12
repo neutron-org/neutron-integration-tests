@@ -12,7 +12,7 @@ import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1be
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import config from '../../config.json';
 
-describe('Neutron / Stargate Queries', () => {
+describe('Neutron / Grpc Queries', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
   let neutronWallet: Wallet;
@@ -217,7 +217,7 @@ describe('Neutron / Stargate Queries', () => {
     test('tokenfactory denom authority metadata should work', async () => {
       const res = await querySmart({
         tokenfactory_denom_authority_metadata: {
-          creator: neutronAccount.wallet.address.toString(),
+          creator: neutronWallet.address,
           subdenom: newTokenDenom,
         },
       });
