@@ -28,7 +28,11 @@ describe('Neutron / dex module (grpc contract)', () => {
 
   describe('Instantiate dex grpc contract', () => {
     test('instantiate contract', async () => {
-      contractAddress = await neutronClient.create(CONTRACTS.DEX_GRPC, {}, 'dex_grpc');
+      contractAddress = await neutronClient.create(
+        CONTRACTS.DEX_GRPC,
+        {},
+        'dex_grpc',
+      );
     });
     test('send funds', async () => {
       await neutronClient.sendTokens(
