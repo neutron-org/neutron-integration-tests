@@ -95,18 +95,15 @@ docker-compose build
 ## Environment variables you can redefine
 
 ```env
-NEUTRON_DENOM - neutron network denom
-COSMOS_DENOM - gaia (cosmoshub) network denom
-CONTRACTS_PATH - path to contracts that will be used in tests
-NEUTRON_ADDRESS_PREFIX - address prefix for neutron controller network
-COSMOS_ADDRESS_PREFIX - address prefix for gaia (cosmoshub) host network
-NODE1_URL - url to the first node
-NODE1_WS_URL - url to websocket of the first node
-NODE2_URL - url to the second node
-NODE2_WS_URL - url to websocket of the second node
-BLOCKS_COUNT_BEFORE_START - how many blocks we wait before start first test
+CONTRACTS_PATH - path to contracts that are used in the tests
+NODE1_URL - REST url to the Neutron node
+NODE2_URL - REST url to the Gaia node
+NODE1_RPC - RPC endpoint to Neutron node
+NODE2_RPC - RPC endpoint to Gaia node
+ICQ_WEB_HOST - interchain query relayer web endpoint
+START_BLOCK_HEIGHT - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
-NO_REBUILD - skip containers rebuilding
+NO_PRINT_VERSIONS - do not print contract versions in console
 DEBUG_SUBMIT_TX - log submitted txs to stdout
 ```
 
