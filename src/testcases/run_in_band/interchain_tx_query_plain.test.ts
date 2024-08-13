@@ -116,8 +116,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('handle callback on a sending', async () => {
       addr1ExpectedBalance += amountToAddrFirst1;
-      let balances = await bankQuerierGaia.allBalances({
-        resolveDenom: false,
+      let balances = await bankQuerierGaia.AllBalances({
         address: watchedAddr1,
       });
       expect(balances.balances).toEqual([]);
