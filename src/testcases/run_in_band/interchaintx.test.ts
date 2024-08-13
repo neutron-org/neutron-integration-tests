@@ -34,6 +34,7 @@ import {
   waitForAck,
 } from '../../helpers/interchaintxs';
 import config from '../../config.json';
+import { Order } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -150,12 +151,15 @@ describe('Neutron / Interchain TXs', () => {
         expect(channels.channels).toIncludeAllPartialMembers([
           {
             portId: `icacontroller-${contractAddress}.test1`,
+            ordering: Order.ORDER_ORDERED,
           },
           {
             portId: `icacontroller-${contractAddress}.test2`,
+            ordering: Order.ORDER_ORDERED,
           },
           {
             portId: `icacontroller-${contractAddress}.test-unordered`,
+            ordering: Order.ORDER_UNORDERED,
           },
         ]);
       });
