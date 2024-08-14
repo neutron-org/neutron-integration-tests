@@ -118,3 +118,7 @@ declare module 'vitest' {
     mnemonics: string[];
   }
 }
+
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};

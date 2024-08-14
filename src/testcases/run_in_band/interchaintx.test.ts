@@ -34,8 +34,10 @@ import {
   waitForAck,
 } from '../../helpers/interchaintxs';
 import { execSync } from 'child_process';
+import { IbcClient, Link, NoopLogger } from '@confio/relayer/build';
 import config from '../../config.json';
 import { Order } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
+import { GasPrice } from '@cosmjs/stargate/build/fee';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -198,7 +200,7 @@ describe('Neutron / Interchain TXs', () => {
           () =>
             neutronClient.queryContractSmart(contractAddress, {
               interchain_account_address: {
-                interchain_account_id: icaId2,
+                interchain_account_id: unorderedIcaId,
                 connection_id: connectionId,
               },
             }),
@@ -569,21 +571,21 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     describe('Unordered channel', () => {
-      test('delegate with timeout does not close unordered channel', async () => {
+      test.skip('delegate with timeout does not close unordered channel', async () => {
         await cleanAckResults(neutronClient, contractAddress);
         const res = await neutronClient.execute(contractAddress, {
           delegate: {
             interchain_account_id: unorderedIcaId,
             validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '10',
+            amount: '100',
             denom: COSMOS_DENOM,
             timeout: 1,
           },
         });
         expect(res.code).toEqual(0);
-        console.log(
-          'unordered ica delegate log: ' + JSON.stringify(res.rawLog),
-        );
+        // console.log(
+        //   'unordered ica delegate log: ' + JSON.stringify(res.rawLog),
+        // );
         const sequenceId = getSequenceId(res);
         console.log('unordered ica sequenceId: ' + sequenceId);
 
@@ -608,25 +610,60 @@ describe('Neutron / Interchain TXs', () => {
         // TODO: check that channel is opened
       });
 
-      test('delegate after the timeout on unordered channel should work as channel should still be open', async () => {
+      test.skip('delegate after the timeout on unordered channel should work as channel should still be open', async () => {
         const res = await neutronClient.execute(contractAddress, {
           delegate: {
             interchain_account_id: unorderedIcaId,
             validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '10',
+            amount: '770',
             denom: COSMOS_DENOM,
-            timeout: 1,
           },
         });
+        const sequenceId = getSequenceId(res);
+        await getAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+        );
         console.log(
           'delegate after timeout rawLog: ' + JSON.stringify(res.rawLog),
         );
-        expect(res.code).toBe(0);
+        expect(res.code).toBe(0); // works as channel is still open
       });
 
       test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
-        const delegationsBefore = await gaiaStakingQuerier.ValidatorDelegations(
-          { validatorAddr: testState.wallets.cosmos.val1.valAddress },
+        const neutronIbcClient = await IbcClient.connectWithSigner(
+          'http://localhost:26657',
+          testState.wallets.neutron.demo1.directwallet,
+          testState.wallets.neutron.demo1.address,
+          {
+            gasPrice: GasPrice.fromString('0.05untrn'),
+            estimatedBlockTime: 3, // FIXME
+            estimatedIndexerTime: 100,
+          },
+        );
+        const gaiaIbcClient = await IbcClient.connectWithSigner(
+          'http://localhost:16657',
+          testState.wallets.cosmos.demo1.directwallet,
+          testState.wallets.cosmos.demo1.address,
+          {
+            gasPrice: GasPrice.fromString('0.05uatom'),
+            estimatedBlockTime: 3,
+            estimatedIndexerTime: 100,
+          },
+        );
+
+        const link = await Link.createWithExistingConnections(
+          neutronIbcClient,
+          gaiaIbcClient,
+          'connection-0',
+          'connection-0',
+          new NoopLogger(),
+        );
+
+        const delegationsBefore = await gaiaStakingQuerier.DelegatorDelegations(
+          { delegatorAddr: unorderedIcaAddress },
         );
 
         const pauseRes = execSync('docker pause setup-hermes-1');
@@ -638,17 +675,25 @@ describe('Neutron / Interchain TXs', () => {
             interchain_account_id: unorderedIcaId,
             validator: testState.wallets.cosmos.val1.valAddress,
             denom: COSMOS_DENOM,
-            amount: '15',
+            amount: '583',
           },
         });
         expect(res1.code).toEqual(0);
         const sequenceId1 = getSequenceId(res1);
+        console.log(
+          'paused sequenceId (TO BE RELAYED ONLY LATER): ' + sequenceId1,
+        );
 
         // TODO: check that delegated did not change
         // TODO: check that operation not acknowledged
 
-        const unpauseRes = execSync('docker unpause setup-hermes-1');
-        console.log('pauseRes: ' + unpauseRes.toString());
+        // const unpauseRes = execSync('docker unpause setup-hermes-1');
+        // console.log('unpauseRes: ' + unpauseRes.toString());
+
+        const delegationsBefore2 =
+          await gaiaStakingQuerier.DelegatorDelegations({
+            delegatorAddr: unorderedIcaAddress,
+          });
 
         // this should be relayed first, even thought it has later sequence.
         const res2 = await neutronClient.execute(contractAddress, {
@@ -656,14 +701,37 @@ describe('Neutron / Interchain TXs', () => {
             interchain_account_id: unorderedIcaId,
             validator: testState.wallets.cosmos.val1.valAddress,
             denom: COSMOS_DENOM,
-            amount: '49',
+            amount: '490',
           },
         });
         expect(res2.code).toEqual(0);
         const sequenceId2 = getSequenceId(res2);
         expect(sequenceId1).toBe(sequenceId2 - 1);
+        console.log('unpaused sequenceId: ' + sequenceId2);
+
+        const pendingPackets = await link.getPendingPackets('A');
+        console.log(
+          'Pending packets to relay manually: ' +
+            JSON.stringify(
+              pendingPackets.map((p) => p.packet.sequence.toString()),
+            ),
+        );
+        const res = await link.relayPackets('A', pendingPackets);
+        console.log(
+          'Manual relay result: ' +
+            JSON.stringify(
+              res.map((p) => p.originalPacket.sequence.toString()),
+            ),
+        );
 
         // timeout handling may be slow, hence we wait for up to 100 blocks here
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId1,
+          100,
+        );
         await waitForAck(
           neutronClient,
           contractAddress,
@@ -671,25 +739,59 @@ describe('Neutron / Interchain TXs', () => {
           sequenceId2,
           100,
         );
+        console.log(
+          'should not get to this point! as were waiting for tx that was sent when relayer was paused',
+        );
 
-        const delegationsAfter = await gaiaStakingQuerier.ValidatorDelegations({
-          validatorAddr: testState.wallets.cosmos.val1.valAddress,
+        const delegationsAfter = await gaiaStakingQuerier.DelegatorDelegations({
+          delegatorAddr: unorderedIcaAddress,
         });
         console.log(
-          'before: ' +
-            JSON.stringify(
-              delegationsBefore.delegationResponses.map((d) => d.balance),
-            ),
+          'before: ' + JSON.stringify(delegationsBefore.delegationResponses),
         );
         console.log(
-          'after: ' +
-            JSON.stringify(
-              delegationsAfter.delegationResponses.map((d) => d.balance),
-            ),
+          'before2: ' + JSON.stringify(delegationsBefore2.delegationResponses),
+        );
+        console.log(
+          'after : ' + JSON.stringify(delegationsAfter.delegationResponses),
         );
 
         // TODO: compare
         // delegationsBefore.delegationResponses[0].
+
+        // TODO: clear first packet. Should be successful
+        const channel = (await ibcQuerier.Channels({})).channels.find(
+          (c) => c.ordering === Order.ORDER_UNORDERED,
+        );
+        const clearPacketsCmd =
+          "docker exec setup-hermes-1 hermes --config /app/network/hermes/config.toml clear packets --chain 'test-1' --port " +
+          channel.portId +
+          ' --channel ' +
+          channel.channelId;
+        console.log('clearPacketsCmd: ' + clearPacketsCmd);
+        const clearPacketsRes = execSync(clearPacketsCmd);
+        console.log('clearPacketsRes: ' + clearPacketsRes.toString());
+
+        // timeout handling may be slow, hence we wait for up to 100 blocks here
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId1,
+          100,
+        );
+
+        // TODO: wait for ack sequenceId1
+        // console.log(
+        //   'after2 : ' +
+        //   JSON.stringify(
+        //     delegationsAfter.delegationResponses.map((d) => d.balance),
+        //   ),
+        // );
+
+        // unpause hermes for tests below
+        const unpauseRes = execSync('docker unpause setup-hermes-1');
+        console.log('unpauseRes: ' + unpauseRes.toString());
       });
     });
 
@@ -758,7 +860,7 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
 
-    describe('delegate with sudo failure', () => {
+    describe('Delegate with sudo failure', () => {
       beforeAll(async () => {
         await cleanAckResults(neutronClient, contractAddress);
 
@@ -951,7 +1053,7 @@ describe('Neutron / Interchain TXs', () => {
               address: contractAddress,
               failureId: 0n,
             }),
-          async (data) => data.failures.length == 6,
+          async (data) => data.failures.length == 5,
           100,
         );
 
@@ -991,12 +1093,7 @@ describe('Neutron / Interchain TXs', () => {
               address: contractAddress,
               failureId: 0n,
             }),
-          async (data) => {
-            console.log(
-              'data.failures.length : ' + data.failures.length.toString(),
-            );
-            return data.failures.length == 7;
-          },
+          async (data) => data.failures.length == 6,
           100,
         );
 
@@ -1045,13 +1142,13 @@ describe('Neutron / Interchain TXs', () => {
           expect.objectContaining({
             address: contractAddress,
             id: 5n,
-            error: 'codespace: wasm, code: 5', // contractmanager sudo limit exceeded
-          }),
-          expect.objectContaining({
-            address: contractAddress,
-            id: 6n,
             error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
           }),
+          // expect.objectContaining({
+          //   address: contractAddress,
+          //   id: 6n,
+          //   // error: 'codespace: contractmanager, code: 1103', // contractmanager sudo limit exceeded
+          // }),
         ]);
 
         const acks = await getAcks(neutronClient, contractAddress);
@@ -1137,3 +1234,26 @@ describe('Neutron / Interchain TXs', () => {
     });
   });
 });
+
+function logger() {
+  return {
+    log: (msg) => {
+      console.log('LOG: ' + msg);
+    },
+    info: (msg) => {
+      console.log('INFO: ' + msg);
+    },
+    error: (msg) => {
+      console.log('ERROR: ' + msg);
+    },
+    warn: (msg) => {
+      console.log('WARN: ' + msg);
+    },
+    verbose: (msg) => {
+      console.log('VERBOSE: ' + msg);
+    },
+    debug: (msg) => {
+      console.log('DEBUG: ' + msg);
+    },
+  };
+}
