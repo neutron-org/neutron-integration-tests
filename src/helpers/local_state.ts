@@ -7,7 +7,15 @@ import {
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
-import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
+import {
+  COSMOS_PREFIX,
+  GAIA_REST,
+  GAIA_RPC,
+  IBC_WEB_HOST,
+  NEUTRON_PREFIX,
+  NEUTRON_REST,
+  NEUTRON_RPC,
+} from './constants';
 import { Wallet } from './wallet';
 
 // limit of wallets precreated for one test
@@ -47,13 +55,13 @@ export class LocalState {
     private mnemonics: string[],
     private suite?: RunnerTestSuite | undefined,
   ) {
-    this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
-    this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
+    this.rpcNeutron = NEUTRON_RPC;
+    this.rpcGaia = GAIA_RPC;
 
-    this.restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
-    this.restGaia = process.env.NODE2_URL || 'http://localhost:1316';
+    this.restNeutron = NEUTRON_REST;
+    this.restGaia = GAIA_REST;
 
-    this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
+    this.icqWebHost = IBC_WEB_HOST;
 
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
