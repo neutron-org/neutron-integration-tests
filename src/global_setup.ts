@@ -8,9 +8,11 @@ import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
 import ch from 'child_process';
 import {
   COSMOS_DENOM,
-  COSMOS_PREFIX, GAIA_RPC,
+  COSMOS_PREFIX,
+  GAIA_RPC,
   NEUTRON_DENOM,
-  NEUTRON_PREFIX, NEUTRON_RPC,
+  NEUTRON_PREFIX,
+  NEUTRON_RPC,
 } from './helpers/constants';
 
 import config from './config.json';
