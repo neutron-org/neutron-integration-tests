@@ -83,3 +83,4 @@ export const GAIA_RPC = process.env.NODE2_RPC || 'http://localhost:16657';
 export const NEUTRON_REST = process.env.NODE1_URL || 'http://localhost:1317';
 export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1316';
 export const IBC_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
+export const GAIA_CONNECTION = 'connection-0';

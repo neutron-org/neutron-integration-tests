@@ -31,30 +31,16 @@ import {
   cleanAckResults,
   getAck,
   getAcks,
+  relayPacketFromA,
   waitForAck,
 } from '../../helpers/interchaintxs';
 import { execSync } from 'child_process';
-import { IbcClient, Link } from '@confio/relayer/build';
+import { Link } from '@confio/relayer/build';
 import config from '../../config.json';
 import {
   Order,
   State,
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
-import { GasPrice } from '@cosmjs/stargate/build/fee';
-import { PacketWithMetadata } from '@confio/relayer/build/lib/endpoint';
-
-async function relayPacket(link: Link, lastPacket: PacketWithMetadata) {
-  await link.relayPackets('A', [lastPacket]);
-  const [acksA, acksB] = await Promise.all([
-    link.getPendingAcks('A'),
-    link.getPendingAcks('B'),
-  ]);
-  const [acksResA, acksResB] = await Promise.all([
-    link.relayAcks('A', acksA),
-    link.relayAcks('B', acksB),
-  ]);
-  return { acksResA, acksResB };
-}
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -70,6 +56,8 @@ describe('Neutron / Interchain TXs', () => {
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: Wallet;
+
+  let link: Link;
 
   const icaId1 = 'test1';
   const icaId2 = 'test2';
@@ -98,6 +86,8 @@ describe('Neutron / Interchain TXs', () => {
     contractManagerQuerier = new ContractManagerQuery(neutronRpcClient);
     const gaiaRpcClient = await testState.gaiaRpcClient();
     gaiaStakingQuerier = new StakingQueryClient(gaiaRpcClient);
+
+    link = await testState.relayerLink();
   });
 
   describe('Interchain Tx with multiple ICAs', () => {
@@ -588,7 +578,7 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     describe('Unordered channel', () => {
-      test.skip('delegate with timeout does not close unordered channel', async () => {
+      test('delegate with timeout does not close unordered channel', async () => {
         await cleanAckResults(neutronClient, contractAddress);
         const res = await neutronClient.execute(contractAddress, {
           delegate: {
@@ -646,34 +636,6 @@ describe('Neutron / Interchain TXs', () => {
       });
 
       test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
-        const neutronIbcClient = await IbcClient.connectWithSigner(
-          testState.rpcNeutron,
-          testState.wallets.neutron.demo1.directwallet,
-          testState.wallets.neutron.demo1.address,
-          {
-            gasPrice: GasPrice.fromString('0.05untrn'),
-            estimatedBlockTime: 3,
-            estimatedIndexerTime: 100,
-          },
-        );
-        const gaiaIbcClient = await IbcClient.connectWithSigner(
-          testState.rpcGaia,
-          testState.wallets.cosmos.demo1.directwallet,
-          testState.wallets.cosmos.demo1.address,
-          {
-            gasPrice: GasPrice.fromString('0.05uatom'),
-            estimatedBlockTime: 3,
-            estimatedIndexerTime: 100,
-          },
-        );
-
-        const link = await Link.createWithExistingConnections(
-          neutronIbcClient,
-          gaiaIbcClient,
-          connectionId,
-          connectionId,
-        );
-
         // We pause hermes container, so that we can use manual relaying of the packets.
         // That needed in order to ack ibc packets in backwards order
         execSync('docker pause setup-hermes-1');
@@ -717,7 +679,7 @@ describe('Neutron / Interchain TXs', () => {
           (p) => p.packet.sequence === BigInt(sequenceId2),
         );
         expect(lastPacket).not.toBeNull();
-        await relayPacket(link, lastPacket);
+        await relayPacketFromA(link, lastPacket);
         await waitForAck(
           neutronClient,
           contractAddress,
@@ -739,7 +701,7 @@ describe('Neutron / Interchain TXs', () => {
           (p) => p.packet.sequence === BigInt(sequenceId1),
         );
         expect(firstPacket).not.toBeNull();
-        await relayPacket(link, firstPacket);
+        await relayPacketFromA(link, firstPacket);
 
         await waitForAck(
           neutronClient,

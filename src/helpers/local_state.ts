@@ -9,6 +9,7 @@ import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
   COSMOS_PREFIX,
+  GAIA_CONNECTION,
   GAIA_REST,
   GAIA_RPC,
   IBC_WEB_HOST,
@@ -17,6 +18,8 @@ import {
   NEUTRON_RPC,
 } from './constants';
 import { Wallet } from './wallet';
+import { IbcClient, Link } from '@confio/relayer';
+import { GasPrice } from '@cosmjs/stargate/build/fee';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -121,6 +124,41 @@ export class LocalState {
     } else {
       throw new Error('rpcClient() called non existent network: ' + network);
     }
+  }
+
+  // Creates a relayer between neutron and gaia
+  // This relayer can be used to manually relay packets
+  // Since hermes don't have manual relay.
+  async relayerLink(): Promise<Link> {
+    const neutronWallet = await this.nextWallet('neutron');
+    const gaiaWallet = await this.nextWallet('cosmos');
+    const neutronIbcClient = await IbcClient.connectWithSigner(
+      this.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
+      {
+        gasPrice: GasPrice.fromString('0.05untrn'),
+        estimatedBlockTime: 3,
+        estimatedIndexerTime: 100,
+      },
+    );
+    const gaiaIbcClient = await IbcClient.connectWithSigner(
+      this.rpcGaia,
+      gaiaWallet.directwallet,
+      gaiaWallet.address,
+      {
+        gasPrice: GasPrice.fromString('0.05uatom'),
+        estimatedBlockTime: 3,
+        estimatedIndexerTime: 100,
+      },
+    );
+
+    return await Link.createWithExistingConnections(
+      neutronIbcClient,
+      gaiaIbcClient,
+      GAIA_CONNECTION,
+      GAIA_CONNECTION,
+    );
   }
 }
 
