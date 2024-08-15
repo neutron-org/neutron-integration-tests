@@ -577,153 +577,6 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
 
-    describe('Unordered channel', () => {
-      test('delegate with timeout does not close unordered channel', async () => {
-        await cleanAckResults(neutronClient, contractAddress);
-        const res = await neutronClient.execute(contractAddress, {
-          delegate: {
-            interchain_account_id: unorderedIcaId,
-            validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '100',
-            denom: COSMOS_DENOM,
-            timeout: 1,
-          },
-        });
-        expect(res.code).toEqual(0);
-        const sequenceId = getSequenceId(res);
-
-        // timeout handling may be slow, hence we wait for up to 100 blocks here
-        await waitForAck(
-          neutronClient,
-          contractAddress,
-          unorderedIcaId,
-          sequenceId,
-          100,
-        );
-        const ackRes = await getAck(
-          neutronClient,
-          contractAddress,
-          unorderedIcaId,
-          sequenceId,
-        );
-        expect(ackRes).toMatchObject<AcknowledgementResult>({
-          timeout: 'message',
-        });
-
-        const channel = (await ibcQuerier.Channels({})).channels.find(
-          (c) => c.ordering === Order.ORDER_UNORDERED,
-        );
-        expect(channel.state).toEqual(State.STATE_OPEN);
-      });
-
-      test('delegate after the timeout on unordered channel should work as channel should still be open', async () => {
-        const res = await neutronClient.execute(contractAddress, {
-          delegate: {
-            interchain_account_id: unorderedIcaId,
-            validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '100',
-            denom: COSMOS_DENOM,
-          },
-        });
-        expect(res.code).toBe(0); // works as channel is still open
-        const sequenceId = getSequenceId(res);
-        await getAck(
-          neutronClient,
-          contractAddress,
-          unorderedIcaId,
-          sequenceId,
-        );
-      });
-
-      test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
-        // We pause hermes container, so that we can use manual relaying of the packets.
-        // That needed in order to ack ibc packets in backwards order
-        execSync('docker pause setup-hermes-1');
-
-        const res1 = await neutronClient.execute(contractAddress, {
-          delegate: {
-            interchain_account_id: unorderedIcaId,
-            validator: testState.wallets.cosmos.val1.valAddress,
-            denom: COSMOS_DENOM,
-            amount: '200',
-          },
-        });
-        expect(res1.code).toEqual(0);
-        const sequenceId1 = getSequenceId(res1);
-
-        // this should be relayed first, even thought it has a later sequence.
-        const res2 = await neutronClient.execute(contractAddress, {
-          delegate: {
-            interchain_account_id: unorderedIcaId,
-            validator: testState.wallets.cosmos.val1.valAddress,
-            denom: COSMOS_DENOM,
-            amount: '400',
-          },
-        });
-        expect(res2.code).toEqual(0);
-        const sequenceId2 = getSequenceId(res2);
-        expect(sequenceId1).toBe(sequenceId2 - 1);
-
-        // should be delegated 100 coins from before
-        const delegationsQ1 = await gaiaStakingQuerier.DelegatorDelegations({
-          delegatorAddr: unorderedIcaAddress,
-        });
-        expect(delegationsQ1.delegationResponses[0].balance.amount).toEqual(
-          '100',
-        );
-
-        const pendingPackets = await link.getPendingPackets('A');
-
-        // relay lastPacket
-        const lastPacket = pendingPackets.find(
-          (p) => p.packet.sequence === BigInt(sequenceId2),
-        );
-        expect(lastPacket).not.toBeNull();
-        await relayPacketFromA(link, lastPacket);
-        await waitForAck(
-          neutronClient,
-          contractAddress,
-          unorderedIcaId,
-          sequenceId2,
-          100,
-        );
-
-        // should be delegated 100 + 400 (lastPacket) coins after relaying last packet
-        const delegationsQ2 = await gaiaStakingQuerier.DelegatorDelegations({
-          delegatorAddr: unorderedIcaAddress,
-        });
-        expect(delegationsQ2.delegationResponses[0].balance.amount).toEqual(
-          '500',
-        );
-
-        // relay firstPacket
-        const firstPacket = pendingPackets.find(
-          (p) => p.packet.sequence === BigInt(sequenceId1),
-        );
-        expect(firstPacket).not.toBeNull();
-        await relayPacketFromA(link, firstPacket);
-
-        await waitForAck(
-          neutronClient,
-          contractAddress,
-          unorderedIcaId,
-          sequenceId1,
-          100,
-        );
-
-        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying last packet
-        const delegationsQ3 = await gaiaStakingQuerier.DelegatorDelegations({
-          delegatorAddr: unorderedIcaAddress,
-        });
-        expect(delegationsQ3.delegationResponses[0].balance.amount).toEqual(
-          '700',
-        );
-
-        // unpause hermes for tests below
-        execSync('docker unpause setup-hermes-1');
-      });
-    });
-
     describe('Recreation', () => {
       test('recreate ICA1', async () => {
         const res = await neutronClient.execute(contractAddress, {
@@ -1151,6 +1004,154 @@ describe('Neutron / Interchain TXs', () => {
           +JSON.parse(Buffer.from(failure.sudoPayload).toString()).response
             .request.sequence,
         );
+      });
+    });
+
+
+    describe('Unordered channel', () => {
+      test('delegate with timeout does not close unordered channel', async () => {
+        await cleanAckResults(neutronClient, contractAddress);
+        const res = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: unorderedIcaId,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            amount: '100',
+            denom: COSMOS_DENOM,
+            timeout: 1,
+          },
+        });
+        expect(res.code).toEqual(0);
+        const sequenceId = getSequenceId(res);
+
+        // timeout handling may be slow, hence we wait for up to 100 blocks here
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+          100,
+        );
+        const ackRes = await getAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+        );
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
+          timeout: 'message',
+        });
+
+        const channel = (await ibcQuerier.Channels({})).channels.find(
+          (c) => c.ordering === Order.ORDER_UNORDERED,
+        );
+        expect(channel.state).toEqual(State.STATE_OPEN);
+      });
+
+      test('delegate after the timeout on unordered channel should work as channel should still be open', async () => {
+        const res = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: unorderedIcaId,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            amount: '100',
+            denom: COSMOS_DENOM,
+          },
+        });
+        expect(res.code).toBe(0); // works as channel is still open
+        const sequenceId = getSequenceId(res);
+        await getAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId,
+        );
+      });
+
+      test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
+        // We pause hermes container, so that we can use manual relaying of the packets.
+        // That needed in order to ack ibc packets in backwards order
+        execSync('docker pause setup-hermes-1');
+
+        const res1 = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: unorderedIcaId,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            denom: COSMOS_DENOM,
+            amount: '200',
+          },
+        });
+        expect(res1.code).toEqual(0);
+        const sequenceId1 = getSequenceId(res1);
+
+        // this should be relayed first, even thought it has a later sequence.
+        const res2 = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: unorderedIcaId,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            denom: COSMOS_DENOM,
+            amount: '400',
+          },
+        });
+        expect(res2.code).toEqual(0);
+        const sequenceId2 = getSequenceId(res2);
+        expect(sequenceId1).toBe(sequenceId2 - 1);
+
+        // should be delegated 100 coins from before
+        const delegationsQ1 = await gaiaStakingQuerier.DelegatorDelegations({
+          delegatorAddr: unorderedIcaAddress,
+        });
+        expect(delegationsQ1.delegationResponses[0].balance.amount).toEqual(
+          '100',
+        );
+
+        const pendingPackets = await link.getPendingPackets('A');
+
+        // relay lastPacket
+        const lastPacket = pendingPackets.find(
+          (p) => p.packet.sequence === BigInt(sequenceId2),
+        );
+        expect(lastPacket).not.toBeNull();
+        await relayPacketFromA(link, lastPacket);
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId2,
+          100,
+        );
+
+        // should be delegated 100 + 400 (lastPacket) coins after relaying last packet
+        const delegationsQ2 = await gaiaStakingQuerier.DelegatorDelegations({
+          delegatorAddr: unorderedIcaAddress,
+        });
+        expect(delegationsQ2.delegationResponses[0].balance.amount).toEqual(
+          '500',
+        );
+
+        // relay firstPacket
+        const firstPacket = pendingPackets.find(
+          (p) => p.packet.sequence === BigInt(sequenceId1),
+        );
+        expect(firstPacket).not.toBeNull();
+        await relayPacketFromA(link, firstPacket);
+
+        await waitForAck(
+          neutronClient,
+          contractAddress,
+          unorderedIcaId,
+          sequenceId1,
+          100,
+        );
+
+        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying last packet
+        const delegationsQ3 = await gaiaStakingQuerier.DelegatorDelegations({
+          delegatorAddr: unorderedIcaAddress,
+        });
+        expect(delegationsQ3.delegationResponses[0].balance.amount).toEqual(
+          '700',
+        );
+
+        // unpause hermes for tests below
+        execSync('docker unpause setup-hermes-1');
       });
     });
   });
