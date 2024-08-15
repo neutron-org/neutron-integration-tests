@@ -1150,7 +1150,7 @@ describe('Neutron / Interchain TXs', () => {
           '700',
         );
 
-        // unpause hermes for tests below
+        // unpause hermes back
         execSync('docker unpause setup-hermes-1');
       });
     });
