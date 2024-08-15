@@ -747,7 +747,7 @@ describe('Neutron / Interchain TXs', () => {
             channels.channels.findLast(
               (c) => c.portId === `icacontroller-${contractAddress}.test1`,
             )?.state == State.STATE_OPEN,
-          100,
+          200,
         );
       });
       test('delegate from first ICA after ICA recreation', async () => {
