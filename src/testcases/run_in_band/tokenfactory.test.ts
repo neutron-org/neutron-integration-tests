@@ -445,8 +445,6 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(burnRes.code).toBe(0);
 
-      // TODO: test burn from different address?
-
       const balanceAfter = parseInt(
         (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
