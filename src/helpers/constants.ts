@@ -7,7 +7,7 @@ export const IBC_RELAYER_NEUTRON_ADDRESS =
 export const CONTRACTS = {
   IBC_TRANSFER: 'ibc_transfer.wasm',
   MSG_RECEIVER: 'msg_receiver.wasm',
-  STARGATE_QUERIER: 'stargate_querier.wasm',
+  GRPC_QUERIER: 'grpc_querier.wasm',
   INTERCHAIN_QUERIES: 'neutron_interchain_queries.wasm',
   INTERCHAIN_TXS: 'neutron_interchain_txs.wasm',
   REFLECT: 'reflect.wasm',
@@ -57,7 +57,7 @@ export const CONTRACTS = {
   BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
   // https://github.com/CosmWasm/cosmwasm/tree/main/contracts/floaty
   FLOATY: '../contracts_thirdparty/floaty_2.0.wasm',
-  DEX_STARGATE: 'dex_stargate.wasm',
+  DEX_GRPC: 'dex_grpc.wasm',
   DEX_DEV: 'dex.wasm',
 
   // TGE liquidity migration related contracts with fixed versions
