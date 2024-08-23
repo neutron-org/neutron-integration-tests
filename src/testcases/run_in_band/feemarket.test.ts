@@ -270,6 +270,10 @@ describe('Neutron / Fee Market', () => {
       nonNtrnWallet.address,
       GasPrice.fromString('0.01uibcatom'),
     );
+
+    // on neutron v4.2.1 tx fails with error
+    // Query failed with (6): rpc error: code = Unknown desc = error escrowing funds: spendable balance 0untrn is smaller than 1untrn:
+    // insufficient funds [cosmos/cosmos-sdk@v0.50.9/x/bank/keeper/send.go:310] with gas used: '18447': unknown request
     const sendAmount = '1000';
     res = await nonNtrnNeutronClient.sendTokens(
       mainDao.contracts.core.address,
