@@ -1,4 +1,4 @@
-import { MsgSendEncodeObject } from '@cosmjs/stargate';
+import { GasPrice, MsgSendEncodeObject } from '@cosmjs/stargate';
 import '@neutron-org/neutronjsplus';
 import {
   Dao,
@@ -7,15 +7,21 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/proposal';
-import { LocalState } from '../../helpers/local_state';
+import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { Suite, inject } from 'vitest';
 
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { generateMnemonic } from 'bip39';
+import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 import config from '../../config.json';
-import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  IBC_ATOM_DENOM,
+  NEUTRON_DENOM,
+  NEUTRON_PREFIX,
+} from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Fee Market', () => {
@@ -26,6 +32,7 @@ describe('Neutron / Fee Market', () => {
   let mainDao: Dao;
   let feemarketQuerier: FeemarketQueryClient;
   let chainManagerAddress: string;
+  let bankQuerierNeutron: BankQuerier;
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
@@ -220,6 +227,72 @@ describe('Neutron / Fee Market', () => {
     await neutronClient.waitBlocks(2);
 
     expect(res.code).toEqual(0);
+  });
+
+  test('only ibc denom on balance', async () => {
+    // testcase checks a simulation works fine if the only ibc denom on sender wallet
+    // test fails on neutron v4.2.1 (feemarket 1.1.0)
+    const nonNtrnMnemonic = generateMnemonic();
+    const nonNtrnWallet = await mnemonicToWallet(
+      nonNtrnMnemonic,
+      NEUTRON_PREFIX,
+    );
+    // fund new wallet with only IBC coins
+    const ibcBalance = '10000000';
+    let res = await neutronClient.sendTokens(
+      nonNtrnWallet.address,
+      [{ denom: IBC_ATOM_DENOM, amount: ibcBalance }],
+      {
+        gas: '200000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '500' }], // 0.0005
+      },
+    );
+    await neutronClient.waitBlocks(2);
+
+    expect(res.code).toEqual(0);
+
+    bankQuerierNeutron = new BankQuerier(await testState.neutronRpcClient());
+    let balance = await bankQuerierNeutron.AllBalances({
+      address: nonNtrnWallet.address,
+    });
+    expect(
+      balance.balances.find((c) => {
+        if (c.denom == NEUTRON_DENOM) {
+          return true;
+        }
+        return false;
+      }),
+    ).toBeUndefined();
+
+    const nonNtrnNeutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      nonNtrnWallet.directwallet,
+      nonNtrnWallet.address,
+      GasPrice.fromString('0.01uibcatom'),
+    );
+    const sendAmount = '1000';
+    res = await nonNtrnNeutronClient.sendTokens(
+      mainDao.contracts.core.address,
+      [{ denom: IBC_ATOM_DENOM, amount: '1000' }],
+      'auto',
+    );
+
+    await nonNtrnNeutronClient.waitBlocks(2);
+
+    expect(res.code).toEqual(0);
+    balance = await bankQuerierNeutron.AllBalances({
+      address: nonNtrnWallet.address,
+    });
+    // console.log(ntrnBalance);
+    expect(
+      +balance.balances.find((c) => {
+        if (c.denom == IBC_ATOM_DENOM) {
+          return true;
+        }
+        return false;
+      }).amount,
+    ).lessThan(+ibcBalance - +sendAmount);
+    // console.log(+ibcBalance - +sendAmount);
   });
 
   test('disable/enable feemarket module', async () => {

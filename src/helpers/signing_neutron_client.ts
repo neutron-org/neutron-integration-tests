@@ -32,6 +32,7 @@ export class SigningNeutronClient extends CosmWasmClient {
     rpc: string,
     wallet: DirectSecp256k1HdWallet,
     signer: string,
+    customGasPrice?: GasPrice,
   ) {
     const registry = new Registry(neutronTypes);
     const neutronClient = await SigningCosmWasmClient.connectWithSigner(
@@ -39,7 +40,10 @@ export class SigningNeutronClient extends CosmWasmClient {
       wallet,
       {
         registry: registry,
-        gasPrice: GasPrice.fromString('0.05untrn'),
+        gasPrice:
+          customGasPrice != undefined
+            ? customGasPrice
+            : GasPrice.fromString('0.05untrn'),
       },
     );
     const cometClient = await connectComet(rpc);
