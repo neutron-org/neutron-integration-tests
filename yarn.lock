@@ -1307,10 +1307,10 @@
   resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.2-rc1.tgz#ca1fc1dc9566858dbd765e8f82c8a70097bcc84b"
   integrity sha512-ju2AqJ14yO4+JF8RwY4ZVy7f2HVjhdf66SfhS6y4ucBZm997/E/yYVMnpWmUncVg8ARooISOKaOYNagqz0am6Q==
 
-"@neutron-org/neutronjs@0.1.0-rc7":
-  version "0.1.0-rc7"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-0.1.0-rc7.tgz#7ff19073d495c07f9cd665190bc2fa18a5f132fa"
-  integrity sha512-7Uqhel68nq/dfTK0MKfc/yDj1gnp4RG/GqT7ljTs/6SaugNf35+niY2rYJXMcQM5EZ5AB0TEQT7bG6RSOZH/lA==
+"@neutron-org/neutronjs@0.1.0-rc8":
+  version "0.1.0-rc8"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-0.1.0-rc8.tgz#5d38ce8c737b5fcb24c57ca015f9e628eff25b58"
+  integrity sha512-tBT/XWY7/uFUivADrPKuohoyCEvspqhgbTCIOcvn6DGw8UmZU+kwRcOtxZ7Hr4zb0k2cI81vOFiJRTrcgnSr2g==
 
 "@neutron-org/neutronjsplus@0.5.0":
   version "0.5.0"
