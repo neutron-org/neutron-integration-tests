@@ -21,7 +21,6 @@ import {
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/query.rpc.Query';
 import {
   QueryFailuresResponse,
-  QueryFailureResponse,
 } from '@neutron-org/neutronjs/neutron/contractmanager/query';
 import { getWithAttempts } from '../../helpers/misc';
 import {
