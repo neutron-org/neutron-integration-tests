@@ -198,7 +198,7 @@ describe('Neutron / Tokenomics', () => {
       await neutronClient.getWithAttempts(
         async () =>
           neutronClient.getBalance(neutronWallet.address, ibcUatomDenom),
-        async (balance) => balance !== undefined,
+        async (balance) => balance.amount === '100000',
       );
     });
 
