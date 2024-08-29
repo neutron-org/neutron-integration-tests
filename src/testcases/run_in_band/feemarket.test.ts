@@ -287,7 +287,6 @@ describe('Neutron / Fee Market', () => {
     balance = await bankQuerierNeutron.AllBalances({
       address: nonNtrnWallet.address,
     });
-    // console.log(ntrnBalance);
     expect(
       +balance.balances.find((c) => {
         if (c.denom == IBC_ATOM_DENOM) {
@@ -296,7 +295,6 @@ describe('Neutron / Fee Market', () => {
         return false;
       }).amount,
     ).lessThan(+ibcBalance - +sendAmount);
-    // console.log(+ibcBalance - +sendAmount);
   });
 
   test('disable/enable feemarket module', async () => {
