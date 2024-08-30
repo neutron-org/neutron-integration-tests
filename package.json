@@ -32,7 +32,9 @@
     "test:feemarket": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/feemarket --bail 1",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
-    "postinstall": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json"
+    "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
+    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json",
+    "postinstall": "yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",
   "license": "Apache-2.0",
@@ -41,7 +43,7 @@
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
     "@cosmjs/stargate": "0.32.4",
     "@cosmjs/tendermint-rpc": "^0.32.4",
-    "@neutron-org/neutronjs": "0.1.0-rc5",
+    "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#f5334307decfa549283d03e626cd45582667c13f",
     "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#cf53a61bd7d4aa1e9204c41b2c2ea36cb024ae7d",
     "@types/lodash": "^4.14.182",
     "axios": "1.6.0",
