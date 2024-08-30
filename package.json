@@ -33,7 +33,7 @@
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
     "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
-    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json",
+    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || { tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
     "postinstall": "yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",
