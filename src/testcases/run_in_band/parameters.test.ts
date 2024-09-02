@@ -12,7 +12,6 @@ import {
   updateCronParamsProposal,
   updateFeeburnerParamsProposal,
   updateFeerefunderParamsProposal,
-  updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
@@ -21,6 +20,7 @@ import { QueryParamsResponse } from '@neutron-org/neutronjs/neutron/interchainqu
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { createRPCQueryClient as createIbcClient } from '@neutron-org/neutronjs/ibc/rpc.query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
+import { QueryClientImpl as ConsensusClient } from '@neutron-org/neutronjs/cosmos/consensus/v1/query.rpc.Query';
 import {
   IbcQuerier,
   NeutronQuerier,
@@ -46,6 +46,7 @@ describe('Neutron / Parameters', () => {
   let neutronQuerier: NeutronQuerier;
   let ibcQuerier: IbcQuerier;
   let osmosisQuerier: OsmosisQuerier;
+  let consensusQuerier: ConsensusClient;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
@@ -71,6 +72,8 @@ describe('Neutron / Parameters', () => {
     osmosisQuerier = await createOsmosisClient({
       rpcEndpoint: testState.rpcNeutron,
     });
+
+    consensusQuerier = new ConsensusClient(await testState.neutronRpcClient());
 
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
@@ -108,11 +111,13 @@ describe('Neutron / Parameters', () => {
         chainManagerAddress,
         'Proposal #1',
         'Param change proposal. This one will pass',
-        updateInterchainqueriesParamsProposal({
+        {
           query_submit_timeout: 30,
           query_deposit: null,
           tx_query_removal_limit: 20,
-        }),
+          max_kv_query_keys_count: 10,
+          max_transactions_filters: 10,
+        },
         '1000',
       );
     });
@@ -149,6 +154,8 @@ describe('Neutron / Parameters', () => {
         );
         expect(paramsAfter.params.querySubmitTimeout).toEqual(30n);
         expect(paramsAfter.params.txQueryRemovalLimit).toEqual(20n);
+        expect(paramsAfter.params.maxKvQueryKeysCount).toEqual(10n);
+        expect(paramsAfter.params.maxTransactionsFilters).toEqual(10n);
       });
     });
   });
@@ -487,6 +494,55 @@ describe('Neutron / Parameters', () => {
           await ibcQuerier.ibc.applications.transfer.v1.params();
         expect(paramsRes.params.sendEnabled).toEqual(false);
         expect(paramsRes.params.receiveEnabled).toEqual(false);
+      });
+    });
+  });
+
+  describe('Consensus params proposal', () => {
+    let proposalId: number;
+    test('create proposal', async () => {
+      proposalId = await daoMember1.submitUpdateParamsConsensusProposal(
+        chainManagerAddress,
+        'Proposal #9',
+        'Update consensus params',
+        {
+          abci: {
+            vote_extensions_enable_height: 1,
+          },
+          evidence: {
+            max_age_duration: '1000h',
+            max_age_num_blocks: 100000,
+            max_bytes: 1048576,
+          },
+          validator: {
+            pub_key_types: ['ed25519'],
+          },
+          block: {
+            max_gas: 30_000_000,
+            max_bytes: 14_857_600,
+          },
+        },
+        '1000',
+      );
+    });
+
+    describe('vote for proposal', () => {
+      test('vote YES', async () => {
+        await daoMember1.voteYes(proposalId);
+      });
+    });
+
+    describe('execute proposal', () => {
+      test('check if proposal is passed', async () => {
+        await dao.checkPassedProposal(proposalId);
+      });
+      test('execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+      });
+      test('check if params changed after proposal execution', async () => {
+        const paramsRes = await consensusQuerier.params();
+        expect(paramsRes.params.block.maxGas).toEqual(30_000_000n);
+        expect(paramsRes.params.block.maxBytes).toEqual(14_857_600n);
       });
     });
   });

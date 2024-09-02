@@ -1,8 +1,10 @@
 import {
   acceptInterchainqueriesParamsChangeProposal,
+  executeUpdateInterchainQueriesParams,
   filterIBCDenoms,
 } from '../../helpers/interchainqueries';
 import '@neutron-org/neutronjsplus';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { inject } from 'vitest';
 import {
@@ -66,6 +68,7 @@ describe('Neutron / Interchain KV Query', () => {
     3: 4,
     4: 3,
     5: 4,
+    6: 11,
   };
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
@@ -80,6 +83,9 @@ describe('Neutron / Interchain KV Query', () => {
   let bankQuerierGaia: BankQuerier;
   let slashingQuerier: SlashingQuerier;
   let contractAddress: string;
+  let daoMember: DaoMember;
+  let mainDao: Dao;
+  let chainManagerAddress: string;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
@@ -114,9 +120,9 @@ describe('Neutron / Interchain KV Query', () => {
       neutronRpcClient,
     );
     const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
-    const dao = new Dao(neutronClient, daoContracts);
-    const daoMember = new DaoMember(
-      dao,
+    mainDao = new Dao(neutronClient, daoContracts);
+    daoMember = new DaoMember(
+      mainDao,
       neutronClient.client,
       neutronWallet.address,
       NEUTRON_DENOM,
@@ -126,6 +132,10 @@ describe('Neutron / Interchain KV Query', () => {
     bankQuerier = new BankQuerier(neutronRpcClient);
     bankQuerierGaia = new BankQuerier(await testState.gaiaRpcClient());
     slashingQuerier = new SlashingQuerier(await testState.gaiaRpcClient());
+
+    const adminQuery = new AdminQueryClient(neutronRpcClient);
+    const admins = await adminQuery.admins();
+    chainManagerAddress = admins.admins[0];
   });
 
   describe('Instantiate interchain queries contract', () => {
@@ -225,6 +235,45 @@ describe('Neutron / Interchain KV Query', () => {
 
         expect(balances.balances.length).toEqual(0);
       });
+
+      test('should throw exception because of too many keys', async () => {
+        await neutronClient.sendTokens(
+          contractAddress,
+          [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+          {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          },
+        );
+        await expect(
+          neutronClient.execute(contractAddress, {
+            register_balances_query: {
+              connection_id: connectionId,
+              denoms: Array.from(Array(33).keys()).map((v) => 'denom' + v),
+              addr: gaiaWallet.address,
+              update_period: 10,
+            },
+          }),
+        ).rejects.toThrowError(/keys count cannot be more than 32/);
+        await executeUpdateInterchainQueriesParams(
+          chainManagerAddress,
+          interchainqQuerier,
+          mainDao,
+          daoMember,
+          10,
+          undefined,
+        );
+        await expect(
+          neutronClient.execute(contractAddress, {
+            register_balances_query: {
+              connection_id: connectionId,
+              denoms: Array.from(Array(11).keys()).map((v) => 'denom' + v),
+              addr: gaiaWallet.address,
+              update_period: 10,
+            },
+          }),
+        ).rejects.toThrowError(/keys count cannot be more than 10/);
+      });
     });
 
     describe('Successfully', () => {
@@ -280,6 +329,25 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           updatePeriods[5],
           [COSMOS_DENOM, 'nonexistentdenom'],
+          testState.wallets.cosmos.val1.address,
+        );
+      });
+
+      test('register icq #6: 100 keys', async () => {
+        await executeUpdateInterchainQueriesParams(
+          chainManagerAddress,
+          interchainqQuerier,
+          mainDao,
+          daoMember,
+          100,
+          undefined,
+        );
+        await registerBalancesQuery(
+          neutronClient,
+          contractAddress,
+          connectionId,
+          updatePeriods[6],
+          Array.from(Array(100).keys()).map((v) => 'denom' + v),
           testState.wallets.cosmos.val1.address,
         );
       });
@@ -369,8 +437,33 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("registered icq #6 doesn't exist", async () => {
+    test('get registered icq #6: 100 keys', async () => {
       const queryId = 6;
+      const queryResult = await getRegisteredQuery(
+        neutronClient,
+        contractAddress,
+        queryId,
+      );
+      expect(queryResult.registered_query.id).toEqual(queryId);
+      expect(queryResult.registered_query.owner).toEqual(contractAddress);
+      expect(queryResult.registered_query.keys.length).toEqual(100);
+      for (let i = 0; i < queryResult.registered_query.keys.length; i++) {
+        expect(queryResult.registered_query.keys[i].path).toEqual('bank');
+        expect(queryResult.registered_query.keys[i].key.length).toBeGreaterThan(
+          0,
+        );
+      }
+
+      expect(queryResult.registered_query.query_type).toEqual('kv');
+      expect(queryResult.registered_query.transactions_filter).toEqual('');
+      expect(queryResult.registered_query.connection_id).toEqual(connectionId);
+      expect(queryResult.registered_query.update_period).toEqual(
+        updatePeriods[queryId],
+      );
+    });
+
+    test("registered icq #7 doesn't exist", async () => {
+      const queryId = 7;
       await expect(
         getRegisteredQuery(neutronClient, contractAddress, queryId),
       ).rejects.toThrow();
@@ -577,7 +670,7 @@ describe('Neutron / Interchain KV Query', () => {
         address: contractAddress,
       });
 
-      expect(balances.balances[0].amount).toEqual('1000000');
+      expect(balances.balances[0].amount).toEqual('2000000');
     });
 
     test('should fail to remove icq #2 from non owner address before timeout expiration', async () => {

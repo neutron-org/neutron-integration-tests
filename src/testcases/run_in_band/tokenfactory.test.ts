@@ -660,11 +660,7 @@ describe('Neutron / Tokenfactory', () => {
       codeId = await neutronClient.upload(CONTRACTS.TOKENFACTORY);
       expect(codeId).toBeGreaterThan(0);
 
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'tokenfactory',
-      );
+      contractAddress = await neutronClient.instantiate(codeId, {});
 
       await neutronClient.sendTokens(
         contractAddress,
@@ -751,6 +747,49 @@ describe('Neutron / Tokenfactory', () => {
         10,
       );
       expect(balance).toEqual(amount);
+    });
+
+    test('burn coins from different wallet', async () => {
+      const wallet2 = await testState.nextWallet('neutron');
+
+      const mintedToDifferentWallet = 100;
+      const toBurn = 50;
+      const leftAfterBurn = mintedToDifferentWallet - toBurn;
+
+      amount -= mintedToDifferentWallet;
+
+      // mint to different wallet
+      const res1 = await neutronClient.execute(contractAddress, {
+        mint_tokens: {
+          denom,
+          amount: mintedToDifferentWallet.toString(),
+          mint_to_address: wallet2.address,
+        },
+      });
+      expect(res1.code).toBe(0);
+
+      const balanceBefore = await neutronClient.getBalance(
+        wallet2.address,
+        denom,
+      );
+      expect(balanceBefore.amount).toBe(mintedToDifferentWallet.toString());
+
+      const res = await neutronClient.execute(contractAddress, {
+        burn_tokens: {
+          denom,
+          amount: toBurn.toString(),
+          burn_from_address: wallet2.address,
+        },
+      });
+      expect(res.code).toBe(0);
+
+      await neutronClient.waitBlocks(5);
+
+      const balanceAfter = await neutronClient.getBalance(
+        wallet2.address,
+        denom,
+      );
+      expect(balanceAfter.amount).toBe(leftAfterBurn.toString());
     });
 
     test('full denom query', async () => {
