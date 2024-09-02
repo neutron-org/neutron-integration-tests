@@ -1007,7 +1007,6 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
 
-
     describe('Unordered channel', () => {
       test('delegate with timeout does not close unordered channel', async () => {
         await cleanAckResults(neutronClient, contractAddress);
