@@ -87,7 +87,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         contractAddress,
         connectionId,
         query1UpdatePeriod,
-        watchedAddr1,
+        [watchedAddr1],
       );
     });
 
