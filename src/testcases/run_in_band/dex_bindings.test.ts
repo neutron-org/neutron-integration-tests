@@ -21,6 +21,7 @@ describe('Neutron / dex module bindings', () => {
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
+  let multiHopSwapDenoms: any[] = [];
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
@@ -72,7 +73,8 @@ describe('Neutron / dex module bindings', () => {
               fees: [0], // u64
               options: [
                 {
-                  disable_swap: true,
+                  disable_autoswap: true,
+                  fail_tx_on_bel: false,
                 },
               ],
             },
@@ -94,7 +96,8 @@ describe('Neutron / dex module bindings', () => {
             fees: [0], // u64
             options: [
               {
-                disable_swap: true,
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
               },
             ],
           },
@@ -314,7 +317,6 @@ describe('Neutron / dex module bindings', () => {
     });
 
     describe('MultiHopSwap', () => {
-      const denoms: any[] = [];
       test('successful multihops', async () => {
         const numberDenoms = 10;
         const fee = {
@@ -366,7 +368,7 @@ describe('Neutron / dex module bindings', () => {
               amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
             },
           );
-          denoms.push({
+          multiHopSwapDenoms.push({
             denom: newTokenDenom,
             balance: 1000000,
           });
@@ -375,15 +377,16 @@ describe('Neutron / dex module bindings', () => {
           const res = await neutronClient.execute(contractAddress, {
             deposit: {
               receiver: contractAddress,
-              token_a: denoms[i].denom,
-              token_b: denoms[i + 1].denom,
+              token_a: multiHopSwapDenoms[i].denom,
+              token_b: multiHopSwapDenoms[i + 1].denom,
               amounts_a: ['1000'], // uint128
               amounts_b: ['1000'], // uint128
               tick_indexes_a_to_b: [5], // i64
               fees: [0], // u64
               options: [
                 {
-                  disable_swap: true,
+                  disable_autoswap: true,
+                  fail_tx_on_bel: false,
                 },
               ],
             },
@@ -396,16 +399,16 @@ describe('Neutron / dex module bindings', () => {
             routes: [
               {
                 hops: [
-                  denoms[0].denom,
-                  denoms[1].denom,
-                  denoms[2].denom,
-                  denoms[3].denom,
-                  denoms[4].denom,
-                  denoms[5].denom,
-                  denoms[6].denom,
-                  denoms[7].denom,
-                  denoms[8].denom,
-                  denoms[9].denom,
+                  multiHopSwapDenoms[0].denom,
+                  multiHopSwapDenoms[1].denom,
+                  multiHopSwapDenoms[2].denom,
+                  multiHopSwapDenoms[3].denom,
+                  multiHopSwapDenoms[4].denom,
+                  multiHopSwapDenoms[5].denom,
+                  multiHopSwapDenoms[6].denom,
+                  multiHopSwapDenoms[7].denom,
+                  multiHopSwapDenoms[8].denom,
+                  multiHopSwapDenoms[9].denom,
                 ],
               },
             ],
@@ -424,7 +427,10 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               routes: [
                 {
-                  hops: [denoms[0].denom, denoms[9].denom],
+                  hops: [
+                    multiHopSwapDenoms[0].denom,
+                    multiHopSwapDenoms[9].denom,
+                  ],
                 },
               ],
               amount_in: '100',
@@ -457,6 +463,19 @@ describe('Neutron / dex module bindings', () => {
         'TickUpdate',
         ['TrancheKey'],
       )[0]['TrancheKey'];
+
+      // swap through a bit of it
+      await neutronClient.execute(contractAddress, {
+        place_limit_order: {
+          receiver: contractAddress,
+          token_in: 'uibcusdc',
+          token_out: 'untrn',
+          tick_index_in_to_out: 0,
+          limit_sell_price: '1',
+          amount_in: '1000',
+          order_type: 'IMMEDIATE_OR_CANCEL',
+        },
+      });
 
       // create an expired tranche
       const res2 = await neutronClient.execute(contractAddress, {
@@ -649,6 +668,128 @@ describe('Neutron / dex module bindings', () => {
         pool_metadata_all: {},
       });
       expect(res.pool_metadata.length).toBeGreaterThan(0);
+    });
+    test('SimulateDeposit', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_deposit: {
+          msg: {
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            amounts_a: ['100'],
+            amounts_b: ['0'],
+            tick_indexes_a_to_b: [0],
+            fees: [1],
+            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+          },
+        },
+      });
+      expect(res.resp.reserve0_deposited[0]).toBe('0');
+      expect(res.resp.reserve1_deposited[0]).toBe('100');
+      expect(res.resp.shares_issued[0].amount).toBe('100');
+    });
+    test('SimulateDeposit failed deposit', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_deposit: {
+          msg: {
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            amounts_a: ['0'],
+            amounts_b: ['100'],
+            tick_indexes_a_to_b: [0],
+            fees: [1],
+            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+          },
+        },
+      });
+      expect(res.resp.failed_deposits[0].error).contains('deposit failed');
+    });
+    test('SimulateWithdrawal', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_withdrawal: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            shares_to_remove: ['10'],
+            tick_indexes_a_to_b: [1],
+            fees: [0],
+          },
+        },
+      });
+      expect(res.resp.reserve1_withdrawn).toBe('10');
+      expect(res.resp.shares_burned[0].amount).toBe('10');
+    });
+    test('SimulatePlaceLimitOrder', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_place_limit_order: {
+          msg: {
+            token_in: 'uibcusdc',
+            token_out: 'untrn',
+            tick_index_in_to_out: 0,
+            limit_sell_price: '1.2',
+            amount_in: '10000',
+            order_type: 'FILL_OR_KILL',
+          },
+        },
+      });
+      expect(res.resp.taker_coin_out.amount).toBe('12212');
+      expect(res.resp.taker_coin_in.amount).toBe('10000');
+      expect(res.resp.coin_in.amount).toBe('10000');
+    }),
+      test('SimulateWithdrawFilledLimitOrder', async () => {
+        const res = await neutronClient.queryContractSmart(contractAddress, {
+          simulate_withdraw_filled_limit_order: {
+            msg: {
+              creator: contractAddress,
+              tranche_key: activeTrancheKey,
+            },
+          },
+        });
+        expect(res.resp.taker_coin_out.amount).toBe('998');
+        expect(res.resp.maker_coin_out.amount).toBe('0');
+      });
+    test('SimulateCancelLimitOrder', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_cancel_limit_order: {
+          msg: {
+            creator: contractAddress,
+            tranche_key: activeTrancheKey,
+          },
+        },
+      });
+      expect(res.resp.taker_coin_out.amount).toBe('998');
+      expect(res.resp.maker_coin_out.amount).toBe('998779');
+    });
+    test('SimulateMultiHopSwap', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_multi_hop_swap: {
+          msg: {
+            receiver: contractAddress,
+            routes: [
+              {
+                hops: [
+                  multiHopSwapDenoms[0].denom,
+                  multiHopSwapDenoms[1].denom,
+                  multiHopSwapDenoms[2].denom,
+                  multiHopSwapDenoms[3].denom,
+                  multiHopSwapDenoms[4].denom,
+                  multiHopSwapDenoms[5].denom,
+                  multiHopSwapDenoms[6].denom,
+                  multiHopSwapDenoms[7].denom,
+                  multiHopSwapDenoms[8].denom,
+                  multiHopSwapDenoms[9].denom,
+                ],
+              },
+            ],
+            amount_in: '100',
+            exit_limit_price: '0.1',
+            pick_best_route: true,
+          },
+        },
+      });
+      expect(res.resp.coin_out.amount).toBe('91');
+      expect(res.resp.route.hops.length).toBe(10);
     });
   });
 });
