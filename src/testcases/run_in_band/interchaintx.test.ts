@@ -16,19 +16,11 @@ import {
   QueryClientImpl as StakingQueryClient,
   QueryDelegatorDelegationsResponse,
 } from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
-import {
-  QueryChannelsResponse,
-} from '@neutron-org/neutronjs/ibc/core/channel/v1/query';
-import {
-  QueryClientImpl as IbcQueryClient
-} from '@neutron-org/neutronjs/ibc/core/channel/v1/query.rpc.Query';
-import {
-  QueryFailuresResponse,
-} from '@neutron-org/neutronjs/neutron/contractmanager/query';
+import { QueryChannelsResponse } from '@neutron-org/neutronjs/ibc/core/channel/v1/query';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/core/channel/v1/query.rpc.Query';
+import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';
 import { getWithAttempts } from '../../helpers/misc';
-import {
-  QueryClientImpl as ContractManagerQuery,
-} from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
+import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
 import { Wallet } from '../../helpers/wallet';
 import {
