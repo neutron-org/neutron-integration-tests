@@ -8,7 +8,7 @@ import {
   registerTransfersQuery,
   waitForTransfersAmount,
 } from '../../helpers/interchainqueries';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import {
   CONTRACTS,
@@ -29,7 +29,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   let contractAddress: string;
   const connectionId = 'connection-0';
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
@@ -87,7 +87,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
         contractAddress,
         connectionId,
         query1UpdatePeriod,
-        watchedAddr1,
+        [watchedAddr1],
       );
     });
 

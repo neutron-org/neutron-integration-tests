@@ -12,7 +12,6 @@ import {
   updateCronParamsProposal,
   updateFeeburnerParamsProposal,
   updateFeerefunderParamsProposal,
-  updateInterchainqueriesParamsProposal,
   updateInterchaintxsParamsProposal,
   updateTokenfactoryParamsProposal,
   updateTransferParamsProposal,
@@ -112,11 +111,13 @@ describe('Neutron / Parameters', () => {
         chainManagerAddress,
         'Proposal #1',
         'Param change proposal. This one will pass',
-        updateInterchainqueriesParamsProposal({
+        {
           query_submit_timeout: 30,
           query_deposit: null,
           tx_query_removal_limit: 20,
-        }),
+          max_kv_query_keys_count: 10,
+          max_transactions_filters: 10,
+        },
         '1000',
       );
     });
@@ -153,6 +154,8 @@ describe('Neutron / Parameters', () => {
         );
         expect(paramsAfter.params.querySubmitTimeout).toEqual(30n);
         expect(paramsAfter.params.txQueryRemovalLimit).toEqual(20n);
+        expect(paramsAfter.params.maxKvQueryKeysCount).toEqual(10n);
+        expect(paramsAfter.params.maxTransactionsFilters).toEqual(10n);
       });
     });
   });
