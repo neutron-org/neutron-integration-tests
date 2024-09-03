@@ -1,4 +1,4 @@
-import { inject, Suite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import config from '../../config.json';
@@ -16,7 +16,7 @@ describe('Neutron / dex module (grpc contract)', () => {
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
