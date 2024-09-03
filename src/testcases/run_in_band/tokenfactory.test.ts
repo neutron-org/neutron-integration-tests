@@ -2,7 +2,7 @@ import { updateTokenfactoryParamsProposal } from '@neutron-org/neutronjsplus/dis
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import {
   Dao,
   DaoMember,
@@ -92,7 +92,7 @@ describe('Neutron / Tokenfactory', () => {
   let bankQuerier: BankQueryClient;
   let chainManagerAddress: string;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(

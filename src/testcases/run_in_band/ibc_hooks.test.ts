@@ -5,7 +5,7 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import { inject, Suite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
@@ -26,7 +26,7 @@ describe('Neutron / IBC hooks', () => {
   const transferDenom =
     'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');

@@ -5,10 +5,21 @@ import {
   QueryClient,
 } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { Suite } from 'vitest';
+import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
-import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
+import {
+  COSMOS_PREFIX,
+  GAIA_CONNECTION,
+  GAIA_REST,
+  GAIA_RPC,
+  IBC_WEB_HOST,
+  NEUTRON_PREFIX,
+  NEUTRON_REST,
+  NEUTRON_RPC,
+} from './constants';
 import { Wallet } from './wallet';
+import { IbcClient, Link } from '@confio/relayer';
+import { GasPrice } from '@cosmjs/stargate/build/fee';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -35,7 +46,7 @@ export class LocalState {
   static async create(
     config: any,
     mnemonics: string[],
-    suite?: Suite,
+    suite?: RunnerTestSuite,
   ): Promise<LocalState> {
     const res = new LocalState(config, mnemonics, suite);
     await res.init();
@@ -45,15 +56,15 @@ export class LocalState {
   protected constructor(
     private config: any,
     private mnemonics: string[],
-    private suite?: Suite | undefined,
+    private suite?: RunnerTestSuite | undefined,
   ) {
-    this.rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
-    this.rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
+    this.rpcNeutron = NEUTRON_RPC;
+    this.rpcGaia = GAIA_RPC;
 
-    this.restNeutron = process.env.NODE1_URL || 'http://localhost:1317';
-    this.restGaia = process.env.NODE2_URL || 'http://localhost:1316';
+    this.restNeutron = NEUTRON_REST;
+    this.restGaia = GAIA_REST;
 
-    this.icqWebHost = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
+    this.icqWebHost = IBC_WEB_HOST;
 
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
@@ -114,6 +125,41 @@ export class LocalState {
       throw new Error('rpcClient() called non existent network: ' + network);
     }
   }
+
+  // Creates an IBC relayer between neutron and gaia
+  // This relayer can be used to manually relay packets
+  // since hermes don't have manual relay.
+  async relayerLink(): Promise<Link> {
+    const neutronWallet = await this.nextWallet('neutron');
+    const gaiaWallet = await this.nextWallet('cosmos');
+    const neutronIbcClient = await IbcClient.connectWithSigner(
+      this.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
+      {
+        gasPrice: GasPrice.fromString('0.05untrn'),
+        estimatedBlockTime: 3,
+        estimatedIndexerTime: 100,
+      },
+    );
+    const gaiaIbcClient = await IbcClient.connectWithSigner(
+      this.rpcGaia,
+      gaiaWallet.directwallet,
+      gaiaWallet.address,
+      {
+        gasPrice: GasPrice.fromString('0.05uatom'),
+        estimatedBlockTime: 3,
+        estimatedIndexerTime: 100,
+      },
+    );
+
+    return await Link.createWithExistingConnections(
+      neutronIbcClient,
+      gaiaIbcClient,
+      GAIA_CONNECTION,
+      GAIA_CONNECTION,
+    );
+  }
 }
 
 export const mnemonicToWallet = async (
@@ -134,7 +180,7 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
-async function testFilePosition(s: Suite): Promise<number> {
+async function testFilePosition(s: RunnerTestSuite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
   const filename = splitted.pop().trim();
