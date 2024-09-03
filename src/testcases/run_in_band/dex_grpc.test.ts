@@ -22,7 +22,7 @@ describe('Neutron / dex module (grpc contract)', () => {
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
-  let multiHopSwapDenoms: any[] = [];
+  const multiHopSwapDenoms: any[] = [];
 
   beforeAll(async (suite: Suite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);

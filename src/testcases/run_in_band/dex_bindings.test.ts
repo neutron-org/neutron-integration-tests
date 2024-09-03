@@ -21,7 +21,7 @@ describe('Neutron / dex module bindings', () => {
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
-  let multiHopSwapDenoms: any[] = [];
+  const multiHopSwapDenoms: any[] = [];
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
