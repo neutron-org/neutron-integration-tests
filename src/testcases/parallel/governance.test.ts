@@ -10,7 +10,7 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateInterchaintxsParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { Suite, inject } from 'vitest';
+import { inject, RunnerTestSuite } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
@@ -48,7 +48,7 @@ describe('Neutron / Governance', () => {
   let interchaintxQuery: InterchainTxQueryClient;
   let interchainAccountsQuerier: InterchainAccountsQueryClient;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
@@ -312,14 +312,17 @@ describe('Neutron / Governance', () => {
         'Proposal #11',
         '',
         '1000',
-        'proposal11',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
-          },
-        ],
+        {
+          name: 'proposal11',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
+            },
+          ],
+          execution_stage: 0, // TODO: update neutronjs here
+        },
       );
     });
 
@@ -330,7 +333,7 @@ describe('Neutron / Governance', () => {
         'Proposal #12',
         '',
         '1000',
-        'proposal11',
+        { name: 'proposal11' },
       );
     });
 
@@ -341,22 +344,25 @@ describe('Neutron / Governance', () => {
         'Proposal #13',
         '',
         '1000',
-        'proposal13',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
-          },
-        ],
+        {
+          name: 'proposal13',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
+            },
+          ],
+          execution_stage: 0, // TODO
+        },
       );
     });
 
@@ -367,18 +373,21 @@ describe('Neutron / Governance', () => {
         'Proposal #14',
         '',
         '1000',
-        'proposal14',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "correct_msg"}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
-          },
-        ],
+        {
+          name: 'proposal14',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "correct_msg"}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+            },
+          ],
+          execution_stage: 0,
+        },
       );
     });
 

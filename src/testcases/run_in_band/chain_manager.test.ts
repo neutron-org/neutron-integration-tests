@@ -8,8 +8,6 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
-  addCronScheduleProposal,
-  removeCronScheduleProposal,
   updateCronParamsProposal,
   updateDexParamsProposal,
   updateTokenfactoryParamsProposal,
@@ -24,7 +22,6 @@ import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutron
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
-import { chainManagerWrapper } from '@neutron-org/neutronjsplus/src/proposal';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -371,27 +368,22 @@ describe('Neutron / Chain Manager', () => {
     const scheduleName = 'schedule1';
 
     test('create addSchedule proposal', async () => {
-      const info = {
-        name: 'schedule1',
-        period: 100,
-        msgs: [
-          {
-            contract: 'whatever',
-            msg: JSON.stringify({}),
-          },
-        ],
-        execution_stage: 0,
-      };
-      proposalId = await subdaoMember1.submitSingleChoiceProposal(
+      proposalId = await subdaoMember1.submitAddSchedule(
+        chainManagerAddress,
         'Add schedule',
         'cron add schedule proposal. Will pass',
-        [
-          chainManagerWrapper(
-            chainManagerAddress,
-            addCronScheduleProposal(info),
-          ),
-        ],
         '1000',
+        {
+          name: 'schedule1',
+          period: 100,
+          msgs: [
+            {
+              contract: 'whatever',
+              msg: JSON.stringify({}),
+            },
+          ],
+          execution_stage: 0,
+        },
       );
 
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
@@ -419,19 +411,12 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('create removeSchedule proposal', async () => {
-      const info = {
-        name: 'schedule1',
-      };
-      proposalId = await subdaoMember1.submitSingleChoiceProposal(
+      proposalId = await subdaoMember1.submitRemoveSchedule(
+        chainManagerAddress,
         'Add schedule',
         'cron add schedule proposal. Will pass',
-        [
-          chainManagerWrapper(
-            chainManagerAddress,
-            removeCronScheduleProposal(info),
-          ),
-        ],
         '1000',
+        { name: 'schedule1' },
       );
 
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
