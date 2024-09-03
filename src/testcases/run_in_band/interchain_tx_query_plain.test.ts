@@ -1,13 +1,17 @@
-import { inject, Suite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import {
   defaultRegistryTypes,
   MsgSendEncodeObject,
+  ProtobufRpcClient,
   SigningStargateClient,
 } from '@cosmjs/stargate';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { Registry } from '@cosmjs/proto-signing';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import {
+  executeUpdateInterchainQueriesParams,
   getRegisteredQuery,
   queryRecipientTxs,
   queryTransfersNumber,
@@ -23,18 +27,29 @@ import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1
 
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
+  let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: Wallet;
   let contractAddress: string;
   let bankQuerierGaia: BankQuerier;
+  let interchainqQuerier: InterchainqQuerier;
+  let daoMember: DaoMember;
+  let mainDao: Dao;
+  let chainManagerAddress: string;
   const connectionId = 'connection-0';
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
@@ -51,6 +66,26 @@ describe('Neutron / Interchain TX Query', () => {
       { registry: new Registry(defaultRegistryTypes) },
     );
     bankQuerierGaia = new BankQuerier(await testState.gaiaRpcClient());
+
+    neutronRpcClient = await testState.neutronRpcClient();
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient,
+      neutronRpcClient,
+    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
+    daoMember = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronWallet.address,
+      NEUTRON_DENOM,
+    );
+    await daoMember.bondFunds('1000000000');
+    interchainqQuerier = new InterchainqQuerier(neutronRpcClient);
+
+    const adminQuery = new AdminQueryClient(neutronRpcClient);
+    const admins = await adminQuery.admins();
+    chainManagerAddress = admins.admins[0];
   });
 
   describe('deploy contract', () => {
@@ -95,7 +130,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query1UpdatePeriod,
-        watchedAddr1,
+        [watchedAddr1],
       );
     });
 
@@ -258,7 +293,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query2UpdatePeriod,
-        watchedAddr2,
+        [watchedAddr2],
       );
     });
 
@@ -327,7 +362,7 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query3UpdatePeriod,
-        watchedAddr3,
+        [watchedAddr3],
       );
     });
 
@@ -626,14 +661,14 @@ describe('Neutron / Interchain TX Query', () => {
         contractAddress,
         connectionId,
         query4UpdatePeriod,
-        watchedAddr4,
+        [watchedAddr4],
       );
       await registerTransfersQuery(
         neutronClient,
         contractAddress,
         connectionId,
         query5UpdatePeriod,
-        watchedAddr5,
+        [watchedAddr5],
       );
       await neutronClient.waitBlocks(2); // wait for queries handling on init
     });
@@ -765,6 +800,65 @@ describe('Neutron / Interchain TX Query', () => {
           amount: addr5ExpectedBalance.toString(),
         },
       ]);
+    });
+  });
+
+  describe('Multiple keys', () => {
+    test('Should fail. register filter with 50 keys', async () => {
+      // Top up contract address before running query
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
+      await expect(
+        registerTransfersQuery(
+          neutronClient,
+          contractAddress,
+          connectionId,
+          query2UpdatePeriod,
+          Array(50).fill(watchedAddr2),
+        ),
+      ).rejects.toThrowError(
+        /failed to validate MsgRegisterInterchainQuery: too many transactions filters, provided=50, max=32/,
+      );
+    });
+
+    test('Should pass. register filter with 50 keys after a proposal', async () => {
+      await executeUpdateInterchainQueriesParams(
+        chainManagerAddress,
+        interchainqQuerier,
+        mainDao,
+        daoMember,
+        undefined,
+        50,
+      );
+
+      await registerTransfersQuery(
+        neutronClient,
+        contractAddress,
+        connectionId,
+        query2UpdatePeriod,
+        Array(50).fill(watchedAddr2),
+      );
+    });
+
+    test('check registered transfers query', async () => {
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 6);
+      expect(query.registered_query.id).toEqual(6);
+      expect(query.registered_query.owner).toEqual(contractAddress);
+      expect(query.registered_query.keys.length).toEqual(0);
+      expect(query.registered_query.query_type).toEqual('tx');
+      expect(JSON.parse(query.registered_query.transactions_filter)).toEqual(
+        Array(50)
+          .fill(watchedAddr2)
+          .map((v) => ({ field: 'transfer.recipient', op: 'Eq', value: v })),
+      );
+      expect(query.registered_query.connection_id).toEqual(connectionId);
+      expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
     });
   });
 

@@ -1,5 +1,5 @@
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -38,7 +38,7 @@ describe('Neutron / Voting Registry', () => {
   // bonding to an additional vault
   const vault3Bonding = 5_000_000;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
     neutronWallet = await testState.nextWallet('neutron');

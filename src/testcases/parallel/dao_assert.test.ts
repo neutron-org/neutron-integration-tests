@@ -1,4 +1,4 @@
-import { inject, Suite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { getContractsHashes } from '../../helpers/setup';
 import '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
@@ -32,7 +32,7 @@ describe('Neutron / DAO check', () => {
   let feeburnerQuery: FeeburnerQueryClient;
   let wasmQuery: WasmQueryClient;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     const neutronWallet = await testState.nextWallet('neutron');

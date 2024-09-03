@@ -8,7 +8,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
@@ -27,7 +27,7 @@ describe('Neutron / Fee Market', () => {
   let feemarketQuerier: FeemarketQueryClient;
   let chainManagerAddress: string;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     const neutronRpcClient = await testState.neutronRpcClient();
 

@@ -10,7 +10,7 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { updateInterchaintxsParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { inject, RunnerTestSuite } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
