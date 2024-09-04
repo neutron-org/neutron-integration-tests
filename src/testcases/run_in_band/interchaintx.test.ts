@@ -1025,7 +1025,7 @@ describe('Neutron / Interchain TXs', () => {
           timeout: 'message',
         });
 
-        const channel = (await ibcQuerier.Channels({})).channels.find(
+        const channel = (await ibcQuerier.channels({})).channels.find(
           (c) => c.ordering === Order.ORDER_UNORDERED,
         );
         expect(channel.state).toEqual(State.STATE_OPEN);
