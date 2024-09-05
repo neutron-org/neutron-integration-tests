@@ -59,6 +59,7 @@ export const CONTRACTS = {
   FLOATY: '../contracts_thirdparty/floaty_2.0.wasm',
   DEX_GRPC: 'dex_grpc.wasm',
   DEX_DEV: 'dex.wasm',
+  CRON: 'cron.wasm',
 
   // TGE liquidity migration related contracts with fixed versions
 

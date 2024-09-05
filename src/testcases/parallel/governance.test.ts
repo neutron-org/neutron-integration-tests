@@ -312,14 +312,17 @@ describe('Neutron / Governance', () => {
         'Proposal #11',
         '',
         '1000',
-        'proposal11',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
-          },
-        ],
+        {
+          name: 'proposal11',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
+            },
+          ],
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+        },
       );
     });
 
@@ -330,7 +333,7 @@ describe('Neutron / Governance', () => {
         'Proposal #12',
         '',
         '1000',
-        'proposal11',
+        { name: 'proposal11' },
       );
     });
 
@@ -341,22 +344,25 @@ describe('Neutron / Governance', () => {
         'Proposal #13',
         '',
         '1000',
-        'proposal13',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
-          },
-        ],
+        {
+          name: 'proposal13',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"incorrect_format": {"return_err": false, "arg": "proposal_11"}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
+            },
+          ],
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+        },
       );
     });
 
@@ -367,18 +373,21 @@ describe('Neutron / Governance', () => {
         'Proposal #14',
         '',
         '1000',
-        'proposal14',
-        5,
-        [
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": false, "arg": "correct_msg"}}',
-          },
-          {
-            contract: contractAddress,
-            msg: '{"test_msg": {"return_err": true, "arg": ""}}',
-          },
-        ],
+        {
+          name: 'proposal14',
+          period: 5,
+          msgs: [
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": false, "arg": "correct_msg"}}',
+            },
+            {
+              contract: contractAddress,
+              msg: '{"test_msg": {"return_err": true, "arg": ""}}',
+            },
+          ],
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+        },
       );
     });
 
