@@ -1349,12 +1349,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@neutron-org/cosmjs-types@0.9.2-rc1":
-  version "0.9.2-rc1"
-  resolved "https://registry.yarnpkg.com/@neutron-org/cosmjs-types/-/cosmjs-types-0.9.2-rc1.tgz#ca1fc1dc9566858dbd765e8f82c8a70097bcc84b"
-  integrity sha512-ju2AqJ14yO4+JF8RwY4ZVy7f2HVjhdf66SfhS6y4ucBZm997/E/yYVMnpWmUncVg8ARooISOKaOYNagqz0am6Q==
-
-"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#1e70c1f68e997857f42bab7647227c8ca9dc8aa1":
+"@neutron-org/neutronjs@4.2.0", "@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#1e70c1f68e997857f42bab7647227c8ca9dc8aa1":
   version "4.2.0"
   resolved "https://github.com/neutron-org/neutronjs.git#1e70c1f68e997857f42bab7647227c8ca9dc8aa1"
 
