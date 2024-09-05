@@ -2,7 +2,7 @@ import { updateTokenfactoryParamsProposal } from '@neutron-org/neutronjsplus/dis
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import {
   Dao,
   DaoMember,
@@ -20,7 +20,7 @@ import {
   MsgMint,
   MsgSetBeforeSendHook,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
-import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
 import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -92,7 +92,7 @@ describe('Neutron / Tokenfactory', () => {
   let bankQuerier: BankQueryClient;
   let chainManagerAddress: string;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
@@ -660,11 +660,7 @@ describe('Neutron / Tokenfactory', () => {
       codeId = await neutronClient.upload(CONTRACTS.TOKENFACTORY);
       expect(codeId).toBeGreaterThan(0);
 
-      contractAddress = await neutronClient.instantiate(
-        codeId,
-        {},
-        'tokenfactory',
-      );
+      contractAddress = await neutronClient.instantiate(codeId, {});
 
       await neutronClient.sendTokens(
         contractAddress,
@@ -709,7 +705,7 @@ describe('Neutron / Tokenfactory', () => {
         },
       });
 
-      const metadata = await bankQuerier.DenomMetadata({ denom: denom });
+      const metadata = await bankQuerier.denomMetadata({ denom: denom });
       expect(metadata.metadata.base).toEqual(denom);
       expect(metadata.metadata.uri).toEqual(denom);
       expect(metadata.metadata.display).toEqual(denom);
@@ -751,6 +747,49 @@ describe('Neutron / Tokenfactory', () => {
         10,
       );
       expect(balance).toEqual(amount);
+    });
+
+    test('burn coins from different wallet', async () => {
+      const wallet2 = await testState.nextWallet('neutron');
+
+      const mintedToDifferentWallet = 100;
+      const toBurn = 50;
+      const leftAfterBurn = mintedToDifferentWallet - toBurn;
+
+      amount -= mintedToDifferentWallet;
+
+      // mint to different wallet
+      const res1 = await neutronClient.execute(contractAddress, {
+        mint_tokens: {
+          denom,
+          amount: mintedToDifferentWallet.toString(),
+          mint_to_address: wallet2.address,
+        },
+      });
+      expect(res1.code).toBe(0);
+
+      const balanceBefore = await neutronClient.getBalance(
+        wallet2.address,
+        denom,
+      );
+      expect(balanceBefore.amount).toBe(mintedToDifferentWallet.toString());
+
+      const res = await neutronClient.execute(contractAddress, {
+        burn_tokens: {
+          denom,
+          amount: toBurn.toString(),
+          burn_from_address: wallet2.address,
+        },
+      });
+      expect(res.code).toBe(0);
+
+      await neutronClient.waitBlocks(5);
+
+      const balanceAfter = await neutronClient.getBalance(
+        wallet2.address,
+        denom,
+      );
+      expect(balanceAfter.amount).toBe(leftAfterBurn.toString());
     });
 
     test('full denom query', async () => {

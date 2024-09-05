@@ -1,4 +1,4 @@
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import '@neutron-org/neutronjsplus';
 import { createBankSendMessage } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -37,7 +37,7 @@ describe('Neutron / Subdao', () => {
   let adminQuery: AdminQueryClient;
   let chainManagerAddress;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet1 = await testState.nextWallet('neutron');
     securityDaoWallet = await testState.nextWallet('neutron');

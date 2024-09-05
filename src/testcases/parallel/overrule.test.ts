@@ -3,7 +3,7 @@ import '@neutron-org/neutronjsplus';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { LocalState } from '../../helpers/local_state';
 import { Dao, DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
-import { Suite, inject } from 'vitest';
+import { RunnerTestSuite, inject } from 'vitest';
 import {
   addSubdaoToDao,
   deployNeutronDao,
@@ -25,7 +25,7 @@ describe('Neutron / Subdao Overrule', () => {
   let neutronClient1: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
 
-  beforeAll(async (suite: Suite) => {
+  beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
     neutronWallet1 = await testState.nextWallet('neutron');

@@ -9,8 +9,10 @@ import ch from 'child_process';
 import {
   COSMOS_DENOM,
   COSMOS_PREFIX,
+  GAIA_RPC,
   NEUTRON_DENOM,
   NEUTRON_PREFIX,
+  NEUTRON_RPC,
 } from './helpers/constants';
 
 import config from './config.json';
@@ -31,11 +33,9 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  const rpcNeutron = process.env.NODE1_RPC || 'http://localhost:26657';
-  const rpcGaia = process.env.NODE2_RPC || 'http://localhost:16657';
   // fund a lot or preallocated wallets for testing purposes
-  await fundWallets(mnemonics, rpcNeutron, NEUTRON_PREFIX, NEUTRON_DENOM);
-  await fundWallets(mnemonics, rpcGaia, COSMOS_PREFIX, COSMOS_DENOM);
+  await fundWallets(mnemonics, NEUTRON_RPC, NEUTRON_PREFIX, NEUTRON_DENOM);
+  await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
 
   provide('mnemonics', mnemonics);
 
@@ -118,3 +118,7 @@ declare module 'vitest' {
     mnemonics: string[];
   }
 }
+
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
