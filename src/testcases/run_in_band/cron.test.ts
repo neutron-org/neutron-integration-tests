@@ -131,12 +131,14 @@ describe('Neutron / Cron', () => {
     test('check that msg from schedule was executed', async () => {
       await neutronClient.waitBlocks(15);
 
-      const queryResult: number =
-        await neutronClient.queryContractSmart(contractAddress, {
+      const queryResult: number = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
           get_begin_blocker_schedule_counter: {
             name: 'schedule1',
           },
-        });
+        },
+      );
 
       expect(queryResult).toBeGreaterThanOrEqual(2);
     });
@@ -165,21 +167,25 @@ describe('Neutron / Cron', () => {
     });
 
     test('check that msg from schedule was not executed because schedule was removed', async () => {
-      const oldQueryResult: number =
-        await neutronClient.queryContractSmart(contractAddress, {
+      const oldQueryResult: number = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
           get_begin_blocker_schedule_counter: {
             name: 'schedule1',
           },
-        });
+        },
+      );
 
       await neutronClient.waitBlocks(10);
 
-      const newQueryResult: number =
-        await neutronClient.queryContractSmart(contractAddress, {
+      const newQueryResult: number = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
           get_begin_blocker_schedule_counter: {
             name: 'schedule1',
           },
-        });
+        },
+      );
 
       expect(newQueryResult).toEqual(oldQueryResult);
     });
@@ -226,12 +232,14 @@ describe('Neutron / Cron', () => {
     test('check that no msgs from schedule were executed because there is an error in the second msg', async () => {
       await neutronClient.waitBlocks(10);
 
-      const queryResult: number =
-        await neutronClient.queryContractSmart(contractAddress, {
+      const queryResult: number = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
           get_end_blocker_schedule_counter: {
             name: 'schedule2',
           },
-        });
+        },
+      );
 
       expect(queryResult).toEqual(null);
     });
@@ -278,12 +286,14 @@ describe('Neutron / Cron', () => {
     test('check that msgs from schedule was executed', async () => {
       await neutronClient.waitBlocks(15);
 
-      let queryResult: number =
-        await neutronClient.queryContractSmart(contractAddress, {
+      const queryResult: number = await neutronClient.queryContractSmart(
+        contractAddress,
+        {
           get_end_blocker_schedule_counter: {
             name: 'schedule3',
           },
-        });
+        },
+      );
 
       expect(queryResult).toBeGreaterThanOrEqual(6);
     });
