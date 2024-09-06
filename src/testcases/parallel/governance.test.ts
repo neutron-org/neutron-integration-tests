@@ -323,6 +323,7 @@ describe('Neutron / Governance', () => {
           ],
           execution_stage: 0, // TODO: update neutronjs here
         },
+        true, // just to check that bindings are ok
       );
     });
 
@@ -334,6 +335,9 @@ describe('Neutron / Governance', () => {
         '',
         '1000',
         { name: 'proposal11' },
+        'single',
+        true,
+        true,
       );
     });
 
