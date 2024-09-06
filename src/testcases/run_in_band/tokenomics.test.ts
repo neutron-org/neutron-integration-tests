@@ -5,11 +5,11 @@ import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { Registry } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
-import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { MsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
+import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 
@@ -90,7 +90,7 @@ describe('Neutron / Tokenomics', () => {
     let totalSupplyBefore: QuerySupplyOfResponse;
 
     test('Read total supply', async () => {
-      totalSupplyBefore = await bankQuerier.SupplyOf({ denom: NEUTRON_DENOM });
+      totalSupplyBefore = await bankQuerier.supplyOf({ denom: NEUTRON_DENOM });
     });
 
     test('Perform tx with a very big neutron fee', async () => {
@@ -107,7 +107,7 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total supply of neutrons has decreased', async () => {
-      const totalSupplyAfter = await bankQuerier.SupplyOf({
+      const totalSupplyAfter = await bankQuerier.supplyOf({
         denom: NEUTRON_DENOM,
       });
       const diff =
