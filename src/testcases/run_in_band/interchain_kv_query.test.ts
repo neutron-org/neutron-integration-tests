@@ -229,7 +229,9 @@ describe('Neutron / Interchain KV Query', () => {
           gaiaWallet.address,
         );
 
-        balances = await bankQuerier.AllBalances({ address: contractAddress });
+        balances = await bankQuerier.AllBalances({
+          address: contractAddress,
+        });
 
         expect(balances.balances.length).toEqual(0);
       });

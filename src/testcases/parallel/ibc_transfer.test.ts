@@ -5,12 +5,9 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
-import {
-  QueryClientImpl as ContractManagerQuery,
-  QueryFailuresResponse,
-} from '@neutron-org/cosmjs-types/neutron/contractmanager/query';
-import { QueryClientImpl as BankQueryClient } from '@neutron-org/cosmjs-types/cosmos/bank/v1beta1/query';
-import { QueryClientImpl as IbcQueryClient } from '@neutron-org/cosmjs-types/ibc/applications/transfer/v1/query';
+import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
@@ -22,6 +19,7 @@ import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { Wallet } from '../../helpers/wallet';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import config from '../../config.json';
+import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =
@@ -117,7 +115,10 @@ describe('Neutron / IBC transfer', () => {
         expect(res.code).toEqual(0);
       });
       test('check balance', async () => {
-        const res = await bankQuerier.AllBalances({ address: ibcContract });
+        const res = await bankQuerier.allBalances({
+          resolveDenom: false,
+          address: ibcContract,
+        });
         expect(res.balances).toEqual([
           { amount: '50000', denom: NEUTRON_DENOM },
         ]);
@@ -191,7 +192,7 @@ describe('Neutron / IBC transfer', () => {
         expect(balance.amount).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const res = await ibcQuerier.DenomTrace({
+        const res = await ibcQuerier.denomTrace({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
         expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
@@ -449,12 +450,9 @@ describe('Neutron / IBC transfer', () => {
         });
       });
       test('execute contract with failing sudo', async () => {
-        const failuresBeforeCall = await contractManagerQuerier.AddressFailures(
-          {
-            failureId: 0n, // bug: should not be in query
-            address: ibcContract,
-          },
-        );
+        const failuresBeforeCall = await contractManagerQuerier.failures({
+          address: ibcContract,
+        });
         expect(failuresBeforeCall.failures.length).toEqual(0);
 
         // Mock sudo handler to fail
@@ -500,8 +498,7 @@ describe('Neutron / IBC transfer', () => {
         const failuresAfterCall =
           await neutronClient.getWithAttempts<QueryFailuresResponse>(
             async () =>
-              contractManagerQuerier.AddressFailures({
-                failureId: 0n, // bug: should not be in query
+              contractManagerQuerier.failures({
                 address: ibcContract,
               }),
             // Wait until there 4 failures in the list
@@ -579,8 +576,7 @@ describe('Neutron / IBC transfer', () => {
 
         const res = await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
-            contractManagerQuerier.AddressFailures({
-              failureId: 0n, // bug: should not be in query
+            contractManagerQuerier.failures({
               address: ibcContract,
             }),
           // Wait until there 6 failures in the list
@@ -600,8 +596,7 @@ describe('Neutron / IBC transfer', () => {
         await neutronClient.waitBlocks(2);
 
         // Try to resubmit failure
-        const failuresResBefore = await contractManagerQuerier.AddressFailures({
-          failureId: 0n, // bug: should not be in query
+        const failuresResBefore = await contractManagerQuerier.failures({
           address: ibcContract,
         });
 
@@ -616,8 +611,7 @@ describe('Neutron / IBC transfer', () => {
         await neutronClient.waitBlocks(5);
 
         // check that failures count is the same
-        const failuresResAfter = await contractManagerQuerier.AddressFailures({
-          failureId: 0n, // bug: should not be in query
+        const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(6);
@@ -631,8 +625,7 @@ describe('Neutron / IBC transfer', () => {
 
       test('successful resubmit failure', async () => {
         // Resubmit failure
-        const failuresResBefore = await contractManagerQuerier.AddressFailures({
-          failureId: 0n, // bug: should not be in query
+        const failuresResBefore = await contractManagerQuerier.failures({
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
@@ -646,8 +639,7 @@ describe('Neutron / IBC transfer', () => {
         await neutronClient.waitBlocks(5);
 
         // check that failures count is changed
-        const failuresResAfter = await contractManagerQuerier.AddressFailures({
-          failureId: 0n, // bug: should not be in query
+        const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
         expect(failuresResAfter.failures.length).toEqual(5);
@@ -663,8 +655,7 @@ describe('Neutron / IBC transfer', () => {
           countTotal: false,
           reverse: false,
         };
-        const res = await contractManagerQuerier.AddressFailures({
-          failureId: 0n, // bug: should not be in query
+        const res = await contractManagerQuerier.failures({
           address: ibcContract,
           pagination,
         });
@@ -679,8 +670,7 @@ describe('Neutron / IBC transfer', () => {
           reverse: false,
         };
         await expect(
-          contractManagerQuerier.AddressFailures({
-            failureId: 0n, // bug: should not be in query
+          contractManagerQuerier.failures({
             address: ibcContract,
             pagination,
           }),
