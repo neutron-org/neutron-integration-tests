@@ -689,6 +689,7 @@ describe('Neutron / Subdao', () => {
           name: 'proposal11',
         },
         'single_nt_pause',
+        false,
         true,
       );
       await subdaoMember1.voteYes(proposalId, 'single_nt_pause');
