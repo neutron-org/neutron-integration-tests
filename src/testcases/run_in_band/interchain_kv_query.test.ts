@@ -69,6 +69,7 @@ describe('Neutron / Interchain KV Query', () => {
     4: 3,
     5: 4,
     6: 11,
+    7: 50,
   };
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
@@ -351,6 +352,19 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.val1.address,
         );
       });
+
+      test('register icq #7: balance', async () => {
+        const height = (await neutronClient.getHeight()) + updatePeriods[7]
+
+        await registerBalancesQuery(
+          neutronClient,
+          contractAddress,
+          connectionId,
+          height,
+          [COSMOS_DENOM],
+          testState.wallets.cosmos.val1.address,
+        );
+      });
     });
   });
 
@@ -462,8 +476,22 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("registered icq #7 doesn't exist", async () => {
+    test('get registered icq #7: balance', async () => {
       const queryId = 7;
+      const queryResult = await getRegisteredQuery(
+        neutronClient,
+        contractAddress,
+        queryId,
+      );
+
+      expect(queryResult.registered_query.last_submitted_result_local_height).greaterThan(0);
+      expect(queryResult.registered_query.last_submitted_result_local_height).lessThan(
+        queryResult.registered_query.update_period,
+      );
+    });
+
+    test("registered icq #8 doesn't exist", async () => {
+      const queryId = 8;
       await expect(
         getRegisteredQuery(neutronClient, contractAddress, queryId),
       ).rejects.toThrow();
@@ -831,7 +859,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-              (await neutronClient.getHeight()),
+            (await neutronClient.getHeight()),
           20,
         );
 
@@ -858,7 +886,7 @@ describe('Neutron / Interchain KV Query', () => {
             return (
               balances[0].denom === beforeBalances[0].denom &&
               parseInt(balances[0].amount || '0') >
-                parseInt(beforeBalances[0].amount || '0')
+              parseInt(beforeBalances[0].amount || '0')
             );
           },
 
