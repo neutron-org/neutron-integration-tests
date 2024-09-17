@@ -69,7 +69,7 @@ describe('Neutron / Interchain KV Query', () => {
     4: 3,
     5: 4,
     6: 11,
-    7: 50,
+    7: 1_000_000,
   };
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
@@ -354,13 +354,13 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #7: balance', async () => {
-        const height = (await neutronClient.getHeight()) + updatePeriods[7];
+        const updatePeriod = (await neutronClient.getHeight()) + updatePeriods[7];
 
         await registerBalancesQuery(
           neutronClient,
           contractAddress,
           connectionId,
-          height,
+          updatePeriod,
           [COSMOS_DENOM],
           testState.wallets.cosmos.val1.address,
         );
