@@ -19,9 +19,12 @@ import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
+import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -34,6 +37,7 @@ describe('Neutron / Chain Manager', () => {
   let cronQuerier: CronQueryClient;
   let tokenfactoryQuerier: TokenfactoryQueryClient;
   let dexQuerier: DexQueryClient;
+  let upgradeQuerier: UpgradeQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async (suite: RunnerTestSuite) => {
@@ -90,6 +94,7 @@ describe('Neutron / Chain Manager', () => {
     tokenfactoryQuerier = new TokenfactoryQueryClient(neutronRpcClient);
     cronQuerier = new CronQueryClient(neutronRpcClient);
     dexQuerier = new DexQueryClient(neutronRpcClient);
+    upgradeQuerier = new UpgradeQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -314,6 +319,7 @@ describe('Neutron / Chain Manager', () => {
       ]);
     });
   });
+
   describe('ALLOW_ONLY: change DEX parameters', () => {
     let proposalId: number;
     const newParams = {
@@ -356,4 +362,305 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
     });
   });
+
+  describe('ALLOW_ONLY: software upgrade', () => {
+    // only upgrade permission
+    let upgradeOnlyClient: SigningNeutronClient;
+    let upgradeOnlyWallet: Wallet;
+
+    // only cancel upgrade permission
+    let cancelUpgradeOnlyClient: SigningNeutronClient;
+    let cancelUpgradeOnlyWallet: Wallet;
+
+    // upgrade and cancel upgrade permissions
+    let fullUpgradeAccessClient: SigningNeutronClient;
+    let fullUpgradeAccessWallet: Wallet;
+
+    beforeAll(async () => {
+      upgradeOnlyWallet = await testState.nextWallet('neutron');
+      upgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
+        testState.rpcNeutron,
+        upgradeOnlyWallet.directwallet,
+        upgradeOnlyWallet.address,
+      );
+
+      cancelUpgradeOnlyWallet = await testState.nextWallet('neutron');
+      cancelUpgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
+        testState.rpcNeutron,
+        cancelUpgradeOnlyWallet.directwallet,
+        cancelUpgradeOnlyWallet.address,
+      );
+
+      fullUpgradeAccessWallet = await testState.nextWallet('neutron');
+      fullUpgradeAccessClient = await SigningNeutronClient.connectWithSigner(
+        testState.rpcNeutron,
+        fullUpgradeAccessWallet.directwallet,
+        fullUpgradeAccessWallet.address,
+      );
+    });
+
+    // grant the expected chain manager strategies to the wallets using Neutron DAO proposal
+    describe('assign software upgrade permissions', async () => {
+      let proposalId: number;
+      it('create proposal', async () => {
+        const assignUpgradeMsg = buildAddSoftwareUpgradeStrategyMsg(
+          upgradeOnlyWallet.address,
+          true,
+          false,
+        );
+        const assignCancelMsg = buildAddSoftwareUpgradeStrategyMsg(
+          cancelUpgradeOnlyWallet.address,
+          false,
+          true,
+        );
+        const assignFullMsg = buildAddSoftwareUpgradeStrategyMsg(
+          fullUpgradeAccessWallet.address,
+          true,
+          true,
+        );
+
+        proposalId = await mainDaoMember.submitSingleChoiceProposal(
+          'Assign software upgrade permissions',
+          'Assign mixed software upgrade permissions to three authorities',
+          [
+            {
+              wasm: {
+                execute: {
+                  contract_addr: chainManagerAddress,
+                  msg: Buffer.from(JSON.stringify(assignUpgradeMsg)).toString(
+                    'base64',
+                  ),
+                  funds: [],
+                },
+              },
+            },
+            {
+              wasm: {
+                execute: {
+                  contract_addr: chainManagerAddress,
+                  msg: Buffer.from(JSON.stringify(assignCancelMsg)).toString(
+                    'base64',
+                  ),
+                  funds: [],
+                },
+              },
+            },
+            {
+              wasm: {
+                execute: {
+                  contract_addr: chainManagerAddress,
+                  msg: Buffer.from(JSON.stringify(assignFullMsg)).toString(
+                    'base64',
+                  ),
+                  funds: [],
+                },
+              },
+            },
+          ],
+          '1000',
+        );
+      });
+
+      it('vote and execute', async () => {
+        await mainDaoMember.voteYes(proposalId);
+        await mainDao.checkPassedProposal(proposalId);
+        await mainDaoMember.executeProposalWithAttempts(proposalId);
+      });
+    });
+
+    describe('check software upgrade permissions', () => {
+      it('random account cannot set or cancel', async () => {
+        await expect(
+          neutronClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildSetSoftwareUpgradeMsg('name', 100000, 'info')],
+              },
+            },
+            [],
+            'auto',
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+        await expect(
+          neutronClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildCancelSoftwareUpgradeMsg()],
+              },
+            },
+            [],
+            'auto',
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+      });
+
+      it('only cancel cannot set', async () => {
+        await expect(
+          cancelUpgradeOnlyClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildSetSoftwareUpgradeMsg('name', 100000, 'info')],
+              },
+            },
+            [],
+            'auto',
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+      });
+
+      it('only set cannot cancel', async () => {
+        await expect(
+          upgradeOnlyClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildCancelSoftwareUpgradeMsg()],
+              },
+            },
+            [],
+            'auto',
+          ),
+        ).rejects.toThrow(/Unauthorized/);
+      });
+
+      describe('full access can both set and cancel', () => {
+        it('assert no plan is currently configured', async () => {
+          const plan = await upgradeQuerier.currentPlan({});
+          expect(plan.plan).toBeUndefined();
+        });
+
+        it('set software upgrade', async () => {
+          await fullUpgradeAccessClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildSetSoftwareUpgradeMsg('name', 100000, 'info')],
+              },
+            },
+            [],
+            'auto',
+          );
+
+          const plan = await upgradeQuerier.currentPlan({});
+          expect(plan.plan.height.toString()).toEqual('100000');
+        });
+
+        it('cancel software upgrade', async () => {
+          await fullUpgradeAccessClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildCancelSoftwareUpgradeMsg()],
+              },
+            },
+            [],
+            'auto',
+          );
+
+          const plan = await upgradeQuerier.currentPlan({});
+          expect(plan.plan).toBeUndefined();
+        });
+      });
+
+      describe('limited access can do what they are granted to do', () => {
+        it('only set can set', async () => {
+          await upgradeOnlyClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildSetSoftwareUpgradeMsg('name', 100000, 'info')],
+              },
+            },
+            [],
+            'auto',
+          );
+
+          const plan = await upgradeQuerier.currentPlan({});
+          expect(plan.plan.height.toString()).toEqual('100000');
+        });
+
+        it('only cancel can cancel', async () => {
+          await cancelUpgradeOnlyClient.execute(
+            chainManagerAddress,
+            {
+              execute_messages: {
+                messages: [buildCancelSoftwareUpgradeMsg()],
+              },
+            },
+            [],
+            'auto',
+          );
+
+          const plan = await upgradeQuerier.currentPlan({});
+          expect(plan.plan).toBeUndefined();
+        });
+      });
+    });
+  });
+});
+
+// returns a wasm execute message to a chain manager that adds software upgrade permissions to
+// a given authority.
+const buildAddSoftwareUpgradeStrategyMsg = (
+  authority: string,
+  upgrade: boolean,
+  cancelUpgrade: boolean,
+): any => ({
+  add_strategy: {
+    address: authority,
+    strategy: {
+      allow_only: [
+        {
+          software_upgrade_permission: {
+            upgrade: upgrade,
+            cancel_upgrade: cancelUpgrade,
+          },
+        },
+      ],
+    },
+  },
+});
+
+// returns an adminmodule admin proposal message that creates a software upgrade plan.
+const buildSetSoftwareUpgradeMsg = (
+  name: string,
+  height: number,
+  info: string,
+): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmos.upgrade.v1beta1.MsgSoftwareUpgrade',
+            authority: ADMIN_MODULE_ADDRESS,
+            plan: {
+              name,
+              height,
+              info,
+            },
+          }),
+        },
+      },
+    },
+  },
+});
+
+// returns an adminmodule admin proposal message that cancens the current software upgrade plan.
+const buildCancelSoftwareUpgradeMsg = (): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/cosmos.upgrade.v1beta1.MsgCancelUpgrade',
+            authority: ADMIN_MODULE_ADDRESS,
+          }),
+        },
+      },
+    },
+  },
 });
