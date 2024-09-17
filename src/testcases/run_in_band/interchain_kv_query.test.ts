@@ -354,7 +354,8 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #7: balance', async () => {
-        const updatePeriod = (await neutronClient.getHeight()) + updatePeriods[7];
+        const updatePeriod =
+          (await neutronClient.getHeight()) + updatePeriods[7];
 
         await registerBalancesQuery(
           neutronClient,
