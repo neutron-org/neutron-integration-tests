@@ -416,7 +416,6 @@ describe('Neutron / Chain Manager', () => {
 
     const scheduleName = 'schedule1';
     test('add cron schedule', async () => {
-      await neutronClient.waitBlocks(5);
       await cronAccessClient.execute(
         chainManagerAddress,
         {
