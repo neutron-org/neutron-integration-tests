@@ -11,6 +11,8 @@ import {
   updateCronParamsProposal,
   updateDexParamsProposal,
   updateTokenfactoryParamsProposal,
+  AddSchedule,
+  RemoveSchedule,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
@@ -363,6 +365,110 @@ describe('Neutron / Chain Manager', () => {
     });
   });
 
+  describe('ALLOW_ONLY: CRON add schedule / remove schedule', () => {
+    let cronAccessClient: SigningNeutronClient;
+    let cronAccessWallet: Wallet;
+    beforeAll(async () => {
+      cronAccessWallet = await testState.nextWallet('neutron');
+      cronAccessClient = await SigningNeutronClient.connectWithSigner(
+        testState.rpcNeutron,
+        cronAccessWallet.directwallet,
+        cronAccessWallet.address,
+      );
+    });
+
+    // grant the expected chain manager strategy to the wallet using Neutron DAO proposal
+    describe('assign cron access permissions', async () => {
+      let proposalId: number;
+      it('create proposal', async () => {
+        const assignCronMsg = buildAddCronSchedulesStrategyMsg(
+          cronAccessWallet.address,
+          true,
+          true,
+        );
+
+        proposalId = await mainDaoMember.submitSingleChoiceProposal(
+          'Assign cron schedules permissions',
+          'Assign cron schedules permissions to an authority',
+          [
+            {
+              wasm: {
+                execute: {
+                  contract_addr: chainManagerAddress,
+                  msg: Buffer.from(JSON.stringify(assignCronMsg)).toString(
+                    'base64',
+                  ),
+                  funds: [],
+                },
+              },
+            },
+          ],
+          '1000',
+        );
+      });
+
+      it('vote and execute', async () => {
+        await mainDaoMember.voteYes(proposalId);
+        await mainDao.checkPassedProposal(proposalId);
+        await mainDaoMember.executeProposalWithAttempts(proposalId);
+      });
+    });
+
+    const scheduleName = 'schedule1';
+    test('add cron schedule', async () => {
+      await neutronClient.waitBlocks(5);
+      await cronAccessClient.execute(
+        chainManagerAddress,
+        {
+          execute_messages: {
+            messages: [
+              buildAddCronScheduleMsg({
+                name: scheduleName,
+                period: 100,
+                msgs: [
+                  {
+                    contract: 'whatever',
+                    msg: JSON.stringify({}),
+                  },
+                ],
+                execution_stage: 0,
+              }),
+            ],
+          },
+        },
+        [],
+        'auto',
+      );
+
+      const res = await cronQuerier.schedule({ name: scheduleName });
+      expect(res.schedule.name).toEqual(scheduleName);
+      expect(res.schedule.msgs.length).toEqual(1);
+      expect(res.schedule.period).toEqual(100n);
+    });
+
+    test('remove cron schedule', async () => {
+      await cronAccessClient.execute(
+        chainManagerAddress,
+        {
+          execute_messages: {
+            messages: [buildRemoveCronScheduleMsg({ name: scheduleName })],
+          },
+        },
+        [],
+        'auto',
+      );
+
+      let exceptionThrown = false;
+      try {
+        await cronQuerier.schedule({ name: scheduleName });
+      } catch (error) {
+        expect(error.message).toMatch(/schedule not found: key not found/);
+        exceptionThrown = true;
+      }
+      expect(exceptionThrown).toBeTruthy();
+    });
+  });
+
   describe('ALLOW_ONLY: software upgrade', () => {
     // only upgrade permission
     let upgradeOnlyClient: SigningNeutronClient;
@@ -604,6 +710,28 @@ describe('Neutron / Chain Manager', () => {
   });
 });
 
+// returns a wasm execute message to a chain manager that adds cron schedules permissions to
+// a given authority.
+const buildAddCronSchedulesStrategyMsg = (
+  authority: string,
+  add: boolean,
+  remove: boolean,
+): any => ({
+  add_strategy: {
+    address: authority,
+    strategy: {
+      allow_only: [
+        {
+          cron_permission: {
+            add_schedule: add,
+            remove_schedule: remove,
+          },
+        },
+      ],
+    },
+  },
+});
+
 // returns a wasm execute message to a chain manager that adds software upgrade permissions to
 // a given authority.
 const buildAddSoftwareUpgradeStrategyMsg = (
@@ -660,6 +788,40 @@ const buildCancelSoftwareUpgradeMsg = (): any => ({
           message: JSON.stringify({
             '@type': '/cosmos.upgrade.v1beta1.MsgCancelUpgrade',
             authority: ADMIN_MODULE_ADDRESS,
+          }),
+        },
+      },
+    },
+  },
+});
+
+// returns a cron message that adds a new schedule.
+const buildAddCronScheduleMsg = (payload: AddSchedule): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.cron.MsgAddSchedule',
+            authority: ADMIN_MODULE_ADDRESS,
+            ...payload,
+          }),
+        },
+      },
+    },
+  },
+});
+
+// returns a cron message that removes a given schedule.
+const buildRemoveCronScheduleMsg = (payload: RemoveSchedule): any => ({
+  custom: {
+    submit_admin_proposal: {
+      admin_proposal: {
+        proposal_execute_message: {
+          message: JSON.stringify({
+            '@type': '/neutron.cron.MsgRemoveSchedule',
+            authority: ADMIN_MODULE_ADDRESS,
+            ...payload,
           }),
         },
       },
