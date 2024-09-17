@@ -469,6 +469,8 @@ describe('Neutron / Chain Manager', () => {
     });
 
     describe('check software upgrade permissions', () => {
+      // checking neutronClient's interaction with chain manager whereas this account
+      // hasn't been given any permissions (the proposal above contains other authorities)
       it('random account cannot set or cancel', async () => {
         await expect(
           neutronClient.execute(
@@ -496,7 +498,7 @@ describe('Neutron / Chain Manager', () => {
         ).rejects.toThrow(/Unauthorized/);
       });
 
-      it('only cancel cannot set', async () => {
+      it('onlyCancel cannot set', async () => {
         await expect(
           cancelUpgradeOnlyClient.execute(
             chainManagerAddress,
@@ -511,7 +513,7 @@ describe('Neutron / Chain Manager', () => {
         ).rejects.toThrow(/Unauthorized/);
       });
 
-      it('only set cannot cancel', async () => {
+      it('onlySet cannot cancel', async () => {
         await expect(
           upgradeOnlyClient.execute(
             chainManagerAddress,
@@ -566,7 +568,7 @@ describe('Neutron / Chain Manager', () => {
       });
 
       describe('limited access can do what they are granted to do', () => {
-        it('only set can set', async () => {
+        it('onlySet can set', async () => {
           await upgradeOnlyClient.execute(
             chainManagerAddress,
             {
@@ -582,7 +584,7 @@ describe('Neutron / Chain Manager', () => {
           expect(plan.plan.height.toString()).toEqual('100000');
         });
 
-        it('only cancel can cancel', async () => {
+        it('onlyCancel can cancel', async () => {
           await cancelUpgradeOnlyClient.execute(
             chainManagerAddress,
             {
