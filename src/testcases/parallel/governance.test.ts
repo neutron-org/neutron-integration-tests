@@ -323,7 +323,7 @@ describe('Neutron / Governance', () => {
           ],
           execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
         },
-          true, // just to check that bindings are ok
+        true, // just to check that bindings are ok
       );
     });
 
