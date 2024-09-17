@@ -321,9 +321,9 @@ describe('Neutron / Governance', () => {
               msg: '{"test_msg": {"return_err": false, "arg": "proposal_11"}}',
             },
           ],
-          execution_stage: 0, // TODO: update neutronjs here
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
         },
-        true, // just to check that bindings are ok
+          true, // just to check that bindings are ok
       );
     });
 
@@ -365,7 +365,7 @@ describe('Neutron / Governance', () => {
               msg: '{"test_msg": {"return_err": false, "arg": "three_messages"}}',
             },
           ],
-          execution_stage: 0, // TODO
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
         },
       );
     });
@@ -390,7 +390,7 @@ describe('Neutron / Governance', () => {
               msg: '{"test_msg": {"return_err": true, "arg": ""}}',
             },
           ],
-          execution_stage: 0,
+          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
         },
       );
     });
