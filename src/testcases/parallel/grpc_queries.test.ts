@@ -8,6 +8,7 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import { MsgCreateDenom } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import config from '../../config.json';
@@ -22,6 +23,8 @@ describe('Neutron / Grpc Queries', () => {
   let gaiaWallet: Wallet;
 
   let newTokenDenom: string;
+
+  let ibcQuerier: IbcQueryClient;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
@@ -38,6 +41,9 @@ describe('Neutron / Grpc Queries', () => {
       gaiaWallet.directwallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
+
+    const neutronRpcClient = await testState.neutronRpcClient();
+    ibcQuerier = new IbcQueryClient(neutronRpcClient);
   });
 
   describe('Prepare for queries', () => {
@@ -160,7 +166,21 @@ describe('Neutron / Grpc Queries', () => {
         },
       });
       expect(res.denom_trace.path).toBe('transfer/channel-0');
-      expect(res.denom_trace.base_denom).toBe('uatom');
+      expect(res.denom_trace.base_denom).toBe(COSMOS_DENOM);
+    });
+
+    test('transfer escrow address should work', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        transfer_escrow_address: {
+          port_id: 'transfer',
+          channel_id: 'channel-0',
+        },
+      });
+      const res2 = await ibcQuerier.escrowAddress({
+        portId: 'transfer',
+        channelId: 'channel-0',
+      });
+      expect(res2.escrowAddress).toBe(res.escrow_address);
     });
 
     // response with the field of type `Any` is expected, but actual type is a different struct
