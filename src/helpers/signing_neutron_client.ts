@@ -98,21 +98,30 @@ export class SigningNeutronClient extends CosmWasmClient {
     fee: StdFee | 'auto' | number = 'auto',
     admin: string = this.sender,
   ): Promise<string> {
-    // upload
-    const wasmCode = await this.getNeutronContract(fileName);
-    const uploadResult = await this.client.upload(this.sender, wasmCode, fee);
+    try {
+      // Upload
+      const wasmCode = await this.getNeutronContract(fileName);
+      const uploadResult = await this.client.upload(this.sender, wasmCode, fee);
+      console.log("Upload logs:", uploadResult.logs);
 
-    // instantiate
-    const res = await this.client.instantiate(
-      this.sender,
-      uploadResult.codeId,
-      msg,
-      label,
-      fee,
-      { admin },
-    );
-    return res.contractAddress;
+      // Instantiate
+      const res = await this.client.instantiate(
+        this.sender,
+        uploadResult.codeId,
+        msg,
+        label,
+        fee,
+        { admin },
+      );
+      console.log("Instantiation events:", res.events);
+      return res.contractAddress;
+
+    } catch (error) {
+      console.error("Error during contract upload/instantiation:", error);
+      throw new Error(`Contract instantiation failed: ${error}`);
+    }
   }
+
 
   async migrate(
     contract: string,

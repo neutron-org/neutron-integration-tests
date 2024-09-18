@@ -74,6 +74,7 @@ export const CONTRACTS = {
   LOCKDROP_VAULT_CL: 'lockdrop_vault_for_cl_pools.wasm',
   MARKETMAP: 'marketmap.wasm',
   ORACLE: 'oracle.wasm',
+  RATE_LIMITER: 'rate_limiter.wasm',
 };
 
 export const NEUTRON_PREFIX = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
