@@ -183,6 +183,12 @@ describe('Neutron / Chain Manager', () => {
                   },
                 },
                 {
+                  cron_permission: {
+                    add_schedule: true,
+                    remove_schedule: true,
+                  },
+                },
+                {
                   update_tokenfactory_params_permission: {
                     denom_creation_fee: true,
                     denom_creation_gas_consume: true,
@@ -354,6 +360,91 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.paused).toEqual(true);
       expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
+    });
+  });
+
+  describe('ALLOW_ONLY: CRON add schedule / remove schedule', () => {
+    let proposalId: number;
+    const scheduleName = 'schedule1';
+
+    test('create addSchedule proposal', async () => {
+      proposalId = await subdaoMember1.submitAddSchedule(
+        chainManagerAddress,
+        'Add schedule',
+        'cron add schedule proposal. Will pass',
+        '1000',
+        {
+          name: 'schedule1',
+          period: 100,
+          msgs: [
+            {
+              contract: 'whatever',
+              msg: JSON.stringify({}),
+            },
+          ],
+          execution_stage: 0,
+        },
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked addSchedule: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const res = await cronQuerier.schedule({ name: scheduleName });
+      expect(res.schedule.name).toEqual(scheduleName);
+      expect(res.schedule.msgs.length).toEqual(1);
+      expect(res.schedule.period).toEqual(100n);
+    });
+
+    test('create removeSchedule proposal', async () => {
+      proposalId = await subdaoMember1.submitRemoveSchedule(
+        chainManagerAddress,
+        'Add schedule',
+        'cron add schedule proposal. Will pass',
+        '1000',
+        { name: 'schedule1' },
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked removeSchedule: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      let exceptionThrown = false;
+      try {
+        await cronQuerier.schedule({ name: scheduleName });
+      } catch (error) {
+        expect(error.message).toMatch(/schedule not found: key not found/);
+        exceptionThrown = true;
+      }
+      expect(exceptionThrown).toBeTruthy();
     });
   });
 });
