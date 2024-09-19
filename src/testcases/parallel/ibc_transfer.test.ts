@@ -483,7 +483,7 @@ describe('Neutron / IBC transfer', () => {
         hermes checks height on remote chain and Timeout error occurs.
         */
         const currentHeight = await gaiaClient.getHeight();
-        await waitBlocks(25, gaiaClient);
+        await waitBlocks(15, gaiaClient);
 
         await neutronClient.execute(ibcContract, {
           send: {
@@ -562,12 +562,6 @@ describe('Neutron / IBC transfer', () => {
             state: 'enabled_infinite_loop',
           },
         });
-        // check that failures count is the same
-        let failuresResAfter = await contractManagerQuerier.failures({
-          address: ibcContract,
-        });
-
-        console.log(failuresResAfter);
 
         await neutronClient.execute(ibcContract, {
           send: {
@@ -578,14 +572,7 @@ describe('Neutron / IBC transfer', () => {
           },
         });
 
-        await neutronClient.waitBlocks(35);
-
-        // check that failures count is the same
-        failuresResAfter = await contractManagerQuerier.failures({
-          address: ibcContract,
-        });
-
-        console.log(failuresResAfter);
+        await neutronClient.waitBlocks(5);
 
         const res = await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
@@ -627,7 +614,6 @@ describe('Neutron / IBC transfer', () => {
         const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
-        console.log(failuresResAfter.failures);
         expect(failuresResAfter.failures.length).toEqual(6);
 
         // Restore sudo handler's normal state
@@ -643,7 +629,6 @@ describe('Neutron / IBC transfer', () => {
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
-        console.log(failure);
         const res = await neutronClient.execute(ibcContract, {
           resubmit_failure: {
             failure_id: +failure.id.toString(),
@@ -651,13 +636,12 @@ describe('Neutron / IBC transfer', () => {
         });
         expect(res.code).toBe(0);
 
-        await neutronClient.waitBlocks(10);
+        await neutronClient.waitBlocks(5);
 
         // check that failures count is changed
         const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
-        console.log(failuresResAfter.failures);
         expect(failuresResAfter.failures.length).toEqual(5);
       });
     });
