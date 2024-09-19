@@ -9,7 +9,6 @@ import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/tr
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
-import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import {
   COSMOS_DENOM,
   CONTRACTS,
@@ -18,7 +17,6 @@ import {
 import { SigningStargateClient } from '@cosmjs/stargate';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
-import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 import {
   Dao,
   DaoMember,
@@ -36,8 +34,8 @@ const UATOM_IBC_TO_NEUTRON_DENOM =
 // These are th
 const DEMO_MNEMONIC_1 =
   'banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass';
-const DEMO_MNEMONIC_2 =
-  'veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only';
+// const DEMO_MNEMONIC_2 =
+//   'veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only';
 
 describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
@@ -45,7 +43,6 @@ describe('Neutron / IBC transfer', () => {
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: DirectSecp256k1HdWallet;
-  let neutronWallet2: DirectSecp256k1HdWallet;
   let neutronAddr: string;
   let gaiaWallet: Wallet;
 
@@ -55,9 +52,7 @@ describe('Neutron / IBC transfer', () => {
 
   let rlContract: string;
 
-  let contractManagerQuerier: ContractManagerQuery;
   let bankQuerier: BankQueryClient;
-  let ibcQuerier: IbcQueryClient;
   let neutronQuerier: NeutronQuerier;
 
   beforeAll(async (suite: RunnerTestSuite) => {
@@ -92,9 +87,7 @@ describe('Neutron / IBC transfer', () => {
       accounts[0].address,
       NEUTRON_DENOM,
     );
-    contractManagerQuerier = new ContractManagerQuery(neutronRpcClient);
     bankQuerier = new BankQueryClient(neutronRpcClient);
-    ibcQuerier = new IbcQueryClient(neutronRpcClient);
     neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
     });
@@ -197,12 +190,17 @@ describe('Neutron / IBC transfer', () => {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
-        let neutronSupply = await bankQuerier.supplyOf({denom: NEUTRON_DENOM})
+        const neutronSupply = await bankQuerier.supplyOf({
+          denom: NEUTRON_DENOM,
+        });
 
-        console.log("BALANCEEE")
-        console.log(neutronSupply.amount)
+        console.log('BALANCEEE');
+        console.log(neutronSupply.amount);
         // 1% of ntrn supply - 1ntrn
-        const firstAmount = ((BigInt(neutronSupply.amount.amount) / BigInt(100)) - BigInt(1000000)).toString();
+        const firstAmount = (
+          BigInt(neutronSupply.amount.amount) / BigInt(100) -
+          BigInt(1000000)
+        ).toString();
 
         const balance = await neutronClient.getBalance(
           mainDao.contracts.core.address,
@@ -334,7 +332,6 @@ describe('Neutron / IBC transfer', () => {
         expect(res.rawLog).contains(
           'IBC Rate Limit exceeded for channel-0/untrn.',
         );
-
       });
     });
     describe('Remove RL contract from neutron', () => {
@@ -407,14 +404,5 @@ function buildChannelQuota(
         send_recv: [sendPercentage, recvPercentage],
       },
     ],
-  };
-}
-
-function buildRestrictionMsg(denom: string, acceptedChannel: string): object {
-  return {
-    set_denom_restrictions: {
-      denom: denom,
-      allowed_channels: [acceptedChannel],
-    },
   };
 }
