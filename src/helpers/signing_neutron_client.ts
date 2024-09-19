@@ -228,17 +228,3 @@ export class SigningNeutronClient extends CosmWasmClient {
     );
   }
 }
-
-export async function CreateWalletFromMnemonic(
-  mnemonic: string,
-  prefix: string,
-): Promise<DirectSecp256k1HdWallet> {
-  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-    prefix: prefix,
-  });
-
-  const accounts = await wallet.getAccounts();
-
-  console.log('Wallet address:', accounts[0].address);
-  return wallet;
-}
