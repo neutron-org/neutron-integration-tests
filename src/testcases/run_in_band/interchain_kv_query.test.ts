@@ -351,6 +351,17 @@ describe('Neutron / Interchain KV Query', () => {
           testState.wallets.cosmos.val1.address,
         );
       });
+
+      test('register icq #7: balance', async () => {
+        await registerBalancesQuery(
+          neutronClient,
+          contractAddress,
+          connectionId,
+          1_000_000,
+          [COSMOS_DENOM],
+          testState.wallets.cosmos.val1.address,
+        );
+      });
     });
   });
 
@@ -462,8 +473,24 @@ describe('Neutron / Interchain KV Query', () => {
       );
     });
 
-    test("registered icq #7 doesn't exist", async () => {
+    test('get registered icq #7: balance', async () => {
       const queryId = 7;
+      const queryResult = await getRegisteredQuery(
+        neutronClient,
+        contractAddress,
+        queryId,
+      );
+
+      expect(
+        queryResult.registered_query.last_submitted_result_local_height,
+      ).greaterThan(0);
+      expect(
+        queryResult.registered_query.last_submitted_result_local_height,
+      ).lessThan(queryResult.registered_query.update_period);
+    });
+
+    test("registered icq #8 doesn't exist", async () => {
+      const queryId = 8;
       await expect(
         getRegisteredQuery(neutronClient, contractAddress, queryId),
       ).rejects.toThrow();
