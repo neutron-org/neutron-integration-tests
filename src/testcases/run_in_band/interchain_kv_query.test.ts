@@ -858,7 +858,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             response.registered_query.last_submitted_result_local_height > 0 &&
             response.registered_query.last_submitted_result_local_height + 5 <
-            (await neutronClient.getHeight()),
+              (await neutronClient.getHeight()),
           20,
         );
 
@@ -885,7 +885,7 @@ describe('Neutron / Interchain KV Query', () => {
             return (
               balances[0].denom === beforeBalances[0].denom &&
               parseInt(balances[0].amount || '0') >
-              parseInt(beforeBalances[0].amount || '0')
+                parseInt(beforeBalances[0].amount || '0')
             );
           },
 
