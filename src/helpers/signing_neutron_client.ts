@@ -102,7 +102,7 @@ export class SigningNeutronClient extends CosmWasmClient {
       // Upload
       const wasmCode = await this.getNeutronContract(fileName);
       const uploadResult = await this.client.upload(this.sender, wasmCode, fee);
-      console.log("Upload logs:", uploadResult.logs);
+      console.log('Upload logs:', uploadResult.logs);
 
       // Instantiate
       const res = await this.client.instantiate(
@@ -113,15 +113,13 @@ export class SigningNeutronClient extends CosmWasmClient {
         fee,
         { admin },
       );
-      console.log("Instantiation events:", res.events);
+      console.log('Instantiation events:', res.events);
       return res.contractAddress;
-
     } catch (error) {
-      console.error("Error during contract upload/instantiation:", error);
+      console.error('Error during contract upload/instantiation:', error);
       throw new Error(`Contract instantiation failed: ${error}`);
     }
   }
-
 
   async migrate(
     contract: string,
@@ -236,4 +234,18 @@ export class SigningNeutronClient extends CosmWasmClient {
       fee,
     );
   }
+}
+
+export async function CreateWalletFromMnemonic(
+  mnemonic: string,
+  prefix: string,
+): Promise<DirectSecp256k1HdWallet> {
+  const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+    prefix: prefix,
+  });
+
+  const accounts = await wallet.getAccounts();
+
+  console.log('Wallet address:', accounts[0].address);
+  return wallet;
 }

@@ -567,7 +567,7 @@ describe('Neutron / IBC transfer', () => {
           address: ibcContract,
         });
 
-        console.log(failuresResAfter)
+        console.log(failuresResAfter);
 
         await neutronClient.execute(ibcContract, {
           send: {
@@ -585,8 +585,7 @@ describe('Neutron / IBC transfer', () => {
           address: ibcContract,
         });
 
-        console.log(failuresResAfter)
-
+        console.log(failuresResAfter);
 
         const res = await neutronClient.getWithAttempts<QueryFailuresResponse>(
           async () =>
@@ -628,7 +627,7 @@ describe('Neutron / IBC transfer', () => {
         const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
-        console.log(failuresResAfter.failures)
+        console.log(failuresResAfter.failures);
         expect(failuresResAfter.failures.length).toEqual(6);
 
         // Restore sudo handler's normal state
@@ -644,7 +643,7 @@ describe('Neutron / IBC transfer', () => {
           address: ibcContract,
         });
         const failure = failuresResBefore.failures[0];
-        console.log(failure)
+        console.log(failure);
         const res = await neutronClient.execute(ibcContract, {
           resubmit_failure: {
             failure_id: +failure.id.toString(),
@@ -658,7 +657,7 @@ describe('Neutron / IBC transfer', () => {
         const failuresResAfter = await contractManagerQuerier.failures({
           address: ibcContract,
         });
-        console.log(failuresResAfter.failures)
+        console.log(failuresResAfter.failures);
         expect(failuresResAfter.failures.length).toEqual(5);
       });
     });
