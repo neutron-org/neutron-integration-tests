@@ -15,7 +15,6 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { SigningStargateClient } from '@cosmjs/stargate';
-import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import {
   Dao,
@@ -26,6 +25,7 @@ import {
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
@@ -34,8 +34,8 @@ const UATOM_IBC_TO_NEUTRON_DENOM =
 // These are th
 const DEMO_MNEMONIC_1 =
   'banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass';
-// const DEMO_MNEMONIC_2 =
-//   'veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only';
+const DEMO_MNEMONIC_2 =
+  'veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only';
 
 describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
@@ -44,7 +44,8 @@ describe('Neutron / IBC transfer', () => {
   let gaiaClient: SigningStargateClient;
   let neutronWallet: DirectSecp256k1HdWallet;
   let neutronAddr: string;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: DirectSecp256k1HdWallet;
+  let gaiaAddr: string;
 
   let daoMember1: DaoMember;
   let mainDao: Dao;
@@ -54,22 +55,25 @@ describe('Neutron / IBC transfer', () => {
 
   let bankQuerier: BankQueryClient;
   let neutronQuerier: NeutronQuerier;
+  let ibcQuerier: IbcQueryClient;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await CreateWalletFromMnemonic(DEMO_MNEMONIC_1, 'neutron');
-    const accounts = await neutronWallet.getAccounts();
-    neutronAddr = accounts[0].address;
+    const accountsNeutron = await neutronWallet.getAccounts();
+    neutronAddr = accountsNeutron[0].address;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet,
       neutronAddr,
     );
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await CreateWalletFromMnemonic(DEMO_MNEMONIC_2, 'cosmos');
+    const accountsGaia = await gaiaWallet.getAccounts();
+    gaiaAddr = accountsGaia[0].address;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -84,7 +88,7 @@ describe('Neutron / IBC transfer', () => {
     daoMember1 = new DaoMember(
       mainDao,
       neutronClient.client,
-      accounts[0].address,
+      accountsNeutron[0].address,
       NEUTRON_DENOM,
     );
     bankQuerier = new BankQueryClient(neutronRpcClient);
@@ -93,6 +97,7 @@ describe('Neutron / IBC transfer', () => {
     });
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
+    ibcQuerier = new IbcQueryClient(neutronRpcClient);
     neutronClient.waitBlocks(20);
   });
 
@@ -145,7 +150,7 @@ describe('Neutron / IBC transfer', () => {
               sourceChannel: TRANSFER_CHANNEL,
               token: { denom: NEUTRON_DENOM, amount: '1000' },
               sender: neutronAddr,
-              receiver: gaiaWallet.address,
+              receiver: gaiaAddr,
               timeoutHeight: {
                 revisionNumber: 2n,
                 revisionHeight: 100000000n,
@@ -194,7 +199,6 @@ describe('Neutron / IBC transfer', () => {
           denom: NEUTRON_DENOM,
         });
 
-        console.log('BALANCEEE');
         console.log(neutronSupply.amount);
         // 1% of ntrn supply - 1ntrn
         const firstAmount = (
@@ -217,7 +221,7 @@ describe('Neutron / IBC transfer', () => {
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: firstAmount },
                 sender: neutronAddr,
-                receiver: gaiaWallet.address,
+                receiver: gaiaAddr,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -238,7 +242,7 @@ describe('Neutron / IBC transfer', () => {
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000001' }, // basically 1NTRN + 1 untrn
                 sender: neutronAddr,
-                receiver: gaiaWallet.address,
+                receiver: gaiaAddr,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -276,7 +280,7 @@ describe('Neutron / IBC transfer', () => {
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '100000' },
                 sender: neutronAddr,
-                receiver: gaiaWallet.address,
+                receiver: gaiaAddr,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -290,31 +294,17 @@ describe('Neutron / IBC transfer', () => {
       });
     });
     describe('with limit, Gaia -> Neutron', () => {
-      test('add limit', async () => {
-        const quota = buildChannelQuota(
-          'weekly',
-          TRANSFER_CHANNEL,
-          UATOM_IBC_TO_NEUTRON_DENOM,
-          604800,
-          1,
-          1,
-        );
-        await neutronClient.execute(rlContract, {
-          add_path: quota,
-        });
-      });
-      // Note: we don't unset the limit afterwards, instead we're removing rate limiting contract from params
-      test('IBC transfer to limit', async () => {
-        const res = await gaiaClient.signAndBroadcast(
-          gaiaWallet.address,
+      test('check that weird IBC denom is uatom indeed', async () => {
+        const resBefroreLimit = await gaiaClient.signAndBroadcast(
+          gaiaAddr,
           [
             {
               typeUrl: GaiaMsgTransfer.typeUrl,
               value: GaiaMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
-                token: { denom: COSMOS_DENOM, amount: '1000' },
-                sender: gaiaWallet.address,
+                token: { denom: COSMOS_DENOM, amount: '1000000' },
+                sender: gaiaAddr,
                 receiver: neutronAddr,
                 timeoutHeight: {
                   revisionNumber: 2n,
@@ -328,7 +318,57 @@ describe('Neutron / IBC transfer', () => {
             amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
           },
         );
-        expect(res.code).toEqual(0);
+        expect(resBefroreLimit.code).toEqual(0);
+        const res = await ibcQuerier.denomTrace({
+          hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
+        });
+        expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
+      });
+
+      test('add limit', async () => {
+        const quota = buildChannelQuota(
+          'weekly',
+          TRANSFER_CHANNEL,
+          UATOM_IBC_TO_NEUTRON_DENOM,
+          604800,
+          1,
+          1,
+        );
+        await neutronClient.execute(rlContract, {
+          add_path: quota,
+        });
+      });
+
+      // Note: we don't unset the limit afterwards, instead we're removing rate limiting contract from params
+      test('IBC transfer to limit', async () => {
+        const uatomibcSupply = await bankQuerier.supplyOf({
+          denom: UATOM_IBC_TO_NEUTRON_DENOM,
+        });
+
+        console.log(uatomibcSupply.amount);
+        const res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: NeutronMsgTransfer.typeUrl,
+              value: NeutronMsgTransfer.fromPartial({
+                sourcePort: 'transfer',
+                sourceChannel: TRANSFER_CHANNEL,
+                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '100000' },
+                sender: neutronAddr,
+                receiver: gaiaAddr,
+                timeoutHeight: {
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
+                },
+              }),
+            },
+          ],
+          {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          },
+        );
+        expect(res.code).toEqual(2);
         expect(res.rawLog).contains(
           'IBC Rate Limit exceeded for channel-0/untrn.',
         );
@@ -356,18 +396,17 @@ describe('Neutron / IBC transfer', () => {
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
-      test('perform IBC send after removig of contract: should', async () => {
-        const res = await gaiaClient.signAndBroadcast(
-          gaiaWallet.address,
+      test('perform IBC send after removig of contract: should be fine', async () => {
+        const res = await neutronClient.signAndBroadcast(
           [
             {
-              typeUrl: GaiaMsgTransfer.typeUrl,
-              value: GaiaMsgTransfer.fromPartial({
+              typeUrl: NeutronMsgTransfer.typeUrl,
+              value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
-                token: { denom: COSMOS_DENOM, amount: '1000000000' },
-                sender: gaiaWallet.address,
-                receiver: neutronAddr,
+                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '100000' },
+                sender: neutronAddr,
+                receiver: gaiaAddr,
                 timeoutHeight: {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
@@ -377,7 +416,7 @@ describe('Neutron / IBC transfer', () => {
           ],
           {
             gas: '200000',
-            amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
           },
         );
         expect(res.code).toEqual(0);
