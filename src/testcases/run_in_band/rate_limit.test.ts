@@ -103,13 +103,6 @@ describe('Neutron / IBC transfer', () => {
         1,
         1,
       );
-      console.log(
-        JSON.stringify({
-          gov_module: ADMIN_MODULE_ADDRESS,
-          ibc_module: ADMIN_MODULE_ADDRESS,
-          paths: [quota],
-        }),
-      );
       rlContract = await neutronClient.create(CONTRACTS.RATE_LIMITER, {
         gov_module: neutronWallet.address,
         ibc_module: ADMIN_MODULE_ADDRESS,
@@ -190,19 +183,12 @@ describe('Neutron / IBC transfer', () => {
         const neutronSupply = await bankQuerier.supplyOf({
           denom: NEUTRON_DENOM,
         });
-
-        console.log(neutronSupply.amount);
         // 1% of ntrn supply - 1ntrn
         const firstAmount = (
           BigInt(neutronSupply.amount.amount) / BigInt(100) -
           BigInt(1000000)
         ).toString();
 
-        const balance = await neutronClient.getBalance(
-          mainDao.contracts.core.address,
-          NEUTRON_DENOM,
-        );
-        console.log(balance);
         // transfer 6.9(9)M from neutron wallet which almost 1%, but still not reach it
         const res = await neutronClient.signAndBroadcast(
           [
@@ -337,7 +323,11 @@ describe('Neutron / IBC transfer', () => {
           denom: UATOM_IBC_TO_NEUTRON_DENOM,
         });
 
-        console.log(uatomibcSupply.amount);
+        const amount = (
+          BigInt(uatomibcSupply.amount.amount) / BigInt(100) +
+          BigInt(1)
+        ).toString();
+
         const res = await neutronClient.signAndBroadcast(
           [
             {
@@ -345,7 +335,7 @@ describe('Neutron / IBC transfer', () => {
               value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
-                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '100000' },
+                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: amount },
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
@@ -394,7 +384,7 @@ describe('Neutron / IBC transfer', () => {
               value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
-                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '100000' },
+                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '10' },
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
