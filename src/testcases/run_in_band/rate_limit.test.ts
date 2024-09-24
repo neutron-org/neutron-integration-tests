@@ -356,6 +356,10 @@ describe('Neutron / IBC transfer', () => {
         expect(res.rawLog).contains('IBC Rate Limit exceeded');
       });
     });
+
+
+    // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params.
+    // ibc send afterwards should work because rate-limiting MW action is completely removed from the ibc stack
     describe('Remove RL contract from neutron', () => {
       const proposalId = 2;
       test('create proposal', async () => {
@@ -378,7 +382,6 @@ describe('Neutron / IBC transfer', () => {
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
-      // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params
       // and here we just tests if ibc send works
       test('perform IBC send after removig of contract: should be fine', async () => {
         const res = await neutronClient.signAndBroadcast(
