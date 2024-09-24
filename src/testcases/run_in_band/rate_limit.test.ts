@@ -175,7 +175,7 @@ describe('Neutron / IBC transfer', () => {
 
   describe('Rate limits', () => {
     describe('with limit, Neutron -> gaia', () => {
-      test('IBC transfer to limit', async () => {
+      test('IBC transfer to limit in 2 steps: 1tx almost hits the limit (w/o failing), 2 tx exceeds the limit by 1 untrn', async () => {
         const fee = {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -272,7 +272,7 @@ describe('Neutron / IBC transfer', () => {
       });
     });
     describe('with limit, Gaia -> Neutron', () => {
-      test('check that weird IBC denom is uatom indeed', async () => {
+      test('send some atoms to neutron chain', async () => {
         const resBefroreLimit = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
           [
@@ -297,6 +297,9 @@ describe('Neutron / IBC transfer', () => {
           },
         );
         expect(resBefroreLimit.code).toEqual(0);
+      });
+
+      test('check that weird IBC denom is uatom indeed', async () => {
         const res = await ibcQuerier.denomTrace({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
@@ -317,8 +320,7 @@ describe('Neutron / IBC transfer', () => {
         });
       });
 
-      // Note: we don't unset the limit afterwards, instead we're removing rate limiting contract from params
-      test('IBC transfer to limit', async () => {
+      test('IBC transfer to limit (hits the limit)', async () => {
         const uatomibcSupply = await bankQuerier.supplyOf({
           denom: UATOM_IBC_TO_NEUTRON_DENOM,
         });
@@ -376,6 +378,8 @@ describe('Neutron / IBC transfer', () => {
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
+      // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params
+      // and here we just tests if ibc send works
       test('perform IBC send after removig of contract: should be fine', async () => {
         const res = await neutronClient.signAndBroadcast(
           [
