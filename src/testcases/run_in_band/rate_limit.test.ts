@@ -357,7 +357,6 @@ describe('Neutron / IBC transfer', () => {
       });
     });
 
-
     // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params.
     // ibc send afterwards should work because rate-limiting MW action is completely removed from the ibc stack
     describe('Remove RL contract from neutron', () => {
