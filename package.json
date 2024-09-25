@@ -48,7 +48,7 @@
     "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#7f45328320b53b4fa2b572bc25bb96bf80260181",
     "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#df604d8c6475c8640f4ee2ded9b1905574226a3a",
     "@types/lodash": "^4.14.182",
-    "axios": "1.6.0",
+    "axios": "1.7.7",
     "commander": "^10.0.0",
     "cosmjs-types": "^0.9.0",
     "date-fns": "^2.16.1",
