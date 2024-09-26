@@ -56,6 +56,8 @@ describe('Neutron / IBC transfer', () => {
   let neutronQuerier: NeutronQuerier;
   let ibcQuerier: IbcQueryClient;
 
+  let amount: string;
+
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
@@ -112,7 +114,7 @@ describe('Neutron / IBC transfer', () => {
         1,
         1,
       );
-      rlContract = await neutronClient.create(CONTRACTS.RATE_LIMITER, {
+      rlContract = await neutronClient.create(CONTRACTS.IBC_RATE_LIMITER, {
         gov_module: neutronWallet.address,
         ibc_module: ADMIN_MODULE_ADDRESS,
         paths: [quota],
@@ -160,13 +162,13 @@ describe('Neutron / IBC transfer', () => {
       expect(res.code).toEqual(0);
     });
 
-    describe('Rate limit params proposal', () => {
+    describe('IBC rate limit params proposal', () => {
       const proposalId = 1;
       test('create proposal', async () => {
         await daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #1',
-          'Param change proposal. Setup rate limit contract',
+          'Param change proposal. Setup IBC rate limit contract',
           {
             contract_address: rlContract,
           },
@@ -185,7 +187,7 @@ describe('Neutron / IBC transfer', () => {
     });
   });
 
-  describe('Rate limits', () => {
+  describe('IBC Rate limits', () => {
     describe('setup ibc contract', () => {
       test('transfer to contract', async () => {
         const res = await neutronClient.sendTokens(
@@ -273,14 +275,16 @@ describe('Neutron / IBC transfer', () => {
       });
 
       test('IBC send via contract(s) should be limited as well', async () => {
-        await expect(neutronClient.execute(ibcContract, {
-          send: {
-            channel: TRANSFER_CHANNEL,
-            to: gaiaWallet.address,
-            denom: NEUTRON_DENOM,
-            amount: '1000001',
-          },
-        })).rejects.toThrow(/IBC Rate Limit exceeded for channel-0/);
+        await expect(
+          neutronClient.execute(ibcContract, {
+            send: {
+              channel: TRANSFER_CHANNEL,
+              to: gaiaWallet.address,
+              denom: NEUTRON_DENOM,
+              amount: '1000001',
+            },
+          }),
+        ).rejects.toThrow(/IBC Rate Limit exceeded for channel-0/);
       });
 
       test('IBC transfer from a different wallet to ensure that limiting is working for different address (non-contract)', async () => {
@@ -398,12 +402,12 @@ describe('Neutron / IBC transfer', () => {
         });
       });
 
-      test('IBC transfer to limit (hits the limit)', async () => {
+      test('IBC transfer exceeds the limit', async () => {
         const uatomibcSupply = await bankQuerier.supplyOf({
           denom: UATOM_IBC_TO_NEUTRON_DENOM,
         });
 
-        const amount = (
+        amount = (
           BigInt(uatomibcSupply.amount.amount) / BigInt(100) +
           BigInt(1)
         ).toString();
@@ -468,7 +472,7 @@ describe('Neutron / IBC transfer', () => {
               value: NeutronMsgTransfer.fromPartial({
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
-                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: '10' },
+                token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: amount },
                 sender: neutronWallet.address,
                 receiver: gaiaWallet.address,
                 timeoutHeight: {
