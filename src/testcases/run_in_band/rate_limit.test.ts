@@ -39,8 +39,10 @@ describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
   let neutronClient: SigningNeutronClient;
+  let neutronClient2: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
+  let neutronWallet2: Wallet;
   let gaiaWallet: Wallet;
 
   let daoMember1: DaoMember;
@@ -48,6 +50,7 @@ describe('Neutron / IBC transfer', () => {
   let chainManagerAddress: string;
 
   let rlContract: string;
+  let ibcContract: string;
 
   let bankQuerier: BankQueryClient;
   let neutronQuerier: NeutronQuerier;
@@ -61,6 +64,12 @@ describe('Neutron / IBC transfer', () => {
       testState.rpcNeutron,
       neutronWallet.directwallet,
       neutronWallet.address,
+    );
+    neutronWallet2 = await testState.nextWallet('neutron');
+    neutronClient2 = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet2.directwallet,
+      neutronWallet2.address,
     );
     gaiaWallet = await mnemonicToWallet(DEMO_MNEMONIC_2, 'cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
@@ -108,6 +117,9 @@ describe('Neutron / IBC transfer', () => {
         ibc_module: ADMIN_MODULE_ADDRESS,
         paths: [quota],
       });
+    });
+    test('instantiate IBC contract', async () => {
+      ibcContract = await neutronClient.create(CONTRACTS.IBC_TRANSFER, {});
     });
   });
 
@@ -174,8 +186,32 @@ describe('Neutron / IBC transfer', () => {
   });
 
   describe('Rate limits', () => {
+    describe('setup ibc contract', () => {
+      test('transfer to contract', async () => {
+        const res = await neutronClient.sendTokens(
+          ibcContract,
+          [{ denom: NEUTRON_DENOM, amount: '50000000' }],
+          {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          },
+        );
+        expect(res.code).toEqual(0);
+      });
+      test('set payer fees', async () => {
+        const res = await neutronClient.execute(ibcContract, {
+          set_fees: {
+            denom: NEUTRON_DENOM,
+            ack_fee: '2333',
+            recv_fee: '0',
+            timeout_fee: '2666',
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
+    });
     describe('with limit, Neutron -> gaia', () => {
-      test('IBC transfer to limit in 2 steps: 1tx almost hits the limit (w/o failing), 2 tx exceeds the limit by 1 untrn', async () => {
+      test('IBC transfer exceed limit in 2 steps: 1tx almost hits the limit (w/o failing), 2 tx exceeds the limit by 1 untrn', async () => {
         const fee = {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -235,6 +271,48 @@ describe('Neutron / IBC transfer', () => {
           'IBC Rate Limit exceeded for channel-0/untrn.',
         );
       });
+
+      test('IBC send via contract(s) should be limited as well', async () => {
+        await expect(neutronClient.execute(ibcContract, {
+          send: {
+            channel: TRANSFER_CHANNEL,
+            to: gaiaWallet.address,
+            denom: NEUTRON_DENOM,
+            amount: '1000001',
+          },
+        })).rejects.toThrow(/IBC Rate Limit exceeded for channel-0/);
+      });
+
+      test('IBC transfer from a different wallet to ensure that limiting is working for different address (non-contract)', async () => {
+        const fee = {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        };
+        const res = await neutronClient2.signAndBroadcast(
+          [
+            {
+              typeUrl: NeutronMsgTransfer.typeUrl,
+              value: NeutronMsgTransfer.fromPartial({
+                sourcePort: 'transfer',
+                sourceChannel: TRANSFER_CHANNEL,
+                token: { denom: NEUTRON_DENOM, amount: '1000001' }, // 1NTRN + 1untrn
+                sender: neutronWallet2.address,
+                receiver: gaiaWallet.address,
+                timeoutHeight: {
+                  revisionNumber: 2n,
+                  revisionHeight: 100000000n,
+                },
+              }),
+            },
+          ],
+          fee,
+        );
+        expect(res.code).toEqual(2);
+        expect(res.rawLog).contains(
+          'IBC Rate Limit exceeded for channel-0/untrn.',
+        );
+      });
+
       test('Unset limit', async () => {
         await neutronClient.execute(rlContract, {
           remove_path: {
