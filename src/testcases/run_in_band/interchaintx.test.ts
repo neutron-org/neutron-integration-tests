@@ -15,7 +15,7 @@ import { SigningStargateClient } from '@cosmjs/stargate';
 import {
   QueryClientImpl as StakingQueryClient,
   QueryDelegatorDelegationsResponse,
-} from '@neutron-org/cosmjs-types/cosmos/staking/v1beta1/query';
+} from 'cosmjs-types/cosmos/staking/v1beta1/query';
 import { QueryChannelsResponse } from '@neutron-org/neutronjs/ibc/core/channel/v1/query';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/core/channel/v1/query.rpc.Query';
 import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';

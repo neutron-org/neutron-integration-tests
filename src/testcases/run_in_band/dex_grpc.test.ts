@@ -6,7 +6,14 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LimitOrderType } from '../../helpers/dex';
-import { getEventAttributesFromTx } from '@neutron-org/neutronjsplus/dist/cosmos';
+import {
+  getEventAttributesFromTx,
+  getEventAttribute,
+} from '@neutron-org/neutronjsplus/dist/cosmos';
+import {
+  MsgCreateDenom,
+  MsgMint,
+} from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 
 describe('Neutron / dex module (grpc contract)', () => {
   let testState: LocalState;
@@ -15,6 +22,7 @@ describe('Neutron / dex module (grpc contract)', () => {
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
+  const multiHopSwapDenoms: any[] = [];
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
@@ -119,13 +127,6 @@ describe('Neutron / dex module (grpc contract)', () => {
       });
     });
     describe('LimitOrder', () => {
-      // enum LimitOrderType{
-      //   GOOD_TIL_CANCELLED = 0;
-      //   FILL_OR_KILL = 1;
-      //   IMMEDIATE_OR_CANCEL = 2;
-      //   JUST_IN_TIME = 3;
-      //   GOOD_TIL_TIME = 4;
-      // }
       test('GOOD_TIL_CANCELLED', async () => {
         // Place order deep in orderbook. Doesn't change exisitng liquidity
         const res = await neutronClient.execute(contractAddress, {
@@ -314,24 +315,131 @@ describe('Neutron / dex module (grpc contract)', () => {
         );
       });
     });
+    describe('MultiHopSwap', () => {
+      test('successful multihops', async () => {
+        const numberDenoms = 10;
+        const fee = {
+          gas: '500000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1250' }],
+        };
+        for (let i = 0; i < numberDenoms; i++) {
+          const data = await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: MsgCreateDenom.typeUrl,
+                value: MsgCreateDenom.fromPartial({
+                  sender: neutronWallet.address,
+                  subdenom: String(i),
+                }),
+              },
+            ],
+            fee,
+          );
+          const newTokenDenom = getEventAttribute(
+            data.events,
+            'create_denom',
+            'new_token_denom',
+          );
 
-    describe.skip('MultiHopSwap', () => {
-      // TBD
-      // console.log(trancheKey);
-      // test('MultiHopSwap', async () => {
-      //   await expect(
-      //     neutronClient.execute(
-      //       contractAddress,
-      //       {
-      //         cancel_limit_order: {
-      //           tranche_key: trancheKey,
-      //         },
-      //       },
-      //     ),
-      //   ).rejects.toThrowError(
-      //     /No active limit found. It does not exist or has already been filled/,
-      //   );
-      // });
+          await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: MsgMint.typeUrl,
+                value: MsgMint.fromPartial({
+                  sender: neutronWallet.address,
+                  amount: {
+                    denom: newTokenDenom,
+                    amount: '1000000',
+                  },
+                  mintToAddress: neutronWallet.address,
+                }),
+              },
+            ],
+            fee,
+          );
+
+          await neutronClient.sendTokens(
+            contractAddress,
+            [{ denom: newTokenDenom, amount: '1000000' }],
+            {
+              gas: '200000',
+              amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+            },
+          );
+          multiHopSwapDenoms.push({
+            denom: newTokenDenom,
+            balance: 1000000,
+          });
+        }
+        for (let i = 0; i < numberDenoms - 1; i++) {
+          const res = await neutronClient.execute(contractAddress, {
+            deposit: {
+              receiver: contractAddress,
+              token_a: multiHopSwapDenoms[i].denom,
+              token_b: multiHopSwapDenoms[i + 1].denom,
+              amounts_a: ['1000'], // uint128
+              amounts_b: ['1000'], // uint128
+              tick_indexes_a_to_b: [5], // i64
+              fees: [0], // u64
+              options: [
+                {
+                  disable_autoswap: true,
+                  fail_tx_on_bel: false,
+                },
+              ],
+            },
+          });
+          expect(res.code).toEqual(0);
+        }
+        const res = await neutronClient.execute(contractAddress, {
+          multi_hop_swap: {
+            receiver: contractAddress,
+            routes: [
+              {
+                hops: [
+                  multiHopSwapDenoms[0].denom,
+                  multiHopSwapDenoms[1].denom,
+                  multiHopSwapDenoms[2].denom,
+                  multiHopSwapDenoms[3].denom,
+                  multiHopSwapDenoms[4].denom,
+                  multiHopSwapDenoms[5].denom,
+                  multiHopSwapDenoms[6].denom,
+                  multiHopSwapDenoms[7].denom,
+                  multiHopSwapDenoms[8].denom,
+                  multiHopSwapDenoms[9].denom,
+                ],
+              },
+            ],
+            amount_in: '100',
+            exit_limit_price: '100000000000000000000000000',
+            pick_best_route: true,
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
+
+      test('no route found', async () => {
+        await expect(
+          neutronClient.execute(contractAddress, {
+            multi_hop_swap: {
+              receiver: contractAddress,
+              routes: [
+                {
+                  hops: [
+                    multiHopSwapDenoms[0].denom,
+                    multiHopSwapDenoms[9].denom,
+                  ],
+                },
+              ],
+              amount_in: '100',
+              exit_limit_price: '100000000000000000000000000',
+              pick_best_route: true,
+            },
+          }),
+        ).rejects.toThrowError(
+          /All multihop routes failed limitPrice check or had insufficient liquidity/,
+        );
+      });
     });
   });
   describe('DEX queries', () => {
@@ -355,6 +463,20 @@ describe('Neutron / dex module (grpc contract)', () => {
         'TickUpdate',
         ['TrancheKey'],
       )[0]['TrancheKey'];
+
+      // swap through a bit of it
+      await neutronClient.execute(contractAddress, {
+        place_limit_order: {
+          receiver: contractAddress,
+          token_in: 'uibcusdc',
+          token_out: 'untrn',
+          tick_index_in_to_out: 0,
+          limit_sell_price: '1000000000000000000000000000',
+          amount_in: '1000',
+          order_type: LimitOrderType.ImmediateOrCancel,
+          max_amount_out: '',
+        },
+      });
 
       // create an expired tranche
       const res2 = await neutronClient.execute(contractAddress, {
@@ -551,6 +673,136 @@ describe('Neutron / dex module (grpc contract)', () => {
         all_pool_metadata: {},
       });
       expect(res.pool_metadata.length).toBeGreaterThan(0);
+    });
+    test('SimulateDeposit', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_deposit: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            amounts_a: ['100'],
+            amounts_b: ['0'],
+            tick_indexes_a_to_b: ['0'],
+            fees: ['1'],
+            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+          },
+        },
+      });
+      expect(res.resp.reserve0_deposited[0]).toBe('0');
+      expect(res.resp.reserve1_deposited[0]).toBe('100');
+      expect(res.resp.shares_issued[0].amount).toBe('100');
+    });
+    test('SimulateDeposit failed deposit', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_deposit: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            amounts_a: ['0'],
+            amounts_b: ['100'],
+            tick_indexes_a_to_b: ['0'],
+            fees: ['1'],
+            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+          },
+        },
+      });
+      expect(res.resp.failed_deposits[0].error).contains('deposit failed');
+    });
+    test('SimulateWithdrawal', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_withdrawal: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            token_a: 'untrn',
+            token_b: 'uibcusdc',
+            shares_to_remove: ['10'],
+            tick_indexes_a_to_b: ['1'],
+            fees: ['0'],
+          },
+        },
+      });
+      expect(res.resp.reserve1_withdrawn).toBe('10');
+      expect(res.resp.shares_burned[0].amount).toBe('10');
+    });
+    test('SimulatePlaceLimitOrder', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_place_limit_order: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            token_in: 'uibcusdc',
+            token_out: 'untrn',
+            tick_index_in_to_out: '0',
+            limit_sell_price: '1200000000000000000000000000',
+            amount_in: '10000',
+            order_type: LimitOrderType.FillOrKill.toString(),
+            max_amount_out: '',
+          },
+        },
+      });
+      expect(res.resp.taker_coin_out.amount).toBe('12212');
+      expect(res.resp.taker_coin_in.amount).toBe('10000');
+      expect(res.resp.coin_in.amount).toBe('10000');
+    }),
+      test('SimulateWithdrawFilledLimitOrder', async () => {
+        const res = await neutronClient.queryContractSmart(contractAddress, {
+          simulate_withdraw_filled_limit_order: {
+            msg: {
+              creator: contractAddress,
+              tranche_key: activeTrancheKey,
+            },
+          },
+        });
+        expect(res.resp.taker_coin_out.amount).toBe('998');
+        expect(res.resp.maker_coin_out.amount).toBe('0');
+      });
+    test('SimulateCancelLimitOrder', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_cancel_limit_order: {
+          msg: {
+            creator: contractAddress,
+            tranche_key: activeTrancheKey,
+          },
+        },
+      });
+      expect(res.resp.taker_coin_out.amount).toBe('998');
+      expect(res.resp.maker_coin_out.amount).toBe('998779');
+    });
+    test('SimulateMultiHopSwap', async () => {
+      const res = await neutronClient.queryContractSmart(contractAddress, {
+        simulate_multi_hop_swap: {
+          msg: {
+            creator: contractAddress,
+            receiver: contractAddress,
+            routes: [
+              {
+                hops: [
+                  multiHopSwapDenoms[0].denom,
+                  multiHopSwapDenoms[1].denom,
+                  multiHopSwapDenoms[2].denom,
+                  multiHopSwapDenoms[3].denom,
+                  multiHopSwapDenoms[4].denom,
+                  multiHopSwapDenoms[5].denom,
+                  multiHopSwapDenoms[6].denom,
+                  multiHopSwapDenoms[7].denom,
+                  multiHopSwapDenoms[8].denom,
+                  multiHopSwapDenoms[9].denom,
+                ],
+              },
+            ],
+            amount_in: '100',
+            exit_limit_price: '100000000000000000000000000',
+            pick_best_route: true,
+          },
+        },
+      });
+      expect(res.resp.coin_out.amount).toBe('91');
+      expect(res.resp.route.hops.length).toBe(10);
     });
   });
 });

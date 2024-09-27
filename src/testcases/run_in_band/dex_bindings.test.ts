@@ -21,6 +21,7 @@ describe('Neutron / dex module bindings', () => {
   let contractAddress: string;
   let activeTrancheKey: string;
   let inactiveTrancheKey: string;
+  const multiHopSwapDenoms: any[] = [];
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
@@ -72,7 +73,8 @@ describe('Neutron / dex module bindings', () => {
               fees: [0], // u64
               options: [
                 {
-                  disable_swap: true,
+                  disable_autoswap: true,
+                  fail_tx_on_bel: false,
                 },
               ],
             },
@@ -94,7 +96,8 @@ describe('Neutron / dex module bindings', () => {
             fees: [0], // u64
             options: [
               {
-                disable_swap: true,
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
               },
             ],
           },
@@ -314,7 +317,6 @@ describe('Neutron / dex module bindings', () => {
     });
 
     describe('MultiHopSwap', () => {
-      const denoms: any[] = [];
       test('successful multihops', async () => {
         const numberDenoms = 10;
         const fee = {
@@ -366,7 +368,7 @@ describe('Neutron / dex module bindings', () => {
               amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
             },
           );
-          denoms.push({
+          multiHopSwapDenoms.push({
             denom: newTokenDenom,
             balance: 1000000,
           });
@@ -375,15 +377,16 @@ describe('Neutron / dex module bindings', () => {
           const res = await neutronClient.execute(contractAddress, {
             deposit: {
               receiver: contractAddress,
-              token_a: denoms[i].denom,
-              token_b: denoms[i + 1].denom,
+              token_a: multiHopSwapDenoms[i].denom,
+              token_b: multiHopSwapDenoms[i + 1].denom,
               amounts_a: ['1000'], // uint128
               amounts_b: ['1000'], // uint128
               tick_indexes_a_to_b: [5], // i64
               fees: [0], // u64
               options: [
                 {
-                  disable_swap: true,
+                  disable_autoswap: true,
+                  fail_tx_on_bel: false,
                 },
               ],
             },
@@ -396,16 +399,16 @@ describe('Neutron / dex module bindings', () => {
             routes: [
               {
                 hops: [
-                  denoms[0].denom,
-                  denoms[1].denom,
-                  denoms[2].denom,
-                  denoms[3].denom,
-                  denoms[4].denom,
-                  denoms[5].denom,
-                  denoms[6].denom,
-                  denoms[7].denom,
-                  denoms[8].denom,
-                  denoms[9].denom,
+                  multiHopSwapDenoms[0].denom,
+                  multiHopSwapDenoms[1].denom,
+                  multiHopSwapDenoms[2].denom,
+                  multiHopSwapDenoms[3].denom,
+                  multiHopSwapDenoms[4].denom,
+                  multiHopSwapDenoms[5].denom,
+                  multiHopSwapDenoms[6].denom,
+                  multiHopSwapDenoms[7].denom,
+                  multiHopSwapDenoms[8].denom,
+                  multiHopSwapDenoms[9].denom,
                 ],
               },
             ],
@@ -424,7 +427,10 @@ describe('Neutron / dex module bindings', () => {
               receiver: contractAddress,
               routes: [
                 {
-                  hops: [denoms[0].denom, denoms[9].denom],
+                  hops: [
+                    multiHopSwapDenoms[0].denom,
+                    multiHopSwapDenoms[9].denom,
+                  ],
                 },
               ],
               amount_in: '100',
