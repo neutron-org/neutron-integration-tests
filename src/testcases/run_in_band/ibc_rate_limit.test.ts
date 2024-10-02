@@ -29,7 +29,7 @@ const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-// These are th
+// These are wallets rich enough to execute transfer which hits the rl
 const DEMO_MNEMONIC_1 =
   'banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass';
 const DEMO_MNEMONIC_2 =
