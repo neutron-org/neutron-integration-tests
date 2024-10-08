@@ -83,9 +83,9 @@ services:
       - neutron-testing
 
   oracle:
-    image: skip-mev/slinky-e2e-oracle
+    image: skip-mev/connect-e2e-oracle
     entrypoint: [
-      "slinky",
+      "connect",
       "--market-map-endpoint", "neutron-node:9090",
       ]
     ports:

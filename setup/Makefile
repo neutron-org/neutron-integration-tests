@@ -13,10 +13,10 @@ build-hermes:
 build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
 
-build-slinky:
-		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.0.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
+build-connect:
+		@docker buildx build --load --build-context app=https://github.com/skip-mev/connect.git#v2.1.0 -t skip-mev/connect-e2e-oracle -f dockerbuilds/Dockerfile.connect .
 
-build-all: build-gaia build-neutron build-hermes build-relayer build-slinky
+build-all: build-gaia build-neutron build-hermes build-relayer build-connect
 
 start-cosmopark:
 		@$(COMPOSE) up -d

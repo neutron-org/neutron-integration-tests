@@ -1,6 +1,6 @@
 FROM golang:1.22-bullseye AS builder
 
-WORKDIR /src/slinky
+WORKDIR /src/connect
 COPY --from=app go.mod .
 
 RUN go mod download
@@ -13,9 +13,9 @@ FROM ubuntu:rolling
 EXPOSE 8080
 EXPOSE 8002
 
-COPY --from=builder /src/slinky/build/* /usr/local/bin/
+COPY --from=builder /src/connect/build/* /usr/local/bin/
 RUN apt-get update && apt-get install ca-certificates -y
 
 WORKDIR /usr/local/bin/
 
-ENTRYPOINT ["slinky"]
+ENTRYPOINT ["connect"]
