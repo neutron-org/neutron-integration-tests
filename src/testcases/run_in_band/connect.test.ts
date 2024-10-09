@@ -11,11 +11,11 @@ import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
+import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/connect/oracle/v2/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 
-describe('Neutron / Slinky', () => {
+describe('Neutron / connect', () => {
   let testState: LocalState;
   let daoMember1: DaoMember;
   let mainDao: Dao;
@@ -156,7 +156,7 @@ describe('Neutron / Slinky', () => {
 
     test('aave/usd price present', async () => {
       const res = await oracleQuery.getPrice({
-        currencyPair: { base: 'AAVE', quote: 'USD' },
+        currencyPair: 'AAVE/USD',
       });
       expect(+res.price.price).toBeGreaterThan(0);
     });
@@ -191,8 +191,8 @@ describe('Neutron / Slinky', () => {
         await neutronClient.queryContractSmart(oracleContract, {
           get_all_currency_pairs: {},
         });
-      expect(res.currency_pairs[0].Base).toBe('AAVE');
-      expect(res.currency_pairs[0].Quote).toBe('USD');
+      expect(res.currency_pairs[0].base).toBe('AAVE');
+      expect(res.currency_pairs[0].quote).toBe('USD');
     });
   });
   describe('wasmbindings marketmap', () => {
@@ -265,8 +265,8 @@ export type GetPricesResponse = {
 };
 
 export type CurrencyPair = {
-  Quote: string;
-  Base: string;
+  quote: string;
+  base: string;
 };
 
 export type GetAllCurrencyPairsResponse = {
