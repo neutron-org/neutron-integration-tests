@@ -310,9 +310,7 @@ describe('Neutron / dex module bindings', () => {
               tranche_key: activeTrancheKey,
             },
           }),
-        ).rejects.toThrowError(
-          /No active limit found. It does not exist or has already been filled/,
-        );
+        ).rejects.toThrowError(/Limit order tranche not found:/);
       });
     });
 
