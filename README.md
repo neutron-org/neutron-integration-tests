@@ -3,7 +3,7 @@
 ## Prerequisities
 
 - Docker engine
-- Node.js version 16
+- Node.js version 20
 
 ### 1. Clone neutron, gaia and neutron-query-relayer
 
@@ -18,7 +18,7 @@ We use the Gaia network as a host network, so you need to clone it next to the n
 
 ```shell
 git clone git@github.com:cosmos/gaia.git
-git checkout v13.0.0
+git checkout v19.0.0
 ```
 
 ### 2. Prepare docker environment
