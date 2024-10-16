@@ -796,7 +796,7 @@ describe('Neutron / Tokenfactory', () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         full_denom: { creator_addr: contractAddress, subdenom },
       });
-      expect(res.denom).toEqual(denom);
+      expect(res.full_denom).toEqual(denom);
     });
 
     test('denom admin query', async () => {
