@@ -648,7 +648,7 @@ describe('Neutron / Tokenfactory', () => {
     });
   });
 
-  describe('wasmbindings', () => {
+  describe('grpc', () => {
     let contractAddress: string;
     const subdenom = 'mycoin';
     let denom: string;
