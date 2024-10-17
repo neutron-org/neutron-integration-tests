@@ -162,7 +162,7 @@ describe('Neutron / Slinky', () => {
     });
   });
 
-  describe('wasmbindings oracle', () => {
+  describe('grpc oracle', () => {
     test('query prices', async () => {
       const res: GetPricesResponse = await neutronClient.queryContractSmart(
         oracleContract,
@@ -180,7 +180,7 @@ describe('Neutron / Slinky', () => {
       const res: GetPriceResponse = await neutronClient.queryContractSmart(
         oracleContract,
         {
-          get_price: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
+          get_price: { base: 'AAVE', quote: 'USD' },
         },
       );
       expect(+res.price.price).toBeGreaterThan(0);
@@ -195,7 +195,7 @@ describe('Neutron / Slinky', () => {
       expect(res.currency_pairs[0].Quote).toBe('USD');
     });
   });
-  describe('wasmbindings marketmap', () => {
+  describe('grpc marketmap', () => {
     test('query last', async () => {
       const res: LastUpdatedResponse = await neutronClient.queryContractSmart(
         marketmapContract,
@@ -273,10 +273,6 @@ export type GetAllCurrencyPairsResponse = {
   currency_pairs: CurrencyPair[];
 };
 
-export type ParamsResponse = {
-  params: Params;
-};
-
 export type CurrencyPair2 = {
   base: string;
   quote: string;
@@ -284,18 +280,6 @@ export type CurrencyPair2 = {
 
 export type LastUpdatedResponse = {
   last_updated: number;
-};
-
-export type MarketMapResponse = {
-  // MarketMap defines the global set of market configurations for all providers
-  // and markets.
-  market_map: MarketMap;
-  // LastUpdated is the last block height that the market map was updated.
-  // This field can be used as an optimization for clients checking if there
-  // is a new update to the map.
-  last_updated: number;
-  // ChainId is the chain identifier for the market map.
-  chain_id: string;
 };
 
 export type MarketResponse = {
