@@ -353,7 +353,7 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #7: balance', async () => {
-        await registerBalancesQuery(
+        const queryId = await registerBalancesQuery(
           neutronClient,
           contractAddress,
           connectionId,
@@ -361,6 +361,7 @@ describe('Neutron / Interchain KV Query', () => {
           [COSMOS_DENOM],
           testState.wallets.cosmos.val1.address,
         );
+        console.log('queryId: ' + queryId)
       });
     });
   });
@@ -373,7 +374,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('bank');
@@ -394,7 +395,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.update_period).toEqual(
         updatePeriods[queryId].toString(),
@@ -408,7 +409,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       // we expect three keys, 1 always + 2 per validator
       expect(queryResult.keys.length).toEqual(3);
@@ -417,7 +418,8 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.connection_id).toEqual(connectionId);
       expect(queryResult.update_period).toEqual(
         updatePeriods[queryId].toString(),
-      );    });
+      );
+    });
 
     test('get registered icq #5: multiple balances', async () => {
       const queryId = 5;
@@ -426,7 +428,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(2);
       expect(queryResult.keys[0].path).toEqual('bank');
@@ -438,7 +440,8 @@ describe('Neutron / Interchain KV Query', () => {
       expect(queryResult.connection_id).toEqual(connectionId);
       expect(queryResult.update_period).toEqual(
         updatePeriods[queryId].toString(),
-      );    });
+      );
+    });
 
     test('get registered icq #6: 100 keys', async () => {
       const queryId = 6;
@@ -447,7 +450,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(100);
       for (let i = 0; i < queryResult.keys.length; i++) {
@@ -471,9 +474,9 @@ describe('Neutron / Interchain KV Query', () => {
         queryId,
       );
 
-      expect(queryResult.last_submitted_result_local_height).greaterThan(0);
-      expect(queryResult.last_submitted_result_local_height).lessThan(
-        queryResult.update_period,
+      expect(+queryResult.last_submitted_result_local_height).greaterThan(0);
+      expect(+queryResult.last_submitted_result_local_height).lessThan(
+        +queryResult.update_period,
       );
     });
 
@@ -840,8 +843,8 @@ describe('Neutron / Interchain KV Query', () => {
         await neutronClient.getWithAttempts(
           () => getRegisteredQuery(neutronClient, contractAddress, queryId),
           async (response) =>
-            response.last_submitted_result_local_height > 0 &&
-            response.last_submitted_result_local_height + 5 <
+            +response.last_submitted_result_local_height > 0 &&
+            +response.last_submitted_result_local_height + 5 <
               (await neutronClient.getHeight()),
           20,
         );
@@ -959,7 +962,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
@@ -1040,7 +1043,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
@@ -1146,7 +1149,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('slashing');
@@ -1230,7 +1233,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId);
+      expect(queryResult.id).toEqual(queryId.toString());
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('staking');

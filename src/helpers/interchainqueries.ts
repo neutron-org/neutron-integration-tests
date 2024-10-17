@@ -547,8 +547,8 @@ export const waitForICQResultWithRemoteHeight = (
     client,
     () => getRegisteredQuery(client, contractAddress, queryId),
     async (query) =>
-      query.last_submitted_result_remote_height
-        .revision_height >= targetHeight,
+      +query.last_submitted_result_remote_height.revision_height >=
+      targetHeight,
     numAttempts,
   );
 

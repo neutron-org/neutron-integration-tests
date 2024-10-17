@@ -460,9 +460,6 @@ describe('Neutron / Interchain TX Query', () => {
       });
       let deposits = await depositsPromise;
       // update time hasn't come yet despite the fact that sent funds are already on the account
-      console.log(
-        'deposits.transfers: \n' + JSON.stringify(deposits.transfers),
-      );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
@@ -927,11 +924,13 @@ describe('Neutron / Interchain TX Query', () => {
   describe('update recipient and check', () => {
     const newWatchedAddr5 = 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa';
     it('should update recipient', async () => {
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
       const res = await neutronClient.execute(contractAddress, {
         update_interchain_query: {
           query_id: 3,
           new_update_period: query3UpdatePeriod,
           new_recipient: newWatchedAddr5,
+          new_keys: query.keys,
         },
       });
       expect(res.code).toEqual(0);
