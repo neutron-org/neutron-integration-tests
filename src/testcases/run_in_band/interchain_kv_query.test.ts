@@ -353,7 +353,7 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #7: balance', async () => {
-        const queryId = await registerBalancesQuery(
+        await registerBalancesQuery(
           neutronClient,
           contractAddress,
           connectionId,
@@ -361,7 +361,6 @@ describe('Neutron / Interchain KV Query', () => {
           [COSMOS_DENOM],
           testState.wallets.cosmos.val1.address,
         );
-        console.log('queryId: ' + queryId)
       });
     });
   });
