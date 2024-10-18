@@ -136,17 +136,17 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
-      expect(query.registered_query.id).toEqual(1);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('1');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr1 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query1UpdatePeriod.toString());
     });
 
     test('handle callback on a sending', async () => {
@@ -299,17 +299,17 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 2);
-      expect(query.registered_query.id).toEqual(2);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('2');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr2 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query2UpdatePeriod.toString());
     });
 
     test('handle callback on a past sending', async () => {
@@ -368,17 +368,17 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
-      expect(query.registered_query.id).toEqual(3);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('3');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr3 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query3UpdatePeriod.toString());
     });
 
     test('check first sending handling', async () => {
@@ -460,9 +460,6 @@ describe('Neutron / Interchain TX Query', () => {
       });
       let deposits = await depositsPromise;
       // update time hasn't come yet despite the fact that sent funds are already on the account
-      console.log(
-        'deposits.transfers: \n' + JSON.stringify(deposits.transfers),
-      );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
@@ -701,30 +698,30 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       let query = await getRegisteredQuery(neutronClient, contractAddress, 4);
-      expect(query.registered_query.id).toEqual(4);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('4');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr4 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query4UpdatePeriod.toString());
 
       query = await getRegisteredQuery(neutronClient, contractAddress, 5);
-      expect(query.registered_query.id).toEqual(5);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('5');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr5 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query5UpdatePeriod.toString());
     });
 
     test('make younger sending and check', async () => {
@@ -848,17 +845,17 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 6);
-      expect(query.registered_query.id).toEqual(6);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(JSON.parse(query.registered_query.transactions_filter)).toEqual(
+      expect(query.id).toEqual('6');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(JSON.parse(query.transactions_filter)).toEqual(
         Array(50)
           .fill(watchedAddr2)
           .map((v) => ({ field: 'transfer.recipient', op: 'Eq', value: v })),
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query2UpdatePeriod.toString());
     });
   });
 
@@ -927,28 +924,30 @@ describe('Neutron / Interchain TX Query', () => {
   describe('update recipient and check', () => {
     const newWatchedAddr5 = 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa';
     it('should update recipient', async () => {
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
       const res = await neutronClient.execute(contractAddress, {
         update_interchain_query: {
           query_id: 3,
           new_update_period: query3UpdatePeriod,
           new_recipient: newWatchedAddr5,
+          new_keys: query.keys,
         },
       });
       expect(res.code).toEqual(0);
     });
     it('seems registered transfers query is updated', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
-      expect(query.registered_query.id).toEqual(3);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('3');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.update_period).toEqual(query3UpdatePeriod.toString());
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           newWatchedAddr5 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
+      expect(query.connection_id).toEqual(connectionId);
     });
 
     it('should handle callback on a sending to the new address', async () => {

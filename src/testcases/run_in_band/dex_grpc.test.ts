@@ -740,6 +740,7 @@ describe('Neutron / dex module (grpc contract)', () => {
             amount_in: '10000',
             order_type: LimitOrderType.FillOrKill.toString(),
             max_amount_out: '',
+            min_average_sell_price: '',
           },
         },
       });

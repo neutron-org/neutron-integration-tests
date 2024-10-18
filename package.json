@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "vitest --run src/testcases/parallel --bail 1 --reporter=basic",
-    "test:run_in_band": "yarn test:feemarket && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters &&  yarn test:slinky && yarn test:chain_manager && yarn test:tokenfactory && yarn test:cron && yarn test:dex_grpc && yarn test:dex_bindings",
+    "test:run_in_band": "yarn test:feemarket && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:tokenomics && yarn test:reserve && yarn test:ibc_hooks && yarn test:float && yarn test:parameters &&  yarn test:slinky && yarn test:chain_manager && yarn test:tokenfactory && yarn test:cron && yarn test:dex_grpc",
     "test:ibc_transfer": "vitest --run src/testcases/parallel/ibc_transfer --bail 1",
     "test:slinky": "vitest --run src/testcases/run_in_band/slinky --bail 1",
     "test:cron": "vitest --run src/testcases/run_in_band/cron --bail 1",
@@ -28,7 +28,6 @@
     "test:voting_registry": "vitest --run src/testcases/parallel/voting_registry --bail 1",
     "test:float": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/float --bail 1",
     "test:dex_grpc": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/dex_grpc --bail 1",
-    "test:dex_bindings": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/dex_bindings --bail 1",
     "test:chain_manager": "vitest --run src/testcases/run_in_band/chain_manager --bail 1",
     "test:feemarket": "NO_WAIT_CHANNEL1=1 NO_WAIT_HTTP2=1 NO_WAIT_CHANNEL2=1 NO_WAIT_DELAY=1 vitest --run src/testcases/run_in_band/feemarket --bail 1",
     "test:ibc_rate_limit": "vitest --run src/testcases/run_in_band/ibc_rate_limit --bail 1",

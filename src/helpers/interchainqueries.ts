@@ -511,26 +511,24 @@ export const getRegisteredQuery = async (
   contractAddress: string,
   queryId: number,
 ): Promise<{
-  registered_query: {
-    id: number;
-    owner: string;
-    keys: {
-      path: string;
-      key: string;
-    }[];
-    query_type: string;
-    transactions_filter: string;
-    connection_id: string;
-    update_period: number;
-    last_submitted_result_local_height: number;
-    last_submitted_result_remote_height: {
-      revision_number: number;
-      revision_height: number;
-    };
-    deposit: { denom: string; amount: string }[];
-    submit_timeout: number;
-    registered_at_height: number;
+  id: number;
+  owner: string;
+  keys: {
+    path: string;
+    key: string;
+  }[];
+  query_type: string;
+  transactions_filter: string;
+  connection_id: string;
+  update_period: number;
+  last_submitted_result_local_height: number;
+  last_submitted_result_remote_height: {
+    revision_number: number;
+    revision_height: number;
   };
+  deposit: { denom: string; amount: string }[];
+  submit_timeout: number;
+  registered_at_height: number;
 }> =>
   client.queryContractSmart(contractAddress, {
     get_registered_query: {
@@ -549,8 +547,8 @@ export const waitForICQResultWithRemoteHeight = (
     client,
     () => getRegisteredQuery(client, contractAddress, queryId),
     async (query) =>
-      query.registered_query.last_submitted_result_remote_height
-        .revision_height >= targetHeight,
+      +query.last_submitted_result_remote_height.revision_height >=
+      targetHeight,
     numAttempts,
   );
 
@@ -581,7 +579,7 @@ export const waitForTransfersAmount = (
     client,
     async () =>
       (await queryTransfersNumber(client, contractAddress)).transfers_number,
-    async (amount) => amount == expectedTransfersAmount,
+    async (amount) => amount.toString() == expectedTransfersAmount.toString(),
     numAttempts,
   );
 
