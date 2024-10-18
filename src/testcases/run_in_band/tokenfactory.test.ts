@@ -806,7 +806,6 @@ describe('Neutron / Tokenfactory', () => {
           subdenom,
         },
       });
-      console.log('res: ' + JSON.stringify(res));
       expect(res.admin).toEqual(contractAddress);
     });
     test('set_before_send_hook', async () => {

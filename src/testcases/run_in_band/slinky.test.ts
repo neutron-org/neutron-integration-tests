@@ -78,14 +78,14 @@ describe('Neutron / Slinky', () => {
   });
 
   describe('before create market map', () => {
-    test('query last should return null', async () => {
+    test('query last should return 0', async () => {
       const res: LastUpdatedResponse = await neutronClient.queryContractSmart(
         marketmapContract,
         {
           last_updated: {},
         },
       );
-      expect(res.last_updated).toBe(null);
+      expect(res.last_updated).toBe('0');
     });
   });
 
@@ -191,8 +191,8 @@ describe('Neutron / Slinky', () => {
         await neutronClient.queryContractSmart(oracleContract, {
           get_all_currency_pairs: {},
         });
-      expect(res.currency_pairs[0].Base).toBe('AAVE');
-      expect(res.currency_pairs[0].Quote).toBe('USD');
+      expect(res.currency_pairs[0].base).toBe('AAVE');
+      expect(res.currency_pairs[0].quote).toBe('USD');
     });
   });
   describe('grpc marketmap', () => {
@@ -203,14 +203,14 @@ describe('Neutron / Slinky', () => {
           last_updated: {},
         },
       );
-      expect(res.last_updated).toBeGreaterThan(0);
+      expect(+res.last_updated).toBeGreaterThan(0);
     });
 
     test('query market', async () => {
       const res: MarketResponse = await neutronClient.queryContractSmart(
         marketmapContract,
         {
-          market: { currency_pair: { Base: 'AAVE', Quote: 'USD' } },
+          market: { currency_pair: { base: 'AAVE', quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
@@ -220,7 +220,7 @@ describe('Neutron / Slinky', () => {
       const res: MarketResponse = await neutronClient.queryContractSmart(
         marketmapContract,
         {
-          market: { currency_pair: { Base: 'USDT', Quote: 'USD' } },
+          market: { currency_pair: { base: 'USDT', quote: 'USD' } },
         },
       );
       expect(res.market).toBeDefined();
@@ -265,17 +265,12 @@ export type GetPricesResponse = {
 };
 
 export type CurrencyPair = {
-  Quote: string;
-  Base: string;
+  quote: string;
+  base: string;
 };
 
 export type GetAllCurrencyPairsResponse = {
   currency_pairs: CurrencyPair[];
-};
-
-export type CurrencyPair2 = {
-  base: string;
-  quote: string;
 };
 
 export type LastUpdatedResponse = {
@@ -284,25 +279,6 @@ export type LastUpdatedResponse = {
 
 export type MarketResponse = {
   market: Market;
-};
-
-export type QuotePrice = {
-  price: string;
-  // // BlockTimestamp tracks the block height associated with this price update.
-  // // We include block timestamp alongside the price to ensure that smart
-  // // contracts and applications are not utilizing stale oracle prices
-  // block_timestamp: time.Time,
-  // BlockHeight is height of block mentioned above
-  block_height: number;
-};
-
-export type Params = {
-  admin: string;
-  market_authorities: string[];
-};
-
-export type MarketMap = {
-  markets: Map<string, Market>;
 };
 
 export type Market = {
@@ -326,7 +302,7 @@ export type ProviderConfig = {
   // For example, if the desired Ticker is BTC/USD, this market could be reached
   // using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This field is
   // optional and nullable.
-  normalize_by_pair: CurrencyPair2;
+  normalize_by_pair: CurrencyPair;
   // Invert is a boolean indicating if the BASE and QUOTE of the market should
   // be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
   invert: boolean;
@@ -337,7 +313,7 @@ export type ProviderConfig = {
 
 export type Ticker = {
   // CurrencyPair is the currency pair for this ticker.
-  currency_pair: CurrencyPair2;
+  currency_pair: CurrencyPair;
   // Decimals is the number of decimal places for the ticker. The number of
   // decimal places is used to convert the price to a human-readable format.
   decimals: number;
