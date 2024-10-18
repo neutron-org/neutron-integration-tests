@@ -803,7 +803,7 @@ describe('Neutron / Tokenfactory', () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         denom_admin: {
           creator: contractAddress,
-          subdenom: denom,
+          subdenom,
         },
       });
       console.log('res: ' + JSON.stringify(res));
@@ -827,7 +827,7 @@ describe('Neutron / Tokenfactory', () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         before_send_hook: {
           creator: contractAddress,
-          subdenom: denom,
+          subdenom,
         },
       });
       expect(res.contract_addr).toEqual(contractAddress);
@@ -904,7 +904,8 @@ describe('Neutron / Tokenfactory', () => {
       expect(balance).toEqual(amount);
       const res = await neutronClient.queryContractSmart(contractAddress, {
         denom_admin: {
-          subdenom: denom,
+          creator: contractAddress,
+          subdenom,
         },
       });
       expect(res.admin).toEqual(neutronWallet.address);
