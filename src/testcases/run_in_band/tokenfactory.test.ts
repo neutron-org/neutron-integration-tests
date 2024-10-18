@@ -692,7 +692,7 @@ describe('Neutron / Tokenfactory', () => {
           denom_units: [
             {
               denom,
-              exponent: 0,
+              exponent: '0',
               aliases: [],
             },
           ],
@@ -794,7 +794,7 @@ describe('Neutron / Tokenfactory', () => {
 
     test('full denom query', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
-        full_denom: { creator_addr: contractAddress, subdenom },
+        full_denom: { creator: contractAddress, subdenom },
       });
       expect(res.full_denom).toEqual(denom);
     });
@@ -802,9 +802,11 @@ describe('Neutron / Tokenfactory', () => {
     test('denom admin query', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         denom_admin: {
+          creator: contractAddress,
           subdenom: denom,
         },
       });
+      console.log('res: ' + JSON.stringify(res));
       expect(res.admin).toEqual(contractAddress);
     });
     test('set_before_send_hook', async () => {
@@ -824,7 +826,8 @@ describe('Neutron / Tokenfactory', () => {
       });
       const res = await neutronClient.queryContractSmart(contractAddress, {
         before_send_hook: {
-          denom,
+          creator: contractAddress,
+          subdenom: denom,
         },
       });
       expect(res.contract_addr).toEqual(contractAddress);
