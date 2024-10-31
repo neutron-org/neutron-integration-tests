@@ -93,17 +93,17 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
-      expect(query.registered_query.id).toEqual(1);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      expect(query.id).toEqual('1');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr1 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query1UpdatePeriod.toString());
     });
 
     test('check failed txs', async () => {

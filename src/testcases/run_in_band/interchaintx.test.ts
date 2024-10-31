@@ -132,7 +132,7 @@ describe('Neutron / Interchain TXs', () => {
           register: {
             connection_id: connectionId,
             interchain_account_id: unorderedIcaId,
-            ordering: 'ORDER_UNORDERED',
+            ordering: 'Unordered',
           },
         });
         expect(res.code).toEqual(0);
