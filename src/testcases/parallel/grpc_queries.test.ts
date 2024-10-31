@@ -226,7 +226,7 @@ describe('Neutron / Grpc Queries', () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         tokenfactory_params: {},
       });
-      expect(res.params.denom_creation_gas_consume).toBe('0');
+      expect(res.params.denom_creation_gas_consume).toBe(null);
     });
 
     test('tokenfactory denom authority metadata should work', async () => {
