@@ -648,7 +648,7 @@ describe('Neutron / Tokenfactory', () => {
     });
   });
 
-  describe('wasmbindings', () => {
+  describe('grpc', () => {
     let contractAddress: string;
     const subdenom = 'mycoin';
     let denom: string;
@@ -692,7 +692,7 @@ describe('Neutron / Tokenfactory', () => {
           denom_units: [
             {
               denom,
-              exponent: 0,
+              exponent: '0',
               aliases: [],
             },
           ],
@@ -794,15 +794,16 @@ describe('Neutron / Tokenfactory', () => {
 
     test('full denom query', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
-        full_denom: { creator_addr: contractAddress, subdenom },
+        full_denom: { creator: contractAddress, subdenom },
       });
-      expect(res.denom).toEqual(denom);
+      expect(res.full_denom).toEqual(denom);
     });
 
     test('denom admin query', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         denom_admin: {
-          subdenom: denom,
+          creator: contractAddress,
+          subdenom,
         },
       });
       expect(res.admin).toEqual(contractAddress);
@@ -824,7 +825,8 @@ describe('Neutron / Tokenfactory', () => {
       });
       const res = await neutronClient.queryContractSmart(contractAddress, {
         before_send_hook: {
-          denom,
+          creator: contractAddress,
+          subdenom,
         },
       });
       expect(res.contract_addr).toEqual(contractAddress);
@@ -901,7 +903,8 @@ describe('Neutron / Tokenfactory', () => {
       expect(balance).toEqual(amount);
       const res = await neutronClient.queryContractSmart(contractAddress, {
         denom_admin: {
-          subdenom: denom,
+          creator: contractAddress,
+          subdenom,
         },
       });
       expect(res.admin).toEqual(neutronWallet.address);
