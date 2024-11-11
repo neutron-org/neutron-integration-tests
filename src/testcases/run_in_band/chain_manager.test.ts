@@ -13,6 +13,8 @@ import {
   updateTokenfactoryParamsProposal,
   AddSchedule,
   RemoveSchedule,
+  updateGlobalFeeParamsProposal,
+  updateConsumerParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
@@ -23,6 +25,9 @@ import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosm
 import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
 import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
+import { QueryClientImpl as DynamicfeesQueryClient } from '@neutron-org/neutronjs/neutron/dynamicfees/v1/query.rpc.Query';
+import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
+import { QueryClientImpl as CCVQueryClient } from '@neutron-org/neutronjs/interchain_security/ccv/consumer/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
@@ -39,6 +44,9 @@ describe('Neutron / Chain Manager', () => {
   let cronQuerier: CronQueryClient;
   let tokenfactoryQuerier: TokenfactoryQueryClient;
   let dexQuerier: DexQueryClient;
+  let dynamicfeesQuerier: DynamicfeesQueryClient;
+  let globalfeeQuerier: GlobalfeeQueryClient;
+  let ccvQuerier: CCVQueryClient;
   let upgradeQuerier: UpgradeQueryClient;
   let chainManagerAddress: string;
 
@@ -73,7 +81,7 @@ describe('Neutron / Chain Manager', () => {
       neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
-      true,
+      false,
     );
 
     subdaoMember1 = new DaoMember(
@@ -97,6 +105,9 @@ describe('Neutron / Chain Manager', () => {
     cronQuerier = new CronQueryClient(neutronRpcClient);
     dexQuerier = new DexQueryClient(neutronRpcClient);
     upgradeQuerier = new UpgradeQueryClient(neutronRpcClient);
+    dynamicfeesQuerier = new DynamicfeesQueryClient(neutronRpcClient);
+    globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
+    ccvQuerier = new CCVQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -203,6 +214,35 @@ describe('Neutron / Chain Manager', () => {
                     paused: true,
                     max_jits_per_block: true,
                     good_til_purge_allowance: true,
+                  },
+                },
+                {
+                  update_ccv_params_permission: {
+                    blocks_per_distribution_transmission: true,
+                    distribution_transmission_channel: true,
+                    provider_fee_pool_addr_str: true,
+                    ccv_timeout_period: true,
+                    transfer_timeout_period: true,
+                    consumer_redistribution_fraction: true,
+                    historical_entries: true,
+                    unbonding_period: true,
+                    // !!! DEPRECATED !!! soft_opt_out_threshold is deprecated. see docs/docs/adrs/adr-015-partial-set-security.md
+                    soft_opt_out_threshold: true,
+                    reward_denoms: true,
+                    provider_reward_denoms: true,
+                    retry_delay_period: true,
+                  },
+                },
+                {
+                  update_globalfee_params_permission: {
+                    minimum_gas_prices: true,
+                    bypass_min_fee_msg_types: true,
+                    max_total_bypass_min_fee_msg_gas_usage: true,
+                  },
+                },
+                {
+                  update_dynamicfees_params_permission: {
+                    ntrn_prices: true,
                   },
                 },
               ],
@@ -325,7 +365,7 @@ describe('Neutron / Chain Manager', () => {
   describe('ALLOW_ONLY: change DEX parameters', () => {
     let proposalId: number;
     const newParams = {
-      fee_tiers: [1, 2, 99],
+      fee_tiers: ['1', '2', '99'],
       paused: true,
       max_jits_per_block: 11,
       good_til_purge_allowance: 50000,
@@ -362,6 +402,171 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.paused).toEqual(true);
       expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
+    });
+  });
+
+  describe('ALLOW_ONLY: change Dynamicfees parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitDynamicfeesChangeParamsProposal(
+        chainManagerAddress,
+        'Proposal #2',
+        'Dynamicfees update params proposal. Will pass',
+        '1000',
+        {
+          ntrn_prices: [{ denom: 'newdenom', amount: '0.5' }],
+        },
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const dynamicfeesParams = await dynamicfeesQuerier.params();
+      expect(dynamicfeesParams.params.ntrnPrices).toEqual([
+        { denom: 'newdenom', amount: '0.5' },
+      ]);
+    });
+  });
+
+  describe('ALLOW_ONLY: change Globalfee parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateParamsGlobalfeeProposal(
+        chainManagerAddress,
+        'Proposal #3',
+        'Globalfee update params proposal. Will pass',
+        updateGlobalFeeParamsProposal({
+          minimum_gas_prices: [{ denom: 'newdenom', amount: '0.5' }],
+          bypass_min_fee_msg_types: ['/gaia.globalfee.v1beta1.MsgUpdateParams'],
+          max_total_bypass_min_fee_msg_gas_usage: '12345',
+        }),
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const globalfeeParams = await globalfeeQuerier.params();
+      expect(globalfeeParams.params.minimumGasPrices).toEqual([
+        { denom: 'newdenom', amount: '0.5' },
+      ]);
+      expect(globalfeeParams.params.bypassMinFeeMsgTypes).toEqual([
+        '/gaia.globalfee.v1beta1.MsgUpdateParams',
+      ]);
+      expect(globalfeeParams.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(
+        12345n,
+      );
+    });
+  });
+
+  describe('ALLOW_ONLY: change ccv consumer parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateParamsConsumerProposal(
+        chainManagerAddress,
+        'Proposal #4',
+        'Consumer update params proposal. Will pass',
+        updateConsumerParamsProposal({
+          enabled: true,
+          blocks_per_distribution_transmission: 321,
+          distribution_transmission_channel: 'channel-23',
+          provider_fee_pool_addr_str: chainManagerAddress,
+          ccv_timeout_period: '32s',
+          transfer_timeout_period: '23s',
+          consumer_redistribution_fraction: '0.33',
+          historical_entries: 123,
+          unbonding_period: '43s',
+          soft_opt_out_threshold: '0.55',
+          reward_denoms: ['tia'],
+          provider_reward_denoms: ['tia'],
+          retry_delay_period: '43s',
+        }),
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      console.log(
+        'subdao',
+        subdaoMember1.dao.contracts.proposals['single'].pre_propose.timelock
+          .address,
+      );
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const ccvParams = await ccvQuerier.queryParams();
+      expect(ccvParams.params.enabled).toEqual(true);
+      expect(ccvParams.params.blocksPerDistributionTransmission).toEqual(321n);
+      expect(ccvParams.params.distributionTransmissionChannel).toEqual(
+        'channel-23',
+      );
+      expect(ccvParams.params.providerFeePoolAddrStr).toEqual(
+        chainManagerAddress,
+      );
+      expect(ccvParams.params.ccvTimeoutPeriod).toEqual({
+        nanos: 0,
+        seconds: 32n,
+      });
+      expect(ccvParams.params.transferTimeoutPeriod).toEqual({
+        nanos: 0,
+        seconds: 23n,
+      });
+      expect(ccvParams.params.consumerRedistributionFraction).toEqual('0.33');
+      expect(ccvParams.params.historicalEntries).toEqual(123n);
+      expect(ccvParams.params.unbondingPeriod).toEqual({
+        nanos: 0,
+        seconds: 43n,
+      });
+      expect(ccvParams.params.softOptOutThreshold).toEqual('0.55');
+      expect(ccvParams.params.rewardDenoms).toEqual(['tia']);
+      expect(ccvParams.params.providerRewardDenoms).toEqual(['tia']);
+      expect(ccvParams.params.retryDelayPeriod).toEqual({
+        nanos: 0,
+        seconds: 43n,
+      });
     });
   });
 
