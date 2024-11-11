@@ -3,7 +3,7 @@ COPY ./hermes/ /app/network/hermes/
 WORKDIR /app
 RUN apt-get update && apt-get install -y wget && \
     PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    VERSION=v1.6.0 && \
+    VERSION=v1.10.1 && \
     TARNAME="hermes-${VERSION}-${PLATFORM}-unknown-linux-gnu.tar.gz" && \
     wget "https://github.com/informalsystems/hermes/releases/download/${VERSION}/${TARNAME}" && \
     tar -xf "$TARNAME" && \

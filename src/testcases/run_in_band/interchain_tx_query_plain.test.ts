@@ -1,72 +1,105 @@
-import Long from 'long';
-import { CodeId } from '../../types';
-import { MsgSend } from '@neutron-org/neutronjsplus/dist/proto/cosmos_sdk/cosmos/bank/v1beta1/tx_pb';
+import { RunnerTestSuite, inject } from 'vitest';
+import { LocalState } from '../../helpers/local_state';
 import {
-  CosmosWrapper,
-  packAnyMsg,
-  WalletWrapper,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
+  defaultRegistryTypes,
+  MsgSendEncodeObject,
+  ProtobufRpcClient,
+  SigningStargateClient,
+} from '@cosmjs/stargate';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { Registry } from '@cosmjs/proto-signing';
+import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
+import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import {
-  TestStateLocalCosmosTestNet,
-  NEUTRON_DENOM,
-  COSMOS_DENOM,
-} from '@neutron-org/neutronjsplus';
-import { NeutronContract } from '@neutron-org/neutronjsplus/dist/types';
-import {
+  executeUpdateInterchainQueriesParams,
   getRegisteredQuery,
   queryRecipientTxs,
   queryTransfersNumber,
   registerTransfersQuery,
   waitForTransfersAmount,
-} from '@neutron-org/neutronjsplus/dist/icq';
+} from '../../helpers/interchainqueries';
+import {
+  CONTRACTS,
+  COSMOS_DENOM,
+  NEUTRON_DENOM,
+} from '../../helpers/constants';
+import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
-const config = require('../../config.json');
+import config from '../../config.json';
+import { Wallet } from '../../helpers/wallet';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
 
 describe('Neutron / Interchain TX Query', () => {
-  let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let testState: LocalState;
+  let neutronClient: SigningNeutronClient;
+  let neutronRpcClient: ProtobufRpcClient;
+  let gaiaClient: SigningStargateClient;
+  let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
   let contractAddress: string;
+  let bankQuerierGaia: BankQuerier;
+  let interchainqQuerier: InterchainqQuerier;
+  let daoMember: DaoMember;
+  let mainDao: Dao;
+  let chainManagerAddress: string;
   const connectionId = 'connection-0';
 
-  beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
-    neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
+  beforeAll(async (suite: RunnerTestSuite) => {
+    testState = await LocalState.create(config, inject('mnemonics'), suite);
+
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
+    );
+
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
+      testState.rpcGaia,
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
+    );
+    bankQuerierGaia = new BankQuerier(await testState.gaiaRpcClient());
+
+    neutronRpcClient = await testState.neutronRpcClient();
+    const daoCoreAddress = await getNeutronDAOCore(
+      neutronClient,
+      neutronRpcClient,
+    );
+    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
+    mainDao = new Dao(neutronClient, daoContracts);
+    daoMember = new DaoMember(
+      mainDao,
+      neutronClient.client,
+      neutronWallet.address,
       NEUTRON_DENOM,
     );
-    neutronAccount = new WalletWrapper(
-      neutronChain,
-      testState.wallets.neutron.demo1,
-    );
-    gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
-      COSMOS_DENOM,
-    );
-    gaiaAccount = new WalletWrapper(gaiaChain, testState.wallets.cosmos.demo2);
+    await daoMember.bondFunds('1000000000');
+    interchainqQuerier = new InterchainqQuerier(neutronRpcClient);
+
+    const adminQuery = new AdminQueryClient(neutronRpcClient);
+    const admins = await adminQuery.admins();
+    chainManagerAddress = admins.admins[0];
   });
 
   describe('deploy contract', () => {
-    let codeId: CodeId;
+    let codeId: number;
     test('store contract', async () => {
-      codeId = await neutronAccount.storeWasm(
-        NeutronContract.INTERCHAIN_QUERIES,
-      );
+      codeId = await neutronClient.upload(CONTRACTS.INTERCHAIN_QUERIES);
       expect(codeId).toBeGreaterThan(0);
     });
     test('instantiate contract', async () => {
-      contractAddress = (
-        await neutronAccount.instantiateContract(
-          codeId,
-          '{}',
-          'neutron_interchain_queries',
-        )
-      )[0]._contract_address;
+      contractAddress = await neutronClient.instantiate(
+        codeId,
+        {},
+        'neutron_interchain_queries',
+      );
     });
   });
 
@@ -84,62 +117,80 @@ describe('Neutron / Interchain TX Query', () => {
   describe('utilize single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
-      await neutronAccount.msgSend(contractAddress, '1000000');
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query1UpdatePeriod,
-        watchedAddr1,
+        [watchedAddr1],
       );
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 1);
-      expect(query.registered_query.id).toEqual(1);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
+      expect(query.id).toEqual('1');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr1 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query1UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query1UpdatePeriod.toString());
     });
 
     test('handle callback on a sending', async () => {
       addr1ExpectedBalance += amountToAddrFirst1;
-      let balances = await gaiaChain.queryBalances(watchedAddr1);
+      let balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr1,
+      });
       expect(balances.balances).toEqual([]);
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr1,
-        amountToAddrFirst1.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrFirst1.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
+
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(watchedAddr1);
+      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr1 });
       expect(balances.balances).toEqual([
-        { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
+        {
+          amount: addr1ExpectedBalance.toString(),
+          denom: COSMOS_DENOM,
+        },
       ]);
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query1UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr1,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr1ExpectedBalance.toString(),
         },
       ]);
@@ -148,63 +199,76 @@ describe('Neutron / Interchain TX Query', () => {
     test('handle callback on a sending to a different address', async () => {
       const differentAddr = addrSecond;
       addr2ExpectedBalance += amountToAddrSecond1;
-      let balances = await gaiaChain.queryBalances(differentAddr);
-      expect(balances.balances).toEqual([]);
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         differentAddr,
-        amountToAddrSecond1.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrSecond1.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(differentAddr);
-      expect(balances.balances).toEqual([
-        { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
-      await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
+      const balance = await gaiaClient.getBalance(differentAddr, COSMOS_DENOM);
+      expect(balance).toEqual({
+        amount: addr2ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
+      await neutronClient.waitBlocks(query1UpdatePeriod * 2); // we are waiting for quite a big time just to be sure
 
       // the different address is not registered by the contract, so its receivings aren't tracked
       let deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         differentAddr,
       );
       expect(deposits.transfers).toEqual([]);
       // the watched address receivings are not changed
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr1,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr1ExpectedBalance.toString(),
         },
       ]);
     });
 
     test('handle failed transfer', async () => {
-      const res = await gaiaAccount.msgSend(watchedAddr1, '99999999999999'); // the amount is greater than the sender has
-      expect(res.txhash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
+        watchedAddr1,
+        [{ denom: COSMOS_DENOM, amount: '99999999999999' }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
+      );
+      // the amount is greater than the sender has
+      expect(res.transactionHash?.length).toBeGreaterThan(0); // hash is not empty thus tx went away
       expect(res.code).toEqual(5); // failed to execute message: insufficient funds
-      const balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([
-        { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom }, // balance hasn't changed thus tx failed
-      ]);
-      await neutronChain.blockWaiter.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      const balance = await gaiaClient.getBalance(watchedAddr1, COSMOS_DENOM);
+      expect(balance).toEqual(
+        { amount: addr1ExpectedBalance.toString(), denom: COSMOS_DENOM }, // balance hasn't changed thus tx failed
+      );
+      await neutronClient.waitBlocks(query1UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
 
       // the watched address receivings are not changed
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr1,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr1ExpectedBalance.toString(),
         },
       ]);
@@ -216,54 +280,62 @@ describe('Neutron / Interchain TX Query', () => {
   describe('utilize multiple transfers queries', () => {
     test('register the second transfers query', async () => {
       // Top up contract address before running query
-      await neutronAccount.msgSend(contractAddress, '1000000');
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query2UpdatePeriod,
-        watchedAddr2,
+        [watchedAddr2],
       );
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 2);
-      expect(query.registered_query.id).toEqual(2);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 2);
+      expect(query.id).toEqual('2');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr2 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query2UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query2UpdatePeriod.toString());
     });
 
     test('handle callback on a past sending', async () => {
-      const balances = await gaiaChain.queryBalances(watchedAddr2);
+      const balances = await gaiaClient.getBalance(watchedAddr2, COSMOS_DENOM);
       expectedIncomingTransfers++;
-      expect(balances.balances).toEqual([
-        { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
+      expect(balances).toEqual({
+        amount: addr2ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query2UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr2,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr2ExpectedBalance.toString(),
         },
       ]);
@@ -271,75 +343,92 @@ describe('Neutron / Interchain TX Query', () => {
   });
 
   const watchedAddr3: string = addrThird;
-  const query3UpdatePeriod = 4;
+  const query3UpdatePeriod = 8;
   const amountToAddrThird1 = 3000;
   const amountToAddrThird2 = 4000;
   describe('check update period', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
-      await neutronAccount.msgSend(contractAddress, '1000000');
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query3UpdatePeriod,
-        watchedAddr3,
+        [watchedAddr3],
       );
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 3);
-      expect(query.registered_query.id).toEqual(3);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
+      expect(query.id).toEqual('3');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr3 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query3UpdatePeriod.toString());
     });
 
     test('check first sending handling', async () => {
       addr3ExpectedBalance += amountToAddrThird1;
-      let balances = await gaiaChain.queryBalances(watchedAddr3);
+      let balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr3,
+      });
       expect(balances.balances).toEqual([]);
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr3,
-        amountToAddrThird1.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrThird1.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(watchedAddr3);
+      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr3 });
       expect(balances.balances).toEqual([
-        { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
+        {
+          amount: addr3ExpectedBalance.toString(),
+          denom: COSMOS_DENOM,
+        },
       ]);
       let deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr3,
       );
-      // update time hasn't come yet despite the fact the sent funds are already on the account
+      // update time hasn't come yet despite the fact that sent funds are already on the account
       expect(deposits.transfers).toEqual([]);
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr3,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr3ExpectedBalance.toString(),
         },
       ]);
@@ -347,55 +436,61 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check second sending handling', async () => {
       addr3ExpectedBalance += amountToAddrThird2;
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr3,
-        amountToAddrThird2.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrThird2.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
       // initiate query before relayer has any chance to submit query data
       const depositsPromise = queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr3,
       );
-      const balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([
-        { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
+      const balances = await gaiaClient.getBalance(watchedAddr3, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr3ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
       let deposits = await depositsPromise;
-      // update time hasn't come yet despite the fact the sent funds are already on the account
+      // update time hasn't come yet despite the fact that sent funds are already on the account
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: (addr3ExpectedBalance - amountToAddrThird2).toString(),
         },
       ]);
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr3,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrThird2.toString(),
         },
       ]);
@@ -408,111 +503,118 @@ describe('Neutron / Interchain TX Query', () => {
     test('exec tx with two transfers', async () => {
       addr1ExpectedBalance += amountToAddrFirst2;
       addr2ExpectedBalance += amountToAddrSecond2;
-      const sendMsg1 = new MsgSend({
-        fromAddress: gaiaAccount.wallet.address.toString(),
-        toAddress: watchedAddr1,
-        amount: [
-          { denom: gaiaChain.denom, amount: amountToAddrFirst2.toString() },
-        ],
-      });
-      const sendMsg2 = new MsgSend({
-        fromAddress: gaiaAccount.wallet.address.toString(),
-        toAddress: watchedAddr2,
-        amount: [
-          {
-            denom: gaiaChain.denom,
-            amount: amountToAddrSecond2.toString(),
-          },
-        ],
-      });
 
-      const res = await gaiaAccount.execTx(
-        {
-          gas_limit: Long.fromString('200000'),
-          amount: [{ denom: gaiaChain.denom, amount: '1000' }],
+      const msgSendObject1: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: gaiaWallet.address,
+          toAddress: watchedAddr1,
+          amount: [
+            { denom: COSMOS_DENOM, amount: amountToAddrFirst2.toString() },
+          ],
         },
-        [
-          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg1),
-          packAnyMsg('/cosmos.bank.v1beta1.MsgSend', sendMsg2),
-        ],
+      };
+
+      const msgSendObject2: MsgSendEncodeObject = {
+        typeUrl: '/cosmos.bank.v1beta1.MsgSend',
+        value: {
+          fromAddress: gaiaWallet.address,
+          toAddress: watchedAddr2,
+          amount: [
+            { denom: COSMOS_DENOM, amount: amountToAddrSecond2.toString() },
+          ],
+        },
+      };
+
+      const res = await gaiaClient.signAndBroadcast(
+        gaiaWallet.address,
+        [msgSendObject1, msgSendObject2],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
+
       expectedIncomingTransfers += 2;
-      expect(res?.tx_response?.txhash?.length).toBeGreaterThan(0);
-      let balances = await gaiaChain.queryBalances(watchedAddr1);
-      expect(balances.balances).toEqual([
-        { amount: addr1ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
-      balances = await gaiaChain.queryBalances(watchedAddr2);
-      expect(balances.balances).toEqual([
-        { amount: addr2ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
-      balances = await gaiaChain.queryBalances(watchedAddr3);
-      expect(balances.balances).toEqual([
-        { amount: addr3ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
+      expect(res?.transactionHash.length).toBeGreaterThan(0);
+      let balances = await gaiaClient.getBalance(watchedAddr1, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr1ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
+      balances = await gaiaClient.getBalance(watchedAddr2, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr2ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
+      balances = await gaiaClient.getBalance(watchedAddr3, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr3ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
     });
 
     test('check transfers handled', async () => {
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         Math.max(...[query1UpdatePeriod, query2UpdatePeriod]) * 2,
       );
       let deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr1,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrFirst1.toString(),
         },
         {
           recipient: watchedAddr1,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrFirst2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr2,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrSecond1.toString(),
         },
         {
           recipient: watchedAddr2,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrSecond2.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr3,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrThird1.toString(),
         },
         {
           recipient: watchedAddr3,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: amountToAddrThird2.toString(),
         },
       ]);
@@ -543,118 +645,145 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('register transfers queries', async () => {
       // Top up contract address before running query
-      await neutronAccount.msgSend(contractAddress, '2000000');
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '2000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query4UpdatePeriod,
-        watchedAddr4,
+        [watchedAddr4],
       );
       await registerTransfersQuery(
-        neutronAccount,
+        neutronClient,
         contractAddress,
         connectionId,
         query5UpdatePeriod,
-        watchedAddr5,
+        [watchedAddr5],
       );
-      await neutronChain.blockWaiter.waitBlocks(2); // wait for queries handling on init
+      await neutronClient.waitBlocks(2); // wait for queries handling on init
     });
 
     test('make older sending', async () => {
       addr5ExpectedBalance += amountToAddrFifth1;
-      let balances = await gaiaChain.queryBalances(watchedAddr5);
+      let balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr5,
+      });
       expect(balances.balances).toEqual([]);
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr5,
-        amountToAddrFifth1.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrFifth1.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(watchedAddr5);
+      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr5 });
       expect(balances.balances).toEqual([
-        { amount: addr5ExpectedBalance.toString(), denom: gaiaChain.denom },
+        {
+          amount: addr5ExpectedBalance.toString(),
+          denom: COSMOS_DENOM,
+        },
       ]);
     });
 
     test('check registered transfers query', async () => {
-      let query = await getRegisteredQuery(neutronChain, contractAddress, 4);
-      expect(query.registered_query.id).toEqual(4);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      let query = await getRegisteredQuery(neutronClient, contractAddress, 4);
+      expect(query.id).toEqual('4');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr4 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query4UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query4UpdatePeriod.toString());
 
-      query = await getRegisteredQuery(neutronChain, contractAddress, 5);
-      expect(query.registered_query.id).toEqual(5);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.transactions_filter).toEqual(
+      query = await getRegisteredQuery(neutronClient, contractAddress, 5);
+      expect(query.id).toEqual('5');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           watchedAddr5 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
-      expect(query.registered_query.update_period).toEqual(query5UpdatePeriod);
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query5UpdatePeriod.toString());
     });
 
     test('make younger sending and check', async () => {
       addr4ExpectedBalance += amountToAddrForth1;
-      let balances = await gaiaChain.queryBalances(watchedAddr4);
+      let balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr4,
+      });
       expect(balances.balances).toEqual([]);
-      const res = await gaiaAccount.msgSend(
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr4,
-        amountToAddrForth1.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrForth1.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(watchedAddr4);
+      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr4 });
       expect(balances.balances).toEqual([
-        { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
+        {
+          amount: addr4ExpectedBalance.toString(),
+          denom: COSMOS_DENOM,
+        },
       ]);
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers - 1,
         query4UpdatePeriod * 2,
       );
       // make sure the query4 result is submitted before the query5 one
       let deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr4,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr4,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr4ExpectedBalance.toString(),
         },
       ]);
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr5,
       );
       expect(deposits.transfers).toEqual([]);
 
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query5UpdatePeriod * 2,
       );
       deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr5,
       );
@@ -663,11 +792,70 @@ describe('Neutron / Interchain TX Query', () => {
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr5,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: addr5ExpectedBalance.toString(),
         },
       ]);
+    });
+  });
+
+  describe('Multiple keys', () => {
+    test('Should fail. register filter with 50 keys', async () => {
+      // Top up contract address before running query
+      await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: NEUTRON_DENOM, amount: '1000000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+        },
+      );
+      await expect(
+        registerTransfersQuery(
+          neutronClient,
+          contractAddress,
+          connectionId,
+          query2UpdatePeriod,
+          Array(50).fill(watchedAddr2),
+        ),
+      ).rejects.toThrowError(
+        /failed to validate MsgRegisterInterchainQuery: too many transactions filters, provided=50, max=32/,
+      );
+    });
+
+    test('Should pass. register filter with 50 keys after a proposal', async () => {
+      await executeUpdateInterchainQueriesParams(
+        chainManagerAddress,
+        interchainqQuerier,
+        mainDao,
+        daoMember,
+        undefined,
+        50,
+      );
+
+      await registerTransfersQuery(
+        neutronClient,
+        contractAddress,
+        connectionId,
+        query2UpdatePeriod,
+        Array(50).fill(watchedAddr2),
+      );
+    });
+
+    test('check registered transfers query', async () => {
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 6);
+      expect(query.id).toEqual('6');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(JSON.parse(query.transactions_filter)).toEqual(
+        Array(50)
+          .fill(watchedAddr2)
+          .map((v) => ({ field: 'transfer.recipient', op: 'Eq', value: v })),
+      );
+      expect(query.connection_id).toEqual(connectionId);
+      expect(query.update_period).toEqual(query2UpdatePeriod.toString());
     });
   });
 
@@ -678,40 +866,47 @@ describe('Neutron / Interchain TX Query', () => {
     test('send amount that is more than contract allows', async () => {
       // contract tracks total amount of transfers to addresses it watches.
       const transfers = await queryTransfersNumber(
-        neutronChain,
+        neutronClient,
         contractAddress,
       );
       expect(transfers.transfers_number).toBeGreaterThan(0);
       transfersAmountBeforeSending = transfers.transfers_number;
 
-      let balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([
-        { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
-      const res = await gaiaAccount.msgSend(
+      let balances = await gaiaClient.getBalance(watchedAddr4, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr4ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
         watchedAddr4,
-        amountToAddrForth2.toString(),
+        [{ denom: COSMOS_DENOM, amount: amountToAddrForth2.toString() }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
       );
       addr4ExpectedBalance += amountToAddrForth2;
       expect(res.code).toEqual(0);
-      balances = await gaiaChain.queryBalances(watchedAddr4);
-      expect(balances.balances).toEqual([
-        { amount: addr4ExpectedBalance.toString(), denom: gaiaChain.denom },
-      ]);
+      balances = await gaiaClient.getBalance(watchedAddr4, COSMOS_DENOM);
+      expect(balances).toEqual({
+        amount: addr4ExpectedBalance.toString(),
+        denom: COSMOS_DENOM,
+      });
     });
 
     test('check that transfer has not been recorded', async () => {
-      await neutronChain.blockWaiter.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
+      await neutronClient.waitBlocks(query4UpdatePeriod * 2 + 1); // we are waiting for quite a big time just to be sure
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         watchedAddr4,
       );
       expect(deposits.transfers).toEqual([
         {
           recipient: watchedAddr4,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
           amount: (addr4ExpectedBalance - amountToAddrForth2).toString(),
         },
       ]);
@@ -719,7 +914,7 @@ describe('Neutron / Interchain TX Query', () => {
       // error. on the error result, the transfers amount previously increased in the sudo func is
       // expected to be reverted.
       const transfers = await queryTransfersNumber(
-        neutronChain,
+        neutronClient,
         contractAddress,
       );
       expect(transfers.transfers_number).toEqual(transfersAmountBeforeSending);
@@ -729,53 +924,60 @@ describe('Neutron / Interchain TX Query', () => {
   describe('update recipient and check', () => {
     const newWatchedAddr5 = 'cosmos1jy7lsk5pk38zjfnn6nt6qlaphy9uejn4hu65xa';
     it('should update recipient', async () => {
-      const res = await neutronAccount.executeContract(
-        contractAddress,
-        JSON.stringify({
-          update_interchain_query: {
-            query_id: 3,
-            new_update_period: query3UpdatePeriod,
-            new_recipient: newWatchedAddr5,
-          },
-        }),
-      );
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
+      const res = await neutronClient.execute(contractAddress, {
+        update_interchain_query: {
+          query_id: 3,
+          new_update_period: query3UpdatePeriod,
+          new_recipient: newWatchedAddr5,
+          new_keys: query.keys,
+        },
+      });
       expect(res.code).toEqual(0);
     });
     it('seems registered transfers query is updated', async () => {
-      const query = await getRegisteredQuery(neutronChain, contractAddress, 3);
-      expect(query.registered_query.id).toEqual(3);
-      expect(query.registered_query.owner).toEqual(contractAddress);
-      expect(query.registered_query.keys.length).toEqual(0);
-      expect(query.registered_query.query_type).toEqual('tx');
-      expect(query.registered_query.update_period).toEqual(query3UpdatePeriod);
-      expect(query.registered_query.transactions_filter).toEqual(
+      const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
+      expect(query.id).toEqual('3');
+      expect(query.owner).toEqual(contractAddress);
+      expect(query.keys.length).toEqual(0);
+      expect(query.query_type).toEqual('tx');
+      expect(query.update_period).toEqual(query3UpdatePeriod.toString());
+      expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
           newWatchedAddr5 +
           '"}]',
       );
-      expect(query.registered_query.connection_id).toEqual(connectionId);
+      expect(query.connection_id).toEqual(connectionId);
     });
 
     it('should handle callback on a sending to the new address', async () => {
-      const res = await gaiaAccount.msgSend(newWatchedAddr5, '10000');
+      const res = await gaiaClient.sendTokens(
+        gaiaWallet.address,
+        newWatchedAddr5,
+        [{ denom: COSMOS_DENOM, amount: '10000' }],
+        {
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+        },
+      );
       expect(res.code).toEqual(0);
       expectedIncomingTransfers++;
       await waitForTransfersAmount(
-        neutronChain,
+        neutronClient,
         contractAddress,
         expectedIncomingTransfers,
         query3UpdatePeriod * 2,
       );
       const deposits = await queryRecipientTxs(
-        neutronChain,
+        neutronClient,
         contractAddress,
         newWatchedAddr5,
       );
       expect(deposits.transfers).toMatchObject([
         {
           recipient: newWatchedAddr5,
-          sender: gaiaAccount.wallet.address.toString(),
-          denom: gaiaChain.denom,
+          sender: gaiaWallet.address,
+          denom: COSMOS_DENOM,
         },
       ]);
     });

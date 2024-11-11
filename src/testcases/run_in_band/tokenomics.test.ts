@@ -1,105 +1,115 @@
-import Long from 'long';
 import '@neutron-org/neutronjsplus';
-import {
-  WalletWrapper,
-  CosmosWrapper,
-  COSMOS_DENOM,
-  NEUTRON_DENOM,
-  TotalBurnedNeutronsAmountResponse,
-  TotalSupplyByDenomResponse,
-} from '@neutron-org/neutronjsplus/dist/cosmos';
-import { TestStateLocalCosmosTestNet } from '@neutron-org/neutronjsplus';
-import { getTreasuryContract } from '@neutron-org/neutronjsplus/dist/dao';
-import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
-
-const config = require('../../config.json');
+import { COSMOS_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
+import { inject } from 'vitest';
+import { LocalState } from '../../helpers/local_state';
+import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
+import { Registry } from '@cosmjs/proto-signing';
+import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
+import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
+import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
+import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
+import { Wallet } from '../../helpers/wallet';
+import config from '../../config.json';
 
 describe('Neutron / Tokenomics', () => {
-  let testState: TestStateLocalCosmosTestNet;
-  let neutronChain: CosmosWrapper;
-  let gaiaChain: CosmosWrapper;
-  let neutronAccount: WalletWrapper;
-  let gaiaAccount: WalletWrapper;
+  let testState: LocalState;
+  let neutronClient: SigningNeutronClient;
+  let gaiaClient: SigningStargateClient;
+  let neutronWallet: Wallet;
+  let gaiaWallet: Wallet;
   let treasuryContractAddress: string;
 
+  let bankQuerier: BankQueryClient;
+  let feeburnerQuerier: FeeburnerQueryClient;
+
   beforeAll(async () => {
-    testState = new TestStateLocalCosmosTestNet(config);
-    await testState.init();
-    neutronChain = new CosmosWrapper(
-      testState.sdk1,
-      testState.blockWaiter1,
-      NEUTRON_DENOM,
-    );
-    neutronAccount = new WalletWrapper(
-      neutronChain,
-      testState.wallets.qaNeutron.genQaWal1,
-    );
-    gaiaChain = new CosmosWrapper(
-      testState.sdk2,
-      testState.blockWaiter2,
-      COSMOS_DENOM,
-    );
-    gaiaAccount = new WalletWrapper(
-      gaiaChain,
-      testState.wallets.qaCosmos.genQaWal1,
+    testState = await LocalState.create(config, inject('mnemonics'));
+    neutronWallet = await testState.nextWallet('neutron');
+    neutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet.directwallet,
+      neutronWallet.address,
     );
 
-    treasuryContractAddress = await getTreasuryContract(neutronChain);
+    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaClient = await SigningStargateClient.connectWithSigner(
+      testState.rpcGaia,
+      gaiaWallet.directwallet,
+      { registry: new Registry(defaultRegistryTypes) },
+    );
+
+    const neutronRpcClient = await testState.rpcClient('neutron');
+    const feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
+    treasuryContractAddress = (await feeburnerQuery.params()).params
+      .treasuryAddress;
+
+    bankQuerier = new BankQueryClient(neutronRpcClient);
+    feeburnerQuerier = new FeeburnerQueryClient(neutronRpcClient);
   });
 
   describe('75% of Neutron fees are burned', () => {
     const bigFee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let burnedBefore: TotalBurnedNeutronsAmountResponse;
+    let burnedBefore: QueryTotalBurnedNeutronsAmountResponse;
 
     test('Read total burned neutrons amount', async () => {
-      burnedBefore = await neutronChain.queryTotalBurnedNeutronsAmount();
+      burnedBefore = await feeburnerQuerier.totalBurnedNeutronsAmount();
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
-        '1000',
+      await neutronClient.sendTokens(
+        testState.wallets.neutron.rly1.address,
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         bigFee,
       );
     });
 
     test('Total burned neutrons amount has increased', async () => {
-      const burnedAfter = await neutronChain.queryTotalBurnedNeutronsAmount();
+      const burnedAfter = await feeburnerQuerier.totalBurnedNeutronsAmount();
       const diff =
-        +(burnedAfter.total_burned_neutrons_amount.coin.amount || 0) -
-        +(burnedBefore.total_burned_neutrons_amount.coin.amount || 0);
+        +(burnedAfter.totalBurnedNeutronsAmount.coin.amount || 0) -
+        +(burnedBefore.totalBurnedNeutronsAmount.coin.amount || 0);
       expect(diff).toBeGreaterThanOrEqual(10e8 * 0.75);
     });
   });
 
   describe('Total supply of neutrons decreases after fee processing', () => {
     const bigFee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: (10e8).toString() }],
     };
-    let totalSupplyBefore: TotalSupplyByDenomResponse;
+    let totalSupplyBefore: QuerySupplyOfResponse;
 
     test('Read total supply', async () => {
-      totalSupplyBefore = await neutronChain.queryTotalSupplyByDenom(
-        NEUTRON_DENOM,
-      );
+      totalSupplyBefore = await bankQuerier.supplyOf({ denom: NEUTRON_DENOM });
     });
 
     test('Perform tx with a very big neutron fee', async () => {
-      await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
-        '1000',
+      await neutronClient.sendTokens(
+        testState.wallets.neutron.rly1.address,
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         bigFee,
       );
     });
 
     test('Total supply of neutrons has decreased', async () => {
-      const totalSupplyAfter = await neutronChain.queryTotalSupplyByDenom(
-        NEUTRON_DENOM,
-      );
+      const totalSupplyAfter = await bankQuerier.supplyOf({
+        denom: NEUTRON_DENOM,
+      });
       const diff =
         +(totalSupplyBefore.amount.amount || 0) -
         +(totalSupplyAfter.amount.amount || 0);
@@ -110,30 +120,37 @@ describe('Neutron / Tokenomics', () => {
   describe('NTRN fees are not sent to Treasury', () => {
     let balanceBefore: number;
     const fee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
     };
 
     test('Read Treasury balance', async () => {
-      balanceBefore = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
-        NEUTRON_DENOM,
+      balanceBefore = parseInt(
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
+        10,
       );
     });
 
     test('Perform any tx and pay with neutron fee', async () => {
-      await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
-        '1000',
+      await neutronClient.sendTokens(
+        testState.wallets.neutron.rly1.address,
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         fee,
       );
     });
 
     test("Balance of Treasury in NTRNs hasn't increased", async () => {
-      await neutronChain.blockWaiter.waitBlocks(1);
-      const balanceAfter = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
-        NEUTRON_DENOM,
+      await neutronClient.waitBlocks(1);
+      const balanceAfter = parseInt(
+        (await neutronClient.getBalance(treasuryContractAddress, NEUTRON_DENOM))
+          .amount,
+        10,
       );
       const diff = balanceAfter - balanceBefore;
       expect(diff).toEqual(0);
@@ -145,7 +162,7 @@ describe('Neutron / Tokenomics', () => {
     const ibcUatomDenom =
       'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
     const fee = {
-      gas_limit: Long.fromString('200000'),
+      gas: '200000',
       amount: [
         {
           denom: ibcUatomDenom,
@@ -155,48 +172,62 @@ describe('Neutron / Tokenomics', () => {
     };
 
     test('obtain uatom tokens', async () => {
-      await gaiaAccount.msgIBCTransfer(
-        'transfer',
-        'channel-0',
+      await gaiaClient.signAndBroadcast(
+        gaiaWallet.address,
+        [
+          {
+            typeUrl: MsgTransfer.typeUrl,
+            value: MsgTransfer.fromPartial({
+              sourcePort: 'transfer',
+              sourceChannel: 'channel-0',
+              token: { denom: COSMOS_DENOM, amount: '100000' },
+              sender: gaiaWallet.address,
+              receiver: neutronWallet.address,
+              timeoutHeight: {
+                revisionNumber: 2n,
+                revisionHeight: 100000000n,
+              },
+            }),
+          },
+        ],
         {
-          denom: COSMOS_DENOM,
-          amount: '100000',
+          gas: '200000',
+          amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
         },
-        testState.wallets.qaNeutron.genQaWal1.address.toString(),
-        { revision_number: new Long(2), revision_height: new Long(100000000) },
       );
-      await getWithAttempts(
-        neutronChain.blockWaiter,
+      await neutronClient.getWithAttempts(
         async () =>
-          neutronChain.queryBalances(
-            testState.wallets.qaNeutron.genQaWal1.address.toString(),
-          ),
-        async (balances) =>
-          balances.balances.find(
-            (balance) => balance.denom === ibcUatomDenom,
-          ) !== undefined,
+          neutronClient.getBalance(neutronWallet.address, ibcUatomDenom),
+        async (balance) => balance !== undefined,
       );
     });
 
     test('Read Treasury balance', async () => {
-      balanceBefore = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
-        ibcUatomDenom,
+      balanceBefore = parseInt(
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
+        10,
       );
     });
 
     test('Perform any tx and pay with uatom fee', async () => {
-      await neutronAccount.msgSend(
-        testState.wallets.neutron.rly1.address.toString(),
-        '1000',
+      await neutronClient.sendTokens(
+        testState.wallets.neutron.rly1.address,
+        [
+          {
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        ],
         fee,
       );
     });
 
     test('Balance of Treasury in uatoms has been increased', async () => {
-      const balanceAfter = await neutronChain.queryDenomBalance(
-        treasuryContractAddress,
-        ibcUatomDenom,
+      const balanceAfter = parseInt(
+        (await neutronClient.getBalance(treasuryContractAddress, ibcUatomDenom))
+          .amount,
+        10,
       );
       const diff = balanceAfter - balanceBefore;
       expect(diff).toBeGreaterThanOrEqual(+fee.amount[0].amount * 0.75);
