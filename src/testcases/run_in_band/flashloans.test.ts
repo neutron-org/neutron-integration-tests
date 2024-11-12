@@ -246,7 +246,7 @@ describe('Neutron / Flashloans', () => {
         const res = await neutronClient.execute(neutronFlashloansUserAddress, {
           request_loan: {
             flashloans_contract: neutronFlashloansAddress,
-            execution_mode: 1, // MODE_WITHHOLD_LOAN
+            execution_mode: 2, // MODE_RETURN_LOAN_MORE_THAN_NECESSARY
             amount: [
               {
                 denom: 'untrn',
@@ -276,7 +276,7 @@ describe('Neutron / Flashloans', () => {
         const res = await neutronClient.execute(neutronFlashloansUserAddress, {
           request_loan: {
             flashloans_contract: neutronFlashloansAddress,
-            execution_mode: 3, // MODE_WITHHOLD_LOAN
+            execution_mode: 3, // MODE_REQUEST_ANOTHER_LOAN_RECURSIVELY
             amount: [
               {
                 denom: 'untrn',
