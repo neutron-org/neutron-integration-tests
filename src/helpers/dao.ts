@@ -67,7 +67,7 @@ export const deploySubdao = async (
         },
       },
     },
-    close_proposal_on_execution_failure: false,
+    close_proposal_on_execution_failure: closeProposalOnExecutionFailure,
   };
   const proposalModuleInstantiateInfo = {
     code_id: proposeCodeId,
@@ -164,7 +164,7 @@ export const setupSubDaoTimelockSet = async (
     mockMainDao ? user : daoContracts.core.address,
     daoContracts.proposals.overrule.pre_propose.address,
     securityDaoAddr,
-    false,
+    closeProposalOnExecutionFailure,
   );
 
   const mainDaoMember = new DaoMember(

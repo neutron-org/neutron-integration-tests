@@ -81,7 +81,7 @@ describe('Neutron / Chain Manager', () => {
       neutronClient,
       mainDao.contracts.core.address,
       securityDaoAddr,
-      false,
+      true,
     );
 
     subdaoMember1 = new DaoMember(
