@@ -330,7 +330,6 @@ describe('Neutron / Chain Manager', () => {
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
         proposalId,
       );
-
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
@@ -365,7 +364,9 @@ describe('Neutron / Chain Manager', () => {
   describe('ALLOW_ONLY: change DEX parameters', () => {
     let proposalId: number;
     const newParams = {
-      fee_tiers: ['1', '2', '99'],
+      // types mixed on purpose, to check contract parser.
+      // Numeric types in neutron-std can be deserialized from both number and string
+      fee_tiers: ['1', '2', 99],
       paused: true,
       max_jits_per_block: 11,
       good_til_purge_allowance: 50000,
