@@ -373,7 +373,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('bank');
@@ -394,7 +394,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.update_period).toEqual(
         updatePeriods[queryId].toString(),
@@ -408,7 +408,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       // we expect three keys, 1 always + 2 per validator
       expect(queryResult.keys.length).toEqual(3);
@@ -427,7 +427,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(2);
       expect(queryResult.keys[0].path).toEqual('bank');
@@ -449,7 +449,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(100);
       for (let i = 0; i < queryResult.keys.length; i++) {
@@ -961,7 +961,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
@@ -1042,7 +1042,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       // XXX: I could actually check that "key" is correctly derived from contractAddress,
       //      but this requires bech32 decoding/encoding shenanigans
@@ -1148,7 +1148,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('slashing');
@@ -1232,7 +1232,7 @@ describe('Neutron / Interchain KV Query', () => {
         contractAddress,
         queryId,
       );
-      expect(queryResult.id).toEqual(queryId.toString());
+      expect(+queryResult.id).toEqual(queryId);
       expect(queryResult.owner).toEqual(contractAddress);
       expect(queryResult.keys.length).toEqual(1);
       expect(queryResult.keys[0].path).toEqual('staking');
