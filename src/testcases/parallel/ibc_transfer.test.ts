@@ -471,19 +471,13 @@ describe('Neutron / IBC transfer', () => {
           },
         });
 
-        /*
-        What is going on here. To test SudoTimeout handler functionality
-        we have to make an IBC package delivery by hermes really slowly.
-        But, actually there is no any activity on the IBC channel at this stage, as a result
-        hermes does not send any UpdateClient messages from gaia to neuron.
-        Gaia keeps building blocks and hermes knows nothing about it.
-        We get the height =N of the gaia chain, wait 15 blocks.
-        Send ibc package from neutron from gaia with timeout N+5
-        current gaia block is actually N+15, but neutron knows nothing about it, and successfully sends package
-        hermes checks height on remote chain and Timeout error occurs.
-        */
+        // to test SudoTimeout handler functionality we have to do a late IBC package delivery
+        // by hermes. We get the height =N of the gaia chain, wait 5 blocks, and send ibc package
+        // from neutron to gaia with timeout N+5. Current gaia block is N+5, but neutron knows
+        // nothing about it, and successfully sends package whereas hermes checks height on remote
+        // chain and Timeout error occurs.
         const currentHeight = await gaiaClient.getHeight();
-        await waitBlocks(15, gaiaClient);
+        await waitBlocks(5, gaiaClient);
 
         await neutronClient.execute(ibcContract, {
           send: {
