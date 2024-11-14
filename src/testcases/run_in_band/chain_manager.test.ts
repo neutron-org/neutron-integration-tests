@@ -452,7 +452,7 @@ describe('Neutron / Chain Manager', () => {
         'Proposal #3',
         'Globalfee update params proposal. Will pass',
         updateGlobalFeeParamsProposal({
-          minimum_gas_prices: [{ denom: 'untrn', amount: '0.111' }],
+          minimum_gas_prices: [{ denom: 'untrn', amount: '0.00111' }],
           bypass_min_fee_msg_types: ['/gaia.globalfee.v1beta1.MsgUpdateParams'],
           max_total_bypass_min_fee_msg_gas_usage: '12345',
         }),
@@ -479,7 +479,7 @@ describe('Neutron / Chain Manager', () => {
 
       const globalfeeParams = await globalfeeQuerier.params();
       expect(globalfeeParams.params.minimumGasPrices).toEqual([
-        { denom: 'untrn', amount: '0.111' },
+        { denom: 'untrn', amount: '0.00111' },
       ]);
       expect(globalfeeParams.params.bypassMinFeeMsgTypes).toEqual([
         '/gaia.globalfee.v1beta1.MsgUpdateParams',
