@@ -11,7 +11,8 @@ import {
 } from '../../helpers/constants';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
+import { BaseAccount } from '@neutron-org/neutronjs/src/cosmos/auth/v1beta1/auth';
 
 // just a fresh test-specific address. don't use it in other parallel test cases to avoid races
 const WATCHED_GAIA_ADDR = 'cosmos1yfhvt7uje9ztwr9mk6xnkg0thf83r2d53w38ja';
@@ -20,7 +21,7 @@ const CONNECTION_ID = 'connection-0';
 const ICQ_UPDATE_PERIOD = 5;
 
 describe(
-  'Neutron / docs / interchainqueries / howto / register KV ICQ',
+  'Neutron / docs / interchainqueries / howto / register KV ICQ with custom keys',
   {},
   () => {
     let testState: LocalState;
@@ -114,15 +115,17 @@ describe(
       });
 
       test('check ICQ submitted value result', async () => {
-        await waitBlocks(ICQ_UPDATE_PERIOD, neutronClient);
-
-        const queryResult = await neutronClient.queryContractSmart(
-          contractAddress,
-          { account: { address: WATCHED_GAIA_ADDR } },
+        await getWithAttempts(
+          neutronClient,
+          async (): Promise<BaseAccount> =>
+            await neutronClient.queryContractSmart(contractAddress, {
+              account: { address: WATCHED_GAIA_ADDR },
+            }),
+          async (response) =>
+            response.address == WATCHED_GAIA_ADDR &&
+            response.sequence == BigInt(0) &&
+            response.accountNumber != BigInt(0),
         );
-        expect(queryResult.address).toEqual(WATCHED_GAIA_ADDR);
-        expect(+queryResult.sequence).toEqual(0);
-        expect(+queryResult.account_number).not.toEqual(0);
       });
     });
   },

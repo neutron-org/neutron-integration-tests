@@ -1,7 +1,7 @@
 import config from '../../config.json';
 import { inject, RunnerTestSuite } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { Registry } from '@cosmjs/proto-signing';
+import { Registry, Coin } from '@cosmjs/proto-signing';
 import { Wallet } from '../../helpers/wallet';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import {
@@ -11,7 +11,7 @@ import {
 } from '../../helpers/constants';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { getWithAttempts } from '@neutron-org/neutronjsplus/dist/wait';
 
 // just a fresh test-specific address. don't use it in other parallel test cases to avoid races
 const WATCHED_GAIA_ADDR = 'cosmos1gdzru2fzdn7czxn89phu9ergn7v8c7zpladz6f';
@@ -114,20 +114,18 @@ describe(
       });
 
       test('check ICQ submitted value result', async () => {
-        await waitBlocks(ICQ_UPDATE_PERIOD, neutronClient);
-
-        const queryResult = await neutronClient.queryContractSmart(
-          contractAddress,
-          { balances: { address: WATCHED_GAIA_ADDR } },
+        await getWithAttempts(
+          neutronClient,
+          async (): Promise<{ coins: Coin[] }> =>
+            await neutronClient.queryContractSmart(contractAddress, {
+              balances: { address: WATCHED_GAIA_ADDR },
+            }),
+          async (response) =>
+            response.coins.length == 1 &&
+            response.coins[0].amount ==
+              WATCHED_GAIA_ADDR_BALANCE_UATOM.toString() &&
+            response.coins[0].denom == COSMOS_DENOM,
         );
-        expect(queryResult).toEqual({
-          coins: [
-            {
-              denom: COSMOS_DENOM,
-              amount: WATCHED_GAIA_ADDR_BALANCE_UATOM.toString(),
-            },
-          ],
-        });
       });
     });
   },
