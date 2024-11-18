@@ -138,7 +138,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '1220000000000000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.GoodTilCanceled,
-            max_amount_out: '',
           },
         });
         expect(res.code).toEqual(0);
@@ -170,7 +169,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '998000000000000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.ImmediateOrCancel,
-            max_amount_out: '',
           },
         });
         expect(res.code).toEqual(0);
@@ -186,7 +184,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '1220000000000000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.JustInTime,
-            max_amount_out: '',
           },
         });
         expect(res.code).toEqual(0);
@@ -204,7 +201,6 @@ describe('Neutron / dex module (grpc contract)', () => {
               Math.ceil(Date.now() / 1000) + 1000,
             ),
             order_type: LimitOrderType.GoodTilTime,
-            max_amount_out: '',
           },
         });
         expect(res.code).toEqual(0);
@@ -221,7 +217,6 @@ describe('Neutron / dex module (grpc contract)', () => {
               amount_in: '10000000',
               expiration_time: secondsToRFC3339(1),
               order_type: LimitOrderType.GoodTilTime,
-              max_amount_out: '',
             },
           }),
         ).rejects.toThrowError(
@@ -240,7 +235,6 @@ describe('Neutron / dex module (grpc contract)', () => {
               amount_in: '10',
               expiration_time: secondsToRFC3339(1),
               order_type: 10,
-              max_amount_out: '',
             },
           }),
         ).rejects.toThrowError(
@@ -259,7 +253,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '818812575700000000000000000',
             amount_in: '1000000',
             order_type: LimitOrderType.GoodTilCanceled,
-            max_amount_out: '',
           },
         });
         expect(res1.code).toEqual(0);
@@ -278,7 +271,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '1100000000000000000000000000',
             amount_in: '1000',
             order_type: LimitOrderType.ImmediateOrCancel,
-            max_amount_out: '',
           },
         });
         expect(res2.code).toEqual(0);
@@ -453,7 +445,6 @@ describe('Neutron / dex module (grpc contract)', () => {
           limit_sell_price: '818812575700000000000000000',
           amount_in: '1000000',
           order_type: LimitOrderType.GoodTilCanceled,
-          max_amount_out: '',
         },
       });
       activeTrancheKey = getEventAttributesFromTx(
@@ -472,7 +463,6 @@ describe('Neutron / dex module (grpc contract)', () => {
           limit_sell_price: '1000000000000000000000000000',
           amount_in: '1000',
           order_type: LimitOrderType.ImmediateOrCancel,
-          max_amount_out: '',
         },
       });
 
@@ -486,7 +476,6 @@ describe('Neutron / dex module (grpc contract)', () => {
           limit_sell_price: '7381675653600000000000000000',
           amount_in: '1000000',
           order_type: LimitOrderType.JustInTime,
-          max_amount_out: '',
         },
       });
       inactiveTrancheKey = getEventAttributesFromTx(
@@ -578,7 +567,7 @@ describe('Neutron / dex module (grpc contract)', () => {
           },
         },
       );
-      expect(respNoPoolData.deposits[0].total_shares).toEqual('');
+      expect(respNoPoolData.deposits[0].total_shares).toBeNull();
       expect(respNoPoolData.deposits[0].pool).toBeNull();
     });
     test('AllTickLiquidity', async () => {
@@ -739,8 +728,6 @@ describe('Neutron / dex module (grpc contract)', () => {
             limit_sell_price: '1200000000000000000000000000',
             amount_in: '10000',
             order_type: LimitOrderType.FillOrKill.toString(),
-            max_amount_out: '',
-            min_average_sell_price: '',
           },
         },
       });
