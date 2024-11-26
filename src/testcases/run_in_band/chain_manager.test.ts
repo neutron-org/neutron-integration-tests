@@ -292,6 +292,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const cronParamsBefore = await cronQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -302,6 +303,12 @@ describe('Neutron / Chain Manager', () => {
 
       const cronParams = await cronQuerier.params();
       expect(cronParams.params.limit).toEqual(42n);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(cronParamsBefore).every(
+          (key) => cronParamsBefore[key] !== cronParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -336,6 +343,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const tokenfactoryParamsBefore = await tokenfactoryQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -358,6 +366,12 @@ describe('Neutron / Chain Manager', () => {
           denomCreator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(tokenfactoryParamsBefore).every(
+          (key) => tokenfactoryParamsBefore[key] !== tokenfactoryParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -390,6 +404,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const dexParamsBefore = await dexQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -403,6 +418,12 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.paused).toEqual(true);
       expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(dexParamsBefore).every(
+          (key) => dexParamsBefore[key] !== dexParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -429,6 +450,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const dynamicfeesParamsBefore = await dynamicfeesQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -441,6 +463,12 @@ describe('Neutron / Chain Manager', () => {
       expect(dynamicfeesParams.params.ntrnPrices).toEqual([
         { denom: 'newdenom', amount: '0.5' },
       ]);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(dynamicfeesParamsBefore).every(
+          (key) => dynamicfeesParamsBefore[key] !== dynamicfeesParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -469,6 +497,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const globalfeeParamsBefore = await globalfeeQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -487,6 +516,12 @@ describe('Neutron / Chain Manager', () => {
       expect(globalfeeParams.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(
         12345n,
       );
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(globalfeeParamsBefore).every(
+          (key) => globalfeeParamsBefore[key] !== globalfeeParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -525,6 +560,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const ccvParamsBefore = await ccvQuerier.queryParams();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -568,6 +604,14 @@ describe('Neutron / Chain Manager', () => {
         nanos: 0,
         seconds: 43n,
       });
+      // field 'enabled' is readonly, and should not be changed, always equals true
+      delete ccvParamsBefore['enabled'];
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(ccvParamsBefore).every(
+          (key) => ccvParamsBefore[key] !== ccvParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
