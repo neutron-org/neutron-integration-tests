@@ -71,6 +71,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
   const watchedAddr1: string = addrFirst;
   const query1UpdatePeriod = 4;
 
+  let queryId: number;
   describe('utilise single transfers query', () => {
     test('register transfers query', async () => {
       // Top up contract address before running query
@@ -82,7 +83,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         },
       );
-      await registerTransfersQuery(
+      queryId = await registerTransfersQuery(
         neutronClient,
         contractAddress,
         connectionId,
@@ -92,8 +93,12 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     });
 
     test('check registered transfers query', async () => {
-      const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
-      expect(query.id).toEqual('1');
+      const query = await getRegisteredQuery(
+        neutronClient,
+        contractAddress,
+        queryId,
+      );
+      expect(+query.id).toEqual(queryId);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
