@@ -203,6 +203,7 @@ describe('Neutron / Chain Manager', () => {
                     paused: true,
                     max_jits_per_block: true,
                     good_til_purge_allowance: true,
+                    whitelisted_lps: true,
                   },
                 },
               ],
@@ -242,9 +243,8 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
+      const timelockedProp =
+        await subdaoMember1.supportAndExecuteProposal(proposalId);
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
@@ -287,9 +287,8 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
+      const timelockedProp =
+        await subdaoMember1.supportAndExecuteProposal(proposalId);
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
@@ -329,6 +328,10 @@ describe('Neutron / Chain Manager', () => {
       paused: true,
       max_jits_per_block: 11,
       good_til_purge_allowance: 50000,
+      whitelisted_lps: [
+        'neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf',
+        'neutron16yn2gcz24s9qwpuxvrhl3xed0pmhrgwx2mz40zrazfc0pt5kq0psucs6xl',
+      ],
     };
     beforeAll(async () => {
       proposalId = await subdaoMember1.submitUpdateParamsDexProposal(
@@ -339,9 +342,8 @@ describe('Neutron / Chain Manager', () => {
         '1000',
       );
 
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
+      const timelockedProp =
+        await subdaoMember1.supportAndExecuteProposal(proposalId);
 
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
@@ -362,6 +364,10 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.paused).toEqual(true);
       expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
+      expect(dexParams.params.whitelistedLps).toEqual([
+        'neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf',
+        'neutron16yn2gcz24s9qwpuxvrhl3xed0pmhrgwx2mz40zrazfc0pt5kq0psucs6xl',
+      ]);
     });
   });
 
