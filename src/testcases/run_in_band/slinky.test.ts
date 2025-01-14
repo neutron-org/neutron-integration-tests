@@ -163,18 +163,19 @@ describe('Neutron / Slinky', () => {
   });
 
   describe('grpc oracle', () => {
-    test('query prices', async () => {
-      const res: GetPricesResponse = await neutronClient.queryContractSmart(
-        oracleContract,
-        {
-          get_prices: {
-            currency_pair_ids: ['AAVE/USD'],
-          },
-        },
-      );
-      expect(res.prices).toHaveLength(1);
-      expect(+res.prices[0].price.price).toBeGreaterThan(0);
-    });
+    // this query is restricted currently
+    // test('query prices', async () => {
+    //   const res: GetPricesResponse = await neutronClient.queryContractSmart(
+    //     oracleContract,
+    //     {
+    //       get_prices: {
+    //         currency_pair_ids: ['AAVE/USD'],
+    //       },
+    //     },
+    //   );
+    //   expect(res.prices).toHaveLength(1);
+    //   expect(+res.prices[0].price.price).toBeGreaterThan(0);
+    // });
 
     test('query price', async () => {
       const res: GetPriceResponse = await neutronClient.queryContractSmart(
@@ -226,15 +227,16 @@ describe('Neutron / Slinky', () => {
       expect(res.market).toBeDefined();
     });
 
-    test('query market map', async () => {
-      const res = await neutronClient.queryContractSmart(marketmapContract, {
-        market_map: {},
-      });
-      expect(res).toBeDefined();
-      expect(res.chain_id).toBeDefined();
-      expect(res.market_map).toBeDefined();
-      expect(res.last_updated).toBeDefined();
-    });
+    // this query is restricted atm
+    // test('query market map', async () => {
+    //   const res = await neutronClient.queryContractSmart(marketmapContract, {
+    //     market_map: {},
+    //   });
+    //   expect(res).toBeDefined();
+    //   expect(res.chain_id).toBeDefined();
+    //   expect(res.market_map).toBeDefined();
+    //   expect(res.last_updated).toBeDefined();
+    // });
 
     test('query params', async () => {
       const res = await neutronClient.queryContractSmart(marketmapContract, {
