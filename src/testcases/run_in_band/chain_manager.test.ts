@@ -218,22 +218,6 @@ describe('Neutron / Chain Manager', () => {
                   },
                 },
                 {
-                  update_ccv_params_permission: {
-                    blocks_per_distribution_transmission: true,
-                    distribution_transmission_channel: true,
-                    provider_fee_pool_addr_str: true,
-                    ccv_timeout_period: true,
-                    transfer_timeout_period: true,
-                    consumer_redistribution_fraction: true,
-                    historical_entries: true,
-                    unbonding_period: true,
-                    soft_opt_out_threshold: true,
-                    reward_denoms: true,
-                    provider_reward_denoms: true,
-                    retry_delay_period: true,
-                  },
-                },
-                {
                   update_globalfee_params_permission: {
                     minimum_gas_prices: true,
                     bypass_min_fee_msg_types: true,
@@ -520,96 +504,6 @@ describe('Neutron / Chain Manager', () => {
       expect(
         Object.keys(globalfeeParamsBefore).every(
           (key) => globalfeeParamsBefore[key] !== globalfeeParams[key],
-        ),
-      ).toBeTrue();
-    });
-  });
-
-  describe('ALLOW_ONLY: change ccv consumer parameters', () => {
-    let proposalId: number;
-    beforeAll(async () => {
-      proposalId = await subdaoMember1.submitUpdateParamsConsumerProposal(
-        chainManagerAddress,
-        'Proposal #4',
-        'Consumer update params proposal. Will pass',
-        updateConsumerParamsProposal({
-          enabled: true,
-          blocksPerDistributionTransmission: 321n,
-          distributionTransmissionChannel: 'channel-23',
-          providerFeePoolAddrStr: chainManagerAddress,
-          ccvTimeoutPeriod: Duration.fromPartial({ seconds: 32n }),
-          transferTimeoutPeriod: Duration.fromPartial({ seconds: 23n }),
-          consumerRedistributionFraction: '0.33',
-          historicalEntries: 123n,
-          unbondingPeriod: Duration.fromPartial({ seconds: 43n }),
-          softOptOutThreshold: '0.55',
-          rewardDenoms: ['tia'],
-          providerRewardDenoms: ['tia'],
-          retryDelayPeriod: Duration.fromPartial({ seconds: 43n }),
-        }),
-        '1000',
-      );
-
-      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
-        proposalId,
-      );
-
-      expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('timelocked');
-      expect(timelockedProp.msgs).toHaveLength(1);
-    });
-
-    test('execute timelocked: success', async () => {
-      const ccvParamsBefore = await ccvQuerier.queryParams();
-      await waitSeconds(10);
-
-      await subdaoMember1.executeTimelockedProposal(proposalId);
-      console.log(
-        'subdao',
-        subdaoMember1.dao.contracts.proposals['single'].pre_propose.timelock
-          .address,
-      );
-      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
-      expect(timelockedProp.id).toEqual(proposalId);
-      expect(timelockedProp.status).toEqual('executed');
-      expect(timelockedProp.msgs).toHaveLength(1);
-
-      const ccvParams = await ccvQuerier.queryParams();
-      expect(ccvParams.params.enabled).toEqual(true);
-      expect(ccvParams.params.blocksPerDistributionTransmission).toEqual(321n);
-      expect(ccvParams.params.distributionTransmissionChannel).toEqual(
-        'channel-23',
-      );
-      expect(ccvParams.params.providerFeePoolAddrStr).toEqual(
-        chainManagerAddress,
-      );
-      expect(ccvParams.params.ccvTimeoutPeriod).toEqual({
-        nanos: 0,
-        seconds: 32n,
-      });
-      expect(ccvParams.params.transferTimeoutPeriod).toEqual({
-        nanos: 0,
-        seconds: 23n,
-      });
-      expect(ccvParams.params.consumerRedistributionFraction).toEqual('0.33');
-      expect(ccvParams.params.historicalEntries).toEqual(123n);
-      expect(ccvParams.params.unbondingPeriod).toEqual({
-        nanos: 0,
-        seconds: 43n,
-      });
-      expect(ccvParams.params.softOptOutThreshold).toEqual('0.55');
-      expect(ccvParams.params.rewardDenoms).toEqual(['tia']);
-      expect(ccvParams.params.providerRewardDenoms).toEqual(['tia']);
-      expect(ccvParams.params.retryDelayPeriod).toEqual({
-        nanos: 0,
-        seconds: 43n,
-      });
-      // field 'enabled' is readonly, and should not be changed, always equals true
-      delete ccvParamsBefore['enabled'];
-      // check that every params field before proposal execution differs from the field after proposal execution
-      expect(
-        Object.keys(ccvParamsBefore).every(
-          (key) => ccvParamsBefore[key] !== ccvParams[key],
         ),
       ).toBeTrue();
     });
