@@ -257,8 +257,8 @@ describe('Neutron / Governance', () => {
         chainManagerAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
-        '07-tendermint-2',
         '07-tendermint-1',
+        '07-tendermint-0',
       );
     });
 
@@ -741,11 +741,11 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #6', () => {
     test('check client statuses before update', async () => {
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Expired');
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-0' }))
           .status,
       ).toBe('Active');
     });
@@ -760,11 +760,11 @@ describe('Neutron / Governance', () => {
 
     test('check client statuses after update', async () => {
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Active');
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-0' }))
           .status,
       ).toBe('Active');
     });
