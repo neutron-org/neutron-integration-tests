@@ -32,7 +32,6 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { Duration } from '@neutron-org/neutronjs/google/protobuf/duration';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -534,18 +533,18 @@ describe('Neutron / Chain Manager', () => {
         'Consumer update params proposal. Will pass',
         updateConsumerParamsProposal({
           enabled: true,
-          blocksPerDistributionTransmission: 321n,
-          distributionTransmissionChannel: 'channel-23',
-          providerFeePoolAddrStr: chainManagerAddress,
-          ccvTimeoutPeriod: Duration.fromPartial({ seconds: 32n }),
-          transferTimeoutPeriod: Duration.fromPartial({ seconds: 23n }),
-          consumerRedistributionFraction: '0.33',
-          historicalEntries: 123n,
-          unbondingPeriod: Duration.fromPartial({ seconds: 43n }),
-          softOptOutThreshold: '0.55',
-          rewardDenoms: ['tia'],
-          providerRewardDenoms: ['tia'],
-          retryDelayPeriod: Duration.fromPartial({ seconds: 43n }),
+          blocks_per_distribution_transmission: 321,
+          distribution_transmission_channel: 'channel-23',
+          provider_fee_pool_addr_str: chainManagerAddress,
+          ccv_timeout_period: '32s',
+          transfer_timeout_period: '23s',
+          consumer_redistribution_fraction: '0.33',
+          historical_entries: 123,
+          unbonding_period: '43s',
+          soft_opt_out_threshold: '0.55',
+          reward_denoms: ['tia'],
+          provider_reward_denoms: ['tia'],
+          retry_delay_period: '43s',
         }),
         '1000',
       );
