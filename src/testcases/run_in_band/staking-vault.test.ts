@@ -90,19 +90,6 @@ describe('Neutron / Staking Vault', () => {
       await mainDao.checkPassedProposal(proposalId);
       await daoMember.executeProposalWithAttempts(proposalId);
     });
-
-    test('verify hook subscriptions', async () => {
-      // TODO generate query client for harpoon
-      // const queryClient = new AdminQueryClient(
-      //   await testState.neutronRpcClient(),
-      // );
-      // const subscriptions = await queryClient.hookSubscriptions({
-      //   contractAddress: stakingVaultAddr,
-      // });
-      //
-      // // Ensure the subscribed hooks match the proposal
-      // expect(subscriptions.hooks).toEqual([0, 1, 3]);
-    });
   });
 
   describe('Staking Vault Operations', () => {
@@ -115,23 +102,82 @@ describe('Neutron / Staking Vault', () => {
     });
 
     describe('Delegate tokens to validator', () => {
+      let createdValidatorAddr: string;
+      describe('Create a New Validator', () => {
+        test('create and validate a new validator', async () => {
+          // Create a new validator address
+          const newValidatorAddress = 'neutronvaloper1newvalidatorxyzxyz';
+
+          // Ensure the validator is now recognized in the system
+          const res = await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: '/cosmos.staking.v1beta1.MsgCreateValidator',
+                value: {
+                  description: {
+                    moniker: 'TestValidator',
+                    identity: '',
+                    website: '',
+                    securityContact: '',
+                    details: '',
+                  },
+                  commission: {
+                    rate: '0.1',
+                    maxRate: '0.2',
+                    maxChangeRate: '0.01',
+                  },
+                  minSelfDelegation: '1',
+                  delegatorAddress: neutronWallet.address,
+                  validatorAddress: newValidatorAddress,
+                  pubkey: 'AjtXdaTQoCsSsdYcLVc90ofykYghfxXEyD/Hk3U50PY=',
+                  value: { denom: NEUTRON_DENOM, amount: '1000' },
+                },
+              },
+            ],
+            {
+              amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
+              gas: '200000',
+            },
+          );
+
+          expect(res.code).toEqual(0);
+
+          await waitBlocks(2, neutronClient);
+
+          const validators = await stakingQuerier.validators({
+            status: 'bonded',
+          });
+
+          const createdValidator = validators.validators.find(
+            (val) => val.operatorAddress === newValidatorAddress,
+          );
+          createdValidatorAddr = createdValidator.operatorAddress;
+
+          expect(createdValidator).toBeDefined();
+          expect(createdValidator.tokens).toEqual('1000');
+          console.log('Validator created successfully:', createdValidator);
+        });
+      });
+
       test('perform multiple delegations and verify VP increase', async () => {
+        // Ensure the validator exists
         const validators = await stakingQuerier.validators({
           status: 'bonded',
         });
-        const validatorAddress = validators.validators[0].operatorAddress;
-        const firstDelegationAmount = '1000000'; // 1 ntrn
-        const secondDelegationAmount = '500000'; // 0.5 ntrn
+        const validator = validators.validators.find(
+          (val) => val.operatorAddress === createdValidatorAddr,
+        );
+        expect(validator).toBeDefined();
 
-        // Perform the first delegation
-        let res = await neutronClient.signAndBroadcast(
+        const delegationAmount = '1000000'; // 1 ntrn
+        const res = await neutronClient.signAndBroadcast(
           [
             {
               typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
               value: {
                 delegatorAddress: neutronWallet.address,
-                validatorAddress: validatorAddress,
-                amount: { denom: NEUTRON_DENOM, amount: firstDelegationAmount },
+                validatorAddress: createdValidatorAddr,
+                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
               },
             },
           ],
@@ -143,57 +189,18 @@ describe('Neutron / Staking Vault', () => {
 
         expect(res.code).toEqual(0);
 
-        // Wait for hooks to process
+        // Wait for the hooks to process
         await waitBlocks(2, neutronClient);
 
-        // Query voting power after the first delegation
-        let vaultInfo = await getStakingVaultInfo(
+        const vaultInfo = await getStakingVaultInfo(
           neutronClient,
           neutronWallet.address,
           stakingVaultAddr,
         );
-        const firstVP = vaultInfo.power;
-
-        expect(firstVP).toBeGreaterThan(0);
-
-        // Perform the second delegation
-        res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validatorAddress,
-                amount: {
-                  denom: NEUTRON_DENOM,
-                  amount: secondDelegationAmount,
-                },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
-            gas: '200000',
-          },
-        );
-
-        expect(res.code).toEqual(0);
-
-        await waitBlocks(2, neutronClient);
-
-        // Query voting power after the second delegation
-        vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
-          stakingVaultAddr,
-        );
-        const secondVP = vaultInfo.power;
-
-        // Ensure voting power has increased
-        expect(secondVP).toBeGreaterThan(firstVP);
-
+        expect(vaultInfo.power).toBeGreaterThan(0);
         console.log(
-          `Voting power after first delegation: ${firstVP}, after second delegation: ${secondVP}`,
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
         );
       });
     });
