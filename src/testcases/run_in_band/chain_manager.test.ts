@@ -13,6 +13,8 @@ import {
   updateTokenfactoryParamsProposal,
   AddSchedule,
   RemoveSchedule,
+  updateGlobalFeeParamsProposal,
+  updateConsumerParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
@@ -23,10 +25,14 @@ import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosm
 import { QueryClientImpl as TokenfactoryQueryClient } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query.rpc.Query';
 import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
+import { QueryClientImpl as DynamicfeesQueryClient } from '@neutron-org/neutronjs/neutron/dynamicfees/v1/query.rpc.Query';
+import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
+import { QueryClientImpl as CCVQueryClient } from '@neutron-org/neutronjs/interchain_security/ccv/consumer/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
+import { Duration } from '@neutron-org/neutronjs/google/protobuf/duration';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
@@ -39,6 +45,9 @@ describe('Neutron / Chain Manager', () => {
   let cronQuerier: CronQueryClient;
   let tokenfactoryQuerier: TokenfactoryQueryClient;
   let dexQuerier: DexQueryClient;
+  let dynamicfeesQuerier: DynamicfeesQueryClient;
+  let globalfeeQuerier: GlobalfeeQueryClient;
+  let ccvQuerier: CCVQueryClient;
   let upgradeQuerier: UpgradeQueryClient;
   let chainManagerAddress: string;
 
@@ -97,6 +106,9 @@ describe('Neutron / Chain Manager', () => {
     cronQuerier = new CronQueryClient(neutronRpcClient);
     dexQuerier = new DexQueryClient(neutronRpcClient);
     upgradeQuerier = new UpgradeQueryClient(neutronRpcClient);
+    dynamicfeesQuerier = new DynamicfeesQueryClient(neutronRpcClient);
+    globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
+    ccvQuerier = new CCVQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
@@ -205,6 +217,18 @@ describe('Neutron / Chain Manager', () => {
                     good_til_purge_allowance: true,
                   },
                 },
+                {
+                  update_globalfee_params_permission: {
+                    minimum_gas_prices: true,
+                    bypass_min_fee_msg_types: true,
+                    max_total_bypass_min_fee_msg_gas_usage: true,
+                  },
+                },
+                {
+                  update_dynamicfees_params_permission: {
+                    ntrn_prices: true,
+                  },
+                },
               ],
             },
           },
@@ -252,6 +276,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const cronParamsBefore = await cronQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -262,6 +287,12 @@ describe('Neutron / Chain Manager', () => {
 
       const cronParams = await cronQuerier.params();
       expect(cronParams.params.limit).toEqual(42n);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(cronParamsBefore).every(
+          (key) => cronParamsBefore[key] !== cronParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
@@ -290,13 +321,13 @@ describe('Neutron / Chain Manager', () => {
       const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
         proposalId,
       );
-
       expect(timelockedProp.id).toEqual(proposalId);
       expect(timelockedProp.status).toEqual('timelocked');
       expect(timelockedProp.msgs).toHaveLength(1);
     });
 
     test('execute timelocked: success', async () => {
+      const tokenfactoryParamsBefore = await tokenfactoryQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -319,13 +350,21 @@ describe('Neutron / Chain Manager', () => {
           denomCreator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
         },
       ]);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(tokenfactoryParamsBefore).every(
+          (key) => tokenfactoryParamsBefore[key] !== tokenfactoryParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
   describe('ALLOW_ONLY: change DEX parameters', () => {
     let proposalId: number;
     const newParams = {
-      fee_tiers: [1, 2, 99],
+      // types mixed on purpose, to check contract parser.
+      // Numeric types in neutron-std can be deserialized from both number and string
+      fee_tiers: ['1', '2', 99],
       paused: true,
       max_jits_per_block: 11,
       good_til_purge_allowance: 50000,
@@ -349,6 +388,7 @@ describe('Neutron / Chain Manager', () => {
     });
 
     test('execute timelocked: success', async () => {
+      const dexParamsBefore = await dexQuerier.params();
       await waitSeconds(10);
 
       await subdaoMember1.executeTimelockedProposal(proposalId);
@@ -362,6 +402,110 @@ describe('Neutron / Chain Manager', () => {
       expect(dexParams.params.paused).toEqual(true);
       expect(dexParams.params.maxJitsPerBlock).toEqual(11n);
       expect(dexParams.params.goodTilPurgeAllowance).toEqual(50000n);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(dexParamsBefore).every(
+          (key) => dexParamsBefore[key] !== dexParams[key],
+        ),
+      ).toBeTrue();
+    });
+  });
+
+  describe('ALLOW_ONLY: change Dynamicfees parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitDynamicfeesChangeParamsProposal(
+        chainManagerAddress,
+        'Proposal #2',
+        'Dynamicfees update params proposal. Will pass',
+        '1000',
+        {
+          ntrn_prices: [{ denom: 'newdenom', amount: '0.5' }],
+        },
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      const dynamicfeesParamsBefore = await dynamicfeesQuerier.params();
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const dynamicfeesParams = await dynamicfeesQuerier.params();
+      expect(dynamicfeesParams.params.ntrnPrices).toEqual([
+        { denom: 'newdenom', amount: '0.5' },
+      ]);
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(dynamicfeesParamsBefore).every(
+          (key) => dynamicfeesParamsBefore[key] !== dynamicfeesParams[key],
+        ),
+      ).toBeTrue();
+    });
+  });
+
+  describe('ALLOW_ONLY: change Globalfee parameters', () => {
+    let proposalId: number;
+    beforeAll(async () => {
+      proposalId = await subdaoMember1.submitUpdateParamsGlobalfeeProposal(
+        chainManagerAddress,
+        'Proposal #3',
+        'Globalfee update params proposal. Will pass',
+        updateGlobalFeeParamsProposal({
+          minimum_gas_prices: [{ denom: 'untrn', amount: '0.00111' }],
+          bypass_min_fee_msg_types: ['/gaia.globalfee.v1beta1.MsgUpdateParams'],
+          max_total_bypass_min_fee_msg_gas_usage: '12345',
+        }),
+        '1000',
+      );
+
+      const timelockedProp = await subdaoMember1.supportAndExecuteProposal(
+        proposalId,
+      );
+
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('timelocked');
+      expect(timelockedProp.msgs).toHaveLength(1);
+    });
+
+    test('execute timelocked: success', async () => {
+      const globalfeeParamsBefore = await globalfeeQuerier.params();
+      await waitSeconds(10);
+
+      await subdaoMember1.executeTimelockedProposal(proposalId);
+      const timelockedProp = await subDao.getTimelockedProposal(proposalId);
+      expect(timelockedProp.id).toEqual(proposalId);
+      expect(timelockedProp.status).toEqual('executed');
+      expect(timelockedProp.msgs).toHaveLength(1);
+
+      const globalfeeParams = await globalfeeQuerier.params();
+      expect(globalfeeParams.params.minimumGasPrices).toEqual([
+        { denom: 'untrn', amount: '0.00111' },
+      ]);
+      expect(globalfeeParams.params.bypassMinFeeMsgTypes).toEqual([
+        '/gaia.globalfee.v1beta1.MsgUpdateParams',
+      ]);
+      expect(globalfeeParams.params.maxTotalBypassMinFeeMsgGasUsage).toEqual(
+        12345n,
+      );
+      // check that every params field before proposal execution differs from the field after proposal execution
+      expect(
+        Object.keys(globalfeeParamsBefore).every(
+          (key) => globalfeeParamsBefore[key] !== globalfeeParams[key],
+        ),
+      ).toBeTrue();
     });
   });
 
