@@ -1,0 +1,18 @@
+# syntax=docker/dockerfile:1
+
+FROM golang:1.22-bullseye
+RUN apt-get update && apt-get install -y jq xxd
+EXPOSE 26656 26657 1317 9090
+COPY --from=app . /opt/neutron
+COPY --from=scripts . /opt/scripts
+RUN cd /opt/neutron && make install-test-binary
+WORKDIR /opt/neutron
+ARG PERSISTENT_PEER
+ENV PERSISTENT_PEER=${PERSISTENT_PEER}
+ENV FEEMARKET_ENABLED=false
+RUN bash /opt/scripts/2_init_genesis.sh && bash /opt/scripts/3_update-genesis.sh && bash /opt/scripts/4_update-config.sh
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD \
+    curl -f http://127.0.0.1:1317/cosmos/base/tendermint/v1beta1/blocks/1 >/dev/null 2>&1 || exit 1
+
+CMD bash /opt/scripts/enable-oracle.sh && bash /opt/scripts/start.sh
