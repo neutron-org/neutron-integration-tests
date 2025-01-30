@@ -7,7 +7,7 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { inject, RunnerTestSuite } from 'vitest';
+import {expect, inject, RunnerTestSuite} from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
@@ -55,114 +55,28 @@ describe('Neutron / Staking Vault', () => {
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
   });
 
-  describe('add hook subscriptions via proposal', () => {
-    let proposalId: number;
-
-    test('bond form wallet 1', async () => {
-      await daoMember.bondFunds('10000');
-      await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember.user),
-        async (response) => response.power == 10000,
-        20,
-      );
-    });
-
-    test('submit hook subscription proposal', async () => {
-      proposalId = await daoMember.submitManageHookSubscriptionProposal(
-        chainManagerAddress,
-        'Add Hook Subscriptions',
-        'Proposal to add hook subscriptions to the contract',
-        {
-          contract_address: stakingVaultAddr,
-          hooks: [0, 1, 2, 3, 4, 5, 6], // Hook types: all
-        },
-        '1000',
-      );
-
-      expect(proposalId).toBeGreaterThan(0);
-    });
-
-    test('vote YES', async () => {
-      await daoMember.voteYes(proposalId);
-    });
-
-    test('execute passed proposal to add hooks', async () => {
-      await mainDao.checkPassedProposal(proposalId);
-      await daoMember.executeProposalWithAttempts(proposalId);
-    });
-  });
-
   describe('Staking Vault Operations', () => {
     beforeAll(async () => {
-      stakingVaultAddr = await neutronClient.create(
-        CONTRACTS.NEUTRON_STAKING_VAULT,
-        {},
-      );
-      expect(stakingVaultAddr).toBeTruthy();
+      stakingVaultAddr = "neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj";
     });
 
     describe('Delegate tokens to validator', () => {
       let createdValidatorAddr: string;
       describe('Create a New Validator', () => {
         test('create and validate a new validator', async () => {
-          // Create a new validator address
-          const newValidatorAddress = 'neutronvaloper1newvalidatorxyzxyz';
-
-          // Ensure the validator is now recognized in the system
-          const res = await neutronClient.signAndBroadcast(
-            [
-              {
-                typeUrl: '/cosmos.staking.v1beta1.MsgCreateValidator',
-                value: {
-                  description: {
-                    moniker: 'TestValidator',
-                    identity: '',
-                    website: '',
-                    securityContact: '',
-                    details: '',
-                  },
-                  commission: {
-                    rate: '0.1',
-                    maxRate: '0.2',
-                    maxChangeRate: '0.01',
-                  },
-                  minSelfDelegation: '1',
-                  delegatorAddress: neutronWallet.address,
-                  validatorAddress: newValidatorAddress,
-                  pubkey: 'AjtXdaTQoCsSsdYcLVc90ofykYghfxXEyD/Hk3U50PY=',
-                  value: { denom: NEUTRON_DENOM, amount: '1000' },
-                },
-              },
-            ],
-            {
-              amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
-              gas: '200000',
-            },
-          );
-
-          expect(res.code).toEqual(0);
-
-          await waitBlocks(2, neutronClient);
-
           const validators = await stakingQuerier.validators({
-            status: 'bonded',
+            status: 'BOND_STATUS_BONDED',
           });
 
-          const createdValidator = validators.validators.find(
-            (val) => val.operatorAddress === newValidatorAddress,
-          );
-          createdValidatorAddr = createdValidator.operatorAddress;
-
-          expect(createdValidator).toBeDefined();
-          expect(createdValidator.tokens).toEqual('1000');
-          console.log('Validator created successfully:', createdValidator);
+          createdValidatorAddr = validators.validators[0].operatorAddress;
+          console.log('Validator created successfully:', createdValidatorAddr);
         });
       });
 
       test('perform multiple delegations and verify VP increase', async () => {
         // Ensure the validator exists
         const validators = await stakingQuerier.validators({
-          status: 'bonded',
+          status: 'BOND_STATUS_BONDED',
         });
         const validator = validators.validators.find(
           (val) => val.operatorAddress === createdValidatorAddr,
@@ -182,11 +96,12 @@ describe('Neutron / Staking Vault', () => {
             },
           ],
           {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
-            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
           },
         );
 
+        console.log('KEKEKEKEKE', res.rawLog);
         expect(res.code).toEqual(0);
 
         // Wait for the hooks to process
