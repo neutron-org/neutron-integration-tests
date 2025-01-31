@@ -24,6 +24,8 @@ describe('Neutron / Staking Vault', () => {
   let chainManagerAddress: string;
   let stakingQuerier: StakingQueryClient;
 
+  let validatorSelfDelegation: number;
+
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
@@ -53,6 +55,8 @@ describe('Neutron / Staking Vault', () => {
     const admins = await queryClient.admins();
     chainManagerAddress = admins.admins[0];
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
+
+    validatorSelfDelegation = 1000000;
   });
 
   describe('Staking Vault Operations', () => {
@@ -113,6 +117,9 @@ describe('Neutron / Staking Vault', () => {
           stakingVaultAddr,
         );
         expect(vaultInfo.power).toEqual(+delegationAmount);
+        expect(vaultInfo.totalPower).toEqual(
+          +delegationAmount + validatorSelfDelegation,
+        );
         console.log(
           'Delegation successful. Updated voting power:',
           vaultInfo.power,
@@ -146,6 +153,91 @@ describe('Neutron / Staking Vault', () => {
           stakingVaultAddr,
         );
         expect(vaultInfo.power).toEqual(+delegationAmount * 2);
+        expect(vaultInfo.totalPower).toEqual(
+          delegationAmount * 2 + validatorSelfDelegation,
+        );
+        console.log(
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+      });
+      test('perform undelegations and verify VP decrease', async () => {
+        // Ensure the validator exists
+        const validators = await stakingQuerier.validators({
+          status: 'BOND_STATUS_BONDED',
+        });
+        const validator = validators.validators.find(
+          (val) => val.operatorAddress === createdValidatorAddr,
+        );
+        expect(validator).toBeDefined();
+
+        const undelegationAmount = '1000000'; // 1 ntrn
+        let res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorAddress: createdValidatorAddr,
+                amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        let vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(+undelegationAmount);
+        expect(vaultInfo.totalPower).toEqual(
+          +undelegationAmount + validatorSelfDelegation,
+        );
+        console.log(
+          'Unelegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+
+        res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorAddress: createdValidatorAddr,
+                amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        console.log(res.rawLog);
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(0);
+        expect(vaultInfo.totalPower).toEqual(validatorSelfDelegation);
         console.log(
           'Delegation successful. Updated voting power:',
           vaultInfo.power,
