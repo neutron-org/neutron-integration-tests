@@ -7,7 +7,7 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import {expect, inject, RunnerTestSuite} from 'vitest';
+import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
@@ -57,7 +57,8 @@ describe('Neutron / Staking Vault', () => {
 
   describe('Staking Vault Operations', () => {
     beforeAll(async () => {
-      stakingVaultAddr = "neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj";
+      stakingVaultAddr =
+        'neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj';
     });
 
     describe('Delegate tokens to validator', () => {
@@ -84,7 +85,7 @@ describe('Neutron / Staking Vault', () => {
         expect(validator).toBeDefined();
 
         const delegationAmount = '1000000'; // 1 ntrn
-        const res = await neutronClient.signAndBroadcast(
+        let res = await neutronClient.signAndBroadcast(
           [
             {
               typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
@@ -101,18 +102,50 @@ describe('Neutron / Staking Vault', () => {
           },
         );
 
-        console.log('KEKEKEKEKE', res.rawLog);
         expect(res.code).toEqual(0);
 
         // Wait for the hooks to process
         await waitBlocks(2, neutronClient);
 
-        const vaultInfo = await getStakingVaultInfo(
+        let vaultInfo = await getStakingVaultInfo(
           neutronClient,
           neutronWallet.address,
           stakingVaultAddr,
         );
-        expect(vaultInfo.power).toBeGreaterThan(0);
+        expect(vaultInfo.power).toEqual(+delegationAmount);
+        console.log(
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+
+        res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorAddress: createdValidatorAddr,
+                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(+delegationAmount * 2);
         console.log(
           'Delegation successful. Updated voting power:',
           vaultInfo.power,
@@ -147,8 +180,8 @@ const getStakingVaultInfo = async (
 
   return {
     height: height,
-    power: +power.power,
-    totalPower: +totalPower.power,
+    power: +power,
+    totalPower: +totalPower,
   };
 };
 
