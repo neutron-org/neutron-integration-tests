@@ -225,7 +225,6 @@ describe('Neutron / Staking Vault', () => {
           },
         );
 
-        console.log(res.rawLog);
         expect(res.code).toEqual(0);
 
         // Wait for the hooks to process
