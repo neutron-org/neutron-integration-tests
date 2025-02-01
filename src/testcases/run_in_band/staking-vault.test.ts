@@ -189,7 +189,7 @@ describe('Neutron / Staking Vault', () => {
             validator2SelfDelegation,
         );
         console.log(
-          'Unelegation successful. Updated voting power:',
+          'Undelegation successful. Updated voting power:',
           vaultInfo.power,
         );
 
@@ -225,7 +225,7 @@ describe('Neutron / Staking Vault', () => {
           validator1SelfDelegation + validator2SelfDelegation,
         );
         console.log(
-          'Delegation successful. Updated voting power:',
+          'Undelegation successful. Updated voting power:',
           vaultInfo.power,
         );
       });
@@ -308,7 +308,7 @@ describe('Neutron / Staking Vault', () => {
             validator2SelfDelegation,
         );
         console.log(
-          'Delegation successful. Updated voting power:',
+          'Redelegation successful. Updated voting power:',
           vaultInfo.power,
         );
 
@@ -352,7 +352,7 @@ describe('Neutron / Staking Vault', () => {
             validator2SelfDelegation,
         );
         console.log(
-          'Delegation successful. Updated voting power:',
+          'Redelegation successful. Updated voting power:',
           vaultInfo.power,
         );
       });
