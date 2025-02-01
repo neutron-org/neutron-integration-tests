@@ -18,13 +18,14 @@ describe('Neutron / Staking Vault', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
   let neutronWallet: Wallet;
-  let daoMember: DaoMember;
-  let mainDao: Dao;
   let stakingVaultAddr: string;
-  let chainManagerAddress: string;
   let stakingQuerier: StakingQueryClient;
 
+  let validator1Addr: string;
+  let validator2Addr: string;
+
   let validator1SelfDelegation: number;
+  let validator2SelfDelegation: number;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
@@ -37,26 +38,8 @@ describe('Neutron / Staking Vault', () => {
     );
 
     const neutronRpcClient = await testState.neutronRpcClient();
-    const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient,
-      neutronRpcClient,
-    );
-    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
 
-    mainDao = new Dao(neutronClient, daoContracts);
-    daoMember = new DaoMember(
-      mainDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
-
-    const queryClient = new AdminQueryClient(neutronRpcClient);
-    const admins = await queryClient.admins();
-    chainManagerAddress = admins.admins[0];
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
-
-    validator1SelfDelegation = 110000000;
   });
 
   describe('Staking Vault Operations', () => {
@@ -65,29 +48,33 @@ describe('Neutron / Staking Vault', () => {
         'neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj';
     });
 
-    describe('Delegate tokens to validator', () => {
-      let createdValidatorAddr: string;
-      describe('Create a New Validator', () => {
+    describe('Delegate/Undelegate/Redelegate tokens to validator', () => {
+      describe('query validators', () => {
         test('create and validate a new validator', async () => {
           const validators = await stakingQuerier.validators({
             status: 'BOND_STATUS_BONDED',
           });
 
-          createdValidatorAddr = validators.validators[0].operatorAddress;
-          console.log('Validator created successfully:', createdValidatorAddr);
+          validator1Addr = validators.validators[0].operatorAddress;
+          validator1SelfDelegation = +validators.validators[0].tokens;
+
+          validator2Addr = validators.validators[1].operatorAddress;
+          validator2SelfDelegation = +validators.validators[1].tokens;
+
+          console.log(
+            'Validator1 created successfully:',
+            validator1Addr,
+            validator1SelfDelegation,
+          );
+          console.log(
+            'Validator2 created successfully:',
+            validator2Addr,
+            validator2SelfDelegation,
+          );
         });
       });
 
       test('perform multiple delegations and verify VP increase', async () => {
-        // Ensure the validator exists
-        const validators = await stakingQuerier.validators({
-          status: 'BOND_STATUS_BONDED',
-        });
-        const validator = validators.validators.find(
-          (val) => val.operatorAddress === createdValidatorAddr,
-        );
-        expect(validator).toBeDefined();
-
         const delegationAmount = '1000000'; // 1 ntrn
         let res = await neutronClient.signAndBroadcast(
           [
@@ -95,7 +82,7 @@ describe('Neutron / Staking Vault', () => {
               typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
               value: {
                 delegatorAddress: neutronWallet.address,
-                validatorAddress: createdValidatorAddr,
+                validatorAddress: validator1Addr,
                 amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
               },
             },
@@ -118,7 +105,9 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+delegationAmount);
         expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount + validator1SelfDelegation,
+          +delegationAmount +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
         );
         console.log(
           'Delegation successful. Updated voting power:',
@@ -131,7 +120,7 @@ describe('Neutron / Staking Vault', () => {
               typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
               value: {
                 delegatorAddress: neutronWallet.address,
-                validatorAddress: createdValidatorAddr,
+                validatorAddress: validator1Addr,
                 amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
               },
             },
@@ -154,7 +143,9 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+delegationAmount * 2);
         expect(vaultInfo.totalPower).toEqual(
-          delegationAmount * 2 + validator1SelfDelegation,
+          delegationAmount * 2 +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
         );
         console.log(
           'Delegation successful. Updated voting power:',
@@ -167,7 +158,7 @@ describe('Neutron / Staking Vault', () => {
           status: 'BOND_STATUS_BONDED',
         });
         const validator = validators.validators.find(
-          (val) => val.operatorAddress === createdValidatorAddr,
+          (val) => val.operatorAddress === validator1Addr,
         );
         expect(validator).toBeDefined();
 
@@ -178,7 +169,7 @@ describe('Neutron / Staking Vault', () => {
               typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
               value: {
                 delegatorAddress: neutronWallet.address,
-                validatorAddress: createdValidatorAddr,
+                validatorAddress: validator1Addr,
                 amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
               },
             },
@@ -201,7 +192,9 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+undelegationAmount);
         expect(vaultInfo.totalPower).toEqual(
-          +undelegationAmount + validator1SelfDelegation,
+          +undelegationAmount +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
         );
         console.log(
           'Unelegation successful. Updated voting power:',
@@ -214,7 +207,7 @@ describe('Neutron / Staking Vault', () => {
               typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
               value: {
                 delegatorAddress: neutronWallet.address,
-                validatorAddress: createdValidatorAddr,
+                validatorAddress: validator1Addr,
                 amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
               },
             },
@@ -236,7 +229,9 @@ describe('Neutron / Staking Vault', () => {
           stakingVaultAddr,
         );
         expect(vaultInfo.power).toEqual(0);
-        expect(vaultInfo.totalPower).toEqual(validator1SelfDelegation);
+        expect(vaultInfo.totalPower).toEqual(
+          validator1SelfDelegation + validator2SelfDelegation,
+        );
         console.log(
           'Delegation successful. Updated voting power:',
           vaultInfo.power,
