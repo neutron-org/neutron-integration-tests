@@ -1,4 +1,6 @@
 services:
+
+  # PAIR 1 -----------------------
   neutron-node:
     image: neutron-node
     container_name: neutron-node
@@ -12,9 +14,46 @@ services:
     environment:
       - RUN_BACKGROUND=0
       - ORACLE_ADDRESS=oracle:8080
-      - FEEMARKET_ENABLED=false
+      - CHAIN_HOME=./data/test-1/node-1/
     networks:
       - neutron-testing
+
+  oracle:
+    image: skip-mev/slinky-e2e-oracle
+    entrypoint: [
+      "slinky",
+      "--market-map-endpoint", "neutron-node:9090",
+      ]
+    ports:
+      - "8080:8080" # main oracle port
+      - "8002:8002" # oracle metrics port
+    networks:
+      - neutron-testing
+  # PAIR 1 ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+  # PAIR 2 -------------------------
+  neutron-node-1:
+    image: neutron-node
+    container_name: neutron-node-1
+    volumes:
+      - data:/opt/neutron/data
+    environment:
+      - RUN_BACKGROUND=0
+      - ORACLE_ADDRESS=oracle-1:8080
+      - CHAIN_HOME=./data/test-1/node-2/
+    networks:
+      - neutron-testing
+
+  oracle-1:
+    image: skip-mev/slinky-e2e-oracle
+    entrypoint: [
+      "slinky",
+      "--market-map-endpoint", "neutron-node-1:9090",
+      ]
+    networks:
+      - neutron-testing
+  # PAIR 2 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
   gaia-node:
     image: gaia-node:latest
@@ -32,6 +71,7 @@ services:
       - STAKEDENOM=uatom
       - ALLOW_ICA_EXEC=yes
       - RUN_BACKGROUND=0
+      - CHAIN_HOME=./data/test-2/
     networks:
       - neutron-testing
 
@@ -79,18 +119,6 @@ services:
       - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
       - RELAYER_LISTEN_ADDR=0.0.0.0:9999
       - LOGGER_LEVEL=debug
-    networks:
-      - neutron-testing
-
-  oracle:
-    image: skip-mev/slinky-e2e-oracle
-    entrypoint: [
-      "slinky",
-      "--market-map-endpoint", "neutron-node:9090",
-      ]
-    ports:
-      - "8080:8080" # main oracle port
-      - "8002:8002" # oracle metrics port
     networks:
       - neutron-testing
 
