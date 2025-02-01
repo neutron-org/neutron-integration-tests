@@ -27,6 +27,9 @@ describe('Neutron / Staking Vault', () => {
   let validator1SelfDelegation: number;
   let validator2SelfDelegation: number;
 
+  const delegationAmount = '1000000'; // 1 ntrn
+  const undelegationAmount = '1000000'; // 1 ntrn
+
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
@@ -50,7 +53,7 @@ describe('Neutron / Staking Vault', () => {
 
     describe('Delegate/Undelegate/Redelegate tokens to validator', () => {
       describe('query validators', () => {
-        test('create and validate a new validator', async () => {
+        test('query validators', async () => {
           const validators = await stakingQuerier.validators({
             status: 'BOND_STATUS_BONDED',
           });
@@ -75,7 +78,6 @@ describe('Neutron / Staking Vault', () => {
       });
 
       test('perform multiple delegations and verify VP increase', async () => {
-        const delegationAmount = '1000000'; // 1 ntrn
         let res = await neutronClient.signAndBroadcast(
           [
             {
@@ -153,16 +155,6 @@ describe('Neutron / Staking Vault', () => {
         );
       });
       test('perform undelegations and verify VP decrease', async () => {
-        // Ensure the validator exists
-        const validators = await stakingQuerier.validators({
-          status: 'BOND_STATUS_BONDED',
-        });
-        const validator = validators.validators.find(
-          (val) => val.operatorAddress === validator1Addr,
-        );
-        expect(validator).toBeDefined();
-
-        const undelegationAmount = '1000000'; // 1 ntrn
         let res = await neutronClient.signAndBroadcast(
           [
             {
@@ -231,6 +223,133 @@ describe('Neutron / Staking Vault', () => {
         expect(vaultInfo.power).toEqual(0);
         expect(vaultInfo.totalPower).toEqual(
           validator1SelfDelegation + validator2SelfDelegation,
+        );
+        console.log(
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+      });
+      test('perform redelegations and verify VP does not change', async () => {
+        let res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorAddress: validator1Addr,
+                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        let vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(+delegationAmount);
+        expect(vaultInfo.totalPower).toEqual(
+          +delegationAmount +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
+        );
+        console.log(
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+
+        // do first part of the redelegation, VP must be the same
+        res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorSrcAddress: validator1Addr,
+                validatorDstAddress: validator2Addr,
+                amount: {
+                  denom: NEUTRON_DENOM,
+                  amount: (delegationAmount / 2).toString(),
+                },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        console.log(res.rawLog);
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(+delegationAmount);
+        expect(vaultInfo.totalPower).toEqual(
+          +delegationAmount +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
+        );
+        console.log(
+          'Delegation successful. Updated voting power:',
+          vaultInfo.power,
+        );
+
+        // do the second part of the redelegation, VP must be the same
+        res = await neutronClient.signAndBroadcast(
+          [
+            {
+              typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+              value: {
+                delegatorAddress: neutronWallet.address,
+                validatorSrcAddress: validator1Addr,
+                validatorDstAddress: validator2Addr,
+                amount: {
+                  denom: NEUTRON_DENOM,
+                  amount: (delegationAmount / 2).toString(),
+                },
+              },
+            },
+          ],
+          {
+            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+            gas: '2000000',
+          },
+        );
+
+        console.log(res.rawLog);
+        expect(res.code).toEqual(0);
+
+        // Wait for the hooks to process
+        await waitBlocks(2, neutronClient);
+
+        vaultInfo = await getStakingVaultInfo(
+          neutronClient,
+          neutronWallet.address,
+          stakingVaultAddr,
+        );
+        expect(vaultInfo.power).toEqual(+delegationAmount);
+        expect(vaultInfo.totalPower).toEqual(
+          +delegationAmount +
+            validator1SelfDelegation +
+            validator2SelfDelegation,
         );
         console.log(
           'Delegation successful. Updated voting power:',
