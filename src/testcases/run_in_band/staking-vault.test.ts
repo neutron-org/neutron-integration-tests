@@ -24,7 +24,7 @@ describe('Neutron / Staking Vault', () => {
   let chainManagerAddress: string;
   let stakingQuerier: StakingQueryClient;
 
-  let validatorSelfDelegation: number;
+  let validator1SelfDelegation: number;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
@@ -56,7 +56,7 @@ describe('Neutron / Staking Vault', () => {
     chainManagerAddress = admins.admins[0];
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
 
-    validatorSelfDelegation = 1000000;
+    validator1SelfDelegation = 110000000;
   });
 
   describe('Staking Vault Operations', () => {
@@ -118,7 +118,7 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+delegationAmount);
         expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount + validatorSelfDelegation,
+          +delegationAmount + validator1SelfDelegation,
         );
         console.log(
           'Delegation successful. Updated voting power:',
@@ -154,7 +154,7 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+delegationAmount * 2);
         expect(vaultInfo.totalPower).toEqual(
-          delegationAmount * 2 + validatorSelfDelegation,
+          delegationAmount * 2 + validator1SelfDelegation,
         );
         console.log(
           'Delegation successful. Updated voting power:',
@@ -201,7 +201,7 @@ describe('Neutron / Staking Vault', () => {
         );
         expect(vaultInfo.power).toEqual(+undelegationAmount);
         expect(vaultInfo.totalPower).toEqual(
-          +undelegationAmount + validatorSelfDelegation,
+          +undelegationAmount + validator1SelfDelegation,
         );
         console.log(
           'Unelegation successful. Updated voting power:',
@@ -236,7 +236,7 @@ describe('Neutron / Staking Vault', () => {
           stakingVaultAddr,
         );
         expect(vaultInfo.power).toEqual(0);
-        expect(vaultInfo.totalPower).toEqual(validatorSelfDelegation);
+        expect(vaultInfo.totalPower).toEqual(validator1SelfDelegation);
         console.log(
           'Delegation successful. Updated voting power:',
           vaultInfo.power,
