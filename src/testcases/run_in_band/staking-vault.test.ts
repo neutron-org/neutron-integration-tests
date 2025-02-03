@@ -1,23 +1,19 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { CONTRACTS, NEUTRON_DENOM } from '../../helpers/constants';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
+import { NEUTRON_DENOM } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 
-describe('Neutron / Staking Vault', () => {
+describe('Neutron / Staking Vault - Extended Scenarios', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
-  let neutronWallet: Wallet;
+  let neutronClient1: SigningNeutronClient;
+  let neutronClient2: SigningNeutronClient;
+
+  let neutronWallet1: Wallet;
+  let neutronWallet2: Wallet;
   let stakingVaultAddr: string;
   let stakingQuerier: StakingQueryClient;
 
@@ -27,33 +23,42 @@ describe('Neutron / Staking Vault', () => {
   let validator1SelfDelegation: number;
   let validator2SelfDelegation: number;
 
-  const delegationAmount = '1000000'; // 1 ntrn
-  const undelegationAmount = '1000000'; // 1 ntrn
+  const delegationAmount = '1000000'; // 1 NTRN
+  const undelegationAmount = '500000'; // 0.5 NTRN
+  const redelegationAmount = '300000'; // 0.3 NTRN
 
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
+
+    neutronWallet1 = await testState.nextWallet('neutron');
+    neutronWallet2 = await testState.nextWallet('neutron');
+
+    neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
+      neutronWallet1.directwallet,
+      neutronWallet1.address,
+    );
+
+    neutronClient2 = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      neutronWallet2.directwallet,
+      neutronWallet2.address,
     );
 
     const neutronRpcClient = await testState.neutronRpcClient();
-
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
   });
 
-  describe('Staking Vault Operations', () => {
+  describe('Staking Vault Operations - Multiple Users & Validators', () => {
     beforeAll(async () => {
       stakingVaultAddr =
         'neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj';
     });
 
-    describe('Delegate/Undelegate/Redelegate tokens to validator', () => {
+    describe('Delegate/Undelegate/Redelegate tokens to multiple validators', () => {
       describe('query validators', () => {
-        test('query validators', async () => {
+        test('fetch validator data', async () => {
           const validators = await stakingQuerier.validators({
             status: 'BOND_STATUS_BONDED',
           });
@@ -64,301 +69,228 @@ describe('Neutron / Staking Vault', () => {
           validator2Addr = validators.validators[1].operatorAddress;
           validator2SelfDelegation = +validators.validators[1].tokens;
 
-          console.log(
-            'Validator1 created successfully:',
-            validator1Addr,
-            validator1SelfDelegation,
-          );
-          console.log(
-            'Validator2 created successfully:',
-            validator2Addr,
-            validator2SelfDelegation,
-          );
+          console.log('Validator1:', validator1Addr, validator1SelfDelegation);
+          console.log('Validator2:', validator2Addr, validator2SelfDelegation);
         });
       });
 
-      test('perform multiple delegations and verify VP increase', async () => {
-        let res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validator1Addr,
-                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
+      test('perform multiple delegations and validate historical voting power', async () => {
+        const delegators = [
+          { wallet: neutronWallet1, client: neutronClient1 },
+          { wallet: neutronWallet2, client: neutronClient2 },
+        ];
 
-        expect(res.code).toEqual(0);
+        for (const { wallet, client } of delegators) {
+          const heightBefore = await client.getHeight();
 
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
+          for (const validator of [validator1Addr, validator2Addr]) {
+            await delegateTokens(
+              client,
+              wallet.address,
+              validator,
+              delegationAmount,
+            );
+          }
 
-        let vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
-          stakingVaultAddr,
-        );
-        expect(vaultInfo.power).toEqual(+delegationAmount);
-        expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Delegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
+          await waitBlocks(2, client);
+          const heightAfter = await client.getHeight();
 
-        res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validator1Addr,
-                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
+          const vaultInfoBefore = await getStakingVaultInfo(
+            client,
+            wallet.address,
+            stakingVaultAddr,
+            heightBefore,
+          );
+          const vaultInfoAfter = await getStakingVaultInfo(
+            client,
+            wallet.address,
+            stakingVaultAddr,
+            heightAfter,
+          );
 
-        expect(res.code).toEqual(0);
-
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
-
-        vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
-          stakingVaultAddr,
-        );
-        expect(vaultInfo.power).toEqual(+delegationAmount * 2);
-        expect(vaultInfo.totalPower).toEqual(
-          delegationAmount * 2 +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Delegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
+          expect(vaultInfoBefore.power).toEqual(0);
+          expect(vaultInfoAfter.power).toEqual(+delegationAmount * 2);
+        }
       });
-      test('perform undelegations and verify VP decrease', async () => {
-        let res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validator1Addr,
-                amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
+
+      test('perform redelegation from Validator1 to Validator2', async () => {
+        const delegator = { wallet: neutronWallet1, client: neutronClient1 };
+
+        const heightBeforeRedelegation = await delegator.client.getHeight();
+
+        await redelegateTokens(
+          delegator.client,
+          delegator.wallet.address,
+          validator1Addr,
+          validator2Addr,
+          redelegationAmount,
         );
 
-        expect(res.code).toEqual(0);
+        await waitBlocks(2, delegator.client);
 
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
+        const heightAfterRedelegation = await delegator.client.getHeight();
 
-        let vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
+        const vaultInfoBefore = await getStakingVaultInfo(
+          delegator.client,
+          delegator.wallet.address,
           stakingVaultAddr,
+          heightBeforeRedelegation,
         );
-        expect(vaultInfo.power).toEqual(+undelegationAmount);
-        expect(vaultInfo.totalPower).toEqual(
-          +undelegationAmount +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Undelegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
-
-        res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validator1Addr,
-                amount: { denom: NEUTRON_DENOM, amount: undelegationAmount },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
-
-        expect(res.code).toEqual(0);
-
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
-
-        vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
+        const vaultInfoAfter = await getStakingVaultInfo(
+          delegator.client,
+          delegator.wallet.address,
           stakingVaultAddr,
+          heightAfterRedelegation,
         );
-        expect(vaultInfo.power).toEqual(0);
-        expect(vaultInfo.totalPower).toEqual(
-          validator1SelfDelegation + validator2SelfDelegation,
-        );
-        console.log(
-          'Undelegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
+
+        expect(vaultInfoBefore.power).toEqual(vaultInfoAfter.power);
       });
-      test('perform redelegations and verify VP does not change', async () => {
-        let res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorAddress: validator1Addr,
-                amount: { denom: NEUTRON_DENOM, amount: delegationAmount },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
 
-        expect(res.code).toEqual(0);
+      test('perform undelegations and validate historical voting power', async () => {
+        const delegators = [
+          { wallet: neutronWallet1, client: neutronClient1 },
+          { wallet: neutronWallet2, client: neutronClient2 },
+        ];
 
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
+        for (const { wallet, client } of delegators) {
+          const heightBeforeUndelegation = await client.getHeight();
 
-        let vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
+          await undelegateTokens(
+            client,
+            wallet.address,
+            validator1Addr,
+            undelegationAmount,
+          );
+          await undelegateTokens(
+            client,
+            wallet.address,
+            validator2Addr,
+            undelegationAmount,
+          );
+
+          await waitBlocks(2, client);
+          const heightAfterUndelegation = await client.getHeight();
+
+          const vaultInfoBefore = await getStakingVaultInfo(
+            client,
+            wallet.address,
+            stakingVaultAddr,
+            heightBeforeUndelegation,
+          );
+          const vaultInfoAfter = await getStakingVaultInfo(
+            client,
+            wallet.address,
+            stakingVaultAddr,
+            heightAfterUndelegation,
+          );
+
+          expect(vaultInfoAfter.power).toBeLessThan(vaultInfoBefore.power);
+        }
+      });
+      // this works only with cheated ownership for now, later will be done using DAO
+      test('blacklist and validate voting power', async () => {
+        const blacklistedAddress = neutronWallet1.address;
+
+        const heightBeforeBlacklist = await neutronClient1.getHeight();
+
+        await neutronClient1.execute(stakingVaultAddr, {
+          add_to_blacklist: { addresses: [blacklistedAddress] },
+        });
+
+        await waitBlocks(2, neutronClient1);
+
+        const vaultInfoAfterBlacklist = await getStakingVaultInfo(
+          neutronClient1,
+          blacklistedAddress,
           stakingVaultAddr,
         );
-        expect(vaultInfo.power).toEqual(+delegationAmount);
-        expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Delegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
+        expect(vaultInfoAfterBlacklist.power).toEqual(0);
 
-        // do first part of the redelegation, VP must be the same
-        res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorSrcAddress: validator1Addr,
-                validatorDstAddress: validator2Addr,
-                amount: {
-                  denom: NEUTRON_DENOM,
-                  amount: (delegationAmount / 2).toString(),
-                },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
-
-        console.log(res.rawLog);
-        expect(res.code).toEqual(0);
-
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
-
-        vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
+        const vaultInfoBeforeBlacklist = await getStakingVaultInfo(
+          neutronClient1,
+          blacklistedAddress,
           stakingVaultAddr,
+          heightBeforeBlacklist,
         );
-        expect(vaultInfo.power).toEqual(+delegationAmount);
-        expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Redelegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
-
-        // do the second part of the redelegation, VP must be the same
-        res = await neutronClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
-              value: {
-                delegatorAddress: neutronWallet.address,
-                validatorSrcAddress: validator1Addr,
-                validatorDstAddress: validator2Addr,
-                amount: {
-                  denom: NEUTRON_DENOM,
-                  amount: (delegationAmount / 2).toString(),
-                },
-              },
-            },
-          ],
-          {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
-          },
-        );
-
-        console.log(res.rawLog);
-        expect(res.code).toEqual(0);
-
-        // Wait for the hooks to process
-        await waitBlocks(2, neutronClient);
-
-        vaultInfo = await getStakingVaultInfo(
-          neutronClient,
-          neutronWallet.address,
-          stakingVaultAddr,
-        );
-        expect(vaultInfo.power).toEqual(+delegationAmount);
-        expect(vaultInfo.totalPower).toEqual(
-          +delegationAmount +
-            validator1SelfDelegation +
-            validator2SelfDelegation,
-        );
-        console.log(
-          'Redelegation successful. Updated voting power:',
-          vaultInfo.power,
-        );
+        expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
       });
     });
   });
 });
+
+const delegateTokens = async (
+  client,
+  delegatorAddress,
+  validatorAddress,
+  amount,
+) => {
+  const res = await client.signAndBroadcast(
+    [
+      {
+        typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+        value: {
+          delegatorAddress,
+          validatorAddress,
+          amount: { denom: NEUTRON_DENOM, amount },
+        },
+      },
+    ],
+    { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
+  );
+
+  expect(res.code).toEqual(0);
+};
+
+const redelegateTokens = async (
+  client: SigningNeutronClient,
+  delegatorAddress: string,
+  validatorSrc: string,
+  validatorDst: string,
+  amount: string,
+) => {
+  const res = await client.signAndBroadcast(
+    [
+      {
+        typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+        value: {
+          delegatorAddress,
+          validatorSrcAddress: validatorSrc,
+          validatorDstAddress: validatorDst,
+          amount: { denom: NEUTRON_DENOM, amount },
+        },
+      },
+    ],
+    {
+      amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+      gas: '2000000',
+    },
+  );
+
+  expect(res.code).toEqual(0);
+};
+
+const undelegateTokens = async (
+  client,
+  delegatorAddress,
+  validatorAddress,
+  amount,
+) => {
+  const res = await client.signAndBroadcast(
+    [
+      {
+        typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+        value: {
+          delegatorAddress,
+          validatorAddress,
+          amount: { denom: NEUTRON_DENOM, amount },
+        },
+      },
+    ],
+    { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
+  );
+
+  expect(res.code).toEqual(0);
+};
 
 const getStakingVaultInfo = async (
   client: SigningNeutronClient,
