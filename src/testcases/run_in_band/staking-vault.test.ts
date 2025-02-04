@@ -2,15 +2,19 @@ import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState } from '../../helpers/local_state';
+import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
+const VAL_MNEMONIC_1 =
+  'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
+const  VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
 
 describe('Neutron / Staking Vault - Extended Scenarios', () => {
   let testState: LocalState;
   let neutronClient1: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
+  let validatorClient: SigningNeutronClient;
 
   let neutronWallet1: Wallet;
   let neutronWallet2: Wallet;
@@ -19,6 +23,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
   let validator1Addr: string;
   let validator2Addr: string;
+  let validatorWallet: Wallet;
 
   let validator1SelfDelegation: number;
   let validator2SelfDelegation: number;
@@ -33,6 +38,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
     neutronWallet1 = await testState.nextWallet('neutron');
     neutronWallet2 = await testState.nextWallet('neutron');
+    validatorWallet = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -44,6 +50,12 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       testState.rpcNeutron,
       neutronWallet2.directwallet,
       neutronWallet2.address,
+    );
+
+    validatorClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      validatorWallet.directwallet,
+      validatorWallet.address,
     );
 
     const neutronRpcClient = await testState.neutronRpcClient();
@@ -215,6 +227,162 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
       });
     });
+    test('Unbond validator while keeping at least 67% of consensus', async () => {
+      const heightBeforeEdit = await validatorClient.getHeight();
+
+      const validators = await stakingQuerier.validators({
+        status: 'BOND_STATUS_BONDED',
+      });
+
+      const validatorInfo = validators.validators[0];
+
+      const currentDescription = validatorInfo.description || {
+        moniker: '',
+        identity: '',
+        website: '',
+        securityContact: '',
+        details: '',
+      };
+
+      validator1Addr = validatorInfo.operatorAddress;
+      validator1SelfDelegation = +validatorInfo.tokens;
+
+      console.log(
+        `Validator1: ${validator1Addr}, Self-delegation: ${validator1SelfDelegation}`,
+      );
+
+      // Query total network voting power
+      const totalNetworkPowerInfo = await getStakingVaultInfo(
+        validatorClient,
+        validatorWallet.address,
+        stakingVaultAddr,
+      );
+
+      const totalNetworkPower = totalNetworkPowerInfo.totalPower;
+      console.log(`Total Network Power Before Unbonding: ${totalNetworkPower}`);
+
+      // Ensure another validator has at least 67% of total power before unbonding
+      const minRequiredPower = Math.ceil(totalNetworkPower * 0.68);
+      console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+
+      const validator2DelegationAmount = Math.max(
+        0,
+        minRequiredPower - validator1SelfDelegation,
+      ).toString();
+
+      console.log(
+        `Delegating ${validator2DelegationAmount} to Validator2 to maintain network consensus...`,
+      );
+
+      // Delegate to another validator before unbonding
+      if (validator2DelegationAmount > '0') {
+        await delegateTokens(
+          validatorClient,
+          validatorWallet.address,
+          validator2Addr,
+          validator2DelegationAmount,
+        );
+
+        await waitBlocks(2, validatorClient);
+      }
+
+      // Check voting power before unbonding
+      const vaultInfoBefore = await getStakingVaultInfo(
+        validatorClient,
+        validatorWallet.address,
+        stakingVaultAddr,
+        heightBeforeEdit,
+      );
+
+      console.log(`Voting Power Before Unbonding: ${vaultInfoBefore.power}`);
+
+      // Set min_self_delegation above current self-delegation
+      const increasedMinSelfDelegation = (
+        validator1SelfDelegation * 2
+      ).toString();
+
+      const res = await validatorClient.signAndBroadcast(
+        [
+          {
+            typeUrl: '/cosmos.staking.v1beta1.MsgEditValidator',
+            value: {
+              validatorAddress: validatorWallet.valAddress,
+              minSelfDelegation: increasedMinSelfDelegation,
+              commissionRate: undefined, // No change
+              description: {
+                moniker: currentDescription.moniker || 'Validator',
+                identity: currentDescription.identity || '',
+                website: currentDescription.website || '',
+                securityContact: currentDescription.securityContact || '',
+                details: currentDescription.details || '',
+              },
+            },
+          },
+        ],
+        {
+          amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+          gas: '2000000',
+        },
+      );
+
+      console.log(res.rawLog);
+      //  validator's self delegation must be greater than their minimum self delegation
+      expect(res.code).toEqual(16);
+
+      // Now proceed with undelegation
+      const res2 = await undelegateTokens(
+        validatorClient,
+        validatorWallet.address,
+        validator1Addr,
+        '10000000',
+      );
+
+      console.log(res2);
+      expect(res2.code).toEqual(0);
+
+      await waitBlocks(2, validatorClient);
+
+      const heightAfterEdit = await validatorClient.getHeight();
+
+      // Query validator state to check if it got unbonded
+      const validatorState = await stakingQuerier.validator({
+        validatorAddr: validator1Addr,
+      });
+
+      console.log(
+        `Validator Status After MinSelfDelegation Increase: ${validatorState.validator.status}`,
+      );
+
+      // Validator should no longer be bonded
+      expect(validatorState.validator.status).not.toEqual('BOND_STATUS_BONDED');
+
+      // Check voting power after unbonding
+      const vaultInfoAfter = await getStakingVaultInfo(
+        validatorClient,
+        validatorWallet.address,
+        stakingVaultAddr,
+        heightAfterEdit,
+      );
+
+      console.log(`Voting Power After Unbonding: ${vaultInfoAfter.power}`);
+
+      // Ensure voting power is reduced to zero
+      expect(vaultInfoAfter.power).toEqual(0);
+      expect(vaultInfoAfter.totalPower).toBeLessThan(
+        vaultInfoBefore.totalPower,
+      );
+
+      // Query delegation after unbonding (should be empty or null)
+      const delegationResponseAfter = await stakingQuerier.delegation({
+        delegatorAddr: validatorWallet.address, // Normal address, not valoper
+        validatorAddr: validator1Addr,
+      });
+
+      console.log(
+        `Delegation Info After Unbonding (by normal addr):`,
+        delegationResponseAfter.delegationResponse || 'No delegation found',
+      );
+    });
   });
 });
 
@@ -270,10 +438,10 @@ const redelegateTokens = async (
 };
 
 const undelegateTokens = async (
-  client,
-  delegatorAddress,
-  validatorAddress,
-  amount,
+  client: SigningNeutronClient,
+  delegatorAddress: string,
+  validatorAddress: string,
+  amount: string,
 ) => {
   const res = await client.signAndBroadcast(
     [
@@ -288,7 +456,7 @@ const undelegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
-
+  console.log(res.rawLog);
   expect(res.code).toEqual(0);
 };
 
