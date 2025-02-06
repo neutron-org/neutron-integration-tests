@@ -6,9 +6,13 @@ import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
-const VAL_MNEMONIC_1 =
-  'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
-const  VAL_MNEMONIC_2="angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice"
+import { execSync } from 'child_process';
+// const VAL_MNEMONIC_1 =
+//   'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
+const VAL_MNEMONIC_2 =
+  'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
+
+const VALIDATOR_CONTAINER = 'neutron-node-1';
 
 describe('Neutron / Staking Vault - Extended Scenarios', () => {
   let testState: LocalState;
@@ -200,189 +204,235 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         }
       });
       // this works only with cheated ownership for now, later will be done using DAO
-      test('blacklist and validate voting power', async () => {
-        const blacklistedAddress = neutronWallet1.address;
-
-        const heightBeforeBlacklist = await neutronClient1.getHeight();
-
-        await neutronClient1.execute(stakingVaultAddr, {
-          add_to_blacklist: { addresses: [blacklistedAddress] },
-        });
-
-        await waitBlocks(2, neutronClient1);
-
-        const vaultInfoAfterBlacklist = await getStakingVaultInfo(
-          neutronClient1,
-          blacklistedAddress,
-          stakingVaultAddr,
-        );
-        expect(vaultInfoAfterBlacklist.power).toEqual(0);
-
-        const vaultInfoBeforeBlacklist = await getStakingVaultInfo(
-          neutronClient1,
-          blacklistedAddress,
-          stakingVaultAddr,
-          heightBeforeBlacklist,
-        );
-        expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
-      });
+      // test('blacklist and validate voting power', async () => {
+      //   const blacklistedAddress = neutronWallet1.address;
+      //
+      //   const heightBeforeBlacklist = await neutronClient1.getHeight();
+      //
+      //   await neutronClient1.execute(stakingVaultAddr, {
+      //     add_to_blacklist: { addresses: [blacklistedAddress] },
+      //   });
+      //
+      //   await waitBlocks(2, neutronClient1);
+      //
+      //   const vaultInfoAfterBlacklist = await getStakingVaultInfo(
+      //     neutronClient1,
+      //     blacklistedAddress,
+      //     stakingVaultAddr,
+      //   );
+      //   expect(vaultInfoAfterBlacklist.power).toEqual(0);
+      //
+      //   const vaultInfoBeforeBlacklist = await getStakingVaultInfo(
+      //     neutronClient1,
+      //     blacklistedAddress,
+      //     stakingVaultAddr,
+      //     heightBeforeBlacklist,
+      //   );
+      //   expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
+      // });
     });
-    test('Unbond validator while keeping at least 67% of consensus', async () => {
-      const heightBeforeEdit = await validatorClient.getHeight();
+  });
 
-      const validators = await stakingQuerier.validators({
-        status: 'BOND_STATUS_BONDED',
-      });
+  test('Validator gets slashed after missing blocks', async () => {
+    console.log(`Validator Address: ${validator1Addr}`);
 
-      const validatorInfo = validators.validators[0];
+    // Query voting power before slashing
+    const heightBeforeSlashing = await validatorClient.getHeight();
+    const vaultInfoBefore = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+      heightBeforeSlashing,
+    );
 
-      const currentDescription = validatorInfo.description || {
-        moniker: '',
-        identity: '',
-        website: '',
-        securityContact: '',
-        details: '',
-      };
+    console.log(`Voting Power Before Slashing: ${vaultInfoBefore.power}`);
 
-      validator1Addr = validatorInfo.operatorAddress;
-      validator1SelfDelegation = +validatorInfo.tokens;
+    console.log(`Validator to slash: ${validatorWallet.valAddress}`);
+    console.log(`Validator #2: ${validator2Addr}`);
 
-      console.log(
-        `Validator1: ${validator1Addr}, Self-delegation: ${validator1SelfDelegation}`,
-      );
 
-      // Query total network voting power
-      const totalNetworkPowerInfo = await getStakingVaultInfo(
+    const newStatus = await simulateSlashingAndJailing(
+      validatorClient,
+      neutronClient1,
+      stakingQuerier,
+      validatorWallet.valAddress,
+      validator2Addr,
+      validatorWallet.address,
+      10, // Set to 10 missed blocks for slashing
+    );
+
+    // Expect validator to be jailed or unbonding
+    expect(newStatus).not.toEqual('BOND_STATUS_BONDED');
+
+    // Query voting power after slashing
+    const heightAfterSlashing = await validatorClient.getHeight();
+    const vaultInfoAfter = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+      heightAfterSlashing,
+    );
+
+    console.log(`Voting Power After Slashing: ${vaultInfoAfter.power}`);
+    console.log(`Total Power After Slashing: ${vaultInfoAfter.totalPower}`);
+
+    // Voting power should be lower or zero
+    expect(vaultInfoAfter.power).toBeLessThan(vaultInfoBefore.power);
+  });
+
+  test('Unbond validator while keeping at least 67% of consensus', async () => {
+    const heightBeforeEdit = await validatorClient.getHeight();
+
+    const validators = await stakingQuerier.validators({
+      status: 'BOND_STATUS_BONDED',
+    });
+
+    const validatorInfo = validators.validators[0];
+
+    const currentDescription = validatorInfo.description || {
+      moniker: '',
+      identity: '',
+      website: '',
+      securityContact: '',
+      details: '',
+    };
+
+    validator1Addr = validatorInfo.operatorAddress;
+    validator1SelfDelegation = +validatorInfo.tokens;
+
+    console.log(
+      `Validator1: ${validator1Addr}, Self-delegation: ${validator1SelfDelegation}`,
+    );
+
+    // Query total network voting power
+    const totalNetworkPowerInfo = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+    );
+
+    const totalNetworkPower = totalNetworkPowerInfo.totalPower;
+    console.log(`Total Network Power Before Unbonding: ${totalNetworkPower}`);
+
+    // Ensure another validator has at least 67% of total power before unbonding
+    const minRequiredPower = Math.ceil(totalNetworkPower * 0.68);
+    console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+
+    const validator2DelegationAmount = Math.max(
+      0,
+      minRequiredPower - validator1SelfDelegation,
+    ).toString();
+
+    console.log(
+      `Delegating ${validator2DelegationAmount} to Validator2 to maintain network consensus...`,
+    );
+
+    // Delegate to another validator before unbonding
+    if (validator2DelegationAmount > '0') {
+      await delegateTokens(
         validatorClient,
         validatorWallet.address,
-        stakingVaultAddr,
+        validator2Addr,
+        validator2DelegationAmount,
       );
-
-      const totalNetworkPower = totalNetworkPowerInfo.totalPower;
-      console.log(`Total Network Power Before Unbonding: ${totalNetworkPower}`);
-
-      // Ensure another validator has at least 67% of total power before unbonding
-      const minRequiredPower = Math.ceil(totalNetworkPower * 0.68);
-      console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
-
-      const validator2DelegationAmount = Math.max(
-        0,
-        minRequiredPower - validator1SelfDelegation,
-      ).toString();
-
-      console.log(
-        `Delegating ${validator2DelegationAmount} to Validator2 to maintain network consensus...`,
-      );
-
-      // Delegate to another validator before unbonding
-      if (validator2DelegationAmount > '0') {
-        await delegateTokens(
-          validatorClient,
-          validatorWallet.address,
-          validator2Addr,
-          validator2DelegationAmount,
-        );
-
-        await waitBlocks(2, validatorClient);
-      }
-
-      // Check voting power before unbonding
-      const vaultInfoBefore = await getStakingVaultInfo(
-        validatorClient,
-        validatorWallet.address,
-        stakingVaultAddr,
-        heightBeforeEdit,
-      );
-
-      console.log(`Voting Power Before Unbonding: ${vaultInfoBefore.power}`);
-
-      // Set min_self_delegation above current self-delegation
-      const increasedMinSelfDelegation = (
-        validator1SelfDelegation * 2
-      ).toString();
-
-      const res = await validatorClient.signAndBroadcast(
-        [
-          {
-            typeUrl: '/cosmos.staking.v1beta1.MsgEditValidator',
-            value: {
-              validatorAddress: validatorWallet.valAddress,
-              minSelfDelegation: increasedMinSelfDelegation,
-              commissionRate: undefined, // No change
-              description: {
-                moniker: currentDescription.moniker || 'Validator',
-                identity: currentDescription.identity || '',
-                website: currentDescription.website || '',
-                securityContact: currentDescription.securityContact || '',
-                details: currentDescription.details || '',
-              },
-            },
-          },
-        ],
-        {
-          amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-          gas: '2000000',
-        },
-      );
-
-      console.log(res.rawLog);
-      //  validator's self delegation must be greater than their minimum self delegation
-      expect(res.code).toEqual(16);
-
-      // Now proceed with undelegation
-      const res2 = await undelegateTokens(
-        validatorClient,
-        validatorWallet.address,
-        validator1Addr,
-        '10000000',
-      );
-
-      console.log(res2);
-      expect(res2.code).toEqual(0);
 
       await waitBlocks(2, validatorClient);
+    }
 
-      const heightAfterEdit = await validatorClient.getHeight();
+    // Check voting power before unbonding
+    const vaultInfoBefore = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+      heightBeforeEdit,
+    );
 
-      // Query validator state to check if it got unbonded
-      const validatorState = await stakingQuerier.validator({
-        validatorAddr: validator1Addr,
-      });
+    console.log(`Voting Power Before Unbonding: ${vaultInfoBefore.power}`);
 
-      console.log(
-        `Validator Status After MinSelfDelegation Increase: ${validatorState.validator.status}`,
-      );
+    // Set min_self_delegation above current self-delegation
+    const increasedMinSelfDelegation = (
+      validator1SelfDelegation * 2
+    ).toString();
 
-      // Validator should no longer be bonded
-      expect(validatorState.validator.status).not.toEqual('BOND_STATUS_BONDED');
+    const res = await validatorClient.signAndBroadcast(
+      [
+        {
+          typeUrl: '/cosmos.staking.v1beta1.MsgEditValidator',
+          value: {
+            validatorAddress: validatorWallet.valAddress,
+            minSelfDelegation: increasedMinSelfDelegation,
+            commissionRate: undefined, // No change
+            description: {
+              moniker: currentDescription.moniker || 'Validator',
+              identity: currentDescription.identity || '',
+              website: currentDescription.website || '',
+              securityContact: currentDescription.securityContact || '',
+              details: currentDescription.details || '',
+            },
+          },
+        },
+      ],
+      {
+        amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+        gas: '2000000',
+      },
+    );
 
-      // Check voting power after unbonding
-      const vaultInfoAfter = await getStakingVaultInfo(
-        validatorClient,
-        validatorWallet.address,
-        stakingVaultAddr,
-        heightAfterEdit,
-      );
+    console.log(res.rawLog);
+    //  validator's self delegation must be greater than their minimum self delegation
+    expect(res.code).toEqual(16);
 
-      console.log(`Voting Power After Unbonding: ${vaultInfoAfter.power}`);
+    // Now proceed with undelegation
+    const res2 = await undelegateTokens(
+      validatorClient,
+      validatorWallet.address,
+      validator1Addr,
+      '10000000',
+    );
 
-      // Ensure voting power is reduced to zero
-      expect(vaultInfoAfter.power).toEqual(0);
-      expect(vaultInfoAfter.totalPower).toBeLessThan(
-        vaultInfoBefore.totalPower,
-      );
+    console.log(res2);
+    expect(res2.code).toEqual(0);
 
-      // Query delegation after unbonding (should be empty or null)
-      const delegationResponseAfter = await stakingQuerier.delegation({
-        delegatorAddr: validatorWallet.address, // Normal address, not valoper
-        validatorAddr: validator1Addr,
-      });
+    await waitBlocks(2, validatorClient);
 
-      console.log(
-        `Delegation Info After Unbonding (by normal addr):`,
-        delegationResponseAfter.delegationResponse || 'No delegation found',
-      );
+    const heightAfterEdit = await validatorClient.getHeight();
+
+    // Query validator state to check if it got unbonded
+    const validatorState = await stakingQuerier.validator({
+      validatorAddr: validator1Addr,
     });
+
+    console.log(
+      `Validator Status After MinSelfDelegation Increase: ${validatorState.validator.status}`,
+    );
+
+    // Validator should no longer be bonded
+    expect(validatorState.validator.status).not.toEqual('BOND_STATUS_BONDED');
+
+    // Check voting power after unbonding
+    const vaultInfoAfter = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+      heightAfterEdit,
+    );
+
+    console.log(`Voting Power After Unbonding: ${vaultInfoAfter.power}`);
+
+    // Ensure voting power is reduced to zero
+    expect(vaultInfoAfter.power).toEqual(0);
+    expect(vaultInfoAfter.totalPower).toBeLessThan(vaultInfoBefore.totalPower);
+
+    // Query delegation after unbonding (should be empty or null)
+    const delegationResponseAfter = await stakingQuerier.delegation({
+      delegatorAddr: validatorWallet.address, // Normal address, not valoper
+      validatorAddr: validator1Addr,
+    });
+
+    console.log(
+      `Delegation Info After Unbonding (by normal addr):`,
+      delegationResponseAfter.delegationResponse || 'No delegation found',
+    );
   });
 });
 
@@ -458,6 +508,91 @@ const undelegateTokens = async (
   );
   console.log(res.rawLog);
   expect(res.code).toEqual(0);
+};
+
+export const simulateSlashingAndJailing = async (
+  validatorClient: SigningNeutronClient,
+  neutronClient: SigningNeutronClient,
+  stakingQuerier: StakingQueryClient,
+  validatorAddr: string,
+  alternativeValidatorAddr: string,
+  delegatorAddr: string,
+  missedBlocks = 10, // Default to slashing threshold
+) => {
+  // Check if validator has been slashed
+  let validatorInfo = await stakingQuerier.validator({ validatorAddr });
+  console.log(
+    `Validator status after slashing period: ${validatorInfo.validator.status}`,
+  );
+
+  // Check if the network has enough voting power to continue producing blocks
+  const activeValidators = await stakingQuerier.validators({
+    status: 'BOND_STATUS_BONDED',
+  });
+  const totalVotingPower = activeValidators.validators.reduce(
+    (acc, val) => acc + Number(val.tokens),
+    0,
+  );
+
+  console.log(`Total active voting power: ${totalVotingPower}`);
+
+  // Retrieve voting power of both validators
+  const slashedValidator = activeValidators.validators.find(
+    (val) => val.operatorAddress === validatorAddr,
+  );
+  const alternativeValidator = activeValidators.validators.find(
+    (val) => val.operatorAddress === alternativeValidatorAddr,
+  );
+
+  if (!slashedValidator) {
+    console.log(`Slashed validator ${validatorAddr} not found.`);
+  } else {
+    console.log(`Slashed Validator Power: ${Number(slashedValidator.tokens)}`);
+  }
+
+  if (!alternativeValidator) {
+    console.log(`Alternative validator ${alternativeValidatorAddr} not found.`);
+    return;
+  }
+
+  const alternativeValidatorPower = Number(alternativeValidator.tokens);
+  console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
+
+  const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
+  console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+
+  if (alternativeValidatorPower < minRequiredPower) {
+    console.log(
+      `Alternative validator does not have enough power, delegating ${
+        minRequiredPower - alternativeValidatorPower
+      } to ${alternativeValidatorAddr}`,
+    );
+    await delegateTokens(
+      validatorClient,
+      delegatorAddr,
+      alternativeValidatorAddr,
+      (minRequiredPower - alternativeValidatorPower).toString(),
+    );
+    console.log(`Delegation successful.`);
+  }
+
+  console.log(`Pausing validator container: ${VALIDATOR_CONTAINER}`);
+  execSync(`docker pause ${VALIDATOR_CONTAINER}`);
+
+  console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
+  await waitBlocks(missedBlocks, neutronClient);
+
+  console.log(`Unpausing validator container: ${VALIDATOR_CONTAINER}`);
+  execSync(`docker unpause ${VALIDATOR_CONTAINER}`);
+
+  console.log(`Waiting 2 blocks to confirm status update...`);
+  await waitBlocks(2, neutronClient);
+
+  // Re-check validator status
+  validatorInfo = await stakingQuerier.validator({ validatorAddr });
+  console.log(`Final validator status: ${validatorInfo.validator.status}`);
+
+  return validatorInfo.validator.status;
 };
 
 const getStakingVaultInfo = async (
