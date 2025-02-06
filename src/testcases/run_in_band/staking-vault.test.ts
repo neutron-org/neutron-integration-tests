@@ -250,7 +250,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     console.log(`Validator to slash: ${validatorWallet.valAddress}`);
     console.log(`Validator #2: ${validator2Addr}`);
 
-
     const newStatus = await simulateSlashingAndJailing(
       validatorClient,
       neutronClient1,
@@ -315,7 +314,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     console.log(`Total Network Power Before Unbonding: ${totalNetworkPower}`);
 
     // Ensure another validator has at least 67% of total power before unbonding
-    const minRequiredPower = Math.ceil(totalNetworkPower * 0.68);
+    const minRequiredPower = Math.ceil(totalNetworkPower);
     console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
 
     const validator2DelegationAmount = Math.max(
@@ -434,6 +433,157 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       delegationResponseAfter.delegationResponse || 'No delegation found',
     );
   });
+
+  test('Jail validator after missing blocks and unjail it', async () => {
+    const heightBeforeJail = await validatorClient.getHeight();
+
+    const validators = await stakingQuerier.validators({
+      status: 'BOND_STATUS_BONDED',
+    });
+
+    const validatorInfo = validators.validators[0];
+
+    const currentDescription = validatorInfo.description || {
+      moniker: '',
+      identity: '',
+      website: '',
+      securityContact: '',
+      details: '',
+    };
+
+    validator1Addr = validatorInfo.operatorAddress;
+    validator1SelfDelegation = +validatorInfo.tokens;
+
+    console.log(
+      `Validator1: ${validator1Addr}, Self-delegation: ${validator1SelfDelegation}`,
+    );
+
+    // Query total network voting power
+    const totalNetworkPowerInfo = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+    );
+
+    const totalNetworkPower = totalNetworkPowerInfo.totalPower;
+    console.log(`Total Network Power Before Jailing: ${totalNetworkPower}`);
+
+    // Ensure another validator has at least 67% of total power before jailing
+    const minRequiredPower = Math.ceil(totalNetworkPower * 0.68);
+    console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+
+    const validator2DelegationAmount = Math.max(
+      0,
+      minRequiredPower - validator1SelfDelegation,
+    ).toString();
+
+    console.log(
+      `Delegating ${validator2DelegationAmount} to Validator2 to maintain network consensus...`,
+    );
+
+    // Delegate to another validator before jailing
+    if (validator2DelegationAmount > '0') {
+      await delegateTokens(
+        validatorClient,
+        validatorWallet.address,
+        validator2Addr,
+        validator2DelegationAmount,
+      );
+
+      await waitBlocks(2, validatorClient);
+    }
+
+    // Check voting power before jailing
+    const vaultInfoBeforeJail = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+      heightBeforeJail,
+    );
+
+    console.log(`Voting Power Before Jailing: ${vaultInfoBeforeJail.power}`);
+
+    // **Pause the validator to trigger slashing and jailing**
+    console.log(`Pausing validator container: ${VALIDATOR_CONTAINER}`);
+    execSync(`docker pause ${VALIDATOR_CONTAINER}`);
+
+    console.log(`Waiting 20 blocks to trigger jailing...`);
+    await waitBlocks(20, validatorClient); // Using twice the blocks for jailing
+
+    // **Check if the validator is jailed**
+    const validatorStateAfterJail = await stakingQuerier.validator({
+      validatorAddr: validator1Addr,
+    });
+
+    console.log(
+      `Validator Status After Jailing: ${validatorStateAfterJail.validator.status}`,
+    );
+
+    // Expect validator to be jailed
+    expect(validatorStateAfterJail.validator.status).toEqual(
+      'BOND_STATUS_UNBONDING',
+    );
+
+    // **Check voting power after jailing**
+    const vaultInfoAfterJail = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+    );
+
+    console.log(`Voting Power After Jailing: ${vaultInfoAfterJail.power}`);
+    expect(vaultInfoAfterJail.power).toBeLessThan(vaultInfoBeforeJail.power);
+
+    // **Unpause the validator**
+    console.log(`Unpausing validator container: ${VALIDATOR_CONTAINER}`);
+    execSync(`docker unpause ${VALIDATOR_CONTAINER}`);
+
+    console.log(`Validator will attempt to unjail...`);
+    const resUnjail = await validatorClient.signAndBroadcast(
+      [
+        {
+          typeUrl: '/cosmos.slashing.v1beta1.MsgUnjail',
+          value: {
+            validatorAddr: validator1Addr,
+          },
+        },
+      ],
+      { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
+    );
+
+    console.log(resUnjail.rawLog);
+    expect(resUnjail.code).toEqual(0);
+
+    console.log(`Waiting 2 blocks to confirm validator is unjailed...`);
+    await waitBlocks(2, validatorClient);
+
+    // **Check validator status after unjailing**
+    const validatorStateAfterUnjail = await stakingQuerier.validator({
+      validatorAddr: validator1Addr,
+    });
+
+    console.log(
+      `Validator Status After Unjail: ${validatorStateAfterUnjail.validator.status}`,
+    );
+
+    // Expect validator to be bonded again
+    expect(validatorStateAfterUnjail.validator.status).toEqual(
+      'BOND_STATUS_BONDED',
+    );
+
+    // **Check voting power after unjailing**
+    const vaultInfoAfterUnjail = await getStakingVaultInfo(
+      validatorClient,
+      validatorWallet.address,
+      stakingVaultAddr,
+    );
+
+    console.log(`Voting Power After Unjailing: ${vaultInfoAfterUnjail.power}`);
+
+    // Ensure voting power is restored
+    expect(vaultInfoAfterUnjail.power).toBeGreaterThan(vaultInfoAfterJail.power);
+  });
+
 });
 
 const delegateTokens = async (
