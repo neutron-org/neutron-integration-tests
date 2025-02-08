@@ -672,13 +672,14 @@ NEUTRON_STAKING_TRACKER_INIT_MSG='{
   "name": "'"$NEUTRON_STAKING_TRACKER_NAME"'",
   "description": "'"$NEUTRON_STAKING_TRACKER_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
-  "denom": "untrn"
+  "denom": "untrn",
+  "staking_proxy_info_contract_address": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'"
 }'
 
 NEUTRON_STAKING_REWARDS_INIT_MSG='{
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
   "annual_reward_rate_bps": 300,
-  "blocks_per_year": 10512000,
+  "blocks_per_year": 100,
   "dao_address": "'"$DAO_CONTRACT_ADDRESS"'",
   "staking_info_proxy": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'",
   "staking_denom": "untrn"
@@ -689,7 +690,7 @@ NEUTRON_STAKING_INFO_PROXY_INIT_MSG='{
   "staking_rewards": "'"$NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS"'",
   "staking_denom": "untrn",
   "providers": [
-    "'"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS"'"
+    "'"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS"'"
   ]
 }'
 
@@ -853,8 +854,8 @@ for i in `seq 2 ${NODES}`; do
   cp ${BASE_DIR}/${CHAINID}/node-1/config/genesis.json ${BASE_DIR}/${CHAINID}/node-${i}/config/genesis.json
 done
 
-echo "DAO $DAO_CONTRACT_ADDRESS"
-echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
-echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS
-echo "STAKING REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS
-echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS
+echo "DAO $DAO_CONTRACT_ADDRESS" >> $CHAIN_DIR/reward_addresses.json
+echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS  >> $CHAIN_DIR/reward_addresses.json
+echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json
+echo "STAKING REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json
+echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json

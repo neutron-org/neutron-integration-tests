@@ -5,7 +5,7 @@ build-gaia:
 		@docker buildx build --load --build-context app=$(APP_DIR)/gaia --build-context setup=$(APP_DIR)/neutron/network -t gaia-node -f dockerbuilds/Dockerfile.gaia --build-arg BINARY=gaiad .
 
 build-neutron:
-		@docker buildx build --load --build-arg PERSISTENT_PEER=neutron-node --build-context app=$(APP_DIR)/neutron --build-context scripts=./scripts -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
+		@docker buildx build --load --build-arg PERSISTENT_PEER=neutron-node --build-context app=$(APP_DIR)/neutron-private --build-context scripts=./scripts -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond . --no-cache
 		# cd $(APP_DIR)/neutron && $(MAKE) build-docker-image
 
 build-hermes:
