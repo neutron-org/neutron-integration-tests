@@ -75,10 +75,10 @@ USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 ### PARAMETERS SECTION
 
 ## slashing params
-SLASHING_SIGNED_BLOCKS_WINDOW=140000
-SLASHING_MIN_SIGNED=0.050000000000000000
+SLASHING_SIGNED_BLOCKS_WINDOW=10
+SLASHING_MIN_SIGNED=0.800000000000000000
 SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
-SLASHING_FRACTION_DOWNTIME=0.000100000000000000
+SLASHING_FRACTION_DOWNTIME=0.100000000000000000
 
 ##pre propose single parameters
 PRE_PROPOSAL_SINGLE_AMOUNT=1000
@@ -678,7 +678,7 @@ NEUTRON_STAKING_TRACKER_INIT_MSG='{
 
 NEUTRON_STAKING_REWARDS_INIT_MSG='{
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
-  "annual_reward_rate_bps": 300,
+  "annual_reward_rate_bps": 1000,
   "blocks_per_year": 100,
   "dao_address": "'"$DAO_CONTRACT_ADDRESS"'",
   "staking_info_proxy": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'",
@@ -842,8 +842,7 @@ set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 4},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 8},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 9},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 11}]"
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10}]"
 
 if ! jq -e . "$GENESIS_PATH" >/dev/null 2>&1; then
     echo "genesis appears to become incorrect json" >&2
