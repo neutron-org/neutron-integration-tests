@@ -11,9 +11,18 @@ import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmo
 import { execSync } from 'child_process';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { sleep } from '@neutron-org/neutronjsplus/src/wait';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
+import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 
-const VAL_MNEMONIC_1 =
-  'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
+// const VAL_MNEMONIC_1 =
+//   'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
 const VAL_MNEMONIC_2 =
   'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
 
@@ -36,6 +45,9 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
   let neutronClient1: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
   // let validatorClient: SigningNeutronClient;
+
+  let demoWalletClient: SigningNeutronClient;
+  let demoWallet: Wallet;
 
   let neutronWallet1: Wallet;
   let neutronWallet2: Wallet;
@@ -60,10 +72,18 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
 
+    demoWallet = testState.wallets.neutron.demo1;
+    demoWalletClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      demoWallet.directwallet,
+      demoWallet.address,
+    );
+
     neutronWallet1 = await testState.nextWallet('neutron');
     neutronWallet2 = await testState.nextWallet('neutron');
-    validatorSecondary = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
+
     // validatorPrimary = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
+    validatorSecondary = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -77,13 +97,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       neutronWallet2.address,
     );
 
-    // This is the client for validator that could be disabled during testrun
-    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorSecondary.directwallet,
-      validatorSecondary.address,
-    );
-
     // This is client for validator that should work ALWAYS bc it's only one that exposes ports
     // In the state it is validator #2, so this naming is only for clients
     // validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
@@ -92,12 +105,73 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     //   validatorPrimary.address,
     // );
 
+    // This is the client for validator that could be disabled during testrun
+    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      validatorSecondary.directwallet,
+      validatorSecondary.address,
+    );
+
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
     bankQuerier = new BankQueryClient(neutronRpcClient);
   });
 
   describe('Staking Rewards', () => {
+    describe('Slashing params', () => {
+      let mainDao: Dao;
+      let daoMember1: DaoMember;
+      let proposalId;
+      test('create proposal', async () => {
+        const neutronRpcClient = await testState.neutronRpcClient();
+        const daoCoreAddress = await getNeutronDAOCore(
+          demoWalletClient,
+          neutronRpcClient,
+        ); // add assert for some addresses
+        const daoContracts = await getDaoContracts(
+          demoWalletClient,
+          daoCoreAddress,
+        );
+        mainDao = new Dao(demoWalletClient, daoContracts);
+        daoMember1 = new DaoMember(
+          mainDao,
+          demoWalletClient.client,
+          demoWallet.address,
+          NEUTRON_DENOM,
+        );
+        console.log('daoMember1: ' + daoMember1.user);
+        await daoMember1.bondFunds('1999999491000');
+        const neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        const chainManagerAddress = admins.admins[0];
+        proposalId = await submitUpdateParamsSlashingProposal(
+          daoMember1,
+          chainManagerAddress,
+          'Proposal #1',
+          'Param change proposal. Update slashing params',
+          {
+            downtime_jail_duration: '4h',
+            min_signed_per_window: '0.800000000000000000',
+            signed_blocks_window: '10',
+            slash_fraction_double_sign: '0.010000000000000000',
+            slash_fraction_downtime: '0.100000000000000000',
+          },
+          '1000',
+        );
+      });
+      test('vote YES', async () => {
+        await daoMember1.voteYes(proposalId);
+      });
+      test('check if proposal is passed', async () => {
+        await mainDao.checkPassedProposal(proposalId);
+      });
+      test('execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+      });
+    });
     describe('ClaimRewards', () => {
       test('send to the rewards pool', async () => {
         const res = await neutronClient2.sendTokens(STAKING_REWARDS, [
@@ -113,7 +187,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           status: 'BOND_STATUS_BONDED',
         });
 
-        validatorWeakAddr = validators.validators[0].operatorAddress; // TODO: why 0 and 1 index? can you deterministically do that?
+        validatorWeakAddr = validators.validators[0].operatorAddress;
         // validator1SelfDelegation = +validators.validators[0].tokens;
 
         validatorStrongAddr = validators.validators[1].operatorAddress;
@@ -840,4 +914,49 @@ export const waitBlocksTimeout = async (
     }
     await sleep(1000);
   }
+};
+
+// TODO: use from neutronjsplus
+/**
+ * submitUpdateParamsRateLimitProposal creates proposal which changes params of slashing module.
+ */
+export const submitUpdateParamsSlashingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsSlashingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.slashing.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
+  );
+};
+
+export type Duration = string;
+
+export type ParamsSlashingInfo = {
+  signed_blocks_window: string; // int64
+  min_signed_per_window: string; // base64?
+  downtime_jail_duration: Duration;
+  slash_fraction_double_sign: string; // dec
+  slash_fraction_downtime: string; // dec
 };
