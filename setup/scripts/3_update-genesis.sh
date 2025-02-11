@@ -56,7 +56,7 @@ CW4_GROUP_CONTRACT=$THIRD_PARTY_CONTRACTS_DIR/cw4_group.wasm
 
 NEUTRON_CHAIN_MANAGER_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_chain_manager.wasm
 
-NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron-staking-vault.wasm
+NEUTRON_STAKING_VAULT_CONTRACT=$CONTRACTS_BINARIES_DIR/neutron_staking_tracker.wasm
 
 # Slinky genesis configs
 USE_CORE_MARKETS=${USE_CORE_MARKETS:-true}
@@ -73,9 +73,9 @@ USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 
 ## slashing params
 SLASHING_SIGNED_BLOCKS_WINDOW=10
-SLASHING_MIN_SIGNED=0.800000000000000000
+SLASHING_MIN_SIGNED=0.500000000000000000
 SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
-SLASHING_FRACTION_DOWNTIME=0.010000000000000000
+SLASHING_FRACTION_DOWNTIME=0.100000000000000000
 
 ##pre propose single parameters
 PRE_PROPOSAL_SINGLE_AMOUNT=1000
@@ -792,8 +792,6 @@ set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 2},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 4},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 5},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 7},
-                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 8},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 9},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS\""], \"hook_type\": 10}]"
 
