@@ -696,43 +696,57 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         selfDelegationAmount, // Uses the previously retrieved self-delegation amount
       );
 
-      // TODO: find exact params to prevent validator from accident jailing which happens from time to time
-      //
-      // console.log(`Waiting for blocks to confirm bonding...`);
-      // await waitBlocks(10, validatorPrimarClient);
+      const resUnjail = await validatorSecondClient.signAndBroadcast(
+        [
+          {
+            typeUrl: '/cosmos.slashing.v1beta1.MsgUnjail',
+            value: {
+              validatorAddr: validatorSecondWallet.valAddress,
+            },
+          },
+        ],
+        {
+          amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+          gas: '2000000',
+        },
+      );
 
-      // // Query validator state to check if it got bonded again
-      // const heightAfterBonding = await validatorSecondClient.getHeight();
-      // const validatorStateAfterBonding = await stakingQuerier.validator({
-      //   validatorAddr: validatorWeakAddr,
-      // });
+      console.log(resUnjail.rawLog);
+      expect(resUnjail.code).toEqual(0);
 
-      // console.log(
-      //   `Validator Status After Self-Delegation: ${validatorStateAfterBonding.validator.status}`,
-      // );
-      //
-      // // Validator should be bonded again
-      // expect(validatorStateAfterBonding.validator.status).toEqual(
-      //   'BOND_STATUS_BONDED',
-      // );
-      //
-      // // Check voting power after bonding back
-      // const vaultInfoAfterBonding = await getStakingVaultInfo(
-      //   validatorSecondClient,
-      //   validatorSecondWallet.address,
-      //   stakingVaultAddr,
-      //   heightAfterBonding,
-      // );
-      //
-      // console.log(
-      //   `Voting Power After Self-Delegation: ${vaultInfoAfterBonding.power}`,
-      // );
-      // console.log(
-      //   `Total Network Power After Self-Delegation: ${vaultInfoAfterBonding.totalPower}`,
-      // );
-      //
-      // // Ensure voting power increased after self-delegation
-      // expect(vaultInfoAfterBonding.power).toBeGreaterThan(vaultInfoAfter.power);
+      console.log(`Waiting for blocks to confirm bonding...`);
+      await waitBlocks(10, validatorPrimarClient);
+
+      // Query validator state to check if it got bonded again
+      const heightAfterBonding = await validatorSecondClient.getHeight();
+      const validatorStateAfterBonding = await stakingQuerier.validator({
+        validatorAddr: validatorWeakAddr,
+      });
+
+      console.log(
+        `Validator Status After Self-Delegation: ${validatorStateAfterBonding.validator.status}`,
+      );
+
+      // Validator should be bonded again
+      expect(validatorStateAfterBonding.validator.status).toEqual(3);
+
+      // Check voting power after bonding back
+      const vaultInfoAfterBonding = await getStakingVaultInfo(
+        validatorSecondClient,
+        validatorSecondWallet.address,
+        stakingVaultAddr,
+        heightAfterBonding,
+      );
+
+      console.log(
+        `Voting Power After Self-Delegation: ${vaultInfoAfterBonding.power}`,
+      );
+      console.log(
+        `Total Network Power After Self-Delegation: ${vaultInfoAfterBonding.totalPower}`,
+      );
+
+      // Ensure voting power increased after self-delegation
+      expect(vaultInfoAfterBonding.power).toBeGreaterThan(vaultInfoAfter.power);
     });
   });
 });
@@ -950,7 +964,6 @@ export const waitBlocksTimeout = async (
       if (block.header.height - initBlock.header.height >= blocks) {
         break;
       }
-      // console.log('timeout number: ' + (Date.now() - start));
       if (Date.now() - start > timeout) {
         break;
       }
