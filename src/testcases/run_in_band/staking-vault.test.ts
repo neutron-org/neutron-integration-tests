@@ -1,5 +1,5 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { sleep, waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
@@ -7,6 +7,17 @@ import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/co
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import { execSync } from 'child_process';
+import { StargateClient } from '@cosmjs/stargate';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
+import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 const VAL_MNEMONIC_1 =
   'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
 const VAL_MNEMONIC_2 =
@@ -20,6 +31,9 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
   let neutronClient2: SigningNeutronClient;
   let validatorSecondClient: SigningNeutronClient;
   let validatorPrimarClient: SigningNeutronClient;
+
+  let daoWalletClient: SigningNeutronClient;
+  let daoWallet: Wallet;
 
   let neutronWallet1: Wallet;
   let neutronWallet2: Wallet;
@@ -77,6 +91,61 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     );
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
+  });
+
+  describe('Slashing params', () => {
+    let mainDao: Dao;
+    let daoMember1: DaoMember;
+    let proposalId;
+    test('create proposal', async () => {
+      const neutronRpcClient = await testState.neutronRpcClient();
+      const daoCoreAddress = await getNeutronDAOCore(
+        daoWalletClient,
+        neutronRpcClient,
+      ); // add assert for some addresses
+      const daoContracts = await getDaoContracts(
+        daoWalletClient,
+        daoCoreAddress,
+      );
+      mainDao = new Dao(daoWalletClient, daoContracts);
+      daoMember1 = new DaoMember(
+        mainDao,
+        daoWalletClient.client,
+        daoWallet.address,
+        NEUTRON_DENOM,
+      );
+      console.log('daoMember1: ' + daoMember1.user);
+      await daoMember1.bondFunds('1999999491000');
+      const neutronQuerier = await createNeutronClient({
+        rpcEndpoint: testState.rpcNeutron,
+      });
+      const admins =
+        await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+      const chainManagerAddress = admins.admins[0];
+      proposalId = await submitUpdateParamsSlashingProposal(
+        daoMember1,
+        chainManagerAddress,
+        'Proposal #1',
+        'Param change proposal. Update slashing params',
+        {
+          downtime_jail_duration: '2h',
+          min_signed_per_window: '0.500000000000000000',
+          signed_blocks_window: '15',
+          slash_fraction_double_sign: '0.010000000000000000',
+          slash_fraction_downtime: '0.100000000000000000',
+        },
+        '1000',
+      );
+    });
+    test('vote YES', async () => {
+      await daoMember1.voteYes(proposalId);
+    });
+    test('check if proposal is passed', async () => {
+      await mainDao.checkPassedProposal(proposalId);
+    });
+    test('execute passed proposal', async () => {
+      await daoMember1.executeProposalWithAttempts(proposalId);
+    });
   });
 
   describe('Staking Vault Operations - Multiple Users & Validators', () => {
@@ -438,7 +507,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     );
 
     console.log(`Waiting for blocks to confirm bonding...`);
-    await waitBlocks(2, validatorPrimarClient);
+    await waitBlocks(10, validatorPrimarClient);
 
     // Query validator state to check if it got bonded again
     const heightAfterBonding = await validatorSecondClient.getHeight();
@@ -498,16 +567,30 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       validatorSecondWallet.valAddress,
       validatorStrongAddr,
       validatorSecondWallet.address,
-      12,
+      6,
     );
+    console.log(`Validator after slashing status: ${newStatus}`);
 
     console.log(`Waiting 10 more blocks to check if validator gets jailed...`);
     await waitBlocks(10, neutronClient1);
 
-    // Expect validator to be in the jail state
-    expect(newStatus).toEqual(4);
+    // Query validator status after potential jailing
+    const validatorStateAfterSlashing = await stakingQuerier.validator({
+      validatorAddr: validatorWeakAddr,
+    });
 
-    // Query voting power after unbonidng leading to slashing
+    console.log(
+      `Validator Status After Slashing: ${validatorStateAfterSlashing.validator.status}`,
+    );
+
+    // Ensure the validator is jailed before proceeding
+    if (validatorStateAfterSlashing.validator.jailed !== true) {
+      throw new Error(
+        `Validator is not jailed, unjail should not be attempted.`,
+      );
+    }
+
+    // Query voting power after unbonding leading to slashing
     const heightAfterSlashing = await validatorSecondClient.getHeight();
     const vaultInfoAfter = await getStakingVaultInfo(
       validatorSecondClient,
@@ -552,9 +635,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     );
 
     // Validator should be bonded again
-    expect(validatorStateAfterUnjail.validator.status).toEqual(
-      3,
-    );
+    expect(validatorStateAfterUnjail.validator.status).toEqual(3);
 
     // **Check voting power after unjailing**
     const vaultInfoAfterUnjail = await getStakingVaultInfo(
@@ -568,7 +649,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     // Ensure voting power is restored
     expect(vaultInfoAfterUnjail.power).toBeGreaterThan(vaultInfoAfter.power);
   });
-
 });
 
 const delegateTokens = async (
@@ -618,7 +698,7 @@ const redelegateTokens = async (
       gas: '2000000',
     },
   );
-
+  console.log(res.rawLog);
   expect(res.code).toEqual(0);
 };
 
@@ -654,11 +734,7 @@ export const simulateSlashingAndJailing = async (
   delegatorAddr: string,
   missedBlocks = 10, // Default to slashing threshold
 ) => {
-  // Check if validator has been slashed
   let validatorInfo = await stakingQuerier.validator({ validatorAddr });
-  console.log(
-    `Validator status after slashing period: ${validatorInfo.validator.status}`,
-  );
 
   // Check if the network has enough voting power to continue producing blocks
   const activeValidators = await stakingQuerier.validators({
@@ -682,7 +758,9 @@ export const simulateSlashingAndJailing = async (
   if (!slashedValidator) {
     console.log(`Slashed validator ${validatorAddr} not found.`);
   } else {
-    console.log(`Slashed Validator Power: ${Number(slashedValidator.tokens)}`);
+    console.log(
+      `Slashed Validator Power Before: ${Number(slashedValidator.tokens)}`,
+    );
   }
 
   if (!alternativeValidator) {
@@ -691,10 +769,10 @@ export const simulateSlashingAndJailing = async (
   }
 
   const alternativeValidatorPower = Number(alternativeValidator.tokens);
-  console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
+  // console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
 
   const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
-  console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+  // console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
 
   if (alternativeValidatorPower < minRequiredPower) {
     console.log(
@@ -708,28 +786,35 @@ export const simulateSlashingAndJailing = async (
       alternativeValidatorAddr,
       (minRequiredPower - alternativeValidatorPower).toString(),
     );
-    console.log(`Delegation successful.`);
   }
 
   console.log(`Pausing validator container: ${VALIDATOR_CONTAINER}`);
   execSync(`docker pause ${VALIDATOR_CONTAINER}`);
 
   console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
-  await waitBlocks(missedBlocks, neutronClient);
+  try {
+    await waitBlocksTimeout(missedBlocks, neutronClient, 20000);
+  } catch (e) {
+    // console.log('after timeout');
+  } // expected error because of timeout. Blocks are not produced after turning off the val, so
 
   console.log(`Unpausing validator container: ${VALIDATOR_CONTAINER}`);
   execSync(`docker unpause ${VALIDATOR_CONTAINER}`);
 
-  console.log(`Waiting 2 blocks to confirm status update...`);
+  // console.log(`Waiting 2 blocks to confirm status update...`);
   await waitBlocks(2, neutronClient);
 
   // Re-check validator status
   validatorInfo = await stakingQuerier.validator({ validatorAddr });
   console.log(`Final validator status: ${validatorInfo.validator.status}`);
 
+  // Retrieve voting power of both validators
+  console.log(
+    `Slashed Validator Power Before: ${Number(validatorInfo.validator.tokens)}`,
+  );
+
   return validatorInfo.validator.status;
 };
-
 const getStakingVaultInfo = async (
   client: SigningNeutronClient,
   address: string,
@@ -764,4 +849,71 @@ type VotingPowerInfo = {
   height: number;
   power: number;
   totalPower: number;
+};
+
+export const waitBlocksTimeout = async (
+  blocks: number,
+  client: StargateClient | CosmWasmClient,
+  timeout = 120000,
+): Promise<void> => {
+  const start = Date.now();
+  // const client = await StargateClient.connect(this.rpc);
+  const initBlock = await client.getBlock();
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      const block = await client.getBlock();
+      if (block.header.height - initBlock.header.height >= blocks) {
+        break;
+      }
+      // console.log('timeout number: ' + (Date.now() - start));
+      if (Date.now() - start > timeout) {
+        break;
+      }
+    } catch (e) {
+      //noop
+    }
+    await sleep(1000);
+  }
+};
+
+export type Duration = string;
+
+export type ParamsSlashingInfo = {
+  signed_blocks_window: string;
+  min_signed_per_window: string;
+  downtime_jail_duration: Duration;
+  slash_fraction_double_sign: string;
+  slash_fraction_downtime: string;
+};
+
+export const submitUpdateParamsSlashingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsSlashingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.slashing.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
+  );
 };
