@@ -75,7 +75,7 @@ USE_COINGECKO_MARKETS=${USE_COINGECKO_MARKETS:-false}
 ### PARAMETERS SECTION
 
 ## slashing params
-SLASHING_SIGNED_BLOCKS_WINDOW=10
+SLASHING_SIGNED_BLOCKS_WINDOW=1000
 SLASHING_MIN_SIGNED=0.800000000000000000
 SLASHING_FRACTION_DOUBLE_SIGN=0.010000000000000000
 SLASHING_FRACTION_DOWNTIME=0.100000000000000000
@@ -839,7 +839,9 @@ set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""   
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 2},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 3},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 4},
+                                                               {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 5},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 8},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 9},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 10}]"
@@ -853,8 +855,8 @@ for i in `seq 2 ${NODES}`; do
   cp ${BASE_DIR}/${CHAINID}/node-1/config/genesis.json ${BASE_DIR}/${CHAINID}/node-${i}/config/genesis.json
 done
 
-echo "DAO $DAO_CONTRACT_ADDRESS" >> $CHAIN_DIR/reward_addresses.json
-echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS  >> $CHAIN_DIR/reward_addresses.json
-echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json
-echo "STAKING REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json
-echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS >> $CHAIN_DIR/reward_addresses.json
+echo "DAO $DAO_CONTRACT_ADDRESS"
+echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
+echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS
+echo "STAKING REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS
+echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS 
