@@ -1,6 +1,13 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { waitBlocks, waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import {
+  NEUTRON_DENOM,
+  SECOND_VALIDATOR_CONTAINER,
+  STAKING_REWARDS,
+  STAKING_TRACKER,
+  VAL_MNEMONIC_1,
+  VAL_MNEMONIC_2,
+} from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
@@ -21,28 +28,10 @@ import {
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 
-const VAL_MNEMONIC_1 =
-  'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
-const VAL_MNEMONIC_2 =
-  'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
-
-// const DAO = 'neutron1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8ts8g30fq';
-// const STAKING_VAULT =
-//   'neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg';
-const STAKING_TRACKER =
-  'neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj';
-const STAKING_REWARDS =
-  'neutron1nhay73rdztlwwxnspup3y4uld59ylaumhddjt80eqmd0xl5e7mfqx0rnr3';
-// const STAKING_INFO_PROXY =
-//   'neutron14xw3z6mhrhuckd46t2saxu7h90fzydnfu7xuewm4tmgl0dakkcjqxc3k6x';
-
-const VALIDATOR_CONTAINER = 'neutron-node-1';
-
 describe('Neutron / Staking Rewards', () => {
   let testState: LocalState;
   let neutronClient1: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
-  // let validatorClient: SigningNeutronClient;
 
   let demoWalletClient: SigningNeutronClient;
   let demoWallet: Wallet;
@@ -58,9 +47,6 @@ describe('Neutron / Staking Rewards', () => {
   let validatorStrongAddr: string;
   let validatorPrimary: Wallet;
   let validatorSecondary: Wallet;
-
-  // let validator1SelfDelegation: number;
-  // let validator2SelfDelegation: number;
 
   let claimRecipient: string;
 
@@ -133,7 +119,7 @@ describe('Neutron / Staking Rewards', () => {
       demoWallet.address,
       NEUTRON_DENOM,
     );
-    console.log('daoMember1: ' + daoMember1.user);
+    // bond a lot to avoid not passing the proposal since now all stake is counted
     await daoMember1.bondFunds('1999999491000');
     const neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
@@ -160,14 +146,8 @@ describe('Neutron / Staking Rewards', () => {
           },
           '1000',
         );
-      });
-      test('vote YES', async () => {
         await daoMember1.voteYes(proposalId);
-      });
-      test('check if proposal is passed', async () => {
         await mainDao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
     });
@@ -179,21 +159,11 @@ describe('Neutron / Staking Rewards', () => {
             amount: '8000000000',
           },
         ]);
-        console.log('res send tokens: ' + JSON.stringify(res.rawLog));
         expect(res.code).toEqual(0);
       });
       test('save vals and delegate to them', async () => {
-        // const validators = await stakingQuerier.validators({
-        //   status: 'BOND_STATUS_BONDED',
-        // });
-
         validatorStrongAddr = validatorPrimary.valAddress;
         validatorWeakAddr = validatorSecondary.valAddress;
-        // validator1SelfDelegation = +validators.validators[0].tokens;
-        // validator2SelfDelegation = +validators.validators[1].tokens;
-
-        console.log('ValidatorWeak:', validatorWeakAddr);
-        console.log('ValidatorStrong:', validatorStrongAddr);
 
         await delegateTokens(
           demoWalletClient,
@@ -219,14 +189,6 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        console.log(
-          'address: ' +
-            validatorPrimary.address +
-            '    balanceBeforeClaim: ' +
-            balanceBeforeClaim.balance.amount +
-            ' , balanceAfterClaim: ' +
-            balanceAfterClaim.balance.amount,
-        );
         expect(+balanceAfterClaim.balance.amount).toBeGreaterThan(
           +balanceBeforeClaim.balance.amount,
         );
@@ -239,15 +201,11 @@ describe('Neutron / Staking Rewards', () => {
       // wait blocks
       // claim again
       // calculate rate per block (rate of accruing rewards should be less because lf slashing)
-      test('claim rewards works as expected', async () => {
-        // claim before delegate should not change anything
+      test('claim rewards works as a user', async () => {
         const balanceBeforeDelegate = await bankQuerier.balance({
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log(
-          'balanceBeforeDelegate: ' + balanceBeforeDelegate.balance.amount,
-        );
 
         const res2 = await neutronClient1.execute(STAKING_REWARDS, {
           claim_rewards: {
@@ -263,14 +221,12 @@ describe('Neutron / Staking Rewards', () => {
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log(
-          'balanceBeforeDelegate2: ' + balanceBeforeDelegate2.balance.amount,
+        expect(+balanceBeforeDelegate2.balance.amount).toEqual(
+          +balanceBeforeDelegate.balance.amount,
         );
-        // expect(+balanceBeforeDelegate2.balance.amount).toEqual(0);
 
         // delegate
         const delegationAmount = '1000000000';
-        // const delegationAmount2 = 10000000000; = delegationAmount;
         const res3 = await delegateTokens(
           neutronClient1,
           neutronWallet1.address,
@@ -279,7 +235,6 @@ describe('Neutron / Staking Rewards', () => {
         );
         expect(res3.code).toEqual(0);
         const delegationHeight = res3.height;
-        console.log('delegationHeight: ' + delegationHeight);
         // wait some number of blocks to get accumulate claimable tokens
         await neutronClient1.waitBlocks(10);
 
@@ -289,35 +244,19 @@ describe('Neutron / Staking Rewards', () => {
           },
         });
         expect(res4.code).toEqual(0);
-        // console.log('logs: \n' + JSON.stringify(res4.events));
         const claimHeight1 = res4.height;
-        console.log('claimHeight1: ' + claimHeight1);
 
         // claim changed balance
         const balanceAfterDelegate1 = await bankQuerier.balance({
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log(
-          'balanceAfterDelegate1: ' + balanceAfterDelegate1.balance.amount,
-        );
         expect(+balanceAfterDelegate1.balance.amount).toBeGreaterThan(0);
 
         // expected rate now is:
-        const accrueRateExpected = +delegationAmount * (0.1 / 100); // 10% every 100 blocks
-        const claimExpected =
-          (claimHeight1 - delegationHeight) * accrueRateExpected;
-        console.log('blocksPassed: ' + (claimHeight1 - delegationHeight));
-        console.log(
-          'rateExpected: ' +
-            accrueRateExpected +
-            ', claimExpected: ' +
-            claimExpected,
-        );
         const claimReal =
           +balanceAfterDelegate1.balance.amount -
           +balanceBeforeDelegate2.balance.amount;
-        console.log('claimReal: ' + claimReal);
         const realRate1 = claimReal / (claimHeight1 - delegationHeight);
 
         // delegation wallet
@@ -326,12 +265,6 @@ describe('Neutron / Staking Rewards', () => {
           neutronWallet1.address,
           STAKING_TRACKER,
         );
-        console.log(
-          `WALLET Voting Power Before Slashing: ${vaultInfoBeforeSlashingWallet.power}`,
-        );
-
-        // console.log(`Validator to slash: ${validatorSecondary.valAddress}`);
-        // console.log(`Validator #2: ${validatorStrongAddr}`);
 
         await simulateSlashingAndJailing(
           validatorSecondClient,
@@ -343,8 +276,8 @@ describe('Neutron / Staking Rewards', () => {
           12,
         );
 
-        while (true) {
-          console.log('waiting for val to be jailed');
+        for (;;) {
+          console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,
           });
@@ -374,9 +307,6 @@ describe('Neutron / Staking Rewards', () => {
           STAKING_TRACKER,
           await validatorSecondClient.getHeight(),
         );
-        console.log(
-          `Voting Power After Slashing and Jailing (SHOULD BE ZERO!!!): ${vaultInfoAfterSlashing.power}`,
-        );
         expect(+vaultInfoAfterSlashing.power).toEqual(0);
 
         // delegation wallet
@@ -385,10 +315,6 @@ describe('Neutron / Staking Rewards', () => {
           neutronWallet1.address,
           STAKING_TRACKER,
         );
-        console.log(
-          `WALLET Voting Power After Slashing (should be zero!!!): ${vaultInfoAfterSlashingWallet.power}`,
-        );
-        // TODO: see why sometimes `AssertionError: expected 0 to be greater than 0`
         expect(vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(
           vaultInfoAfterSlashingWallet.power,
         );
@@ -409,26 +335,11 @@ describe('Neutron / Staking Rewards', () => {
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log(
-          'balanceAfterSlashing1: ' +
-            balanceAfterSlashing1.balance.amount +
-            '   balanceAfterSlashing2: ' +
-            balanceAfterSlashing2.balance.amount,
-        );
         const newClaimReal =
           +balanceAfterSlashing2.balance.amount -
           +balanceAfterSlashing1.balance.amount;
-        console.log('Balance change: ' + newClaimReal);
-        console.log('claimReal: ' + newClaimReal);
         const realRate2 =
           newClaimReal / (claimHeightAfterSlashing2 - claimHeightAfterSlashing);
-
-        console.log(
-          'realRate1: ' +
-            realRate1 +
-            ' , realRate2 (SHOULD BE 0): ' +
-            realRate2,
-        );
 
         expect(realRate2).toBeLessThan(realRate1);
         expect(realRate2).toBe(0);
@@ -436,15 +347,6 @@ describe('Neutron / Staking Rewards', () => {
         // waiting for unjail
         console.log('waiting 30s for unjail...');
         await waitSeconds(30);
-
-        const vaultInfoBeforeJail = await getStakingTrackerInfo(
-          neutronClient1,
-          neutronWallet1.address,
-          STAKING_TRACKER,
-        );
-        console.log(
-          'vaultInfoAfterJail: ' + JSON.stringify(vaultInfoBeforeJail),
-        );
 
         // **Step 3: Unjail Validator**
         const resUnjail = await validatorSecondClient.signAndBroadcast(
@@ -461,8 +363,6 @@ describe('Neutron / Staking Rewards', () => {
             gas: '2000000',
           },
         );
-
-        console.log(resUnjail.rawLog);
         expect(resUnjail.code).toEqual(0);
 
         const resAfterSlashing3 = await neutronClient1.execute(
@@ -497,32 +397,12 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        // TODO: wait blocks here; then compare to previous line height to get actual rate!
-
-        const vaultInfoAfterJail = await getStakingTrackerInfo(
-          neutronClient1,
-          neutronWallet1.address,
-          STAKING_TRACKER,
-        );
-        console.log(
-          'vaultInfoAfterJail: ' + JSON.stringify(vaultInfoAfterJail),
-        );
-
-        console.log(
-          'balanceAfterSlashing4: ' + balanceAfterSlashing4.balance.amount,
-        );
         const newClaimReal3 =
           +balanceAfterSlashing4.balance.amount -
           +balanceAfterSlashing3.balance.amount;
-        console.log(
-          'Balance change: ' + newClaimReal3,
-          '   height change: ' +
-            (claimHeightAfterSlashing4 - claimHeightAfterSlashing3),
-        );
         const realRate3 =
           newClaimReal3 /
           (claimHeightAfterSlashing4 - claimHeightAfterSlashing3);
-        console.log('realRate3: ' + realRate3, '   realRate1: ' + realRate1);
         expect(realRate3).toBeLessThan(realRate1);
         expect(realRate3 / 2.0).toBeCloseTo((realRate1 * 0.9) / 2, 2);
       });
@@ -530,7 +410,6 @@ describe('Neutron / Staking Rewards', () => {
       test('blacklisted address works with rewards correctly', async () => {
         const delegationAmount = '1000000000'; // 1000ntrn
         const blacklistedWallet = await testState.nextWallet('neutron');
-        console.log('blacklistedWallet: ' + blacklistedWallet.address);
         const blacklistedClient = await SigningNeutronClient.connectWithSigner(
           testState.rpcNeutron,
           blacklistedWallet.directwallet,
@@ -549,7 +428,6 @@ describe('Neutron / Staking Rewards', () => {
           validatorStrongAddr,
           delegationAmount, // 1000ntrn
         );
-        console.log('problems: ' + res1.rawLog);
         expect(res1.code).toEqual(0);
 
         await blacklistedClient.waitBlocks(2);
@@ -570,12 +448,6 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        console.log(
-          'beforeblacklist: balance1: ' +
-            balance1.balance.amount +
-            ' balance2: ' +
-            balance2.balance.amount,
-        );
         expect(+balance2.balance.amount).toBeGreaterThan(
           +balance1.balance.amount,
         );
@@ -621,19 +493,13 @@ describe('Neutron / Staking Rewards', () => {
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log(
-          'balance4: ' +
-            balance4.balance.amount +
-            '  balance3: ' +
-            balance3.balance.amount,
-        );
         expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
 
         // remove from blacklist
         const proposalId2 = await submitRemoveFromBlacklistProposal(
           daoMember1,
           STAKING_TRACKER,
-          'DeBlacklist Address Proposal',
+          'Remove from Blacklist Address Proposal',
           'Proposal to remove blacklisted address from voting',
           { addresses: [blacklistedWallet.address] },
           '1000',
@@ -654,7 +520,6 @@ describe('Neutron / Staking Rewards', () => {
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        console.log('balance5: ' + balance5.balance.amount);
         expect(+balance5.balance.amount).toBeGreaterThan(
           +balance4.balance.amount,
         );
@@ -728,10 +593,10 @@ export const simulateSlashingAndJailing = async (
   }
 
   const alternativeValidatorPower = Number(alternativeValidator.tokens);
-  // console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
+  console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
 
   const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
-  // console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+  console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
 
   if (alternativeValidatorPower < minRequiredPower) {
     console.log(
@@ -755,25 +620,25 @@ export const simulateSlashingAndJailing = async (
   );
   console.log(`Voting Power Before Slashing: ${vaultInfoBeforeSlashing.power}`);
 
-  console.log(`Pausing validator container: ${VALIDATOR_CONTAINER}`);
-  execSync(`docker pause ${VALIDATOR_CONTAINER}`);
+  console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
+  execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
 
   console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
   try {
     await waitBlocksTimeout(missedBlocks, neutronClient, 20000);
   } catch (e) {
-    // console.log('after timeout');
-  } // expected error because of timeout. Blocks are not produced after turning off the val, so
+    // expected error because of timeout. Blocks are not produced after turning off the val.
+  }
 
-  console.log(`Unpausing validator container: ${VALIDATOR_CONTAINER}`);
-  execSync(`docker unpause ${VALIDATOR_CONTAINER}`);
+  console.log(`Unpausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
+  execSync(`docker unpause ${SECOND_VALIDATOR_CONTAINER}`);
 
-  // console.log(`Waiting 2 blocks to confirm status update...`);
+  console.log(`Waiting 2 blocks to confirm status update...`);
   await waitBlocks(2, neutronClient);
 
   // Re-check validator status
   validatorInfo = await stakingQuerier.validator({ validatorAddr });
-  // console.log(`Final validator status: ${validatorInfo.validator.status}`);
+  console.log(`Final validator status: ${validatorInfo.validator.status}`);
 
   // Retrieve voting power of both validators
   console.log(
@@ -835,7 +700,6 @@ export const waitBlocksTimeout = async (
       if (block.header.height - initBlock.header.height >= blocks) {
         break;
       }
-      // console.log('timeout number: ' + (Date.now() - start));
       if (Date.now() - start > timeout) {
         break;
       }
@@ -899,6 +763,7 @@ export type RemoveFromBlacklistInfo = {
   addresses: string[];
 };
 
+// TODO: use from neutronjsplus
 export const submitAddToBlacklistProposal = async (
   dao: DaoMember,
   contractAddress: string,
@@ -929,6 +794,7 @@ export const submitAddToBlacklistProposal = async (
   );
 };
 
+// TODO: use from neutronjsplus
 export const submitRemoveFromBlacklistProposal = async (
   dao: DaoMember,
   contractAddress: string,
