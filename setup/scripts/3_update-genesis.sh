@@ -644,7 +644,7 @@ NEUTRON_CHAIN_MANAGER_INIT_MSG='{
 NEUTRON_STAKING_VAULT_INIT_MSG='{
   "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
   "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
-  "owner": "'"$DAO_CONTRACT_ADDRESS"'",
+  "owner": "'"$DAO_CONTRACT_ADDRESS"'"
 }'
 
 echo "Instantiate contracts"
