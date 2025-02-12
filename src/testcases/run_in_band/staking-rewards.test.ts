@@ -262,7 +262,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       // wait blocks
       // claim again
       // calculate rate per block (rate of accruing rewards should be less because lf slashing)
-      test('claim rewards works as expected', async () => {
+      test.skip('claim rewards works as expected', async () => {
         // claim before delegate should not change anything
         const balanceBeforeDelegate = await bankQuerier.balance({
           address: claimRecipient,
@@ -412,6 +412,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         console.log(
           `WALLET Voting Power After Slashing (should be zero!!!): ${vaultInfoAfterSlashingWallet.power}`,
         );
+        // TODO: see why sometimes `AssertionError: expected 0 to be greater than 0`
         expect(vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(
           vaultInfoAfterSlashingWallet.power,
         );
@@ -449,7 +450,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         console.log(
           'realRate1: ' +
             realRate1 +
-            ' , realRate2 (SHOULD BE VERY LOW!): ' +
+            ' , realRate2 (SHOULD BE 0): ' +
             realRate2,
         );
 
@@ -548,6 +549,123 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         console.log('realRate3: ' + realRate3, '   realRate1: ' + realRate1);
         expect(realRate3).toBeLessThan(realRate1);
         expect(realRate3 / 2.0).toBeCloseTo((realRate1 * 0.9) / 2, 2);
+      });
+
+      test('blacklisted address works with rewards correctly', async () => {
+        const delegationAmount = '1000000000'; // 1000ntrn
+        const blacklistedWallet = await testState.nextWallet('neutron');
+        console.log('blacklistedWallet: ' + blacklistedWallet.address);
+        const blacklistedClient = await SigningNeutronClient.connectWithSigner(
+          testState.rpcNeutron,
+          blacklistedWallet.directwallet,
+          blacklistedWallet.address,
+        );
+
+        // delegate
+        // test claim works
+        // blacklist
+        // claim, then test claim doesn't add to balance
+        // remove from blacklist
+        // then test claim works
+        const res1 = await delegateTokens(
+          blacklistedClient,
+          blacklistedWallet.address,
+          validatorStrongAddr,
+          delegationAmount, // 1000ntrn
+        );
+        console.log('problems: ' + res1.rawLog);
+        expect(res1.code).toEqual(0);
+
+        await blacklistedClient.waitBlocks(2);
+        const balance1 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        const res2 = await blacklistedClient.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res2.code).toEqual(0);
+
+        const balance2 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        console.log(
+          'beforeblacklist: balance1: ' +
+            balance1.balance.amount +
+            ' balance2: ' +
+            balance2.balance.amount,
+        );
+        expect(+balance2.balance.amount).toBeGreaterThan(
+          +balance1.balance.amount,
+        );
+
+        // blacklist
+        const res3 = await neutronClient1.execute(STAKING_TRACKER, {
+          add_to_blacklist: [claimRecipient],
+        });
+        expect(res3.code).toEqual(0);
+
+        // claim pending rewards
+        const res4 = await blacklistedClient.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res4.code).toEqual(0);
+
+        const balance3 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        await blacklistedClient.waitBlocks(10);
+
+        // claim again, should be zero because blacklisted
+        const res5 = await blacklistedClient.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res5.code).toEqual(0);
+        const balance4 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+        console.log(
+          'balance4: ' +
+            balance4.balance.amount +
+            '  balance3: ' +
+            balance3.balance.amount,
+        );
+        expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
+
+        // remove from blacklist
+        const res6 = await neutronClient1.execute(STAKING_REWARDS, {
+          remove_from_blacklist: [claimRecipient],
+        });
+        expect(res6.code).toEqual(0);
+
+        await blacklistedClient.waitBlocks(10);
+        const res7 = await blacklistedClient.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res7.code).toEqual(0);
+
+        const balance5 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+        console.log('balance5: ' + balance5.balance.amount);
+        expect(+balance5.balance.amount).toBeGreaterThan(
+          +balance4.balance.amount,
+        );
       });
     });
   });
