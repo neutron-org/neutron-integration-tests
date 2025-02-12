@@ -307,9 +307,10 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           let daoMember1: DaoMember;
           let proposalId: number;
           let blacklistedAddress: string;
+          let heightBeforeBlacklist: number;
 
           test('create proposal', async () => {
-            blacklistedAddress = neutronWallet1.address;
+            blacklistedAddress = neutronWallet2.address;
 
             const neutronRpcClient = await testState.neutronRpcClient();
             const daoCoreAddress = await getNeutronDAOCore(
@@ -358,40 +359,47 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             await mainDao.checkPassedProposal(proposalId);
           });
 
-          // test works, but there is something wrong with proposal's chainmanager wrapping
-          // to be fixed
-          // test('execute passed proposal', async () => {
-          //   await daoMember1.executeProposalWithAttempts(proposalId);
-          // });
-          //
-          // test('validate blacklist effect on voting power', async () => {
-          //   const heightBeforeBlacklist = await neutronClient1.getHeight();
-          //
-          //   // Validate voting power before blacklist
-          //   const vaultInfoBeforeBlacklist = await getStakingVaultInfo(
-          //     neutronClient1,
-          //     blacklistedAddress,
-          //     stakingVaultAddr,
-          //     heightBeforeBlacklist,
-          //   );
-          //   expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
-          //   console.log(
-          //     `Voting Power Before Blacklist: ${vaultInfoBeforeBlacklist.power}`,
-          //   );
-          //
-          //   await waitBlocks(2, neutronClient1); // Wait for changes to take effect
-          //
-          //   // Validate voting power after blacklist
-          //   const vaultInfoAfterBlacklist = await getStakingVaultInfo(
-          //     neutronClient1,
-          //     blacklistedAddress,
-          //     stakingVaultAddr,
-          //   );
-          //   expect(vaultInfoAfterBlacklist.power).toEqual(0);
-          //   console.log(
-          //     `Voting Power After Blacklist: ${vaultInfoAfterBlacklist.power}`,
-          //   );
-          // });
+          test('execute passed proposal', async () => {
+            heightBeforeBlacklist = await neutronClient1.getHeight();
+            const vaultInfoBeforeBlacklist = await getStakingVaultInfo(
+              neutronClient1,
+              blacklistedAddress,
+              stakingVaultAddr,
+              heightBeforeBlacklist,
+            );
+            // before blacklist there is a vp
+            expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
+            await waitBlocks(1, daoWalletClient);
+            await daoMember1.executeProposalWithAttempts(proposalId);
+          });
+
+          test('validate blacklist effect on voting power', async () => {
+            // Validate voting power before blacklist
+            const vaultInfoBeforeBlacklistOldBlock = await getStakingVaultInfo(
+              neutronClient1,
+              blacklistedAddress,
+              stakingVaultAddr,
+              heightBeforeBlacklist,
+            );
+            // address is blacklisted, even in the past no voting power
+            expect(vaultInfoBeforeBlacklistOldBlock.power).toBe(0);
+            console.log(
+              `Voting Power After Blacklist, old block: ${vaultInfoBeforeBlacklistOldBlock.power}`,
+            );
+
+            await waitBlocks(2, neutronClient1); // Wait for changes to take effect
+
+            // Validate voting power after blacklist
+            const vaultInfoAfterBlacklist = await getStakingVaultInfo(
+              neutronClient1,
+              blacklistedAddress,
+              stakingVaultAddr,
+            );
+            expect(vaultInfoAfterBlacklist.power).toEqual(0);
+            console.log(
+              `Voting Power After Blacklist: ${vaultInfoAfterBlacklist.power}`,
+            );
+          });
         });
       });
     });
@@ -1028,17 +1036,13 @@ export const submitAddToBlacklistProposal = async (
   blacklist: AddToBlacklistInfo,
   deposit: string,
 ): Promise<number> => {
-  const msg = {
-    add_to_blacklist: blacklist, // `{ addresses: Vec<String> }`
-  };
-
   const wasmMessage = {
     wasm: {
       execute: {
         contract_addr: contractAddress,
         msg: Buffer.from(
           JSON.stringify({
-            msg,
+            add_to_blacklist: blacklist,
           }),
         ).toString('base64'),
         funds: [],
@@ -1046,24 +1050,10 @@ export const submitAddToBlacklistProposal = async (
     },
   };
 
-  const proposalMessage = chainManagerWrapper(chainManagerAddress, {
-    custom: {
-      submit_admin_proposal: {
-        admin_proposal: {
-          proposal_execute_message: {
-            message: Buffer.from(JSON.stringify(wasmMessage)).toString(
-              'base64',
-            ),
-          },
-        },
-      },
-    },
-  });
-
   return await dao.submitSingleChoiceProposal(
     title,
     description,
-    [proposalMessage],
+    [wasmMessage],
     deposit,
   );
 };
