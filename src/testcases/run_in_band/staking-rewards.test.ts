@@ -38,7 +38,7 @@ const STAKING_REWARDS =
 
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 
-describe('Neutron / Staking Vault - Extended Scenarios', () => {
+describe('Neutron / Staking Rewards', () => {
   let testState: LocalState;
   let neutronClient1: SigningNeutronClient;
   let neutronClient2: SigningNeutronClient;
@@ -63,6 +63,11 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
   // let validator2SelfDelegation: number;
 
   let claimRecipient: string;
+
+  // dao
+  let mainDao: Dao;
+  let daoMember1: DaoMember;
+  let chainManagerAddress: string;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
@@ -112,38 +117,35 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
     bankQuerier = new BankQueryClient(neutronRpcClient);
+
+    const daoCoreAddress = await getNeutronDAOCore(
+      demoWalletClient,
+      neutronRpcClient,
+    ); // add assert for some addresses
+    const daoContracts = await getDaoContracts(
+      demoWalletClient,
+      daoCoreAddress,
+    );
+    mainDao = new Dao(demoWalletClient, daoContracts);
+    daoMember1 = new DaoMember(
+      mainDao,
+      demoWalletClient.client,
+      demoWallet.address,
+      NEUTRON_DENOM,
+    );
+    console.log('daoMember1: ' + daoMember1.user);
+    await daoMember1.bondFunds('1999999491000');
+    const neutronQuerier = await createNeutronClient({
+      rpcEndpoint: testState.rpcNeutron,
+    });
+    const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+    chainManagerAddress = admins.admins[0];
   });
 
   describe('Staking Rewards', () => {
     describe('Set slashing params', () => {
-      let mainDao: Dao;
-      let daoMember1: DaoMember;
       let proposalId;
       test('create proposal', async () => {
-        const neutronRpcClient = await testState.neutronRpcClient();
-        const daoCoreAddress = await getNeutronDAOCore(
-          demoWalletClient,
-          neutronRpcClient,
-        ); // add assert for some addresses
-        const daoContracts = await getDaoContracts(
-          demoWalletClient,
-          daoCoreAddress,
-        );
-        mainDao = new Dao(demoWalletClient, daoContracts);
-        daoMember1 = new DaoMember(
-          mainDao,
-          demoWalletClient.client,
-          demoWallet.address,
-          NEUTRON_DENOM,
-        );
-        console.log('daoMember1: ' + daoMember1.user);
-        await daoMember1.bondFunds('1999999491000');
-        const neutronQuerier = await createNeutronClient({
-          rpcEndpoint: testState.rpcNeutron,
-        });
-        const admins =
-          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
-        const chainManagerAddress = admins.admins[0];
         proposalId = await submitUpdateParamsSlashingProposal(
           daoMember1,
           chainManagerAddress,
@@ -177,6 +179,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             amount: '8000000000',
           },
         ]);
+        console.log('res send tokens: ' + JSON.stringify(res.rawLog));
         expect(res.code).toEqual(0);
       });
       test('save vals and delegate to them', async () => {
@@ -198,32 +201,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           validatorStrongAddr,
           '100000000000', // delegate 100000 ntrn to strong so that it's enough to produce blocks by itself (> 66.6%)
         );
-      });
-
-      test.skip('perform multiple delegations', async () => {
-        const delegators = [
-          { wallet: neutronWallet1, client: neutronClient1 },
-          { wallet: neutronWallet2, client: neutronClient2 },
-        ];
-
-        for (const { wallet, client } of delegators) {
-          for (const validator of [validatorWeakAddr, validatorStrongAddr]) {
-            await delegateTokens(client, wallet.address, validator, '1000000');
-          }
-
-          const demoWallet = testState.wallets.neutron.demo1;
-          const demoWalletClient = await SigningNeutronClient.connectWithSigner(
-            testState.rpcNeutron,
-            demoWallet.directwallet,
-            demoWallet.address,
-          );
-          await delegateTokens(
-            demoWalletClient,
-            demoWallet.address,
-            validatorStrongAddr,
-            '100000000000', // delegate 100000 ntrn to strong so that it's enough to produce blocks by itself (> 66.6%)
-          );
-        }
       });
 
       test('claim rewards for validator', async () => {
@@ -262,13 +239,12 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       // wait blocks
       // claim again
       // calculate rate per block (rate of accruing rewards should be less because lf slashing)
-      test.skip('claim rewards works as expected', async () => {
+      test('claim rewards works as expected', async () => {
         // claim before delegate should not change anything
         const balanceBeforeDelegate = await bankQuerier.balance({
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
-        // expect(+balanceBeforeDelegate.balance.amount).toEqual(0);
         console.log(
           'balanceBeforeDelegate: ' + balanceBeforeDelegate.balance.amount,
         );
@@ -605,10 +581,19 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         );
 
         // blacklist
-        const res3 = await neutronClient1.execute(STAKING_TRACKER, {
-          add_to_blacklist: [claimRecipient],
-        });
-        expect(res3.code).toEqual(0);
+        // Create the Blacklist Proposal
+
+        const proposalId1 = await submitAddToBlacklistProposal(
+          daoMember1,
+          STAKING_TRACKER,
+          'Blacklist Address Proposal',
+          'Proposal to blacklist an address from voting',
+          { addresses: [blacklistedWallet.address] },
+          '1000',
+        );
+        await daoMember1.voteYes(proposalId1);
+        await mainDao.checkPassedProposal(proposalId1);
+        await daoMember1.executeProposalWithAttempts(proposalId1);
 
         // claim pending rewards
         const res4 = await blacklistedClient.execute(STAKING_REWARDS, {
@@ -645,10 +630,17 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
 
         // remove from blacklist
-        const res6 = await neutronClient1.execute(STAKING_REWARDS, {
-          remove_from_blacklist: [claimRecipient],
-        });
-        expect(res6.code).toEqual(0);
+        const proposalId2 = await submitRemoveFromBlacklistProposal(
+          daoMember1,
+          STAKING_TRACKER,
+          'DeBlacklist Address Proposal',
+          'Proposal to remove blacklisted address from voting',
+          { addresses: [blacklistedWallet.address] },
+          '1000',
+        );
+        await daoMember1.voteYes(proposalId2);
+        await mainDao.checkPassedProposal(proposalId2);
+        await daoMember1.executeProposalWithAttempts(proposalId2);
 
         await blacklistedClient.waitBlocks(10);
         const res7 = await blacklistedClient.execute(STAKING_REWARDS, {
@@ -897,4 +889,72 @@ export type ParamsSlashingInfo = {
   downtime_jail_duration: Duration;
   slash_fraction_double_sign: string; // dec
   slash_fraction_downtime: string; // dec
+};
+
+export type AddToBlacklistInfo = {
+  addresses: string[];
+};
+
+export type RemoveFromBlacklistInfo = {
+  addresses: string[];
+};
+
+export const submitAddToBlacklistProposal = async (
+  dao: DaoMember,
+  contractAddress: string,
+  title: string,
+  description: string,
+  blacklist: AddToBlacklistInfo,
+  deposit: string,
+): Promise<number> => {
+  const wasmMessage = {
+    wasm: {
+      execute: {
+        contract_addr: contractAddress,
+        msg: Buffer.from(
+          JSON.stringify({
+            add_to_blacklist: blacklist,
+          }),
+        ).toString('base64'),
+        funds: [],
+      },
+    },
+  };
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [wasmMessage],
+    deposit,
+  );
+};
+
+export const submitRemoveFromBlacklistProposal = async (
+  dao: DaoMember,
+  contractAddress: string,
+  title: string,
+  description: string,
+  blacklist: RemoveFromBlacklistInfo,
+  deposit: string,
+): Promise<number> => {
+  const wasmMessage = {
+    wasm: {
+      execute: {
+        contract_addr: contractAddress,
+        msg: Buffer.from(
+          JSON.stringify({
+            remove_from_blacklist: blacklist,
+          }),
+        ).toString('base64'),
+        funds: [],
+      },
+    },
+  };
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [wasmMessage],
+    deposit,
+  );
 };

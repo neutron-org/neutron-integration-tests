@@ -75,7 +75,6 @@ export const CONTRACTS = {
   MARKETMAP: 'marketmap.wasm',
   ORACLE: 'oracle.wasm',
   IBC_RATE_LIMITER: 'rate_limiter.wasm',
-  NEUTRON_STAKING_VAULT: 'neutron_staking_vault.wasm',
 };
 
 export const NEUTRON_PREFIX = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
