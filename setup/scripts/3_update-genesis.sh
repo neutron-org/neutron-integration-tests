@@ -645,7 +645,6 @@ NEUTRON_STAKING_VAULT_INIT_MSG='{
   "name": "'"$NEUTRON_STAKING_VAULT_NAME"'",
   "description": "'"$NEUTRON_STAKING_VAULT_DESCRIPTION"'",
   "owner": "'"$DAO_CONTRACT_ADDRESS"'",
-  "denom": "untrn"
 }'
 
 echo "Instantiate contracts"
