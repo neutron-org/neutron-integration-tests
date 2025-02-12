@@ -1,5 +1,5 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { waitBlocks, waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
@@ -150,7 +150,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           'Proposal #1',
           'Param change proposal. Update slashing params',
           {
-            downtime_jail_duration: '1m',
+            downtime_jail_duration: '30s',
             min_signed_per_window: '0.800000000000000000',
             signed_blocks_window: '10',
             slash_fraction_double_sign: '0.010000000000000000',
@@ -207,7 +207,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         ];
 
         for (const { wallet, client } of delegators) {
-
           for (const validator of [validatorWeakAddr, validatorStrongAddr]) {
             await delegateTokens(client, wallet.address, validator, '1000000');
           }
@@ -251,7 +250,9 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             ' , balanceAfterClaim: ' +
             balanceAfterClaim.balance.amount,
         );
-        expect(+balanceAfterClaim.balance.amount).toBeGreaterThan(+balanceBeforeClaim.balance.amount);
+        expect(+balanceAfterClaim.balance.amount).toBeGreaterThan(
+          +balanceBeforeClaim.balance.amount,
+        );
       });
 
       // delegate
@@ -314,7 +315,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         expect(res4.code).toEqual(0);
         // console.log('logs: \n' + JSON.stringify(res4.events));
         const claimHeight1 = res4.height;
-        console.log('claimHeight: ' + claimHeight1);
+        console.log('claimHeight1: ' + claimHeight1);
 
         // claim changed balance
         const balanceAfterDelegate1 = await bankQuerier.balance({
@@ -366,10 +367,31 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           12,
         );
 
-        console.log(
-          `Waiting 10 more blocks to check if validator gets jailed...`,
-        );
-        await waitBlocks(10, neutronClient1);
+        while (true) {
+          console.log('waiting for val to be jailed');
+          const val = await stakingQuerier.validator({
+            validatorAddr: validatorWeakAddr,
+          });
+          if (val.validator.jailed) {
+            break;
+          }
+          await waitSeconds(3);
+        }
+
+        // clean up pending rewards before slashing to see clean rate
+        const resClaim2 = await neutronClient1.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(resClaim2.code).toEqual(0);
+        const claimHeightAfterSlashing = resClaim2.height;
+
+        const balanceAfterSlashing1 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
         const vaultInfoAfterSlashing = await getStakingTrackerInfo(
           validatorSecondClient,
           validatorSecondary.address,
@@ -379,6 +401,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         console.log(
           `Voting Power After Slashing and Jailing (SHOULD BE ZERO!!!): ${vaultInfoAfterSlashing.power}`,
         );
+        expect(+vaultInfoAfterSlashing.power).toEqual(0);
 
         // delegation wallet
         const vaultInfoAfterSlashingWallet = await getStakingTrackerInfo(
@@ -387,11 +410,12 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           STAKING_TRACKER,
         );
         console.log(
-          `WALLET Voting Power After Slashing: ${vaultInfoAfterSlashingWallet.power}`,
+          `WALLET Voting Power After Slashing (should be zero!!!): ${vaultInfoAfterSlashingWallet.power}`,
         );
         expect(vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(
           vaultInfoAfterSlashingWallet.power,
         );
+        expect(vaultInfoAfterSlashingWallet.power).toEqual(0);
 
         // wait blocks to accrue claim under lower stake after slashing
         await neutronClient1.waitBlocks(20);
@@ -402,33 +426,25 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           },
         });
         expect(res5.code).toEqual(0);
-        // console.log('logs: \n' + JSON.stringify(res4.events));
-        const claimHeight2 = res5.height;
+        const claimHeightAfterSlashing2 = res5.height;
 
-        const balanceAfterSlashing1 = await bankQuerier.balance({
+        const balanceAfterSlashing2 = await bankQuerier.balance({
           address: claimRecipient,
           denom: NEUTRON_DENOM,
         });
         console.log(
-          'claimed total after slashing: ' +
-            balanceAfterSlashing1.balance.amount,
+          'balanceAfterSlashing1: ' +
+            balanceAfterSlashing1.balance.amount +
+            '   balanceAfterSlashing2: ' +
+            balanceAfterSlashing2.balance.amount,
         );
         const newClaimReal =
-          +balanceAfterSlashing1.balance.amount -
-          +balanceAfterDelegate1.balance.amount;
+          +balanceAfterSlashing2.balance.amount -
+          +balanceAfterSlashing1.balance.amount;
         console.log('Balance change: ' + newClaimReal);
-
-        const newAccrueRateExpected = +(+delegationAmount * 0.9) * (0.1 / 100); // 10% every 100 blocks
-        const newClaimExpected =
-          (claimHeight2 - claimHeight1) * newAccrueRateExpected;
-        console.log(
-          'newRateExpected: ' +
-            newAccrueRateExpected +
-            ', newClaimExpected: ' +
-            newClaimExpected,
-        );
         console.log('claimReal: ' + newClaimReal);
-        const realRate2 = newClaimReal / (claimHeight2 - claimHeight1);
+        const realRate2 =
+          newClaimReal / (claimHeightAfterSlashing2 - claimHeightAfterSlashing);
 
         console.log(
           'realRate1: ' +
@@ -438,6 +454,20 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         );
 
         expect(realRate2).toBeLessThan(realRate1);
+        expect(realRate2).toBe(0);
+
+        // waiting for unjail
+        console.log('waiting 30s for unjail...');
+        await waitSeconds(30);
+
+        const vaultInfoBeforeJail = await getStakingTrackerInfo(
+          neutronClient1,
+          neutronWallet1.address,
+          STAKING_TRACKER,
+        );
+        console.log(
+          'vaultInfoAfterJail: ' + JSON.stringify(vaultInfoBeforeJail),
+        );
 
         // **Step 3: Unjail Validator**
         const resUnjail = await validatorSecondClient.signAndBroadcast(
@@ -457,27 +487,67 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
         console.log(resUnjail.rawLog);
         expect(resUnjail.code).toEqual(0);
-      });
 
-      test.skip('unjail validator', async () => {
-        // **Step 3: Unjail Validator**
-        const resUnjail = await validatorSecondClient.signAndBroadcast(
-          [
-            {
-              typeUrl: '/cosmos.slashing.v1beta1.MsgUnjail',
-              value: {
-                validatorAddr: validatorSecondary.valAddress,
-              },
-            },
-          ],
+        const resAfterSlashing3 = await neutronClient1.execute(
+          STAKING_REWARDS,
           {
-            amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-            gas: '2000000',
+            claim_rewards: {
+              to_address: claimRecipient,
+            },
           },
         );
+        expect(resAfterSlashing3.code).toEqual(0);
+        const claimHeightAfterSlashing3 = resAfterSlashing3.height;
+        const balanceAfterSlashing3 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
 
-        console.log(resUnjail.rawLog);
-        expect(resUnjail.code).toEqual(0);
+        await neutronClient1.waitBlocks(10);
+
+        const resAfterSlashing4 = await neutronClient1.execute(
+          STAKING_REWARDS,
+          {
+            claim_rewards: {
+              to_address: claimRecipient,
+            },
+          },
+        );
+        expect(resAfterSlashing4.code).toEqual(0);
+        const claimHeightAfterSlashing4 = resAfterSlashing4.height;
+        const balanceAfterSlashing4 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        // TODO: wait blocks here; then compare to previous line height to get actual rate!
+
+        const vaultInfoAfterJail = await getStakingTrackerInfo(
+          neutronClient1,
+          neutronWallet1.address,
+          STAKING_TRACKER,
+        );
+        console.log(
+          'vaultInfoAfterJail: ' + JSON.stringify(vaultInfoAfterJail),
+        );
+
+        console.log(
+          'balanceAfterSlashing4: ' + balanceAfterSlashing4.balance.amount,
+        );
+        const newClaimReal3 =
+          +balanceAfterSlashing4.balance.amount -
+          +balanceAfterSlashing3.balance.amount;
+        console.log(
+          'Balance change: ' + newClaimReal3,
+          '   height change: ' +
+            (claimHeightAfterSlashing4 - claimHeightAfterSlashing3),
+        );
+        const realRate3 =
+          newClaimReal3 /
+          (claimHeightAfterSlashing4 - claimHeightAfterSlashing3);
+        console.log('realRate3: ' + realRate3, '   realRate1: ' + realRate1);
+        expect(realRate3).toBeLessThan(realRate1);
+        expect(realRate3 / 2.0).toBeCloseTo((realRate1 * 0.9) / 2, 2);
       });
     });
   });
@@ -488,8 +558,8 @@ const delegateTokens = async (
   delegatorAddress,
   validatorAddress,
   amount,
-): Promise<DeliverTxResponse> => {
-  const res = await client.signAndBroadcast(
+): Promise<DeliverTxResponse> =>
+  await client.signAndBroadcast(
     [
       {
         typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
@@ -502,9 +572,6 @@ const delegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
-
-  return res;
-};
 
 export const simulateSlashingAndJailing = async (
   validatorClient: SigningNeutronClient,
