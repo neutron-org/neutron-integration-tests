@@ -173,7 +173,7 @@ describe('Neutron / Staking Rewards', () => {
         );
       });
 
-      test('claim rewards for validator', async () => {
+      test('claim rewards for strong validator', async () => {
         const balanceBeforeClaim = await bankQuerier.balance({
           address: validatorPrimary.address,
           denom: NEUTRON_DENOM,
@@ -186,6 +186,27 @@ describe('Neutron / Staking Rewards', () => {
 
         const balanceAfterClaim = await bankQuerier.balance({
           address: validatorPrimary.address,
+          denom: NEUTRON_DENOM,
+        });
+
+        expect(+balanceAfterClaim.balance.amount).toBeGreaterThan(
+          +balanceBeforeClaim.balance.amount,
+        );
+      });
+
+      test('claim rewards for weak validator without new delegations', async () => {
+        const balanceBeforeClaim = await bankQuerier.balance({
+          address: validatorSecondary.address,
+          denom: NEUTRON_DENOM,
+        });
+
+        const res = await validatorSecondClient.execute(STAKING_REWARDS, {
+          claim_rewards: {},
+        });
+        expect(res.code).toEqual(0);
+
+        const balanceAfterClaim = await bankQuerier.balance({
+          address: validatorSecondary.address,
           denom: NEUTRON_DENOM,
         });
 
@@ -524,6 +545,78 @@ describe('Neutron / Staking Rewards', () => {
           +balance4.balance.amount,
         );
       });
+
+      test('redelegation works with rewards correctly', async () => {
+        const delegationAmount = '1000000000'; // 1000ntrn
+        const redelegationAmount = '1000000000';
+        const wallet = await testState.nextWallet('neutron');
+        const client = await SigningNeutronClient.connectWithSigner(
+          testState.rpcNeutron,
+          wallet.directwallet,
+          wallet.address,
+        );
+
+        const claimRecipient = (await testState.nextWallet('neutron')).address;
+
+        // delegate
+        // redelegate
+        // test claim still accrues funds after redelegation
+        const res1 = await delegateTokens(
+          client,
+          wallet.address,
+          validatorStrongAddr,
+          delegationAmount, // 1000ntrn
+        );
+        expect(res1.code).toEqual(0);
+
+        await redelegateTokens(
+          client,
+          wallet.address,
+          validatorStrongAddr,
+          validatorWeakAddr,
+          redelegationAmount,
+        );
+
+        const balance1 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        const res2 = await client.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res2.code).toEqual(0);
+
+        const balance2 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        expect(+balance2.balance.amount).toBeGreaterThan(
+          +balance1.balance.amount,
+        );
+
+        // wait for claim tokens to accrue
+        await client.waitBlocks(5);
+
+        const res3 = await client.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res3.code).toEqual(0);
+
+        const balance3 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        expect(+balance3.balance.amount).toBeGreaterThan(
+          +balance2.balance.amount,
+        );
+      });
     });
   });
 });
@@ -547,6 +640,34 @@ const delegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
+
+const redelegateTokens = async (
+  client: SigningNeutronClient,
+  delegatorAddress: string,
+  validatorSrc: string,
+  validatorDst: string,
+  amount: string,
+) => {
+  const res = await client.signAndBroadcast(
+    [
+      {
+        typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
+        value: {
+          delegatorAddress,
+          validatorSrcAddress: validatorSrc,
+          validatorDstAddress: validatorDst,
+          amount: { denom: NEUTRON_DENOM, amount },
+        },
+      },
+    ],
+    {
+      amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
+      gas: '2000000',
+    },
+  );
+  console.log(res.rawLog);
+  expect(res.code).toEqual(0);
+};
 
 export const simulateSlashingAndJailing = async (
   validatorClient: SigningNeutronClient,
