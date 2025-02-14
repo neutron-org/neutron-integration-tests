@@ -35,7 +35,7 @@ export default async function ({ provide }: GlobalSetupContext) {
 
   // fund a lot or preallocated wallets for testing purposes
   await fundWallets(mnemonics, NEUTRON_RPC, NEUTRON_PREFIX, NEUTRON_DENOM);
-  await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
+  // await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
 
   provide('mnemonics', mnemonics);
 
