@@ -862,6 +862,76 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     });
 
     describe('Validator Full Unbonding and Removal', () => {
+      let mainDao: Dao;
+      let daoMember1: DaoMember;
+      let proposalId: number;
+
+      test('Submit proposal for validator removal before unbonding', async () => {
+        console.log(
+          `Submitting proposal to remove validator: ${validatorWeakAddr}`,
+        );
+
+        const neutronRpcClient = await testState.neutronRpcClient();
+        const daoCoreAddress = await getNeutronDAOCore(
+          daoWalletClient,
+          neutronRpcClient,
+        );
+
+        const daoContracts = await getDaoContracts(
+          daoWalletClient,
+          daoCoreAddress,
+        );
+
+        mainDao = new Dao(daoWalletClient, daoContracts);
+        daoMember1 = new DaoMember(
+          mainDao,
+          daoWalletClient.client,
+          daoWallet.address,
+          NEUTRON_DENOM,
+        );
+
+        const neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        const chainManagerAddress = admins.admins[0];
+
+        // Submit proposal for validator removal
+        proposalId = await submitUpdateParamsStakingProposal(
+          daoMember1,
+          chainManagerAddress,
+          'Validator Removal Proposal',
+          'Proposal to remove validator by fully undelegating',
+          {
+            unbonding_time: '0s', // Set unbonding time to zero for instant removal
+            max_validators: '125',
+            max_entries: '16',
+            historical_entries: '10000',
+            bond_denom: NEUTRON_DENOM,
+          },
+          '1000',
+        );
+
+        console.log(`Proposal submitted with ID: ${proposalId}`);
+      });
+
+      test('Vote on proposal', async () => {
+        await daoMember1.voteYes(proposalId);
+        console.log(`Voted YES on proposal ${proposalId}`);
+      });
+
+      test('Check if proposal is passed', async () => {
+        await mainDao.checkPassedProposal(proposalId);
+        console.log(`Proposal ${proposalId} has passed.`);
+      });
+
+      test('Execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+        console.log(`Executed proposal ${proposalId}.`);
+      });
+
       test('All clients undelegate, then validator self-unbonds, ensuring no cross-delegations', async () => {
         console.log(`Starting validator unbonding process...`);
         console.log(`Validator to be removed: ${validatorWeakAddr}`);
@@ -1326,5 +1396,45 @@ export const submitAddToBlacklistProposal = async (
     description,
     [wasmMessage],
     deposit,
+  );
+};
+
+export type ParamsStakingInfo = {
+  unbonding_time: Duration;
+  max_validators: string;
+  max_entries: string;
+  historical_entries: string;
+  bond_denom: string;
+};
+
+export const submitUpdateParamsStakingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsStakingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.staking.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
   );
 };

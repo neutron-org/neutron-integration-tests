@@ -55,72 +55,72 @@ services:
       - neutron-testing
   # PAIR 2 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-  gaia-node:
-    image: gaia-node:latest
-    container_name: gaia-node
-    volumes:
-      - data:/opt/gaia/data
-    ports:
-      - 1316:1317
-      - 16657:26657
-      - 16656:26656
-      - 9090:9090
-    environment:
-      - BINARY=gaiad
-      - CHAINID=test-2
-      - STAKEDENOM=uatom
-      - ALLOW_ICA_EXEC=yes
-      - RUN_BACKGROUND=0
-      - CHAIN_HOME=./data/test-2/
-    networks:
-      - neutron-testing
-
-  hermes:
-    image: hermes:1.10.4
-    depends_on:
-      - "neutron-node"
-      - "gaia-node"
-    networks:
-      - neutron-testing
-
-  relayer:
-    image: neutron-org/neutron-query-relayer
-    entrypoint: ./run.sh
-    volumes:
-      - data:/data
-    depends_on:
-      - "neutron-node"
-      - "gaia-node"
-    ports:
-      - 9999:9999
-    environment:
-      - NODE=neutron-node
-      - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
-      - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron-node:26657
-      - RELAYER_NEUTRON_CHAIN_REST_ADDR=http://neutron-node:1317
-      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/test-1
-      - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=demowallet3
-      - RELAYER_NEUTRON_CHAIN_GAS_PRICES=0.5untrn
-      - RELAYER_NEUTRON_CHAIN_GAS_ADJUSTMENT=1.4
-      - RELAYER_NEUTRON_CHAIN_DENOM=untrn
-      - RELAYER_NEUTRON_CHAIN_MAX_GAS_PRICE=1000
-      - RELAYER_NEUTRON_CHAIN_GAS_PRICE_MULTIPLIER=1.1
-      - RELAYER_NEUTRON_CHAIN_CONNECTION_ID=connection-0
-      - RELAYER_NEUTRON_CHAIN_DEBUG=true
-      - RELAYER_NEUTRON_CHAIN_ACCOUNT_PREFIX=neutron
-      - RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
-      - RELAYER_TARGET_CHAIN_RPC_ADDR=tcp://gaia-node:26657
-      - RELAYER_TARGET_CHAIN_ACCOUNT_PREFIX=cosmos
-      - RELAYER_TARGET_CHAIN_VALIDATOR_ACCOUNT_PREFIX=cosmosvaloper
-      - RELAYER_TARGET_CHAIN_DEBUG=true
-      - RELAYER_REGISTRY_ADDRESSES=
-      - RELAYER_ALLOW_TX_QUERIES=true
-      - RELAYER_ALLOW_KV_CALLBACKS=true
-      - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
-      - RELAYER_LISTEN_ADDR=0.0.0.0:9999
-      - LOGGER_LEVEL=debug
-    networks:
-      - neutron-testing
+#  gaia-node:
+#    image: gaia-node:latest
+#    container_name: gaia-node
+#    volumes:
+#      - data:/opt/gaia/data
+#    ports:
+#      - 1316:1317
+#      - 16657:26657
+#      - 16656:26656
+#      - 9090:9090
+#    environment:
+#      - BINARY=gaiad
+#      - CHAINID=test-2
+#      - STAKEDENOM=uatom
+#      - ALLOW_ICA_EXEC=yes
+#      - RUN_BACKGROUND=0
+#      - CHAIN_HOME=./data/test-2/
+#    networks:
+#      - neutron-testing
+#
+#  hermes:
+#    image: hermes:1.10.4
+#    depends_on:
+#      - "neutron-node"
+#      - "gaia-node"
+#    networks:
+#      - neutron-testing
+#
+#  relayer:
+#    image: neutron-org/neutron-query-relayer
+#    entrypoint: ./run.sh
+#    volumes:
+#      - data:/data
+#    depends_on:
+#      - "neutron-node"
+#      - "gaia-node"
+#    ports:
+#      - 9999:9999
+#    environment:
+#      - NODE=neutron-node
+#      - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
+#      - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron-node:26657
+#      - RELAYER_NEUTRON_CHAIN_REST_ADDR=http://neutron-node:1317
+#      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/test-1
+#      - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=demowallet3
+#      - RELAYER_NEUTRON_CHAIN_GAS_PRICES=0.5untrn
+#      - RELAYER_NEUTRON_CHAIN_GAS_ADJUSTMENT=1.4
+#      - RELAYER_NEUTRON_CHAIN_DENOM=untrn
+#      - RELAYER_NEUTRON_CHAIN_MAX_GAS_PRICE=1000
+#      - RELAYER_NEUTRON_CHAIN_GAS_PRICE_MULTIPLIER=1.1
+#      - RELAYER_NEUTRON_CHAIN_CONNECTION_ID=connection-0
+#      - RELAYER_NEUTRON_CHAIN_DEBUG=true
+#      - RELAYER_NEUTRON_CHAIN_ACCOUNT_PREFIX=neutron
+#      - RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
+#      - RELAYER_TARGET_CHAIN_RPC_ADDR=tcp://gaia-node:26657
+#      - RELAYER_TARGET_CHAIN_ACCOUNT_PREFIX=cosmos
+#      - RELAYER_TARGET_CHAIN_VALIDATOR_ACCOUNT_PREFIX=cosmosvaloper
+#      - RELAYER_TARGET_CHAIN_DEBUG=true
+#      - RELAYER_REGISTRY_ADDRESSES=
+#      - RELAYER_ALLOW_TX_QUERIES=true
+#      - RELAYER_ALLOW_KV_CALLBACKS=true
+#      - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
+#      - RELAYER_LISTEN_ADDR=0.0.0.0:9999
+#      - LOGGER_LEVEL=debug
+#    networks:
+#      - neutron-testing
 
 volumes:
   data:
