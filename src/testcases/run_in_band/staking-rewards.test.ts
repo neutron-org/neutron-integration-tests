@@ -617,6 +617,90 @@ describe('Neutron / Staking Rewards', () => {
           +balance2.balance.amount,
         );
       });
+
+      test('full tx unbond works with rewards correctly', async () => {
+        const delegationAmount = '10000000'; // 10ntrn
+        const wallet = await testState.nextWallet('neutron');
+        const client = await SigningNeutronClient.connectWithSigner(
+          testState.rpcNeutron,
+          wallet.directwallet,
+          wallet.address,
+        );
+
+        const claimRecipient = (await testState.nextWallet('neutron')).address;
+
+        // delegate
+        // redelegate
+        // test claim still accrues funds after redelegation
+        const res1 = await delegateTokens(
+          client,
+          wallet.address,
+          validatorStrongAddr,
+          delegationAmount,
+        );
+        expect(res1.code).toEqual(0);
+
+        await client.waitBlocks(5);
+
+        const balance1 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        const res2 = await client.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res2.code).toEqual(0);
+
+        const balance2 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+        expect(+balance2.balance.amount).toBeGreaterThan(
+          +balance1.balance.amount,
+        );
+
+        // undelegate full amount
+        await undelegateTokens(
+          client,
+          wallet.address,
+          validatorStrongAddr,
+          delegationAmount, // Uses dynamically retrieved amount
+        );
+
+        await client.waitBlocks(2);
+
+        const info = await getStakingTrackerInfo(
+          client,
+          wallet.address,
+          STAKING_TRACKER,
+        );
+        expect(info.power).toEqual(0);
+
+        // claim to remove already accrued funds to make clean test
+        const res3 = await client.execute(STAKING_REWARDS, {
+          claim_rewards: {
+            to_address: claimRecipient,
+          },
+        });
+        expect(res3.code).toEqual(0);
+
+        const balance3 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+
+        await client.waitBlocks(5);
+
+        const balance4 = await bankQuerier.balance({
+          address: claimRecipient,
+          denom: NEUTRON_DENOM,
+        });
+        // balance has not changed since last claim since stake is now zero
+        expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
+      });
     });
   });
 });
@@ -640,6 +724,29 @@ const delegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
+
+const undelegateTokens = async (
+  client: SigningNeutronClient,
+  delegatorAddress: string,
+  validatorAddress: string,
+  amount: string,
+) => {
+  const res = await client.signAndBroadcast(
+    [
+      {
+        typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+        value: {
+          delegatorAddress,
+          validatorAddress,
+          amount: { denom: NEUTRON_DENOM, amount },
+        },
+      },
+    ],
+    { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
+  );
+  console.log(res.rawLog);
+  expect(res.code).toEqual(0);
+};
 
 const redelegateTokens = async (
   client: SigningNeutronClient,
