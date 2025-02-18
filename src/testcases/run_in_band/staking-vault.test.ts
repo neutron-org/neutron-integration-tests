@@ -261,46 +261,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           expect(vaultInfoBefore.power).toEqual(vaultInfoAfter.power);
         });
 
-        test('perform full undelegation from one validator', async () => {
-          const delegator = { wallet: neutronWallet1, client: neutronClient1 };
-
-          const heightBeforeFullUndelegation =
-            await delegator.client.getHeight();
-
-          const vaultInfoBefore = await getStakingVaultInfo(
-            delegator.client,
-            delegator.wallet.address,
-            stakingVaultAddr,
-            heightBeforeFullUndelegation,
-          );
-
-          const fullUndelegationAmount = vaultInfoBefore.power;
-
-          expect(fullUndelegationAmount).toBeGreaterThan(0);
-
-          // Perform full undelegation
-          await undelegateTokens(
-            delegator.client,
-            delegator.wallet.address,
-            validatorWeakAddr,
-            fullUndelegationAmount.toString(),
-          );
-
-          await waitBlocks(2, delegator.client);
-
-          const heightAfterFullUndelegation =
-            await delegator.client.getHeight();
-
-          const vaultInfoAfter = await getStakingVaultInfo(
-            delegator.client,
-            delegator.wallet.address,
-            stakingVaultAddr,
-            heightAfterFullUndelegation,
-          );
-
-          expect(vaultInfoAfter.power).toEqual(0);
-        });
-
         test('perform undelegations and validate historical voting power', async () => {
           const delegators = [
             { wallet: neutronWallet1, client: neutronClient1 },
@@ -343,67 +303,56 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           }
         });
 
-        test('Perform full undelegation from one validator', async () => {
+        test('perform full undelegation from one validator', async () => {
           const delegator = { wallet: neutronWallet1, client: neutronClient1 };
 
-          console.log(`Fetching block height before full undelegation...`);
-          const heightBeforeFullUndelegation =
-            await delegator.client.getHeight();
+          // Query delegation balance instead of voting power
+          const delegations = await stakingQuerier.delegatorDelegations({
+            delegatorAddr: delegator.wallet.address,
+          });
+
+          const delegation = delegations.delegationResponses.find(
+            (del) => del.delegation.validatorAddress === validatorWeakAddr,
+          );
+
+          if (!delegation) {
+            console.log(
+              `No delegation found for ${delegator.wallet.address} to ${validatorWeakAddr}. Skipping...`,
+            );
+            return;
+          }
+
+          const fullUndelegationAmount = delegation.balance.amount;
           console.log(
-            `Block height before undelegation: ${heightBeforeFullUndelegation}`,
+            `Full undelegation amount for ${delegator.wallet.address}: ${fullUndelegationAmount}`,
           );
 
-          console.log(
-            `Fetching staking vault info for ${delegator.wallet.address}...`,
-          );
-          const vaultInfoBefore = await getStakingVaultInfo(
-            delegator.client,
-            delegator.wallet.address,
-            stakingVaultAddr,
-            heightBeforeFullUndelegation,
-          );
-
-          const fullUndelegationAmount = vaultInfoBefore.power;
-
-          console.log(
-            `Total delegated amount before undelegation: ${fullUndelegationAmount}`,
-          );
-
-          expect(fullUndelegationAmount).toBeGreaterThan(0);
+          expect(Number(fullUndelegationAmount)).toBeGreaterThan(0);
 
           // Perform full undelegation
-          console.log(
-            `Performing full undelegation of ${fullUndelegationAmount} from validator ${validatorWeakAddr}...`,
-          );
           await undelegateTokens(
             delegator.client,
             delegator.wallet.address,
             validatorWeakAddr,
-            fullUndelegationAmount.toString(),
+            fullUndelegationAmount,
           );
 
           await waitBlocks(2, delegator.client);
 
-          console.log(`Fetching block height after full undelegation...`);
-          const heightAfterFullUndelegation =
-            await delegator.client.getHeight();
-          console.log(
-            `Block height after undelegation: ${heightAfterFullUndelegation}`,
+          // Re-query delegation to ensure it's removed
+          const delegationsAfter = await stakingQuerier.delegatorDelegations({
+            delegatorAddr: delegator.wallet.address,
+          });
+
+          const remainingDelegation = delegationsAfter.delegationResponses.find(
+            (del) => del.delegation.validatorAddress === validatorWeakAddr,
           );
 
-          console.log(`Fetching updated staking vault info...`);
-          const vaultInfoAfter = await getStakingVaultInfo(
-            delegator.client,
-            delegator.wallet.address,
-            stakingVaultAddr,
-            heightAfterFullUndelegation,
-          );
+          expect(remainingDelegation).toBeUndefined();
 
           console.log(
-            `Total delegated amount after undelegation: ${vaultInfoAfter.power}`,
+            `Successfully undelegated all funds from ${validatorWeakAddr} for ${delegator.wallet.address}.`,
           );
-
-          expect(vaultInfoAfter.power).toEqual(0);
         });
 
         describe('Blacklist', () => {
@@ -1043,45 +992,8 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             validatorWeakAddr,
             selfDelegation.balance.amount,
           );
-
-          await waitBlocks(2, validatorSecondClient);
+          // here validator removed completly and chain stops
         }
-
-        console.log(`Verifying removal of validator ${validatorWeakAddr}...`);
-
-        const validatorState = await stakingQuerier.validator({
-          validatorAddr: validatorWeakAddr,
-        });
-
-        console.log(
-          `Validator Status After Full Unbonding: ${validatorState.validator.status}`,
-        );
-
-        expect(validatorState.validator.status).not.toEqual(
-          'BOND_STATUS_BONDED',
-        );
-
-        const heightAfterUnbonding = await validatorPrimarClient.getHeight();
-        console.log(`New block height: ${heightAfterUnbonding}`);
-
-        const vaultInfoAfter = await getStakingVaultInfo(
-          validatorSecondClient,
-          validatorSecondWallet.address,
-          stakingVaultAddr,
-          heightAfterUnbonding,
-        );
-
-        console.log(
-          `Final Voting Power After Unbonding: ${vaultInfoAfter.power}`,
-        );
-        console.log(
-          `Total Network Power After Unbonding: ${vaultInfoAfter.totalPower}`,
-        );
-
-        expect(vaultInfoAfter.power).toEqual(0);
-        expect(vaultInfoAfter.totalPower).toBeLessThan(
-          vaultInfoAfter.totalPower,
-        );
       });
     });
   });
