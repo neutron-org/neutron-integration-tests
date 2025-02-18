@@ -759,9 +759,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         validatorSecondWallet.valAddress,
         selfDelegationAmount, // Uses dynamically retrieved amount
       );
-
-      // await waitBlocks(2, validatorSecondClient);
-
       const heightAfterEdit = await validatorPrimarClient.getHeight();
 
       // Query validator state to check if it got unbonded
@@ -794,11 +791,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       expect(vaultInfoAfter.totalPower).toBeLessThan(
         vaultInfoBefore.totalPower,
       );
-
-      // ----------------------
-      // STEP 2: BOND VALIDATOR BACK (SELF-DELEGATION)
-      // ----------------------
-
       console.log(`Performing self-delegation to bond validator back...`);
 
       await delegateTokens(
@@ -905,7 +897,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           'Validator Removal Proposal',
           'Proposal to remove validator by fully undelegating',
           {
-            unbonding_time: '0s', // Set unbonding time to zero for instant removal
+            unbonding_time: '2s',
             max_validators: '125',
             max_entries: '16',
             historical_entries: '10000',
@@ -948,7 +940,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         const heightBeforeUnbonding = await validatorPrimarClient.getHeight();
         console.log(`Current block height: ${heightBeforeUnbonding}`);
 
-        // Step 1: Each client undelegates all their stake
         for (const { wallet, client } of delegators) {
           console.log(`Checking delegations for ${wallet.address}...`);
 
@@ -987,7 +978,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           await waitBlocks(2, client);
         }
 
-        // Step 2: Ensure validatorStrongAddr has no delegation in validatorWeakAddr before proceeding
         console.log(
           `Verifying that ${validatorStrongAddr} does not have delegations in ${validatorWeakAddr}...`,
         );
@@ -1025,7 +1015,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           );
         }
 
-        // Step 3: Validator itself unbonds last
         console.log(
           `Initiating final self-unbonding for ${validatorWeakAddr}...`,
         );
@@ -1058,7 +1047,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           await waitBlocks(2, validatorSecondClient);
         }
 
-        // Step 4: Verify validator removal
         console.log(`Verifying removal of validator ${validatorWeakAddr}...`);
 
         const validatorState = await stakingQuerier.validator({
@@ -1073,7 +1061,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           'BOND_STATUS_BONDED',
         );
 
-        // Step 5: Ensure validator voting power is zero
         const heightAfterUnbonding = await validatorPrimarClient.getHeight();
         console.log(`New block height: ${heightAfterUnbonding}`);
 
