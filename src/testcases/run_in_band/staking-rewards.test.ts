@@ -302,6 +302,7 @@ describe('Neutron / Staking Rewards', () => {
         );
 
         for (;;) {
+          console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,
           });
@@ -310,6 +311,7 @@ describe('Neutron / Staking Rewards', () => {
           }
           await waitSeconds(3);
         }
+        console.log('validator is jailed');
 
         // clean up pending rewards before slashing to see clean rate
         const resClaim2 = await neutronClient1.execute(STAKING_REWARDS, {

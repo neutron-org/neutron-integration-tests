@@ -1,15 +1,10 @@
 import { SigningNeutronClient } from './signing_neutron_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
-import {
-  NEUTRON_DENOM,
-  SECOND_VALIDATOR_CONTAINER,
-  STAKING_TRACKER,
-} from './constants';
+import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { waitBlocksTimeout } from '../testcases/run_in_band/staking-rewards.test';
 import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
@@ -145,9 +140,9 @@ export const simulateSlashingAndJailing = async (
   // console.log(`Total active voting power: ${totalVotingPower}`);
 
   // Retrieve voting power of both validators
-  const slashedValidator = activeValidators.validators.find(
-    (val) => val.operatorAddress === validatorAddr,
-  );
+  // const slashedValidator = activeValidators.validators.find(
+  //   (val) => val.operatorAddress === validatorAddr,
+  // );
   const alternativeValidator = activeValidators.validators.find(
     (val) => val.operatorAddress === alternativeValidatorAddr,
   );
@@ -185,22 +180,18 @@ export const simulateSlashingAndJailing = async (
   }
 
   // slashed validator
-  const vaultInfoBeforeSlashing = await getStakingTrackerInfo(
-    validatorClient,
-    validatorAddr,
-    STAKING_TRACKER,
-  );
+  // const vaultInfoBeforeSlashing = await getStakingTrackerInfo(
+  //   validatorClient,
+  //   validatorAddr,
+  //   STAKING_TRACKER,
+  // );
   // console.log(`Voting Power Before Slashing: ${vaultInfoBeforeSlashing.power}`);
 
   console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
 
   // console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
-  try {
-    await waitBlocksTimeout(missedBlocks, neutronClient, 20000);
-  } catch (e) {
-    // expected error because of timeout. Blocks are not produced after turning off the val.
-  }
+  await waitBlocks(missedBlocks, neutronClient, 25000);
 
   console.log(`Unpausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker unpause ${SECOND_VALIDATOR_CONTAINER}`);
