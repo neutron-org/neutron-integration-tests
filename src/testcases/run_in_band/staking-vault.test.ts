@@ -45,7 +45,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
   // strong is validator that controls ~90% of total vp at the beginning
   let validatorStrongAddr: string;
   let validatorSecondWallet: Wallet;
-  let validatorSecondary: Wallet;
+  let validatorPrimaryWallet: Wallet;
 
   let validatorWeakSelfDelegation: number;
   let validatorStrongSelfDelegation: number;
@@ -61,7 +61,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     neutronWallet1 = await testState.nextWallet('neutron');
     neutronWallet2 = await testState.nextWallet('neutron');
     validatorSecondWallet = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
-    validatorSecondary = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
+    validatorPrimaryWallet = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -86,8 +86,8 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
     // In the state it is validator #2, so this naming is only for clients
     validatorPrimarClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      validatorSecondary.directwallet,
-      validatorSecondary.address,
+      validatorPrimaryWallet.directwallet,
+      validatorPrimaryWallet.address,
     );
 
     daoWallet = testState.wallets.neutron.demo1;
@@ -140,8 +140,8 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             downtime_jail_duration: '5s',
             min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '30',
-            slash_fraction_double_sign: '0.010000000000000000',
-            slash_fraction_downtime: '0.100000000000000000',
+            slash_fraction_double_sign: '0.000000000000000000',
+            slash_fraction_downtime: '0.000000000000000000',
           },
           '1000',
         );
@@ -302,6 +302,59 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             expect(vaultInfoAfter.power).toBeLessThan(vaultInfoBefore.power);
           }
         });
+
+        test('perform full undelegation from one validator', async () => {
+          const delegator = { wallet: neutronWallet1, client: neutronClient1 };
+
+          // Query delegation balance instead of voting power
+          const delegations = await stakingQuerier.delegatorDelegations({
+            delegatorAddr: delegator.wallet.address,
+          });
+
+          const delegation = delegations.delegationResponses.find(
+            (del) => del.delegation.validatorAddress === validatorWeakAddr,
+          );
+
+          if (!delegation) {
+            console.log(
+              `No delegation found for ${delegator.wallet.address} to ${validatorWeakAddr}. Skipping...`,
+            );
+            return;
+          }
+
+          const fullUndelegationAmount = delegation.balance.amount;
+          console.log(
+            `Full undelegation amount for ${delegator.wallet.address}: ${fullUndelegationAmount}`,
+          );
+
+          expect(Number(fullUndelegationAmount)).toBeGreaterThan(0);
+
+          // Perform full undelegation
+          await undelegateTokens(
+            delegator.client,
+            delegator.wallet.address,
+            validatorWeakAddr,
+            fullUndelegationAmount,
+          );
+
+          await waitBlocks(2, delegator.client);
+
+          // Re-query delegation to ensure it's removed
+          const delegationsAfter = await stakingQuerier.delegatorDelegations({
+            delegatorAddr: delegator.wallet.address,
+          });
+
+          const remainingDelegation = delegationsAfter.delegationResponses.find(
+            (del) => del.delegation.validatorAddress === validatorWeakAddr,
+          );
+
+          expect(remainingDelegation).toBeUndefined();
+
+          console.log(
+            `Successfully undelegated all funds from ${validatorWeakAddr} for ${delegator.wallet.address}.`,
+          );
+        });
+
         describe('Blacklist', () => {
           let mainDao: Dao;
           let daoMember1: DaoMember;
@@ -655,9 +708,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
         validatorSecondWallet.valAddress,
         selfDelegationAmount, // Uses dynamically retrieved amount
       );
-
-      // await waitBlocks(2, validatorSecondClient);
-
       const heightAfterEdit = await validatorPrimarClient.getHeight();
 
       // Query validator state to check if it got unbonded
@@ -690,11 +740,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
       expect(vaultInfoAfter.totalPower).toBeLessThan(
         vaultInfoBefore.totalPower,
       );
-
-      // ----------------------
-      // STEP 2: BOND VALIDATOR BACK (SELF-DELEGATION)
-      // ----------------------
-
       console.log(`Performing self-delegation to bond validator back...`);
 
       await delegateTokens(
@@ -755,6 +800,204 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
       // Ensure voting power increased after self-delegation
       expect(vaultInfoAfterBonding.power).toBeGreaterThan(vaultInfoAfter.power);
+    });
+
+    describe('Validator Full Unbonding and Removal', () => {
+      let mainDao: Dao;
+      let daoMember1: DaoMember;
+      let proposalId: number;
+
+      test('Submit proposal for validator removal before unbonding', async () => {
+        console.log(
+          `Submitting proposal to remove validator: ${validatorWeakAddr}`,
+        );
+
+        const neutronRpcClient = await testState.neutronRpcClient();
+        const daoCoreAddress = await getNeutronDAOCore(
+          daoWalletClient,
+          neutronRpcClient,
+        );
+
+        const daoContracts = await getDaoContracts(
+          daoWalletClient,
+          daoCoreAddress,
+        );
+
+        mainDao = new Dao(daoWalletClient, daoContracts);
+        daoMember1 = new DaoMember(
+          mainDao,
+          daoWalletClient.client,
+          daoWallet.address,
+          NEUTRON_DENOM,
+        );
+
+        const neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        const chainManagerAddress = admins.admins[0];
+
+        // Submit proposal for validator removal
+        proposalId = await submitUpdateParamsStakingProposal(
+          daoMember1,
+          chainManagerAddress,
+          'Validator Removal Proposal',
+          'Proposal to remove validator by fully undelegating',
+          {
+            unbonding_time: '2s',
+            max_validators: '125',
+            max_entries: '16',
+            historical_entries: '10000',
+            bond_denom: NEUTRON_DENOM,
+          },
+          '1000',
+        );
+
+        console.log(`Proposal submitted with ID: ${proposalId}`);
+      });
+
+      test('Vote on proposal', async () => {
+        await daoMember1.voteYes(proposalId);
+        console.log(`Voted YES on proposal ${proposalId}`);
+      });
+
+      test('Check if proposal is passed', async () => {
+        await mainDao.checkPassedProposal(proposalId);
+        console.log(`Proposal ${proposalId} has passed.`);
+      });
+
+      test('Execute passed proposal', async () => {
+        await daoMember1.executeProposalWithAttempts(proposalId);
+        console.log(`Executed proposal ${proposalId}.`);
+      });
+
+      test('All clients undelegate, then validator self-unbonds, ensuring no cross-delegations', async () => {
+        console.log(`Starting validator unbonding process...`);
+        console.log(`Validator to be removed: ${validatorWeakAddr}`);
+        console.log(`Remaining validator: ${validatorStrongAddr}`);
+
+        const delegators = [
+          { wallet: neutronWallet1, client: neutronClient1 },
+          { wallet: neutronWallet2, client: neutronClient2 },
+          { wallet: daoWallet, client: daoWalletClient },
+          { wallet: validatorSecondWallet, client: validatorSecondClient }, // Validator itself
+          // { wallet: validatorPrimaryWallet, client: validatorPrimarClient }, // Primary validator
+        ];
+
+        const heightBeforeUnbonding = await validatorPrimarClient.getHeight();
+        console.log(`Current block height: ${heightBeforeUnbonding}`);
+
+        // Check voting power before unbonding
+        const vaultInfoBefore = await getStakingVaultInfo(
+          validatorSecondClient,
+          validatorSecondWallet.address,
+          stakingVaultAddr,
+          heightBeforeUnbonding,
+        );
+
+        for (const { wallet, client } of delegators) {
+          console.log(`Checking delegations for ${wallet.address}...`);
+
+          const delegations = await stakingQuerier.delegatorDelegations({
+            delegatorAddr: wallet.address,
+          });
+
+          if (delegations.delegationResponses.length === 0) {
+            console.log(
+              `No delegations found for ${wallet.address}. Skipping...`,
+            );
+            continue;
+          }
+
+          for (const delegation of delegations.delegationResponses) {
+            const undelegationAmount = delegation.balance.amount;
+            if (undelegationAmount === '0') {
+              console.log(
+                `Skipping undelegation for ${wallet.address} from ${delegation.delegation.validatorAddress}, amount is zero.`,
+              );
+              continue;
+            }
+
+            console.log(
+              `Undelegating ${undelegationAmount} from ${delegation.delegation.validatorAddress} for ${wallet.address}...`,
+            );
+
+            await undelegateTokens(
+              client,
+              wallet.address,
+              delegation.delegation.validatorAddress,
+              undelegationAmount,
+            );
+          }
+
+          await waitBlocks(2, client);
+        }
+
+        console.log(
+          `Verifying that ${validatorStrongAddr} does not have delegations in ${validatorWeakAddr}...`,
+        );
+
+        console.log(
+          `Initiating final self-unbonding for ${validatorWeakAddr}...`,
+        );
+
+        const validatorDelegations = await stakingQuerier.validatorDelegations({
+          validatorAddr: validatorWeakAddr,
+        });
+
+        const selfDelegation = validatorDelegations.delegationResponses.find(
+          (del) =>
+            del.delegation.delegatorAddress === validatorSecondWallet.address,
+        );
+
+        if (!selfDelegation) {
+          console.log(
+            `Validator ${validatorWeakAddr} has no self-delegation left.`,
+          );
+        } else {
+          console.log(
+            `Self-undelegating ${selfDelegation.balance.amount} from ${validatorWeakAddr}...`,
+          );
+
+          await undelegateTokens(
+            validatorSecondClient,
+            validatorSecondWallet.address,
+            validatorWeakAddr,
+            selfDelegation.balance.amount,
+          );
+        }
+
+        const heightAfterUnbonding = await validatorPrimarClient.getHeight();
+
+        await waitBlocks(2, neutronClient1);
+
+        const validators = await stakingQuerier.validators({
+          status: 'BOND_STATUS_BONDED',
+        });
+
+        expect(validators.validators.length).toEqual(1);
+
+        // Check voting power after unbonding
+        const vaultInfoAfter = await getStakingVaultInfo(
+          validatorSecondClient,
+          validatorSecondWallet.address,
+          stakingVaultAddr,
+          heightAfterUnbonding,
+        );
+
+        console.log(`Voting Power After Unbonding: ${vaultInfoAfter.power}`);
+        console.log(
+          `Total Network Power After Unbonding: ${vaultInfoAfter.totalPower}`,
+        );
+
+        // Ensure voting power is reduced to zero
+        expect(vaultInfoAfter.power).toEqual(0);
+        expect(vaultInfoAfter.totalPower).toBeLessThan(
+          vaultInfoBefore.totalPower,
+        );
+      });
     });
   });
 });
@@ -1055,5 +1298,45 @@ export const submitAddToBlacklistProposal = async (
     description,
     [wasmMessage],
     deposit,
+  );
+};
+
+export type ParamsStakingInfo = {
+  unbonding_time: Duration;
+  max_validators: string;
+  max_entries: string;
+  historical_entries: string;
+  bond_denom: string;
+};
+
+export const submitUpdateParamsStakingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsStakingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.staking.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
   );
 };
