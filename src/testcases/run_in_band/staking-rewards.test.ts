@@ -1,8 +1,7 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
-import { waitBlocks, waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
-  SECOND_VALIDATOR_CONTAINER,
   STAKING_REWARDS,
   STAKING_TRACKER,
   VAL_MNEMONIC_1,
@@ -13,11 +12,7 @@ import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
-import { DeliverTxResponse, StargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
-import { execSync } from 'child_process';
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { sleep } from '@neutron-org/neutronjsplus/src/wait';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import {
   Dao,
@@ -25,8 +20,16 @@ import {
   getDaoContracts,
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
-import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
+import {
+  delegateTokens,
+  getStakingTrackerInfo,
+  redelegateTokens,
+  undelegateTokens,
+  simulateSlashingAndJailing,
+  submitRemoveFromBlacklistProposal,
+  submitAddToBlacklistProposal,
+  submitUpdateParamsSlashingProposal,
+} from '../../helpers/staking';
 
 describe('Neutron / Staking Rewards', () => {
   let testState: LocalState;
@@ -138,8 +141,8 @@ describe('Neutron / Staking Rewards', () => {
           'Proposal #1',
           'Param change proposal. Update slashing params',
           {
-            downtime_jail_duration: '30s',
-            min_signed_per_window: '0.800000000000000000',
+            downtime_jail_duration: '3s',
+            min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '10',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
@@ -286,6 +289,7 @@ describe('Neutron / Staking Rewards', () => {
           neutronWallet1.address,
           STAKING_TRACKER,
         );
+        expect(+vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(0);
 
         await simulateSlashingAndJailing(
           validatorSecondClient,
@@ -298,7 +302,6 @@ describe('Neutron / Staking Rewards', () => {
         );
 
         for (;;) {
-          console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,
           });
@@ -342,7 +345,7 @@ describe('Neutron / Staking Rewards', () => {
         expect(vaultInfoAfterSlashingWallet.power).toEqual(0);
 
         // wait blocks to accrue claim under lower stake after slashing
-        await neutronClient1.waitBlocks(20);
+        await neutronClient1.waitBlocks(10);
 
         const res5 = await neutronClient1.execute(STAKING_REWARDS, {
           claim_rewards: {
@@ -366,8 +369,7 @@ describe('Neutron / Staking Rewards', () => {
         expect(realRate2).toBe(0);
 
         // waiting for unjail
-        console.log('waiting 30s for unjail...');
-        await waitSeconds(30);
+        await waitSeconds(5);
 
         // **Step 3: Unjail Validator**
         const resUnjail = await validatorSecondClient.signAndBroadcast(
@@ -501,7 +503,7 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        await blacklistedClient.waitBlocks(10);
+        await blacklistedClient.waitBlocks(2);
 
         // claim again, should be zero because blacklisted
         const res5 = await blacklistedClient.execute(STAKING_REWARDS, {
@@ -704,351 +706,3 @@ describe('Neutron / Staking Rewards', () => {
     });
   });
 });
-
-const delegateTokens = async (
-  client: SigningNeutronClient,
-  delegatorAddress,
-  validatorAddress,
-  amount,
-): Promise<DeliverTxResponse> =>
-  await client.signAndBroadcast(
-    [
-      {
-        typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
-        value: {
-          delegatorAddress,
-          validatorAddress,
-          amount: { denom: NEUTRON_DENOM, amount },
-        },
-      },
-    ],
-    { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
-  );
-
-const undelegateTokens = async (
-  client: SigningNeutronClient,
-  delegatorAddress: string,
-  validatorAddress: string,
-  amount: string,
-) => {
-  const res = await client.signAndBroadcast(
-    [
-      {
-        typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
-        value: {
-          delegatorAddress,
-          validatorAddress,
-          amount: { denom: NEUTRON_DENOM, amount },
-        },
-      },
-    ],
-    { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
-  );
-  console.log(res.rawLog);
-  expect(res.code).toEqual(0);
-};
-
-const redelegateTokens = async (
-  client: SigningNeutronClient,
-  delegatorAddress: string,
-  validatorSrc: string,
-  validatorDst: string,
-  amount: string,
-) => {
-  const res = await client.signAndBroadcast(
-    [
-      {
-        typeUrl: '/cosmos.staking.v1beta1.MsgBeginRedelegate',
-        value: {
-          delegatorAddress,
-          validatorSrcAddress: validatorSrc,
-          validatorDstAddress: validatorDst,
-          amount: { denom: NEUTRON_DENOM, amount },
-        },
-      },
-    ],
-    {
-      amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }],
-      gas: '2000000',
-    },
-  );
-  console.log(res.rawLog);
-  expect(res.code).toEqual(0);
-};
-
-export const simulateSlashingAndJailing = async (
-  validatorClient: SigningNeutronClient,
-  neutronClient: SigningNeutronClient,
-  stakingQuerier: StakingQueryClient,
-  validatorAddr: string,
-  alternativeValidatorAddr: string,
-  delegatorAddr: string,
-  missedBlocks = 10, // Default to slashing threshold
-) => {
-  // Check if validator has been slashed
-  let validatorInfo = await stakingQuerier.validator({ validatorAddr });
-
-  // Check if the network has enough voting power to continue producing blocks
-  const activeValidators = await stakingQuerier.validators({
-    status: 'BOND_STATUS_BONDED',
-  });
-  const totalVotingPower = activeValidators.validators.reduce(
-    (acc, val) => acc + Number(val.tokens),
-    0,
-  );
-
-  console.log(`Total active voting power: ${totalVotingPower}`);
-
-  // Retrieve voting power of both validators
-  const slashedValidator = activeValidators.validators.find(
-    (val) => val.operatorAddress === validatorAddr,
-  );
-  const alternativeValidator = activeValidators.validators.find(
-    (val) => val.operatorAddress === alternativeValidatorAddr,
-  );
-
-  if (!slashedValidator) {
-    console.log(`Slashed validator ${validatorAddr} not found.`);
-  } else {
-    console.log(
-      `Slashed Validator Power Before: ${Number(slashedValidator.tokens)}`,
-    );
-  }
-
-  if (!alternativeValidator) {
-    console.log(`Alternative validator ${alternativeValidatorAddr} not found.`);
-    return;
-  }
-
-  const alternativeValidatorPower = Number(alternativeValidator.tokens);
-  console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
-
-  const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
-  console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
-
-  if (alternativeValidatorPower < minRequiredPower) {
-    console.log(
-      `Alternative validator does not have enough power, delegating ${
-        minRequiredPower - alternativeValidatorPower
-      } to ${alternativeValidatorAddr}`,
-    );
-    await delegateTokens(
-      validatorClient,
-      delegatorAddr,
-      alternativeValidatorAddr,
-      (minRequiredPower - alternativeValidatorPower).toString(),
-    );
-  }
-
-  // slashed validator
-  const vaultInfoBeforeSlashing = await getStakingTrackerInfo(
-    validatorClient,
-    validatorAddr,
-    STAKING_TRACKER,
-  );
-  console.log(`Voting Power Before Slashing: ${vaultInfoBeforeSlashing.power}`);
-
-  console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
-  execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
-
-  console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
-  try {
-    await waitBlocksTimeout(missedBlocks, neutronClient, 20000);
-  } catch (e) {
-    // expected error because of timeout. Blocks are not produced after turning off the val.
-  }
-
-  console.log(`Unpausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
-  execSync(`docker unpause ${SECOND_VALIDATOR_CONTAINER}`);
-
-  console.log(`Waiting 2 blocks to confirm status update...`);
-  await waitBlocks(2, neutronClient);
-
-  // Re-check validator status
-  validatorInfo = await stakingQuerier.validator({ validatorAddr });
-  console.log(`Final validator status: ${validatorInfo.validator.status}`);
-
-  // Retrieve voting power of both validators
-  console.log(
-    `Slashed Validator Power Before: ${Number(validatorInfo.validator.tokens)}`,
-  );
-
-  return validatorInfo.validator.status;
-};
-
-const getStakingTrackerInfo = async (
-  client: SigningNeutronClient,
-  address: string,
-  stakingTrackerAddr: string,
-  height?: number,
-): Promise<VotingPowerInfo> => {
-  if (typeof height === 'undefined') {
-    height = await client.getHeight();
-  }
-
-  const power = await client.queryContractSmart(stakingTrackerAddr, {
-    voting_power_at_height: {
-      address: address,
-      ...(height !== undefined ? { height: height } : {}),
-    },
-  });
-
-  const totalPower = await client.queryContractSmart(stakingTrackerAddr, {
-    total_power_at_height: {
-      ...(height !== undefined ? { height: height } : {}),
-    },
-  });
-
-  return {
-    height: height,
-    power: +power,
-    totalPower: +totalPower,
-  };
-};
-
-type VotingPowerInfo = {
-  height: number;
-  power: number;
-  totalPower: number;
-};
-
-// same as waitBlocks, but do not error on timeout
-export const waitBlocksTimeout = async (
-  blocks: number,
-  client: StargateClient | CosmWasmClient,
-  timeout = 120000,
-): Promise<void> => {
-  const start = Date.now();
-  // const client = await StargateClient.connect(this.rpc);
-  const initBlock = await client.getBlock();
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      const block = await client.getBlock();
-      if (block.header.height - initBlock.header.height >= blocks) {
-        break;
-      }
-      if (Date.now() - start > timeout) {
-        break;
-      }
-    } catch (e) {
-      //noop
-    }
-    await sleep(1000);
-  }
-};
-
-// TODO: use from neutronjsplus
-/**
- * submitUpdateParamsRateLimitProposal creates proposal which changes params of slashing module.
- */
-export const submitUpdateParamsSlashingProposal = async (
-  dao: DaoMember,
-  chainManagerAddress: string,
-  title: string,
-  description: string,
-  params: ParamsSlashingInfo,
-  amount: string,
-): Promise<number> => {
-  const message = chainManagerWrapper(chainManagerAddress, {
-    custom: {
-      submit_admin_proposal: {
-        admin_proposal: {
-          proposal_execute_message: {
-            message: JSON.stringify({
-              '@type': '/cosmos.slashing.v1beta1.MsgUpdateParams',
-              authority: ADMIN_MODULE_ADDRESS,
-              params,
-            }),
-          },
-        },
-      },
-    },
-  });
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [message],
-    amount,
-  );
-};
-
-export type Duration = string;
-
-export type ParamsSlashingInfo = {
-  signed_blocks_window: string; // int64
-  min_signed_per_window: string; // base64?
-  downtime_jail_duration: Duration;
-  slash_fraction_double_sign: string; // dec
-  slash_fraction_downtime: string; // dec
-};
-
-export type AddToBlacklistInfo = {
-  addresses: string[];
-};
-
-export type RemoveFromBlacklistInfo = {
-  addresses: string[];
-};
-
-// TODO: use from neutronjsplus
-export const submitAddToBlacklistProposal = async (
-  dao: DaoMember,
-  contractAddress: string,
-  title: string,
-  description: string,
-  blacklist: AddToBlacklistInfo,
-  deposit: string,
-): Promise<number> => {
-  const wasmMessage = {
-    wasm: {
-      execute: {
-        contract_addr: contractAddress,
-        msg: Buffer.from(
-          JSON.stringify({
-            add_to_blacklist: blacklist,
-          }),
-        ).toString('base64'),
-        funds: [],
-      },
-    },
-  };
-
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [wasmMessage],
-    deposit,
-  );
-};
-
-// TODO: use from neutronjsplus
-export const submitRemoveFromBlacklistProposal = async (
-  dao: DaoMember,
-  contractAddress: string,
-  title: string,
-  description: string,
-  blacklist: RemoveFromBlacklistInfo,
-  deposit: string,
-): Promise<number> => {
-  const wasmMessage = {
-    wasm: {
-      execute: {
-        contract_addr: contractAddress,
-        msg: Buffer.from(
-          JSON.stringify({
-            remove_from_blacklist: blacklist,
-          }),
-        ).toString('base64'),
-        funds: [],
-      },
-    },
-  };
-
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [wasmMessage],
-    deposit,
-  );
-};
