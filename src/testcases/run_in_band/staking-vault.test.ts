@@ -140,8 +140,8 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             downtime_jail_duration: '5s',
             min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '30',
-            slash_fraction_double_sign: '0.010000000000000000',
-            slash_fraction_downtime: '0.100000000000000000',
+            slash_fraction_double_sign: '0.000000000000000000',
+            slash_fraction_downtime: '0.000000000000000000',
           },
           '1000',
         );
@@ -883,11 +883,19 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           { wallet: neutronWallet2, client: neutronClient2 },
           { wallet: daoWallet, client: daoWalletClient },
           { wallet: validatorSecondWallet, client: validatorSecondClient }, // Validator itself
-          { wallet: validatorPrimaryWallet, client: validatorPrimarClient }, // Primary validator
+          // { wallet: validatorPrimaryWallet, client: validatorPrimarClient }, // Primary validator
         ];
 
         const heightBeforeUnbonding = await validatorPrimarClient.getHeight();
         console.log(`Current block height: ${heightBeforeUnbonding}`);
+
+        // Check voting power before unbonding
+        const vaultInfoBefore = await getStakingVaultInfo(
+          validatorSecondClient,
+          validatorSecondWallet.address,
+          stakingVaultAddr,
+          heightBeforeUnbonding,
+        );
 
         for (const { wallet, client } of delegators) {
           console.log(`Checking delegations for ${wallet.address}...`);
@@ -931,39 +939,6 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           `Verifying that ${validatorStrongAddr} does not have delegations in ${validatorWeakAddr}...`,
         );
 
-        const strongValidatorDelegations =
-          await stakingQuerier.delegatorDelegations({
-            delegatorAddr: validatorStrongAddr,
-          });
-
-        const crossDelegation =
-          strongValidatorDelegations.delegationResponses.find(
-            (del) => del.delegation.validatorAddress === validatorWeakAddr,
-          );
-
-        if (crossDelegation) {
-          console.log(
-            `Validator ${validatorStrongAddr} has delegation in ${validatorWeakAddr}, undelegating ${crossDelegation.balance.amount}...`,
-          );
-
-          await undelegateTokens(
-            validatorPrimarClient,
-            validatorStrongAddr,
-            validatorWeakAddr,
-            crossDelegation.balance.amount,
-          );
-
-          await waitBlocks(2, validatorPrimarClient);
-
-          console.log(
-            `Validator ${validatorStrongAddr} successfully undelegated from ${validatorWeakAddr}.`,
-          );
-        } else {
-          console.log(
-            `Confirmed: ${validatorStrongAddr} has no delegations in ${validatorWeakAddr}. Proceeding with self-unbonding.`,
-          );
-        }
-
         console.log(
           `Initiating final self-unbonding for ${validatorWeakAddr}...`,
         );
@@ -992,8 +967,36 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             validatorWeakAddr,
             selfDelegation.balance.amount,
           );
-          // here validator removed completly and chain stops
         }
+
+        const heightAfterUnbonding = await validatorPrimarClient.getHeight();
+
+        await waitBlocks(2, neutronClient1);
+
+        const validators = await stakingQuerier.validators({
+          status: 'BOND_STATUS_BONDED',
+        });
+
+        expect(validators.validators.length).toEqual(1);
+
+        // Check voting power after unbonding
+        const vaultInfoAfter = await getStakingVaultInfo(
+          validatorSecondClient,
+          validatorSecondWallet.address,
+          stakingVaultAddr,
+          heightAfterUnbonding,
+        );
+
+        console.log(`Voting Power After Unbonding: ${vaultInfoAfter.power}`);
+        console.log(
+          `Total Network Power After Unbonding: ${vaultInfoAfter.totalPower}`,
+        );
+
+        // Ensure voting power is reduced to zero
+        expect(vaultInfoAfter.power).toEqual(0);
+        expect(vaultInfoAfter.totalPower).toBeLessThan(
+          vaultInfoBefore.totalPower,
+        );
       });
     });
   });
