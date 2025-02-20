@@ -31,6 +31,8 @@ BigInt.prototype.toJSON = function () {
   return Number(this);
 };
 
+const DEFAULT_SHEDULE_BLOCK_PERIOD = 40;
+
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 const ORACLE_CONTAINER = 'setup-oracle-1-1';
 
@@ -182,17 +184,9 @@ describe('Neutron / Revenue', () => {
   describe('revenue property tests', () => {
     test('wait the new revenue period begins', async () => {
       const height = await neutronClient.getHeight();
-      const paymentInfo = await revenueQuerier.paymentInfo();
 
       await waitBlocks(
-        Number(
-          paymentInfo.paymentSchedule.blockBasedPaymentSchedule.blocksPerPeriod,
-        ) +
-          Number(
-            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
-              .currentPeriodStartBlock,
-          ) -
-          height,
+        2 * DEFAULT_SHEDULE_BLOCK_PERIOD - height,
         neutronClient,
       );
     });
