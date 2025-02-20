@@ -186,6 +186,8 @@ describe('Neutron / Revenue', () => {
     test('wait the slinky to get up and running', async () => {
       for (;;) {
         try {
+          // we get an error until slinky get up and start filling TWAP price
+          // no error thrown means slinky up and posts prices
           await revenueQuerier.paymentInfo();
           break;
         } catch {
