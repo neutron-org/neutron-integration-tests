@@ -483,6 +483,7 @@ describe('Neutron / Revenue', () => {
 
       test('check state', async () => {
         // give a time to change state
+        await waitBlocks(1, neutronClient);
         paymentInfo = await revenueQuerier.paymentInfo();
 
         // js .getMonth() start with zero
@@ -580,6 +581,7 @@ describe('Neutron / Revenue', () => {
 
       test('check state', async () => {
         // give a time to change state
+        await waitBlocks(1, neutronClient);
         const paymentInfo = await revenueQuerier.paymentInfo();
         expect(paymentInfo.paymentSchedule.emptyPaymentSchedule).toBeDefined();
       });
