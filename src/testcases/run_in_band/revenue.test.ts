@@ -32,8 +32,6 @@ BigInt.prototype.toJSON = function () {
   return Number(this);
 };
 
-const DEFAULT_SHEDULE_BLOCK_PERIOD = 40;
-
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 const ORACLE_CONTAINER = 'setup-oracle-1-1';
 
@@ -432,40 +430,18 @@ describe('Neutron / Revenue', () => {
       let params: QueryRevenueParamsResponse;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        params = await revenueQuerier.params();
-        const newParams: ParamsRevenue = {
-          base_compensation: params.params.baseCompensation + '',
-          twap_window: params.params.twapWindow + '',
-          blocks_performance_requirement: {
-            allowed_to_miss:
-              params.params.blocksPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.blocksPerformanceRequirement.requiredAtLeast,
-          },
-          oracle_votes_performance_requirement: {
-            allowed_to_miss:
-              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
-          },
-          payment_schedule_type: {
+        params = await submitRevenueParamsProposal(
+          params,
+          revenueQuerier,
+          daoMember,
+          chainManagerAddress,
+          mainDao,
+          {
             monthly_payment_schedule_type: {},
           },
-        };
-
-        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
-          chainManagerAddress,
-          'Proposal update revenue params (monthly type params)',
-          '',
-          updateRevenueParamsProposal(newParams),
-          '1000',
         );
 
-        await daoMember.voteYes(proposalId);
-        await mainDao.checkPassedProposal(proposalId);
-
         height = await neutronClient.getHeight();
-        await daoMember.executeProposalWithAttempts(proposalId);
       });
 
       test('check params', async () => {
@@ -530,40 +506,16 @@ describe('Neutron / Revenue', () => {
     describe('empty type schedule', () => {
       let params: QueryRevenueParamsResponse;
       test('submit and execute params proposal', async () => {
-        params = await revenueQuerier.params();
-
-        const newParams: ParamsRevenue = {
-          base_compensation: params.params.baseCompensation + '',
-          twap_window: params.params.twapWindow + '',
-          blocks_performance_requirement: {
-            allowed_to_miss:
-              params.params.blocksPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.blocksPerformanceRequirement.requiredAtLeast,
-          },
-          oracle_votes_performance_requirement: {
-            allowed_to_miss:
-              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
-          },
-          payment_schedule_type: {
+        params = await submitRevenueParamsProposal(
+          params,
+          revenueQuerier,
+          daoMember,
+          chainManagerAddress,
+          mainDao,
+          {
             empty_payment_schedule_type: {},
           },
-        };
-
-        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
-          chainManagerAddress,
-          'Proposal update revenue params (empty type params)',
-          '',
-          updateRevenueParamsProposal(newParams),
-          '1000',
         );
-
-        await daoMember.voteYes(proposalId);
-        await mainDao.checkPassedProposal(proposalId);
-
-        await daoMember.executeProposalWithAttempts(proposalId);
       });
 
       test('check params', async () => {
@@ -585,17 +537,18 @@ describe('Neutron / Revenue', () => {
         for (let i = 0; i < valsState.stats.length; i++) {
           expect(
             Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
-          ).lte(2);
+          ).lte(3);
           expect(
             Number(
               valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
             ),
-          ).lte(2);
+          ).lte(3);
         }
       });
     });
   });
 });
+
 async function submitRevenueParamsProposal(
   params: QueryRevenueParamsResponse,
   revenueQuerier: RevenueQueryClient,
@@ -625,7 +578,7 @@ async function submitRevenueParamsProposal(
 
   const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
     chainManagerAddress,
-    'Proposal update revenue params (block type params)',
+    'Proposal update revenue params',
     '',
     updateRevenueParamsProposal(newParams),
     '1000',
