@@ -1,7 +1,6 @@
 import '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
-import { CONTRACTS } from '../../helpers/constants';
 import {
   Dao,
   DaoMember,
@@ -9,25 +8,24 @@ import {
   getNeutronDAOCore,
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { RunnerTestSuite, inject } from 'vitest';
-import { NEUTRON_DENOM } from '../../helpers/constants';
+import { IBC_USDC_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as RevenueQueryClient } from '@neutron-org/neutronjs/neutron/revenue/query.rpc.Query';
-import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
-import { BlockBasedPaymentSchedule } from '@neutron-org/neutronjs/neutron/revenue/genesis';
-import { BinaryReader } from '@neutron-org/neutronjs/binary';
+
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { createHash } from 'crypto';
-import { PubKey as Ed25519PubKey } from 'cosmjs-types/cosmos/crypto/ed25519/keys';
 import { execSync } from 'child_process';
 import { PerformanceRequirement } from '@neutron-org/neutronjs/neutron/revenue/params';
 import {
   ParamsRevenue,
   updateRevenueParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-const bech32 = require('bech32');
+import {
+  QueryPaymentInfoResponse,
+  QueryParamsResponse as QueryRevenueParamsResponse,
+} from '@neutron-org/neutronjs/neutron/revenue/query';
 
 BigInt.prototype.toJSON = function () {
   return Number(this);
@@ -38,10 +36,9 @@ const ORACLE_CONTAINER = 'setup-oracle-1-1';
 
 const VALOPER_VAL2 = 'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx';
 const VALOPER_ACCOUNT_VAL2 = 'neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z';
-const RevenuePoolAccount = 'neutron1k5d2e2572uf85wa6ek0yv24ezw26z6n5rnfkad';
 
 /* 
-настройки revenue для теста
+revenue module setup
 set_genesis_param_jq ".app_state.revenue.state.payment_schedule.blocks_per_period" "\"40\""              
 set_genesis_param_jq ".app_state.revenue.state.payment_schedule.current_period_start_block" "\"0\""        
 set_genesis_param_jq ".app_state.revenue.params.blocks_performance_requirement.allowed_to_miss" "\"0.1\"" # 4 blocks
@@ -58,7 +55,7 @@ set_genesis_param_jq ".app_state.revenue.params.oracle_votes_performance_require
 // 'medium' - lose 50% of required_at_least
 // 'high' - lose more than 100% of required_at_least
 
-const CASES = [
+const REVENUE_CASES = [
   { lostBlocks: 'no', lostOracles: 'no' },
   { lostBlocks: 'no', lostOracles: 'low' },
   { lostBlocks: 'no', lostOracles: 'medium' },
@@ -68,7 +65,7 @@ const CASES = [
   { lostBlocks: 'high', lostOracles: 'no' },
 ];
 
-describe('Neutron / Cron', () => {
+describe('Neutron / Revenue', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
   let neutronClient: SigningNeutronClient;
@@ -77,9 +74,7 @@ describe('Neutron / Cron', () => {
   let daoMember: DaoMember;
 
   let revenueQuerier: RevenueQueryClient;
-  let stakingQuerier: StakingQueryClient;
   let bankQuerier: BankQueryClient;
-  let consensusAddressVal2: string;
   let blocksPerformanceRequirement: PerformanceRequirement;
   let oraclePerformanceRequirement: PerformanceRequirement;
 
@@ -110,99 +105,109 @@ describe('Neutron / Cron', () => {
     chainManagerAddress = admins.admins[0];
 
     revenueQuerier = new RevenueQueryClient(neutronRpcClient);
-    stakingQuerier = new StakingQueryClient(neutronRpcClient);
     bankQuerier = new BankQueryClient(neutronRpcClient);
-
-    const valResp = await stakingQuerier.validator({
-      validatorAddr: VALOPER_VAL2,
-    });
-    const pk = Ed25519PubKey.decode(valResp.validator.consensusPubkey.value);
-    const sha256Hash = createHash('sha256').update(pk.key).digest();
-    const consensusAddressBytes = sha256Hash.slice(0, 20);
-
-    consensusAddressVal2 = bech32.encode(
-      'neutronvalcons',
-      bech32.toWords(consensusAddressBytes),
-    );
   });
 
   describe('prepare: top up the module account', () => {
     describe('send a bit funds to the module account', () => {
-      test('send funds from wallet', async () => {
-        const res = await neutronClient.sendTokens(
-          RevenuePoolAccount,
-          [
-            {
-              denom: NEUTRON_DENOM,
-              amount: '100000000',
-            },
-          ],
+      test('send funds from wallet to revenue treasury', async () => {
+        const msg = {
+          typeUrl: '/neutron.revenue.MsgFundTreasury',
+          value: {
+            sender: neutronClient.sender,
+            amount: [
+              {
+                denom: NEUTRON_DENOM,
+                amount: '100000000',
+              },
+            ],
+          },
+        };
+        const res = await neutronClient.client.signAndBroadcast(
+          neutronClient.sender,
+          [msg],
           {
             gas: '4000000',
             amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
           },
         );
+
+        expect(res.code).toEqual(0);
+      });
+
+      // TODO: fix test
+      test.skip('should fail: send funds from wallet to revenue treasury non ntrn', async () => {
+        const msg = {
+          typeUrl: '/neutron.revenue.MsgFundTreasury',
+          value: {
+            sender: neutronClient.sender,
+            amount: [
+              {
+                denom: IBC_USDC_DENOM,
+                amount: '100000000',
+              },
+            ],
+          },
+        };
+        const res = await neutronClient.client.signAndBroadcast(
+          neutronClient.sender,
+          [msg],
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
+        );
+
         expect(res.code).toEqual(0);
       });
 
       test('bond from wallet', async () => {
-        await daoMember.bondFunds('10000');
+        await daoMember.bondFunds('30000');
         await neutronClient.getWithAttempts(
           async () => await mainDao.queryVotingPower(daoMember.user),
-          async (response) => response.power == 10000,
+          async (response) => response.power == 30000,
           20,
         );
       });
     });
 
     test('query states', async () => {
-      const state = await revenueQuerier.state();
       const params = await revenueQuerier.params();
-      const validators = await revenueQuerier.validatorsStats();
-      const ps = BlockBasedPaymentSchedule.decode(
-        new BinaryReader(state.state.paymentSchedule.value),
-      );
-      console.log(state);
-      console.log(params);
-      console.log(ps);
-      console.log(JSON.stringify(validators, null, 2));
       blocksPerformanceRequirement = params.params.blocksPerformanceRequirement;
       oraclePerformanceRequirement =
         params.params.oracleVotesPerformanceRequirement;
     });
   });
 
-  describe.skip('behavior tests', () => {
+  describe('revenue property tests', () => {
     test('wait the new revenue period begins', async () => {
       const height = await neutronClient.getHeight();
-      const state = await revenueQuerier.state();
-      const ps = BlockBasedPaymentSchedule.decode(
-        new BinaryReader(state.state.paymentSchedule.value),
-      );
+      const paymentInfo = await revenueQuerier.paymentInfo();
+
       await waitBlocks(
-        Number(ps.blocksPerPeriod) +
-          Number(ps.currentPeriodStartBlock) -
+        Number(
+          paymentInfo.paymentSchedule.blockBasedPaymentSchedule.blocksPerPeriod,
+        ) +
+          Number(
+            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .currentPeriodStartBlock,
+          ) -
           height,
         neutronClient,
       );
     });
 
-    test.each(CASES)(
-      'lostBlocks: $lostBlocks, lostOracles: $lostOracles, expectedRevenue: $expectedRevenue',
-      async ({ lostBlocks, lostOracles, expectedRevenue }) => {
-        const state = await revenueQuerier.state();
-        const ps = BlockBasedPaymentSchedule.decode(
-          new BinaryReader(state.state.paymentSchedule.value),
-        );
+    test.each(REVENUE_CASES)(
+      'lostBlocks: $lostBlocks, lostOracles: $lostOracles',
+      async ({ lostBlocks, lostOracles }) => {
+        const paymentInfo = await revenueQuerier.paymentInfo();
         let valState = await revenueQuerier.validatorStats({
-          consensusAddress: consensusAddressVal2,
+          valOperAddress: VALOPER_VAL2,
         });
-        console.log('at start: ', valState);
         const valBalanceAtStart = await bankQuerier.balance({
           address: VALOPER_ACCOUNT_VAL2,
           denom: 'untrn',
         });
-        console.log('at start: ', valBalanceAtStart);
         if (lostOracles == 'low') {
           execSync('docker pause ' + ORACLE_CONTAINER);
           // 0-3
@@ -243,55 +248,59 @@ describe('Neutron / Cron', () => {
 
         const height = await neutronClient.getHeight();
         await waitBlocks(
-          Number(ps.blocksPerPeriod) +
-            Number(ps.currentPeriodStartBlock) -
+          Number(
+            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .blocksPerPeriod,
+          ) +
+            Number(
+              paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                .currentPeriodStartBlock,
+            ) -
             height -
             1,
           neutronClient,
         );
         valState = await revenueQuerier.validatorStats({
-          consensusAddress: consensusAddressVal2,
+          valOperAddress: VALOPER_VAL2,
         });
-        console.log('at finish: ', valState);
         // wait 2 blocks to ensure next perios begins
         // and validators got paid (or not when perf==0)
         await waitBlocks(2, neutronClient);
         //make sure new period started
-        const nextState = await revenueQuerier.state();
-        const nextps = BlockBasedPaymentSchedule.decode(
-          new BinaryReader(nextState.state.paymentSchedule.value),
-        );
-        expect(Number(nextps.currentPeriodStartBlock)).gt(
-          Number(ps.currentPeriodStartBlock),
+        const nextPaymentInfo = await revenueQuerier.paymentInfo();
+        expect(
+          Number(
+            nextPaymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .currentPeriodStartBlock,
+          ),
+        ).gt(
+          Number(
+            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .currentPeriodStartBlock,
+          ),
         );
 
-        console.log('');
         const valBalanceAtFinish = await bankQuerier.balance({
           address: VALOPER_ACCOUNT_VAL2,
           denom: 'untrn',
         });
-        console.log('at finish: ', valBalanceAtFinish);
         const balDiff =
           +valBalanceAtFinish.balance.amount -
           +valBalanceAtStart.balance.amount;
-        console.log(
-          'diff: ',
-          +valBalanceAtFinish.balance.amount -
-            +valBalanceAtStart.balance.amount,
-        );
 
         const blocksAtLeast =
           +blocksPerformanceRequirement.requiredAtLeast *
-          Number(ps.blocksPerPeriod);
+          Number(
+            nextPaymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .blocksPerPeriod,
+          );
         const oracleVotesAtLeast =
           +oraclePerformanceRequirement.requiredAtLeast *
-          Number(ps.blocksPerPeriod);
-        console.log(
-          'oracle at least: ',
-          oracleVotesAtLeast,
-          ' block at least: ',
-          blocksAtLeast,
-        );
+          Number(
+            nextPaymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .blocksPerPeriod,
+          );
+
         if (
           valState.stats.validatorInfo.commitedBlocksInPeriod > blocksAtLeast &&
           valState.stats.validatorInfo.commitedOracleVotesInPeriod >
@@ -312,8 +321,10 @@ describe('Neutron / Cron', () => {
           expectedBlockMissedAtMost = 40;
         }
         expect(
-          Number(ps.blocksPerPeriod) -
-            Number(valState.stats.validatorInfo.commitedBlocksInPeriod),
+          Number(
+            nextPaymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .blocksPerPeriod,
+          ) - Number(valState.stats.validatorInfo.commitedBlocksInPeriod),
         ).lte(expectedBlockMissedAtMost);
 
         // TODO: check block events for revenue amount
@@ -321,52 +332,271 @@ describe('Neutron / Cron', () => {
     );
   });
 
-  describe('change params', () => {
-    test('wait the new revenue period begins', async () => {
-      const height = await neutronClient.getHeight();
-      let params = await revenueQuerier.params();
+  describe('change params proposals', () => {
+    describe('block type shedule', () => {
+      let height: number;
+      let params: QueryRevenueParamsResponse;
+      let paymentInfo: QueryPaymentInfoResponse;
+      test('submit and execute params proposal', async () => {
+        params = await revenueQuerier.params();
 
-      const newParams: ParamsRevenue = {
-        denom_compensation: params.params.denomCompensation,
-        base_compensation: params.params.baseCompensation + '',
-        TWAP_Window: params.params.tWAPWindow + '',
-        blocks_performance_requirement: {
-          allowed_to_miss:
-            params.params.blocksPerformanceRequirement.allowedToMiss,
-          required_at_least:
-            params.params.blocksPerformanceRequirement.requiredAtLeast,
-        },
-        oracle_votes_performance_requirement: {
-          allowed_to_miss:
-            params.params.oracleVotesPerformanceRequirement.allowedToMiss,
-          required_at_least:
-            params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
-        },
-        block_based_payment_schedule_type: {
-          blocks_per_period: '50',
-        },
-      };
+        const newParams: ParamsRevenue = {
+          base_compensation: params.params.baseCompensation + '',
+          twap_window: params.params.twapWindow + '',
+          blocks_performance_requirement: {
+            allowed_to_miss:
+              params.params.blocksPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.blocksPerformanceRequirement.requiredAtLeast,
+          },
+          oracle_votes_performance_requirement: {
+            allowed_to_miss:
+              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
+          },
+          payment_schedule_type: {
+            block_based_payment_schedule_type: {
+              blocks_per_period: '50',
+            },
+          },
+        };
 
-      const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
-        chainManagerAddress,
-        'Proposal update revenue params',
-        '',
-        updateRevenueParamsProposal(newParams),
-        '1000',
-      );
+        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
+          chainManagerAddress,
+          'Proposal update revenue params (block type params)',
+          '',
+          updateRevenueParamsProposal(newParams),
+          '1000',
+        );
 
-      await daoMember.voteYes(proposalId);
-      await mainDao.checkPassedProposal(proposalId);
-      // TODO: intentionally wait the middle of revenue period
-      const state = await revenueQuerier.state();
-      const ps = BlockBasedPaymentSchedule.decode(
-        new BinaryReader(state.state.paymentSchedule.value),
-      );
-      await daoMember.executeProposalWithAttempts(proposalId);
-      params = await revenueQuerier.params();
-      expect(params.params.blockBasedPaymentScheduleType.blocksPerPeriod).eq(
-        50,
-      );
+        await daoMember.voteYes(proposalId);
+        await mainDao.checkPassedProposal(proposalId);
+
+        height = await neutronClient.getHeight();
+        await daoMember.executeProposalWithAttempts(proposalId);
+      });
+
+      test('check params', async () => {
+        params = await revenueQuerier.params();
+        expect(
+          params.params.paymentScheduleType.blockBasedPaymentScheduleType
+            .blocksPerPeriod,
+        ).eq(50n);
+      });
+
+      test('check state', async () => {
+        // give a time to change state
+        await waitBlocks(1, neutronClient);
+        paymentInfo = await revenueQuerier.paymentInfo();
+        expect(
+          paymentInfo.paymentSchedule.blockBasedPaymentSchedule.blocksPerPeriod,
+        ).eq(50n);
+        expect(
+          Number(
+            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .currentPeriodStartBlock,
+          ),
+        ).gte(height);
+      });
+
+      test('check validators state', async () => {
+        const valsState = await revenueQuerier.validatorsStats();
+        height = await neutronClient.getHeight();
+        for (let i = 0; i < valsState.stats.length; i++) {
+          // we check LTE not EQ because
+          // 1) getHeight query might happen one block later then validatorsStats query
+          // 2) validator might lost a block/vote
+          expect(
+            Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                  .currentPeriodStartBlock,
+              ) +
+              1,
+          );
+          expect(
+            Number(
+              valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
+            ),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                  .currentPeriodStartBlock,
+              ) +
+              1,
+          );
+        }
+      });
+    });
+
+    describe('month type schedule', () => {
+      let height: number;
+      let params: QueryRevenueParamsResponse;
+      let paymentInfo: QueryPaymentInfoResponse;
+      test('submit and execute params proposal', async () => {
+        params = await revenueQuerier.params();
+        const newParams: ParamsRevenue = {
+          base_compensation: params.params.baseCompensation + '',
+          twap_window: params.params.twapWindow + '',
+          blocks_performance_requirement: {
+            allowed_to_miss:
+              params.params.blocksPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.blocksPerformanceRequirement.requiredAtLeast,
+          },
+          oracle_votes_performance_requirement: {
+            allowed_to_miss:
+              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
+          },
+          payment_schedule_type: {
+            monthly_payment_schedule_type: {},
+          },
+        };
+
+        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
+          chainManagerAddress,
+          'Proposal update revenue params (monthly type params)',
+          '',
+          updateRevenueParamsProposal(newParams),
+          '1000',
+        );
+
+        await daoMember.voteYes(proposalId);
+        await mainDao.checkPassedProposal(proposalId);
+
+        height = await neutronClient.getHeight();
+        await daoMember.executeProposalWithAttempts(proposalId);
+      });
+
+      test('check params', async () => {
+        params = await revenueQuerier.params();
+        expect(
+          params.params.paymentScheduleType.monthlyPaymentScheduleType,
+        ).toBeDefined();
+      });
+
+      test('check state', async () => {
+        // give a time to change state
+        paymentInfo = await revenueQuerier.paymentInfo();
+
+        // js .getMonth() start with zero
+        expect(
+          Number(
+            paymentInfo.paymentSchedule.monthlyPaymentSchedule.currentMonth,
+          ),
+        ).eq(new Date().getMonth() + 1);
+        expect(
+          Number(
+            paymentInfo.paymentSchedule.monthlyPaymentSchedule
+              .currentMonthStartBlock,
+          ),
+        ).gte(height);
+      });
+
+      test('check validators state', async () => {
+        const valsState = await revenueQuerier.validatorsStats();
+        height = await neutronClient.getHeight();
+        for (let i = 0; i < valsState.stats.length; i++) {
+          // we check LTE not EQ because
+          // 1) getHeight query might happen one block later then validatorsStats query
+          // 2) validator might lost a block/vote
+          expect(
+            Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.monthlyPaymentSchedule
+                  .currentMonthStartBlock,
+              ) +
+              1,
+          );
+          expect(
+            Number(
+              valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
+            ),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.monthlyPaymentSchedule
+                  .currentMonthStartBlock,
+              ) +
+              1,
+          );
+        }
+      });
+    });
+
+    describe('empty type schedule', () => {
+      let params: QueryRevenueParamsResponse;
+      test('submit and execute params proposal', async () => {
+        params = await revenueQuerier.params();
+
+        const newParams: ParamsRevenue = {
+          base_compensation: params.params.baseCompensation + '',
+          twap_window: params.params.twapWindow + '',
+          blocks_performance_requirement: {
+            allowed_to_miss:
+              params.params.blocksPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.blocksPerformanceRequirement.requiredAtLeast,
+          },
+          oracle_votes_performance_requirement: {
+            allowed_to_miss:
+              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
+            required_at_least:
+              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
+          },
+          payment_schedule_type: {
+            empty_payment_schedule_type: {},
+          },
+        };
+
+        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
+          chainManagerAddress,
+          'Proposal update revenue params (empty type params)',
+          '',
+          updateRevenueParamsProposal(newParams),
+          '1000',
+        );
+
+        await daoMember.voteYes(proposalId);
+        await mainDao.checkPassedProposal(proposalId);
+
+        await daoMember.executeProposalWithAttempts(proposalId);
+      });
+
+      test('check params', async () => {
+        params = await revenueQuerier.params();
+        expect(
+          params.params.paymentScheduleType.emptyPaymentScheduleType,
+        ).toBeDefined();
+      });
+
+      test('check state', async () => {
+        // give a time to change state
+        const paymentInfo = await revenueQuerier.paymentInfo();
+        expect(paymentInfo.paymentSchedule.emptyPaymentSchedule).toBeDefined();
+      });
+
+      test('check validators state', async () => {
+        const valsState = await revenueQuerier.validatorsStats();
+        for (let i = 0; i < valsState.stats.length; i++) {
+          expect(
+            Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
+          ).lte(2);
+          expect(
+            Number(
+              valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
+            ),
+          ).lte(2);
+        }
+      });
     });
   });
 });
