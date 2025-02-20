@@ -20,6 +20,7 @@ import { execSync } from 'child_process';
 import { PerformanceRequirement } from '@neutron-org/neutronjs/neutron/revenue/params';
 import {
   ParamsRevenue,
+  PaymentScheduleType,
   updateRevenueParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import {
@@ -182,13 +183,34 @@ describe('Neutron / Revenue', () => {
   });
 
   describe('revenue property tests', () => {
-    test('wait the new revenue period begins', async () => {
-      const height = await neutronClient.getHeight();
+    test('wait the slinky to get up and running', async () => {
+      for (;;) {
+        try {
+          await revenueQuerier.paymentInfo();
+          break;
+        } catch {
+          await waitBlocks(1, neutronClient);
+        }
+      }
 
-      await waitBlocks(
-        2 * DEFAULT_SHEDULE_BLOCK_PERIOD - height,
-        neutronClient,
+      await waitBlocks(10, neutronClient);
+
+      const params = await revenueQuerier.params();
+      // enable revenue by setting shedule type to block_based_payment_schedule_type
+      await submitRevenueParamsProposal(
+        params,
+        revenueQuerier,
+        daoMember,
+        chainManagerAddress,
+        mainDao,
+        {
+          block_based_payment_schedule_type: {
+            blocks_per_period: '40',
+          },
+        },
       );
+      // wait for state change
+      await waitBlocks(1, neutronClient);
     });
 
     test.each(REVENUE_CASES)(
@@ -332,43 +354,19 @@ describe('Neutron / Revenue', () => {
       let params: QueryRevenueParamsResponse;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        params = await revenueQuerier.params();
-
-        const newParams: ParamsRevenue = {
-          base_compensation: params.params.baseCompensation + '',
-          twap_window: params.params.twapWindow + '',
-          blocks_performance_requirement: {
-            allowed_to_miss:
-              params.params.blocksPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.blocksPerformanceRequirement.requiredAtLeast,
-          },
-          oracle_votes_performance_requirement: {
-            allowed_to_miss:
-              params.params.oracleVotesPerformanceRequirement.allowedToMiss,
-            required_at_least:
-              params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
-          },
-          payment_schedule_type: {
+        params = await submitRevenueParamsProposal(
+          params,
+          revenueQuerier,
+          daoMember,
+          chainManagerAddress,
+          mainDao,
+          {
             block_based_payment_schedule_type: {
               blocks_per_period: '50',
             },
           },
-        };
-
-        const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
-          chainManagerAddress,
-          'Proposal update revenue params (block type params)',
-          '',
-          updateRevenueParamsProposal(newParams),
-          '1000',
         );
-
-        await daoMember.voteYes(proposalId);
-        await mainDao.checkPassedProposal(proposalId);
-
         height = await neutronClient.getHeight();
-        await daoMember.executeProposalWithAttempts(proposalId);
       });
 
       test('check params', async () => {
@@ -596,3 +594,44 @@ describe('Neutron / Revenue', () => {
     });
   });
 });
+async function submitRevenueParamsProposal(
+  params: QueryRevenueParamsResponse,
+  revenueQuerier: RevenueQueryClient,
+  daoMember: DaoMember,
+  chainManagerAddress: string,
+  mainDao: Dao,
+  sheduleType: PaymentScheduleType,
+) {
+  params = await revenueQuerier.params();
+
+  const newParams: ParamsRevenue = {
+    base_compensation: params.params.baseCompensation + '',
+    twap_window: params.params.twapWindow + '',
+    blocks_performance_requirement: {
+      allowed_to_miss: params.params.blocksPerformanceRequirement.allowedToMiss,
+      required_at_least:
+        params.params.blocksPerformanceRequirement.requiredAtLeast,
+    },
+    oracle_votes_performance_requirement: {
+      allowed_to_miss:
+        params.params.oracleVotesPerformanceRequirement.allowedToMiss,
+      required_at_least:
+        params.params.oracleVotesPerformanceRequirement.requiredAtLeast,
+    },
+    payment_schedule_type: sheduleType,
+  };
+
+  const proposalId = await daoMember.submitUpdateParamsRevenueProposal(
+    chainManagerAddress,
+    'Proposal update revenue params (block type params)',
+    '',
+    updateRevenueParamsProposal(newParams),
+    '1000',
+  );
+
+  await daoMember.voteYes(proposalId);
+  await mainDao.checkPassedProposal(proposalId);
+
+  await daoMember.executeProposalWithAttempts(proposalId);
+  return params;
+}

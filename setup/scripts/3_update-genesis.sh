@@ -771,15 +771,10 @@ set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED" 
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
 
-set_genesis_param_jq ".app_state.revenue.payment_schedule.block_based_payment_schedule.blocks_per_period" "\"40\""              # revenue
-set_genesis_param_jq ".app_state.revenue.payment_schedule.block_based_payment_schedule.current_period_start_block" "\"0\""        # revenue
-jq 'del(.app_state.revenue.payment_schedule.empty_payment_schedule)' > tmp_genesis_file.json < "$GENESIS_PATH" && mv tmp_genesis_file.json "$GENESIS_PATH"
 set_genesis_param_jq ".app_state.revenue.params.blocks_performance_requirement.allowed_to_miss" "\"0.1\"" # revenue
 set_genesis_param_jq ".app_state.revenue.params.blocks_performance_requirement.required_at_least" "\"0.4\"" # revenue
 set_genesis_param_jq ".app_state.revenue.params.oracle_votes_performance_requirement.allowed_to_miss" "\"0.1\"" # revenue
 set_genesis_param_jq ".app_state.revenue.params.oracle_votes_performance_requirement.required_at_least" "\"0.4\"" # revenue
-set_genesis_param_jq ".app_state.revenue.params.payment_schedule_type.block_based_payment_schedule_type.blocks_per_period" "\"40\"" # revenue
-jq 'del(.app_state.revenue.params.payment_schedule_type.empty_payment_schedule_type)' > tmp_genesis_file.json < "$GENESIS_PATH" && mv tmp_genesis_file.json "$GENESIS_PATH"
 set_genesis_param_jq ".app_state.revenue.params.twap_window" "\"30\"" # revenue
 
 
