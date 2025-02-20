@@ -195,10 +195,9 @@ describe('Neutron / Revenue', () => {
 
       await waitBlocks(10, neutronClient);
 
-      const params = await revenueQuerier.params();
       // enable revenue by setting shedule type to block_based_payment_schedule_type
       await submitRevenueParamsProposal(
-        params,
+        neutronClient,
         revenueQuerier,
         daoMember,
         chainManagerAddress,
@@ -350,12 +349,12 @@ describe('Neutron / Revenue', () => {
 
   describe('change params proposals', () => {
     describe('block type shedule', () => {
-      let height: number;
-      let params: QueryRevenueParamsResponse;
+      let height;
+      let params;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        params = await submitRevenueParamsProposal(
-          params,
+        [params, height] = await submitRevenueParamsProposal(
+          neutronClient,
           revenueQuerier,
           daoMember,
           chainManagerAddress,
@@ -366,7 +365,6 @@ describe('Neutron / Revenue', () => {
             },
           },
         );
-        height = await neutronClient.getHeight();
       });
 
       test('check params', async () => {
@@ -426,12 +424,12 @@ describe('Neutron / Revenue', () => {
     });
 
     describe('month type schedule', () => {
-      let height: number;
-      let params: QueryRevenueParamsResponse;
+      let height;
+      let params;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        params = await submitRevenueParamsProposal(
-          params,
+        [params, height] = await submitRevenueParamsProposal(
+          neutronClient,
           revenueQuerier,
           daoMember,
           chainManagerAddress,
@@ -440,8 +438,6 @@ describe('Neutron / Revenue', () => {
             monthly_payment_schedule_type: {},
           },
         );
-
-        height = await neutronClient.getHeight();
       });
 
       test('check params', async () => {
@@ -504,10 +500,10 @@ describe('Neutron / Revenue', () => {
     });
 
     describe('empty type schedule', () => {
-      let params: QueryRevenueParamsResponse;
+      let params;
       test('submit and execute params proposal', async () => {
-        params = await submitRevenueParamsProposal(
-          params,
+        [params] = await submitRevenueParamsProposal(
+          neutronClient,
           revenueQuerier,
           daoMember,
           chainManagerAddress,
@@ -550,14 +546,14 @@ describe('Neutron / Revenue', () => {
 });
 
 async function submitRevenueParamsProposal(
-  params: QueryRevenueParamsResponse,
+  neutronClient: SigningNeutronClient,
   revenueQuerier: RevenueQueryClient,
   daoMember: DaoMember,
   chainManagerAddress: string,
   mainDao: Dao,
   sheduleType: PaymentScheduleType,
 ) {
-  params = await revenueQuerier.params();
+  const params = await revenueQuerier.params();
 
   const newParams: ParamsRevenue = {
     base_compensation: params.params.baseCompensation + '',
@@ -587,6 +583,8 @@ async function submitRevenueParamsProposal(
   await daoMember.voteYes(proposalId);
   await mainDao.checkPassedProposal(proposalId);
 
+  const height = await neutronClient.getHeight();
+
   await daoMember.executeProposalWithAttempts(proposalId);
-  return params;
+  return [params, height];
 }
