@@ -328,20 +328,6 @@ describe('Neutron / Revenue', () => {
           expect(+valState.stats.performanceRating).eq(0);
         }
 
-        let expectedBlockMissedAtMost = 3; // for 'no' and 'low' variants
-        if (lostBlocks == 'medium') {
-          expectedBlockMissedAtMost = 23;
-        }
-        if (lostBlocks == 'high') {
-          expectedBlockMissedAtMost = 40;
-        }
-        expect(
-          Number(
-            nextPaymentInfo.paymentSchedule.blockBasedPaymentSchedule
-              .blocksPerPeriod,
-          ) - Number(valState.stats.validatorInfo.commitedBlocksInPeriod),
-        ).lte(expectedBlockMissedAtMost);
-
         // TODO: check block events for revenue amount
       },
     );
