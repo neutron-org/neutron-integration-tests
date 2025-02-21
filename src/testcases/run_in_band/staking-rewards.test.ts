@@ -22,12 +22,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import {
   delegateTokens,
-  getStakingTrackerInfo,
+  getTrackingStakeInfo,
   redelegateTokens,
   undelegateTokens,
   simulateSlashingAndJailing,
-  submitRemoveFromBlacklistProposal,
-  submitAddToBlacklistProposal,
   submitUpdateParamsSlashingProposal,
 } from '../../helpers/staking';
 
@@ -284,7 +282,7 @@ describe('Neutron / Staking Rewards', () => {
         const realRate1 = claimReal / (claimHeight1 - delegationHeight);
 
         // delegation wallet
-        const vaultInfoBeforeSlashingWallet = await getStakingTrackerInfo(
+        const vaultInfoBeforeSlashingWallet = await getTrackingStakeInfo(
           neutronClient1,
           neutronWallet1.address,
           STAKING_TRACKER,
@@ -327,7 +325,7 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        const vaultInfoAfterSlashing = await getStakingTrackerInfo(
+        const vaultInfoAfterSlashing = await getTrackingStakeInfo(
           validatorSecondClient,
           validatorSecondary.address,
           STAKING_TRACKER,
@@ -336,7 +334,7 @@ describe('Neutron / Staking Rewards', () => {
         expect(+vaultInfoAfterSlashing.power).toEqual(0);
 
         // delegation wallet
-        const vaultInfoAfterSlashingWallet = await getStakingTrackerInfo(
+        const vaultInfoAfterSlashingWallet = await getTrackingStakeInfo(
           neutronClient1,
           neutronWallet1.address,
           STAKING_TRACKER,
@@ -430,124 +428,6 @@ describe('Neutron / Staking Rewards', () => {
           (claimHeightAfterSlashing4 - claimHeightAfterSlashing3);
         expect(realRate3).toBeLessThan(realRate1);
         expect(realRate3 / 2.0).toBeCloseTo((realRate1 * 0.9) / 2, 2);
-      });
-
-      test('blacklisted address works with rewards correctly', async () => {
-        const delegationAmount = '1000000000'; // 1000ntrn
-        const blacklistedWallet = await testState.nextWallet('neutron');
-        const blacklistedClient = await SigningNeutronClient.connectWithSigner(
-          testState.rpcNeutron,
-          blacklistedWallet.directwallet,
-          blacklistedWallet.address,
-        );
-
-        // delegate
-        // test claim works
-        // blacklist
-        // claim, then test claim doesn't add to balance
-        // remove from blacklist
-        // then test claim works
-        const res1 = await delegateTokens(
-          blacklistedClient,
-          blacklistedWallet.address,
-          validatorStrongAddr,
-          delegationAmount, // 1000ntrn
-        );
-        expect(res1.code).toEqual(0);
-
-        await blacklistedClient.waitBlocks(2);
-        const balance1 = await bankQuerier.balance({
-          address: claimRecipient,
-          denom: NEUTRON_DENOM,
-        });
-
-        const res2 = await blacklistedClient.execute(STAKING_REWARDS, {
-          claim_rewards: {
-            to_address: claimRecipient,
-          },
-        });
-        expect(res2.code).toEqual(0);
-
-        const balance2 = await bankQuerier.balance({
-          address: claimRecipient,
-          denom: NEUTRON_DENOM,
-        });
-
-        expect(+balance2.balance.amount).toBeGreaterThan(
-          +balance1.balance.amount,
-        );
-
-        // blacklist
-        // Create the Blacklist Proposal
-
-        const proposalId1 = await submitAddToBlacklistProposal(
-          daoMember1,
-          STAKING_TRACKER,
-          'Blacklist Address Proposal',
-          'Proposal to blacklist an address from voting',
-          { addresses: [blacklistedWallet.address] },
-          '1000',
-        );
-        await daoMember1.voteYes(proposalId1);
-        await mainDao.checkPassedProposal(proposalId1);
-        await daoMember1.executeProposalWithAttempts(proposalId1);
-
-        // claim pending rewards
-        const res4 = await blacklistedClient.execute(STAKING_REWARDS, {
-          claim_rewards: {
-            to_address: claimRecipient,
-          },
-        });
-        expect(res4.code).toEqual(0);
-
-        const balance3 = await bankQuerier.balance({
-          address: claimRecipient,
-          denom: NEUTRON_DENOM,
-        });
-
-        await blacklistedClient.waitBlocks(2);
-
-        // claim again, should be zero because blacklisted
-        const res5 = await blacklistedClient.execute(STAKING_REWARDS, {
-          claim_rewards: {
-            to_address: claimRecipient,
-          },
-        });
-        expect(res5.code).toEqual(0);
-        const balance4 = await bankQuerier.balance({
-          address: claimRecipient,
-          denom: NEUTRON_DENOM,
-        });
-        expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
-
-        // remove from blacklist
-        const proposalId2 = await submitRemoveFromBlacklistProposal(
-          daoMember1,
-          STAKING_TRACKER,
-          'Remove from Blacklist Address Proposal',
-          'Proposal to remove blacklisted address from voting',
-          { addresses: [blacklistedWallet.address] },
-          '1000',
-        );
-        await daoMember1.voteYes(proposalId2);
-        await mainDao.checkPassedProposal(proposalId2);
-        await daoMember1.executeProposalWithAttempts(proposalId2);
-
-        await blacklistedClient.waitBlocks(10);
-        const res7 = await blacklistedClient.execute(STAKING_REWARDS, {
-          claim_rewards: {
-            to_address: claimRecipient,
-          },
-        });
-        expect(res7.code).toEqual(0);
-
-        const balance5 = await bankQuerier.balance({
-          address: claimRecipient,
-          denom: NEUTRON_DENOM,
-        });
-        expect(+balance5.balance.amount).toBeGreaterThan(
-          +balance4.balance.amount,
-        );
       });
 
       test('redelegation works with rewards correctly', async () => {
@@ -676,7 +556,7 @@ describe('Neutron / Staking Rewards', () => {
 
         await client.waitBlocks(2);
 
-        const info = await getStakingTrackerInfo(
+        const info = await getTrackingStakeInfo(
           client,
           wallet.address,
           STAKING_TRACKER,

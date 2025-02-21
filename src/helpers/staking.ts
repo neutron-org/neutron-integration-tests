@@ -1,13 +1,14 @@
 import { SigningNeutronClient } from './signing_neutron_client';
-import { DeliverTxResponse } from '@cosmjs/stargate';
+import { DeliverTxResponse, StargateClient } from "@cosmjs/stargate";
 import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { sleep, waitBlocks } from "@neutron-org/neutronjsplus/dist/wait";
 import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
+import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
 
 export type VotingPowerInfo = {
   height: number;
@@ -15,7 +16,7 @@ export type VotingPowerInfo = {
   totalPower: number;
 };
 
-export const getStakingTrackerInfo = async (
+export const getTrackingStakeInfo = async (
   client: SigningNeutronClient,
   address: string,
   stakingTrackerAddr: string,
@@ -324,4 +325,69 @@ export const submitRemoveFromBlacklistProposal = async (
     [wasmMessage],
     deposit,
   );
+};
+
+export type ParamsStakingInfo = {
+  unbonding_time: Duration;
+  max_validators: string;
+  max_entries: string;
+  historical_entries: string;
+  bond_denom: string;
+};
+
+export const submitUpdateParamsStakingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsStakingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.staking.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
+  );
+};
+
+export const waitBlocksTimeout = async (
+  blocks: number,
+  client: StargateClient | CosmWasmClient,
+  timeout = 120000,
+): Promise<void> => {
+  const start = Date.now();
+  // const client = await StargateClient.connect(this.rpc);
+  const initBlock = await client.getBlock();
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      const block = await client.getBlock();
+      if (block.header.height - initBlock.header.height >= blocks) {
+        break;
+      }
+      if (Date.now() - start > timeout) {
+        break;
+      }
+    } catch (e) {
+      //noop
+    }
+    await sleep(1000);
+  }
 };
