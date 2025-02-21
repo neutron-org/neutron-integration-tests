@@ -167,10 +167,10 @@ NEUTRON_STAKING_VAULT_LABEL="neutron.voting.vaults.staking"
 
 NEUTRON_STAKING_TRACKER_NAME="Neutron Staking Tracker"
 NEUTRON_STAKING_TRACKER_DESCRIPTION="Tracks the Staking module for querying historical voting power and notifying about staking changes"
-NEUTRON_STAKING_TRACKER_LABEL="neutron.staking_tracker" # TODO: assign correct label
+NEUTRON_STAKING_TRACKER_LABEL="neutron.staking_tracker"
 
-NEUTRON_STAKING_REWARDS_LABEL="neutron.staking_rewards" # TODO: assign correct label
-NEUTRON_STAKING_INFO_PROXY_LABEL="neutron.staking_proxy" # TODO: assign correct label
+NEUTRON_STAKING_REWARDS_LABEL="neutron.staking_rewards"
+NEUTRON_STAKING_INFO_PROXY_LABEL="neutron.staking_proxy"
 
 
 
@@ -215,6 +215,7 @@ NEUTRON_STAKING_TRACKER_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_TRACKE
 NEUTRON_STAKING_VAULT_BINARY_ID=$(store_binary          "$NEUTRON_STAKING_VAULT_CONTRACT")
 NEUTRON_STAKING_REWARDS_BINARY_ID=$(store_binary        "$NEUTRON_STAKING_REWARDS_CONTRACT")
 NEUTRON_STAKING_INFO_PROXY_BINARY_ID=$(store_binary     "$NEUTRON_STAKING_INFO_PROXY_CONTRACT")
+
 
 # WARNING!
 # The following code is needed to pre-generate the contract addresses

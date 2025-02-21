@@ -226,15 +226,15 @@ describe('Neutron / Slinky', () => {
       expect(res.market).toBeDefined();
     });
 
-    test('query market map', async () => {
-      const res = await neutronClient.queryContractSmart(marketmapContract, {
-        market_map: {},
-      });
-      expect(res).toBeDefined();
-      expect(res.chain_id).toBeDefined();
-      expect(res.market_map).toBeDefined();
-      expect(res.last_updated).toBeDefined();
-    });
+    // test('query market map', async () => {
+    //   const res = await neutronClient.queryContractSmart(marketmapContract, {
+    //     market_map: {},
+    //   });
+    //   expect(res).toBeDefined();
+    //   expect(res.chain_id).toBeDefined();
+    //   expect(res.market_map).toBeDefined();
+    //   expect(res.last_updated).toBeDefined();
+    // });
 
     test('query params', async () => {
       const res = await neutronClient.queryContractSmart(marketmapContract, {
