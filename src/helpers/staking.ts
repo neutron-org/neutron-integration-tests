@@ -1,14 +1,14 @@
 import { SigningNeutronClient } from './signing_neutron_client';
-import { DeliverTxResponse, StargateClient } from "@cosmjs/stargate";
+import { DeliverTxResponse, StargateClient } from '@cosmjs/stargate';
 import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
-import { sleep, waitBlocks } from "@neutron-org/neutronjsplus/dist/wait";
+import { sleep, waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 export type VotingPowerInfo = {
   height: number;
@@ -27,14 +27,14 @@ export const getTrackingStakeInfo = async (
   }
 
   const power = await client.queryContractSmart(stakingTrackerAddr, {
-    voting_power_at_height: {
+    stake_at_height: {
       address: address,
       ...(height !== undefined ? { height: height } : {}),
     },
   });
 
   const totalPower = await client.queryContractSmart(stakingTrackerAddr, {
-    total_power_at_height: {
+    total_stake_at_height: {
       ...(height !== undefined ? { height: height } : {}),
     },
   });
@@ -46,11 +46,41 @@ export const getTrackingStakeInfo = async (
   };
 };
 
+export const getVaultVPInfo = async (
+  client: SigningNeutronClient,
+  address: string,
+  stakingVaultAddr: string,
+  height?: number,
+): Promise<VotingPowerInfo> => {
+  if (typeof height === 'undefined') {
+    height = await client.getHeight();
+  }
+
+  const power = await client.queryContractSmart(stakingVaultAddr, {
+    voting_power_at_height: {
+      address: address,
+      ...(height !== undefined ? { height: height } : {}),
+    },
+  });
+
+  const totalPower = await client.queryContractSmart(stakingVaultAddr, {
+    total_power_at_height: {
+      ...(height !== undefined ? { height: height } : {}),
+    },
+  });
+
+  return {
+    height: height,
+    power: +power.power,
+    totalPower: +totalPower.power,
+  };
+};
+
 export const delegateTokens = async (
   client: SigningNeutronClient,
-  delegatorAddress,
-  validatorAddress,
-  amount,
+  delegatorAddress: string,
+  validatorAddress: string,
+  amount: string,
 ): Promise<DeliverTxResponse> =>
   await client.signAndBroadcast(
     [

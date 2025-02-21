@@ -1,6 +1,10 @@
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { NEUTRON_DENOM, STAKING_TRACKER } from '../../helpers/constants';
+import {
+  NEUTRON_DENOM,
+  STAKING_TRACKER,
+  STAKING_VAULT,
+} from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
@@ -16,6 +20,7 @@ import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutro
 import {
   delegateTokens,
   getTrackingStakeInfo,
+  getVaultVPInfo,
   redelegateTokens,
   simulateSlashingAndJailing,
   submitAddToBlacklistProposal,
@@ -353,8 +358,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
           );
         });
 
-        // TODO: move this blacklist to use the staking-vault contract instead
-        describe.skip('Blacklist', () => {
+        describe('Blacklist', () => {
           let mainDao: Dao;
           let daoMember1: DaoMember;
           let proposalId: number;
@@ -386,7 +390,7 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             // Create the Blacklist Proposal
             proposalId = await submitAddToBlacklistProposal(
               daoMember1,
-              STAKING_TRACKER,
+              STAKING_VAULT,
               'Blacklist Address Proposal',
               'Proposal to blacklist an address from voting',
               { addresses: [blacklistedAddress] },
@@ -404,10 +408,10 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
           test('execute passed proposal', async () => {
             heightBeforeBlacklist = await neutronClient1.getHeight();
-            const vaultInfoBeforeBlacklist = await getTrackingStakeInfo(
+            const vaultInfoBeforeBlacklist = await getVaultVPInfo(
               neutronClient1,
               blacklistedAddress,
-              STAKING_TRACKER,
+              STAKING_VAULT,
               heightBeforeBlacklist,
             );
             // before blacklist there is a vp
@@ -418,10 +422,10 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
           test('validate blacklist effect on voting power', async () => {
             // Validate voting power before blacklist
-            const vaultInfoBeforeBlacklistOldBlock = await getTrackingStakeInfo(
+            const vaultInfoBeforeBlacklistOldBlock = await getVaultVPInfo(
               neutronClient1,
               blacklistedAddress,
-              STAKING_TRACKER,
+              STAKING_VAULT,
               heightBeforeBlacklist,
             );
             // address is blacklisted, even in the past no voting power
@@ -433,10 +437,10 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
             await waitBlocks(2, neutronClient1); // Wait for changes to take effect
 
             // Validate voting power after blacklist
-            const vaultInfoAfterBlacklist = await getTrackingStakeInfo(
+            const vaultInfoAfterBlacklist = await getVaultVPInfo(
               neutronClient1,
               blacklistedAddress,
-              STAKING_TRACKER,
+              STAKING_VAULT,
             );
             expect(vaultInfoAfterBlacklist.power).toEqual(0);
             console.log(
