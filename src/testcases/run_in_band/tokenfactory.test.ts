@@ -127,7 +127,7 @@ describe('Neutron / Tokenfactory', () => {
       neutronWallet.address,
       NEUTRON_DENOM,
     );
-    await mainDaoMember.bondFunds('10000');
+    await mainDaoMember.bondFunds('1000000000');
 
     subDao = await setupSubDaoTimelockSet(
       neutronWallet.address,

@@ -74,10 +74,10 @@ describe('Neutron / Tokenomics', () => {
       neutronWallet.address,
       NEUTRON_DENOM,
     );
-    await daoMember.bondFunds('10000');
+    await daoMember.bondFunds('1000000000');
     await neutronClient.getWithAttempts(
       async () => await mainDao.queryVotingPower(daoMember.user),
-      async (response) => response.power >= 10000,
+      async (response) => response.power >= 1000000000,
       20,
     );
 
@@ -192,8 +192,6 @@ describe('Neutron / Tokenomics', () => {
     });
 
     test('Total burned neutrons amount has increased', async () => {
-      const params = await feemarketQuerier.params();
-      console.log('KEKEKEKE', params.params);
       const burnedAfter = await feeburnerQuerier.totalBurnedNeutronsAmount();
       const diff =
         +(burnedAfter.totalBurnedNeutronsAmount.coin.amount || 0) -
