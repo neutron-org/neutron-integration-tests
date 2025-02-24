@@ -5,8 +5,8 @@ build-gaia:
 		@docker buildx build --load --build-context app=$(APP_DIR)/gaia --build-context setup=$(APP_DIR)/neutron/network -t gaia-node -f dockerbuilds/Dockerfile.gaia --build-arg BINARY=gaiad .
 
 build-neutron:
-		@docker buildx build --load --build-arg PERSISTENT_PEER=neutron-node --build-context app=$(APP_DIR)/neutron --build-context scripts=./scripts -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond .
-		# cd $(APP_DIR)/neutron && $(MAKE) build-docker-image
+		@docker buildx build --load --build-arg PERSISTENT_PEER=neutron-node --build-context app=$(APP_DIR)/neutron-private --build-context scripts=./scripts -t neutron-node -f dockerbuilds/Dockerfile.neutron --build-arg BINARY=neutrond . --no-cache
+		# cd $(APP_DIR)/neutron-private && $(MAKE) build-docker-image
 
 build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.10.4 .
@@ -15,7 +15,7 @@ build-relayer:
 		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
 
 build-slinky:
-		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.0.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
+		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.2.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-slinky
 

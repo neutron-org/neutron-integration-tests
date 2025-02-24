@@ -163,10 +163,10 @@ describe('Neutron / Revenue', () => {
       });
 
       test('bond from wallet', async () => {
-        await daoMember.bondFunds('30000');
+        await daoMember.bondFunds('3000000000');
         await neutronClient.getWithAttempts(
           async () => await mainDao.queryVotingPower(daoMember.user),
-          async (response) => response.power == 30000,
+          async (response) => response.power == 3000000000,
           20,
         );
       });

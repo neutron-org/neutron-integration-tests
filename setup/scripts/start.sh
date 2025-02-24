@@ -14,6 +14,7 @@ echo "Creating log file at $CHAIN_HOME/$CHAINID.log"
 if [ "$RUN_BACKGROUND" == 1 ]; then
   $BINARY start                           \
     --log_level debug                     \
+    --log_format json                     \
     --home "$CHAIN_HOME"                   \
     --pruning=nothing                     \
     --grpc.address="0.0.0.0:$GRPCPORT"    \
@@ -21,6 +22,7 @@ if [ "$RUN_BACKGROUND" == 1 ]; then
 else
   $BINARY start                           \
     --log_level debug                     \
+    --log_format json                     \
     --home "$CHAIN_HOME"                   \
     --pruning=nothing                     \
     --grpc.address="0.0.0.0:$GRPCPORT"    \
