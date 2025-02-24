@@ -1,3 +1,11 @@
+#!/bin/bash
+set -e
+
+BINARY=${BINARY:-neutrond}
+BASE_DIR=./data
+CHAINID=${CHAINID:-test-1}
+CHAIN_DIR="$BASE_DIR/$CHAINID"
+
 # Stop if it is already running
 if pgrep -x "$BINARY" >/dev/null; then
     echo "Terminating $BINARY..."
