@@ -62,10 +62,10 @@ describe('Neutron / Global Fee', () => {
       NEUTRON_DENOM,
     );
 
-    await daoMember.bondFunds('10000');
+    await daoMember.bondFunds('1000000000');
     await neutronClient.getWithAttempts(
       async () => await mainDao.queryVotingPower(daoMember.user),
-      async (response) => response.power == 10000,
+      async (response) => response.power == 1000000000,
       20,
     );
 
@@ -80,7 +80,7 @@ describe('Neutron / Global Fee', () => {
   });
 
   afterAll(async () => {
-    await daoMember.unbondFunds('10000');
+    await daoMember.unbondFunds('1000000000');
   });
 
   let counter = 1;

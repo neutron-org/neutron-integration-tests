@@ -70,10 +70,10 @@ describe('Neutron / Cron', () => {
 
   describe('prepare: bond funds', () => {
     test('bond from wallet', async () => {
-      await daoMember.bondFunds('10000');
+      await daoMember.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember.user),
-        async (response) => response.power == 10000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
@@ -139,6 +139,8 @@ describe('Neutron / Cron', () => {
           },
         },
       );
+
+      console.log(queryResult);
 
       expect(queryResult).toBeGreaterThanOrEqual(2);
     });
