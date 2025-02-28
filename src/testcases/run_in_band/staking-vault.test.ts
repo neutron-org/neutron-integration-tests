@@ -571,6 +571,17 @@ describe('Neutron / Staking Vault - Extended Scenarios', () => {
 
       // Ensure voting power is less than before it was slashed
       expect(vaultInfoBefore.power).toBeGreaterThan(vaultInfoAfterUnjail.power);
+      const delegationsAfterUnjail = await stakingQuerier.validatorDelegations({
+        validatorAddr: validatorSecondWallet.valAddress,
+      });
+      const selfDelegation = delegationsAfterUnjail.delegationResponses.find(
+        (r) =>
+          r.delegation.validatorAddress == validatorSecondWallet.valAddress &&
+          r.delegation.delegatorAddress === validatorSecondWallet.address,
+      );
+      expect(+selfDelegation.balance.amount).toEqual(
+        vaultInfoAfterUnjail.power,
+      );
     });
 
     test('Unbond validator while keeping at least 67% of consensus', async () => {
