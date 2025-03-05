@@ -396,28 +396,3 @@ export const submitUpdateParamsStakingProposal = async (
     amount,
   );
 };
-
-export const waitBlocksTimeout = async (
-  blocks: number,
-  client: StargateClient | CosmWasmClient,
-  timeout = 120000,
-): Promise<void> => {
-  const start = Date.now();
-  // const client = await StargateClient.connect(this.rpc);
-  const initBlock = await client.getBlock();
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    try {
-      const block = await client.getBlock();
-      if (block.header.height - initBlock.header.height >= blocks) {
-        break;
-      }
-      if (Date.now() - start > timeout) {
-        break;
-      }
-    } catch (e) {
-      //noop
-    }
-    await sleep(1000);
-  }
-};
