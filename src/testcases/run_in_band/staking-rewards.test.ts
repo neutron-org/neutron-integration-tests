@@ -22,7 +22,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import {
   delegateTokens,
-  getTrackingStakeInfo,
+  getTrackedStakeInfo,
   redelegateTokens,
   undelegateTokens,
   simulateSlashingAndJailing,
@@ -282,12 +282,12 @@ describe('Neutron / Staking Rewards', () => {
         const realRate1 = claimReal / (claimHeight1 - delegationHeight);
 
         // delegation wallet
-        const vaultInfoBeforeSlashingWallet = await getTrackingStakeInfo(
+        const vaultInfoBeforeSlashingWallet = await getTrackedStakeInfo(
           neutronClient1,
           neutronWallet1.address,
           STAKING_TRACKER,
         );
-        expect(+vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(0);
+        expect(+vaultInfoBeforeSlashingWallet.stake).toBeGreaterThan(0);
 
         await simulateSlashingAndJailing(
           validatorSecondClient,
@@ -325,24 +325,24 @@ describe('Neutron / Staking Rewards', () => {
           denom: NEUTRON_DENOM,
         });
 
-        const vaultInfoAfterSlashing = await getTrackingStakeInfo(
+        const vaultInfoAfterSlashing = await getTrackedStakeInfo(
           validatorSecondClient,
           validatorSecondary.address,
           STAKING_TRACKER,
           await validatorSecondClient.getHeight(),
         );
-        expect(+vaultInfoAfterSlashing.power).toEqual(0);
+        expect(+vaultInfoAfterSlashing.stake).toEqual(0);
 
         // delegation wallet
-        const vaultInfoAfterSlashingWallet = await getTrackingStakeInfo(
+        const vaultInfoAfterSlashingWallet = await getTrackedStakeInfo(
           neutronClient1,
           neutronWallet1.address,
           STAKING_TRACKER,
         );
-        expect(vaultInfoBeforeSlashingWallet.power).toBeGreaterThan(
-          vaultInfoAfterSlashingWallet.power,
+        expect(vaultInfoBeforeSlashingWallet.stake).toBeGreaterThan(
+          vaultInfoAfterSlashingWallet.stake,
         );
-        expect(vaultInfoAfterSlashingWallet.power).toEqual(0);
+        expect(vaultInfoAfterSlashingWallet.stake).toEqual(0);
 
         // wait blocks to accrue claim under lower stake after slashing
         await neutronClient1.waitBlocks(10);
@@ -556,12 +556,12 @@ describe('Neutron / Staking Rewards', () => {
 
         await client.waitBlocks(2);
 
-        const info = await getTrackingStakeInfo(
+        const info = await getTrackedStakeInfo(
           client,
           wallet.address,
           STAKING_TRACKER,
         );
-        expect(info.power).toEqual(0);
+        expect(info.stake).toEqual(0);
 
         // claim to remove already accrued funds to make clean test
         const res3 = await client.execute(STAKING_REWARDS, {

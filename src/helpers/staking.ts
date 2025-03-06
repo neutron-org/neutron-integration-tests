@@ -8,15 +8,14 @@ import { sleep, waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 
 export type VotingPowerInfo = {
   height: number;
-  power: number;
-  totalPower: number;
+  stake: number;
+  totalStake: number;
 };
 
-export const getTrackingStakeInfo = async (
+export const getTrackedStakeInfo = async (
   client: SigningNeutronClient,
   address: string,
   stakingTrackerAddr: string,
@@ -26,14 +25,14 @@ export const getTrackingStakeInfo = async (
     height = await client.getHeight();
   }
 
-  const power = await client.queryContractSmart(stakingTrackerAddr, {
+  const stake = await client.queryContractSmart(stakingTrackerAddr, {
     stake_at_height: {
       address: address,
       ...(height !== undefined ? { height: height } : {}),
     },
   });
 
-  const totalPower = await client.queryContractSmart(stakingTrackerAddr, {
+  const totalStake = await client.queryContractSmart(stakingTrackerAddr, {
     total_stake_at_height: {
       ...(height !== undefined ? { height: height } : {}),
     },
@@ -41,8 +40,8 @@ export const getTrackingStakeInfo = async (
 
   return {
     height: height,
-    power: +power,
-    totalPower: +totalPower,
+    stake: +stake,
+    totalStake: +totalStake,
   };
 };
 
@@ -71,8 +70,8 @@ export const getVaultVPInfo = async (
 
   return {
     height: height,
-    power: +power.power,
-    totalPower: +totalPower.power,
+    stake: +power.power,
+    totalStake: +totalPower.power,
   };
 };
 
