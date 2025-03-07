@@ -4,6 +4,8 @@ import {
   NEUTRON_DENOM,
   STAKING_TRACKER,
   STAKING_VAULT,
+  VAL_MNEMONIC_1,
+  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
 import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
@@ -28,11 +30,6 @@ import {
   submitUpdateParamsStakingProposal,
   undelegateTokens,
 } from '../../helpers/staking';
-
-const VAL_MNEMONIC_1 =
-  'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
-const VAL_MNEMONIC_2 =
-  'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
 
 describe('Neutron / Staking Tracker - Extended Scenarios', () => {
   let testState: LocalState;
