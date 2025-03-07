@@ -1,18 +1,24 @@
 import { SigningNeutronClient } from './signing_neutron_client';
-import { DeliverTxResponse, StargateClient } from '@cosmjs/stargate';
+import { DeliverTxResponse } from '@cosmjs/stargate';
 import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
-import { sleep, waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
-export type VotingPowerInfo = {
+export type StakeInfo = {
   height: number;
   stake: number;
   totalStake: number;
+};
+
+export type VotingPowerInfo = {
+  height: number;
+  power: number;
+  totalPower: number;
 };
 
 export const getTrackedStakeInfo = async (
@@ -20,7 +26,7 @@ export const getTrackedStakeInfo = async (
   address: string,
   stakingTrackerAddr: string,
   height?: number,
-): Promise<VotingPowerInfo> => {
+): Promise<StakeInfo> => {
   if (typeof height === 'undefined') {
     height = await client.getHeight();
   }
@@ -70,8 +76,8 @@ export const getVaultVPInfo = async (
 
   return {
     height: height,
-    stake: +power.power,
-    totalStake: +totalPower.power,
+    power: +power.power,
+    totalPower: +totalPower.power,
   };
 };
 

@@ -131,7 +131,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           daoWallet.address,
           NEUTRON_DENOM,
         );
-        console.log('daoMember1: ' + daoMember1.user);
         await daoMember1.bondFunds('1999999491000');
         const neutronQuerier = await createNeutronClient({
           rpcEndpoint: testState.rpcNeutron,
@@ -178,17 +177,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
             validatorStrongAddr = validators.validators[1].operatorAddress;
             validatorStrongSelfDelegation = +validators.validators[1].tokens;
-
-            console.log(
-              'ValidatorWeak:',
-              validatorWeakAddr,
-              validatorWeakSelfDelegation,
-            );
-            console.log(
-              'ValidatorStrong:',
-              validatorStrongAddr,
-              validatorStrongSelfDelegation,
-            );
           });
         });
 
@@ -319,16 +307,10 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           if (!delegation) {
-            console.log(
-              `No delegation found for ${delegator.wallet.address} to ${validatorWeakAddr}. Skipping...`,
-            );
             return;
           }
 
           const fullUndelegationAmount = delegation.balance.amount;
-          console.log(
-            `Full undelegation amount for ${delegator.wallet.address}: ${fullUndelegationAmount}`,
-          );
 
           expect(Number(fullUndelegationAmount)).toBeGreaterThan(0);
 
@@ -352,10 +334,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           expect(remainingDelegation).toBeUndefined();
-
-          console.log(
-            `Successfully undelegated all funds from ${validatorWeakAddr} for ${delegator.wallet.address}.`,
-          );
         });
 
         describe('Blacklist', () => {
@@ -415,7 +393,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
               heightBeforeBlacklist,
             );
             // before blacklist there is a vp
-            expect(vaultInfoBeforeBlacklist.stake).toBeGreaterThan(0);
+            expect(vaultInfoBeforeBlacklist.power).toBeGreaterThan(0);
             await waitBlocks(1, daoWalletClient);
             await daoMember1.executeProposalWithAttempts(proposalId);
           });
@@ -429,10 +407,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
               heightBeforeBlacklist,
             );
             // address is blacklisted, even in the past no voting power
-            expect(vaultInfoBeforeBlacklistOldBlock.stake).toBe(0);
-            console.log(
-              `Voting Power After Blacklist, old block: ${vaultInfoBeforeBlacklistOldBlock.stake}`,
-            );
+            expect(vaultInfoBeforeBlacklistOldBlock.power).toBe(0);
 
             await waitBlocks(2, neutronClient1); // Wait for changes to take effect
 
@@ -442,18 +417,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
               blacklistedAddress,
               STAKING_VAULT,
             );
-            expect(vaultInfoAfterBlacklist.stake).toEqual(0);
-            console.log(
-              `Voting Power After Blacklist: ${vaultInfoAfterBlacklist.stake}`,
-            );
+            expect(vaultInfoAfterBlacklist.power).toEqual(0);
           });
         });
       });
     });
 
     test('Validator gets slashed after missing blocks, then rebond and unjail', async () => {
-      console.log(`Validator Address: ${validatorWeakAddr}`);
-
       // Query voting power before slashing
       const heightBeforeSlashing = await validatorSecondClient.getHeight();
       const stakeInfoBefore = await getTrackedStakeInfo(
@@ -463,12 +433,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         heightBeforeSlashing,
       );
 
-      console.log(`Voting Power Before Slashing: ${stakeInfoBefore.stake}`);
-
-      console.log(`Validator to slash: ${validatorSecondWallet.valAddress}`);
-      console.log(`Validator #2: ${validatorStrongAddr}`);
-
-      const newStatus = await simulateSlashingAndJailing(
+      await simulateSlashingAndJailing(
         validatorSecondClient,
         neutronClient1,
         stakingQuerier,
@@ -477,16 +442,11 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         validatorSecondWallet.address,
         16,
       );
-      console.log(`Validator after slashing status: ${newStatus}`);
 
       // Query validator status after potential jailing
       const validatorStateAfterSlashing = await stakingQuerier.validator({
         validatorAddr: validatorWeakAddr,
       });
-
-      console.log(
-        `Validator Status After Slashing: ${validatorStateAfterSlashing.validator.status}`,
-      );
 
       // Ensure the validator is jailed before proceeding
       if (validatorStateAfterSlashing.validator.jailed !== true) {
@@ -504,9 +464,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         heightAfterSlashing,
       );
 
-      console.log(`Voting Power After Slashing: ${stakeInfoAfter.stake}`);
-      console.log(`Total Power After Slashing: ${stakeInfoAfter.totalStake}`);
-
       // Voting power should be lower or zero
       expect(stakeInfoAfter.stake).toBeLessThan(stakeInfoBefore.stake);
 
@@ -514,7 +471,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       await waitBlocks(3, neutronClient1);
 
       // **Step 3: Unjail Validator**
-      console.log(`Validator will attempt to unjail...`);
       const resUnjail = await validatorSecondClient.signAndBroadcast(
         [
           {
@@ -529,21 +485,14 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           gas: '2000000',
         },
       );
-
-      console.log(resUnjail.rawLog);
       expect(resUnjail.code).toEqual(0);
 
-      console.log(`Waiting 3 blocks to confirm validator is unjailed...`);
       await waitBlocks(3, validatorSecondClient);
 
       // **Check validator status after unjailing**
       const validatorStateAfterUnjail = await stakingQuerier.validator({
         validatorAddr: validatorWeakAddr,
       });
-
-      console.log(
-        `Validator Status After Unjail: ${validatorStateAfterUnjail.validator.status}`,
-      );
 
       // Validator should be bonded again
       expect(validatorStateAfterUnjail.validator.status).toEqual(3);
@@ -553,10 +502,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         validatorSecondClient,
         validatorSecondWallet.address,
         STAKING_TRACKER,
-      );
-
-      console.log(
-        `Voting Power After Unjailing: ${stakeInfoAfterUnjail.stake}`,
       );
 
       // Ensure voting power is restored
@@ -583,11 +528,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       validatorWeakAddr = validatorInfo.operatorAddress;
       validatorWeakSelfDelegation = +validatorInfo.tokens;
 
-      console.log(`ValidatorWeak: ${validatorWeakAddr}`);
-      console.log(
-        `Self-Delegation Before Unbonding: ${validatorWeakSelfDelegation}`,
-      );
-
       // Query total network voting power
       const totalNetworkPowerInfo = await getTrackedStakeInfo(
         validatorPrimaryClient,
@@ -596,23 +536,12 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       );
 
       const totalNetworkPower = totalNetworkPowerInfo.totalStake;
-      console.log(
-        `Total Network Voting Power Before Unbonding: ${totalNetworkPower}`,
-      );
-      console.log(
-        `Ensure validator self delegation gives vp: ${totalNetworkPowerInfo.stake}`,
-      );
 
       // Print delegations before unbonding
       const validatorDelegationsBefore =
         await stakingQuerier.validatorDelegations({
           validatorAddr: validatorWeakAddr,
         });
-
-      console.log(
-        `Validator Delegations Before Unbonding:`,
-        validatorDelegationsBefore.delegationResponses,
-      );
 
       // Retrieve validator's **self-delegation** before unbonding
       const selfDelegationEntry =
@@ -625,20 +554,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         ? selfDelegationEntry.balance.amount
         : '0';
 
-      console.log(`Retrieved Self-Delegation Amount: ${selfDelegationAmount}`);
-
       // Ensure another validator has at least 67% of total power before unbonding
       const minRequiredPower = Math.ceil(totalNetworkPower * 0.67);
-      console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
 
       const validatorStrongDelegationAmount = Math.max(
         0,
         minRequiredPower - validatorStrongSelfDelegation,
       ).toString();
-
-      console.log(
-        `Delegating ${validatorStrongDelegationAmount} to ValidatorStrong to maintain network consensus...`,
-      );
 
       // Delegate to another validator before unbonding
       if (validatorStrongDelegationAmount > '0') {
@@ -659,8 +581,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         STAKING_TRACKER,
         heightBeforeEdit,
       );
-
-      console.log(`Voting Power Before Unbonding: ${stakeInfoBefore.stake}`);
 
       // Set min_self_delegation above current self-delegation
       const increasedMinSelfDelegation = (
@@ -691,7 +611,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         },
       );
 
-      console.log(`Edit Validator Transaction Response:`, res.rawLog);
       // Validator's self-delegation must be greater than their minimum self-delegation
       expect(res.code).toEqual(16);
 
@@ -709,10 +628,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         validatorAddr: validatorWeakAddr,
       });
 
-      console.log(
-        `Validator Status After Unbonding: ${validatorState.validator.status}`,
-      );
-
       // Validator should no longer be bonded
       expect(validatorState.validator.status).not.toEqual('BOND_STATUS_BONDED');
 
@@ -724,17 +639,11 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         heightAfterEdit,
       );
 
-      console.log(`Voting Power After Unbonding: ${stakeInfoAfter.stake}`);
-      console.log(
-        `Total Network Power After Unbonding: ${stakeInfoAfter.totalStake}`,
-      );
-
       // Ensure voting power is reduced to zero
       expect(stakeInfoAfter.stake).toEqual(0);
       expect(stakeInfoAfter.totalStake).toBeLessThan(
         stakeInfoBefore.totalStake,
       );
-      console.log(`Performing self-delegation to bond validator back...`);
 
       await delegateTokens(
         validatorSecondClient,
@@ -758,10 +667,8 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         },
       );
 
-      console.log(resUnjail.rawLog);
       expect(resUnjail.code).toEqual(0);
 
-      console.log(`Waiting for blocks to confirm bonding...`);
       await waitBlocks(10, validatorPrimaryClient);
 
       // Query validator state to check if it got bonded again
@@ -769,10 +676,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       const validatorStateAfterBonding = await stakingQuerier.validator({
         validatorAddr: validatorWeakAddr,
       });
-
-      console.log(
-        `Validator Status After Self-Delegation: ${validatorStateAfterBonding.validator.status}`,
-      );
 
       // Validator should be bonded again
       expect(validatorStateAfterBonding.validator.status).toEqual(3);
@@ -785,13 +688,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         heightAfterBonding,
       );
 
-      console.log(
-        `Voting Power After Self-Delegation: ${stakeInfoAfterBonding.stake}`,
-      );
-      console.log(
-        `Total Network Power After Self-Delegation: ${stakeInfoAfterBonding.totalStake}`,
-      );
-
       // Ensure voting power increased after self-delegation
       expect(stakeInfoAfterBonding.stake).toBeGreaterThan(stakeInfoAfter.stake);
     });
@@ -802,10 +698,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       let proposalId: number;
 
       test('Submit proposal for validator removal before unbonding', async () => {
-        console.log(
-          `Submitting proposal to remove validator: ${validatorWeakAddr}`,
-        );
-
         const neutronRpcClient = await testState.neutronRpcClient();
         const daoCoreAddress = await getNeutronDAOCore(
           daoWalletClient,
@@ -848,40 +740,29 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           },
           '1000',
         );
-
-        console.log(`Proposal submitted with ID: ${proposalId}`);
       });
 
       test('Vote on proposal', async () => {
         await daoMember1.voteYes(proposalId);
-        console.log(`Voted YES on proposal ${proposalId}`);
       });
 
       test('Check if proposal is passed', async () => {
         await mainDao.checkPassedProposal(proposalId);
-        console.log(`Proposal ${proposalId} has passed.`);
       });
 
       test('Execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
-        console.log(`Executed proposal ${proposalId}.`);
       });
 
       test('All clients undelegate, then validator self-unbonds, ensuring no cross-delegations', async () => {
-        console.log(`Starting validator unbonding process...`);
-        console.log(`Validator to be removed: ${validatorWeakAddr}`);
-        console.log(`Remaining validator: ${validatorStrongAddr}`);
-
         const delegators = [
           { wallet: neutronWallet1, client: neutronClient1 },
           { wallet: neutronWallet2, client: neutronClient2 },
           { wallet: daoWallet, client: daoWalletClient },
           { wallet: validatorSecondWallet, client: validatorSecondClient }, // Validator itself
-          // { wallet: validatorPrimaryWallet, client: validatorPrimarClient }, // Primary validator
         ];
 
         const heightBeforeUnbonding = await validatorPrimaryClient.getHeight();
-        console.log(`Current block height: ${heightBeforeUnbonding}`);
 
         // Check voting power before unbonding
         const stakeInfoBefore = await getTrackedStakeInfo(
@@ -892,31 +773,19 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         );
 
         for (const { wallet, client } of delegators) {
-          console.log(`Checking delegations for ${wallet.address}...`);
-
           const delegations = await stakingQuerier.delegatorDelegations({
             delegatorAddr: wallet.address,
           });
 
           if (delegations.delegationResponses.length === 0) {
-            console.log(
-              `No delegations found for ${wallet.address}. Skipping...`,
-            );
             continue;
           }
 
           for (const delegation of delegations.delegationResponses) {
             const undelegationAmount = delegation.balance.amount;
-            if (undelegationAmount === '0') {
-              console.log(
-                `Skipping undelegation for ${wallet.address} from ${delegation.delegation.validatorAddress}, amount is zero.`,
-              );
+            if (+undelegationAmount === 0) {
               continue;
             }
-
-            console.log(
-              `Undelegating ${undelegationAmount} from ${delegation.delegation.validatorAddress} for ${wallet.address}...`,
-            );
 
             await undelegateTokens(
               client,
@@ -929,14 +798,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           await waitBlocks(2, client);
         }
 
-        console.log(
-          `Verifying that ${validatorStrongAddr} does not have delegations in ${validatorWeakAddr}...`,
-        );
-
-        console.log(
-          `Initiating final self-unbonding for ${validatorWeakAddr}...`,
-        );
-
         const validatorDelegations = await stakingQuerier.validatorDelegations({
           validatorAddr: validatorWeakAddr,
         });
@@ -946,15 +807,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
             del.delegation.delegatorAddress === validatorSecondWallet.address,
         );
 
-        if (!selfDelegation) {
-          console.log(
-            `Validator ${validatorWeakAddr} has no self-delegation left.`,
-          );
-        } else {
-          console.log(
-            `Self-undelegating ${selfDelegation.balance.amount} from ${validatorWeakAddr}...`,
-          );
-
+        if (selfDelegation) {
           await undelegateTokens(
             validatorSecondClient,
             validatorSecondWallet.address,
@@ -979,11 +832,6 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           validatorSecondWallet.address,
           STAKING_TRACKER,
           heightAfterUnbonding,
-        );
-
-        console.log(`Voting Power After Unbonding: ${stakeInfoAfter.stake}`);
-        console.log(
-          `Total Network Power After Unbonding: ${stakeInfoAfter.totalStake}`,
         );
 
         // Ensure voting power is reduced to zero
