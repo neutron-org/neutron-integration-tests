@@ -161,7 +161,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       });
     });
 
-    describe('Staking Vault Operations - Multiple Users & Validators', () => {
+    describe('Staking Tracker Operations - Multiple Users & Validators', () => {
       describe('Delegate/Undelegate/Redelegate tokens to multiple validators', () => {
         describe('query validators', () => {
           test('fetch validator data', async () => {
@@ -177,7 +177,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           });
         });
 
-        test('perform multiple delegations and validate historical stake', async () => {
+        test('perform multiple delegations and validate historical stake info', async () => {
           const delegators = [
             { wallet: neutronWallet1, client: neutronClient1 },
             { wallet: neutronWallet2, client: neutronClient2 },
@@ -249,7 +249,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           expect(stakeInfoBefore.stake).toEqual(stakeInfoAfter.stake);
         });
 
-        test('perform undelegations and validate historical stake', async () => {
+        test('perform undelegations and validate historical stake info', async () => {
           const delegators = [
             { wallet: neutronWallet1, client: neutronClient1 },
             { wallet: neutronWallet2, client: neutronClient2 },
@@ -526,13 +526,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       validatorWeakSelfDelegation = +validatorInfo.tokens;
 
       // Query total bonded tokens
-      const totalNetworkPowerInfo = await getTrackedStakeInfo(
+      const totalStakeInfo = await getTrackedStakeInfo(
         validatorPrimaryClient,
         validatorSecondWallet.address,
         STAKING_TRACKER,
       );
 
-      const totalNetworkPower = totalNetworkPowerInfo.totalStake;
+      const totalStake = totalStakeInfo.totalStake;
 
       // Print delegations before unbonding
       const validatorDelegationsBefore =
@@ -551,12 +551,12 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         ? selfDelegationEntry.balance.amount
         : '0';
 
-      // Ensure another validator has at least 67% of total power before unbonding
-      const minRequiredPower = Math.ceil(totalNetworkPower * 0.67);
+      // Ensure another validator has at least 67% of total stake before unbonding
+      const minRequiredStake = Math.ceil(totalStake * 0.67);
 
       const validatorStrongDelegationAmount = Math.max(
         0,
-        minRequiredPower - validatorStrongSelfDelegation,
+        minRequiredStake - validatorStrongSelfDelegation,
       ).toString();
 
       // Delegate to another validator before unbonding

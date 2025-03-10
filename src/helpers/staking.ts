@@ -165,21 +165,21 @@ export const simulateSlashingAndJailing = async (
   let validatorInfo = await stakingQuerier.validator({ validatorAddr });
 
   // Check if the network has enough voting power to continue producing blocks
-  const activeValidators = await stakingQuerier.validators({
+  const bondedValidators = await stakingQuerier.validators({
     status: 'BOND_STATUS_BONDED',
   });
-  const totalVotingPower = activeValidators.validators.reduce(
+  const totalBondedTokens = bondedValidators.validators.reduce(
     (acc, val) => acc + Number(val.tokens),
     0,
   );
 
-  // console.log(`Total active voting power: ${totalVotingPower}`);
+  // console.log(`Total bonded tokens: ${totalBondedTokens}`);
 
-  // Retrieve voting power of both validators
-  // const slashedValidator = activeValidators.validators.find(
+  // Retrieve bonded tokens of both validators
+  // const slashedValidator = bondedValidators.validators.find(
   //   (val) => val.operatorAddress === validatorAddr,
   // );
-  const alternativeValidator = activeValidators.validators.find(
+  const alternativeValidator = bondedValidators.validators.find(
     (val) => val.operatorAddress === alternativeValidatorAddr,
   );
 
@@ -198,30 +198,30 @@ export const simulateSlashingAndJailing = async (
   const alternativeValidatorPower = Number(alternativeValidator.tokens);
   // console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
 
-  const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
-  // console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+  const minRequiredBondedTokens = Math.ceil(totalBondedTokens * 0.68);
+  // console.log(`Minimum Required Power for Consensus: ${minRequiredBondedTokens}`);
 
-  if (alternativeValidatorPower < minRequiredPower) {
+  if (alternativeValidatorPower < minRequiredBondedTokens) {
     console.log(
       `Alternative validator does not have enough power, delegating ${
-        minRequiredPower - alternativeValidatorPower
+        minRequiredBondedTokens - alternativeValidatorPower
       } to ${alternativeValidatorAddr}`,
     );
     await delegateTokens(
       validatorClient,
       delegatorAddr,
       alternativeValidatorAddr,
-      (minRequiredPower - alternativeValidatorPower).toString(),
+      (minRequiredBondedTokens - alternativeValidatorPower).toString(),
     );
   }
 
   // slashed validator
-  // const vaultInfoBeforeSlashing = await getStakingTrackerInfo(
+  // const stakeInfoBeforeSlashing = await getStakingTrackerInfo(
   //   validatorClient,
   //   validatorAddr,
   //   STAKING_TRACKER,
   // );
-  // console.log(`Voting Power Before Slashing: ${vaultInfoBeforeSlashing.power}`);
+  // console.log(`Voting Power Before Slashing: ${stakeInfoBeforeSlashing.stake}`);
 
   console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
