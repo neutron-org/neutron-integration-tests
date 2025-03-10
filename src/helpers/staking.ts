@@ -9,30 +9,66 @@ import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
 import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
+export type StakeInfo = {
+  height: number;
+  stake: number;
+  totalStake: number;
+};
+
 export type VotingPowerInfo = {
   height: number;
   power: number;
   totalPower: number;
 };
 
-export const getStakingTrackerInfo = async (
+export const getTrackedStakeInfo = async (
   client: SigningNeutronClient,
   address: string,
   stakingTrackerAddr: string,
+  height?: number,
+): Promise<StakeInfo> => {
+  if (typeof height === 'undefined') {
+    height = await client.getHeight();
+  }
+
+  const stake = await client.queryContractSmart(stakingTrackerAddr, {
+    stake_at_height: {
+      address: address,
+      ...(height !== undefined ? { height: height } : {}),
+    },
+  });
+
+  const totalStake = await client.queryContractSmart(stakingTrackerAddr, {
+    total_stake_at_height: {
+      ...(height !== undefined ? { height: height } : {}),
+    },
+  });
+
+  return {
+    height: height,
+    stake: +stake,
+    totalStake: +totalStake,
+  };
+};
+
+export const getVaultVPInfo = async (
+  client: SigningNeutronClient,
+  address: string,
+  stakingVaultAddr: string,
   height?: number,
 ): Promise<VotingPowerInfo> => {
   if (typeof height === 'undefined') {
     height = await client.getHeight();
   }
 
-  const power = await client.queryContractSmart(stakingTrackerAddr, {
+  const power = await client.queryContractSmart(stakingVaultAddr, {
     voting_power_at_height: {
       address: address,
       ...(height !== undefined ? { height: height } : {}),
     },
   });
 
-  const totalPower = await client.queryContractSmart(stakingTrackerAddr, {
+  const totalPower = await client.queryContractSmart(stakingVaultAddr, {
     total_power_at_height: {
       ...(height !== undefined ? { height: height } : {}),
     },
@@ -40,16 +76,16 @@ export const getStakingTrackerInfo = async (
 
   return {
     height: height,
-    power: +power,
-    totalPower: +totalPower,
+    power: +power.power,
+    totalPower: +totalPower.power,
   };
 };
 
 export const delegateTokens = async (
   client: SigningNeutronClient,
-  delegatorAddress,
-  validatorAddress,
-  amount,
+  delegatorAddress: string,
+  validatorAddress: string,
+  amount: string,
 ): Promise<DeliverTxResponse> =>
   await client.signAndBroadcast(
     [
@@ -129,21 +165,21 @@ export const simulateSlashingAndJailing = async (
   let validatorInfo = await stakingQuerier.validator({ validatorAddr });
 
   // Check if the network has enough voting power to continue producing blocks
-  const activeValidators = await stakingQuerier.validators({
+  const bondedValidators = await stakingQuerier.validators({
     status: 'BOND_STATUS_BONDED',
   });
-  const totalVotingPower = activeValidators.validators.reduce(
+  const totalBondedTokens = bondedValidators.validators.reduce(
     (acc, val) => acc + Number(val.tokens),
     0,
   );
 
-  // console.log(`Total active voting power: ${totalVotingPower}`);
+  // console.log(`Total bonded tokens: ${totalBondedTokens}`);
 
-  // Retrieve voting power of both validators
-  // const slashedValidator = activeValidators.validators.find(
+  // Retrieve bonded tokens of both validators
+  // const slashedValidator = bondedValidators.validators.find(
   //   (val) => val.operatorAddress === validatorAddr,
   // );
-  const alternativeValidator = activeValidators.validators.find(
+  const alternativeValidator = bondedValidators.validators.find(
     (val) => val.operatorAddress === alternativeValidatorAddr,
   );
 
@@ -162,30 +198,30 @@ export const simulateSlashingAndJailing = async (
   const alternativeValidatorPower = Number(alternativeValidator.tokens);
   // console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
 
-  const minRequiredPower = Math.ceil(totalVotingPower * 0.68);
-  // console.log(`Minimum Required Power for Consensus: ${minRequiredPower}`);
+  const minRequiredBondedTokens = Math.ceil(totalBondedTokens * 0.68);
+  // console.log(`Minimum Required Power for Consensus: ${minRequiredBondedTokens}`);
 
-  if (alternativeValidatorPower < minRequiredPower) {
+  if (alternativeValidatorPower < minRequiredBondedTokens) {
     console.log(
       `Alternative validator does not have enough power, delegating ${
-        minRequiredPower - alternativeValidatorPower
+        minRequiredBondedTokens - alternativeValidatorPower
       } to ${alternativeValidatorAddr}`,
     );
     await delegateTokens(
       validatorClient,
       delegatorAddr,
       alternativeValidatorAddr,
-      (minRequiredPower - alternativeValidatorPower).toString(),
+      (minRequiredBondedTokens - alternativeValidatorPower).toString(),
     );
   }
 
   // slashed validator
-  // const vaultInfoBeforeSlashing = await getStakingTrackerInfo(
+  // const stakeInfoBeforeSlashing = await getStakingTrackerInfo(
   //   validatorClient,
   //   validatorAddr,
   //   STAKING_TRACKER,
   // );
-  // console.log(`Voting Power Before Slashing: ${vaultInfoBeforeSlashing.power}`);
+  // console.log(`Voting Power Before Slashing: ${stakeInfoBeforeSlashing.stake}`);
 
   console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
@@ -323,5 +359,45 @@ export const submitRemoveFromBlacklistProposal = async (
     description,
     [wasmMessage],
     deposit,
+  );
+};
+
+export type ParamsStakingInfo = {
+  unbonding_time: Duration;
+  max_validators: string;
+  max_entries: string;
+  historical_entries: string;
+  bond_denom: string;
+};
+
+export const submitUpdateParamsStakingProposal = async (
+  dao: DaoMember,
+  chainManagerAddress: string,
+  title: string,
+  description: string,
+  params: ParamsStakingInfo,
+  amount: string,
+): Promise<number> => {
+  const message = chainManagerWrapper(chainManagerAddress, {
+    custom: {
+      submit_admin_proposal: {
+        admin_proposal: {
+          proposal_execute_message: {
+            message: JSON.stringify({
+              '@type': '/cosmos.staking.v1beta1.MsgUpdateParams',
+              authority: ADMIN_MODULE_ADDRESS,
+              params,
+            }),
+          },
+        },
+      },
+    },
+  });
+
+  return await dao.submitSingleChoiceProposal(
+    title,
+    description,
+    [message],
+    amount,
   );
 };
