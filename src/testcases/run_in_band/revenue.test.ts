@@ -23,10 +23,7 @@ import {
   PaymentScheduleType,
   updateRevenueParamsProposal,
 } from '@neutron-org/neutronjsplus/dist/proposal';
-import {
-  QueryPaymentInfoResponse,
-  QueryParamsResponse as QueryRevenueParamsResponse,
-} from '@neutron-org/neutronjs/neutron/revenue/query';
+import { QueryPaymentInfoResponse } from '@neutron-org/neutronjs/neutron/revenue/query';
 
 BigInt.prototype.toJSON = function () {
   return Number(this);
