@@ -131,7 +131,7 @@ describe('Neutron / Staking Rewards', () => {
 
   describe('Staking Rewards', () => {
     describe('Set slashing params', () => {
-      let proposalId;
+      let proposalId: number;
       test('create accept and execute proposal', async () => {
         proposalId = await submitUpdateParamsSlashingProposal(
           daoMember1,
@@ -299,7 +299,7 @@ describe('Neutron / Staking Rewards', () => {
           12,
         );
 
-        for (;;) {
+        for (; ;) {
           console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,

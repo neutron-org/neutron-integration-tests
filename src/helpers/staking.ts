@@ -81,6 +81,47 @@ export const getVaultVPInfo = async (
   };
 };
 
+export const getBondedTokens = async (
+  stakingQuerier: StakingQueryClient,
+  address: string,
+): Promise<number> => {
+  const delegations = await stakingQuerier.delegatorDelegations({
+    delegatorAddr: address,
+  });
+
+  const bondedTokens = delegations.delegationResponses.reduce(
+    (sum, delegation) => sum + +delegation.balance.amount,
+    0,
+  );
+
+  return bondedTokens;
+};
+
+export const checkVotingPowerMatchBondedTokens = async (
+  neutronClient: SigningNeutronClient,
+  stakingQuerier: StakingQueryClient,
+  address: string,
+  stakingTrackerAddr: string,
+  stakingVaultAddr: string,
+) => {
+  const stake = await neutronClient.queryContractSmart(stakingTrackerAddr, {
+    stake_at_height: {
+      address: address,
+    },
+  });
+
+  const power = await neutronClient.queryContractSmart(stakingVaultAddr, {
+    voting_power_at_height: {
+      address: address,
+    },
+  });
+
+  const bondedTokens = await getBondedTokens(stakingQuerier, address);
+
+  expect(power.power).toEqual(stake);
+  expect(bondedTokens).toEqual(+power.power);
+};
+
 export const delegateTokens = async (
   client: SigningNeutronClient,
   delegatorAddress: string,
@@ -203,8 +244,7 @@ export const simulateSlashingAndJailing = async (
 
   if (alternativeValidatorPower < minRequiredBondedTokens) {
     console.log(
-      `Alternative validator does not have enough power, delegating ${
-        minRequiredBondedTokens - alternativeValidatorPower
+      `Alternative validator does not have enough power, delegating ${minRequiredBondedTokens - alternativeValidatorPower
       } to ${alternativeValidatorAddr}`,
     );
     await delegateTokens(
