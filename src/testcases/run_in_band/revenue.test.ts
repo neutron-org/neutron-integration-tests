@@ -528,12 +528,12 @@ describe('Neutron / Revenue', () => {
   });
 
   describe('change params proposals', () => {
-    describe('block type shedule', () => {
-      let height;
-      let params;
+    describe('block->block payment shedule change', () => {
+      const blocksPerPeriod = BLOCK_BASED_PAYMENT_SCHEDULE_DURATION + 10;
+      let height: number;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        [params, height] = await submitRevenueParamsProposal(
+        const resp = await submitRevenueParamsProposal(
           neutronClient,
           revenueQuerier,
           daoMember,
@@ -541,20 +541,24 @@ describe('Neutron / Revenue', () => {
           mainDao,
           {
             block_based_payment_schedule_type: {
-              blocks_per_period: '50',
+              blocks_per_period: blocksPerPeriod.toString(),
             },
           },
         );
+        height = resp[1];
       });
 
       test('check params', async () => {
-        params = await revenueQuerier.params();
+        const newParams = await revenueQuerier.params();
         expect(
-          params.params.paymentScheduleType.blockBasedPaymentScheduleType
-            .blocksPerPeriod,
-        ).eq(50n);
+          Number(
+            newParams.params.paymentScheduleType.blockBasedPaymentScheduleType
+              .blocksPerPeriod,
+          ),
+        ).eq(blocksPerPeriod);
       });
 
+      let newPeriodStartBlock: number;
       test('check state', async () => {
         // give a time to change state
         await waitBlocks(1, neutronClient);
@@ -568,6 +572,25 @@ describe('Neutron / Revenue', () => {
               .currentPeriodStartBlock,
           ),
         ).gte(height);
+        newPeriodStartBlock = Number(
+          paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+            .currentPeriodStartBlock,
+        );
+      });
+
+      test('check partial revenue distribution', async () => {
+        const paymentInfo = await revenueQuerier.paymentInfo();
+        const rde = await revenueDistributionEventsAtHeight(
+          newPeriodStartBlock,
+        );
+        const val1Events = rde.find((e) => e.validator === VALOPER_VAL1);
+        expect(val1Events.period_completeness).toBeLessThan(1);
+        expect(val1Events.performance_rating).toEqual(1);
+        // allow price fluctuation
+        expect(+val1Events.revenue_amount.amount).toBeWithin(
+          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 0.9,
+          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 1.1,
+        );
       });
 
       test('check validators state', async () => {
@@ -603,12 +626,11 @@ describe('Neutron / Revenue', () => {
       });
     });
 
-    describe('month type schedule', () => {
-      let height;
-      let params;
+    describe('block->month payment shedule change', () => {
+      let height: number;
       let paymentInfo: QueryPaymentInfoResponse;
       test('submit and execute params proposal', async () => {
-        [params, height] = await submitRevenueParamsProposal(
+        const resp = await submitRevenueParamsProposal(
           neutronClient,
           revenueQuerier,
           daoMember,
@@ -618,15 +640,17 @@ describe('Neutron / Revenue', () => {
             monthly_payment_schedule_type: {},
           },
         );
+        height = resp[1];
       });
 
       test('check params', async () => {
-        params = await revenueQuerier.params();
+        const newParams = await revenueQuerier.params();
         expect(
-          params.params.paymentScheduleType.monthlyPaymentScheduleType,
+          newParams.params.paymentScheduleType.monthlyPaymentScheduleType,
         ).toBeDefined();
       });
 
+      let newPeriodStartBlock: number;
       test('check state', async () => {
         // give a time to change state
         await waitBlocks(1, neutronClient);
@@ -644,6 +668,25 @@ describe('Neutron / Revenue', () => {
               .currentMonthStartBlock,
           ),
         ).gte(height);
+        newPeriodStartBlock = Number(
+          paymentInfo.paymentSchedule.monthlyPaymentSchedule
+            .currentMonthStartBlock,
+        );
+      });
+
+      test('check partial revenue distribution', async () => {
+        const paymentInfo = await revenueQuerier.paymentInfo();
+        const rde = await revenueDistributionEventsAtHeight(
+          newPeriodStartBlock,
+        );
+        const val1Events = rde.find((e) => e.validator === VALOPER_VAL1);
+        expect(val1Events.period_completeness).toBeLessThan(1);
+        expect(val1Events.performance_rating).toEqual(1);
+        // allow price fluctuation
+        expect(+val1Events.revenue_amount.amount).toBeWithin(
+          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 0.9,
+          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 1.1,
+        );
       });
 
       test('check validators state', async () => {
@@ -679,10 +722,9 @@ describe('Neutron / Revenue', () => {
       });
     });
 
-    describe('empty type schedule', () => {
-      let params;
+    describe('month->empty payment shedule change', () => {
       test('submit and execute params proposal', async () => {
-        [params] = await submitRevenueParamsProposal(
+        await submitRevenueParamsProposal(
           neutronClient,
           revenueQuerier,
           daoMember,
@@ -695,9 +737,9 @@ describe('Neutron / Revenue', () => {
       });
 
       test('check params', async () => {
-        params = await revenueQuerier.params();
+        const newParams = await revenueQuerier.params();
         expect(
-          params.params.paymentScheduleType.emptyPaymentScheduleType,
+          newParams.params.paymentScheduleType.emptyPaymentScheduleType,
         ).toBeDefined();
       });
 
@@ -719,6 +761,100 @@ describe('Neutron / Revenue', () => {
               valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
             ),
           ).lte(3);
+        }
+      });
+    });
+
+    describe('empty->block payment shedule change', () => {
+      const blocksPerPeriod = 50;
+      let height: number;
+      let paymentInfo: QueryPaymentInfoResponse;
+      test('submit and execute params proposal', async () => {
+        const resp = await submitRevenueParamsProposal(
+          neutronClient,
+          revenueQuerier,
+          daoMember,
+          chainManagerAddress,
+          mainDao,
+          {
+            block_based_payment_schedule_type: {
+              blocks_per_period: blocksPerPeriod.toString(),
+            },
+          },
+        );
+        height = resp[1];
+      });
+
+      test('check params', async () => {
+        const newParams = await revenueQuerier.params();
+        expect(
+          Number(
+            newParams.params.paymentScheduleType.blockBasedPaymentScheduleType
+              .blocksPerPeriod,
+          ),
+        ).eq(blocksPerPeriod);
+      });
+
+      let newPeriodStartBlock: number;
+      test('check state', async () => {
+        // give a time to change state
+        await waitBlocks(1, neutronClient);
+        paymentInfo = await revenueQuerier.paymentInfo();
+        expect(
+          paymentInfo.paymentSchedule.blockBasedPaymentSchedule.blocksPerPeriod,
+        ).eq(50n);
+        expect(
+          Number(
+            paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+              .currentPeriodStartBlock,
+          ),
+        ).gte(height);
+        newPeriodStartBlock = Number(
+          paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+            .currentPeriodStartBlock,
+        );
+      });
+
+      test('check revenue distribution events', async () => {
+        const blockResults = await getBlockResults(
+          NEUTRON_RPC,
+          newPeriodStartBlock,
+        );
+        const rdNone = blockResults.finalize_block_events.find(
+          (e) => e.type === 'revenue_distribution_none',
+        );
+        expect(rdNone).toBeDefined();
+      });
+
+      test('check validators state', async () => {
+        const valsState = await revenueQuerier.validatorsStats();
+        height = await neutronClient.getHeight();
+        for (let i = 0; i < valsState.stats.length; i++) {
+          // we check LTE not EQ because
+          // 1) getHeight query might happen one block later then validatorsStats query
+          // 2) validator might lost a block/vote
+          expect(
+            Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                  .currentPeriodStartBlock,
+              ) +
+              1,
+          );
+          expect(
+            Number(
+              valsState.stats[i].validatorInfo.commitedOracleVotesInPeriod,
+            ),
+          ).lte(
+            height -
+              Number(
+                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                  .currentPeriodStartBlock,
+              ) +
+              1,
+          );
         }
       });
     });
@@ -777,6 +913,7 @@ type RevenueDistributionEvent = {
   committed_blocks_in_period: number;
   committed_oracle_votes_in_period: number;
   total_block_in_period: number;
+  period_completeness: number;
 };
 
 async function revenueDistributionEventsAtHeight(
@@ -813,5 +950,6 @@ function parseRevenueDistributionEvent(
       attrMap['committed_oracle_votes_in_period'],
     ),
     total_block_in_period: Number(attrMap['total_block_in_period']),
+    period_completeness: Number(attrMap['period_completeness']),
   };
 }
