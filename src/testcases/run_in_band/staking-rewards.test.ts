@@ -299,7 +299,7 @@ describe('Neutron / Staking Rewards', () => {
           12,
         );
 
-        for (; ;) {
+        for (;;) {
           console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,

@@ -244,7 +244,8 @@ export const simulateSlashingAndJailing = async (
 
   if (alternativeValidatorPower < minRequiredBondedTokens) {
     console.log(
-      `Alternative validator does not have enough power, delegating ${minRequiredBondedTokens - alternativeValidatorPower
+      `Alternative validator does not have enough power, delegating ${
+        minRequiredBondedTokens - alternativeValidatorPower
       } to ${alternativeValidatorAddr}`,
     );
     await delegateTokens(

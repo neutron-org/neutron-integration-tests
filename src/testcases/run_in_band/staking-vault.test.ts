@@ -66,10 +66,7 @@ describe('Neutron / Staking Vault', () => {
       daoWalletClient,
       neutronRpcClient,
     );
-    const daoContracts = await getDaoContracts(
-      daoWalletClient,
-      daoCoreAddress,
-    );
+    const daoContracts = await getDaoContracts(daoWalletClient, daoCoreAddress);
     mainDao = new Dao(daoWalletClient, daoContracts);
     daoMember1 = new DaoMember(
       mainDao,
@@ -256,7 +253,9 @@ describe('Neutron / Staking Vault', () => {
           heightBeforeBlacklist,
         );
         // despite address is blacklisted, it still has voting power in the past
-        expect(vaultInfoBeforeBlacklistOldBlock.power).toEqual(+delegationAmount * 2);
+        expect(vaultInfoBeforeBlacklistOldBlock.power).toEqual(
+          +delegationAmount * 2,
+        );
 
         await daoMember2.voteYes(proposalId);
       });

@@ -215,7 +215,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
             expect(stakeInfoBefore.stake).toEqual(0);
             expect(stakeInfoAfter.stake).toEqual(+delegationAmount * 2);
-            checkVotingPowerMatchBondedTokens(client, stakingQuerier, wallet.address, STAKING_TRACKER, STAKING_VAULT);
+            await checkVotingPowerMatchBondedTokens(
+              client,
+              stakingQuerier,
+              wallet.address,
+              STAKING_TRACKER,
+              STAKING_VAULT,
+            );
           }
         });
 
@@ -250,7 +256,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           expect(stakeInfoBefore.stake).toEqual(stakeInfoAfter.stake);
-          checkVotingPowerMatchBondedTokens(delegator.client, stakingQuerier, delegator.wallet.address, STAKING_TRACKER, STAKING_VAULT);
+          await checkVotingPowerMatchBondedTokens(
+            delegator.client,
+            stakingQuerier,
+            delegator.wallet.address,
+            STAKING_TRACKER,
+            STAKING_VAULT,
+          );
         });
 
         test('perform undelegations and validate historical stake info', async () => {
@@ -292,7 +304,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
             );
 
             expect(stakeInfoAfter.stake).toBeLessThan(stakeInfoBefore.stake);
-            checkVotingPowerMatchBondedTokens(client, stakingQuerier, wallet.address, STAKING_TRACKER, STAKING_VAULT);
+            await checkVotingPowerMatchBondedTokens(
+              client,
+              stakingQuerier,
+              wallet.address,
+              STAKING_TRACKER,
+              STAKING_VAULT,
+            );
           }
         });
 
@@ -336,7 +354,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           expect(remainingDelegation).toBeUndefined();
-          checkVotingPowerMatchBondedTokens(delegator.client, stakingQuerier, delegator.wallet.address, STAKING_TRACKER, STAKING_VAULT);
+          await checkVotingPowerMatchBondedTokens(
+            delegator.client,
+            stakingQuerier,
+            delegator.wallet.address,
+            STAKING_TRACKER,
+            STAKING_VAULT,
+          );
         });
 
         describe('Blacklist', () => {
@@ -429,8 +453,12 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
             );
             expect(stakeInfoAfterBlacklist.stake).toBeGreaterThan(0);
 
-            const bondedTokens = await getBondedTokens(stakingQuerier, blacklistedAddress);
+            const bondedTokens = await getBondedTokens(
+              stakingQuerier,
+              blacklistedAddress,
+            );
             expect(bondedTokens).toBeGreaterThan(0);
+            expect(stakeInfoAfterBlacklist.stake).toEqual(bondedTokens);
           });
         });
       });
@@ -487,7 +515,10 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       );
       expect(vaultInfoAfter.power).toEqual(stakeInfoAfter.stake);
 
-      const bondedTokens = await getBondedTokens(stakingQuerier, validatorSecondWallet.address);
+      const bondedTokens = await getBondedTokens(
+        stakingQuerier,
+        validatorSecondWallet.address,
+      );
       expect(bondedTokens).toBeGreaterThan(0);
 
       // should be enough to cover jail period
@@ -529,7 +560,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
       // Ensure bonded tokens amount is restored
       expect(stakeInfoAfterUnjail.stake).toBeGreaterThan(stakeInfoAfter.stake);
-      checkVotingPowerMatchBondedTokens(validatorSecondClient, stakingQuerier, validatorSecondWallet.address, STAKING_TRACKER, STAKING_VAULT);
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
     });
 
     test('Unbond validator while keeping at least 67% of consensus', async () => {
@@ -668,7 +705,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       expect(stakeInfoAfter.totalStake).toBeLessThan(
         stakeInfoBefore.totalStake,
       );
-      checkVotingPowerMatchBondedTokens(validatorSecondClient, stakingQuerier, validatorSecondWallet.address, STAKING_TRACKER, STAKING_VAULT);
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
 
       await delegateTokens(
         validatorSecondClient,
@@ -715,7 +758,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
       // Ensure bonded tokens amount is increased after self-delegation
       expect(stakeInfoAfterBonding.stake).toBeGreaterThan(stakeInfoAfter.stake);
-      checkVotingPowerMatchBondedTokens(validatorSecondClient, stakingQuerier, validatorSecondWallet.address, STAKING_TRACKER, STAKING_VAULT);
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
     });
 
     describe('Validator Full Unbonding and Removal', () => {
@@ -865,7 +914,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         expect(stakeInfoAfter.totalStake).toBeLessThan(
           stakeInfoBefore.totalStake,
         );
-        checkVotingPowerMatchBondedTokens(validatorSecondClient, stakingQuerier, validatorSecondWallet.address, STAKING_TRACKER, STAKING_VAULT);
+        await checkVotingPowerMatchBondedTokens(
+          validatorSecondClient,
+          stakingQuerier,
+          validatorSecondWallet.address,
+          STAKING_TRACKER,
+          STAKING_VAULT,
+        );
       });
     });
   });
