@@ -20,7 +20,9 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import {
+  checkVotingPowerMatchBondedTokens,
   delegateTokens,
+  getBondedTokens,
   getTrackedStakeInfo,
   getVaultVPInfo,
   redelegateTokens,
@@ -110,7 +112,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     describe('Slashing params', () => {
       let mainDao: Dao;
       let daoMember1: DaoMember;
-      let proposalId;
+      let proposalId: number;
       test('create proposal', async () => {
         const neutronRpcClient = await testState.neutronRpcClient();
         const daoCoreAddress = await getNeutronDAOCore(
@@ -213,6 +215,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
             expect(stakeInfoBefore.stake).toEqual(0);
             expect(stakeInfoAfter.stake).toEqual(+delegationAmount * 2);
+            await checkVotingPowerMatchBondedTokens(
+              client,
+              stakingQuerier,
+              wallet.address,
+              STAKING_TRACKER,
+              STAKING_VAULT,
+            );
           }
         });
 
@@ -247,6 +256,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           expect(stakeInfoBefore.stake).toEqual(stakeInfoAfter.stake);
+          await checkVotingPowerMatchBondedTokens(
+            delegator.client,
+            stakingQuerier,
+            delegator.wallet.address,
+            STAKING_TRACKER,
+            STAKING_VAULT,
+          );
         });
 
         test('perform undelegations and validate historical stake info', async () => {
@@ -288,6 +304,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
             );
 
             expect(stakeInfoAfter.stake).toBeLessThan(stakeInfoBefore.stake);
+            await checkVotingPowerMatchBondedTokens(
+              client,
+              stakingQuerier,
+              wallet.address,
+              STAKING_TRACKER,
+              STAKING_VAULT,
+            );
           }
         });
 
@@ -331,6 +354,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           );
 
           expect(remainingDelegation).toBeUndefined();
+          await checkVotingPowerMatchBondedTokens(
+            delegator.client,
+            stakingQuerier,
+            delegator.wallet.address,
+            STAKING_TRACKER,
+            STAKING_VAULT,
+          );
         });
 
         describe('Blacklist', () => {
@@ -403,8 +433,8 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
               STAKING_VAULT,
               heightBeforeBlacklist,
             );
-            // address is blacklisted, even in the past no voting power
-            expect(vaultInfoBeforeBlacklistOldBlock.power).toBe(0);
+            // despite address is blacklisted, it still has voting power in the past
+            expect(vaultInfoBeforeBlacklistOldBlock.power).toBeGreaterThan(0);
 
             await waitBlocks(2, neutronClient1); // Wait for changes to take effect
 
@@ -415,6 +445,20 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
               STAKING_VAULT,
             );
             expect(vaultInfoAfterBlacklist.power).toEqual(0);
+
+            const stakeInfoAfterBlacklist = await getTrackedStakeInfo(
+              neutronClient1,
+              blacklistedAddress,
+              STAKING_TRACKER,
+            );
+            expect(stakeInfoAfterBlacklist.stake).toBeGreaterThan(0);
+
+            const bondedTokens = await getBondedTokens(
+              stakingQuerier,
+              blacklistedAddress,
+            );
+            expect(bondedTokens).toBeGreaterThan(0);
+            expect(stakeInfoAfterBlacklist.stake).toEqual(bondedTokens);
           });
         });
       });
@@ -464,6 +508,19 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       // Bonded tokens should be lower than before or zero
       expect(stakeInfoAfter.stake).toBeLessThan(stakeInfoBefore.stake);
 
+      const vaultInfoAfter = await getVaultVPInfo(
+        validatorSecondClient,
+        validatorSecondWallet.address,
+        STAKING_VAULT,
+      );
+      expect(vaultInfoAfter.power).toEqual(stakeInfoAfter.stake);
+
+      const bondedTokens = await getBondedTokens(
+        stakingQuerier,
+        validatorSecondWallet.address,
+      );
+      expect(bondedTokens).toBeGreaterThan(0);
+
       // should be enough to cover jail period
       await waitBlocks(3, neutronClient1);
 
@@ -503,6 +560,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
       // Ensure bonded tokens amount is restored
       expect(stakeInfoAfterUnjail.stake).toBeGreaterThan(stakeInfoAfter.stake);
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
     });
 
     test('Unbond validator while keeping at least 67% of consensus', async () => {
@@ -641,6 +705,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       expect(stakeInfoAfter.totalStake).toBeLessThan(
         stakeInfoBefore.totalStake,
       );
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
 
       await delegateTokens(
         validatorSecondClient,
@@ -687,6 +758,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
       // Ensure bonded tokens amount is increased after self-delegation
       expect(stakeInfoAfterBonding.stake).toBeGreaterThan(stakeInfoAfter.stake);
+      await checkVotingPowerMatchBondedTokens(
+        validatorSecondClient,
+        stakingQuerier,
+        validatorSecondWallet.address,
+        STAKING_TRACKER,
+        STAKING_VAULT,
+      );
     });
 
     describe('Validator Full Unbonding and Removal', () => {
@@ -835,6 +913,13 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         expect(stakeInfoAfter.stake).toEqual(0);
         expect(stakeInfoAfter.totalStake).toBeLessThan(
           stakeInfoBefore.totalStake,
+        );
+        await checkVotingPowerMatchBondedTokens(
+          validatorSecondClient,
+          stakingQuerier,
+          validatorSecondWallet.address,
+          STAKING_TRACKER,
+          STAKING_VAULT,
         );
       });
     });
