@@ -682,6 +682,7 @@ NEUTRON_STAKING_REWARDS_INIT_MSG='{
   "annual_reward_rate_bps": 1000,
   "blocks_per_year": 100,
   "dao_address": "'"$DAO_CONTRACT_ADDRESS"'",
+  "security_address": "'"$DAO_CONTRACT_ADDRESS"'",
   "staking_info_proxy": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'",
   "staking_denom": "untrn"
 }'

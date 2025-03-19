@@ -131,7 +131,7 @@ describe('Neutron / Staking Rewards', () => {
 
   describe('Staking Rewards', () => {
     describe('Set slashing params', () => {
-      let proposalId;
+      let proposalId: number;
       test('create accept and execute proposal', async () => {
         proposalId = await submitUpdateParamsSlashingProposal(
           daoMember1,
