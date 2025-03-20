@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { LocalState } from '../../helpers/local_state';
+import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import { getBlockResults } from '../../helpers/misc';
 import {
@@ -40,6 +40,8 @@ BigInt.prototype.toJSON = function () {
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 const ORACLE_CONTAINER = 'setup-oracle-1-1';
 
+const DEMO1_MNEMONIC =
+  'banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass';
 const VALOPER_VAL1 = 'neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr';
 // a validator with a small stake that will be disabled and enabled during the run
 const VALOPER_VAL2 = 'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx';
@@ -93,7 +95,7 @@ describe('Neutron / Revenue', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await mnemonicToWallet(DEMO1_MNEMONIC, 'neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -131,7 +133,7 @@ describe('Neutron / Revenue', () => {
             amount: [
               {
                 denom: NEUTRON_DENOM,
-                amount: '100000000',
+                amount: (900_000_000_000).toString(),
               },
             ],
           },
@@ -178,7 +180,7 @@ describe('Neutron / Revenue', () => {
         await daoMember.bondFunds('3000000000');
         await neutronClient.getWithAttempts(
           async () => await mainDao.queryVotingPower(daoMember.user),
-          async (response) => response.power == 3000000000,
+          async (response) => response.power >= 3000000000,
           20,
         );
       });
@@ -584,12 +586,18 @@ describe('Neutron / Revenue', () => {
           newPeriodStartBlock,
         );
         const val1Events = rde.find((e) => e.validator === VALOPER_VAL1);
-        expect(val1Events.period_completeness).toBeLessThan(1);
+        expect(val1Events.effective_period_progress).toBeLessThan(1);
+        expect(val1Events.effective_period_progress).toBeGreaterThan(0);
         expect(val1Events.performance_rating).toEqual(1);
+        expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
-          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 0.9,
-          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 1.1,
+          +paymentInfo.baseRevenueAmount *
+            val1Events.effective_period_progress *
+            0.99,
+          +paymentInfo.baseRevenueAmount *
+            val1Events.effective_period_progress *
+            1.01,
         );
       });
 
@@ -656,12 +664,14 @@ describe('Neutron / Revenue', () => {
         await waitBlocks(1, neutronClient);
         paymentInfo = await revenueQuerier.paymentInfo();
 
-        // js .getMonth() start with zero
         expect(
-          Number(
-            paymentInfo.paymentSchedule.monthlyPaymentSchedule.currentMonth,
-          ),
-        ).eq(new Date().getMonth() + 1);
+          new Date(
+            Number(
+              paymentInfo.paymentSchedule.monthlyPaymentSchedule
+                .currentMonthStartBlockTs,
+            ) * 1000, // seconds to milliseconds
+          ).getMonth(),
+        ).eq(new Date().getMonth());
         expect(
           Number(
             paymentInfo.paymentSchedule.monthlyPaymentSchedule
@@ -680,12 +690,18 @@ describe('Neutron / Revenue', () => {
           newPeriodStartBlock,
         );
         const val1Events = rde.find((e) => e.validator === VALOPER_VAL1);
-        expect(val1Events.period_completeness).toBeLessThan(1);
+        expect(val1Events.effective_period_progress).toBeLessThan(1);
+        expect(val1Events.effective_period_progress).toBeGreaterThan(0);
         expect(val1Events.performance_rating).toEqual(1);
+        expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
-          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 0.9,
-          +paymentInfo.baseRevenueAmount * val1Events.period_completeness * 1.1,
+          +paymentInfo.baseRevenueAmount *
+            val1Events.effective_period_progress *
+            0.99,
+          +paymentInfo.baseRevenueAmount *
+            val1Events.effective_period_progress *
+            1.01,
         );
       });
 
@@ -723,8 +739,9 @@ describe('Neutron / Revenue', () => {
     });
 
     describe('month->empty payment shedule change', () => {
+      let height: number;
       test('submit and execute params proposal', async () => {
-        await submitRevenueParamsProposal(
+        const resp = await submitRevenueParamsProposal(
           neutronClient,
           revenueQuerier,
           daoMember,
@@ -734,6 +751,7 @@ describe('Neutron / Revenue', () => {
             empty_payment_schedule_type: {},
           },
         );
+        height = resp[1];
       });
 
       test('check params', async () => {
@@ -748,6 +766,42 @@ describe('Neutron / Revenue', () => {
         await waitBlocks(1, neutronClient);
         const paymentInfo = await revenueQuerier.paymentInfo();
         expect(paymentInfo.paymentSchedule.emptyPaymentSchedule).toBeDefined();
+      });
+
+      test('check partial revenue distribution', async () => {
+        const paymentInfo = await revenueQuerier.paymentInfo();
+        // try to find distribution events somewhere after proposal exec
+        for (let tryHeigh = height + 1; ; tryHeigh++) {
+          if (tryHeigh > height + 10) {
+            // we expect to find distribution events in a nearest block
+            throw new Error(
+              'no distribution events found after payment schedule change',
+            );
+          }
+
+          const rde = await revenueDistributionEventsAtHeight(tryHeigh);
+          if (rde.length == 0) {
+            await waitBlocks(1, neutronClient);
+            continue;
+          }
+          const val1Events = rde.find((e) => e.validator === VALOPER_VAL1);
+
+          // a tiny part of a month passed
+          expect(val1Events.effective_period_progress).toBeLessThan(0.0001);
+          expect(val1Events.effective_period_progress).toBeGreaterThan(0);
+          expect(val1Events.performance_rating).toEqual(1);
+          expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
+          // allow price fluctuation
+          expect(+val1Events.revenue_amount.amount).toBeWithin(
+            +paymentInfo.baseRevenueAmount *
+              val1Events.effective_period_progress *
+              0.99,
+            +paymentInfo.baseRevenueAmount *
+              val1Events.effective_period_progress *
+              1.01,
+          );
+          break;
+        }
       });
 
       test('check validators state', async () => {
@@ -913,13 +967,17 @@ type RevenueDistributionEvent = {
   committed_blocks_in_period: number;
   committed_oracle_votes_in_period: number;
   total_block_in_period: number;
-  period_completeness: number;
+  effective_period_progress: number;
 };
 
 async function revenueDistributionEventsAtHeight(
   height: number,
 ): Promise<RevenueDistributionEvent[]> {
   const blockResults = await getBlockResults(NEUTRON_RPC, height);
+  if (blockResults.finalize_block_events == undefined) {
+    return [];
+  }
+
   return blockResults.finalize_block_events
     .filter((event) => event.type === 'revenue_distribution')
     .map((event) => parseRevenueDistributionEvent(event.attributes));
@@ -950,6 +1008,6 @@ function parseRevenueDistributionEvent(
       attrMap['committed_oracle_votes_in_period'],
     ),
     total_block_in_period: Number(attrMap['total_block_in_period']),
-    period_completeness: Number(attrMap['period_completeness']),
+    effective_period_progress: Number(attrMap['effective_period_progress']),
   };
 }
