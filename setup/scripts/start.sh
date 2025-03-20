@@ -13,7 +13,6 @@ echo "Starting $CHAINID in $CHAIN_HOME..."
 echo "Creating log file at $CHAIN_HOME/$CHAINID.log"
 if [ "$RUN_BACKGROUND" == 1 ]; then
   $BINARY start                           \
-    --log_level debug                     \
     --log_format json                     \
     --home "$CHAIN_HOME"                   \
     --pruning=nothing                     \
@@ -21,7 +20,6 @@ if [ "$RUN_BACKGROUND" == 1 ]; then
     --trace > "$CHAIN_HOME/$CHAINID.log" 2>&1 &
 else
   $BINARY start                           \
-    --log_level debug                     \
     --log_format json                     \
     --home "$CHAIN_HOME"                   \
     --pruning=nothing                     \
