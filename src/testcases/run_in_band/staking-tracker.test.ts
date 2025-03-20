@@ -25,6 +25,7 @@ import {
   getBondedTokens,
   getTrackedStakeInfo,
   getVaultVPInfo,
+  pauseRewardsContract,
   redelegateTokens,
   simulateSlashingAndJailing,
   submitAddToBlacklistProposal,
@@ -106,6 +107,9 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
+
+    process.env.PAUSE_REWARDS === '1' &&
+      (await pauseRewardsContract(daoWalletClient));
   });
 
   describe('Staking tracker', () => {

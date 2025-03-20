@@ -682,7 +682,7 @@ NEUTRON_STAKING_REWARDS_INIT_MSG='{
   "annual_reward_rate_bps": 1000,
   "blocks_per_year": 100,
   "dao_address": "'"$DAO_CONTRACT_ADDRESS"'",
-  "security_address": "'"$DAO_CONTRACT_ADDRESS"'",
+  "security_address": "'"$ADMIN_ADDRESS"'",
   "staking_info_proxy": "'"$NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS"'",
   "staking_denom": "untrn"
 }'
@@ -816,7 +816,7 @@ echo "Setting the rest of Neutron genesis params..."
 set_genesis_param admins                                 "[\"$NEUTRON_CHAIN_MANAGER_CONTRACT_ADDRESS\"]"  # admin module
 set_genesis_param treasury_address                       "\"$DAO_CONTRACT_ADDRESS\""                      # feeburner
 set_genesis_param fee_collector_address                  "\"$DAO_CONTRACT_ADDRESS\","                     # tokenfactory
-set_genesis_param security_address                       "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\","    # cron
+set_genesis_param_jq ".app_state.cron.params.security_address" "\"$SECURITY_SUBDAO_CORE_CONTRACT_ADDRESS\"" # cron
 set_genesis_param limit                                  5                                                # cron
 set_genesis_param signed_blocks_window                   "\"$SLASHING_SIGNED_BLOCKS_WINDOW\","            # slashing
 set_genesis_param min_signed_per_window                  "\"$SLASHING_MIN_SIGNED\","                      # slashing
@@ -867,4 +867,4 @@ echo "DAO $DAO_CONTRACT_ADDRESS"
 echo "STAKING VAULT" $NEUTRON_STAKING_VAULT_CONTRACT_ADDRESS
 echo "STAKING TRACKER" $NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS
 echo "STAKING REWARDS" $NEUTRON_STAKING_REWARDS_CONTRACT_ADDRESS
-echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS 
+echo "STAKING INFO PROXY" $NEUTRON_STAKING_INFO_PROXY_CONTRACT_ADDRESS
