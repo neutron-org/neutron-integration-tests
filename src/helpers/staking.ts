@@ -1,6 +1,10 @@
 import { SigningNeutronClient } from './signing_neutron_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
-import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
+import {
+  NEUTRON_DENOM,
+  SECOND_VALIDATOR_CONTAINER,
+  STAKING_REWARDS,
+} from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
@@ -400,4 +404,12 @@ export const submitUpdateParamsStakingProposal = async (
     [message],
     amount,
   );
+};
+
+export const pauseRewardsContract = async (client: SigningNeutronClient) => {
+  const res = await client.execute(STAKING_REWARDS, {
+    pause: {},
+  });
+  console.log(res.rawLog);
+  expect(res.code).toEqual(0);
 };
