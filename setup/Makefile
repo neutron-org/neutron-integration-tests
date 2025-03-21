@@ -22,7 +22,7 @@ start-cosmopark:
 		@$(COMPOSE) up -d
 
 stop-cosmopark:
-		@$(COMPOSE) down -t0 --remove-orphans -v
+		@$(COMPOSE) down --remove-orphans -v
 
 start-neutron-node:
 		@$(COMPOSE) up neutron-node
