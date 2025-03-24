@@ -5,7 +5,7 @@ import { setup } from './helpers/setup';
 import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
-import ch from 'child_process';
+import ch, {execSync} from 'child_process';
 import {
   COSMOS_DENOM,
   COSMOS_PREFIX,
@@ -47,6 +47,7 @@ export default async function ({ provide }: GlobalSetupContext) {
       ch.execSync(`cd setup && make stop-cosmopark`);
       // this is a hack to make sure everything (volumes, etc.) was deleted after the previous test run (very important in case of run-in-band tests)
       ch.execSync(`cd setup && make stop-cosmopark`);
+      ch.execSync(`cd setup && make clean`);
     }
     teardownHappened = true;
   };
