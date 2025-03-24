@@ -1,6 +1,10 @@
 import { SigningNeutronClient } from './signing_neutron_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
-import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
+import {
+  NEUTRON_DENOM,
+  SECOND_VALIDATOR_CONTAINER,
+  STAKING_REWARDS,
+} from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
@@ -161,7 +165,6 @@ export const undelegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
-  console.log(res.rawLog);
   expect(res.code).toEqual(0);
 };
 
@@ -189,7 +192,6 @@ export const redelegateTokens = async (
       gas: '2000000',
     },
   );
-  console.log(res.rawLog);
   expect(res.code).toEqual(0);
 };
 
@@ -214,40 +216,19 @@ export const simulateSlashingAndJailing = async (
     0,
   );
 
-  // console.log(`Total bonded tokens: ${totalBondedTokens}`);
-
-  // Retrieve bonded tokens of both validators
-  // const slashedValidator = bondedValidators.validators.find(
-  //   (val) => val.operatorAddress === validatorAddr,
-  // );
   const alternativeValidator = bondedValidators.validators.find(
     (val) => val.operatorAddress === alternativeValidatorAddr,
   );
-
-  // if (!slashedValidator) {
-  //   console.log(`Slashed validator ${validatorAddr} not found.`);
-  // } else {
-  //   console.log(
-  //     `Slashed Validator Power Before: ${Number(slashedValidator.tokens)}`,
-  //   );
-  // }
 
   if (!alternativeValidator) {
     throw 'no alternative validator for slashing found';
   }
 
   const alternativeValidatorPower = Number(alternativeValidator.tokens);
-  // console.log(`Alternative Validator Power: ${alternativeValidatorPower}`);
 
   const minRequiredBondedTokens = Math.ceil(totalBondedTokens * 0.68);
-  // console.log(`Minimum Required Power for Consensus: ${minRequiredBondedTokens}`);
 
   if (alternativeValidatorPower < minRequiredBondedTokens) {
-    console.log(
-      `Alternative validator does not have enough power, delegating ${
-        minRequiredBondedTokens - alternativeValidatorPower
-      } to ${alternativeValidatorAddr}`,
-    );
     await delegateTokens(
       validatorClient,
       delegatorAddr,
@@ -256,34 +237,16 @@ export const simulateSlashingAndJailing = async (
     );
   }
 
-  // slashed validator
-  // const stakeInfoBeforeSlashing = await getStakingTrackerInfo(
-  //   validatorClient,
-  //   validatorAddr,
-  //   STAKING_TRACKER,
-  // );
-  // console.log(`Voting Power Before Slashing: ${stakeInfoBeforeSlashing.stake}`);
-
-  console.log(`Pausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker pause ${SECOND_VALIDATOR_CONTAINER}`);
 
-  // console.log(`Waiting ${missedBlocks} blocks to trigger slashing...`);
   await waitBlocks(missedBlocks, neutronClient, 25000);
 
-  console.log(`Unpausing validator container: ${SECOND_VALIDATOR_CONTAINER}`);
   execSync(`docker unpause ${SECOND_VALIDATOR_CONTAINER}`);
 
-  // console.log(`Waiting 2 blocks to confirm status update...`);
   await waitBlocks(2, neutronClient);
 
   // Re-check validator status
   validatorInfo = await stakingQuerier.validator({ validatorAddr });
-  // console.log(`Final validator status: ${validatorInfo.validator.status}`);
-
-  // Retrieve voting power of both validators
-  // console.log(
-  //   `Slashed Validator Power Before: ${Number(validatorInfo.validator.tokens)}`,
-  // );
 
   return validatorInfo.validator.status;
 };
@@ -441,4 +404,12 @@ export const submitUpdateParamsStakingProposal = async (
     [message],
     amount,
   );
+};
+
+export const pauseRewardsContract = async (client: SigningNeutronClient) => {
+  const res = await client.execute(STAKING_REWARDS, {
+    pause: {},
+  });
+  console.log(res.rawLog);
+  expect(res.code).toEqual(0);
 };

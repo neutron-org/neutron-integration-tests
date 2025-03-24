@@ -139,9 +139,6 @@ describe('Neutron / Cron', () => {
           },
         },
       );
-
-      console.log(queryResult);
-
       expect(queryResult).toBeGreaterThanOrEqual(2);
     });
   });

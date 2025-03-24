@@ -5,12 +5,7 @@ RUN apt-get update && apt-get install -y jq xxd
 EXPOSE 26656 26657 1317 9090
 COPY --from=app . /opt/neutron
 
-RUN mkdir -p /root/.ssh
-RUN ssh-keyscan github.com > /root/.ssh/known_hosts
-RUN git config --global url."git@github.com:".insteadOf "https://github.com/"
-RUN go env -w GOPRIVATE='github.com/neutron-org/*'
-
-RUN --mount=type=ssh cd /opt/neutron && make install-test-binary
+RUN cd /opt/neutron && make install-test-binary
 WORKDIR /opt/neutron
 
 ARG PERSISTENT_PEER

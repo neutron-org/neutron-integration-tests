@@ -22,6 +22,7 @@ import {
   delegateTokens,
   getTrackedStakeInfo,
   getVaultVPInfo,
+  pauseRewardsContract,
   submitAddToBlacklistProposal,
   submitRemoveFromBlacklistProposal,
   submitUpdateParamsSlashingProposal,
@@ -113,6 +114,9 @@ describe('Neutron / Staking Vault', () => {
     });
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
+
+    process.env.PAUSE_REWARDS === '1' &&
+      (await pauseRewardsContract(daoWalletClient));
   });
 
   describe('Delegate tokens to multiple validators', () => {

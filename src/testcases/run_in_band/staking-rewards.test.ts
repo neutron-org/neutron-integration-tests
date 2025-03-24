@@ -23,6 +23,7 @@ import {
 import {
   delegateTokens,
   getTrackedStakeInfo,
+  pauseRewardsContract,
   redelegateTokens,
   undelegateTokens,
   simulateSlashingAndJailing,
@@ -300,7 +301,6 @@ describe('Neutron / Staking Rewards', () => {
         );
 
         for (;;) {
-          console.log('waiting for val to be jailed...');
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,
           });
@@ -309,7 +309,6 @@ describe('Neutron / Staking Rewards', () => {
           }
           await waitSeconds(3);
         }
-        console.log('validator is jailed');
 
         // clean up pending rewards before slashing to see clean rate
         const resClaim2 = await neutronClient1.execute(STAKING_REWARDS, {
@@ -584,6 +583,33 @@ describe('Neutron / Staking Rewards', () => {
         });
         // balance has not changed since last claim since stake is now zero
         expect(+balance4.balance.amount).toEqual(+balance3.balance.amount);
+      });
+    });
+    describe('Pause contract', () => {
+      test('can not claim rewards', async () => {
+        await pauseRewardsContract(demoWalletClient);
+
+        const balanceBefore = await bankQuerier.balance({
+          address: validatorPrimary.address,
+          denom: NEUTRON_DENOM,
+        });
+
+        await expect(
+          validatorPrimaryClient.execute(STAKING_REWARDS, {
+            claim_rewards: {},
+          }),
+        ).rejects.toThrow(
+          /Action is denied, the contract is on pause temporarily/,
+        );
+
+        const balanceAfter = await bankQuerier.balance({
+          address: validatorPrimary.address,
+          denom: NEUTRON_DENOM,
+        });
+
+        expect(+balanceAfter.balance.amount).toEqual(
+          +balanceBefore.balance.amount,
+        );
       });
     });
   });
