@@ -29,12 +29,6 @@ const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
   'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2';
 
-// These are wallets rich enough to execute transfer which hits the rl
-const DEMO_MNEMONIC_1 =
-  'banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass';
-const DEMO_MNEMONIC_2 =
-  'veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only';
-
 describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
@@ -61,7 +55,7 @@ describe('Neutron / IBC transfer', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await mnemonicToWallet(DEMO_MNEMONIC_1, 'neutron');
+    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -73,7 +67,7 @@ describe('Neutron / IBC transfer', () => {
       neutronWallet2.directwallet,
       neutronWallet2.address,
     );
-    gaiaWallet = await mnemonicToWallet(DEMO_MNEMONIC_2, 'cosmos');
+    gaiaWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.directwallet,
