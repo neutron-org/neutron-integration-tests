@@ -46,7 +46,8 @@ const VALOPER_VAL2 = 'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx';
 const VALOPER_ACCOUNT_VAL2 = 'neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z';
 
 // THE TEST IS TIGHTLY COUPLED WITH THE FOLLOWING PARAM VALUES. CHANGE MAY BREAK THE TEST
-const REVENUE_PARAM_BASE_COMPENSATION = 2500;
+const REVENUE_PARAM_REWARD_QUOTE_AMOUNT = 2500;
+const REVENUE_PARAM_REWARD_QUOTE_ASSET = 'USD';
 const REVENUE_PARAM_TWAP_WINDOW = 40;
 const REVENUE_PARAM_BLOCKS_REQUIRED_AT_LEAST = 0.1;
 const REVENUE_PARAM_BLOCKS_ALLOWED_TO_MISS = 0.4;
@@ -218,7 +219,11 @@ describe('Neutron / Revenue', () => {
 
     test('set main params for revenue module', async () => {
       const newParams: ParamsRevenue = {
-        base_compensation: REVENUE_PARAM_BASE_COMPENSATION.toString(),
+        reward_asset: NEUTRON_DENOM,
+        reward_quote: {
+          amount: REVENUE_PARAM_REWARD_QUOTE_AMOUNT.toString(),
+          asset: REVENUE_PARAM_REWARD_QUOTE_ASSET,
+        },
         twap_window: REVENUE_PARAM_TWAP_WINDOW.toString(),
         blocks_performance_requirement: {
           allowed_to_miss: REVENUE_PARAM_BLOCKS_ALLOWED_TO_MISS.toString(),
@@ -284,7 +289,11 @@ describe('Neutron / Revenue', () => {
       // set a pretty much wide window for performance requirement calc to catch all performance
       // rating values: 1.0, 0.0, and inbetween. Also set block-based payment schedule type.
       const newParams: ParamsRevenue = {
-        base_compensation: params.params.baseCompensation + '',
+        reward_asset: params.params.rewardAsset,
+        reward_quote: {
+          amount: params.params.rewardQuote.amount + '',
+          asset: params.params.rewardQuote.asset,
+        },
         twap_window: params.params.twapWindow + '',
         blocks_performance_requirement: {
           allowed_to_miss: blocksAllowedToMiss.toString(),
@@ -382,7 +391,7 @@ describe('Neutron / Revenue', () => {
           +val2BalanceAfter.balance.amount - +val2BalanceBefore.balance.amount;
 
         const paymentInfo = await revenueQuerier.paymentInfo();
-        const baseRevenue = Number(paymentInfo.baseRevenueAmount);
+        const baseRevenue = +paymentInfo.baseRevenueAmount.amount;
 
         const rde = await revenueDistributionEventsAtHeight(nextPpStartBlock);
         const val1Rde = rde.find((e) => e.validator === VALOPER_VAL1);
@@ -471,7 +480,11 @@ describe('Neutron / Revenue', () => {
         const params = await revenueQuerier.params();
 
         const newParams: ParamsRevenue = {
-          base_compensation: params.params.baseCompensation + '',
+          reward_asset: params.params.rewardAsset,
+          reward_quote: {
+            amount: params.params.rewardQuote.amount + '',
+            asset: params.params.rewardQuote.asset,
+          },
           twap_window: params.params.twapWindow + '',
           blocks_performance_requirement: {
             allowed_to_miss: '1.0',
@@ -637,10 +650,10 @@ describe('Neutron / Revenue', () => {
         expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
-          +paymentInfo.baseRevenueAmount *
+          +paymentInfo.baseRevenueAmount.amount *
             val1Events.effective_period_progress *
             0.99,
-          +paymentInfo.baseRevenueAmount *
+          +paymentInfo.baseRevenueAmount.amount *
             val1Events.effective_period_progress *
             1.01,
         );
@@ -741,10 +754,10 @@ describe('Neutron / Revenue', () => {
         expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
-          +paymentInfo.baseRevenueAmount *
+          +paymentInfo.baseRevenueAmount.amount *
             val1Events.effective_period_progress *
             0.99,
-          +paymentInfo.baseRevenueAmount *
+          +paymentInfo.baseRevenueAmount.amount *
             val1Events.effective_period_progress *
             1.01,
         );
@@ -838,10 +851,10 @@ describe('Neutron / Revenue', () => {
           expect(+val1Events.revenue_amount.amount).toBeGreaterThan(0);
           // allow price fluctuation
           expect(+val1Events.revenue_amount.amount).toBeWithin(
-            +paymentInfo.baseRevenueAmount *
+            +paymentInfo.baseRevenueAmount.amount *
               val1Events.effective_period_progress *
               0.99,
-            +paymentInfo.baseRevenueAmount *
+            +paymentInfo.baseRevenueAmount.amount *
               val1Events.effective_period_progress *
               1.01,
           );
@@ -971,7 +984,11 @@ async function submitRevenueParamsProposal(
   const params = await revenueQuerier.params();
 
   const newParams: ParamsRevenue = {
-    base_compensation: params.params.baseCompensation + '',
+    reward_asset: params.params.rewardAsset,
+    reward_quote: {
+      amount: params.params.rewardQuote.amount + '',
+      asset: params.params.rewardQuote.asset,
+    },
     twap_window: params.params.twapWindow + '',
     blocks_performance_requirement: {
       allowed_to_miss: params.params.blocksPerformanceRequirement.allowedToMiss,
