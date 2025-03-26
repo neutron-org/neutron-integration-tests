@@ -30,7 +30,6 @@ import {
   simulateSlashingAndJailing,
   submitAddToBlacklistProposal,
   submitUpdateParamsSlashingProposal,
-  submitUpdateParamsStakingProposal,
   undelegateTokens,
 } from '../../helpers/staking';
 
