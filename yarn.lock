@@ -1189,6 +1189,10 @@
   version "4.2.0"
   resolved "https://github.com/neutron-org/neutronjs.git#9100cb454e9c90ea4b7c725466e5a2f1061e86c2"
 
+"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#a605a124e5fbae81af768a7910166fa3aa3a31f8":
+  version "4.2.0"
+  resolved "https://github.com/neutron-org/neutronjs.git#a605a124e5fbae81af768a7910166fa3aa3a31f8"
+
 "@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#caa491bd0e219a6ac1b15505802eefb73b52724e":
   version "0.5.0"
   resolved "https://github.com/neutron-org/neutronjsplus.git#caa491bd0e219a6ac1b15505802eefb73b52724e"
