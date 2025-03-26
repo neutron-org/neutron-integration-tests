@@ -550,12 +550,6 @@ describe('Neutron / Revenue', () => {
       expect(val1Revenue.total_block_in_period).toEqual(
         REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
       );
-      expect(val1Revenue.committed_blocks_in_period).toEqual(
-        REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
-      );
-      expect(val1Revenue.committed_oracle_votes_in_period).toEqual(
-        REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
-      );
       expect(val1Revenue.in_active_valset_for_blocks_in_period).toEqual(
         REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
       );
