@@ -5,7 +5,7 @@ import { setup } from './helpers/setup';
 import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
-import ch, {execSync} from 'child_process';
+import ch from 'child_process';
 import {
   COSMOS_DENOM,
   COSMOS_PREFIX,

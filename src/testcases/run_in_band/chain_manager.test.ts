@@ -26,7 +26,6 @@ import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/co
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { QueryClientImpl as DynamicfeesQueryClient } from '@neutron-org/neutronjs/neutron/dynamicfees/v1/query.rpc.Query';
 import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
-import { QueryClientImpl as CCVQueryClient } from '@neutron-org/neutronjs/interchain_security/ccv/consumer/v1/query.rpc.Query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
@@ -45,7 +44,6 @@ describe('Neutron / Chain Manager', () => {
   let dexQuerier: DexQueryClient;
   let dynamicfeesQuerier: DynamicfeesQueryClient;
   let globalfeeQuerier: GlobalfeeQueryClient;
-  let ccvQuerier: CCVQueryClient;
   let upgradeQuerier: UpgradeQueryClient;
   let chainManagerAddress: string;
 
@@ -106,7 +104,6 @@ describe('Neutron / Chain Manager', () => {
     upgradeQuerier = new UpgradeQueryClient(neutronRpcClient);
     dynamicfeesQuerier = new DynamicfeesQueryClient(neutronRpcClient);
     globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
-    ccvQuerier = new CCVQueryClient(neutronRpcClient);
   });
 
   // We need to do this because the real main dao has a super long voting period.
