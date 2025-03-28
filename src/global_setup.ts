@@ -45,6 +45,9 @@ export default async function ({ provide }: GlobalSetupContext) {
     }
     if (!process.env.NO_DOCKER) {
       ch.execSync(`cd setup && make stop-cosmopark`);
+      // this is a hack to make sure everything (volumes, etc.) was deleted after the previous test run (very important in case of run-in-band tests)
+      ch.execSync(`cd setup && make stop-cosmopark`);
+      ch.execSync(`cd setup && make clean`);
     }
     teardownHappened = true;
   };

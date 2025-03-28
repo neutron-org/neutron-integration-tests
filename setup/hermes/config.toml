@@ -94,7 +94,6 @@ id = 'test-1'
 rpc_addr = 'http://neutron-node:26657'
 grpc_addr = 'http://neutron-node:9090'
 event_source = { mode = 'push', url = 'ws://neutron-node:26657/websocket', batch_delay = '200ms' }
-ccv_consumer_chain = true
 rpc_timeout = '10s'
 account_prefix = 'neutron'
 key_name = 'testkey_1'

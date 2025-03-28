@@ -218,7 +218,7 @@ describe('Neutron / Grpc Queries', () => {
           connection_id: 'connection-0',
         },
       });
-      expect(res.connection.client_id).toBe('07-tendermint-1');
+      expect(res.connection.client_id).toBe('07-tendermint-0');
       expect(+res.proof_height.revision_height).toBeGreaterThan(0);
     });
 

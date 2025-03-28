@@ -58,10 +58,10 @@ describe('Neutron / Slinky', () => {
 
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000');
+      await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 10000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });

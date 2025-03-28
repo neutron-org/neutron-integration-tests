@@ -139,34 +139,34 @@ describe('Neutron / Governance', () => {
 
   describe('prepare: bond funds', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000');
+      await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 10000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
     test('bond from wallet 2', async () => {
-      await daoMember2.bondFunds('10000');
+      await daoMember2.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 10000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
     test('bond from wallet 3 ', async () => {
-      await daoMember3.bondFunds('10000');
+      await daoMember3.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 10000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
     test('check voting power', async () => {
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryTotalVotingPower(),
-        // 3x10000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
-        async (response) => response.power == 31000,
+        // 3x1000000000 + 1000 from investors vault (see neutron/network/init-neutrond.sh)
+        async (response) => response.power == 3110001000,
         20,
       );
     });
@@ -257,8 +257,8 @@ describe('Neutron / Governance', () => {
         chainManagerAddress,
         'Proposal #6',
         'UpdateClient proposal. Will pass',
-        '07-tendermint-2',
         '07-tendermint-1',
+        '07-tendermint-0',
       );
     });
 
@@ -741,11 +741,11 @@ describe('Neutron / Governance', () => {
   describe('execute proposal #6', () => {
     test('check client statuses before update', async () => {
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Expired');
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-0' }))
           .status,
       ).toBe('Active');
     });
@@ -760,11 +760,11 @@ describe('Neutron / Governance', () => {
 
     test('check client statuses after update', async () => {
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-2' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
           .status,
       ).toBe('Active');
       expect(
-        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-1' }))
+        (await ibcClientQuerier.clientStatus({ clientId: '07-tendermint-0' }))
           .status,
       ).toBe('Active');
     });

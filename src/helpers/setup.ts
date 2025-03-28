@@ -40,6 +40,8 @@ export const setup = async (host1: string, host2: string) => {
   }
   try {
     execSync(`cd setup && make stop-cosmopark`);
+    // this is a hack to make sure everything (volumes, etc.) was deleted after the previous test run (very important in case of run-in-band tests)
+    execSync(`cd setup && make clean`);
     // eslint-disable-next-line no-empty
   } catch (e) {}
   console.log('Starting container... it may take long');
