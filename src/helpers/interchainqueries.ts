@@ -511,7 +511,7 @@ export const getRegisteredQuery = async (
   contractAddress: string,
   queryId: number,
 ): Promise<{
-  id: number;
+  id: string;
   owner: string;
   keys: {
     path: string;
@@ -634,7 +634,7 @@ export const registerTransfersQuery = async (
   connectionId: string,
   updatePeriod: number,
   recipients: string[],
-) => {
+): Promise<number> => {
   const res = await client.execute(contractAddress, {
     register_transfers_query: {
       connection_id: connectionId,
@@ -646,6 +646,7 @@ export const registerTransfersQuery = async (
   if (res.code != 0) {
     throw new Error('res.code != 0');
   }
+  return parseInt(getEventAttribute(res.events, 'neutron', 'query_id'));
 };
 
 /**
