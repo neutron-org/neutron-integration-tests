@@ -86,7 +86,7 @@ services:
     ports:
       - 9999:9999
     environment:
-      - NODE=neutron-node
+      - NODE=gaia-node
       - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
       - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron-node:26657
       - RELAYER_NEUTRON_CHAIN_REST_ADDR=http://neutron-node:1317
