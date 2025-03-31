@@ -4,8 +4,6 @@ services:
   neutron-node:
     image: neutron-node
     container_name: neutron-node
-    volumes:
-      - data:/opt/neutron/data
     ports:
       - 1317:1317
       - 26657:26657
@@ -36,8 +34,6 @@ services:
   neutron-node-1:
     image: neutron-node
     container_name: neutron-node-1
-    volumes:
-      - data:/opt/neutron/data
     environment:
       - RUN_BACKGROUND=0
       - ORACLE_ADDRESS=oracle-1:8080
@@ -58,8 +54,6 @@ services:
   gaia-node:
     image: gaia-node:latest
     container_name: gaia-node
-    volumes:
-      - data:/opt/gaia/data
     ports:
       - 1316:1317
       - 16657:26657
@@ -86,8 +80,6 @@ services:
   relayer:
     image: neutron-org/neutron-query-relayer
     entrypoint: ./run.sh
-    volumes:
-      - data:/data
     depends_on:
       - "neutron-node"
       - "gaia-node"
@@ -98,7 +90,7 @@ services:
       - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
       - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron-node:26657
       - RELAYER_NEUTRON_CHAIN_REST_ADDR=http://neutron-node:1317
-      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/test-1/node-1
+      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data/queryrelayer
       - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=demowallet3
       - RELAYER_NEUTRON_CHAIN_GAS_PRICES=0.5untrn
       - RELAYER_NEUTRON_CHAIN_GAS_ADJUSTMENT=1.4
@@ -121,11 +113,6 @@ services:
       - LOGGER_LEVEL=debug
     networks:
       - neutron-testing
-
-volumes:
-  data:
-    name: neutron-testing-data
-    external: false
 
 networks:
   neutron-testing:
