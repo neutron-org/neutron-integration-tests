@@ -23,10 +23,8 @@ import {
   getTrackedStakeInfo,
   getVaultVPInfo,
   pauseRewardsContract,
-  submitAddToBlacklistProposal,
-  submitRemoveFromBlacklistProposal,
-  submitUpdateParamsSlashingProposal,
 } from '../../helpers/staking';
+import { updateSlashingParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Staking Vault', () => {
   let testState: LocalState;
@@ -169,18 +167,17 @@ describe('Neutron / Staking Vault', () => {
       let heightBeforeBlacklist: number;
 
       test('create proposal', async () => {
-        proposalId = await submitUpdateParamsSlashingProposal(
-          daoMember1,
+        proposalId = await daoMember1.submitUpdateParamsSlashingProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Update slashing params',
-          {
+          updateSlashingParamsProposal({
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '10',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
-          },
+          }),
           '1000',
         );
       });
@@ -200,8 +197,7 @@ describe('Neutron / Staking Vault', () => {
           blacklistedAddress = neutronWallet2.address;
 
           // Create the Blacklist Proposal
-          proposalId = await submitAddToBlacklistProposal(
-            daoMember1,
+          proposalId = await daoMember1.submitAddToBlacklistProposal(
             STAKING_VAULT,
             'Blacklist Address Proposal',
             'Proposal to blacklist an address from voting',
@@ -278,18 +274,17 @@ describe('Neutron / Staking Vault', () => {
       let heightBeforeWhitelist: number;
 
       test('create proposal', async () => {
-        proposalId = await submitUpdateParamsSlashingProposal(
-          daoMember1,
+        proposalId = await daoMember1.submitUpdateParamsSlashingProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Update slashing params',
-          {
+          updateSlashingParamsProposal({
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.400000000000000000',
             signed_blocks_window: '8',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
-          },
+          }),
           '1000',
         );
       });
@@ -306,8 +301,7 @@ describe('Neutron / Staking Vault', () => {
         let proposalId: number;
 
         test('create proposal', async () => {
-          proposalId = await submitRemoveFromBlacklistProposal(
-            daoMember1,
+          proposalId = await daoMember1.submitRemoveFromBlacklistProposal(
             STAKING_VAULT,
             'Remove address from blacklist Proposal',
             'Proposal to remove the address from the blacklist and return its voting power',

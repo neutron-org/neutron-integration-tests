@@ -28,10 +28,9 @@ import {
   pauseRewardsContract,
   redelegateTokens,
   simulateSlashingAndJailing,
-  submitAddToBlacklistProposal,
-  submitUpdateParamsSlashingProposal,
   undelegateTokens,
 } from '../../helpers/staking';
+import { updateSlashingParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Staking Tracker - Extended Scenarios', () => {
   let testState: LocalState;
@@ -140,18 +139,17 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         const admins =
           await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
         const chainManagerAddress = admins.admins[0];
-        proposalId = await submitUpdateParamsSlashingProposal(
-          daoMember1,
+        proposalId = await daoMember1.submitUpdateParamsSlashingProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Update slashing params',
-          {
+          updateSlashingParamsProposal({
             downtime_jail_duration: '5s',
             min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '30',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
-          },
+          }),
           '1000',
         );
       });
@@ -396,8 +394,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
             );
 
             // Create the Blacklist Proposal
-            proposalId = await submitAddToBlacklistProposal(
-              daoMember1,
+            proposalId = await daoMember1.submitAddToBlacklistProposal(
               STAKING_VAULT,
               'Blacklist Address Proposal',
               'Proposal to blacklist an address from voting',
