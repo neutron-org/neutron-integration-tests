@@ -11,7 +11,7 @@ build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.10.4 .
 
 build-relayer:
-		@docker buildx build --load --build-context app=$(APP_DIR)/neutron-query-relayer --build-context queryrelayer=./queryrelayer -t neutron-org/neutron-query-relayer -f dockerbuilds/Dockerfile.queryrelayer . --no-cache
+		@docker buildx build --load --build-context app=$(APP_DIR)/neutron-query-relayer -t neutron-org/neutron-query-relayer -f dockerbuilds/Dockerfile.queryrelayer . --no-cache
 
 build-slinky:
 		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.2.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .

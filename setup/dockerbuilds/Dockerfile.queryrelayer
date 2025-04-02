@@ -1,3 +1,5 @@
+FROM neutronorg/neutron:v6.0.0 as keyring
+
 FROM golang:1.22-bullseye as builder
 
 ARG LDFLAGS
@@ -7,12 +9,17 @@ COPY --from=app go.mod go.sum ./
 RUN go mod download
 COPY --from=app . .
 RUN go build -ldflags "${LDFLAGS}" -a -o build/neutron_query_relayer ./cmd/neutron_query_relayer/*.go
+COPY --from=keyring /bin/neutrond /bin/neutrond 
+# demowallet3 from 2_init_genesis.sh
+RUN echo "obscure canal because tomorrow tribe sibling describe satoshi kiwi upgrade bless empty math trend erosion oblige donate label birth chronic hazard ensure wreck shine" | /bin/neutrond keys add demowallet3 --home "/data/queryrelayer" --recover --keyring-backend=test
+
+
 
 FROM debian:buster
 RUN apt update && apt install ca-certificates curl -y && apt-get clean
 ADD ["https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.x86_64.so","https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.aarch64.so","/lib/"]
 COPY --from=app run.sh .
-COPY --from=queryrelayer . /data/queryrelayer
+COPY --from=builder /data/queryrelayer/keyring-test /data/queryrelayer/keyring-test
 COPY --from=builder /app/build/neutron_query_relayer /bin/
 EXPOSE 9999
 
