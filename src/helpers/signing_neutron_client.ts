@@ -1,9 +1,5 @@
 import { DeliverTxResponse, IndexedTx, StdFee } from '@cosmjs/stargate';
-import {
-  CosmWasmClient,
-  MigrateResult,
-  SigningCosmWasmClient,
-} from '@cosmjs/cosmwasm-stargate';
+import { CosmWasmClient, MigrateResult } from '@cosmjs/cosmwasm-stargate';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
 import {
@@ -22,6 +18,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from './constants';
 import { neutronTypes } from './registry_types';
+import { Eip191SigningCosmwasmClient } from './eip191_cosmwasm_client';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -34,7 +31,7 @@ export class SigningNeutronClient extends CosmWasmClient {
     signer: string,
   ) {
     const registry = new Registry(neutronTypes);
-    const neutronClient = await SigningCosmWasmClient.connectWithSigner(
+    const neutronClient = await Eip191SigningCosmwasmClient.connectWithSigner(
       rpc,
       wallet,
       {
@@ -42,6 +39,7 @@ export class SigningNeutronClient extends CosmWasmClient {
         gasPrice: GasPrice.fromString('0.05untrn'),
       },
     );
+    // TODO: or neutronMetaClient
     const cometClient = await connectComet(rpc);
     return new SigningNeutronClient(
       rpc,
@@ -53,9 +51,9 @@ export class SigningNeutronClient extends CosmWasmClient {
   }
 
   protected constructor(
-    public rpc: string,
-    public sender: string,
-    public client: SigningCosmWasmClient,
+    public readonly rpc: string,
+    public readonly sender: string,
+    public readonly client: Eip191SigningCosmwasmClient,
     private contractsPath: string,
     cometClient: CometClient,
   ) {
