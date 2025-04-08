@@ -1,4 +1,4 @@
-import { Registry } from '@cosmjs/proto-signing';
+import { OfflineSigner, Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
@@ -47,6 +47,7 @@ describe('Neutron / IBC transfer', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
+    console.log('neutronWallet.address: ' + neutronWallet.address);
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.directwallet,
@@ -56,7 +57,7 @@ describe('Neutron / IBC transfer', () => {
     gaiaWallet2 = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.directwallet as OfflineSigner, // TODO: no way of doing that
       { registry: new Registry(defaultRegistryTypes) },
     );
 

@@ -2,7 +2,7 @@ import { IndexedTx, JsonObject } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import { getSequenceId } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
-import { Registry } from '@cosmjs/proto-signing';
+import { OfflineSigner, Registry } from '@cosmjs/proto-signing';
 import {
   CONTRACTS,
   COSMOS_DENOM,
@@ -74,7 +74,7 @@ describe('Neutron / Interchain TXs', () => {
     gaiaWallet = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.directwallet as OfflineSigner, // TODO: no way of doing that
       { registry: new Registry(defaultRegistryTypes) },
     );
 

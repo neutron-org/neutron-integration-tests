@@ -1,15 +1,16 @@
-import { AccountData, DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { AccountData, OfflineSigner } from '@cosmjs/proto-signing';
+import { Eip191Signer } from './eip191_cosmwasm_client';
 
 // Wallet is a sample data class for holding simplified wallet data for testing purposes
 export class Wallet {
   addrPrefix: string;
-  directwallet: DirectSecp256k1HdWallet;
+  directwallet: OfflineSigner | Eip191Signer;
   account: AccountData;
   address: string;
   valAddress: string;
   constructor(
     addrPrefix: string,
-    directwallet: DirectSecp256k1HdWallet,
+    directwallet: OfflineSigner | Eip191Signer,
     account: AccountData,
     valAccount: AccountData,
   ) {

@@ -4,8 +4,8 @@ import { promises as fsPromise } from 'fs';
 import path from 'path';
 import {
   Coin,
-  DirectSecp256k1HdWallet,
   EncodeObject,
+  OfflineSigner,
   Registry,
 } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
@@ -18,7 +18,10 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from './constants';
 import { neutronTypes } from './registry_types';
-import { Eip191SigningCosmwasmClient } from './eip191_cosmwasm_client';
+import {
+  Eip191Signer,
+  Eip191SigningCosmwasmClient,
+} from './eip191_cosmwasm_client';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -27,7 +30,7 @@ export class SigningNeutronClient extends CosmWasmClient {
   // creates a SigningNeutronClient
   static async connectWithSigner(
     rpc: string,
-    wallet: DirectSecp256k1HdWallet,
+    wallet: OfflineSigner | Eip191Signer,
     signer: string,
   ) {
     const registry = new Registry(neutronTypes);

@@ -1,18 +1,27 @@
 import {
+  AccountData,
   encodeSecp256k1Pubkey,
   makeSignDoc as makeSignDocAmino,
+  OfflineAminoSigner,
   StdFee,
+  // Pubkey as AminoPubkey,
 } from '@cosmjs/amino';
+import { AuthInfo, Fee, Tx, TxBody } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 import { fromBase64, toUtf8 } from '@cosmjs/encoding';
 import { Int53, Uint53 } from '@cosmjs/math';
 import { PubKey } from '@neutron-org/neutronjs/neutron/crypto/v1beta1/ethsecp256k1/keys';
 import { Any } from 'cosmjs-types/google/protobuf/any';
+import {
+  ServiceClientImpl,
+  SimulateRequest,
+} from 'cosmjs-types/cosmos/tx/v1beta1/service';
 import {
   EncodeObject,
   encodePubkey,
   isOfflineDirectSigner,
   makeAuthInfoBytes,
   makeSignDoc,
+  OfflineDirectSigner,
   OfflineSigner,
   Registry,
   TxBodyEncodeObject,
@@ -39,9 +48,12 @@ import {
   SigningStargateClientOptions,
   logs,
   Attribute,
+  createProtobufRpcClient,
+  ProtobufRpcClient,
 } from '@cosmjs/stargate';
 import {
   CosmWasmClient,
+  createWasmAminoConverters,
   ExecuteInstruction,
   ExecuteResult,
   InstantiateOptions,
@@ -62,16 +74,17 @@ import {
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { AccessConfig } from 'cosmjs-types/cosmwasm/wasm/v1/types';
 import { Coin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
+import { StdSignDoc } from '@cosmjs/amino/build/signdoc';
 
 // TODO: can we implement this using metamask extension?
 /**
  * Interface for EIP-191 signer
  */
 export interface Eip191Signer {
-  getAccounts(): Promise<Array<{ address: string; pubkey: Uint8Array }>>;
+  getAccounts(): Promise<readonly AccountData[]>;
   signEip191(
     signerAddress: string,
-    signDoc: any,
+    signDoc: StdSignDoc,
   ): Promise<{ signature: { signature: string }; signed: any }>;
 }
 
@@ -79,8 +92,8 @@ export interface Eip191Signer {
  * Type guard to check if a signer is an EIP-191 signer
  */
 export function isEip191Signer(
-  signer: OfflineSigner,
-): signer is OfflineSigner & Eip191Signer {
+  signer: OfflineSigner | Eip191Signer,
+): signer is OfflineSigner | Eip191Signer {
   return 'signEip191' in signer;
 }
 
@@ -100,7 +113,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
   public readonly broadcastTimeoutMs: number | undefined;
   public readonly broadcastPollIntervalMs: number | undefined;
 
-  private readonly signer: OfflineSigner;
+  private readonly signer: OfflineSigner | Eip191Signer;
   private readonly aminoTypes: AminoTypes;
   private readonly gasPrice: GasPrice | undefined;
   // Starting with Cosmos SDK 0.47, we see many cases in which 1.3 is not enough anymore
@@ -115,7 +128,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
    */
   public static async connectWithSigner(
     endpoint: string | HttpEndpoint,
-    signer: OfflineSigner,
+    signer: OfflineSigner | Eip191Signer,
     options: SigningStargateClientOptions = {},
   ): Promise<Eip191SigningCosmwasmClient> {
     const cometClient = await connectComet(endpoint);
@@ -132,7 +145,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
    */
   public static async createWithSigner(
     cometClient: CometClient,
-    signer: OfflineSigner,
+    signer: OfflineSigner | Eip191Signer,
     options: SigningStargateClientOptions = {},
   ): Promise<Eip191SigningCosmwasmClient> {
     return new Eip191SigningCosmwasmClient(cometClient, signer, options);
@@ -156,13 +169,16 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
 
   protected constructor(
     cometClient: CometClient | undefined,
-    signer: OfflineSigner,
+    signer: OfflineSigner | Eip191Signer,
     options: SigningStargateClientOptions,
   ) {
     super(cometClient);
     const {
       registry = new Registry(defaultRegistryTypes),
-      aminoTypes = new AminoTypes(createDefaultAminoConverters()),
+      aminoTypes = new AminoTypes({
+        ...createDefaultAminoConverters(),
+        ...createWasmAminoConverters(),
+      }),
     } = options;
     this.registry = registry;
     this.aminoTypes = aminoTypes;
@@ -184,14 +200,14 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     if (!accountFromSigner) {
       throw new Error('Failed to retrieve account from signer');
     }
-    const pubkey = encodeSecp256k1Pubkey(accountFromSigner.pubkey);
+    const pubkey1 = await this.getEip191PubKey(accountFromSigner.pubkey);
+    // const pubkey = {
+    //   type: pubkey1.typeUrl,
+    //   value: pubkey1.value,
+    // } as AminoPubkey;
     const { sequence } = await this.getSequence(signerAddress);
-    const { gasInfo } = await this.forceGetQueryClient().tx.simulate(
-      anyMsgs,
-      memo,
-      pubkey,
-      sequence,
-    );
+    const rpc = createProtobufRpcClient(this.forceGetQueryClient());
+    const { gasInfo } = await simulate(rpc, anyMsgs, memo, pubkey1, sequence);
     assertDefined(gasInfo);
     return Uint53.fromString(gasInfo.gasUsed.toString()).toNumber();
   }
@@ -345,7 +361,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     { accountNumber, sequence, chainId }: SignerData,
     timeoutHeight?: bigint,
   ): Promise<TxRaw> {
-    assert(!isOfflineDirectSigner(this.signer));
+    assert(!isOfflineDirectSigner(this.signer as OfflineSigner));
     const accountFromSigner = (await this.signer.getAccounts()).find(
       (account) => account.address === signerAddress,
     );
@@ -366,10 +382,9 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
       sequence,
       timeoutHeight,
     );
-    const { signature, signed } = await this.signer.signAmino(
-      signerAddress,
-      signDoc,
-    );
+    const { signature, signed } = await (
+      this.signer as OfflineAminoSigner
+    ).signAmino(signerAddress, signDoc);
     const signedTxBody = {
       messages: signed.msgs.map((msg) => this.aminoTypes.fromAmino(msg)),
       memo: signed.memo,
@@ -405,7 +420,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     { accountNumber, sequence, chainId }: SignerData,
     timeoutHeight?: bigint,
   ): Promise<TxRaw> {
-    assert(isOfflineDirectSigner(this.signer));
+    assert(isOfflineDirectSigner(this.signer as OfflineSigner));
     const accountFromSigner = (await this.signer.getAccounts()).find(
       (account) => account.address === signerAddress,
     );
@@ -438,10 +453,9 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
       chainId,
       accountNumber,
     );
-    const { signature, signed } = await this.signer.signDirect(
-      signerAddress,
-      signDoc,
-    );
+    const { signature, signed } = await (
+      this.signer as OfflineDirectSigner
+    ).signDirect(signerAddress, signDoc);
     return TxRaw.fromPartial({
       bodyBytes: signed.bodyBytes,
       authInfoBytes: signed.authInfoBytes,
@@ -476,12 +490,12 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
       sequence,
       timeoutHeight,
     );
+    console.log('SignDoc: \n' + JSON.stringify(signDoc) + '\n');
 
     // Use the EIP-191 signer to sign the document
-    const { signature, signed } = await this.signer.signEip191(
-      signerAddress,
-      signDoc,
-    );
+    const { signature, signed } = await (
+      this.signer as Eip191Signer
+    ).signEip191(signerAddress, signDoc);
 
     const signedTxBody = {
       messages: signed.msgs.map((msg) => this.aminoTypes.fromAmino(msg)),
@@ -540,7 +554,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     // When uploading a contract, the simulation is only 1-2% away from the actual gas usage.
     // So we have a smaller default gas multiplier than signAndBroadcast.
     const usedFee = fee == 'auto' ? 1.1 : fee;
-
+    console.log('senderAddress: ' + senderAddress);
     const result = await this.signAndBroadcast(
       senderAddress,
       [storeCodeMsg],
@@ -742,4 +756,39 @@ export function findAttribute(
     );
   }
   return out;
+}
+
+export async function simulate(
+  rpc: ProtobufRpcClient,
+  messages: readonly Any[],
+  memo: string | undefined,
+  signer: Any,
+  sequence: number,
+) {
+  // Use this service to get easy typed access to query methods
+  // This cannot be used for proof verification
+  const queryService = new ServiceClientImpl(rpc);
+
+  const tx = Tx.fromPartial({
+    authInfo: AuthInfo.fromPartial({
+      fee: Fee.fromPartial({}),
+      signerInfos: [
+        {
+          publicKey: signer,
+          sequence: BigInt(sequence),
+          modeInfo: { single: { mode: SignMode.SIGN_MODE_UNSPECIFIED } },
+        },
+      ],
+    }),
+    body: TxBody.fromPartial({
+      messages: Array.from(messages),
+      memo: memo,
+    }),
+    signatures: [new Uint8Array()],
+  });
+  const request = SimulateRequest.fromPartial({
+    txBytes: Tx.encode(tx).finish(),
+  });
+  const response = await queryService.Simulate(request);
+  return response;
 }

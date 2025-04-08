@@ -3,7 +3,7 @@ import { GeneratedType } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
-import { MsgFundTreasury } from '@neutron-org/neutronjs/neutron/revenue/tx';
+// import { MsgFundTreasury } from '@neutron-org/neutronjs/neutron/revenue/tx';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
 import { MsgUnjail } from 'cosmjs-types/cosmos/slashing/v1beta1/tx';
 import {
@@ -38,7 +38,7 @@ export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
   [MsgSubmitProposalLegacy.typeUrl, MsgSubmitProposalLegacy as any],
   [ParameterChangeProposal.typeUrl, ParameterChangeProposal as any],
   // revenue
-  [MsgFundTreasury.typeUrl, MsgFundTreasury as any],
+  // [MsgFundTreasury.typeUrl, MsgFundTreasury as any], // TODO: fix that
   // shasling
   [MsgUnjail.typeUrl, MsgUnjail],
 ];

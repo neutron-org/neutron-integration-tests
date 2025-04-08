@@ -53,6 +53,7 @@
     "@cosmjs/tendermint-rpc": "^0.32.4",
     "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#7a57c57981c285fe76a56ea8a03d483b1c9b685b",
     "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#257cb4f3ec1017916265e584400f4f24c4db9e92",
+    "@scure/base": "^1.2.4",
     "@types/lodash": "^4.14.182",
     "axios": "1.6.0",
     "commander": "^10.0.0",

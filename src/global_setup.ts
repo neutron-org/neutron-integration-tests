@@ -1,7 +1,12 @@
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing';
+import {
+  DirectSecp256k1HdWallet,
+  Registry,
+  makeCosmoshubPath,
+} from '@cosmjs/proto-signing';
 import { generateMnemonic } from 'bip39';
 import { setup } from './helpers/setup';
+import { pathToString } from '@cosmjs/crypto';
 import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
@@ -16,10 +21,13 @@ import {
 } from './helpers/constants';
 
 import config from './config.json';
+import { ethers } from 'ethers';
+import { ethToNeutronBechAddress } from './helpers/metamask_emulator';
+// import { hexlify } from 'ethers';
 
 let teardownHappened = false;
 
-const WALLET_COUNT = 1000;
+const WALLET_COUNT = 10;
 
 export default async function ({ provide }: GlobalSetupContext) {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
@@ -34,8 +42,14 @@ export default async function ({ provide }: GlobalSetupContext) {
   }
 
   // fund a lot or preallocated wallets for testing purposes
-  await fundWallets(mnemonics, NEUTRON_RPC, NEUTRON_PREFIX, NEUTRON_DENOM);
-  await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
+  await fundWallets(
+    'neutron',
+    mnemonics,
+    NEUTRON_RPC,
+    NEUTRON_PREFIX,
+    NEUTRON_DENOM,
+  );
+  await fundWallets('gaia', mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
 
   provide('mnemonics', mnemonics);
 
@@ -55,6 +69,7 @@ export default async function ({ provide }: GlobalSetupContext) {
 
 // Funds a lots of new wallets from one wallet.
 async function fundWallets(
+  network: string,
   mnemonics: string[],
   rpc: string,
   prefix: string,
@@ -71,19 +86,56 @@ async function fundWallets(
   );
 
   const richguy = (await directwallet.getAccounts())[0].address;
+  // amount to be transferred to each new wallet
   const pooramount = '10000000000';
-  const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
-    DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: prefix,
-    })
-      .then((directwallet) => directwallet.getAccounts())
-      .then((accounts) => accounts[0])
-      .then((account) => ({
-        address: account.address,
+
+  let outputs: Output[] = [];
+  if (network === 'neutron') {
+    const cosmosHdPath = makeCosmoshubPath(0);
+    outputs = mnemonics.map((mnemonic) => {
+      const ethMnemonic = ethers.Mnemonic.fromPhrase(mnemonic);
+      // const seed = mnemonicS.computeSeed();
+      // console.log('ethers seed: ' + seed);
+      const hdNode = ethers.HDNodeWallet.fromMnemonic(
+        ethMnemonic,
+        pathToString(cosmosHdPath),
+      );
+      // const hdNodeCosmos = hdNode.derivePath(pathToString(cosmosHdPath));
+      const wallet = new ethers.Wallet(hdNode.privateKey);
+      const neutronAddress = ethToNeutronBechAddress(wallet.address);
+      return {
+        address: neutronAddress,
         coins: [{ denom: denom, amount: pooramount }],
-      })),
-  );
-  const outputs: Output[] = await Promise.all(values);
+      };
+    });
+  } else {
+    const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
+      DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        prefix: prefix,
+        hdPaths: [makeCosmoshubPath(0)],
+      })
+        .then((directwallet) => directwallet.getAccounts())
+        .then((accounts) => accounts[0])
+        .then((account) => {
+          console.log(
+            'wallet address: ' +
+              account.address +
+              ', precreated mnemonic: ' +
+              mnemonic,
+          );
+          // const mnemonicChecked = new EnglishMnemonic(mnemonic);
+          // Bip39.mnemonicToSeed(mnemonicChecked, '').then((m) => {
+          //   const n = hexlify(m);
+          //   console.log('cosmjs seed for mnemonic: ' + mnemonic + ': '+ n + '\n');
+          // });
+          return {
+            address: account.address,
+            coins: [{ denom: denom, amount: pooramount }],
+          };
+        }),
+    );
+    outputs = await Promise.all(values);
+  }
   const inputs: Input[] = [
     {
       address: richguy,

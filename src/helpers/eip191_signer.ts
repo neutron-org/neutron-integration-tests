@@ -1,6 +1,8 @@
+import { AccountData } from '@cosmjs/proto-signing';
 import { MetaMaskEmulator } from './metamask_emulator';
 import { Eip191Signer } from './eip191_cosmwasm_client';
 import { toBase64 } from '@cosmjs/encoding';
+import { serializeSignDoc, StdSignDoc } from '@cosmjs/amino/build/signdoc';
 
 /**
  * Implementation of Eip191Signer that uses MetaMaskEmulator for signing
@@ -11,7 +13,7 @@ export class MetaMaskEip191Signer implements Eip191Signer {
   /**
    * Get accounts from the MetaMask emulator
    */
-  async getAccounts(): Promise<Array<{ address: string; pubkey: Uint8Array }>> {
+  async getAccounts(): Promise<readonly AccountData[]> {
     // Use the new method to get both addresses and public keys
     return this.metamaskEmulator.getAccountsWithPubkeys();
   }
@@ -22,11 +24,12 @@ export class MetaMaskEip191Signer implements Eip191Signer {
    */
   async signEip191(
     signerAddress: string,
-    signDoc: any,
+    signDoc: StdSignDoc,
   ): Promise<{ signature: { signature: string }; signed: any }> {
     // Convert the signDoc to a string that can be signed
     // In a real implementation, you would need to properly format the document according to EIP-191
-    const messageToSign = JSON.stringify(signDoc);
+    // const messageToSign = JSON.stringify(signDoc);
+    const messageToSign = serializeSignDoc(signDoc);
 
     // Sign the message using the MetaMask emulator
     const signature = await this.metamaskEmulator.personal_sign(

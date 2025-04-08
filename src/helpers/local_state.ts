@@ -4,7 +4,7 @@ import {
   ProtobufRpcClient,
   QueryClient,
 } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { DirectSecp256k1HdWallet, OfflineSigner } from '@cosmjs/proto-signing';
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
@@ -20,6 +20,8 @@ import {
 import { Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
+import { MetaMaskEmulator } from './metamask_emulator';
+import { MetaMaskEip191Signer } from './eip191_signer';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -94,12 +96,29 @@ export class LocalState {
           WALLETS_PER_TEST_FILE,
       );
     }
-    const nextWalletIndex =
-      this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
+    const nextWalletIndex = currentOffsetInTestFile;
+    // this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
 
     this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
-    return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    if (network === 'neutron') {
+      const signer = new MetaMaskEip191Signer(
+        await MetaMaskEmulator.connect([mnemonic]),
+      );
+
+      const account = (await signer.getAccounts())[0];
+      const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+        mnemonic,
+        {
+          prefix: 'neutron' + 'valoper', // FIXME: use prefix from config
+        },
+      );
+      const accountValoper = (await directwalletValoper.getAccounts())[0];
+      return new Wallet('neutron', signer, account, accountValoper);
+    } else {
+      return await mnemonicToWallet(mnemonic, network);
+    }
   }
 
   async neutronRpcClient() {
@@ -134,7 +153,7 @@ export class LocalState {
     const gaiaWallet = await this.nextWallet('cosmos');
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.directwallet as OfflineSigner, // TODO: no way of doing that
       neutronWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05untrn'),
@@ -144,7 +163,7 @@ export class LocalState {
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(
       this.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.directwallet as OfflineSigner, // TODO: no way of doing that
       gaiaWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05uatom'),
