@@ -2,7 +2,8 @@ import { AccountData } from '@cosmjs/proto-signing';
 import { MetaMaskEmulator } from './metamask_emulator';
 import { Eip191Signer } from './eip191_cosmwasm_client';
 import { toBase64 } from '@cosmjs/encoding';
-import { serializeSignDoc, StdSignDoc } from '@cosmjs/amino/build/signdoc';
+import { serializeSignDoc, StdSignDoc, escapeCharacters, sortedJsonStringify } from '@cosmjs/amino/build/signdoc';
+import { Buffer } from 'buffer';
 
 /**
  * Implementation of Eip191Signer that uses MetaMaskEmulator for signing
@@ -25,22 +26,22 @@ export class MetaMaskEip191Signer implements Eip191Signer {
   async signEip191(
     signerAddress: string,
     signDoc: StdSignDoc,
-  ): Promise<{ signature: { signature: string }; signed: any }> {
-    // Convert the signDoc to a string that can be signed
-    // In a real implementation, you would need to properly format the document according to EIP-191
-    // const messageToSign = JSON.stringify(signDoc);
+  ): Promise<{ signature: { signature: Buffer }; signed: any }> {
     const messageToSign = serializeSignDoc(signDoc);
+    // const serialized = escapeCharacters(sortedJsonStringify(signDoc));
+    // console.log('serialized: ', serialized);
 
     // Sign the message using the MetaMask emulator
-    const signature = await this.metamaskEmulator.personal_sign(
+    const signature = await this.metamaskEmulator.personalSign(
       messageToSign,
       signerAddress,
     );
+    const signatureHex = Buffer.from(signature.replace('0x', ''), "hex");
 
     // Return the signature and the original document
     return {
       signature: {
-        signature: toBase64(new TextEncoder().encode(signature)),
+        signature: signatureHex,
       },
       signed: signDoc,
     };

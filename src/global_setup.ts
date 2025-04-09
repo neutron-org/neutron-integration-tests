@@ -2,9 +2,9 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import {
   DirectSecp256k1HdWallet,
   Registry,
-  makeCosmoshubPath,
+  // makeCosmoshubPath,
 } from '@cosmjs/proto-signing';
-import { generateMnemonic } from 'bip39';
+// import { generateMnemonic } from 'bip39';
 import { setup } from './helpers/setup';
 import { pathToString } from '@cosmjs/crypto';
 import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
@@ -22,12 +22,13 @@ import {
 
 import config from './config.json';
 import { ethers } from 'ethers';
-import { ethToNeutronBechAddress } from './helpers/metamask_emulator';
+import { ACC_PATH, ethToNeutronBechAddress } from './helpers/metamask_emulator';
+import { stringToPath } from '@cosmjs/crypto/build/slip10';
 // import { hexlify } from 'ethers';
 
 let teardownHappened = false;
 
-const WALLET_COUNT = 10;
+const WALLET_COUNT = 1;
 
 export default async function ({ provide }: GlobalSetupContext) {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
@@ -36,10 +37,18 @@ export default async function ({ provide }: GlobalSetupContext) {
     await setup(host1, host2);
   }
 
-  const mnemonics: string[] = [];
-  for (let i = 0; i < WALLET_COUNT; i++) {
-    mnemonics.push(generateMnemonic());
-  }
+  const mnemonics: string[] = [
+    'middle axis hero strike castle result online harvest venue manage language metal',
+  ];
+  // This is the mnemonic for metamask!
+  // Metamask data:
+  // ethereum address: 0xCeCd2802Adca78538527244d943610328A6746C0
+  // OR:               0xcecd2802adca78538527244d943610328a6746c0
+  // neutron address: neutron1emxjsq4defu98pf8y3xegdssx29xw3kq2xytt4
+  // middle axis hero strike castle result online harvest venue manage language metal
+  // for (let i = 0; i < WALLET_COUNT; i++) {
+  //   mnemonics.push(generateMnemonic());
+  // }
 
   // fund a lot or preallocated wallets for testing purposes
   await fundWallets(
@@ -91,7 +100,8 @@ async function fundWallets(
 
   let outputs: Output[] = [];
   if (network === 'neutron') {
-    const cosmosHdPath = makeCosmoshubPath(0);
+    // const cosmosHdPath = makeCosmoshubPath(0);
+    const cosmosHdPath = stringToPath(ACC_PATH);
     outputs = mnemonics.map((mnemonic) => {
       const ethMnemonic = ethers.Mnemonic.fromPhrase(mnemonic);
       // const seed = mnemonicS.computeSeed();
@@ -103,6 +113,12 @@ async function fundWallets(
       // const hdNodeCosmos = hdNode.derivePath(pathToString(cosmosHdPath));
       const wallet = new ethers.Wallet(hdNode.privateKey);
       const neutronAddress = ethToNeutronBechAddress(wallet.address);
+      console.log(
+        'neutron wallet address: ' +
+          neutronAddress +
+          ', precreated mnemonic: ' +
+          mnemonic,
+      );
       return {
         address: neutronAddress,
         coins: [{ denom: denom, amount: pooramount }],
@@ -112,13 +128,14 @@ async function fundWallets(
     const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
       DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
         prefix: prefix,
-        hdPaths: [makeCosmoshubPath(0)],
+        // hdPaths: [makeCosmoshubPath(0)]
+        hdPaths: [stringToPath(ACC_PATH)],
       })
         .then((directwallet) => directwallet.getAccounts())
         .then((accounts) => accounts[0])
         .then((account) => {
           console.log(
-            'wallet address: ' +
+            'gaia wallet address: ' +
               account.address +
               ', precreated mnemonic: ' +
               mnemonic,

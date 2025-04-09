@@ -11,6 +11,7 @@ import { fromBase64, toUtf8 } from '@cosmjs/encoding';
 import { Int53, Uint53 } from '@cosmjs/math';
 import { PubKey } from '@neutron-org/neutronjs/neutron/crypto/v1beta1/ethsecp256k1/keys';
 import { Any } from 'cosmjs-types/google/protobuf/any';
+import { Uint64 } from '@cosmjs/math';
 import {
   ServiceClientImpl,
   SimulateRequest,
@@ -75,6 +76,7 @@ import {
 import { AccessConfig } from 'cosmjs-types/cosmwasm/wasm/v1/types';
 import { Coin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
 import { StdSignDoc } from '@cosmjs/amino/build/signdoc';
+import { BaseAccount } from 'cosmjs-types/cosmos/auth/v1beta1/auth';
 
 // TODO: can we implement this using metamask extension?
 /**
@@ -85,7 +87,7 @@ export interface Eip191Signer {
   signEip191(
     signerAddress: string,
     signDoc: StdSignDoc,
-  ): Promise<{ signature: { signature: string }; signed: any }>;
+  ): Promise<{ signature: { signature: Buffer }; signed: any }>;
 }
 
 /**
@@ -200,14 +202,21 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     if (!accountFromSigner) {
       throw new Error('Failed to retrieve account from signer');
     }
-    const pubkey1 = await this.getEip191PubKey(accountFromSigner.pubkey);
-    // const pubkey = {
-    //   type: pubkey1.typeUrl,
-    //   value: pubkey1.value,
-    // } as AminoPubkey;
-    const { sequence } = await this.getSequence(signerAddress);
+    const pubkey = await this.getEip191PubKey(accountFromSigner.pubkey);
+    const rawAccount = await this.forceGetQueryClient().auth.account(
+      signerAddress,
+    );
+    if (!rawAccount) {
+      throw new Error('no account found');
+    }
+    const baseAccount = BaseAccount.decode(rawAccount.value);
+    // const accountNumber = uint64FromProto(baseAccount.accountNumber).toNumber();
+    const sequence = uint64FromProto(baseAccount.sequence).toNumber();
+    console.log('sequence: ' + sequence.toString());
+
+    // const { sequence } = await this.getSequence(signerAddress);
     const rpc = createProtobufRpcClient(this.forceGetQueryClient());
-    const { gasInfo } = await simulate(rpc, anyMsgs, memo, pubkey1, sequence);
+    const { gasInfo } = await simulate(rpc, anyMsgs, memo, pubkey, sequence);
     assertDefined(gasInfo);
     return Uint53.fromString(gasInfo.gasUsed.toString()).toNumber();
   }
@@ -314,7 +323,18 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     if (explicitSignerData) {
       signerData = explicitSignerData;
     } else {
-      const { accountNumber, sequence } = await this.getSequence(signerAddress);
+      // const { accountNumber, sequence } = await this.getSequence(signerAddress);
+      const rawAccount = await this.forceGetQueryClient().auth.account(
+        signerAddress,
+      );
+      if (!rawAccount) {
+        throw new Error('no account found');
+      }
+      const baseAccount = BaseAccount.decode(rawAccount.value);
+      const accountNumber = uint64FromProto(
+        baseAccount.accountNumber,
+      ).toNumber();
+      const sequence = uint64FromProto(baseAccount.sequence).toNumber();
       const chainId = await this.getChainId();
       signerData = {
         accountNumber: accountNumber,
@@ -490,7 +510,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
       sequence,
       timeoutHeight,
     );
-    console.log('SignDoc: \n' + JSON.stringify(signDoc) + '\n');
+    // console.log('SignDoc: \n' + JSON.stringify(signDoc) + '\n');
 
     // Use the EIP-191 signer to sign the document
     const { signature, signed } = await (
@@ -520,7 +540,7 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     return TxRaw.fromPartial({
       bodyBytes: signedTxBodyBytes,
       authInfoBytes: signedAuthInfoBytes,
-      signatures: [fromBase64(signature.signature)],
+      signatures: [signature.signature],
     });
   }
 
@@ -791,4 +811,8 @@ export async function simulate(
   });
   const response = await queryService.Simulate(request);
   return response;
+}
+
+function uint64FromProto(input: number | bigint): Uint64 {
+  return Uint64.fromString(input.toString());
 }
