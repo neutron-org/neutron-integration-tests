@@ -21,7 +21,7 @@ import { Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { MetaMaskEmulator } from './metamask_emulator';
-import { FakeMetaMaskEip191Signer } from './eip191_signer';
+import { FakeMetaMaskEip191Signer } from './fake_eip191_signer';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;

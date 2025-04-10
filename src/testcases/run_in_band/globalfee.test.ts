@@ -90,7 +90,7 @@ describe('Neutron / Global Fee', () => {
     kind: string,
     bypassMinFeeMsgTypes: string[] | null,
     minimumGasPrices: Coin[] | null,
-    maxTotalBypassMinFeesgGasUsage: bigint | null,
+    maxTotalBypassMinFeesGasUsage: bigint | null,
   ) => {
     const res = await globalfeeQuerier.params();
     if (bypassMinFeeMsgTypes == null) {
@@ -102,8 +102,8 @@ describe('Neutron / Global Fee', () => {
         amount: p.amount,
       }));
     }
-    if (maxTotalBypassMinFeesgGasUsage == null) {
-      maxTotalBypassMinFeesgGasUsage =
+    if (maxTotalBypassMinFeesGasUsage == null) {
+      maxTotalBypassMinFeesGasUsage =
         res.params.maxTotalBypassMinFeeMsgGasUsage;
     }
 
@@ -114,7 +114,7 @@ describe('Neutron / Global Fee', () => {
       updateGlobalFeeParamsProposal({
         bypass_min_fee_msg_types: bypassMinFeeMsgTypes,
         max_total_bypass_min_fee_msg_gas_usage:
-          maxTotalBypassMinFeesgGasUsage.toString(),
+          maxTotalBypassMinFeesGasUsage.toString(),
         minimum_gas_prices: minimumGasPrices,
       }),
       '1000',
