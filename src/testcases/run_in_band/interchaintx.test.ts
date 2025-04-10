@@ -67,14 +67,14 @@ describe('Neutron / Interchain TXs', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
 
     gaiaWallet = await testState.nextWallet('cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet as OfflineSigner, // TODO: no way of doing that
+      gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that
       { registry: new Registry(defaultRegistryTypes) },
     );
 

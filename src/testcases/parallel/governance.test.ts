@@ -53,7 +53,7 @@ describe('Neutron / Governance', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const neutronRpcClient = await testState.neutronRpcClient();
@@ -73,7 +73,7 @@ describe('Neutron / Governance', () => {
     const neutronWallet2 = await testState.nextWallet('neutron');
     const neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
     daoMember2 = new DaoMember(
@@ -86,7 +86,7 @@ describe('Neutron / Governance', () => {
     const neutronWallet3 = await testState.nextWallet('neutron');
     const neutronClient3 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet3.directwallet,
+      neutronWallet3.signer,
       neutronWallet3.address,
     );
     daoMember3 = new DaoMember(
@@ -1197,7 +1197,7 @@ describe('Neutron / Governance', () => {
         daoMember1.user,
         await SigningStargateClient.connectWithSigner(
           testState.rpcNeutron,
-          neutronWallet.directwallet,
+          neutronWallet.signer,
           { registry: new Registry(neutronTypes) },
         ),
         new Registry(neutronTypes),

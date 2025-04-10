@@ -44,14 +44,14 @@ describe('Neutron / Voting Registry', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
 
     daoMemberWallet = await testState.nextWallet('neutron');
     neutronDaoMemberClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      daoMemberWallet.directwallet,
+      daoMemberWallet.signer,
       daoMemberWallet.address,
     );
 

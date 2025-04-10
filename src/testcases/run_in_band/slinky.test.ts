@@ -35,7 +35,7 @@ describe('Neutron / Slinky', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const neutronRpcClient = await testState.rpcClient('neutron');

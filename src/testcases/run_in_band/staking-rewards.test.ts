@@ -64,7 +64,7 @@ describe('Neutron / Staking Rewards', () => {
     demoWallet = testState.wallets.neutron.demo1;
     demoWalletClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      demoWallet.directwallet,
+      demoWallet.signer,
       demoWallet.address,
     );
 
@@ -77,13 +77,13 @@ describe('Neutron / Staking Rewards', () => {
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet1.directwallet,
+      neutronWallet1.signer,
       neutronWallet1.address,
     );
 
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
 
@@ -91,14 +91,14 @@ describe('Neutron / Staking Rewards', () => {
     // In the state it is validator #2, so this naming is only for clients
     validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      validatorPrimary.directwallet,
+      validatorPrimary.signer,
       validatorPrimary.address,
     );
 
     // This is the client for validator that could be disabled during testrun
     validatorSecondClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      validatorSecondary.directwallet,
+      validatorSecondary.signer,
       validatorSecondary.address,
     );
 
@@ -435,7 +435,7 @@ describe('Neutron / Staking Rewards', () => {
         const wallet = await testState.nextWallet('neutron');
         const client = await SigningNeutronClient.connectWithSigner(
           testState.rpcNeutron,
-          wallet.directwallet,
+          wallet.signer,
           wallet.address,
         );
 
@@ -506,7 +506,7 @@ describe('Neutron / Staking Rewards', () => {
         const wallet = await testState.nextWallet('neutron');
         const client = await SigningNeutronClient.connectWithSigner(
           testState.rpcNeutron,
-          wallet.directwallet,
+          wallet.signer,
           wallet.address,
         );
 

@@ -58,19 +58,19 @@ describe('Neutron / IBC transfer', () => {
     neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     neutronWallet2 = await testState.nextWallet('neutron');
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
     gaiaWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 

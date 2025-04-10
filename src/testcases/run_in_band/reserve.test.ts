@@ -32,7 +32,7 @@ describe('Neutron / Treasury', () => {
 
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
 
@@ -40,7 +40,7 @@ describe('Neutron / Treasury', () => {
 
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      mainDaoWallet.directwallet,
+      mainDaoWallet.signer,
       mainDaoWallet.address,
     );
     securityDaoWallet = testState.wallets.neutron.icq;

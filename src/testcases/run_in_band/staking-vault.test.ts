@@ -59,7 +59,7 @@ describe('Neutron / Staking Vault', () => {
     daoWallet = testState.wallets.neutron.demo1;
     daoWalletClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      daoWallet.directwallet,
+      daoWallet.signer,
       daoWallet.address,
     );
     const neutronRpcClient = await testState.neutronRpcClient();
@@ -80,7 +80,7 @@ describe('Neutron / Staking Vault', () => {
     neutronWallet2 = await testState.nextWallet('neutron');
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
     daoMember2 = new DaoMember(
@@ -93,7 +93,7 @@ describe('Neutron / Staking Vault', () => {
     neutronWallet3 = await testState.nextWallet('neutron');
     neutronClient3 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet3.directwallet,
+      neutronWallet3.signer,
       neutronWallet3.address,
     );
     daoMember3 = new DaoMember(

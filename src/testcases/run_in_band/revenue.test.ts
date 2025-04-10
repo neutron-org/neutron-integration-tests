@@ -107,7 +107,7 @@ describe('Neutron / Revenue', () => {
     neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const neutronRpcClient = await testState.neutronRpcClient();

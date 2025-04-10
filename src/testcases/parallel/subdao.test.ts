@@ -47,12 +47,12 @@ describe('Neutron / Subdao', () => {
     securityDaoAddr = securityDaoWallet.address;
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet1.directwallet,
+      neutronWallet1.signer,
       neutronWallet1.address,
     );
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
 

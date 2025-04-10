@@ -92,25 +92,25 @@ describe('Neutron / Interchain KV Query', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const otherNeutronWallet = await testState.nextWallet('neutron');
     otherNeutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      otherNeutronWallet.directwallet,
+      otherNeutronWallet.signer,
       otherNeutronWallet.address,
     );
     gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
     gaiaClient2 = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      testState.wallets.cosmos.rly2.directwallet,
+      testState.wallets.cosmos.rly2.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 

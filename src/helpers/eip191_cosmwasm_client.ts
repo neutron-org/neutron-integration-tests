@@ -35,6 +35,7 @@ import {
 import { assert, assertDefined } from '@cosmjs/utils';
 import { SignMode } from 'cosmjs-types/cosmos/tx/signing/v1beta1/signing';
 import { TxRaw } from 'cosmjs-types/cosmos/tx/v1beta1/tx';
+import { ChangeAdminResult } from '@cosmjs/cosmwasm-stargate/build/signingcosmwasmclient';
 
 import {
   AminoTypes,
@@ -51,6 +52,9 @@ import {
   Attribute,
   createProtobufRpcClient,
   ProtobufRpcClient,
+  MsgDelegateEncodeObject,
+  MsgUndelegateEncodeObject,
+  MsgWithdrawDelegatorRewardEncodeObject,
 } from '@cosmjs/stargate';
 import {
   CosmWasmClient,
@@ -61,22 +65,33 @@ import {
   InstantiateResult,
   JsonObject,
   MigrateResult,
+  MsgClearAdminEncodeObject,
   MsgExecuteContractEncodeObject,
+  MsgInstantiateContract2EncodeObject,
   MsgInstantiateContractEncodeObject,
   MsgMigrateContractEncodeObject,
   MsgStoreCodeEncodeObject,
+  MsgUpdateAdminEncodeObject,
   UploadResult,
 } from '@cosmjs/cosmwasm-stargate';
 import {
+  MsgClearAdmin,
   MsgExecuteContract,
   MsgInstantiateContract,
+  MsgInstantiateContract2,
   MsgMigrateContract,
   MsgStoreCode,
+  MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { AccessConfig } from 'cosmjs-types/cosmwasm/wasm/v1/types';
 import { Coin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
 import { StdSignDoc } from '@cosmjs/amino/build/signdoc';
 import { BaseAccount } from 'cosmjs-types/cosmos/auth/v1beta1/auth';
+import {
+  MsgDelegate,
+  MsgUndelegate,
+} from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
+import { MsgWithdrawDelegatorReward } from 'cosmjs-types/cosmos/distribution/v1beta1/tx';
 
 // TODO: can we implement this using metamask extension?
 /**
@@ -114,8 +129,9 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
   public readonly registry: Registry;
   public readonly broadcastTimeoutMs: number | undefined;
   public readonly broadcastPollIntervalMs: number | undefined;
-
   private readonly signer: OfflineSigner | Eip191Signer;
+
+  // private readonly signer: OfflineSigner | Eip191Signer;
   private readonly aminoTypes: AminoTypes;
   private readonly gasPrice: GasPrice | undefined;
   // Starting with Cosmos SDK 0.47, we see many cases in which 1.3 is not enough anymore
@@ -601,6 +617,119 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
     };
   }
 
+  public async instantiate2(
+    senderAddress: string,
+    codeId: number,
+    salt: Uint8Array,
+    msg: JsonObject,
+    label: string,
+    fee: StdFee | 'auto' | number,
+    options: InstantiateOptions = {},
+  ): Promise<InstantiateResult> {
+    const instantiateContract2Msg: MsgInstantiateContract2EncodeObject = {
+      typeUrl: '/cosmwasm.wasm.v1.MsgInstantiateContract2',
+      value: MsgInstantiateContract2.fromPartial({
+        sender: senderAddress,
+        codeId: BigInt(new Uint53(codeId).toString()),
+        label: label,
+        msg: toUtf8(JSON.stringify(msg)),
+        funds: [...(options.funds || [])],
+        admin: options.admin,
+        salt: salt,
+        fixMsg: false,
+      }),
+    };
+    const result = await this.signAndBroadcast(
+      senderAddress,
+      [instantiateContract2Msg],
+      fee,
+      options.memo,
+    );
+    if (isDeliverTxFailure(result)) {
+      throw new Error(createDeliverTxResponseErrorMessage(result));
+    }
+    const contractAddressAttr = findAttribute(
+      result.events,
+      'instantiate',
+      '_contract_address',
+    );
+    return {
+      contractAddress: contractAddressAttr.value,
+      logs: logs.parseRawLog(result.rawLog),
+      height: result.height,
+      transactionHash: result.transactionHash,
+      events: result.events,
+      gasWanted: result.gasWanted,
+      gasUsed: result.gasUsed,
+    };
+  }
+
+  public async updateAdmin(
+    senderAddress: string,
+    contractAddress: string,
+    newAdmin: string,
+    fee: StdFee | 'auto' | number,
+    memo = '',
+  ): Promise<ChangeAdminResult> {
+    const updateAdminMsg: MsgUpdateAdminEncodeObject = {
+      typeUrl: '/cosmwasm.wasm.v1.MsgUpdateAdmin',
+      value: MsgUpdateAdmin.fromPartial({
+        sender: senderAddress,
+        contract: contractAddress,
+        newAdmin: newAdmin,
+      }),
+    };
+    const result = await this.signAndBroadcast(
+      senderAddress,
+      [updateAdminMsg],
+      fee,
+      memo,
+    );
+    if (isDeliverTxFailure(result)) {
+      throw new Error(createDeliverTxResponseErrorMessage(result));
+    }
+    return {
+      logs: logs.parseRawLog(result.rawLog),
+      height: result.height,
+      transactionHash: result.transactionHash,
+      events: result.events,
+      gasWanted: result.gasWanted,
+      gasUsed: result.gasUsed,
+    };
+  }
+
+  public async clearAdmin(
+    senderAddress: string,
+    contractAddress: string,
+    fee: StdFee | 'auto' | number,
+    memo = '',
+  ): Promise<ChangeAdminResult> {
+    const clearAdminMsg: MsgClearAdminEncodeObject = {
+      typeUrl: '/cosmwasm.wasm.v1.MsgClearAdmin',
+      value: MsgClearAdmin.fromPartial({
+        sender: senderAddress,
+        contract: contractAddress,
+      }),
+    };
+    const result = await this.signAndBroadcast(
+      senderAddress,
+      [clearAdminMsg],
+      fee,
+      memo,
+    );
+    if (isDeliverTxFailure(result)) {
+      throw new Error(createDeliverTxResponseErrorMessage(result));
+    }
+    return {
+      logs: logs.parseRawLog(result.rawLog),
+      height: result.height,
+      transactionHash: result.transactionHash,
+      events: result.events,
+      gasWanted: result.gasWanted,
+      gasUsed: result.gasUsed,
+    };
+  }
+
   public async instantiate(
     senderAddress: string,
     codeId: number,
@@ -745,6 +874,63 @@ export class Eip191SigningCosmwasmClient extends CosmWasmClient {
       },
     };
     return this.signAndBroadcast(senderAddress, [sendMsg], fee, memo);
+  }
+
+  public async delegateTokens(
+    delegatorAddress: string,
+    validatorAddress: string,
+    amount: Coin,
+    fee: StdFee | 'auto' | number,
+    memo = '',
+  ): Promise<DeliverTxResponse> {
+    const delegateMsg: MsgDelegateEncodeObject = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgDelegate',
+      value: MsgDelegate.fromPartial({
+        delegatorAddress: delegatorAddress,
+        validatorAddress,
+        amount,
+      }),
+    };
+    return this.signAndBroadcast(delegatorAddress, [delegateMsg], fee, memo);
+  }
+
+  public async undelegateTokens(
+    delegatorAddress: string,
+    validatorAddress: string,
+    amount: Coin,
+    fee: StdFee | 'auto' | number,
+    memo = '',
+  ): Promise<DeliverTxResponse> {
+    const undelegateMsg: MsgUndelegateEncodeObject = {
+      typeUrl: '/cosmos.staking.v1beta1.MsgUndelegate',
+      value: MsgUndelegate.fromPartial({
+        delegatorAddress: delegatorAddress,
+        validatorAddress,
+        amount,
+      }),
+    };
+    return this.signAndBroadcast(delegatorAddress, [undelegateMsg], fee, memo);
+  }
+
+  public async withdrawRewards(
+    delegatorAddress: string,
+    validatorAddress: string,
+    fee: StdFee | 'auto' | number,
+    memo = '',
+  ): Promise<DeliverTxResponse> {
+    const withdrawDelegatorRewardMsg: MsgWithdrawDelegatorRewardEncodeObject = {
+      typeUrl: '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward',
+      value: MsgWithdrawDelegatorReward.fromPartial({
+        delegatorAddress: delegatorAddress,
+        validatorAddress,
+      }),
+    };
+    return this.signAndBroadcast(
+      delegatorAddress,
+      [withdrawDelegatorRewardMsg],
+      fee,
+      memo,
+    );
   }
 }
 

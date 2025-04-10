@@ -53,7 +53,7 @@ describe('Neutron / Parameters', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     neutronRpcClient = await testState.rpcClient('neutron');

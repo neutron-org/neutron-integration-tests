@@ -52,7 +52,7 @@ describe('Neutron / Chain Manager', () => {
     const neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const securityDaoWallet = await testState.nextWallet('neutron');
@@ -520,7 +520,7 @@ describe('Neutron / Chain Manager', () => {
       cronAccessWallet = await testState.nextWallet('neutron');
       cronAccessClient = await SigningNeutronClient.connectWithSigner(
         testState.rpcNeutron,
-        cronAccessWallet.directwallet,
+        cronAccessWallet.signer,
         cronAccessWallet.address,
       );
     });
@@ -633,21 +633,21 @@ describe('Neutron / Chain Manager', () => {
       upgradeOnlyWallet = await testState.nextWallet('neutron');
       upgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
         testState.rpcNeutron,
-        upgradeOnlyWallet.directwallet,
+        upgradeOnlyWallet.signer,
         upgradeOnlyWallet.address,
       );
 
       cancelUpgradeOnlyWallet = await testState.nextWallet('neutron');
       cancelUpgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
         testState.rpcNeutron,
-        cancelUpgradeOnlyWallet.directwallet,
+        cancelUpgradeOnlyWallet.signer,
         cancelUpgradeOnlyWallet.address,
       );
 
       fullUpgradeAccessWallet = await testState.nextWallet('neutron');
       fullUpgradeAccessClient = await SigningNeutronClient.connectWithSigner(
         testState.rpcNeutron,
-        fullUpgradeAccessWallet.directwallet,
+        fullUpgradeAccessWallet.signer,
         fullUpgradeAccessWallet.address,
       );
     });

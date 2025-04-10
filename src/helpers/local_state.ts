@@ -21,7 +21,7 @@ import { Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { MetaMaskEmulator } from './metamask_emulator';
-import { MetaMaskEip191Signer } from './eip191_signer';
+import { FakeMetaMaskEip191Signer } from './eip191_signer';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -103,7 +103,7 @@ export class LocalState {
 
     const mnemonic = this.mnemonics[nextWalletIndex];
     if (network === 'neutron') {
-      const signer = new MetaMaskEip191Signer(
+      const signer = new FakeMetaMaskEip191Signer(
         await MetaMaskEmulator.connect([mnemonic]),
       );
 
@@ -115,7 +115,7 @@ export class LocalState {
         },
       );
       const accountValoper = (await directwalletValoper.getAccounts())[0];
-      return new Wallet('neutron', signer, account, accountValoper);
+      return new Wallet(signer, account, accountValoper);
     } else {
       return await mnemonicToWallet(mnemonic, network);
     }
@@ -153,7 +153,7 @@ export class LocalState {
     const gaiaWallet = await this.nextWallet('cosmos');
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
-      neutronWallet.directwallet as OfflineSigner, // TODO: no way of doing that
+      neutronWallet.signer as OfflineSigner, // TODO: no way of doing that
       neutronWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05untrn'),
@@ -163,7 +163,7 @@ export class LocalState {
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(
       this.rpcGaia,
-      gaiaWallet.directwallet as OfflineSigner, // TODO: no way of doing that
+      gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that
       gaiaWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05uatom'),
@@ -196,7 +196,7 @@ export const mnemonicToWallet = async (
     },
   );
   const accountValoper = (await directwalletValoper.getAccounts())[0];
-  return new Wallet(addrPrefix, directwallet, account, accountValoper);
+  return new Wallet(directwallet, account, accountValoper);
 };
 
 async function testFilePosition(s: RunnerTestSuite): Promise<number> {

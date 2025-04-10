@@ -32,7 +32,7 @@ describe('Neutron / Global Fee', () => {
     neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
     const neutronRpcClient = await testState.rpcClient('neutron');
@@ -45,7 +45,7 @@ describe('Neutron / Global Fee', () => {
 
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
 

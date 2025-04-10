@@ -29,7 +29,7 @@ describe('Neutron / dex module (grpc contract)', () => {
     neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer,
       neutronWallet.address,
     );
   });

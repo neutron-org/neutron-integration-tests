@@ -72,20 +72,20 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet1.directwallet,
+      neutronWallet1.signer,
       neutronWallet1.address,
     );
 
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      neutronWallet2.directwallet,
+      neutronWallet2.signer,
       neutronWallet2.address,
     );
 
     // This is the client for validator that could be disabled during testrun
     validatorSecondClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      validatorSecondWallet.directwallet,
+      validatorSecondWallet.signer,
       validatorSecondWallet.address,
     );
 
@@ -93,14 +93,14 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     // In the state it is validator #2, so this naming is only for clients
     validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      validatorPrimaryWallet.directwallet,
+      validatorPrimaryWallet.signer,
       validatorPrimaryWallet.address,
     );
 
     daoWallet = testState.wallets.neutron.demo1;
     daoWalletClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
-      daoWallet.directwallet,
+      daoWallet.signer,
       daoWallet.address,
     );
 
