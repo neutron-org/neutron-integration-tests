@@ -22,7 +22,7 @@ import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractma
 import { getWithAttempts } from '../../helpers/misc';
 import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import {
   AcknowledgementResult,
   cleanAckResults,
@@ -52,7 +52,7 @@ describe('Neutron / Interchain TXs', () => {
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let link: Link;
 
@@ -71,7 +71,7 @@ describe('Neutron / Interchain TXs', () => {
       neutronWallet.address,
     );
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that

@@ -59,7 +59,7 @@ import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/ne
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
 import config from '../../config.json';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
@@ -75,7 +75,7 @@ describe('Neutron / Interchain KV Query', () => {
   let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let gaiaClient2: SigningStargateClient;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let neutronWallet: Wallet;
   let otherNeutronClient: SigningNeutronClient;
   let interchainqQuerier: InterchainqQuerier;

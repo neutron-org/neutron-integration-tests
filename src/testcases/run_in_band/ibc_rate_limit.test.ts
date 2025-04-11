@@ -23,7 +23,7 @@ import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants'
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
@@ -37,7 +37,7 @@ describe('Neutron / IBC transfer', () => {
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let neutronWallet2: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let daoMember1: DaoMember;
   let mainDao: Dao;
@@ -67,7 +67,8 @@ describe('Neutron / IBC transfer', () => {
       neutronWallet2.signer,
       neutronWallet2.address,
     );
-    gaiaWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
+    // TODO: remove comment if works
+    gaiaWallet = await testState.wallets.cosmos.demo2; // mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,

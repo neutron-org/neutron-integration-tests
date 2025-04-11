@@ -26,7 +26,7 @@ import {
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 import config from '../../config.json';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import {
   Dao,
   DaoMember,
@@ -40,7 +40,7 @@ describe('Neutron / Interchain TX Query', () => {
   let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let contractAddress: string;
   let bankQuerierGaia: BankQuerier;
   let interchainqQuerier: InterchainqQuerier;
@@ -59,7 +59,7 @@ describe('Neutron / Interchain TX Query', () => {
       neutronWallet.address,
     );
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,

@@ -1,5 +1,5 @@
 import { AccountData, OfflineSigner } from '@cosmjs/proto-signing';
-import { Eip191Signer } from './eip191_cosmwasm_client';
+import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
 
 // Wallet is a sample data class for holding simplified wallet data for testing purposes
 export class Wallet {
@@ -8,6 +8,21 @@ export class Wallet {
 
   constructor(
     public readonly signer: OfflineSigner | Eip191Signer,
+    public readonly account: AccountData,
+    valAccount: AccountData,
+  ) {
+    this.address = this.account.address;
+    this.valAddress = valAccount.address;
+  }
+}
+
+// GaiaWallet is a sample data class for holding simplified gaia wallet data for testing purposes
+export class GaiaWallet {
+  address: string;
+  valAddress: string;
+
+  constructor(
+    public readonly signer: OfflineSigner,
     public readonly account: AccountData,
     valAccount: AccountData,
   ) {

@@ -17,7 +17,7 @@ import {
   NEUTRON_REST,
   NEUTRON_RPC,
 } from './constants';
-import { Wallet } from './wallet';
+import { GaiaWallet, Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { MetaMaskEmulator } from './metamask_emulator';
@@ -28,7 +28,7 @@ const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
   wallets: {
-    cosmos: Record<string, Wallet>;
+    cosmos: Record<string, GaiaWallet>;
     neutron: Record<string, Wallet>;
   };
   icqWebHost: string;
@@ -79,7 +79,7 @@ export class LocalState {
     }
 
     this.wallets = {
-      cosmos: await getGenesisWallets(COSMOS_PREFIX, this.config),
+      cosmos: await getGenesisGaiaWallets(COSMOS_PREFIX, this.config),
       neutron: await getGenesisWallets(NEUTRON_PREFIX, this.config),
     };
   }
@@ -88,7 +88,43 @@ export class LocalState {
   // The wallet is prefunded in a globalSetup.
   // That way we can safely use these wallets in a parallel tests
   // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
-  async nextWallet(network: string): Promise<Wallet> {
+  async nextWallet(_network: string): Promise<Wallet> {
+    const nextWalletIndex = await this.getNextWalletIndexAndUpdate('neutron');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    const signer = new FakeMetaMaskEip191Signer(
+      await MetaMaskEmulator.connect([mnemonic]),
+    );
+
+    const account = (await signer.getAccounts())[0];
+    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      {
+        prefix: NEUTRON_PREFIX + 'valoper',
+      },
+    );
+    const accountValoper = (await directwalletValoper.getAccounts())[0];
+    return new Wallet(signer, account, accountValoper);
+  }
+
+  async nextGaiaWallet(): Promise<GaiaWallet> {
+    const nextWalletIndex = await this.getNextWalletIndexAndUpdate('cosmos');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: COSMOS_PREFIX,
+    });
+
+    const account = (await signer.getAccounts())[0];
+    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      {
+        prefix: COSMOS_PREFIX + 'valoper',
+      },
+    );
+    const accountValoper = (await directwalletValoper.getAccounts())[0];
+    return new GaiaWallet(signer, account, accountValoper);
+  }
+
+  async getNextWalletIndexAndUpdate(network: string): Promise<number> {
     const currentOffsetInTestFile = this.walletIndexes[network];
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
@@ -96,29 +132,12 @@ export class LocalState {
           WALLETS_PER_TEST_FILE,
       );
     }
-    const nextWalletIndex = currentOffsetInTestFile;
-    // this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
+    const nextWalletIndex =
+      this.testFilePosition * WALLETS_PER_TEST_FILE + currentOffsetInTestFile;
 
     this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
-    const mnemonic = this.mnemonics[nextWalletIndex];
-    if (network === 'neutron') {
-      const signer = new FakeMetaMaskEip191Signer(
-        await MetaMaskEmulator.connect([mnemonic]),
-      );
-
-      const account = (await signer.getAccounts())[0];
-      const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
-        mnemonic,
-        {
-          prefix: 'neutron' + 'valoper', // FIXME: use prefix from config
-        },
-      );
-      const accountValoper = (await directwalletValoper.getAccounts())[0];
-      return new Wallet(signer, account, accountValoper);
-    } else {
-      return await mnemonicToWallet(mnemonic, network);
-    }
+    return nextWalletIndex;
   }
 
   async neutronRpcClient() {
@@ -150,7 +169,7 @@ export class LocalState {
   // since hermes don't have manual relay.
   async relayerLink(): Promise<Link> {
     const neutronWallet = await this.nextWallet('neutron');
-    const gaiaWallet = await this.nextWallet('cosmos');
+    const gaiaWallet = await this.nextGaiaWallet();
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
       neutronWallet.signer as OfflineSigner, // TODO: no way of doing that
@@ -180,6 +199,25 @@ export class LocalState {
     );
   }
 }
+
+// TODO: use it in all wallet creation funcs
+export const mnemonicToGaiaWallet = async (
+  mnemonic: string,
+  addrPrefix: string,
+): Promise<GaiaWallet> => {
+  const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+    prefix: addrPrefix,
+  });
+  const account = (await directwallet.getAccounts())[0];
+  const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+    mnemonic,
+    {
+      prefix: addrPrefix + 'valoper',
+    },
+  );
+  const accountValoper = (await directwalletValoper.getAccounts())[0];
+  return new GaiaWallet(directwallet, account, accountValoper);
+};
 
 export const mnemonicToWallet = async (
   mnemonic: string,
@@ -238,7 +276,7 @@ async function listFilenamesInDir(dir: string): Promise<string[]> {
 }
 
 const getGenesisWallets = async (
-  prefix: string,
+  prefix: string = NEUTRON_PREFIX,
   config: any,
 ): Promise<Record<string, Wallet>> => ({
   val1: await mnemonicToWallet(config.VAL_MNEMONIC_1, prefix),
@@ -247,4 +285,16 @@ const getGenesisWallets = async (
   icq: await mnemonicToWallet(config.DEMO_MNEMONIC_3, prefix),
   rly1: await mnemonicToWallet(config.RLY_MNEMONIC_1, prefix),
   rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
+});
+
+const getGenesisGaiaWallets = async (
+  prefix: string = COSMOS_PREFIX,
+  config: any,
+): Promise<Record<string, GaiaWallet>> => ({
+  val1: await mnemonicToGaiaWallet(config.VAL_MNEMONIC_1, prefix),
+  demo1: await mnemonicToGaiaWallet(config.DEMO_MNEMONIC_1, prefix),
+  demo2: await mnemonicToGaiaWallet(config.DEMO_MNEMONIC_2, prefix),
+  icq: await mnemonicToGaiaWallet(config.DEMO_MNEMONIC_3, prefix),
+  rly1: await mnemonicToGaiaWallet(config.RLY_MNEMONIC_1, prefix),
+  rly2: await mnemonicToGaiaWallet(config.RLY_MNEMONIC_2, prefix),
 });

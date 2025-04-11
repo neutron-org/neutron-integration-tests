@@ -21,6 +21,7 @@ import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
+import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
 
 export const executeUpdateInterchainQueriesParams = async (
   chainManagerAddress: string,
@@ -274,7 +275,7 @@ export const registerUnbondingDelegationsQuery = async (
 
 export const acceptInterchainqueriesParamsChangeProposal = async (
   user: string,
-  client: SigningCosmWasmClient,
+  client: Eip191SigningCosmwasmClient,
   rpcClient: ProtobufRpcClient,
   title: string,
   description: string,

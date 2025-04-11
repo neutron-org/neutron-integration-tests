@@ -10,7 +10,7 @@ import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/n
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import {
@@ -27,7 +27,7 @@ describe('Neutron / Tokenomics', () => {
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let treasuryContractAddress: string;
 
   let bankQuerier: BankQueryClient;
@@ -46,7 +46,7 @@ describe('Neutron / Tokenomics', () => {
       neutronWallet.address,
     );
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,

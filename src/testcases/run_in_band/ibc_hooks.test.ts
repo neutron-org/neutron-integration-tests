@@ -13,14 +13,14 @@ import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1
 
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let contractAddress: string;
   let fee: any;
   const transferDenom =

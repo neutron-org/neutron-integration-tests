@@ -18,14 +18,14 @@ import {
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import config from '../../config.json';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let contractAddress: string;
   const connectionId = 'connection-0';
 
@@ -39,7 +39,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
       neutronWallet.address,
     );
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,

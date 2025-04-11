@@ -48,7 +48,7 @@ describe('Neutron / DAO check', () => {
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
       neutronRpcClient,
-    ); //add assert for some addresses
+    ); // add assert for some addresses
     daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
     proposalSingleAddress = daoContracts.proposals.single.address;
     preProposalSingleAddress =

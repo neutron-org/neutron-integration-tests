@@ -1,4 +1,4 @@
-import { OfflineSigner, Registry } from '@cosmjs/proto-signing';
+import { Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
@@ -16,7 +16,7 @@ import {
 } from '../../helpers/constants';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import config from '../../config.json';
 import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
@@ -33,8 +33,8 @@ describe('Neutron / IBC transfer', () => {
   let neutronClient: SigningNeutronClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
-  let gaiaWallet2: Wallet;
+  let gaiaWallet: GaiaWallet;
+  let gaiaWallet2: GaiaWallet;
 
   let ibcContract: string;
   let receiverContract: string;
@@ -47,17 +47,16 @@ describe('Neutron / IBC transfer', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextWallet('neutron');
-    console.log('neutronWallet.address: ' + neutronWallet.address);
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
       neutronWallet.address,
     );
-    gaiaWallet = await testState.nextWallet('cosmos');
-    gaiaWallet2 = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
+    gaiaWallet2 = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -157,6 +156,12 @@ describe('Neutron / IBC transfer', () => {
           IBC_TOKEN_DENOM,
         );
         expect(balance.amount).toEqual('1000');
+
+        const balance2 = await gaiaClient.getBalance(
+          gaiaWallet.address,
+          COSMOS_DENOM,
+        );
+        console.log('uatom before balance: ' + balance2.amount);
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
         const res = await gaiaClient.signAndBroadcast(

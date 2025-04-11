@@ -27,18 +27,12 @@ export class MetaMaskEmulator {
 
     for (const mnemonic of mnemonics) {
       const ethMnemonic = ethers.Mnemonic.fromPhrase(mnemonic);
-      // const seed = mnemonicS.computeSeed();
-      // console.log('ethers seed: ' + seed);
       const hdNode = ethers.HDNodeWallet.fromMnemonic(
         ethMnemonic,
         pathToString(cosmosHdPath),
       );
-      // const hdNodeCosmos = hdNode.derivePath(pathToString(cosmosHdPath));
       const wallet = new ethers.Wallet(hdNode.privateKey);
       const neutronAddress = ethToNeutronBechAddress(wallet.address);
-      console.log(
-        'set wallet: ' + neutronAddress + ' for mnemonic: ' + mnemonic + '\n',
-      );
       wallets.set(neutronAddress, { wallet, mnemonic });
     }
     return new MetaMaskEmulator(wallets);
@@ -54,7 +48,6 @@ export class MetaMaskEmulator {
         // In ethers.js v6, we can use the signingKey property
         // The signingKey property contains the publicKey property
 
-        console.log('wallet: ', JSON.stringify(wallet));
         const pubkeyHex = wallet.signingKey.publicKey;
 
         // Remove the '0x' prefix if present
@@ -77,14 +70,8 @@ export class MetaMaskEmulator {
           messagetest,
           ethhex.decode(signatureTest),
         );
-        console.log('pubKeyBytes: ' + hexStr(pubkeyBytes));
-        console.log('pubKeyBytes2: ' + hexStr(pubKeyBytes2));
-
-        // return Any.fromPartial({
-        //   typeUrl: PubKey.typeUrl,
-        //   value: PubKey.encode({ key: pubKeyBytes }).finish(),
-        // });
-
+        // console.log('pubKeyBytes: ' + hexStr(pubkeyBytes));
+        // console.log('pubKeyBytes2: ' + hexStr(pubKeyBytes2));
         return {
           address,
           pubkey: pubKeyBytes2,

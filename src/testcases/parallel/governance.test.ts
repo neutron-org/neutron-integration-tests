@@ -14,7 +14,7 @@ import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
-import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
+import { DeliverTxResponse } from '@cosmjs/stargate';
 import { QueryClientImpl as UpgradeQuerier } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as IbcClientQuerier } from '@neutron-org/neutronjs/ibc/core/client/v1/query.rpc.Query';
 import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
@@ -26,6 +26,7 @@ import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants'
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { neutronTypes } from '../../helpers/registry_types';
 import config from '../../config.json';
+import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
@@ -1195,11 +1196,7 @@ describe('Neutron / Governance', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
       const res = await msgSendDirectProposal(
         daoMember1.user,
-        await SigningStargateClient.connectWithSigner(
-          testState.rpcNeutron,
-          neutronWallet.signer,
-          { registry: new Registry(neutronTypes) },
-        ),
+        neutronClient.client,
         new Registry(neutronTypes),
         'icahost',
         'HostEnabled',
@@ -1221,7 +1218,7 @@ type TestArgResponse = {
 // TODO: description?
 const msgSendDirectProposal = async (
   signer: string,
-  client: SigningStargateClient,
+  client: Eip191SigningCosmwasmClient,
   registry: Registry,
   subspace: string,
   key: string,

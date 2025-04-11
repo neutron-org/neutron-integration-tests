@@ -18,10 +18,8 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from './constants';
 import { neutronTypes } from './registry_types';
-import {
-  Eip191Signer,
-  Eip191SigningCosmwasmClient,
-} from './eip191_cosmwasm_client';
+import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
+import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,

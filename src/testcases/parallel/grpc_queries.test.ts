@@ -1,7 +1,7 @@
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { RunnerTestSuite, inject } from 'vitest';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
@@ -20,7 +20,7 @@ describe('Neutron / Grpc Queries', () => {
   let contractAddress: string;
 
   let gaiaClient: SigningStargateClient;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let newTokenDenom: string;
 
@@ -35,7 +35,7 @@ describe('Neutron / Grpc Queries', () => {
       neutronWallet.signer,
       neutronWallet.address,
     );
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,

@@ -32,10 +32,6 @@ import { Params as RevenueModuleParams } from '@neutron-org/neutronjs/neutron/re
 import { EventAttribute } from '@neutron-org/neutronjs/tendermint/abci/types';
 import { Coin, parseCoins } from '@cosmjs/proto-signing';
 
-BigInt.prototype.toJSON = function () {
-  return Number(this);
-};
-
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 const ORACLE_CONTAINER = 'setup-oracle-1-1';
 
