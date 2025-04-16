@@ -136,7 +136,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 1);
-      expect(query.id).toEqual('1');
+      expect(+query.id).toEqual(1);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -299,7 +299,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 2);
-      expect(query.id).toEqual('2');
+      expect(+query.id).toEqual(2);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -368,7 +368,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
-      expect(query.id).toEqual('3');
+      expect(+query.id).toEqual(3);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -698,7 +698,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       let query = await getRegisteredQuery(neutronClient, contractAddress, 4);
-      expect(query.id).toEqual('4');
+      expect(+query.id).toEqual(4);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -711,7 +711,7 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.update_period).toEqual(query4UpdatePeriod.toString());
 
       query = await getRegisteredQuery(neutronClient, contractAddress, 5);
-      expect(query.id).toEqual('5');
+      expect(+query.id).toEqual(5);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -845,7 +845,7 @@ describe('Neutron / Interchain TX Query', () => {
 
     test('check registered transfers query', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 6);
-      expect(query.id).toEqual('6');
+      expect(+query.id).toEqual(6);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
@@ -937,7 +937,7 @@ describe('Neutron / Interchain TX Query', () => {
     });
     it('seems registered transfers query is updated', async () => {
       const query = await getRegisteredQuery(neutronClient, contractAddress, 3);
-      expect(query.id).toEqual('3');
+      expect(+query.id).toEqual(3);
       expect(query.owner).toEqual(contractAddress);
       expect(query.keys.length).toEqual(0);
       expect(query.query_type).toEqual('tx');
