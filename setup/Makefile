@@ -11,7 +11,7 @@ build-hermes:
 		@docker build -f dockerbuilds/Dockerfile.hermes -t hermes:1.10.4 .
 
 build-relayer:
-		cd $(APP_DIR)/neutron-query-relayer/ && make build-docker
+		@docker buildx build --load --build-context app=$(APP_DIR)/neutron-query-relayer -t neutron-org/neutron-query-relayer -f dockerbuilds/Dockerfile.queryrelayer . --no-cache
 
 build-slinky:
 		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.2.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
@@ -22,11 +22,7 @@ start-cosmopark:
 		@$(COMPOSE) up -d
 
 stop-cosmopark:
-		@$(COMPOSE) down -t 60 --remove-orphans -v
+		@$(COMPOSE) down --remove-orphans -v
 
 start-neutron-node:
 		@$(COMPOSE) up neutron-node
-
-clean:
-		@echo "Removing previous testing data"
-		-@docker volume rm neutron-testing-data

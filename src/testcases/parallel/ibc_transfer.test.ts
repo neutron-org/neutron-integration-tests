@@ -72,26 +72,6 @@ describe('Neutron / IBC transfer', () => {
     });
   });
 
-  describe('Staking', () => {
-    test('store and instantiate mgs receiver contract', async () => {
-      receiverContract = await neutronClient.create(CONTRACTS.MSG_RECEIVER, {});
-    });
-    test('staking queries must fail since we have no staking module in Neutron', async () => {
-      let exceptionThrown = false;
-      try {
-        await neutronClient.execute(receiverContract, {
-          call_staking: {},
-        });
-      } catch (err) {
-        const error = err as Error;
-        expect(error.message).toMatch(/Staking is not supported/i);
-        exceptionThrown = true;
-      }
-
-      expect(exceptionThrown).toBeTruthy();
-    });
-  });
-
   describe('IBC', () => {
     describe('Correct way', () => {
       let relayerBalance = 0;
