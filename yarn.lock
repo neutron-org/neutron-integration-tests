@@ -1190,18 +1190,18 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#14e43e554cf55b8e3611d6a4f804c92f546b7f8e":
+"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#7a819b9ffe8f0f24ec015bd3a5605917c6a63ddf":
   version "4.2.0"
-  resolved "https://github.com/neutron-org/neutronjs.git#14e43e554cf55b8e3611d6a4f804c92f546b7f8e"
+  resolved "https://github.com/neutron-org/neutronjs.git#7a819b9ffe8f0f24ec015bd3a5605917c6a63ddf"
 
-"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#45ea88f8c481577c8b26cbc0ee55f0a761879eea":
+"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#a675933a95ed390803f7b656de11d275df79e5ad":
   version "0.5.0"
-  resolved "https://github.com/neutron-org/neutronjsplus.git#45ea88f8c481577c8b26cbc0ee55f0a761879eea"
+  resolved "https://github.com/neutron-org/neutronjsplus.git#a675933a95ed390803f7b656de11d275df79e5ad"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.4"
     "@cosmjs/proto-signing" "^0.32.4"
     "@cosmjs/stargate" "0.32.4"
-    "@neutron-org/neutronjs" "https://github.com/neutron-org/neutronjs.git#14e43e554cf55b8e3611d6a4f804c92f546b7f8e"
+    "@neutron-org/neutronjs" "https://github.com/neutron-org/neutronjs.git#7a819b9ffe8f0f24ec015bd3a5605917c6a63ddf"
     axios "1.6.0"
     bip39 "^3.1.0"
     long "^5.2.1"
