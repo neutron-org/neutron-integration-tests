@@ -578,7 +578,7 @@ describe('Neutron / Chain Manager', () => {
                     msg: JSON.stringify({}),
                   },
                 ],
-                execution_stage: 0,
+                execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
               }),
             ],
           },
