@@ -35,7 +35,7 @@ describe('Neutron / Subdao', () => {
   let subDao: Dao;
   let mainDao: Dao;
   let adminQuery: AdminQueryClient;
-  let chainManagerAddress;
+  let chainManagerAddress: string;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
