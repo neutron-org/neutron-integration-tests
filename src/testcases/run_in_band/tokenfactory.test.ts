@@ -299,14 +299,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
-              mintToAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -406,14 +405,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
-              mintToAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -431,14 +429,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgBurn.typeUrl,
-            value: MsgBurn.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '100',
               },
-              burnFromAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -531,14 +528,14 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
               mintToAddress: neutronWallet.address,
-            }),
+            },
           },
         ],
         fee,

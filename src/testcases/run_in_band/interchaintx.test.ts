@@ -74,7 +74,7 @@ describe('Neutron / Interchain TXs', () => {
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
