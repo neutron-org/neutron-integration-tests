@@ -27,8 +27,8 @@ import {
   redelegateTokens,
   undelegateTokens,
   simulateSlashingAndJailing,
-  submitUpdateParamsSlashingProposal,
 } from '../../helpers/staking';
+import { updateSlashingParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Staking Rewards', () => {
   let testState: LocalState;
@@ -134,18 +134,17 @@ describe('Neutron / Staking Rewards', () => {
     describe('Set slashing params', () => {
       let proposalId: number;
       test('create accept and execute proposal', async () => {
-        proposalId = await submitUpdateParamsSlashingProposal(
-          daoMember1,
+        proposalId = await daoMember1.submitUpdateParamsSlashingProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Update slashing params',
-          {
+          updateSlashingParamsProposal({
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.500000000000000000',
             signed_blocks_window: '10',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
-          },
+          }),
           '1000',
         );
         await daoMember1.voteYes(proposalId);
