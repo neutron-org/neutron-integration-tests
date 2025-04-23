@@ -157,9 +157,9 @@ describe('Neutron / IBC transfer', () => {
     });
 
     describe('IBC rate limit params proposal', () => {
-      let proposalId;
+      let proposalId: number;
       test('create proposal', async () => {
-        proposalId = daoMember1.submitUpdateParamsRateLimitProposal(
+        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Setup IBC rate limit contract',
@@ -168,11 +168,14 @@ describe('Neutron / IBC transfer', () => {
           },
           '1000',
         );
+        console.log('proposal id: ' + proposalId);
       });
       test('vote YES', async () => {
+        await neutronClient.waitBlocks(5);
         await daoMember1.voteYes(proposalId);
       });
       test('check if proposal is passed', async () => {
+        await neutronClient.waitBlocks(5);
         await mainDao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {
@@ -324,7 +327,7 @@ describe('Neutron / IBC transfer', () => {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
-        // here we doing exact same tx, but it is not failing because there is no such path (limit) anymore
+        // here we are doing the exact same tx, but it is not failing because there is no such path (limit) anymore
         const res = await neutronClient.signAndBroadcast(
           [
             {
@@ -434,11 +437,11 @@ describe('Neutron / IBC transfer', () => {
     });
 
     // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params.
-    // ibc send afterwards should work because rate-limiting MW action is completely removed from the ibc stack
+    // ibc send afterward should work because rate-limiting MW action is completely removed from the ibc stack
     describe('Remove RL contract from neutron', () => {
-      const proposalId = 2;
+      let proposalId: number;
       test('create proposal', async () => {
-        await daoMember1.submitUpdateParamsRateLimitProposal(
+        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #2',
           'Param change proposal. Remove rate limit contract',
@@ -457,8 +460,8 @@ describe('Neutron / IBC transfer', () => {
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
-      // and here we just tests if ibc send works
-      test('perform IBC send after removig of contract: should be fine', async () => {
+      // and here we just test if ibc send works
+      test('perform IBC send after removing contract: should be fine', async () => {
         const res = await neutronClient.signAndBroadcast(
           [
             {
