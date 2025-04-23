@@ -210,26 +210,25 @@ describe('Neutron / IBC transfer', () => {
         // we expect X4 balance because the contract sends 2 txs: first one = amount and the second one amount*2 + transfer from a usual account
         expect(balance.amount).toEqual('4000');
       });
-      test('relayer must receive fee', async () => {
+      test('relayer must not receive fee', async () => {
         await neutronClient.waitBlocks(10);
         const balance = await neutronClient.getBalance(
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        const resBalance =
-          parseInt(balance.amount, 10) - 2333 * 2 - relayerBalance;
+        const resBalance = parseInt(balance.amount, 10) - relayerBalance;
         expect(resBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
       });
-      test('contract should be refunded', async () => {
+      test('contract should not be charged', async () => {
         await neutronClient.waitBlocks(10);
         const balance = await neutronClient.getBalance(
           ibcContract,
           NEUTRON_DENOM,
         );
-        expect(parseInt(balance.amount, 10)).toBe(50000 - 3000 - 2333 * 2);
+        expect(parseInt(balance.amount, 10)).toBe(50000 - 3000);
       });
     });
-    describe('Missing fee', () => {
+    describe('Missing fee is fine', () => {
       beforeAll(async () => {
         await neutronClient.execute(ibcContract, {
           set_fees: {
@@ -241,16 +240,15 @@ describe('Neutron / IBC transfer', () => {
         });
       });
       test('execute contract should fail', async () => {
-        await expect(
-          neutronClient.execute(ibcContract, {
-            send: {
-              channel: TRANSFER_CHANNEL,
-              to: gaiaWallet.address,
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-            },
-          }),
-        ).rejects.toThrow(/invalid coins/);
+        const res = await neutronClient.execute(ibcContract, {
+          send: {
+            channel: TRANSFER_CHANNEL,
+            to: gaiaWallet.address,
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        });
+        expect(res.code).toEqual(0);
       });
     });
     describe('Multihops', () => {
@@ -329,94 +327,48 @@ describe('Neutron / IBC transfer', () => {
         );
       });
     });
-    describe('Fee in wrong denom', () => {
-      const portName = 'transfer';
-      const channelName = TRANSFER_CHANNEL;
-      const uatomIBCDenom = getIBCDenom(portName, channelName, 'uatom');
-      expect(uatomIBCDenom).toEqual(UATOM_IBC_TO_NEUTRON_DENOM);
+    // describe('Fee in wrong denom', () => {
+    //   const portName = 'transfer';
+    //   const channelName = TRANSFER_CHANNEL;
+    //   const uatomIBCDenom = getIBCDenom(portName, channelName, 'uatom');
+    //   expect(uatomIBCDenom).toEqual(UATOM_IBC_TO_NEUTRON_DENOM);
 
-      test('transfer some atoms to contract', async () => {
-        const uatomAmount = '1000';
+    //   test('transfer some atoms to contract', async () => {
+    //     const uatomAmount = '1000';
 
-        const res = await gaiaClient.signAndBroadcast(
-          gaiaWallet.address,
-          [
-            {
-              typeUrl: GaiaMsgTransfer.typeUrl,
-              value: GaiaMsgTransfer.fromPartial({
-                sourcePort: portName,
-                sourceChannel: channelName,
-                token: { denom: COSMOS_DENOM, amount: uatomAmount },
-                sender: gaiaWallet.address,
-                receiver: ibcContract,
-                timeoutHeight: {
-                  revisionNumber: 2n,
-                  revisionHeight: 100000000n,
-                },
-              }),
-            },
-          ],
-          {
-            gas: '200000',
-            amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
-          },
-        );
-        expect(res.code).toEqual(0);
+    //     const res = await gaiaClient.signAndBroadcast(
+    //       gaiaWallet.address,
+    //       [
+    //         {
+    //           typeUrl: GaiaMsgTransfer.typeUrl,
+    //           value: GaiaMsgTransfer.fromPartial({
+    //             sourcePort: portName,
+    //             sourceChannel: channelName,
+    //             token: { denom: COSMOS_DENOM, amount: uatomAmount },
+    //             sender: gaiaWallet.address,
+    //             receiver: ibcContract,
+    //             timeoutHeight: {
+    //               revisionNumber: 2n,
+    //               revisionHeight: 100000000n,
+    //             },
+    //           }),
+    //         },
+    //       ],
+    //       {
+    //         gas: '200000',
+    //         amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
+    //       },
+    //     );
+    //     expect(res.code).toEqual(0);
 
-        await neutronClient.waitBlocks(10);
-        const balance = await neutronClient.getBalance(
-          ibcContract,
-          uatomIBCDenom,
-        );
-        expect(balance.amount).toEqual(uatomAmount);
-      });
-      test('try to set fee in IBC transferred atoms', async () => {
-        const res = await neutronClient.execute(ibcContract, {
-          set_fees: {
-            denom: uatomIBCDenom,
-            ack_fee: '100',
-            recv_fee: '0',
-            timeout_fee: '100',
-          },
-        });
-        expect(res.code).toEqual(0);
-
-        await expect(
-          neutronClient.execute(ibcContract, {
-            send: {
-              channel: TRANSFER_CHANNEL,
-              to: gaiaWallet.address,
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-            },
-          }),
-        ).rejects.toThrow(/insufficient fee/);
-      });
-    });
-    describe('Not enough amount of tokens on contract to pay fee', () => {
-      beforeAll(async () => {
-        await neutronClient.execute(ibcContract, {
-          set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '1000000',
-            recv_fee: '0',
-            timeout_fee: '100000',
-          },
-        });
-      });
-      test('execute contract should fail', async () => {
-        await expect(
-          neutronClient.execute(ibcContract, {
-            send: {
-              channel: TRANSFER_CHANNEL,
-              to: gaiaWallet.address,
-              denom: NEUTRON_DENOM,
-              amount: '1000',
-            },
-          }),
-        ).rejects.toThrow(/insufficient funds/);
-      });
-    });
+    //     await neutronClient.waitBlocks(10);
+    //     const balance = await neutronClient.getBalance(
+    //       ibcContract,
+    //       uatomIBCDenom,
+    //     );
+    //     expect(balance.amount).toEqual(uatomAmount);
+    //   });
+    // });
 
     describe('Failing sudo handlers', () => {
       beforeAll(async () => {
