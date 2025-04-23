@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import {
+  AminoTypes,
   createProtobufRpcClient,
   ProtobufRpcClient,
   QueryClient,
@@ -22,6 +23,7 @@ import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 import { MetaMaskEmulator } from './metamask_emulator';
 import { FakeMetaMaskEip191Signer } from './fake_eip191_signer';
+import { aminoConverters } from '@neutron-org/neutronjsplus/dist/amino';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -106,6 +108,26 @@ export class LocalState {
     return new Wallet(signer, account, accountValoper);
   }
 
+  // similar to nextWallet, but returns ordinary signing neutron wallet
+  // helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
+  async nextSimpleSignNeutronWallet(): Promise<Wallet> {
+    const nextWalletIndex = await this.getNextWalletIndexAndUpdate('neutron');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: NEUTRON_PREFIX,
+    });
+
+    const account = (await signer.getAccounts())[0];
+    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      {
+        prefix: NEUTRON_PREFIX + 'valoper',
+      },
+    );
+    const accountValoper = (await directwalletValoper.getAccounts())[0];
+    return new Wallet(signer, account, accountValoper);
+  }
+
   async nextGaiaWallet(): Promise<GaiaWallet> {
     const nextWalletIndex = await this.getNextWalletIndexAndUpdate('cosmos');
     const mnemonic = this.mnemonics[nextWalletIndex];
@@ -166,18 +188,19 @@ export class LocalState {
 
   // Creates an IBC relayer between neutron and gaia
   // This relayer can be used to manually relay packets
-  // since hermes don't have manual relay.
+  // since hermes don't have a manual relay.
   async relayerLink(): Promise<Link> {
-    const neutronWallet = await this.nextWallet('neutron');
+    const neutronWallet = await this.nextSimpleSignNeutronWallet();
     const gaiaWallet = await this.nextGaiaWallet();
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
-      neutronWallet.signer as OfflineSigner, // TODO: no way of doing that
+      neutronWallet.signer as OfflineSigner,
       neutronWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05untrn'),
         estimatedBlockTime: 3,
         estimatedIndexerTime: 100,
+        aminoTypes: new AminoTypes(aminoConverters),
       },
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(

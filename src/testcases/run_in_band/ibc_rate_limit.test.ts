@@ -55,7 +55,7 @@ describe('Neutron / IBC transfer', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
+    neutronWallet = await testState.nextWallet('neutron');
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
@@ -67,8 +67,7 @@ describe('Neutron / IBC transfer', () => {
       neutronWallet2.signer,
       neutronWallet2.address,
     );
-    // TODO: remove comment if works
-    gaiaWallet = await testState.wallets.cosmos.demo2; // mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
+    gaiaWallet = await testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,
@@ -122,10 +121,10 @@ describe('Neutron / IBC transfer', () => {
 
   describe('prepare: test IBC transfer and set RL contract addr to neutron', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000');
+      await daoMember1.bondFunds('100000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 11000,
+        async (response) => response.power == 100000,
         20,
       );
     });
@@ -158,9 +157,9 @@ describe('Neutron / IBC transfer', () => {
     });
 
     describe('IBC rate limit params proposal', () => {
-      const proposalId = 1;
+      let proposalId;
       test('create proposal', async () => {
-        await daoMember1.submitUpdateParamsRateLimitProposal(
+        proposalId = daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Setup IBC rate limit contract',
@@ -227,7 +226,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: firstAmount },
@@ -237,7 +236,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           fee,
@@ -248,7 +247,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000001' }, // basically 1NTRN + 1 untrn
@@ -258,7 +257,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           fee,
@@ -291,7 +290,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '1000001' }, // 1NTRN + 1untrn
@@ -301,7 +300,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           fee,
@@ -330,7 +329,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: NEUTRON_DENOM, amount: '100000' },
@@ -340,7 +339,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           fee,
@@ -411,7 +410,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: amount },
@@ -421,7 +420,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           {
@@ -464,7 +463,7 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: NeutronMsgTransfer.typeUrl,
-              value: NeutronMsgTransfer.fromPartial({
+              value: {
                 sourcePort: 'transfer',
                 sourceChannel: TRANSFER_CHANNEL,
                 token: { denom: UATOM_IBC_TO_NEUTRON_DENOM, amount: amount },
@@ -474,7 +473,7 @@ describe('Neutron / IBC transfer', () => {
                   revisionNumber: 2n,
                   revisionHeight: 100000000n,
                 },
-              }),
+              },
             },
           ],
           {
