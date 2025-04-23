@@ -16,6 +16,8 @@ export class Wallet {
   }
 }
 
+// TODO: try to make valAddress into just using another Wallet with another AccountData (with 'valoper' prefix)
+
 // GaiaWallet is a sample data class for holding simplified gaia wallet data for testing purposes
 export class GaiaWallet {
   address: string;

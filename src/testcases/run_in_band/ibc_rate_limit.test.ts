@@ -67,7 +67,7 @@ describe('Neutron / IBC transfer', () => {
       neutronWallet2.signer,
       neutronWallet2.address,
     );
-    gaiaWallet = await testState.wallets.cosmos.demo2;
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,
