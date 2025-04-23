@@ -205,7 +205,7 @@ export class LocalState {
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(
       this.rpcGaia,
-      gaiaWallet.signer as OfflineSigner, // TODO: no way of doing that
+      gaiaWallet.signer,
       gaiaWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05uatom'),

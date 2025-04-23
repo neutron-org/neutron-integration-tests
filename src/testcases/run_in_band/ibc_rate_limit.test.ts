@@ -1,6 +1,6 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject, expect } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
@@ -172,6 +172,8 @@ describe('Neutron / IBC transfer', () => {
       });
       test('vote YES', async () => {
         await neutronClient.waitBlocks(5);
+        const vp = await daoMember1.queryVotingPower();
+        console.log('voting power total: ' + vp.power);
         await daoMember1.voteYes(proposalId);
       });
       test('check if proposal is passed', async () => {
@@ -352,7 +354,7 @@ describe('Neutron / IBC transfer', () => {
     });
     describe('with limit, Gaia -> Neutron', () => {
       test('send some atoms to neutron chain', async () => {
-        const resBefroreLimit = await gaiaClient.signAndBroadcast(
+        const resBeforeLimit = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
           [
             {
@@ -375,7 +377,7 @@ describe('Neutron / IBC transfer', () => {
             amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
           },
         );
-        expect(resBefroreLimit.code).toEqual(0);
+        expect(resBeforeLimit.code).toEqual(0);
       });
 
       test('check that weird IBC denom is uatom indeed', async () => {
