@@ -1,6 +1,5 @@
 import { promises as fs } from 'fs';
 import {
-  AminoTypes,
   createProtobufRpcClient,
   ProtobufRpcClient,
   QueryClient,
@@ -20,7 +19,6 @@ import {
 import { GaiaWallet, Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
-import { aminoConverters } from '@neutron-org/neutronjsplus/dist/amino';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
@@ -168,7 +166,6 @@ export class LocalState {
         gasPrice: GasPrice.fromString('0.05untrn'),
         estimatedBlockTime: 3,
         estimatedIndexerTime: 100,
-        aminoTypes: new AminoTypes(aminoConverters),
       },
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(

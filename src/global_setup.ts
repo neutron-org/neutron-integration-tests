@@ -23,7 +23,7 @@ import { stringToPath } from '@cosmjs/crypto/build/slip10';
 
 let teardownHappened = false;
 
-const WALLET_COUNT = 1000;
+const MNEMONICS_COUNT = 1000;
 
 export default async function ({ provide }: GlobalSetupContext) {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
@@ -34,7 +34,7 @@ export default async function ({ provide }: GlobalSetupContext) {
 
   // generate lots of mnemonics for test wallets
   const mnemonics: string[] = [];
-  for (let i = 0; i < WALLET_COUNT; i++) {
+  for (let i = 0; i < MNEMONICS_COUNT; i++) {
     mnemonics.push(generateMnemonic());
   }
 
@@ -114,8 +114,8 @@ async function fundWallets(
   }
   const amount =
     prefix === NEUTRON_PREFIX
-      ? +pooramount * WALLET_COUNT * 2
-      : +pooramount * WALLET_COUNT;
+      ? +pooramount * MNEMONICS_COUNT * 2
+      : +pooramount * MNEMONICS_COUNT;
 
   const inputs: Input[] = [
     {

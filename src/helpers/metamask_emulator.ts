@@ -3,12 +3,12 @@ import { ethers } from 'ethers';
 import { bech32, BytesCoder, hex, utf8 } from '@scure/base';
 import { pathToString } from '@cosmjs/crypto';
 import * as secp256k1 from '@noble/secp256k1';
-// import { Any } from 'cosmjs-types/google/protobuf/any';
-import { keccak_256 } from '@noble/hashes/sha3';
 import { stringToPath } from '@cosmjs/crypto/build/slip10';
+// eslint-disable-next-line camelcase
+import { keccak_256 } from '@noble/hashes/sha3';
+
 export const ACC_PATH = "m/44'/60'/0'/0/1";
 
-// import { PubKey } from '@neutron-org/neutronjs/neutron/crypto/v1beta1/ethsecp256k1/keys';
 export class MetaMaskEmulator {
   private wallets: Map<string, { wallet: ethers.Wallet; mnemonic: string }> =
     new Map();
@@ -61,20 +61,18 @@ export class MetaMaskEmulator {
           pubkeyBytes[i / 2] = parseInt(cleanHex.slice(i, i + 2), 16);
         }
 
-        // TMP: pubkey from recovery!
-        const messagetest = utf8.decode(
+        // Sign sample message
+        const message = utf8.decode(
           'Sign to allow retrieval of your public key',
         );
-        const signatureTest = await wallet.signMessage(messagetest);
-        const pubKeyBytes2 = recoverPubKeyFromEthSignature(
-          messagetest,
-          ethhex.decode(signatureTest),
+        const signature = await wallet.signMessage(message);
+        const pubKeyBytes = recoverPubKeyFromEthSignature(
+          message,
+          ethhex.decode(signature),
         );
-        // console.log('pubKeyBytes: ' + hexStr(pubkeyBytes));
-        // console.log('pubKeyBytes2: ' + hexStr(pubKeyBytes2));
         return {
           address,
-          pubkey: pubKeyBytes2,
+          pubkey: pubKeyBytes,
           algo: 'secp256k1',
         } as AccountData;
       },
@@ -98,22 +96,11 @@ export class MetaMaskEmulator {
       throw new Error(`Wallet for address ${address} not found.`);
     }
 
-    // const messageBytes = ethers.toUtf8Bytes(message);
-
-    // Create the Ethereum signed message prefix according to EIP-191
-    // const prefix = '\x19Ethereum Signed Message:\n' + message.length;
-    // const prefixBytes = ethers.toUtf8Bytes(prefix);
-
-    // Combine prefix and message bytes
-    // const messageToSign = new Uint8Array(prefixBytes.length + message.length);
-    // messageToSign.set(prefixBytes, 0);
-    // messageToSign.set(message, prefixBytes.length);
-
     return wallet.wallet.signMessage(message);
   }
 }
 
-// TODO: move to some meaningful place
+// Converts ethereum address to the neutron bech32 address.
 export function ethToNeutronBechAddress(ethAddress: string) {
   const bytes = ethhex.decode(ethAddress);
   const prefix = 'neutron';
@@ -162,9 +149,4 @@ export function hashEthArbitraryMessage(message: Uint8Array): Uint8Array {
       ...message,
     ]),
   );
-}
-function hexStr(arrayBuffer) {
-  return Array.from(new Uint8Array(arrayBuffer))
-    .map((n) => n.toString(16).padStart(2, '0'))
-    .join('');
 }
