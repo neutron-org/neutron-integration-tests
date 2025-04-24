@@ -65,19 +65,19 @@ async function fundWallets(
   prefix: string,
   denom: string,
 ): Promise<void> {
-  const richguywallet = await DirectSecp256k1HdWallet.fromMnemonic(
+  const richguyWallet = await DirectSecp256k1HdWallet.fromMnemonic(
     config.DEMO_MNEMONIC_1,
     { prefix: prefix },
   );
-  const client = await SigningStargateClient.connectWithSigner(
+  const richguy = await SigningStargateClient.connectWithSigner(
     rpc,
-    richguywallet,
+    richguyWallet,
     { registry: new Registry(defaultRegistryTypes) },
   );
 
-  const richguy = (await richguywallet.getAccounts())[0].address;
+  const richguyAddress = (await richguyWallet.getAccounts())[0].address;
   // amount to be transferred to each new wallet
-  const pooramount = '10000000000';
+  const poorAmount = '10000000000';
 
   let outputs: Output[];
   const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
@@ -88,7 +88,7 @@ async function fundWallets(
       .then((accounts) => accounts[0])
       .then((account) => ({
         address: account.address,
-        coins: [{ denom: denom, amount: pooramount }],
+        coins: [{ denom: denom, amount: poorAmount }],
       })),
   );
   outputs = await Promise.all(values);
@@ -97,29 +97,28 @@ async function fundWallets(
     // fund both addresses derived from ethereum and cosmos-sdk for a given mnemonic.
     // this will allow us to use either one in any test.
     const cosmosHdPath = stringToPath(ACC_PATH);
-    const ethAddressOutputs = mnemonics.map((mnemonic) => {
-      const ethMnemonic = ethers.Mnemonic.fromPhrase(mnemonic);
+    const ethDerivedOutputs = mnemonics.map((mnemonic) => {
       const hdNode = ethers.HDNodeWallet.fromMnemonic(
-        ethMnemonic,
+        ethers.Mnemonic.fromPhrase(mnemonic),
         pathToString(cosmosHdPath),
       );
       const wallet = new ethers.Wallet(hdNode.privateKey);
       const neutronAddress = ethToNeutronBechAddress(wallet.address);
       return {
         address: neutronAddress,
-        coins: [{ denom: denom, amount: pooramount }],
+        coins: [{ denom: denom, amount: poorAmount }],
       };
     });
-    outputs = outputs.concat(ethAddressOutputs);
+    outputs = outputs.concat(ethDerivedOutputs);
   }
   const amount =
     prefix === NEUTRON_PREFIX
-      ? +pooramount * MNEMONICS_COUNT * 2
-      : +pooramount * MNEMONICS_COUNT;
+      ? +poorAmount * MNEMONICS_COUNT * 2
+      : +poorAmount * MNEMONICS_COUNT;
 
   const inputs: Input[] = [
     {
-      address: richguy,
+      address: richguyAddress,
       coins: [{ denom: denom, amount: amount.toString() }],
     },
   ];
@@ -135,8 +134,8 @@ async function fundWallets(
     gas: '50000000',
     amount: [{ denom: denom, amount: '125000' }],
   };
-  const result = await client.signAndBroadcast(richguy, [msg], fee, '');
-  const resultTx = await client.getTx(result.transactionHash);
+  const result = await richguy.signAndBroadcast(richguyAddress, [msg], fee, '');
+  const resultTx = await richguy.getTx(result.transactionHash);
   if (resultTx.code !== 0) {
     throw (
       'could not setup test wallets; rawLog = ' +

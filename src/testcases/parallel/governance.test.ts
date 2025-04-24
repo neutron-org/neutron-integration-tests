@@ -50,7 +50,7 @@ describe('Neutron / Governance', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextSimpleSignNeutronWallet();
+    neutronWallet = await testState.nextSecp256k1SignNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

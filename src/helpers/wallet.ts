@@ -3,7 +3,7 @@ import {
   DirectSecp256k1HdWallet,
   OfflineSigner,
 } from '@cosmjs/proto-signing';
-import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
+import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191_signer';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 import { FakeMetaMaskEip191Signer } from './fake_eip191_signer';
 import { MetaMaskEmulator } from './metamask_emulator';

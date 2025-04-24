@@ -9,6 +9,7 @@ import { keccak_256 } from '@noble/hashes/sha3';
 
 export const ACC_PATH = "m/44'/60'/0'/0/1";
 
+// Emulates behavior of Metamask extension with given `mnemonics`.
 export class MetaMaskEmulator {
   private wallets: Map<string, { wallet: ethers.Wallet; mnemonic: string }> =
     new Map();
@@ -45,9 +46,6 @@ export class MetaMaskEmulator {
   public async getAccountsWithPubkeys(): Promise<readonly AccountData[]> {
     const res: Promise<AccountData>[] = Array.from(this.wallets.entries()).map(
       async ([address, { wallet }]) => {
-        // In ethers.js v6, we can use the signingKey property
-        // The signingKey property contains the publicKey property
-
         const pubkeyHex = wallet.signingKey.publicKey;
 
         // Remove the '0x' prefix if present
@@ -101,7 +99,7 @@ export class MetaMaskEmulator {
 }
 
 // Converts ethereum address to the neutron bech32 address.
-export function ethToNeutronBechAddress(ethAddress: string) {
+export function ethToNeutronBechAddress(ethAddress: string): string {
   const bytes = ethhex.decode(ethAddress);
   const prefix = 'neutron';
   return bech32.encode(prefix, bech32.toWords(bytes));
@@ -119,6 +117,7 @@ export const ethhex = {
   decode: (str: string) => hex.decode(str.replace(/^0x/, '').toLowerCase()),
 } satisfies BytesCoder;
 
+// Recovers pubkey from ethereum `signature`, given it's for signed `message`.
 export function recoverPubKeyFromEthSignature(
   message: Uint8Array,
   signature: Uint8Array,
@@ -138,9 +137,7 @@ export function recoverPubKeyFromEthSignature(
   return secpSignature.recoverPublicKey(digest).toRawBytes(true);
 }
 
-/**
- * Hashes and returns the digest of the given EIP191 `message` bytes.
- */
+// Hashes and returns the digest of the given EIP191 `message` bytes.
 export function hashEthArbitraryMessage(message: Uint8Array): Uint8Array {
   return keccak_256(
     Uint8Array.from([

@@ -66,22 +66,20 @@ export class LocalState {
   }
 
   protected async init() {
-    if (this.suite) {
-      this.testFilePosition = await testFilePosition(this.suite);
-    } else {
-      this.testFilePosition = 0;
-    }
-
+    // We do not pass suite in run_in_band tests which are non-parallel.
+    // In such tests, we do not care about overlapping with other tests, so we can set the index to 0.
+    this.testFilePosition = this.suite ? await testFilePosition(this.suite) : 0;
     this.wallets = {
       cosmos: await getGenesisGaiaWallets(this.config),
-      neutron: await getGenesisWallets(this.config),
+      neutron: await getGenesisNeutronWallets(this.config),
     };
   }
 
-  // Returns new wallet for a given `network`.
+  // Returns new wallet for neutron network.
+  // Depending on WALLETS_SIGN_METHOD it can be a randomized signature wallet, or deterministic one.
   // The wallet is prefunded in a globalSetup.
   // That way we can safely use these wallets in a parallel tests
-  // (no sequence overlapping problem when using the same wallets in parallel since they're all unique).
+  // (avoids the sequence overlapping problem when using the same wallets in parallel since they're all unique).
   async nextNeutronWallet(): Promise<Wallet> {
     let kind: string;
     if (WALLETS_SIGN_METHOD === 'random') {
@@ -89,21 +87,14 @@ export class LocalState {
     } else {
       kind = WALLETS_SIGN_METHOD;
     }
+    console.log('using sign method: ' + kind);
     return this.nextNeutronWalletWithSigner(kind);
   }
 
-  // similar to nextWallet, but returns ordinary signing neutron wallet
-  // helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
-  async nextSimpleSignNeutronWallet(): Promise<Wallet> {
+  // Returns new wallet for neutron network with secp256k1 signature method.
+  // Helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
+  async nextSecp256k1SignNeutronWallet(): Promise<Wallet> {
     return this.nextNeutronWalletWithSigner('secp256k1');
-  }
-
-  private async nextNeutronWalletWithSigner(
-    signerKind: string,
-  ): Promise<Wallet> {
-    const nextWalletIndex = await this.getAndUpdateNextWalletIndex('neutron');
-    const mnemonic = this.mnemonics[nextWalletIndex];
-    return Wallet.fromMnemonic(mnemonic, signerKind);
   }
 
   async nextGaiaWallet(): Promise<GaiaWallet> {
@@ -156,7 +147,7 @@ export class LocalState {
   // This relayer can be used to manually relay packets
   // since hermes does not have a manual relay.
   async relayerLink(): Promise<Link> {
-    const neutronWallet = await this.nextSimpleSignNeutronWallet();
+    const neutronWallet = await this.nextSecp256k1SignNeutronWallet();
     const gaiaWallet = await this.nextGaiaWallet();
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
@@ -185,6 +176,14 @@ export class LocalState {
       GAIA_CONNECTION,
       GAIA_CONNECTION,
     );
+  }
+
+  private async nextNeutronWalletWithSigner(
+    signerKind: string,
+  ): Promise<Wallet> {
+    const nextWalletIndex = await this.getAndUpdateNextWalletIndex('neutron');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    return Wallet.fromMnemonic(mnemonic, signerKind);
   }
 }
 
@@ -226,7 +225,7 @@ async function listFilenamesInDir(dir: string): Promise<string[]> {
   return res.sort();
 }
 
-const getGenesisWallets = async (
+const getGenesisNeutronWallets = async (
   config: any,
 ): Promise<Record<string, Wallet>> => ({
   val1: await Wallet.fromMnemonic(config.VAL_MNEMONIC_1),
