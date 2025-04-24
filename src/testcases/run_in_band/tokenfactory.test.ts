@@ -94,7 +94,7 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
@@ -117,7 +117,7 @@ describe('Neutron / Tokenfactory', () => {
       daoCoreAddress,
     );
 
-    securityDaoWallet = await testState.nextWallet('neutron');
+    securityDaoWallet = await testState.nextNeutronWallet();
     securityDaoAddr = securityDaoWallet.address;
 
     mainDao = new Dao(neutronClient.client, daoContracts);
@@ -747,7 +747,7 @@ describe('Neutron / Tokenfactory', () => {
     });
 
     test('burn coins from different wallet', async () => {
-      const wallet2 = await testState.nextWallet('neutron');
+      const wallet2 = await testState.nextNeutronWallet();
 
       const mintedToDifferentWallet = 100;
       const toBurn = 50;

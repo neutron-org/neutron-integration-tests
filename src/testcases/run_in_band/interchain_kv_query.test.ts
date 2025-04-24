@@ -89,13 +89,13 @@ describe('Neutron / Interchain KV Query', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
       neutronWallet.address,
     );
-    const otherNeutronWallet = await testState.nextWallet('neutron');
+    const otherNeutronWallet = await testState.nextNeutronWallet();
     otherNeutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       otherNeutronWallet.signer,

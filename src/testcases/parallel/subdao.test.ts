@@ -39,9 +39,9 @@ describe('Neutron / Subdao', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet1 = await testState.nextWallet('neutron');
-    securityDaoWallet = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    securityDaoWallet = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
     demo1Addr = neutronWallet1.address;
     demo2Addr = neutronWallet2.address;
     securityDaoAddr = securityDaoWallet.address;

@@ -61,7 +61,7 @@ describe('Neutron / IBC transfer', () => {
       neutronWallet.signer,
       neutronWallet.address,
     );
-    neutronWallet2 = await testState.nextWallet('neutron');
+    neutronWallet2 = await testState.nextNeutronWallet();
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet2.signer,

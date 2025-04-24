@@ -4,11 +4,9 @@ import {
   NEUTRON_DENOM,
   STAKING_TRACKER,
   STAKING_VAULT,
-  VAL_MNEMONIC_1,
-  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -49,7 +47,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
   // weak is the validator with drastically less bonded tokens
   let validatorWeakAddr: string;
-  // strong is validator that controls ~90% of bonded tokens at the beginning
+  // strong is the validator that controls ~90% of bonded tokens at the beginning
   let validatorStrongAddr: string;
   let validatorSecondWallet: Wallet;
   let validatorPrimaryWallet: Wallet;
@@ -65,10 +63,10 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
 
-    neutronWallet1 = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
-    validatorSecondWallet = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
-    validatorPrimaryWallet = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
+    validatorSecondWallet = testState.wallets.neutron.val2;
+    validatorPrimaryWallet = testState.wallets.neutron.val1;
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,

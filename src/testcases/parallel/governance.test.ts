@@ -26,7 +26,6 @@ import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants'
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { neutronTypes } from '../../helpers/registry_types';
 import config from '../../config.json';
-import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
@@ -51,7 +50,7 @@ describe('Neutron / Governance', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextSimpleSignNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
@@ -71,7 +70,7 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
 
-    const neutronWallet2 = await testState.nextWallet('neutron');
+    const neutronWallet2 = await testState.nextNeutronWallet();
     const neutronClient2 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet2.signer,
@@ -84,7 +83,7 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
 
-    const neutronWallet3 = await testState.nextWallet('neutron');
+    const neutronWallet3 = await testState.nextNeutronWallet();
     const neutronClient3 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet3.signer,
@@ -143,14 +142,14 @@ describe('Neutron / Governance', () => {
       await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 1000000000,
+        async (response) => response.power == 1000001000,
         20,
       );
     });
     test('bond from wallet 2', async () => {
       await daoMember2.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
+        async () => await mainDao.queryVotingPower(daoMember2.user),
         async (response) => response.power == 1000000000,
         20,
       );
@@ -158,7 +157,7 @@ describe('Neutron / Governance', () => {
     test('bond from wallet 3 ', async () => {
       await daoMember3.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
+        async () => await mainDao.queryVotingPower(daoMember3.user),
         async (response) => response.power == 1000000000,
         20,
       );
@@ -1196,7 +1195,7 @@ describe('Neutron / Governance', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
       const res = await msgSendDirectProposal(
         daoMember1.user,
-        neutronClient.client,
+        neutronClient,
         new Registry(neutronTypes),
         'icahost',
         'HostEnabled',
@@ -1218,7 +1217,7 @@ type TestArgResponse = {
 // TODO: description?
 const msgSendDirectProposal = async (
   signer: string,
-  client: Eip191SigningCosmwasmClient,
+  client: SigningNeutronClient,
   registry: Registry,
   subspace: string,
   key: string,
@@ -1239,6 +1238,7 @@ const msgSendDirectProposal = async (
       },
     ],
   };
+
   const val: MsgSubmitProposalLegacy = {
     content: {
       typeUrl: '/cosmos.params.v1beta1.ParameterChangeProposal',
@@ -1253,5 +1253,5 @@ const msgSendDirectProposal = async (
     typeUrl: MsgSubmitProposalLegacy.typeUrl,
     value: val,
   };
-  return await client.signAndBroadcast(signer, [msg], fee);
+  return await client.client.signAndBroadcast(signer, [msg], fee);
 };

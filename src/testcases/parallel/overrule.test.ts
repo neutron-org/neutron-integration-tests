@@ -28,8 +28,8 @@ describe('Neutron / Subdao Overrule', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
-    neutronWallet1 = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet1.signer,

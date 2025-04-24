@@ -35,7 +35,7 @@ describe('Neutron / DAO check', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    const neutronWallet = await testState.nextWallet('neutron');
+    const neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

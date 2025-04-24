@@ -2,7 +2,7 @@ import { IndexedTx, JsonObject } from '@cosmjs/cosmwasm-stargate';
 import '@neutron-org/neutronjsplus';
 import { getSequenceId } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
-import { OfflineSigner, Registry } from '@cosmjs/proto-signing';
+import { Registry } from '@cosmjs/proto-signing';
 import {
   CONTRACTS,
   COSMOS_DENOM,
@@ -64,7 +64,7 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

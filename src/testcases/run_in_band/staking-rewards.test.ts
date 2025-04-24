@@ -4,11 +4,9 @@ import {
   NEUTRON_DENOM,
   STAKING_REWARDS,
   STAKING_TRACKER,
-  VAL_MNEMONIC_1,
-  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -68,12 +66,12 @@ describe('Neutron / Staking Rewards', () => {
       demoWallet.address,
     );
 
-    neutronWallet1 = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
-    claimRecipient = (await testState.nextWallet('neutron')).address;
+    neutronWallet1 = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
+    claimRecipient = (await testState.nextNeutronWallet()).address;
 
-    validatorPrimary = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
-    validatorSecondary = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
+    validatorPrimary = testState.wallets.neutron.val1;
+    validatorSecondary = testState.wallets.neutron.val2;
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -432,14 +430,14 @@ describe('Neutron / Staking Rewards', () => {
       test('redelegation works with rewards correctly', async () => {
         const delegationAmount = '1000000000'; // 1000ntrn
         const redelegationAmount = '1000000000';
-        const wallet = await testState.nextWallet('neutron');
+        const wallet = await testState.nextNeutronWallet();
         const client = await SigningNeutronClient.connectWithSigner(
           testState.rpcNeutron,
           wallet.signer,
           wallet.address,
         );
 
-        const claimRecipient = (await testState.nextWallet('neutron')).address;
+        const claimRecipient = (await testState.nextNeutronWallet()).address;
 
         // delegate
         // redelegate
@@ -503,14 +501,14 @@ describe('Neutron / Staking Rewards', () => {
 
       test('full tx unbond works with rewards correctly', async () => {
         const delegationAmount = '10000000'; // 10ntrn
-        const wallet = await testState.nextWallet('neutron');
+        const wallet = await testState.nextNeutronWallet();
         const client = await SigningNeutronClient.connectWithSigner(
           testState.rpcNeutron,
           wallet.signer,
           wallet.address,
         );
 
-        const claimRecipient = (await testState.nextWallet('neutron')).address;
+        const claimRecipient = (await testState.nextNeutronWallet()).address;
 
         // delegate
         // redelegate

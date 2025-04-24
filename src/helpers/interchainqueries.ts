@@ -275,7 +275,7 @@ export const registerUnbondingDelegationsQuery = async (
 
 export const acceptInterchainqueriesParamsChangeProposal = async (
   user: string,
-  client: Eip191SigningCosmwasmClient,
+  client: Eip191SigningCosmwasmClient | SigningCosmWasmClient,
   rpcClient: ProtobufRpcClient,
   title: string,
   description: string,

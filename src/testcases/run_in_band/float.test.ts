@@ -13,7 +13,7 @@ describe('Float operations support', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

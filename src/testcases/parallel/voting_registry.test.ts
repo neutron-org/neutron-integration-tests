@@ -41,14 +41,14 @@ describe('Neutron / Voting Registry', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
-    neutronWallet = await testState.nextWallet('neutron');
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,
       neutronWallet.address,
     );
 
-    daoMemberWallet = await testState.nextWallet('neutron');
+    daoMemberWallet = await testState.nextNeutronWallet();
     neutronDaoMemberClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       daoMemberWallet.signer,

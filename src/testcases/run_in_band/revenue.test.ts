@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import { getBlockResults } from '../../helpers/misc';
 import {
@@ -100,7 +100,7 @@ describe('Neutron / Revenue', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
+    neutronWallet = testState.wallets.neutron.demo1;
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

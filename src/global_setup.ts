@@ -32,21 +32,17 @@ export default async function ({ provide }: GlobalSetupContext) {
     await setup(host1, host2);
   }
 
+  // generate lots of mnemonics for test wallets
   const mnemonics: string[] = [];
   for (let i = 0; i < WALLET_COUNT; i++) {
     mnemonics.push(generateMnemonic());
   }
 
   // fund a lot or preallocated wallets for testing purposes
-  await fundWallets(
-    'neutron',
-    mnemonics,
-    NEUTRON_RPC,
-    NEUTRON_PREFIX,
-    NEUTRON_DENOM,
-  );
-  await fundWallets('gaia', mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
+  await fundWallets(mnemonics, NEUTRON_RPC, NEUTRON_PREFIX, NEUTRON_DENOM);
+  await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
 
+  // make mnemonics fetchable in test
   provide('mnemonics', mnemonics);
 
   return async () => {
@@ -62,32 +58,46 @@ export default async function ({ provide }: GlobalSetupContext) {
   };
 }
 
-// Funds a lots of new wallets from one wallet.
+// Funds lots of new wallets from one wallet.
 async function fundWallets(
-  network: string,
   mnemonics: string[],
   rpc: string,
   prefix: string,
   denom: string,
 ): Promise<void> {
-  const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(
+  const richguywallet = await DirectSecp256k1HdWallet.fromMnemonic(
     config.DEMO_MNEMONIC_1,
     { prefix: prefix },
   );
   const client = await SigningStargateClient.connectWithSigner(
     rpc,
-    directwallet,
+    richguywallet,
     { registry: new Registry(defaultRegistryTypes) },
   );
 
-  const richguy = (await directwallet.getAccounts())[0].address;
+  const richguy = (await richguywallet.getAccounts())[0].address;
   // amount to be transferred to each new wallet
   const pooramount = '10000000000';
 
   let outputs: Output[];
-  if (network === 'neutron') {
+  const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
+    DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: prefix,
+    })
+      .then((directwallet) => directwallet.getAccounts())
+      .then((accounts) => accounts[0])
+      .then((account) => ({
+        address: account.address,
+        coins: [{ denom: denom, amount: pooramount }],
+      })),
+  );
+  outputs = await Promise.all(values);
+
+  if (prefix === NEUTRON_PREFIX) {
+    // fund both addresses derived from ethereum and cosmos-sdk for a given mnemonic.
+    // this will allow us to use either one in any test.
     const cosmosHdPath = stringToPath(ACC_PATH);
-    outputs = mnemonics.map((mnemonic) => {
+    const ethAddressOutputs = mnemonics.map((mnemonic) => {
       const ethMnemonic = ethers.Mnemonic.fromPhrase(mnemonic);
       const hdNode = ethers.HDNodeWallet.fromMnemonic(
         ethMnemonic,
@@ -100,26 +110,17 @@ async function fundWallets(
         coins: [{ denom: denom, amount: pooramount }],
       };
     });
-  } else {
-    const values: Promise<Output>[] = mnemonics.map((mnemonic) =>
-      DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-        prefix: prefix,
-      })
-        .then((directwallet) => directwallet.getAccounts())
-        .then((accounts) => accounts[0])
-        .then((account) => ({
-          address: account.address,
-          coins: [{ denom: denom, amount: pooramount }],
-        })),
-    );
-    outputs = await Promise.all(values);
+    outputs = outputs.concat(ethAddressOutputs);
   }
+  const amount =
+    prefix === NEUTRON_PREFIX
+      ? +pooramount * WALLET_COUNT * 2
+      : +pooramount * WALLET_COUNT;
+
   const inputs: Input[] = [
     {
       address: richguy,
-      coins: [
-        { denom: denom, amount: (+pooramount * WALLET_COUNT).toString() },
-      ],
+      coins: [{ denom: denom, amount: amount.toString() }],
     },
   ];
   const value: MsgMultiSend = {
