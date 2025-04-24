@@ -1,11 +1,6 @@
 import { AccountData } from '@cosmjs/proto-signing';
 import { MetaMaskEmulator } from './metamask_emulator';
-import {
-  serializeSignDoc,
-  StdSignDoc,
-  escapeCharacters,
-  sortedJsonStringify,
-} from '@cosmjs/amino/build/signdoc';
+import { serializeSignDoc, StdSignDoc } from '@cosmjs/amino/build/signdoc';
 import { Buffer } from 'buffer';
 import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
 
@@ -32,8 +27,6 @@ export class FakeMetaMaskEip191Signer implements Eip191Signer {
     signDoc: StdSignDoc,
   ): Promise<{ signature: { signature: Buffer }; signed: any }> {
     const messageToSign = serializeSignDoc(signDoc);
-    const messageToSignStr = escapeCharacters(sortedJsonStringify(signDoc));
-    console.log('\nsigndoc serialized: ' + messageToSignStr);
 
     // Sign the message using the MetaMask emulator
     const signature = await this.metamaskEmulator.personalSign(
