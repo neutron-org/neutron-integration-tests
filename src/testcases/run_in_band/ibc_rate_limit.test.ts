@@ -168,16 +168,12 @@ describe('Neutron / IBC transfer', () => {
           },
           '1000',
         );
-        console.log('proposal id: ' + proposalId);
       });
       test('vote YES', async () => {
         await neutronClient.waitBlocks(5);
-        const vp = await daoMember1.queryVotingPower();
-        console.log('voting power total: ' + vp.power);
         await daoMember1.voteYes(proposalId);
       });
       test('check if proposal is passed', async () => {
-        await neutronClient.waitBlocks(5);
         await mainDao.checkPassedProposal(proposalId);
       });
       test('execute passed proposal', async () => {

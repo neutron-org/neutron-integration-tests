@@ -1194,9 +1194,9 @@
   version "4.2.0"
   resolved "https://github.com/neutron-org/neutronjs.git#7a819b9ffe8f0f24ec015bd3a5605917c6a63ddf"
 
-"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#3c06aed8e1a4826437aa6729f35f45375b21cad5":
+"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#462cf0d47dfb2e0415426a20f3b8f27591e70ac5":
   version "0.5.0"
-  resolved "https://github.com/neutron-org/neutronjsplus.git#3c06aed8e1a4826437aa6729f35f45375b21cad5"
+  resolved "https://github.com/neutron-org/neutronjsplus.git#462cf0d47dfb2e0415426a20f3b8f27591e70ac5"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.4"
     "@cosmjs/proto-signing" "^0.32.4"
