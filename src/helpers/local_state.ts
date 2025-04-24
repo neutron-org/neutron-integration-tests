@@ -87,7 +87,6 @@ export class LocalState {
     } else {
       kind = WALLETS_SIGN_METHOD;
     }
-    console.log('using sign method: ' + kind);
     return this.nextNeutronWalletWithSigner(kind);
   }
 
