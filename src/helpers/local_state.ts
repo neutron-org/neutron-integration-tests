@@ -5,16 +5,14 @@ import {
   ProtobufRpcClient,
   QueryClient,
 } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet, OfflineSigner } from '@cosmjs/proto-signing';
+import { OfflineSigner } from '@cosmjs/proto-signing';
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
-  COSMOS_PREFIX,
   GAIA_CONNECTION,
   GAIA_REST,
   GAIA_RPC,
   IBC_WEB_HOST,
-  NEUTRON_PREFIX,
   NEUTRON_REST,
   NEUTRON_RPC,
   WALLETS_SIGN_METHOD,
@@ -22,20 +20,10 @@ import {
 import { GaiaWallet, Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
-import { MetaMaskEmulator } from './metamask_emulator';
-import { FakeMetaMaskEip191Signer } from './fake_eip191_signer';
 import { aminoConverters } from '@neutron-org/neutronjsplus/dist/amino';
-import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
 
 // limit of wallets precreated for one test
 const WALLETS_PER_TEST_FILE = 20;
-
-const NEUTRON_VALOPER_OPTIONS = {
-  prefix: NEUTRON_PREFIX + 'valoper',
-};
-const COSMOS_VALOPER_OPTIONS = {
-  prefix: COSMOS_PREFIX + 'valoper',
-};
 
 export class LocalState {
   wallets: {
@@ -117,43 +105,13 @@ export class LocalState {
   ): Promise<Wallet> {
     const nextWalletIndex = await this.getAndUpdateNextWalletIndex('neutron');
     const mnemonic = this.mnemonics[nextWalletIndex];
-
-    let signer: OfflineSigner | Eip191Signer;
-    if (signerKind === 'eip191') {
-      signer = new FakeMetaMaskEip191Signer(
-        await MetaMaskEmulator.connect([mnemonic]),
-      );
-    } else if (signerKind === 'secp256k1') {
-      signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-        prefix: NEUTRON_PREFIX,
-      });
-    } else {
-      throw new Error('unknown neutron signer kind: ' + signerKind);
-    }
-
-    const account = (await signer.getAccounts())[0];
-    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
-      mnemonic,
-      NEUTRON_VALOPER_OPTIONS,
-    );
-    const accountValoper = (await directwalletValoper.getAccounts())[0];
-    return new Wallet(signer, account, accountValoper);
+    return Wallet.fromMnemonic(mnemonic, signerKind);
   }
 
   async nextGaiaWallet(): Promise<GaiaWallet> {
     const nextWalletIndex = await this.getAndUpdateNextWalletIndex('cosmos');
     const mnemonic = this.mnemonics[nextWalletIndex];
-    const signer = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: COSMOS_PREFIX,
-    });
-
-    const account = (await signer.getAccounts())[0];
-    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
-      mnemonic,
-      COSMOS_VALOPER_OPTIONS,
-    );
-    const accountValoper = (await directwalletValoper.getAccounts())[0];
-    return new GaiaWallet(signer, account, accountValoper);
+    return GaiaWallet.fromMnemonic(mnemonic);
   }
 
   async getAndUpdateNextWalletIndex(network: string): Promise<number> {
@@ -196,9 +154,9 @@ export class LocalState {
     }
   }
 
-  // Creates an IBC relayer between neutron and gaia
+  // Creates an IBC relayer between neutron and gaia.
   // This relayer can be used to manually relay packets
-  // since hermes don't have a manual relay.
+  // since hermes does not have a manual relay.
   async relayerLink(): Promise<Link> {
     const neutronWallet = await this.nextSimpleSignNeutronWallet();
     const gaiaWallet = await this.nextGaiaWallet();

@@ -308,7 +308,7 @@ describe('Neutron / Fee Market', () => {
           },
         );
       } catch (e) {
-        // do nothing if called with same sequence
+        // do nothing if called with the same sequence
       }
       await neutronClient.waitBlocks(1);
     }

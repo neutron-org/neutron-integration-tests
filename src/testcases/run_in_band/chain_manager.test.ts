@@ -108,7 +108,7 @@ describe('Neutron / Chain Manager', () => {
 
   // We need to do this because the real main dao has a super long voting period.
   // In the subdao tests, a new set of dao contracts was deployed with a smaller
-  // period, but feels like an overkill here.
+  // period, but feels like overkill here.
   describe('Change the overrule proposal voting period', () => {
     let proposalId: number;
     test('create proposal', async () => {
