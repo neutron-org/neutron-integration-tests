@@ -22,10 +22,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/wait';
 import { NEUTRON_DENOM } from './constants';
 import { neutronTypes } from './registry_types';
-import {
-  Eip191Signer,
-  isEip191Signer,
-} from '@neutron-org/neutronjsplus/dist/eip191';
+import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191';
 import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
 
 // SigningNeutronClient simplifies tests operations for
@@ -42,22 +39,11 @@ export class SigningNeutronClient extends CosmWasmClient {
       registry: new Registry(neutronTypes),
       gasPrice: GasPrice.fromString('0.05untrn'),
     };
-    let neutronClient: Eip191SigningCosmwasmClient | SigningCosmWasmClient;
-    if (isEip191Signer(wallet)) {
-      neutronClient = await Eip191SigningCosmwasmClient.connectWithSigner(
-        rpc,
-        wallet,
-        options,
-      );
-    } else {
-      console.log('create SingingCosmwasmClient');
-      // TODO: maybe this does not make sense? since we still can use direct signing with Eip191SigningCosmwasmClient
-      neutronClient = await SigningCosmWasmClient.connectWithSigner(
-        rpc,
-        wallet,
-        options,
-      );
-    }
+    const neutronClient = await Eip191SigningCosmwasmClient.connectWithSigner(
+      rpc,
+      wallet,
+      options,
+    );
     // TODO: or neutronMetaClient
     const cometClient = await connectComet(rpc);
     return new SigningNeutronClient(

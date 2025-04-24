@@ -135,12 +135,6 @@ describe('Neutron / IBC transfer', () => {
           IBC_TOKEN_DENOM,
         );
         expect(balance.amount).toEqual('1000');
-
-        const balance2 = await gaiaClient.getBalance(
-          gaiaWallet.address,
-          COSMOS_DENOM,
-        );
-        console.log('uatom before balance: ' + balance2.amount);
       });
       test('uatom IBC transfer from a remote chain to Neutron', async () => {
         const res = await gaiaClient.signAndBroadcast(
