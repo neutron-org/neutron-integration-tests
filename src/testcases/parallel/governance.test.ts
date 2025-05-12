@@ -919,7 +919,7 @@ describe('Neutron / Governance', () => {
       );
       expect(queryResult.funds).toEqual([]);
 
-      // check that we get increment after waiting > period blocks
+      // check that we get incremented after waiting > period blocks
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
@@ -1193,9 +1193,16 @@ describe('Neutron / Governance', () => {
 
   describe('check that only admin can create valid proposals', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
+      // use secp256k1 wallet since it's hard to sign MsgSubmitProposalLegacy in amino encoding automatically
+      const customWallet = await testState.nextSecp256k1SignNeutronWallet();
+      const customClient = await SigningNeutronClient.connectWithSigner(
+        testState.rpcNeutron,
+        customWallet.signer,
+        customWallet.address,
+      );
       const res = await msgSendDirectProposal(
-        daoMember1.user,
-        neutronClient,
+        customClient.sender,
+        customClient,
         new Registry(neutronTypes),
         'icahost',
         'HostEnabled',
