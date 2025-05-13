@@ -121,10 +121,10 @@ describe('Neutron / IBC transfer', () => {
 
   describe('prepare: test IBC transfer and set RL contract addr to neutron', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000');
+      await daoMember1.bondFunds('10000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 11000,
+        async (response) => response.power == 10000001000,
         20,
       );
     });
@@ -209,7 +209,7 @@ describe('Neutron / IBC transfer', () => {
     describe('with limit, Neutron -> gaia', () => {
       test('IBC transfer exceed limit in 2 steps: 1tx almost hits the limit (w/o failing), 2 tx exceeds the limit by 1 untrn', async () => {
         const fee = {
-          gas: '200000',
+          gas: '300000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
         const neutronSupply = await bankQuerier.supplyOf({
@@ -241,6 +241,8 @@ describe('Neutron / IBC transfer', () => {
           ],
           fee,
         );
+        console.log('logs: ' + JSON.stringify(
+          res.rawLog));
         expect(res.code).toEqual(0);
 
         const res2 = await neutronClient.signAndBroadcast(
@@ -283,7 +285,7 @@ describe('Neutron / IBC transfer', () => {
 
       test('IBC transfer from a different wallet to ensure that limiting is working for different address (non-contract)', async () => {
         const fee = {
-          gas: '200000',
+          gas: '300000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
         const res = await neutronClient2.signAndBroadcast(
@@ -321,7 +323,7 @@ describe('Neutron / IBC transfer', () => {
       });
       test('IBC transfer:  no more limiting', async () => {
         const fee = {
-          gas: '200000',
+          gas: '300000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
         // here we doing exact same tx, but it is not failing because there is no such path (limit) anymore
@@ -376,10 +378,10 @@ describe('Neutron / IBC transfer', () => {
       });
 
       test('check that weird IBC denom is uatom indeed', async () => {
-        const res = await ibcQuerier.denomTrace({
+        const res = await ibcQuerier.denom({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
-        expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
+        expect(res.denom.base).toEqual(COSMOS_DENOM);
       });
 
       test('add limit', async () => {
