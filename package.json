@@ -41,13 +41,14 @@
     "fmt": "eslint ./src --fix",
     "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
     "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || { tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
-    "postinstall": "yarn build:neutronjs && yarn build:neutronjsplus"
+    "build:tsrelayer": "[ -d './node_modules/@confio/relayer/build' ] || { tsc -p ./node_modules/@confio/relayer/tsconfig.json && cp -R ./node_modules/@confio/relayer/build/* ./node_modules/@confio/relayer/ ; }",
+    "postinstall": "yarn build:tsrelayer && yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@confio/relayer": "^0.12.0",
+    "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#1195752a2abdba004ab0383b49c4e200f48c60f4",
     "@cosmjs/cosmwasm-stargate": "^0.32.4",
     "@cosmjs/stargate": "0.32.4",
     "@cosmjs/tendermint-rpc": "^0.32.4",
