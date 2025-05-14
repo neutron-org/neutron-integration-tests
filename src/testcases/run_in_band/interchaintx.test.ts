@@ -1050,9 +1050,12 @@ describe('Neutron / Interchain TXs', () => {
         );
       });
 
+      // This test doesn't work since ts-relayer is obsolete and not supported.
+      // Ibc-go-v10 removed field "packet_data" from "send_packet" event, and instead uses "packet_data_hex".
+      // This breaks the ts-relayer packet search.
       test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
         // We pause hermes container, so that we can use manual relaying of the packets.
-        // That needed in order to ack ibc packets in backwards order
+        // That needed to ack ibc packets in backwards order
         execSync('docker pause setup-hermes-1');
 
         const res1 = await neutronClient.execute(contractAddress, {
@@ -1103,7 +1106,7 @@ describe('Neutron / Interchain TXs', () => {
           100,
         );
 
-        // should be delegated 100 + 400 (lastPacket) coins after relaying last packet
+        // should be delegated 100 + 400 (lastPacket) coins after relaying lastPacket
         const delegationsQ2 = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: unorderedIcaAddress,
         });
@@ -1126,7 +1129,7 @@ describe('Neutron / Interchain TXs', () => {
           100,
         );
 
-        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying last packet
+        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying the last packet
         const delegationsQ3 = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: unorderedIcaAddress,
         });

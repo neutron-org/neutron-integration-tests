@@ -126,9 +126,9 @@ export class LocalState {
     }
   }
 
-  // Creates an IBC relayer between neutron and gaia
+  // Creates an IBC relayer between neutron and gaia.
   // This relayer can be used to manually relay packets
-  // since hermes don't have manual relay.
+  // since hermes doesn't have a manual relay.
   async relayerLink(): Promise<Link> {
     const neutronWallet = await this.nextWallet('neutron');
     const gaiaWallet = await this.nextWallet('cosmos');
