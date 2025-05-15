@@ -121,10 +121,10 @@ describe('Neutron / IBC transfer', () => {
 
   describe('prepare: test IBC transfer and set RL contract addr to neutron', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000000000');
+      await daoMember1.bondFunds('10000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 10000001000,
+        async (response) => response.power == 11000,
         20,
       );
     });
@@ -241,8 +241,6 @@ describe('Neutron / IBC transfer', () => {
           ],
           fee,
         );
-        console.log('logs: ' + JSON.stringify(
-          res.rawLog));
         expect(res.code).toEqual(0);
 
         const res2 = await neutronClient.signAndBroadcast(
