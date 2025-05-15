@@ -37,7 +37,6 @@ describe('Neutron / IBC transfer', () => {
   let gaiaWallet2: Wallet;
 
   let ibcContract: string;
-  let receiverContract: string;
 
   let contractManagerQuerier: ContractManagerQuery;
   let bankQuerier: BankQueryClient;
@@ -172,10 +171,10 @@ describe('Neutron / IBC transfer', () => {
         expect(balance.amount).toEqual('1000');
       });
       test('check that weird IBC denom is uatom indeed', async () => {
-        const res = await ibcQuerier.denomTrace({
+        const res = await ibcQuerier.denom({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
-        expect(res.denomTrace.baseDenom).toEqual(COSMOS_DENOM);
+        expect(res.denom.base).toEqual(COSMOS_DENOM);
       });
       test('set payer fees', async () => {
         const res = await neutronClient.execute(ibcContract, {
