@@ -170,7 +170,6 @@ describe('Neutron / IBC transfer', () => {
         );
       });
       test('vote YES', async () => {
-        await neutronClient.waitBlocks(5);
         await daoMember1.voteYes(proposalId);
       });
       test('check if proposal is passed', async () => {
