@@ -28,6 +28,15 @@ describe('Neutron / Treasury', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
+
+    mainDaoWallet = testState.wallets.neutron.demo1Secp256k1;
+
+    neutronClient = await SigningNeutronClient.connectWithSigner(
+      testState.rpcNeutron,
+      mainDaoWallet.signer,
+      mainDaoWallet.address,
+    );
+
     neutronWallet2 = testState.wallets.neutron.demo2;
 
     neutronClient2 = await SigningNeutronClient.connectWithSigner(
@@ -36,13 +45,6 @@ describe('Neutron / Treasury', () => {
       neutronWallet2.address,
     );
 
-    mainDaoWallet = testState.wallets.neutron.demo1;
-
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      mainDaoWallet.signer,
-      mainDaoWallet.address,
-    );
     securityDaoWallet = testState.wallets.neutron.icq;
     holder1Wallet = testState.wallets.neutron.demo2;
     holder2Wallet = testState.wallets.neutron.rly1;

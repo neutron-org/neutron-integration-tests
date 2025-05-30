@@ -95,7 +95,6 @@ describe('Neutron / IBC transfer', () => {
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
     ibcQuerier = new IbcQueryClient(neutronRpcClient);
-    neutronClient.waitBlocks(20);
   });
 
   describe('Contracts', () => {
@@ -124,7 +123,7 @@ describe('Neutron / IBC transfer', () => {
       await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 1000001000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });

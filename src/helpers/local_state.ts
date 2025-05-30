@@ -81,16 +81,10 @@ export class LocalState {
   // That way we can safely use these wallets in a parallel tests
   // (avoids the sequence overlapping problem when using the same wallets in parallel since they're all unique).
   async nextNeutronWallet(): Promise<Wallet> {
-    let kind: string;
-    if (WALLETS_SIGN_METHOD === 'random') {
-      kind = Math.random() < 0.5 ? 'eip191' : 'secp256k1';
-    } else {
-      kind = WALLETS_SIGN_METHOD;
-    }
-    return this.nextNeutronWalletWithSigner(kind);
+    return this.nextNeutronWalletWithSigner(signMethod());
   }
 
-  // Returns new wallet for neutron network with secp256k1 signature method.
+// Returns new wallet for neutron network with secp256k1 signature method.
   // Helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
   async nextSecp256k1SignNeutronWallet(): Promise<Wallet> {
     return this.nextNeutronWalletWithSigner('secp256k1');
@@ -229,11 +223,13 @@ const getGenesisNeutronWallets = async (
 ): Promise<Record<string, Wallet>> => ({
   val1: await Wallet.fromMnemonic(config.VAL_MNEMONIC_1),
   val2: await Wallet.fromMnemonic(config.VAL_MNEMONIC_2),
-  demo1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1),
-  demo2: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_2),
-  icq: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_3),
-  rly1: await Wallet.fromMnemonic(config.RLY_MNEMONIC_1),
-  rly2: await Wallet.fromMnemonic(config.RLY_MNEMONIC_2),
+  // some built in contracts need specified admin, and that is demo1 with secp256k1 sign pubkey
+  demo1Secp256k1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1),
+  demo1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1, signMethod()),
+  demo2: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_2, signMethod()),
+  icq: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_3, signMethod()),
+  rly1: await Wallet.fromMnemonic(config.RLY_MNEMONIC_1, signMethod()),
+  rly2: await Wallet.fromMnemonic(config.RLY_MNEMONIC_2, signMethod()),
 });
 
 const getGenesisGaiaWallets = async (
@@ -246,3 +242,11 @@ const getGenesisGaiaWallets = async (
   rly1: await GaiaWallet.fromMnemonic(config.RLY_MNEMONIC_1),
   rly2: await GaiaWallet.fromMnemonic(config.RLY_MNEMONIC_2),
 });
+
+export function signMethod() {
+  if (WALLETS_SIGN_METHOD === 'random') {
+    return Math.random() < 0.5 ? 'eip191' : 'secp256k1';
+  } else {
+    return WALLETS_SIGN_METHOD;
+  }
+}

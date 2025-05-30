@@ -14,6 +14,8 @@ import {
   NEUTRON_DENOM,
   NEUTRON_PREFIX,
   NEUTRON_RPC,
+  IBC_ATOM_DENOM,
+  IBC_USDC_DENOM,
 } from './helpers/constants';
 
 import config from './config.json';
@@ -38,9 +40,23 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  // fund a lot or preallocated wallets for testing purposes
-  await fundWallets(mnemonics, NEUTRON_RPC, NEUTRON_PREFIX, NEUTRON_DENOM);
-  await fundWallets(mnemonics, GAIA_RPC, COSMOS_PREFIX, COSMOS_DENOM);
+  const fundings = [NEUTRON_DENOM, IBC_ATOM_DENOM, IBC_USDC_DENOM];
+  for (let i = 0; i < fundings.length; i++) {
+    await fundWallets(
+      mnemonics,
+      NEUTRON_RPC,
+      NEUTRON_PREFIX,
+      NEUTRON_DENOM,
+      fundings[i],
+    );
+  }
+  await fundWallets(
+    mnemonics,
+    GAIA_RPC,
+    COSMOS_PREFIX,
+    COSMOS_DENOM,
+    COSMOS_DENOM,
+  );
 
   // make mnemonics fetchable in test
   provide('mnemonics', mnemonics);
@@ -63,6 +79,7 @@ async function fundWallets(
   mnemonics: string[],
   rpc: string,
   prefix: string,
+  feeDenom: string,
   denom: string,
 ): Promise<void> {
   const richguyWallet = await DirectSecp256k1HdWallet.fromMnemonic(
@@ -132,7 +149,7 @@ async function fundWallets(
   };
   const fee = {
     gas: '50000000',
-    amount: [{ denom: denom, amount: '125000' }],
+    amount: [{ denom: feeDenom, amount: '125000' }],
   };
   const result = await richguy.signAndBroadcast(richguyAddress, [msg], fee, '');
   const resultTx = await richguy.getTx(result.transactionHash);

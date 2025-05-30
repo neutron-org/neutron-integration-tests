@@ -43,14 +43,6 @@ describe('Neutron / IBC hooks', () => {
     );
   });
 
-  describe('Wallets', () => {
-    test('Addresses', () => {
-      expect(testState.wallets.neutron.demo1.address).toEqual(
-        'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
-      );
-    });
-  });
-
   describe('Instantiate hooks ibc transfer contract', () => {
     test('instantiate contract', async () => {
       contractAddress = await neutronClient.create(

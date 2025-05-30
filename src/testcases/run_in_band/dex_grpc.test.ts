@@ -26,7 +26,7 @@ describe('Neutron / dex module (grpc contract)', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = testState.wallets.neutron.demo1;
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

@@ -31,7 +31,7 @@ describe('Neutron / Fee Market', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     const neutronRpcClient = await testState.neutronRpcClient();
 
-    neutronWallet = testState.wallets.neutron.demo1;
+    neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
       neutronWallet.signer,

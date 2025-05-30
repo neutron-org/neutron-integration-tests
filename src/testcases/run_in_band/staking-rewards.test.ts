@@ -119,7 +119,7 @@ describe('Neutron / Staking Rewards', () => {
       demoWallet.address,
       NEUTRON_DENOM,
     );
-    // bond a lot to avoid not passing the proposal since now all stake is counted
+    // bond a lot to avoid not passing the proposal because now all the stake is counted
     await daoMember1.bondFunds('1999999491000');
     const neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
@@ -585,7 +585,13 @@ describe('Neutron / Staking Rewards', () => {
     });
     describe('Pause contract', () => {
       test('can not claim rewards', async () => {
-        await pauseRewardsContract(demoWalletClient);
+        const admin = testState.wallets.neutron.demo1Secp256k1;
+        const adminClient= await SigningNeutronClient.connectWithSigner(
+          testState.rpcNeutron,
+          admin.signer,
+          admin.address,
+        );
+        await pauseRewardsContract(adminClient);
 
         const balanceBefore = await bankQuerier.balance({
           address: validatorPrimary.address,
