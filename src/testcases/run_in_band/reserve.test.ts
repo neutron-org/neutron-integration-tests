@@ -3,7 +3,7 @@ import { inject } from 'vitest';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -12,8 +12,8 @@ import config from '../../config.json';
 
 describe('Neutron / Treasury', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
   let neutronWallet2: Wallet;
   let mainDaoWallet: Wallet;
   let securityDaoWallet: Wallet;
@@ -31,19 +31,11 @@ describe('Neutron / Treasury', () => {
 
     mainDaoWallet = testState.wallets.neutron.demo1Secp256k1;
 
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      mainDaoWallet.signer,
-      mainDaoWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(mainDaoWallet);
 
     neutronWallet2 = testState.wallets.neutron.demo2;
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     securityDaoWallet = testState.wallets.neutron.icq;
     holder1Wallet = testState.wallets.neutron.demo2;
@@ -592,7 +584,7 @@ describe('Neutron / Treasury', () => {
 });
 
 const setupDSC = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
@@ -618,7 +610,7 @@ interface ReserveStats {
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
 const normalizeReserveBurnedCoins = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   reserveAddress: string,
   feeburnerQuerier: FeeburnerQueryClient,
 ): Promise<ReserveStats> => {
@@ -671,7 +663,7 @@ const getBurnedCoinsAmount = async (
 };
 
 const setupReserve = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
@@ -702,7 +694,7 @@ const setupReserve = async (
  * @param actionCheck is called after unpausing to make sure the executable action worked.
  */
 async function testExecControl(
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   testingContract: string,
   execAction: () => Promise<number | undefined>,
   actionCheck: () => Promise<void>,

@@ -84,7 +84,7 @@ export class LocalState {
     return this.nextNeutronWalletWithSigner(signMethod());
   }
 
-// Returns new wallet for neutron network with secp256k1 signature method.
+  // Returns new wallet for neutron network with secp256k1 signature method.
   // Helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
   async nextSecp256k1SignNeutronWallet(): Promise<Wallet> {
     return this.nextNeutronWalletWithSigner('secp256k1');

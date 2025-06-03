@@ -2,23 +2,19 @@ import { LocalState } from '../../helpers/local_state';
 import { inject } from 'vitest';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 
 describe('Float operations support', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let neutronWallet: Wallet;
   let contractAddress: string;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
   });
   describe('Contracts: ', () => {
     test('instantiate', async () => {

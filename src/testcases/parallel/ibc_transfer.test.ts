@@ -1,7 +1,7 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
@@ -30,7 +30,7 @@ const UATOM_IBC_TO_NEUTRON_DENOM =
 describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: GaiaWallet;
@@ -46,11 +46,8 @@ describe('Neutron / IBC transfer', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaWallet2 = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(

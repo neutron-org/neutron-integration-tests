@@ -1,4 +1,4 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
@@ -33,12 +33,12 @@ import {
 
 describe('Neutron / Staking Tracker - Extended Scenarios', () => {
   let testState: LocalState;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
-  let validatorSecondClient: SigningNeutronClient;
-  let validatorPrimaryClient: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
+  let validatorSecondClient: NeutronTestClient;
+  let validatorPrimaryClient: NeutronTestClient;
 
-  let daoWalletClient: SigningNeutronClient;
+  let daoWalletClient: NeutronTestClient;
   let daoWallet: Wallet;
 
   let neutronWallet1: Wallet;
@@ -68,39 +68,23 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     validatorSecondWallet = testState.wallets.neutron.val2;
     validatorPrimaryWallet = testState.wallets.neutron.val1;
 
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.signer,
-      neutronWallet1.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     // This is the client for validator that could be disabled during testrun
-    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorSecondWallet.signer,
-      validatorSecondWallet.address,
+    validatorSecondClient = await NeutronTestClient.connectWithSigner(
+      validatorSecondWallet,
     );
 
     // This is client for validator that should work ALWAYS bc it's only one that exposes ports
     // In the state it is validator #2, so this naming is only for clients
-    validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorPrimaryWallet.signer,
-      validatorPrimaryWallet.address,
+    validatorPrimaryClient = await NeutronTestClient.connectWithSigner(
+      validatorPrimaryWallet,
     );
 
     daoWallet = testState.wallets.neutron.demo1;
-    daoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      daoWallet.signer,
-      daoWallet.address,
-    );
+    daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
 
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);

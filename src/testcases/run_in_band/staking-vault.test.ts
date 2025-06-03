@@ -1,4 +1,4 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
@@ -35,9 +35,9 @@ describe('Neutron / Staking Vault', () => {
   let validatorWallet1: Wallet;
   let validatorWallet2: Wallet;
 
-  let daoWalletClient: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
-  let neutronClient3: SigningNeutronClient;
+  let daoWalletClient: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
+  let neutronClient3: NeutronTestClient;
 
   let validatorAddr1: string;
   let validatorAddr2: string;
@@ -55,11 +55,7 @@ describe('Neutron / Staking Vault', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     daoWallet = testState.wallets.neutron.demo1;
-    daoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      daoWallet.signer,
-      daoWallet.address,
-    );
+    daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       daoWalletClient,
@@ -76,11 +72,7 @@ describe('Neutron / Staking Vault', () => {
     await daoMember1.bondFunds('1000000000');
 
     neutronWallet2 = await testState.nextNeutronWallet();
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
@@ -89,11 +81,7 @@ describe('Neutron / Staking Vault', () => {
     );
 
     neutronWallet3 = await testState.nextNeutronWallet();
-    neutronClient3 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet3.signer,
-      neutronWallet3.address,
-    );
+    neutronClient3 = await NeutronTestClient.connectWithSigner(neutronWallet3);
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,

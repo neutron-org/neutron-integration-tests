@@ -16,12 +16,12 @@ import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { ProtobufRpcClient, SigningStargateClient } from '@cosmjs/stargate';
 import { getWithAttempts } from './misc';
 import axios, { AxiosResponse } from 'axios';
-import { SigningNeutronClient } from './signing_neutron_client';
+import { NeutronTestClient } from './neutron_test_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
-import { Eip191SigningCosmwasmClient } from '@neutron-org/neutronjsplus/dist/eip191_cosmwasm_client';
+import { SigningNeutronClient } from '@neutron-org/neutronjsplus/dist/signing_neutron_client';
 
 export const executeUpdateInterchainQueriesParams = async (
   chainManagerAddress: string,
@@ -64,7 +64,7 @@ export const executeUpdateInterchainQueriesParams = async (
 };
 
 export const getKvCallbackStatus = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ): Promise<{
@@ -83,7 +83,7 @@ export const filterIBCDenoms = (list: Coin[]): Coin[] =>
   );
 
 export const watchForKvCallbackUpdates = async (
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   targetClient: SigningStargateClient,
   contractAddress: string,
   queryIds: number[],
@@ -180,7 +180,7 @@ export const getDelegatorUnbondingDelegationsResult = async (
   });
 
 export const getQueryDelegatorDelegationsResult = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ): Promise<{
@@ -201,7 +201,7 @@ export const getQueryDelegatorDelegationsResult = async (
   });
 
 export const registerBalancesQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -226,7 +226,7 @@ export const registerBalancesQuery = async (
 };
 
 export const registerSigningInfoQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -249,7 +249,7 @@ export const registerSigningInfoQuery = async (
 };
 
 export const registerUnbondingDelegationsQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -275,7 +275,7 @@ export const registerUnbondingDelegationsQuery = async (
 
 export const acceptInterchainqueriesParamsChangeProposal = async (
   user: string,
-  client: Eip191SigningCosmwasmClient | SigningCosmWasmClient,
+  client: SigningNeutronClient | SigningCosmWasmClient,
   rpcClient: ProtobufRpcClient,
   title: string,
   description: string,
@@ -344,7 +344,7 @@ const makeSingleChoiceProposalPass = async (
 };
 
 export const removeQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ) =>
@@ -359,7 +359,7 @@ export const removeQuery = async (
   );
 
 export const removeQueryViaTx = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   queryId: bigint,
   sender: string = client.sender,
 ) =>
@@ -380,7 +380,7 @@ export const removeQueryViaTx = async (
   );
 
 export const registerDelegatorDelegationsQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -398,7 +398,7 @@ export const registerDelegatorDelegationsQuery = async (
 };
 
 export const validateBalanceQuery = async (
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   bankQuerier: BankQuerier,
   contractAddress: string,
   queryId: number,
@@ -420,7 +420,7 @@ export const validateBalanceQuery = async (
 };
 
 export const registerProposalVotesQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -445,7 +445,7 @@ export const registerProposalVotesQuery = async (
 };
 
 export const getProposalVotesResult = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ): Promise<{
@@ -465,7 +465,7 @@ export const getProposalVotesResult = (
   });
 
 export const registerGovProposalsQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -488,7 +488,7 @@ export const registerGovProposalsQuery = async (
 };
 
 export const getProposalsResult = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ): Promise<{
@@ -508,7 +508,7 @@ export const getProposalsResult = (
  * queryId.
  */
 export const getRegisteredQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
 ): Promise<{
@@ -538,7 +538,7 @@ export const getRegisteredQuery = async (
   });
 
 export const waitForICQResultWithRemoteHeight = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   queryId: number,
   targetHeight: number,
@@ -557,7 +557,7 @@ export const waitForICQResultWithRemoteHeight = (
  * queryTransfersNumber queries the contract for recorded transfers number.
  */
 export const queryTransfersNumber = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
 ): Promise<{
   transfers_number: number;
@@ -571,7 +571,7 @@ export const queryTransfersNumber = (
  * number of incoming transfers stored.
  */
 export const waitForTransfersAmount = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   expectedTransfersAmount: number,
   numAttempts = 50,
@@ -630,7 +630,7 @@ export const postResubmitTxs = async (
  * the given parameters and checks the tx result to be successful.
  */
 export const registerTransfersQuery = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   connectionId: string,
   updatePeriod: number,
@@ -653,7 +653,7 @@ export const registerTransfersQuery = async (
  * queryRecipientTxs queries the contract for recorded transfers to the given recipient address.
  */
 export const queryRecipientTxs = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   recipient: string,
 ): Promise<{

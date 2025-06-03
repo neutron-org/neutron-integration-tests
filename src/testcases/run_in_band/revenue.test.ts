@@ -17,7 +17,7 @@ import {
 import { QueryClientImpl as RevenueQueryClient } from '@neutron-org/neutronjs/neutron/revenue/query.rpc.Query';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { execSync } from 'child_process';
@@ -90,7 +90,7 @@ const REVENUE_CASES = [
 describe('Neutron / Revenue', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let chainManagerAddress: string;
   let mainDao: Dao;
   let daoMember: DaoMember;
@@ -101,11 +101,7 @@ describe('Neutron / Revenue', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = testState.wallets.neutron.demo1;
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -964,7 +960,7 @@ describe('Neutron / Revenue', () => {
 });
 
 async function submitRevenueParamsProposal(
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   revenueQuerier: RevenueQueryClient,
   daoMember: DaoMember,
   chainManagerAddress: string,
@@ -1070,7 +1066,7 @@ payment schedule to be configured. Returns the block height of the next payment 
  */
 async function waitForNextPaymentPeriod(
   revenueQuerier: RevenueQueryClient,
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
 ): Promise<number> {
   const paymentInfo = await revenueQuerier.paymentInfo();
   const ppStartBlock =

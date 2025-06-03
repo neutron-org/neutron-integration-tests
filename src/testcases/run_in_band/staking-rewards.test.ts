@@ -1,4 +1,4 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
@@ -30,10 +30,10 @@ import {
 
 describe('Neutron / Staking Rewards', () => {
   let testState: LocalState;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
 
-  let demoWalletClient: SigningNeutronClient;
+  let demoWalletClient: NeutronTestClient;
   let demoWallet: Wallet;
 
   let neutronWallet1: Wallet;
@@ -41,8 +41,8 @@ describe('Neutron / Staking Rewards', () => {
   let stakingQuerier: StakingQueryClient;
   let bankQuerier: BankQueryClient;
 
-  let validatorPrimaryClient: SigningNeutronClient;
-  let validatorSecondClient: SigningNeutronClient;
+  let validatorPrimaryClient: NeutronTestClient;
+  let validatorSecondClient: NeutronTestClient;
   let validatorWeakAddr: string;
   let validatorStrongAddr: string;
   let validatorPrimary: Wallet;
@@ -60,11 +60,7 @@ describe('Neutron / Staking Rewards', () => {
     testState = await LocalState.create(config, mnemonics, suite);
 
     demoWallet = testState.wallets.neutron.demo1;
-    demoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      demoWallet.signer,
-      demoWallet.address,
-    );
+    demoWalletClient = await NeutronTestClient.connectWithSigner(demoWallet);
 
     neutronWallet1 = await testState.nextNeutronWallet();
     neutronWallet2 = await testState.nextNeutronWallet();
@@ -73,31 +69,19 @@ describe('Neutron / Staking Rewards', () => {
     validatorPrimary = testState.wallets.neutron.val1;
     validatorSecondary = testState.wallets.neutron.val2;
 
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.signer,
-      neutronWallet1.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     // This is client for validator that should work ALWAYS bc it's only one that exposes ports
     // In the state it is validator #2, so this naming is only for clients
-    validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorPrimary.signer,
-      validatorPrimary.address,
+    validatorPrimaryClient = await NeutronTestClient.connectWithSigner(
+      validatorPrimary,
     );
 
     // This is the client for validator that could be disabled during testrun
-    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorSecondary.signer,
-      validatorSecondary.address,
+    validatorSecondClient = await NeutronTestClient.connectWithSigner(
+      validatorSecondary,
     );
 
     const neutronRpcClient = await testState.neutronRpcClient();
@@ -431,11 +415,7 @@ describe('Neutron / Staking Rewards', () => {
         const delegationAmount = '1000000000'; // 1000ntrn
         const redelegationAmount = '1000000000';
         const wallet = await testState.nextNeutronWallet();
-        const client = await SigningNeutronClient.connectWithSigner(
-          testState.rpcNeutron,
-          wallet.signer,
-          wallet.address,
-        );
+        const client = await NeutronTestClient.connectWithSigner(wallet);
 
         const claimRecipient = (await testState.nextNeutronWallet()).address;
 
@@ -502,11 +482,7 @@ describe('Neutron / Staking Rewards', () => {
       test('full tx unbond works with rewards correctly', async () => {
         const delegationAmount = '10000000'; // 10ntrn
         const wallet = await testState.nextNeutronWallet();
-        const client = await SigningNeutronClient.connectWithSigner(
-          testState.rpcNeutron,
-          wallet.signer,
-          wallet.address,
-        );
+        const client = await NeutronTestClient.connectWithSigner(wallet);
 
         const claimRecipient = (await testState.nextNeutronWallet()).address;
 
@@ -586,11 +562,7 @@ describe('Neutron / Staking Rewards', () => {
     describe('Pause contract', () => {
       test('can not claim rewards', async () => {
         const admin = testState.wallets.neutron.demo1Secp256k1;
-        const adminClient= await SigningNeutronClient.connectWithSigner(
-          testState.rpcNeutron,
-          admin.signer,
-          admin.address,
-        );
+        const adminClient = await NeutronTestClient.connectWithSigner(admin);
         await pauseRewardsContract(adminClient);
 
         const balanceBefore = await bankQuerier.balance({

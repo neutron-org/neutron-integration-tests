@@ -12,7 +12,7 @@ import {
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   MsgBurn,
   MsgChangeAdmin,
@@ -78,7 +78,7 @@ function unpackDenom(
 
 describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
 
   let neutronWallet: Wallet;
   let subDao: Dao;
@@ -95,11 +95,7 @@ describe('Neutron / Tokenfactory', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     // Setup subdao with update tokenfactory params
     const neutronRpcClient = await testState.rpcClient('neutron');
     osmosisQuerier = await createOsmosisClient({

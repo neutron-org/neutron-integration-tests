@@ -9,7 +9,7 @@ import {
   waitForTransfersAmount,
 } from '../../helpers/interchainqueries';
 import { RunnerTestSuite, inject } from 'vitest';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   CONTRACTS,
   COSMOS_DENOM,
@@ -22,7 +22,7 @@ import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 describe('Neutron / Interchain TX Query Resubmit', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: GaiaWallet;
@@ -33,11 +33,7 @@ describe('Neutron / Interchain TX Query Resubmit', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(

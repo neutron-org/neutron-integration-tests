@@ -8,7 +8,7 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -24,7 +24,7 @@ import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: GaiaWallet;
@@ -40,11 +40,7 @@ describe('Neutron / Tokenomics', () => {
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(

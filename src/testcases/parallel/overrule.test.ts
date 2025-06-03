@@ -9,7 +9,7 @@ import {
   deployNeutronDao,
   deploySubdao,
 } from '../../helpers/dao';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 
@@ -22,24 +22,16 @@ describe('Neutron / Subdao Overrule', () => {
   let mainDaoMember2: DaoMember;
   let subDao: Dao;
   let mainDao: Dao;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
     neutronWallet1 = await testState.nextNeutronWallet();
     neutronWallet2 = await testState.nextNeutronWallet();
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.signer,
-      neutronWallet1.address,
-    );
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     const daoContracts = await deployNeutronDao(
       neutronWallet1.address,
@@ -194,7 +186,7 @@ describe('Neutron / Subdao Overrule', () => {
 
 // this function isn't in the DaoMember class since it makes no sense in general but in a very specific test
 async function voteAgainstOverrule(
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   member: DaoMember,
   timelockAddress: string,
   proposalId: number,

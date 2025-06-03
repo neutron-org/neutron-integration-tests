@@ -44,7 +44,7 @@ import {
   validateBalanceQuery,
   watchForKvCallbackUpdates,
 } from '../../helpers/interchainqueries';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   defaultRegistryTypes,
   ProtobufRpcClient,
@@ -71,13 +71,13 @@ describe('Neutron / Interchain KV Query', () => {
     6: 11,
   };
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let gaiaClient2: SigningStargateClient;
   let gaiaWallet: GaiaWallet;
   let neutronWallet: Wallet;
-  let otherNeutronClient: SigningNeutronClient;
+  let otherNeutronClient: NeutronTestClient;
   let interchainqQuerier: InterchainqQuerier;
   let bankQuerier: BankQuerier;
   let bankQuerierGaia: BankQuerier;
@@ -90,16 +90,10 @@ describe('Neutron / Interchain KV Query', () => {
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const otherNeutronWallet = await testState.nextNeutronWallet();
-    otherNeutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      otherNeutronWallet.signer,
-      otherNeutronWallet.address,
+    otherNeutronClient = await NeutronTestClient.connectWithSigner(
+      otherNeutronWallet,
     );
     gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(

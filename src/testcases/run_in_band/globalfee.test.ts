@@ -14,7 +14,7 @@ import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 
 import config from '../../config.json';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
 
@@ -23,18 +23,14 @@ describe('Neutron / Global Fee', () => {
   let daoMember: DaoMember;
   let mainDao: Dao;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let globalfeeQuerier: GlobalfeeQueryClient;
   let chainManagerAddress: string;
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const neutronRpcClient = await testState.rpcClient('neutron');
 
     const adminQuery = new AdminQueryClient(neutronRpcClient);
@@ -43,11 +39,7 @@ describe('Neutron / Global Fee', () => {
 
     globalfeeQuerier = new GlobalfeeQueryClient(neutronRpcClient);
 
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,

@@ -8,7 +8,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   DaoContracts,
   VotingVaultsModule,
@@ -18,7 +18,7 @@ import config from '../../config.json';
 
 describe('Neutron / DAO check', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let daoContracts: DaoContracts;
   let proposalSingleAddress: string;
   let preProposalSingleAddress: string;
@@ -36,11 +36,7 @@ describe('Neutron / DAO check', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     const neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     const neutronRpcClient = await testState.rpcClient('neutron');
     feeburnerQuery = new FeeburnerQueryClient(neutronRpcClient);
@@ -288,7 +284,7 @@ describe('Neutron / DAO check', () => {
 });
 
 const performCommonChecks = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   daoContracts: DaoContracts,
   contractAddress: string,
 ) => {
@@ -298,7 +294,7 @@ const performCommonChecks = async (
 };
 
 const verifyAdmin = async (
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   contractAddress: string,
   expectedAdmin: string,
 ) => {
@@ -307,7 +303,7 @@ const verifyAdmin = async (
 };
 
 const checkContractHash = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   binaryName: string,
   wasmQuery: WasmQueryClient,
@@ -322,7 +318,7 @@ const checkContractHash = async (
 };
 
 const checkDaoAddress = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   expectedDao: string,
 ) => {
@@ -333,7 +329,7 @@ const checkDaoAddress = async (
 };
 
 const verifyLabel = async (
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   daoContracts: DaoContracts,
   address: string,
 ) => {

@@ -10,7 +10,7 @@ import {
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import {
   QueryClientImpl as StakingQueryClient,
@@ -49,7 +49,7 @@ describe('Neutron / Interchain TXs', () => {
   let ibcQuerier: IbcQueryClient;
   let contractManagerQuerier: ContractManagerQuery;
 
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let gaiaWallet: GaiaWallet;
@@ -65,11 +65,7 @@ describe('Neutron / Interchain TXs', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(

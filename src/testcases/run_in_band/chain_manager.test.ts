@@ -26,14 +26,14 @@ import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/co
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { QueryClientImpl as DynamicfeesQueryClient } from '@neutron-org/neutronjs/neutron/dynamicfees/v1/query.rpc.Query';
 import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let subdaoMember1: DaoMember;
   let mainDaoMember: DaoMember;
   let securityDaoAddr: string;
@@ -50,11 +50,7 @@ describe('Neutron / Chain Manager', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     const neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const securityDaoWallet = await testState.nextNeutronWallet();
     securityDaoAddr = securityDaoWallet.address;
     const neutronRpcClient = await testState.rpcClient('neutron');
@@ -514,14 +510,12 @@ describe('Neutron / Chain Manager', () => {
   });
 
   describe('ALLOW_ONLY: CRON add schedule / remove schedule', () => {
-    let cronAccessClient: SigningNeutronClient;
+    let cronAccessClient: NeutronTestClient;
     let cronAccessWallet: Wallet;
     beforeAll(async () => {
       cronAccessWallet = await testState.nextNeutronWallet();
-      cronAccessClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        cronAccessWallet.signer,
-        cronAccessWallet.address,
+      cronAccessClient = await NeutronTestClient.connectWithSigner(
+        cronAccessWallet,
       );
     });
 
@@ -618,37 +612,31 @@ describe('Neutron / Chain Manager', () => {
 
   describe('ALLOW_ONLY: software upgrade', () => {
     // only upgrade permission
-    let upgradeOnlyClient: SigningNeutronClient;
+    let upgradeOnlyClient: NeutronTestClient;
     let upgradeOnlyWallet: Wallet;
 
     // only cancel upgrade permission
-    let cancelUpgradeOnlyClient: SigningNeutronClient;
+    let cancelUpgradeOnlyClient: NeutronTestClient;
     let cancelUpgradeOnlyWallet: Wallet;
 
     // upgrade and cancel upgrade permissions
-    let fullUpgradeAccessClient: SigningNeutronClient;
+    let fullUpgradeAccessClient: NeutronTestClient;
     let fullUpgradeAccessWallet: Wallet;
 
     beforeAll(async () => {
       upgradeOnlyWallet = await testState.nextNeutronWallet();
-      upgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        upgradeOnlyWallet.signer,
-        upgradeOnlyWallet.address,
+      upgradeOnlyClient = await NeutronTestClient.connectWithSigner(
+        upgradeOnlyWallet,
       );
 
       cancelUpgradeOnlyWallet = await testState.nextNeutronWallet();
-      cancelUpgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        cancelUpgradeOnlyWallet.signer,
-        cancelUpgradeOnlyWallet.address,
+      cancelUpgradeOnlyClient = await NeutronTestClient.connectWithSigner(
+        cancelUpgradeOnlyWallet,
       );
 
       fullUpgradeAccessWallet = await testState.nextNeutronWallet();
-      fullUpgradeAccessClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        fullUpgradeAccessWallet.signer,
-        fullUpgradeAccessWallet.address,
+      fullUpgradeAccessClient = await NeutronTestClient.connectWithSigner(
+        fullUpgradeAccessWallet,
       );
     });
 

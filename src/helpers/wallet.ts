@@ -16,6 +16,7 @@ export class Wallet {
   constructor(
     public readonly signer: OfflineSigner | Eip191Signer,
     public readonly account: AccountData,
+    public readonly signerKind: string,
     valAccount: AccountData,
   ) {
     this.address = this.account.address;
@@ -47,7 +48,7 @@ export class Wallet {
       },
     );
     const accountValoper = (await directwalletValoper.getAccounts())[0];
-    return new Wallet(signer, account, accountValoper);
+    return new Wallet(signer, account, signerKind, accountValoper);
   }
 }
 

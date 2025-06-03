@@ -23,14 +23,14 @@ import { QueryClientImpl as InterchainTxQueryClient } from '@neutron-org/neutron
 import { QueryClientImpl as InterchainAccountsQueryClient } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { neutronTypes } from '../../helpers/registry_types';
 import config from '../../config.json';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
   let daoMember3: DaoMember;
@@ -51,11 +51,8 @@ describe('Neutron / Governance', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.signer,
-      neutronWallet.address,
-    );
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -71,11 +68,10 @@ describe('Neutron / Governance', () => {
     );
 
     const neutronWallet2 = await testState.nextNeutronWallet();
-    const neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.signer,
-      neutronWallet2.address,
+    const neutronClient2 = await NeutronTestClient.connectWithSigner(
+      neutronWallet2,
     );
+
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
@@ -84,11 +80,10 @@ describe('Neutron / Governance', () => {
     );
 
     const neutronWallet3 = await testState.nextNeutronWallet();
-    const neutronClient3 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet3.signer,
-      neutronWallet3.address,
+    const neutronClient3 = await NeutronTestClient.connectWithSigner(
+      neutronWallet3,
     );
+
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,
@@ -1195,10 +1190,8 @@ describe('Neutron / Governance', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
       // use secp256k1 wallet since it's hard to sign MsgSubmitProposalLegacy in amino encoding automatically
       const customWallet = await testState.nextSecp256k1SignNeutronWallet();
-      const customClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        customWallet.signer,
-        customWallet.address,
+      const customClient = await NeutronTestClient.connectWithSigner(
+        customWallet,
       );
       const res = await msgSendDirectProposal(
         customClient.sender,
@@ -1224,7 +1217,7 @@ type TestArgResponse = {
 // TODO: description?
 const msgSendDirectProposal = async (
   signer: string,
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   registry: Registry,
   subspace: string,
   key: string,
