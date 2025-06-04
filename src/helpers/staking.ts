@@ -101,6 +101,17 @@ export const getBondedTokens = async (
   return bondedTokens;
 };
 
+export const getTrackingValidators = async (
+  client: SigningNeutronClient,
+  stakingTrackerAddr: string,
+): Promise<any> => {
+  const validators = await client.queryContractSmart(stakingTrackerAddr, {
+    list_validators: { limit: 1000 },
+  });
+
+  return validators;
+};
+
 export const checkVotingPowerMatchBondedTokens = async (
   neutronClient: SigningNeutronClient,
   stakingQuerier: StakingQueryClient,
@@ -165,6 +176,7 @@ export const undelegateTokens = async (
     ],
     { amount: [{ denom: NEUTRON_DENOM, amount: '5000000' }], gas: '2000000' },
   );
+  console.log('undelegate res: ' + JSON.stringify(res.rawLog));
   expect(res.code).toEqual(0);
 };
 
