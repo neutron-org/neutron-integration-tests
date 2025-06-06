@@ -40,14 +40,14 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  const fundings = [NEUTRON_DENOM, IBC_ATOM_DENOM, IBC_USDC_DENOM];
-  for (let i = 0; i < fundings.length; i++) {
+  const denomsToFund = [NEUTRON_DENOM, IBC_ATOM_DENOM, IBC_USDC_DENOM];
+  for (let i = 0; i < denomsToFund.length; i++) {
     await fundWallets(
       mnemonics,
       NEUTRON_RPC,
       NEUTRON_PREFIX,
       NEUTRON_DENOM,
-      fundings[i],
+      denomsToFund[i],
     );
   }
   await fundWallets(
