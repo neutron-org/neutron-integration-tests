@@ -5,10 +5,9 @@ import {
   STAKING_REWARDS,
   STAKING_TRACKER,
   VAL_MNEMONIC_1,
-  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState, mnemonicWithAccountToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -72,8 +71,8 @@ describe('Neutron / Staking Rewards', () => {
     neutronWallet2 = await testState.nextWallet('neutron');
     claimRecipient = (await testState.nextWallet('neutron')).address;
 
-    validatorPrimary = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
-    validatorSecondary = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
+    validatorPrimary = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 1);
+    validatorSecondary = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 2);
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,
@@ -142,7 +141,7 @@ describe('Neutron / Staking Rewards', () => {
           {
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.500000000000000000',
-            signed_blocks_window: '10',
+            signed_blocks_window: '30',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
           },
@@ -223,7 +222,7 @@ describe('Neutron / Staking Rewards', () => {
       // slash
       // wait blocks
       // claim again
-      // calculate rate per block (rate of accruing rewards should be less because lf slashing)
+      // calculate rate per block (rate of accruing rewards should be less because of slashing)
       test('claim rewards works as a user', async () => {
         const balanceBeforeDelegate = await bankQuerier.balance({
           address: claimRecipient,

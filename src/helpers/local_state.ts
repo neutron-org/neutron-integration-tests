@@ -5,6 +5,7 @@ import {
   QueryClient,
 } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { HdPath, stringToPath } from "@cosmjs/crypto";
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
@@ -12,7 +13,7 @@ import {
   GAIA_CONNECTION,
   GAIA_REST,
   GAIA_RPC,
-  IBC_WEB_HOST,
+  ICQ_WEB_HOST,
   NEUTRON_PREFIX,
   NEUTRON_REST,
   NEUTRON_RPC,
@@ -64,7 +65,7 @@ export class LocalState {
     this.restNeutron = NEUTRON_REST;
     this.restGaia = GAIA_REST;
 
-    this.icqWebHost = IBC_WEB_HOST;
+    this.icqWebHost = ICQ_WEB_HOST;
 
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
@@ -180,6 +181,28 @@ export const mnemonicToWallet = async (
   return new Wallet(addrPrefix, directwallet, account, accountValoper);
 };
 
+export const mnemonicWithAccountToWallet = async (
+  mnemonic: string,
+  addrPrefix: string,
+  accountIndex: number,
+): Promise<Wallet> => {
+  const hdPath: HdPath = stringToPath(`m/44'/118'/${accountIndex}'/0/0`);
+  const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+    prefix: addrPrefix,
+    hdPaths: [hdPath],
+  });
+  const account = (await directwallet.getAccounts())[0];
+  const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+    mnemonic,
+    {
+      prefix: addrPrefix + 'valoper',
+      hdPaths: [hdPath],
+    },
+  );
+  const accountValoper = (await directwalletValoper.getAccounts())[0];
+  return new Wallet(addrPrefix, directwallet, account, accountValoper);
+};
+
 async function testFilePosition(s: RunnerTestSuite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
@@ -222,7 +245,7 @@ const getGenesisWallets = async (
   prefix: string,
   config: any,
 ): Promise<Record<string, Wallet>> => ({
-  val1: await mnemonicToWallet(config.VAL_MNEMONIC_1, prefix),
+  val1: await mnemonicWithAccountToWallet(config.VAL_MNEMONIC_1, prefix, 1),
   demo1: await mnemonicToWallet(config.DEMO_MNEMONIC_1, prefix),
   demo2: await mnemonicToWallet(config.DEMO_MNEMONIC_2, prefix),
   icq: await mnemonicToWallet(config.DEMO_MNEMONIC_3, prefix),

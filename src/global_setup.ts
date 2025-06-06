@@ -23,7 +23,7 @@ const WALLET_COUNT = 1000;
 
 export default async function ({ provide }: GlobalSetupContext) {
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
-  const host2 = process.env.NODE2_URL || 'http://localhost:1316';
+  const host2 = process.env.NODE2_URL || 'http://localhost:1318';
   if (!process.env.NO_DOCKER) {
     await setup(host1, host2);
   }

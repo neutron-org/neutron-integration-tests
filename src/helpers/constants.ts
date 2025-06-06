@@ -80,10 +80,10 @@ export const CONTRACTS = {
 export const NEUTRON_PREFIX = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
 export const COSMOS_PREFIX = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
 export const NEUTRON_RPC = process.env.NODE1_RPC || 'http://localhost:26657';
-export const GAIA_RPC = process.env.NODE2_RPC || 'http://localhost:16657';
+export const GAIA_RPC = process.env.NODE2_RPC || 'http://localhost:26658';
 export const NEUTRON_REST = process.env.NODE1_URL || 'http://localhost:1317';
-export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1316';
-export const IBC_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
+export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1318';
+export const ICQ_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 export const GAIA_CONNECTION = 'connection-0';
 
 export const STAKING_VAULT =
@@ -100,4 +100,4 @@ export const VAL_MNEMONIC_1 =
 export const VAL_MNEMONIC_2 =
   'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
 
-export const SECOND_VALIDATOR_CONTAINER = 'neutron-node-1';
+export const SECOND_VALIDATOR_CONTAINER = 'main-neutron_val2-1';

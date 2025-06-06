@@ -1,0 +1,123 @@
+version: "3"
+services:
+  neutron_val1:
+    image: neutron-node-2
+    command:
+      - start
+      - --home=/opt
+      - --log_format=json
+      - --pruning=nothing
+      - --log_level=info
+      - --trace
+    entrypoint:
+      - neutrond
+    volumes:
+      - neutron_val1:/opt
+    ports:
+      - 26657:26657
+      - 1317:1317
+      - 9090:9090
+  neutron_val2:
+    image: neutron-node-2
+    command:
+      - start
+      - --home=/opt
+      - --log_format=json
+      - --pruning=nothing
+      - --log_level=info
+      - --trace
+    entrypoint:
+      - neutrond
+    volumes:
+      - neutron_val2:/opt
+  gaia_val1:
+    image: gaia-node-2
+    command:
+      - start
+      - --home=/opt
+      - --log_format=json
+      - --pruning=nothing
+      - --log_level=info
+      - --trace
+    entrypoint:
+      - gaiad
+    volumes:
+      - gaia_val1:/opt
+    ports:
+      - 127.0.0.1:26658:26657
+      - 127.0.0.1:1318:1317
+      - 127.0.0.1:9091:9090
+  relayer_hermes0:
+    image: hermes-2:1.10.4
+    command:
+      - -c
+      - /root/start.sh
+    volumes:
+      - relayer_hermes0:/root
+    entrypoint:
+      - /bin/bash
+    depends_on:
+      - neutron_val1
+      - gaia_val1
+  relayer_neutron1:
+    image: neutron-org/neutron-query-relayer-2
+    entrypoint:
+      - ./run.sh
+    depends_on:
+      - neutron_val1
+      - gaia_val1
+    volumes:
+      - neutron_val1:/data
+    environment:
+      - NODE=neutron_val1
+      - LOGGER_LEVEL=debug
+      - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
+      - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron_val1:26657
+      - RELAYER_NEUTRON_CHAIN_REST_ADDR=http://neutron_val1:1317
+      - RELAYER_NEUTRON_CHAIN_HOME_DIR=/data
+      - RELAYER_NEUTRON_CHAIN_SIGN_KEY_NAME=relayer_1
+      - RELAYER_NEUTRON_CHAIN_GAS_PRICES=0.5untrn
+      - RELAYER_NEUTRON_CHAIN_GAS_ADJUSTMENT=1.5
+      - RELAYER_NEUTRON_CHAIN_DENOM=untrn
+      - RELAYER_NEUTRON_CHAIN_MAX_GAS_PRICE=1000
+      - RELAYER_NEUTRON_CHAIN_GAS_PRICE_MULTIPLIER=1.1
+      - RELAYER_NEUTRON_CHAIN_CONNECTION_ID=connection-0
+      - RELAYER_NEUTRON_CHAIN_DEBUG=true
+      - RELAYER_NEUTRON_CHAIN_ACCOUNT_PREFIX=neutron
+      - RELAYER_NEUTRON_CHAIN_KEYRING_BACKEND=test
+      - RELAYER_TARGET_CHAIN_RPC_ADDR=tcp://gaia_val1:26657
+      - RELAYER_TARGET_CHAIN_REST_ADDR=http://gaia_val1:1317
+      - RELAYER_TARGET_CHAIN_DENOM=uatom
+      - RELAYER_TARGET_CHAIN_GAS_PRICES=0.5uatom
+      - RELAYER_TARGET_CHAIN_ACCOUNT_PREFIX=cosmos
+      - RELAYER_TARGET_CHAIN_VALIDATOR_ACCOUNT_PREFIX=cosmosvaloper
+      - RELAYER_TARGET_CHAIN_DEBUG=true
+      - RELAYER_ALLOW_KV_CALLBACKS=true
+      - RELAYER_REGISTRY_ADDRESSES=
+      - RELAYER_ALLOW_TX_QUERIES=true
+      - RELAYER_STORAGE_PATH=/data/relayer/storage/leveldb
+      - RELAYER_LISTEN_ADDR=0.0.0.0:9999
+  oracle-1:
+    image: skip-mev/slinky-e2e-oracle
+    entrypoint:
+      - slinky
+      - --market-map-endpoint
+      - neutron_val1:9090
+    ports:
+      - 8080:8080
+      - 8002:8002
+    depends_on:
+      - neutron_val1
+  oracle-2:
+    image: skip-mev/slinky-e2e-oracle
+    entrypoint:
+      - slinky
+      - --market-map-endpoint
+      - neutron_val2:9090
+    depends_on:
+      - neutron_val2
+volumes:
+  neutron_val1: null
+  neutron_val2: null
+  gaia_val1: null
+  relayer_hermes0: null
