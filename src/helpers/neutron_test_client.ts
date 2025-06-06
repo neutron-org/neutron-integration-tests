@@ -19,14 +19,17 @@ import {
 import { NEUTRON_DENOM, NEUTRON_RPC } from './constants';
 import { neutronTypes } from './registry_types';
 import {
-  DirectSignerAdapter,
-  Eip191SignerAdapter,
-  SignerAdapter,
+  Signer,
   SigningNeutronClient,
 } from '@neutron-org/neutronjsplus/dist/signing_neutron_client';
 import { Wallet } from './wallet';
 import { aminoConverters } from '@neutron-org/neutronjsplus/dist/amino';
 import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191_signer';
+import {
+  DirectSignerAdapter,
+  Eip191SignerAdapter,
+} from '@neutron-org/neutronjsplus/dist/signer_adapters';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing/build/signer';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -40,9 +43,12 @@ export class NeutronTestClient extends CosmWasmClient {
     };
     const aminoTypes = new AminoTypes(aminoConverters);
     const registry = new Registry(neutronTypes);
-    let adapter: SignerAdapter;
+    let adapter: Signer;
     if (wallet.signerKind === 'secp256k1') {
-      adapter = new DirectSignerAdapter(wallet.signer, aminoTypes, registry);
+      adapter = new DirectSignerAdapter(
+        wallet.signer as OfflineDirectSigner,
+        registry,
+      );
     } else if (wallet.signerKind === 'eip191') {
       adapter = new Eip191SignerAdapter(
         wallet.signer as Eip191Signer,
