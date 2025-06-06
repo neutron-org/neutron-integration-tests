@@ -33,7 +33,6 @@ echo "$DEMO_MNEMONIC_2" | $BINARY keys add demowallet2 --home "$MASTER_CHAIN_DIR
 echo "$DEMO_MNEMONIC_3" | $BINARY keys add demowallet3 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
 echo "$RLY_MNEMONIC_1" | $BINARY keys add rly1 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
 echo "$RLY_MNEMONIC_2" | $BINARY keys add rly2 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
-#$BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val2 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show demowallet1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
