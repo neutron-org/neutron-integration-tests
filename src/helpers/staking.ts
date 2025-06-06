@@ -101,6 +101,18 @@ export const getBondedTokens = async (
   return bondedTokens;
 };
 
+export const getTrackedValidators = async (
+  client: SigningNeutronClient,
+  stakingTrackerAddr: string,
+  limit = 1000,
+): Promise<any> => {
+  const validators = await client.queryContractSmart(stakingTrackerAddr, {
+    list_validators: { limit },
+  });
+
+  return validators;
+};
+
 export const checkVotingPowerMatchBondedTokens = async (
   neutronClient: SigningNeutronClient,
   stakingQuerier: StakingQueryClient,
