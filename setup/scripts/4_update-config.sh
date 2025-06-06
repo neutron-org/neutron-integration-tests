@@ -40,4 +40,5 @@ for i in `seq 1 ${NODES}`; do
   sed -i -e 's/enabled-unsafe-cors = false/enabled-unsafe-cors = true/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
   sed -i -e 's/persistent_peers = ""/persistent_peers = "'"$NODE1@$PERSISTENT_PEER:$P2PPORT"'"/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/allow_duplicate_ip = false/allow_duplicate_ip = true/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+  sed -i -e 's#cors_allowed_origins = \[\]#cors_allowed_origins = ["*"]#g' "${CHAIN_DIR}/node-${i}/config/config.toml"
 done;
