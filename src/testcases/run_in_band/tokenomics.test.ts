@@ -27,6 +27,7 @@ describe('Neutron / Tokenomics', () => {
   let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
+  let receiverWallet: Wallet;
   let gaiaWallet: GaiaWallet;
   let treasuryContractAddress: string;
 
@@ -41,6 +42,7 @@ describe('Neutron / Tokenomics', () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    receiverWallet = await testState.nextNeutronWallet();
 
     gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
@@ -172,7 +174,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -205,7 +207,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -244,7 +246,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -322,7 +324,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with uatom fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,

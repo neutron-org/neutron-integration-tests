@@ -39,7 +39,7 @@ describe('Neutron / Treasury', () => {
 
     securityDaoWallet = testState.wallets.neutron.icq;
     holder1Wallet = testState.wallets.neutron.demo2;
-    holder2Wallet = testState.wallets.neutron.rly1;
+    holder2Wallet = await testState.nextNeutronWallet();
     mainDaoAddr = mainDaoWallet.address;
     securityDaoAddr = securityDaoWallet.address;
     holder1Addr = holder1Wallet.address;
