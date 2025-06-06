@@ -76,6 +76,7 @@ describe('Neutron / Interchain KV Query', () => {
   let gaiaClient: SigningStargateClient;
   let gaiaClient2: SigningStargateClient;
   let gaiaWallet: GaiaWallet;
+  let gaiaWallet2: GaiaWallet;
   let neutronWallet: Wallet;
   let otherNeutronClient: NeutronTestClient;
   let interchainqQuerier: InterchainqQuerier;
@@ -95,16 +96,17 @@ describe('Neutron / Interchain KV Query', () => {
     otherNeutronClient = await NeutronTestClient.connectWithSigner(
       otherNeutronWallet,
     );
-    gaiaWallet = testState.wallets.cosmos.demo2;
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
       gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
+    gaiaWallet2 = await testState.nextGaiaWallet();
     gaiaClient2 = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      testState.wallets.cosmos.rly2.signer,
+      gaiaWallet2.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -487,7 +489,7 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 2;
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
-        testState.wallets.cosmos.rly2.address,
+        gaiaWallet2.address,
         [{ denom: COSMOS_DENOM, amount: '9000' }],
         {
           gas: '200000',
@@ -714,7 +716,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           2,
           [COSMOS_DENOM],
-          testState.wallets.cosmos.rly2.address,
+          gaiaWallet2.address,
         );
 
         await neutronClient.waitBlocks(1);
@@ -922,7 +924,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       const proposalResp = await executeMsgSubmitProposal(
         gaiaClient2,
-        testState.wallets.cosmos.rly2,
+        gaiaWallet2,
         '1250',
       );
 
@@ -1257,9 +1259,8 @@ describe('Neutron / Interchain KV Query', () => {
         interchainQueryResult.unbonding_delegations.unbonding_responses,
       ).toEqual([
         {
-          delegator_address: 'cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw',
-          validator_address:
-            'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+          delegator_address: gaiaWallet.address,
+          validator_address: validatorAddress,
           entries: [
             {
               balance: '2000',
