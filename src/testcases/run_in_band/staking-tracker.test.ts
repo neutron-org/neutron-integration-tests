@@ -12,7 +12,10 @@ import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
-import { PubKey as CosmosCryptoEd25519Pubkey } from 'cosmjs-types/cosmos/crypto/ed25519/keys';
+import {
+  PubKey,
+  PubKey as CosmosCryptoEd25519Pubkey,
+} from 'cosmjs-types/cosmos/crypto/ed25519/keys';
 
 import {
   Dao,
@@ -26,7 +29,7 @@ import {
   delegateTokens,
   getBondedTokens,
   getTrackedStakeInfo,
-  getTrackingValidators,
+  getTrackedValidators,
   getVaultVPInfo,
   pauseRewardsContract,
   redelegateTokens,
@@ -135,7 +138,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         minSelfDelegation: '1',
         validatorAddress: wallet.valAddress,
         pubkey: {
-          typeUrl: '/cosmos.crypto.ed25519.PubKey',
+          typeUrl: PubKey.typeUrl,
           value: Uint8Array.from(
             CosmosCryptoEd25519Pubkey.encode(
               CosmosCryptoEd25519Pubkey.fromPartial({
@@ -169,13 +172,9 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         ],
         fee,
       );
-      await client.waitBlocks(2);
+      await client.waitBlocks(1);
 
-      const validatorsRes = await stakingQuerier.validators({
-        status: 'BOND_STATUS_UNBONDED',
-      });
-
-      const trackingValidatorsBefore = await getTrackingValidators(
+      const trackingValidatorsBefore = await getTrackedValidators(
         client,
         STAKING_TRACKER,
       );
@@ -185,15 +184,14 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       expect(trackingValidatorsBefore.length).toEqual(
         moduleValidatorsBefore.validators.length,
       );
-      expect(trackingValidatorsBefore.length).toEqual(3);
+      const beforeLength = trackingValidatorsBefore.length;
 
       // undelegate all tokens
-      const valAddr = validatorsRes.validators[0].operatorAddress;
-      await undelegateTokens(client, wallet.address, valAddr, '1');
+      await undelegateTokens(client, wallet.address, wallet.valAddress, '1');
 
       await client.waitBlocks(1);
 
-      const trackingValidatorsAfter = await getTrackingValidators(
+      const trackingValidatorsAfter = await getTrackedValidators(
         client,
         STAKING_TRACKER,
       );
@@ -203,7 +201,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
       expect(trackingValidatorsAfter.length).toEqual(
         moduleValidatorsAfter.validators.length,
       );
-      expect(trackingValidatorsAfter.length).toEqual(2);
+      expect(trackingValidatorsAfter.length).toEqual(beforeLength - 1);
     });
 
     describe('Slashing params', () => {
