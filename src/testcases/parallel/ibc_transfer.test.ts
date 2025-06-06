@@ -37,7 +37,6 @@ describe('Neutron / IBC transfer', () => {
   let gaiaWallet2: Wallet;
 
   let ibcContract: string;
-  let receiverContract: string;
 
   let contractManagerQuerier: ContractManagerQuery;
   let bankQuerier: BankQueryClient;
