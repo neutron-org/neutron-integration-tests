@@ -1,0 +1,270 @@
+{
+  "context": "main",
+  "networks": {
+    "neutron": {
+      "binary": "neutrond",
+      "chain_id": "test-1",
+      "denom": "untrn",
+      "image": "neutron-node-2",
+      "prefix": "neutron",
+      "trace": true,
+      "public": true,
+      "validators": 2,
+      "validators_balance": [
+        "100000000000000",
+        "100000000000000"
+      ],
+      "validators_stake": [
+        "100000000",
+        "10000000"
+      ],
+      "upload": [
+        "../contracts",
+        "../contracts_thirdparty",
+        "./scripts/init-neutrond.sh"
+      ],
+      "post_init": [
+        "CHAINID=test-1 CHAIN_DIR=/opt /opt/init-neutrond.sh"
+      ],
+      "genesis_opts": {
+        "app_state.auction.params.proposer_fee": "0.25",
+        "app_state.bank.denom_metadata": [
+          {
+            "description": "The native staking token of the Neutron network",
+            "denom_units": [
+              {
+                "denom": "untrn",
+                "exponent": 0,
+                "aliases": [
+                  "microntrn"
+                ]
+              },
+              {
+                "denom": "ntrn",
+                "exponent": 6,
+                "aliases": [
+                  "NTRN"
+                ]
+              }
+            ],
+            "base": "untrn",
+            "display": "ntrn",
+            "name": "Neutron",
+            "symbol": "NTRN"
+          }
+        ],
+        "app_state.contractmanager.params.sudo_call_gas_limit": "1000000",
+        "app_state.cron.params.limit": 5,
+        "app_state.feemarket.params.min_base_gas_price": "0.0025",
+        "app_state.feemarket.params.max_learning_rate": "0.5",
+        "app_state.feemarket.params.max_block_utilization": "1000000000",
+        "app_state.feemarket.params.fee_denom": "untrn",
+        "app_state.feemarket.params.enabled": true,
+        "app_state.feemarket.params.distribute_fees": true,
+        "app_state.feemarket.state.base_gas_price": "0.0025",
+        "app_state.globalfee.params.minimum_gas_prices": [
+          {
+            "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+            "amount": "0"
+          },
+          {
+            "denom": "untrn",
+            "amount": "0"
+          }
+        ],
+        "app_state.globalfee.params.bypass_min_fee_msg_types": [
+          "/ibc.core.channel.v1.Msg/RecvPacket",
+          "/ibc.core.channel.v1.Msg/Acknowledgement",
+          "/ibc.core.client.v1.Msg/UpdateClient"
+        ],
+        "app_state.globalfee.params.max_total_bypass_min_fee_msg_gas_usage": "1000000",
+        "app_state.marketmap.params.market_authorities": [
+          "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z"
+        ],
+        "app_state.marketmap.params.admin": "neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z",
+        "app_state.slashing.params.signed_blocks_window": "1000",
+        "app_state.slashing.params.min_signed_per_window": "0.800000000000000000",
+        "app_state.slashing.params.slash_fraction_double_sign": "0.010000000000000000",
+        "app_state.slashing.params.slash_fraction_downtime": "0.100000000000000000",
+        "app_state.staking.params.bond_denom": "untrn",
+        "consensus.params.block.max_gas": "1000000000",
+        "consensus.params.abci.vote_extensions_enable_height": "1"
+      },
+      "config_opts": {
+        "consensus.timeout_commit": "1s",
+        "consensus.timeout_propose": "1s",
+        "p2p.allow_duplicate_ip": true
+      },
+      "app_opts": {
+        "minimum-gas-prices": "0.0025untrn,0.0025ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+        "optimistic-execution-enabled": true,
+        "telemetry.enabled": true,
+        "telemetry.prometheus-retention-time": 1000,
+        "api.enable": "true",
+        "api.swagger": "true",
+        "api.address": "tcp://0.0.0.0:1317",
+        "api.enabled-unsafe-cors": true,
+        "grpc.enable": "true",
+        "grpc.address": "0.0.0.0:9090",
+        "oracle.enabled": true,
+        "oracle.oracle_address": "oracle:8080",
+        "oracle.client_timeout": "300ms",
+        "rosetta.enable": "true"
+      }
+    },
+    "gaia": {
+      "binary": "gaiad",
+      "chain_id": "test-2",
+      "denom": "uatom",
+      "image": "gaia-node-2",
+      "prefix": "cosmos",
+      "trace": true,
+      "validators": 1,
+      "validators_balance": [
+        "1900000000"
+      ],
+      "validators_stake": [
+        "100000000"
+      ],
+      "genesis_opts": {
+        "app_state.feemarket.params.enabled": false,
+        "app_state.feemarket.params.fee_denom": "uatom",
+        "app_state.feemarket.params.min_base_gas_price": "0.0025",
+        "app_state.feemarket.state.base_gas_price": "0.0025",
+        "app_state.slashing.params.downtime_jail_duration": "10s",
+        "app_state.slashing.params.signed_blocks_window": "10",
+        "app_state.slashing.params.min_signed_per_window": "0.9",
+        "app_state.slashing.params.slash_fraction_downtime": "0.1",
+        "app_state.staking.params.validator_bond_factor": "10",
+        "app_state.staking.params.unbonding_time": "1814400s",
+        "app_state.staking.params.bond_denom": "uatom",
+        "app_state.mint.minter.inflation": "0.9",
+        "app_state.mint.params.inflation_max": "0.95",
+        "app_state.mint.params.inflation_min": "0.5",
+        "app_state.interchainaccounts.host_genesis_state.params.allow_messages": [
+          "/cosmos.bank.v1beta1.MsgSend",
+          "/cosmos.staking.v1beta1.MsgDelegate",
+          "/cosmos.staking.v1beta1.MsgUndelegate"
+        ],
+        "app_state.ibc.client_genesis.params.allowed_clients": [
+          "*"
+        ]
+      },
+      "config_opts": {
+        "rpc.laddr": "tcp://0.0.0.0:26657"
+      },
+      "app_opts": {
+        "api.enable": true,
+        "api.address": "tcp://0.0.0.0:1317",
+        "api.swagger": true,
+        "grpc.enable": true,
+        "grpc.address": "0.0.0.0:9090",
+        "minimum-gas-prices": "0uatom",
+        "rosetta.enable": true
+      },
+      "upload": [
+        "./scripts/init-gaia.sh"
+      ],
+      "commands": {
+        "addGenesisAccount": "genesis add-genesis-account",
+        "gentx": "genesis gentx",
+        "collectGenTx": "genesis collect-gentxs"
+      },
+      "post_start": [
+        "/opt/init-gaia.sh > /opt/init-gaia.log 2>&1"
+      ]
+    }
+  },
+  "custom_containers": [
+    {
+      "name": "oracle-1",
+      "image": "skip-mev/slinky-e2e-oracle",
+      "entrypoint": "slinky --market-map-endpoint neutron_val1:9090",
+      "ports": [
+        "8080:8080",
+        "8002:8002"
+      ],
+      "depends_on": [
+        "neutron_val1"
+      ]
+    },
+    {
+      "name": "oracle-2",
+      "image": "skip-mev/slinky-e2e-oracle",
+      "entrypoint": "slinky --market-map-endpoint neutron_val2:9090",
+      "depends_on": [
+        "neutron_val2"
+      ]
+    }
+  ],
+  "master_mnemonic": "clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion",
+  "loglevel": "debug",
+  "wallets": {
+    "demowallet1": {
+      "mnemonic": "banner spread envelope side kite person disagree path silver will brother under couch edit food venture squirrel civil budget number acquire point work mass",
+      "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
+    },
+    "demowallet2": {
+      "mnemonic": "veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only",
+      "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
+    },
+    "rly2": {
+      "mnemonic": "record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset",
+      "balance": "100000000000000"
+    }
+  },
+  "relayers": [
+    {
+      "type": "hermes",
+      "networks": [
+        "neutron",
+        "gaia"
+      ],
+      "connections": [
+        [
+          "neutron",
+          "gaia"
+        ]
+      ],
+      "image": "hermes-2:1.10.4",
+      "log_level": "trace",
+      "binary": "hermes",
+      "config": {
+        "chains.0.event_source.batch_delay": "200ms",
+        "chains.0.default_gas": 100000,
+        "chains.0.max_gas": 3000000,
+        "chains.0.gas_price.price": 0.0025,
+        "chains.0.gas_multiplier": 2.0,
+        "chains.0.clock_drift": "5s",
+        "chains.0.trusting_period": "10days",
+        "chains.1.event_source.batch_delay": "200ms",
+        "chains.1.default_gas": 100000,
+        "chains.1.max_gas": 3000000,
+        "chains.1.gas_price.price": 0.0025,
+        "chains.1.gas_multiplier": 2.0,
+        "chains.1.clock_drift": "5s",
+        "chains.1.trusting_period": "14days"
+      },
+      "mnemonic": "alley afraid soup fall idea toss can goose become valve initial strong forward bright dish figure check leopard decide warfare hub unusual join cart",
+      "balance": "100000000000000",
+      "upload": [
+        "./hermes/create-short-living-client.sh"
+      ],
+      "post_init": [
+        "HOST_CHAIN=test-1 REFERENCE_CHAIN=test-2 /root/create-short-living-client.sh"
+      ]
+    },
+    {
+      "type": "neutron",
+      "networks": [
+        "neutron",
+        "gaia"
+      ],
+      "image": "neutron-org/neutron-query-relayer-2",
+      "log_level": "debug",
+      "binary": "neutron-query-relayer",
+      "mnemonic": "obscure canal because tomorrow tribe sibling describe satoshi kiwi upgrade bless empty math trend erosion oblige donate label birth chronic hazard ensure wreck shine",
+      "balance": "100000000000000"
+    }
+  ]
+}
