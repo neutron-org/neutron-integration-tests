@@ -27,6 +27,7 @@
         "CHAINID=test-1 CHAIN_DIR=/opt /opt/init-neutrond.sh"
       ],
       "genesis_opts": {
+        "app_state.crisis.constant_fee.denom": "untrn",
         "app_state.auction.params.proposer_fee": "0.25",
         "app_state.bank.denom_metadata": [
           {
@@ -91,8 +92,8 @@
         "consensus.params.abci.vote_extensions_enable_height": "1"
       },
       "config_opts": {
-        "consensus.timeout_commit": "1s",
         "consensus.timeout_propose": "1s",
+        "consensus.timeout_commit": "1s",
         "p2p.allow_duplicate_ip": true
       },
       "app_opts": {
@@ -121,26 +122,23 @@
       "trace": true,
       "validators": 1,
       "validators_balance": [
-        "1900000000"
+        "100000000000000"
       ],
       "validators_stake": [
-        "100000000"
+        "7000000000"
       ],
       "genesis_opts": {
+        "app_state.crisis.constant_fee.denom": "uatom",
         "app_state.feemarket.params.enabled": false,
         "app_state.feemarket.params.fee_denom": "uatom",
         "app_state.feemarket.params.min_base_gas_price": "0.0025",
         "app_state.feemarket.state.base_gas_price": "0.0025",
-        "app_state.slashing.params.downtime_jail_duration": "10s",
-        "app_state.slashing.params.signed_blocks_window": "10",
-        "app_state.slashing.params.min_signed_per_window": "0.9",
-        "app_state.slashing.params.slash_fraction_downtime": "0.1",
-        "app_state.staking.params.validator_bond_factor": "10",
+        "app_state.gov.params.min_deposit[0].denom": "uatom",
+        "app_state.gov.params.expedited_min_deposit[0].denom": "uatom",
+        "app_state.mint.params.mint_denom": "uatom",
+        "app_state.provider.params.consumer_reward_denom_registration_fee.denom": "uatom",
         "app_state.staking.params.unbonding_time": "1814400s",
         "app_state.staking.params.bond_denom": "uatom",
-        "app_state.mint.minter.inflation": "0.9",
-        "app_state.mint.params.inflation_max": "0.95",
-        "app_state.mint.params.inflation_min": "0.5",
         "app_state.interchainaccounts.host_genesis_state.params.allow_messages": [
           "/cosmos.bank.v1beta1.MsgSend",
           "/cosmos.staking.v1beta1.MsgDelegate",
@@ -151,15 +149,20 @@
         ]
       },
       "config_opts": {
+        "consensus.timeout_propose": "1s",
+        "consensus.timeout_commit": "1s",
         "rpc.laddr": "tcp://0.0.0.0:26657"
       },
       "app_opts": {
+        "minimum-gas-prices": "0.0025uatom,0.0025ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+        "telemetry.enabled": true,
+        "telemetry.prometheus-retention-time": 1000,
         "api.enable": true,
-        "api.address": "tcp://0.0.0.0:1317",
         "api.swagger": true,
+        "api.address": "tcp://0.0.0.0:1317",
+        "api.enabled-unsafe-cors": true,
         "grpc.enable": true,
         "grpc.address": "0.0.0.0:9090",
-        "minimum-gas-prices": "0uatom",
         "rosetta.enable": true
       },
       "upload": [
