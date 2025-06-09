@@ -248,6 +248,6 @@ const getGenesisWallets = async (
   val1: await mnemonicWithAccountToWallet(config.VAL_MNEMONIC_1, prefix, 1),
   demo1: await mnemonicToWallet(config.DEMO_MNEMONIC_1, prefix),
   demo2: await mnemonicToWallet(config.DEMO_MNEMONIC_2, prefix),
-  icq: await mnemonicToWallet(config.DEMO_MNEMONIC_3, prefix),
-  rly1: await mnemonicToWallet(config.RLY_MNEMONIC_1, prefix),
+  icq: await mnemonicToWallet(config.ICQ_MNEMONIC, prefix),
+  ibc: await mnemonicToWallet(config.IBC_MNEMONIC, prefix),
 });

@@ -97,7 +97,5 @@ export const STAKING_INFO_PROXY =
 
 export const VAL_MNEMONIC_1 =
   'clock post desk civil pottery foster expand merit dash seminar song memory figure uniform spice circle try happy obvious trash crime hybrid hood cushion';
-export const VAL_MNEMONIC_2 =
-  'angry twist harsh drastic left brass behave host shove marriage fall update business leg direct reward object ugly security warm tuna model broccoli choice';
 
 export const SECOND_VALIDATOR_CONTAINER = 'main-neutron_val2-1';

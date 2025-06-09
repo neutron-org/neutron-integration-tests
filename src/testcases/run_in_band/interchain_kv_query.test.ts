@@ -110,7 +110,7 @@ describe('Neutron / Interchain KV Query', () => {
 
     gaiaClient2 = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      testState.wallets.cosmos.rly1.directwallet,
+      testState.wallets.cosmos.ibc.directwallet,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -493,7 +493,7 @@ describe('Neutron / Interchain KV Query', () => {
       const queryId = 2;
       const res = await gaiaClient.sendTokens(
         gaiaWallet.address,
-        testState.wallets.cosmos.rly1.address,
+        testState.wallets.cosmos.ibc.address,
         [{ denom: COSMOS_DENOM, amount: '9000' }],
         {
           gas: '200000',
@@ -720,7 +720,7 @@ describe('Neutron / Interchain KV Query', () => {
           connectionId,
           2,
           [COSMOS_DENOM],
-          testState.wallets.cosmos.rly1.address,
+          testState.wallets.cosmos.ibc.address,
         );
 
         await neutronClient.waitBlocks(1);
@@ -928,7 +928,7 @@ describe('Neutron / Interchain KV Query', () => {
 
       const proposalResp = await executeMsgSubmitProposal(
         gaiaClient2,
-        testState.wallets.cosmos.rly1,
+        testState.wallets.cosmos.ibc,
         '1250',
       );
 
