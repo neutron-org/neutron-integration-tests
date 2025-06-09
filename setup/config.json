@@ -210,10 +210,6 @@
     "demowallet2": {
       "mnemonic": "veteran try aware erosion drink dance decade comic dawn museum release episode original list ability owner size tuition surface ceiling depth seminar capable only",
       "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
-    },
-    "rly2": {
-      "mnemonic": "record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset",
-      "balance": "100000000000000"
     }
   },
   "relayers": [

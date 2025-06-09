@@ -250,5 +250,4 @@ const getGenesisWallets = async (
   demo2: await mnemonicToWallet(config.DEMO_MNEMONIC_2, prefix),
   icq: await mnemonicToWallet(config.DEMO_MNEMONIC_3, prefix),
   rly1: await mnemonicToWallet(config.RLY_MNEMONIC_1, prefix),
-  rly2: await mnemonicToWallet(config.RLY_MNEMONIC_2, prefix),
 });
