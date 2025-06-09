@@ -10,10 +10,10 @@ import { DaoContracts } from '@neutron-org/neutronjsplus/dist/dao_types';
 import { NEUTRON_DENOM, CONTRACTS } from './constants';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { addSubdaoProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { SigningNeutronClient } from './signing_neutron_client';
+import { NeutronTestClient } from './neutron_test_client';
 
 export const deploySubdao = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   mainDaoCoreAddress: string,
   overrulePreProposeAddress: string,
   securityDaoAddr: string,
@@ -152,7 +152,7 @@ export const deploySubdao = async (
 
 export const setupSubDaoTimelockSet = async (
   user: string,
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   mainDaoAddress: string,
   securityDaoAddr: string,
   mockMainDao: boolean,
@@ -180,7 +180,7 @@ export const setupSubDaoTimelockSet = async (
 
 export const deployNeutronDao = async (
   user: string,
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
 ): Promise<DaoContracts> => {
   const coreCodeId = await client.upload(CONTRACTS.DAO_CORE);
   const proposeSingleCodeId = await client.upload(

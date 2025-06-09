@@ -20,6 +20,9 @@ DEMO_MNEMONIC_3="obscure canal because tomorrow tribe sibling describe satoshi k
 RLY_MNEMONIC_1="alley afraid soup fall idea toss can goose become valve initial strong forward bright dish figure check leopard decide warfare hub unusual join cart"
 RLY_MNEMONIC_2="record gift you once hip style during joke field prize dust unique length more pencil transfer quit train device arrive energy sort steak upset"
 
+ETH_DEMO_1_ADDRESS="neutron165cyjk6ujhjy3cyxkj2wdqw3fj3k69kqkaqnrm"
+ETH_DEMO_2_ADDRESS="neutron1lx5vlcwz78zp4g24qne4mrsutvkkh5ffj674q5"
+ETH_DEMO_3_ADDRESS="neutron1m2arw2gnr5n3n0g2yg40y6qzj0lclw9jxuth9e"
 
 MASTER_CHAIN_DIR="${CHAIN_DIR}/node-1"
 
@@ -33,12 +36,15 @@ echo "$DEMO_MNEMONIC_2" | $BINARY keys add demowallet2 --home "$MASTER_CHAIN_DIR
 echo "$DEMO_MNEMONIC_3" | $BINARY keys add demowallet3 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
 echo "$RLY_MNEMONIC_1" | $BINARY keys add rly1 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
 echo "$RLY_MNEMONIC_2" | $BINARY keys add rly2 --home "$MASTER_CHAIN_DIR" --recover --keyring-backend=test
-#$BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show val2 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show demowallet1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show demowallet2 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show demowallet3 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
+# eth like demo1, demo2, demo3 accounts
+$BINARY $GENESIS_PREFIX add-genesis-account $ETH_DEMO_1_ADDRESS "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
+$BINARY $GENESIS_PREFIX add-genesis-account $ETH_DEMO_2_ADDRESS "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
+$BINARY $GENESIS_PREFIX add-genesis-account $ETH_DEMO_3_ADDRESS "100000000000000$STAKEDENOM,100000000000000$IBCATOMDENOM,100000000000000$IBCUSDCDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show rly1 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY $GENESIS_PREFIX add-genesis-account "$($BINARY --home "$MASTER_CHAIN_DIR" keys show rly2 --keyring-backend test -a --home "$MASTER_CHAIN_DIR")" "100000000000000$STAKEDENOM"  --home "$MASTER_CHAIN_DIR"
 $BINARY gentx val1 "100000000$STAKEDENOM" --home "$MASTER_CHAIN_DIR" --chain-id "$CHAINID" --keyring-backend test

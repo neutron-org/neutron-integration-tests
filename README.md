@@ -105,6 +105,8 @@ START_BLOCK_HEIGHT - how many blocks we wait before start first test
 NO_DOCKER - do not start cosmopark for tests
 NO_PRINT_VERSIONS - do not print contract versions in console
 DEBUG_SUBMIT_TX - log submitted txs to stdout
+WALLETS_SIGN_METHOD - use 'secp256k1' to sign messages using direct sign, 'eip191' to sign using ethereum like signature,
+'random' to pick method randomly each time you request for a new wallet
 ```
 
 ## Config

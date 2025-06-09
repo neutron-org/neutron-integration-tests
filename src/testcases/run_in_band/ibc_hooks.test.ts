@@ -6,21 +6,21 @@ import {
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 describe('Neutron / IBC hooks', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let contractAddress: string;
   let fee: any;
   const transferDenom =
@@ -29,26 +29,14 @@ describe('Neutron / IBC hooks', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     gaiaWallet = testState.wallets.cosmos.demo2;
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
-  });
-
-  describe('Wallets', () => {
-    test('Addresses', () => {
-      expect(testState.wallets.neutron.demo1.address).toEqual(
-        'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
-      );
-    });
   });
 
   describe('Instantiate hooks ibc transfer contract', () => {

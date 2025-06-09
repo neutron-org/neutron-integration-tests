@@ -6,7 +6,7 @@ import {
   ProtobufRpcClient,
   SigningStargateClient,
 } from '@cosmjs/stargate';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { Registry } from '@cosmjs/proto-signing';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
@@ -26,7 +26,7 @@ import {
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 
 import config from '../../config.json';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import {
   Dao,
   DaoMember,
@@ -36,11 +36,11 @@ import {
 
 describe('Neutron / Interchain TX Query', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let neutronRpcClient: ProtobufRpcClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let contractAddress: string;
   let bankQuerierGaia: BankQuerier;
   let interchainqQuerier: InterchainqQuerier;
@@ -52,17 +52,13 @@ describe('Neutron / Interchain TX Query', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
     bankQuerierGaia = new BankQuerier(await testState.gaiaRpcClient());

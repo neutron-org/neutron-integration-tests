@@ -1,14 +1,12 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
   STAKING_TRACKER,
   STAKING_VAULT,
-  VAL_MNEMONIC_1,
-  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -43,12 +41,12 @@ import { bytesFromBase64 } from 'cosmjs-types/helpers';
 
 describe('Neutron / Staking Tracker - Extended Scenarios', () => {
   let testState: LocalState;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
-  let validatorSecondClient: SigningNeutronClient;
-  let validatorPrimaryClient: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
+  let validatorSecondClient: NeutronTestClient;
+  let validatorPrimaryClient: NeutronTestClient;
 
-  let daoWalletClient: SigningNeutronClient;
+  let daoWalletClient: NeutronTestClient;
   let daoWallet: Wallet;
 
   let neutronWallet1: Wallet;
@@ -57,7 +55,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
   // weak is the validator with drastically less bonded tokens
   let validatorWeakAddr: string;
-  // strong is validator that controls ~90% of bonded tokens at the beginning
+  // strong is the validator that controls ~90% of bonded tokens at the beginning
   let validatorStrongAddr: string;
   let validatorSecondWallet: Wallet;
   let validatorPrimaryWallet: Wallet;
@@ -73,50 +71,36 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
 
-    neutronWallet1 = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
-    validatorSecondWallet = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
-    validatorPrimaryWallet = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
+    validatorSecondWallet = testState.wallets.neutron.val2;
+    validatorPrimaryWallet = testState.wallets.neutron.val1;
 
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.directwallet,
-      neutronWallet1.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     // This is the client for validator that could be disabled during testrun
-    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorSecondWallet.directwallet,
-      validatorSecondWallet.address,
+    validatorSecondClient = await NeutronTestClient.connectWithSigner(
+      validatorSecondWallet,
     );
 
     // This is client for validator that should work ALWAYS bc it's only one that exposes ports
     // In the state it is validator #2, so this naming is only for clients
-    validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorPrimaryWallet.directwallet,
-      validatorPrimaryWallet.address,
+    validatorPrimaryClient = await NeutronTestClient.connectWithSigner(
+      validatorPrimaryWallet,
     );
 
     daoWallet = testState.wallets.neutron.demo1;
-    daoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      daoWallet.directwallet,
-      daoWallet.address,
-    );
+    daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
 
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
 
+    const admin = testState.wallets.neutron.demo1Secp256k1;
+    const adminClient = await NeutronTestClient.connectWithSigner(admin);
     process.env.PAUSE_REWARDS === '1' &&
-      (await pauseRewardsContract(daoWalletClient));
+      (await pauseRewardsContract(adminClient));
   });
 
   describe('Staking tracker', () => {

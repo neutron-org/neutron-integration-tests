@@ -8,9 +8,9 @@ import { defaultRegistryTypes, SigningStargateClient } from '@cosmjs/stargate';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryTotalBurnedNeutronsAmountResponse } from '@neutron-org/neutronjs/neutron/feeburner/query';
 import { QuerySupplyOfResponse } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { MsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import {
@@ -24,10 +24,11 @@ import { DynamicFeesParams } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Tokenomics', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let receiverWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
   let treasuryContractAddress: string;
 
   let bankQuerier: BankQueryClient;
@@ -39,17 +40,14 @@ describe('Neutron / Tokenomics', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    receiverWallet = await testState.nextNeutronWallet();
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -176,7 +174,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -209,7 +207,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -248,7 +246,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -326,7 +324,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with uatom fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        receiverWallet.address,
         [
           {
             denom: NEUTRON_DENOM,
