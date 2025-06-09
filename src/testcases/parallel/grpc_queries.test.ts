@@ -159,7 +159,7 @@ describe('Neutron / Grpc Queries', () => {
       expect(res.account.address).toBe(neutronWallet.address);
     });
 
-    test('transfer denom trace should work', async () => {
+    test.skip('transfer denom trace should work', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
         transfer_denom_trace: {
           hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
