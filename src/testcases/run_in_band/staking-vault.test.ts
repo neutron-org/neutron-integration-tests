@@ -54,7 +54,7 @@ describe('Neutron / Staking Vault', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    daoWallet = testState.wallets.neutron.demo1;
+    daoWallet = await testState.nextNeutronWallet()
     daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
@@ -101,8 +101,10 @@ describe('Neutron / Staking Vault', () => {
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
 
+    const admin = testState.wallets.neutron.demo1Secp256k1;
+    const adminClient = await NeutronTestClient.connectWithSigner(admin);
     process.env.PAUSE_REWARDS === '1' &&
-      (await pauseRewardsContract(daoWalletClient));
+      (await pauseRewardsContract(adminClient));
   });
 
   describe('Delegate tokens to multiple validators', () => {

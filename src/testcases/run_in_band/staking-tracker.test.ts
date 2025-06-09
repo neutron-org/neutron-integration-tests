@@ -89,8 +89,10 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
 
+    const admin = testState.wallets.neutron.demo1Secp256k1;
+    const adminClient = await NeutronTestClient.connectWithSigner(admin);
     process.env.PAUSE_REWARDS === '1' &&
-      (await pauseRewardsContract(daoWalletClient));
+      (await pauseRewardsContract(adminClient));
   });
 
   describe('Staking tracker', () => {
