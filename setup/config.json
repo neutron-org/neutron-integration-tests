@@ -58,9 +58,8 @@
         "app_state.cron.params.limit": 5,
         "app_state.feemarket.params.min_base_gas_price": "0.0025",
         "app_state.feemarket.params.max_learning_rate": "0.5",
-        "app_state.feemarket.params.max_block_utilization": "1000000000",
         "app_state.feemarket.params.fee_denom": "untrn",
-        "app_state.feemarket.params.enabled": true,
+        "app_state.feemarket.params.enabled": false,
         "app_state.feemarket.params.distribute_fees": true,
         "app_state.feemarket.state.base_gas_price": "0.0025",
         "app_state.globalfee.params.minimum_gas_prices": [
@@ -88,6 +87,11 @@
         "app_state.slashing.params.slash_fraction_double_sign": "0.010000000000000000",
         "app_state.slashing.params.slash_fraction_downtime": "0.100000000000000000",
         "app_state.staking.params.bond_denom": "untrn",
+        "app_state.revenue.params.blocks_performance_requirement.allowed_to_miss": "0.1",
+        "app_state.revenue.params.blocks_performance_requirement.required_at_least": "0.4",
+        "app_state.revenue.params.oracle_votes_performance_requirement.allowed_to_miss": "0.1",
+        "app_state.revenue.params.oracle_votes_performance_requirement.required_at_least": "0.4",
+        "app_state.revenue.params.twap_window": "30",
         "consensus.params.block.max_gas": "1000000000",
         "consensus.params.abci.vote_extensions_enable_height": "1"
       },
