@@ -176,7 +176,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        testState.wallets.neutron.ibc.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -209,7 +209,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform tx with a very big neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        testState.wallets.neutron.ibc.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -248,7 +248,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with neutron fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        testState.wallets.neutron.ibc.address,
         [
           {
             denom: NEUTRON_DENOM,
@@ -326,7 +326,7 @@ describe('Neutron / Tokenomics', () => {
 
     test('Perform any tx and pay with uatom fee', async () => {
       await neutronClient.sendTokens(
-        testState.wallets.neutron.rly1.address,
+        testState.wallets.neutron.ibc.address,
         [
           {
             denom: NEUTRON_DENOM,
