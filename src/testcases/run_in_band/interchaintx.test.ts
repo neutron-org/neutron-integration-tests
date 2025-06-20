@@ -5,7 +5,7 @@ import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import {
   CONTRACTS,
-  COSMOS_DENOM,
+  COSMOS_DENOM, IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
@@ -38,6 +38,10 @@ import {
   Order,
   State,
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
+import { Dao, DaoMember, getDaoContracts, getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
+import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -320,6 +324,176 @@ describe('Neutron / Interchain TXs', () => {
           NEUTRON_DENOM,
         );
         expect(balance.amount).toEqual('6998000');
+      });
+    });
+
+    describe('Send Interchain TX with fees disabled', () => {
+      let daoMember: DaoMember;
+      let dao: Dao;
+      let neutronQuerier: NeutronQuerier;
+      let chainManagerAddress: string;
+
+      let relayerBalanceBefore: number;
+
+      beforeAll(async () => {
+        const neutronRpcClient = await testState.rpcClient('neutron');
+
+        const daoCoreAddress = await getNeutronDAOCore(
+          neutronClient,
+          neutronRpcClient,
+        );
+        const daoContracts = await getDaoContracts(
+          neutronClient,
+          daoCoreAddress,
+        );
+
+        neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        chainManagerAddress = admins.admins[0];
+
+        dao = new Dao(neutronClient, daoContracts);
+        daoMember = new DaoMember(
+          dao,
+          neutronClient.client,
+          neutronWallet.address,
+          NEUTRON_DENOM,
+        );
+        await daoMember.bondFunds('1000000000');
+
+        // disable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal #4',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: false,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+
+        const balance = await neutronClient.getBalance(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+          NEUTRON_DENOM,
+        );
+        relayerBalanceBefore = +(balance.amount || '0');
+      });
+
+      afterAll(async () => {
+        // enable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal #4',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: true,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+      });
+
+      test('delegate from first ICA', async () => {
+        const res = await neutronClient.execute(contractAddress, {
+          delegate: {
+            interchain_account_id: icaId1,
+            validator: testState.wallets.cosmos.val1.valAddress,
+            amount: '1000',
+            denom: COSMOS_DENOM,
+          },
+        });
+        expect(res.code).toEqual(0);
+        const sequenceId = getSequenceId(res);
+        await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
+        const ackRes = await getAck(
+          neutronClient,
+          contractAddress,
+          icaId1,
+          sequenceId,
+        );
+        expect(ackRes).toMatchObject<AcknowledgementResult>({
+          success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
+        });
+      });
+      test('check validator state', async () => {
+        const res1 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
+          gaiaClient,
+          () =>
+            gaiaStakingQuerier.DelegatorDelegations({
+              delegatorAddr: icaAddress1,
+            }),
+          async (delegations) => delegations.delegationResponses?.length == 1,
+        );
+        expect(res1.delegationResponses).toEqual([
+          {
+            balance: { amount: '1000', denom: COSMOS_DENOM },
+            delegation: {
+              delegatorAddress: icaAddress1,
+              shares: '1000000000000000000000',
+              validatorAddress:
+                'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+            },
+          },
+        ]);
+        const res2 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
+          gaiaClient,
+          () =>
+            gaiaStakingQuerier.DelegatorDelegations({
+              delegatorAddr: icaAddress2,
+            }),
+          async (delegations) => delegations.delegationResponses?.length == 0,
+        );
+        expect(res2.delegationResponses).toEqual([]);
+      });
+      test('check contract balance', async () => {
+        const balance = await neutronClient.getBalance(
+          contractAddress,
+          NEUTRON_DENOM,
+        );
+        expect(balance.amount).toEqual('6998000');
+      });
+
+      test('relayer balance should not change', async () => {
+        // TODO
       });
     });
 

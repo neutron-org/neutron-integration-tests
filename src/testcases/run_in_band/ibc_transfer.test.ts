@@ -20,6 +20,15 @@ import { Wallet } from '../../helpers/wallet';
 import { getIBCDenom } from '@neutron-org/neutronjsplus/dist/cosmos';
 import config from '../../config.json';
 import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
+import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =
@@ -252,6 +261,178 @@ describe('Neutron / IBC transfer', () => {
         ).rejects.toThrow(/invalid coins/);
       });
     });
+    describe('Disabled fee', () => {
+      let daoMember: DaoMember;
+      let dao: Dao;
+      let neutronQuerier: NeutronQuerier;
+      let chainManagerAddress: string;
+
+      let relayerBalanceBefore: number;
+      let contractBalanceBefore: number;
+      let gaiaBalanceBefore: number;
+
+      beforeAll(async () => {
+        const neutronRpcClient = await testState.rpcClient('neutron');
+
+        const daoCoreAddress = await getNeutronDAOCore(
+          neutronClient,
+          neutronRpcClient,
+        );
+        const daoContracts = await getDaoContracts(
+          neutronClient,
+          daoCoreAddress,
+        );
+
+        neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        chainManagerAddress = admins.admins[0];
+
+        dao = new Dao(neutronClient, daoContracts);
+        daoMember = new DaoMember(
+          dao,
+          neutronClient.client,
+          neutronWallet.address,
+          NEUTRON_DENOM,
+        );
+        await daoMember.bondFunds('1000000000');
+
+        // disable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal #4',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: false,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+
+        const balance = await neutronClient.getBalance(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+          NEUTRON_DENOM,
+        );
+        relayerBalanceBefore = +(balance.amount || '0');
+
+        const balance2 = await neutronClient.getBalance(
+          ibcContract,
+          NEUTRON_DENOM,
+        );
+        contractBalanceBefore = +(balance2.amount || '0');
+
+        const balance3 = await gaiaClient.getBalance(
+          gaiaWallet.address,
+          IBC_TOKEN_DENOM,
+        );
+        gaiaBalanceBefore = +(balance3.amount || '0');
+      });
+
+      afterAll(async () => {
+        // enable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal #4',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: true,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+      });
+
+      test('set payer fees in contract', async () => {
+        const res = await neutronClient.execute(ibcContract, {
+          set_fees: {
+            denom: NEUTRON_DENOM,
+            ack_fee: '100000',
+            recv_fee: '0',
+            timeout_fee: '200000',
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
+
+      test('execute contract', async () => {
+        const res = await neutronClient.execute(ibcContract, {
+          send: {
+            channel: TRANSFER_CHANNEL,
+            to: gaiaWallet.address,
+            denom: NEUTRON_DENOM,
+            amount: '1000',
+          },
+        });
+        expect(res.code).toEqual(0);
+      });
+
+      test('check wallet balance', async () => {
+        await neutronClient.waitBlocks(10);
+        const balanceAfter = await gaiaClient.getBalance(
+          gaiaWallet.address,
+          IBC_TOKEN_DENOM,
+        );
+        // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
+        expect(+balanceAfter.amount - gaiaBalanceBefore).toEqual(3000);
+      });
+
+      test('relayer must not receive fee', async () => {
+        await neutronClient.waitBlocks(10);
+        const balanceAfter = await neutronClient.getBalance(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+          NEUTRON_DENOM,
+        );
+        expect(+balanceAfter.amount - relayerBalanceBefore).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
+      });
+
+      test('contract should not send fee', async () => {
+        await neutronClient.waitBlocks(10);
+        const balanceAfter = await neutronClient.getBalance(
+          ibcContract,
+          NEUTRON_DENOM,
+        );
+        expect(contractBalanceBefore - +balanceAfter.amount).toBe(3000);
+      });
+    });
+
     describe('Multihops', () => {
       // 1. Check balance of Account 1 on Chain 1
       // 2. Check balance of Account 3 on Chain 2
