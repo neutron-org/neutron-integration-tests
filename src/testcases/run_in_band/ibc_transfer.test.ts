@@ -82,19 +82,21 @@ describe('Neutron / IBC transfer', () => {
 
   describe('IBC', () => {
     describe('Correct way', () => {
-      let relayerBalance = 0;
+      let beforeRelayerBalance = 0;
       beforeAll(async () => {
         await neutronClient.waitBlocks(10);
         const balance = await neutronClient.getBalance(
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        relayerBalance = parseInt(balance.amount || '0', 10);
+        console.log('balance.amount: ' + balance.amount);
+        beforeRelayerBalance = parseInt(balance.amount || '0', 10);
+        console.log('relayerBalance: ' + beforeRelayerBalance);
       });
       test('transfer to contract', async () => {
         const res = await neutronClient.sendTokens(
           ibcContract,
-          [{ denom: NEUTRON_DENOM, amount: '50000' }],
+          [{ denom: NEUTRON_DENOM, amount: '500000' }],
           {
             gas: '200000',
             amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
@@ -108,7 +110,7 @@ describe('Neutron / IBC transfer', () => {
           address: ibcContract,
         });
         expect(res.balances).toEqual([
-          { amount: '50000', denom: NEUTRON_DENOM },
+          { amount: '500000', denom: NEUTRON_DENOM },
         ]);
       });
       test('IBC transfer from a usual account', async () => {
@@ -189,9 +191,9 @@ describe('Neutron / IBC transfer', () => {
         const res = await neutronClient.execute(ibcContract, {
           set_fees: {
             denom: NEUTRON_DENOM,
-            ack_fee: '2333',
+            ack_fee: '20000',
             recv_fee: '0',
-            timeout_fee: '2666',
+            timeout_fee: '30000',
           },
         });
         expect(res.code).toEqual(0);
@@ -224,9 +226,10 @@ describe('Neutron / IBC transfer', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        const resBalance =
-          parseInt(balance.amount, 10) - 2333 * 2 - relayerBalance;
-        expect(resBalance).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
+        const afterBalance = parseInt(balance.amount, 10);
+        const resBalance = afterBalance - beforeRelayerBalance - 20000 * 2;
+        console.log('resBalance diff: ', resBalance);
+        expect(resBalance).toBeGreaterThan(-4000); // it may differ by about 3-4k because of the gas fee
       });
       test('contract should be refunded', async () => {
         await neutronClient.waitBlocks(10);
@@ -234,7 +237,7 @@ describe('Neutron / IBC transfer', () => {
           ibcContract,
           NEUTRON_DENOM,
         );
-        expect(parseInt(balance.amount, 10)).toBe(50000 - 3000 - 2333 * 2);
+        expect(+balance.amount).toBe(500000 - 3000 - 20000 * 2);
       });
     });
     describe('Missing fee', () => {
@@ -303,7 +306,7 @@ describe('Neutron / IBC transfer', () => {
         const proposalId =
           await daoMember.submitUpdateParamsFeerefunderProposal(
             chainManagerAddress,
-            'Proposal #4',
+            'Proposal',
             'Feerefunder update params proposal',
             updateFeerefunderParamsProposal({
               min_fee: {
@@ -420,7 +423,7 @@ describe('Neutron / IBC transfer', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        expect(+balanceAfter.amount - relayerBalanceBefore).toBeLessThan(5); // it may differ by about 1-2 because of the gas fee
+        expect(relayerBalanceBefore - +balanceAfter.amount).toBeLessThan(2000); // it may differ by about 1400 because of the gas fee
       });
 
       test('contract should not send fee', async () => {

@@ -5,7 +5,8 @@ import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Registry } from '@cosmjs/proto-signing';
 import {
   CONTRACTS,
-  COSMOS_DENOM, IBC_RELAYER_NEUTRON_ADDRESS,
+  COSMOS_DENOM,
+  IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
@@ -38,7 +39,12 @@ import {
   Order,
   State,
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
-import { Dao, DaoMember, getDaoContracts, getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
@@ -333,6 +339,7 @@ describe('Neutron / Interchain TXs', () => {
       let neutronQuerier: NeutronQuerier;
       let chainManagerAddress: string;
 
+      let contractBalanceBefore: number;
       let relayerBalanceBefore: number;
 
       beforeAll(async () => {
@@ -367,20 +374,20 @@ describe('Neutron / Interchain TXs', () => {
         const proposalId =
           await daoMember.submitUpdateParamsFeerefunderProposal(
             chainManagerAddress,
-            'Proposal #4',
+            'Proposal update feerefunder params',
             'Feerefunder update params proposal',
             updateFeerefunderParamsProposal({
               min_fee: {
                 recv_fee: [],
                 ack_fee: [
                   {
-                    amount: '1',
+                    amount: '1000',
                     denom: NEUTRON_DENOM,
                   },
                 ],
                 timeout_fee: [
                   {
-                    amount: '1',
+                    amount: '1000',
                     denom: NEUTRON_DENOM,
                   },
                 ],
@@ -398,6 +405,12 @@ describe('Neutron / Interchain TXs', () => {
           NEUTRON_DENOM,
         );
         relayerBalanceBefore = +(balance.amount || '0');
+
+        const balance2 = await neutronClient.getBalance(
+          contractAddress,
+          NEUTRON_DENOM,
+        );
+        contractBalanceBefore = +(balance2.amount || '0');
       });
 
       afterAll(async () => {
@@ -461,14 +474,14 @@ describe('Neutron / Interchain TXs', () => {
             gaiaStakingQuerier.DelegatorDelegations({
               delegatorAddr: icaAddress1,
             }),
-          async (delegations) => delegations.delegationResponses?.length == 1,
+          async (res) => res.delegationResponses?.length == 1,
         );
         expect(res1.delegationResponses).toEqual([
           {
-            balance: { amount: '1000', denom: COSMOS_DENOM },
+            balance: { amount: '2000', denom: COSMOS_DENOM },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '1000000000000000000000',
+              shares: '2000000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -484,16 +497,20 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res2.delegationResponses).toEqual([]);
       });
-      test('check contract balance', async () => {
+      test('contract balance should not change', async () => {
         const balance = await neutronClient.getBalance(
           contractAddress,
           NEUTRON_DENOM,
         );
-        expect(balance.amount).toEqual('6998000');
+        expect(+balance.amount).toEqual(contractBalanceBefore);
       });
 
       test('relayer balance should not change', async () => {
-        // TODO
+        const balanceAfter = await neutronClient.getBalance(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+          NEUTRON_DENOM,
+        );
+        expect(relayerBalanceBefore - +balanceAfter.amount).toBeLessThan(2000); // it may differ by about 1400 because of the gas fee
       });
     });
 
@@ -539,10 +556,10 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res1.delegationResponses).toEqual([
           {
-            balance: { amount: '2000', denom: COSMOS_DENOM },
+            balance: { amount: '3000', denom: COSMOS_DENOM },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '2000000000000000000000',
+              shares: '3000000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -597,7 +614,7 @@ describe('Neutron / Interchain TXs', () => {
           undelegate: {
             interchain_account_id: icaId1,
             validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '1000',
+            amount: '2000',
             denom: COSMOS_DENOM,
           },
         });
