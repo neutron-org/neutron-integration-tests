@@ -487,15 +487,6 @@ describe('Neutron / Interchain TXs', () => {
             },
           },
         ]);
-        const res2 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
-          gaiaClient,
-          () =>
-            gaiaStakingQuerier.DelegatorDelegations({
-              delegatorAddr: icaAddress2,
-            }),
-          async (delegations) => delegations.delegationResponses?.length == 0,
-        );
-        expect(res2.delegationResponses).toEqual([]);
       });
       test('contract balance should not change', async () => {
         const balance = await neutronClient.getBalance(

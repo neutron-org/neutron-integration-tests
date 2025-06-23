@@ -89,9 +89,7 @@ describe('Neutron / IBC transfer', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        console.log('balance.amount: ' + balance.amount);
         beforeRelayerBalance = parseInt(balance.amount || '0', 10);
-        console.log('relayerBalance: ' + beforeRelayerBalance);
       });
       test('transfer to contract', async () => {
         const res = await neutronClient.sendTokens(
@@ -228,7 +226,6 @@ describe('Neutron / IBC transfer', () => {
         );
         const afterBalance = parseInt(balance.amount, 10);
         const resBalance = afterBalance - beforeRelayerBalance - 20000 * 2;
-        console.log('resBalance diff: ', resBalance);
         expect(resBalance).toBeGreaterThan(-4000); // it may differ by about 3-4k because of the gas fee
       });
       test('contract should be refunded', async () => {
