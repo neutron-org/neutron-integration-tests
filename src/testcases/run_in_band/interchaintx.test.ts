@@ -400,6 +400,10 @@ describe('Neutron / Interchain TXs', () => {
         await dao.checkPassedProposal(proposalId);
         await daoMember.executeProposalWithAttempts(proposalId);
 
+        const feerefunderParams =
+          await neutronQuerier.neutron.feerefunder.params({});
+        expect(feerefunderParams.params.feeEnabled).toBeFalse();
+
         const balance = await neutronClient.getBalance(
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
@@ -443,6 +447,10 @@ describe('Neutron / Interchain TXs', () => {
         await daoMember.voteYes(proposalId);
         await dao.checkPassedProposal(proposalId);
         await daoMember.executeProposalWithAttempts(proposalId);
+
+        const feerefunderParams =
+          await neutronQuerier.neutron.feerefunder.params({});
+        expect(feerefunderParams.params.feeEnabled).toBeTrue();
       });
 
       test('delegate from first ICA', async () => {
@@ -501,7 +509,7 @@ describe('Neutron / Interchain TXs', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        expect(relayerBalanceBefore - +balanceAfter.amount).toBeLessThan(2000); // it may differ by about 1400 because of the gas fee
+        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000); // it may differ by about 1400 because of the gas fee
       });
     });
 
