@@ -7,7 +7,10 @@ import {
   VAL_MNEMONIC_1,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicWithAccountToWallet } from '../../helpers/local_state';
+import {
+  LocalState,
+  mnemonicWithAccountToWallet,
+} from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import {
@@ -102,10 +105,18 @@ describe('Neutron / Staking Vault', () => {
       NEUTRON_DENOM,
     );
 
-    validatorWallet1 = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 1);
+    validatorWallet1 = await mnemonicWithAccountToWallet(
+      VAL_MNEMONIC_1,
+      'neutron',
+      1,
+    );
     validatorAddr1 = validatorWallet1.valAddress;
 
-    validatorWallet2 = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 2);
+    validatorWallet2 = await mnemonicWithAccountToWallet(
+      VAL_MNEMONIC_1,
+      'neutron',
+      2,
+    );
     validatorAddr2 = validatorWallet2.valAddress;
 
     const neutronQuerier = await createNeutronClient({

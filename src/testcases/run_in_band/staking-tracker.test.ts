@@ -7,7 +7,10 @@ import {
   VAL_MNEMONIC_1,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicWithAccountToWallet } from '../../helpers/local_state';
+import {
+  LocalState,
+  mnemonicWithAccountToWallet,
+} from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
@@ -67,8 +70,16 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     neutronWallet1 = await testState.nextWallet('neutron');
     neutronWallet2 = await testState.nextWallet('neutron');
 
-    validatorPrimaryWallet = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 1);
-    validatorSecondWallet = await mnemonicWithAccountToWallet(VAL_MNEMONIC_1, 'neutron', 2);
+    validatorPrimaryWallet = await mnemonicWithAccountToWallet(
+      VAL_MNEMONIC_1,
+      'neutron',
+      1,
+    );
+    validatorSecondWallet = await mnemonicWithAccountToWallet(
+      VAL_MNEMONIC_1,
+      'neutron',
+      2,
+    );
 
     neutronClient1 = await SigningNeutronClient.connectWithSigner(
       testState.rpcNeutron,

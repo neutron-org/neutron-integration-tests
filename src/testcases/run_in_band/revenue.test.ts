@@ -261,7 +261,6 @@ describe('Neutron / Revenue', () => {
       let tries = 0;
       for (;;) {
         tries++;
-        console.log(tries);
         if (tries > 120) {
           throw new Error("slinky couldn't provide NTRN price in 2 minutes");
         }
@@ -269,12 +268,9 @@ describe('Neutron / Revenue', () => {
         try {
           // we get an error until slinky get up and start filling TWAP price
           // no error thrown means slinky up and posts prices
-          console.log("await revenueQuerier.paymentInfo();");
           await revenueQuerier.paymentInfo();
-          console.log("break");
           break;
         } catch {
-          console.log("waiting 1 block");
           await waitBlocks(1, neutronClient);
         }
       }

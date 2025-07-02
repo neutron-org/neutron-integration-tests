@@ -5,7 +5,7 @@ import {
   QueryClient,
 } from '@cosmjs/stargate';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { HdPath, stringToPath } from "@cosmjs/crypto";
+import { HdPath, stringToPath } from '@cosmjs/crypto';
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
