@@ -36,14 +36,14 @@ BigInt.prototype.toJSON = function () {
   return Number(this);
 };
 
-const VALIDATOR_CONTAINER = 'neutron-node-1';
-const ORACLE_CONTAINER = 'setup-oracle-1-1';
+const VALIDATOR_CONTAINER = 'main-neutron_val2-1';
+const ORACLE_CONTAINER = 'main-oracle-2-1';
 
-const VALOPER_VAL1 = 'neutronvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk5tccmr';
-const VALOPER_ACCOUNT_VAL1 = 'neutron18hl5c9xn5dze2g50uaw0l2mr02ew57zkwkppa8';
+const VALOPER_VAL1 = 'neutronvaloper1m58makq8u902aaa3hcmhvaqmfhfk40vslm3zk9';
+const VALOPER_ACCOUNT_VAL1 = 'neutron1m58makq8u902aaa3hcmhvaqmfhfk40vs9xgmsp';
 // a validator with a small stake that will be disabled and enabled during the run
-const VALOPER_VAL2 = 'neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx';
-const VALOPER_ACCOUNT_VAL2 = 'neutron1qnk2n4nlkpw9xfqntladh74w6ujtulwn6dwq8z';
+const VALOPER_VAL2 = 'neutronvaloper1zhj0cmv44fyj827lv0pk978g09jfhxcrg3x0w8';
+const VALOPER_ACCOUNT_VAL2 = 'neutron1zhj0cmv44fyj827lv0pk978g09jfhxcrjvlkgr';
 
 // THE TEST IS TIGHTLY COUPLED WITH THE FOLLOWING PARAM VALUES. CHANGE MAY BREAK THE TEST
 const REVENUE_PARAM_REWARD_QUOTE_AMOUNT = 2500;
