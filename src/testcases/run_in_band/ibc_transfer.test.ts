@@ -232,7 +232,7 @@ describe('Neutron / IBC transfer', () => {
         const resBalance = afterBalance - beforeRelayerBalance - ackFee * 2;
         expect(resBalance).toBeWithin(-4000, 0); // it may differ by about 3-4k because of the gas fee
       });
-      test('contract should be refunded', async () => {
+      test('contract should be charged the fees', async () => {
         await neutronClient.waitBlocks(10);
         const balance = await neutronClient.getBalance(
           ibcContract,
@@ -440,8 +440,8 @@ describe('Neutron / IBC transfer', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        // if relayer had received a fee, it would have been around -(200k - 2k)
-        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000); // it may differ by about 1400 because of the gas fee
+        // relayer balance changes only because of gas fees
+        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000);
       });
 
       test('contract should not send fee', async () => {

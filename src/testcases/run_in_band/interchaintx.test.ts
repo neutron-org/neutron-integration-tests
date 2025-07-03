@@ -509,7 +509,8 @@ describe('Neutron / Interchain TXs', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000); // it may differ by about 1400 because of the gas fee
+        // relayer balance changes only because of gas fees
+        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000);
       });
     });
 
