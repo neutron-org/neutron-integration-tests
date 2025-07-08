@@ -54,7 +54,7 @@ describe('Neutron / Staking Vault', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    daoWallet = await testState.nextNeutronWallet()
+    daoWallet = await testState.nextNeutronWallet();
     daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
