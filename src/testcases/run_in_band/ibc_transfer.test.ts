@@ -1,5 +1,5 @@
 import { Registry } from '@cosmjs/proto-signing';
-import { RunnerTestSuite, inject } from 'vitest';
+import { RunnerTestSuite, inject, describe, afterAll, beforeAll } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
@@ -92,7 +92,7 @@ describe('Neutron / IBC transfer', () => {
           IBC_RELAYER_NEUTRON_ADDRESS,
           NEUTRON_DENOM,
         );
-        beforeRelayerBalance = parseInt(balance.amount || '0', 10);
+        beforeRelayerBalance = +balance.amount;
       });
       test('transfer to contract', async () => {
         const res = await neutronClient.sendTokens(
@@ -191,10 +191,12 @@ describe('Neutron / IBC transfer', () => {
       test('set payer fees', async () => {
         const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: ackFee.toString(),
-            recv_fee: '0',
-            timeout_fee: '30000',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: ackFee.toString(),
+              recv_fee: '0',
+              timeout_fee: '30000',
+            },
           },
         });
         expect(res.code).toEqual(0);
@@ -247,14 +249,17 @@ describe('Neutron / IBC transfer', () => {
     });
     describe('Missing fee', () => {
       beforeAll(async () => {
-        await neutronClient.execute(ibcContract, {
+        const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '0',
-            recv_fee: '0',
-            timeout_fee: '0',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: '0',
+              recv_fee: '0',
+              timeout_fee: '0',
+            },
           },
         });
+        expect(res.code).toEqual(0);
       });
       test('execute contract should fail', async () => {
         await expect(
@@ -342,24 +347,6 @@ describe('Neutron / IBC transfer', () => {
         const feerefunderParams =
           await neutronQuerier.neutron.feerefunder.params({});
         expect(feerefunderParams.params.feeEnabled).toBeFalse();
-
-        const balance = await neutronClient.getBalance(
-          IBC_RELAYER_NEUTRON_ADDRESS,
-          NEUTRON_DENOM,
-        );
-        relayerBalanceBefore = +(balance.amount || '0');
-
-        const balance2 = await neutronClient.getBalance(
-          ibcContract,
-          NEUTRON_DENOM,
-        );
-        contractBalanceBefore = +(balance2.amount || '0');
-
-        const balance3 = await gaiaClient.getBalance(
-          gaiaWallet.address,
-          IBC_TOKEN_DENOM,
-        );
-        gaiaBalanceBefore = +(balance3.amount || '0');
       });
 
       afterAll(async () => {
@@ -398,62 +385,178 @@ describe('Neutron / IBC transfer', () => {
         expect(feerefunderParams.params.feeEnabled).toBeTrue();
       });
 
-      test('set payer fees in contract', async () => {
-        const res = await neutronClient.execute(ibcContract, {
-          set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '100000',
-            recv_fee: '0',
-            timeout_fee: '200000',
-          },
+      describe('Fees disabled does not send fees even if specified', async () => {
+        beforeAll(async () => {
+          const res = await neutronClient.execute(ibcContract, {
+            set_fees: {
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '100000',
+                recv_fee: '0',
+                timeout_fee: '200000',
+              },
+            },
+          });
+          expect(res.code).toEqual(0);
+
+          const balance = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          relayerBalanceBefore = +balance.amount;
+
+          const balance2 = await neutronClient.getBalance(
+            ibcContract,
+            NEUTRON_DENOM,
+          );
+          contractBalanceBefore = +balance2.amount;
+
+          const balance3 = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          gaiaBalanceBefore = +balance3.amount;
         });
-        expect(res.code).toEqual(0);
-      });
 
-      test('execute contract', async () => {
-        const res = await neutronClient.execute(ibcContract, {
-          send: {
-            channel: TRANSFER_CHANNEL,
-            to: gaiaWallet.address,
-            denom: NEUTRON_DENOM,
-            amount: transferAmount.toString(),
-          },
+        test('execute contract', async () => {
+          const res = await neutronClient.execute(ibcContract, {
+            send: {
+              channel: TRANSFER_CHANNEL,
+              to: gaiaWallet.address,
+              denom: NEUTRON_DENOM,
+              amount: transferAmount.toString(),
+            },
+          });
+          expect(res.code).toEqual(0);
         });
-        expect(res.code).toEqual(0);
+
+        test('check wallet balance', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
+          expect(+balanceAfter.amount - gaiaBalanceBefore).toEqual(
+            transferAmount * 3,
+          );
+        });
+
+        test('relayer must not receive fee', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          // relayer balance changes only because of gas fees
+          expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(
+            0,
+            2000,
+          );
+        });
+
+        test('contract should not send fee', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await neutronClient.getBalance(
+            ibcContract,
+            NEUTRON_DENOM,
+          );
+          // contract sent only transferAmount * 3
+          expect(contractBalanceBefore - +balanceAfter.amount).toBe(
+            transferAmount * 3,
+          );
+        });
       });
 
-      test('check wallet balance', async () => {
-        await neutronClient.waitBlocks(10);
-        const balanceAfter = await gaiaClient.getBalance(
-          gaiaWallet.address,
-          IBC_TOKEN_DENOM,
-        );
-        // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
-        expect(+balanceAfter.amount - gaiaBalanceBefore).toEqual(
-          transferAmount * 3,
-        );
-      });
+      describe('Fees disabled allow for empty fees', async () => {
+        beforeAll(async () => {
+          const res = await neutronClient.execute(ibcContract, {
+            set_fees: {
+              fees: null,
+            },
+          });
+          expect(res.code).toEqual(0);
 
-      test('relayer must not receive fee', async () => {
-        await neutronClient.waitBlocks(10);
-        const balanceAfter = await neutronClient.getBalance(
-          IBC_RELAYER_NEUTRON_ADDRESS,
-          NEUTRON_DENOM,
-        );
-        // relayer balance changes only because of gas fees
-        expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(0, 2000);
-      });
+          const balance = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          relayerBalanceBefore = +balance.amount;
 
-      test('contract should not send fee', async () => {
-        await neutronClient.waitBlocks(10);
-        const balanceAfter = await neutronClient.getBalance(
-          ibcContract,
-          NEUTRON_DENOM,
-        );
-        // contract sent only transferAmount * 3
-        expect(contractBalanceBefore - +balanceAfter.amount).toBe(
-          transferAmount * 3,
-        );
+          const balance2 = await neutronClient.getBalance(
+            ibcContract,
+            NEUTRON_DENOM,
+          );
+          contractBalanceBefore = +balance2.amount;
+
+          const balance3 = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          gaiaBalanceBefore = +balance3.amount;
+        });
+        afterAll(async () => {
+          const res = await neutronClient.execute(ibcContract, {
+            set_fees: {
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '100000',
+                recv_fee: '0',
+                timeout_fee: '200000',
+              },
+            },
+          });
+          expect(res.code).toEqual(0);
+        });
+
+        test('execute contract', async () => {
+          const res = await neutronClient.execute(ibcContract, {
+            send: {
+              channel: TRANSFER_CHANNEL,
+              to: gaiaWallet.address,
+              denom: NEUTRON_DENOM,
+              amount: transferAmount.toString(),
+            },
+          });
+          expect(res.code).toEqual(0);
+        });
+
+        test('check wallet balance', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          // we expect X3 balance because the contract sends 2 txs: first one = amount and the second one amount*2
+          expect(+balanceAfter.amount - gaiaBalanceBefore).toEqual(
+            transferAmount * 3,
+          );
+        });
+
+        test('relayer must not receive fee', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          // relayer balance changes only because of gas fees
+          expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(
+            0,
+            2000,
+          );
+        });
+
+        test('contract should not send fee', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await neutronClient.getBalance(
+            ibcContract,
+            NEUTRON_DENOM,
+          );
+          // contract sent only transferAmount * 3
+          expect(contractBalanceBefore - +balanceAfter.amount).toBe(
+            transferAmount * 3,
+          );
+        });
       });
     });
 
@@ -577,10 +680,12 @@ describe('Neutron / IBC transfer', () => {
       test('try to set fee in IBC transferred atoms', async () => {
         const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: uatomIBCDenom,
-            ack_fee: '100',
-            recv_fee: '0',
-            timeout_fee: '100',
+            fees: {
+              denom: uatomIBCDenom,
+              ack_fee: '100',
+              recv_fee: '0',
+              timeout_fee: '100',
+            },
           },
         });
         expect(res.code).toEqual(0);
@@ -599,14 +704,17 @@ describe('Neutron / IBC transfer', () => {
     });
     describe('Not enough amount of tokens on contract to pay fee', () => {
       beforeAll(async () => {
-        await neutronClient.execute(ibcContract, {
+        const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '1000000',
-            recv_fee: '0',
-            timeout_fee: '100000',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: '1000000',
+              recv_fee: '0',
+              timeout_fee: '100000',
+            },
           },
         });
+        expect(res.code).toEqual(0);
       });
       test('execute contract should fail', async () => {
         await expect(
@@ -624,14 +732,17 @@ describe('Neutron / IBC transfer', () => {
 
     describe('Failing sudo handlers', () => {
       beforeAll(async () => {
-        await neutronClient.execute(ibcContract, {
+        const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '1000',
-            recv_fee: '0',
-            timeout_fee: '1000',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: '1000',
+              recv_fee: '0',
+              timeout_fee: '1000',
+            },
           },
         });
+        expect(res.code).toEqual(0);
       });
       test('execute contract with failing sudo', async () => {
         const failuresBeforeCall = await contractManagerQuerier.failures({
