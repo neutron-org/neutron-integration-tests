@@ -385,6 +385,78 @@ describe('Neutron / IBC transfer', () => {
         expect(feerefunderParams.params.feeEnabled).toBeTrue();
       });
 
+      describe('Original msg transfer from neutron', async () => {
+        let gaiaBalanceBefore: number;
+
+        test('IBC transfer from a usual account', async () => {
+          const balance = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          gaiaBalanceBefore = +balance.amount;
+
+          const fee = {
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
+          };
+          const res = await neutronClient.signAndBroadcast(
+            [
+              {
+                typeUrl: GaiaMsgTransfer.typeUrl,
+                value: GaiaMsgTransfer.fromPartial({
+                  sourcePort: 'transfer',
+                  sourceChannel: TRANSFER_CHANNEL,
+                  token: { denom: NEUTRON_DENOM, amount: '1000' },
+                  sender: neutronWallet.address,
+                  receiver: gaiaWallet.address,
+                  timeoutHeight: {
+                    revisionNumber: 2n,
+                    revisionHeight: 100000000n,
+                  },
+                }),
+              },
+            ],
+            fee,
+          );
+          expect(res.code).toEqual(0);
+        });
+
+        test('Balance changed correctly', async () => {
+          await neutronClient.waitBlocks(10);
+          const balance = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          expect(+balance.amount - gaiaBalanceBefore).toEqual(1000);
+        });
+
+        test('execute contract', async () => {
+          const balance = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          gaiaBalanceBefore = +balance.amount;
+          const res = await neutronClient.execute(ibcContract, {
+            send_native: {
+              channel: TRANSFER_CHANNEL,
+              to: gaiaWallet.address,
+              denom: NEUTRON_DENOM,
+              amount: '1000',
+            },
+          });
+          expect(res.code).toEqual(0);
+        });
+
+        test('transfer changed gaia wallet balance', async () => {
+          await neutronClient.waitBlocks(10);
+          const balanceAfter = await gaiaClient.getBalance(
+            gaiaWallet.address,
+            IBC_TOKEN_DENOM,
+          );
+          expect(+balanceAfter.amount - gaiaBalanceBefore).toEqual(1000);
+        });
+      });
+
       describe('Fees disabled does not send fees even if specified', async () => {
         beforeAll(async () => {
           const res = await neutronClient.execute(ibcContract, {
