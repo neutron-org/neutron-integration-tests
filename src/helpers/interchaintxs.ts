@@ -1,4 +1,4 @@
-import { SigningNeutronClient } from './signing_neutron_client';
+import { NeutronTestClient } from './neutron_test_client';
 import { JsonObject } from '@cosmjs/cosmwasm-stargate';
 import { Link } from '@confio/relayer/build';
 import { PacketWithMetadata } from '@confio/relayer/build/lib/endpoint';
@@ -12,7 +12,7 @@ export type AcknowledgementResult =
  * cleanAckResults clears all ACK's from contract storage
  */
 export const cleanAckResults = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
 ) => client.execute(contractAddress, { clean_ack_results: {} });
 
@@ -20,7 +20,7 @@ export const cleanAckResults = (
  * waitForAck waits until ACK appears in contract storage
  */
 export const waitForAck = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   icaId: string,
   sequenceId: number,
@@ -39,7 +39,7 @@ export const waitForAck = (
   );
 
 export const getAck = (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   contractAddress: string,
   icaId: string,
   sequenceId: number,
@@ -51,10 +51,7 @@ export const getAck = (
     },
   });
 
-export const getAcks = (
-  client: SigningNeutronClient,
-  contractAddress: string,
-) =>
+export const getAcks = (client: NeutronTestClient, contractAddress: string) =>
   client.queryContractSmart(contractAddress, {
     acknowledgement_results: {},
   });

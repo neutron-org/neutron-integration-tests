@@ -2,7 +2,7 @@ import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import config from '../../config.json';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LimitOrderType } from '../../helpers/dex';
@@ -17,7 +17,7 @@ import {
 
 describe('Neutron / dex module (grpc contract)', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let neutronWallet: Wallet;
   let contractAddress: string;
   let activeTrancheKey: string;
@@ -26,12 +26,8 @@ describe('Neutron / dex module (grpc contract)', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = testState.wallets.neutron.demo1;
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
   });
 
   describe('Instantiate dex grpc contract', () => {

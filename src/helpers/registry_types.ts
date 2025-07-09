@@ -40,7 +40,7 @@ export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
   [ParameterChangeProposal.typeUrl, ParameterChangeProposal as any],
   // revenue
   [MsgFundTreasury.typeUrl, MsgFundTreasury as any],
-  // shasling
+  // slashing
   [MsgUnjail.typeUrl, MsgUnjail],
   // staking
   [MsgCreateValidator.typeUrl, MsgCreateValidator as any],
