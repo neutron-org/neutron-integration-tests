@@ -1190,18 +1190,18 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#8fcf06090c9591557fd149944cdc6d493d2728f6":
+"@neutron-org/neutronjs@https://github.com/neutron-org/neutronjs.git#1c642d1658173e8e3f64f59373d3a47879e35a16":
   version "4.2.0"
-  resolved "https://github.com/neutron-org/neutronjs.git#8fcf06090c9591557fd149944cdc6d493d2728f6"
+  resolved "https://github.com/neutron-org/neutronjs.git#1c642d1658173e8e3f64f59373d3a47879e35a16"
 
-"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#ea67672b7b76f96dd6bb2a085f8ceb2f6ada43ac":
+"@neutron-org/neutronjsplus@https://github.com/neutron-org/neutronjsplus.git#8e8e8a868616c283991b9f1eced44a6a3b969549":
   version "0.5.0"
-  resolved "https://github.com/neutron-org/neutronjsplus.git#ea67672b7b76f96dd6bb2a085f8ceb2f6ada43ac"
+  resolved "https://github.com/neutron-org/neutronjsplus.git#8e8e8a868616c283991b9f1eced44a6a3b969549"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.32.4"
     "@cosmjs/proto-signing" "^0.32.4"
     "@cosmjs/stargate" "0.32.4"
-    "@neutron-org/neutronjs" "https://github.com/neutron-org/neutronjs.git#8fcf06090c9591557fd149944cdc6d493d2728f6"
+    "@neutron-org/neutronjs" "https://github.com/neutron-org/neutronjs.git#1c642d1658173e8e3f64f59373d3a47879e35a16"
     "@types/pako" "^1.0.1"
     axios "1.6.0"
     bip39 "^3.1.0"
@@ -1238,9 +1238,9 @@
   integrity sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==
 
 "@noble/secp256k1@^2.2.3":
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-2.2.3.tgz#c505ced542328ed13315a8d811684d042f7acc5b"
-  integrity sha512-l7r5oEQym9Us7EAigzg30/PQAvynhMt2uoYtT3t26eGDVm9Yii5mZ5jWSWmZ/oSIR2Et0xfc6DXrG0bZ787V3w==
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@noble/secp256k1/-/secp256k1-2.3.0.tgz#ddfe6e853472fb88cba4d5e59b7067adc1e64adf"
+  integrity sha512-0TQed2gcBbIrh7Ccyw+y/uZQvbJwm7Ao4scBUxqpBCcsOlZG0O4KGfjtNAy/li4W8n1xt3dxrwJ0beZ2h2G6Kw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -1420,11 +1420,6 @@
   version "4.37.0"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.37.0.tgz#a54d7304c3bd45573d8bcd1270de89771f8195fe"
   integrity sha512-LWbXUBwn/bcLx2sSsqy7pK5o+Nr+VCoRoAohfJ5C/aBio9nfJmGQqHAhU6pwxV/RmyTk5AqdySma7uwWGlmeuA==
-
-"@scure/base@^1.2.4":
-  version "1.2.4"
-  resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.2.4.tgz#002eb571a35d69bdb4c214d0995dff76a8dcd2a9"
-  integrity sha512-5Yy9czTO47mqz+/J8GM6GIId4umdCk1wc1q8rKERQulIoc8VP9pzDcghv10Tl2E7R96ZUx/PhND3ESYUQX8NuQ==
 
 "@scure/base@~1.1.6":
   version "1.1.9"
