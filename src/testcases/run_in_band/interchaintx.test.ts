@@ -10,8 +10,8 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { RunnerTestSuite, inject, afterAll } from 'vitest';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import {
   QueryClientImpl as StakingQueryClient,
@@ -23,7 +23,7 @@ import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractma
 import { getWithAttempts } from '../../helpers/misc';
 import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import {
   AcknowledgementResult,
   cleanAckResults,
@@ -59,10 +59,10 @@ describe('Neutron / Interchain TXs', () => {
   let ibcQuerier: IbcQueryClient;
   let contractManagerQuerier: ContractManagerQuery;
 
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let link: Link;
 
@@ -74,17 +74,13 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 

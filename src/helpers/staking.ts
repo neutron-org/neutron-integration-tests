@@ -1,4 +1,4 @@
-import { SigningNeutronClient } from './signing_neutron_client';
+import { NeutronTestClient } from './neutron_test_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
 import {
   NEUTRON_DENOM,
@@ -26,7 +26,7 @@ export type VotingPowerInfo = {
 };
 
 export const getTrackedStakeInfo = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   address: string,
   stakingTrackerAddr: string,
   height?: number,
@@ -56,7 +56,7 @@ export const getTrackedStakeInfo = async (
 };
 
 export const getVaultVPInfo = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   address: string,
   stakingVaultAddr: string,
   height?: number,
@@ -114,7 +114,7 @@ export const getTrackedValidators = async (
 };
 
 export const checkVotingPowerMatchBondedTokens = async (
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   stakingQuerier: StakingQueryClient,
   address: string,
   stakingTrackerAddr: string,
@@ -139,7 +139,7 @@ export const checkVotingPowerMatchBondedTokens = async (
 };
 
 export const delegateTokens = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
@@ -159,7 +159,7 @@ export const delegateTokens = async (
   );
 
 export const undelegateTokens = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   delegatorAddress: string,
   validatorAddress: string,
   amount: string,
@@ -181,7 +181,7 @@ export const undelegateTokens = async (
 };
 
 export const redelegateTokens = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   delegatorAddress: string,
   validatorSrc: string,
   validatorDst: string,
@@ -208,8 +208,8 @@ export const redelegateTokens = async (
 };
 
 export const simulateSlashingAndJailing = async (
-  validatorClient: SigningNeutronClient,
-  neutronClient: SigningNeutronClient,
+  validatorClient: NeutronTestClient,
+  neutronClient: NeutronTestClient,
   stakingQuerier: StakingQueryClient,
   validatorAddr: string,
   alternativeValidatorAddr: string,
@@ -418,7 +418,7 @@ export const submitUpdateParamsStakingProposal = async (
   );
 };
 
-export const pauseRewardsContract = async (client: SigningNeutronClient) => {
+export const pauseRewardsContract = async (client: NeutronTestClient) => {
   const res = await client.execute(STAKING_REWARDS, {
     pause: {},
   });

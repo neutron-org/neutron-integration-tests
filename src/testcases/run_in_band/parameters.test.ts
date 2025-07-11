@@ -27,7 +27,7 @@ import {
   OsmosisQuerier,
 } from '@neutron-org/neutronjs/querier_types';
 import { ProtobufRpcClient } from '@cosmjs/stargate';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
@@ -36,7 +36,7 @@ describe('Neutron / Parameters', () => {
   let testState: LocalState;
 
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let daoMember1: DaoMember;
   let dao: Dao;
   let chainManagerAddress: string;
@@ -50,12 +50,8 @@ describe('Neutron / Parameters', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,

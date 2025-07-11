@@ -1,17 +1,13 @@
-import { DeliverTxResponse, IndexedTx, StdFee } from '@cosmjs/stargate';
 import {
-  CosmWasmClient,
-  MigrateResult,
-  SigningCosmWasmClient,
-} from '@cosmjs/cosmwasm-stargate';
+  AminoTypes,
+  DeliverTxResponse,
+  IndexedTx,
+  StdFee,
+} from '@cosmjs/stargate';
+import { CosmWasmClient, MigrateResult } from '@cosmjs/cosmwasm-stargate';
 import { promises as fsPromise } from 'fs';
 import path from 'path';
-import {
-  Coin,
-  DirectSecp256k1HdWallet,
-  EncodeObject,
-  Registry,
-} from '@cosmjs/proto-signing';
+import { Coin, EncodeObject, Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 import { CometClient, connectComet } from '@cosmjs/tendermint-rpc';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
@@ -20,32 +16,57 @@ import {
   getWithAttempts,
   queryContractWithWait,
 } from '@neutron-org/neutronjsplus/dist/wait';
-import { NEUTRON_DENOM } from './constants';
+import { NEUTRON_DENOM, NEUTRON_RPC } from './constants';
 import { neutronTypes } from './registry_types';
+import {
+  Signer,
+  SigningNeutronClient,
+} from '@neutron-org/neutronjsplus/dist/signing_neutron_client';
+import { Wallet } from './wallet';
+import { aminoConverters } from '@neutron-org/neutronjsplus/dist/amino';
+import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191_signer';
+import {
+  DirectSignerAdapter,
+  Eip191SignerAdapter,
+} from '@neutron-org/neutronjsplus/dist/signer_adapters';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing/build/signer';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
 // and also for basic queries, like getHeight, getBlock, or getTx
-export class SigningNeutronClient extends CosmWasmClient {
+export class NeutronTestClient extends CosmWasmClient {
   // creates a SigningNeutronClient
-  static async connectWithSigner(
-    rpc: string,
-    wallet: DirectSecp256k1HdWallet,
-    signer: string,
-  ) {
+  static async connectWithSigner(wallet: Wallet, rpc: string = NEUTRON_RPC) {
+    const options = {
+      registry: new Registry(neutronTypes),
+      gasPrice: GasPrice.fromString('0.05untrn'),
+    };
+    const aminoTypes = new AminoTypes(aminoConverters);
     const registry = new Registry(neutronTypes);
-    const neutronClient = await SigningCosmWasmClient.connectWithSigner(
+    let adapter: Signer;
+    if (wallet.signerKind === 'secp256k1') {
+      adapter = new DirectSignerAdapter(
+        wallet.signer as OfflineDirectSigner,
+        registry,
+      );
+    } else if (wallet.signerKind === 'eip191') {
+      adapter = new Eip191SignerAdapter(
+        wallet.signer as Eip191Signer,
+        aminoTypes,
+        registry,
+      );
+    } else {
+      throw new Error('Unexpected wallet signerKind: ' + wallet.signerKind);
+    }
+    const neutronClient = await SigningNeutronClient.connectWithSigner(
       rpc,
-      wallet,
-      {
-        registry: registry,
-        gasPrice: GasPrice.fromString('0.05untrn'),
-      },
+      adapter,
+      options,
     );
     const cometClient = await connectComet(rpc);
-    return new SigningNeutronClient(
+    return new NeutronTestClient(
       rpc,
-      signer,
+      wallet.address,
       neutronClient,
       CONTRACTS_PATH,
       cometClient,
@@ -53,9 +74,9 @@ export class SigningNeutronClient extends CosmWasmClient {
   }
 
   protected constructor(
-    public rpc: string,
-    public sender: string,
-    public client: SigningCosmWasmClient,
+    public readonly rpc: string,
+    public readonly sender: string,
+    public readonly client: SigningNeutronClient,
     private contractsPath: string,
     cometClient: CometClient,
   ) {

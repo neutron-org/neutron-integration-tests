@@ -1,7 +1,7 @@
 import { Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject, expect } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { LocalState } from '../../helpers/local_state';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
 import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
@@ -23,7 +23,7 @@ import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants'
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 
 const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
@@ -32,12 +32,12 @@ const UATOM_IBC_TO_NEUTRON_DENOM =
 describe('Neutron / IBC transfer', () => {
   let testState: LocalState;
 
-  let neutronClient: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
   let neutronWallet2: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let daoMember1: DaoMember;
   let mainDao: Dao;
@@ -55,22 +55,14 @@ describe('Neutron / IBC transfer', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
-    neutronWallet2 = await testState.nextWallet('neutron');
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
-    gaiaWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_2, 'cosmos');
+    neutronWallet = testState.wallets.neutron.demo1;
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    neutronWallet2 = await testState.nextNeutronWallet();
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -95,7 +87,6 @@ describe('Neutron / IBC transfer', () => {
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
     ibcQuerier = new IbcQueryClient(neutronRpcClient);
-    neutronClient.waitBlocks(20);
   });
 
   describe('Contracts', () => {
@@ -121,10 +112,10 @@ describe('Neutron / IBC transfer', () => {
 
   describe('prepare: test IBC transfer and set RL contract addr to neutron', () => {
     test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('10000');
+      await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 11000,
+        async (response) => response.power == 1000000000,
         20,
       );
     });
@@ -157,9 +148,9 @@ describe('Neutron / IBC transfer', () => {
     });
 
     describe('IBC rate limit params proposal', () => {
-      const proposalId = 1;
+      let proposalId: number;
       test('create proposal', async () => {
-        await daoMember1.submitUpdateParamsRateLimitProposal(
+        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #1',
           'Param change proposal. Setup IBC rate limit contract',
@@ -326,7 +317,7 @@ describe('Neutron / IBC transfer', () => {
           gas: '200000',
           amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
         };
-        // here we doing exact same tx, but it is not failing because there is no such path (limit) anymore
+        // here we are doing the exact same tx, but it is not failing because there is no such path (limit) anymore
         const res = await neutronClient.signAndBroadcast(
           [
             {
@@ -351,7 +342,7 @@ describe('Neutron / IBC transfer', () => {
     });
     describe('with limit, Gaia -> Neutron', () => {
       test('send some atoms to neutron chain', async () => {
-        const resBefroreLimit = await gaiaClient.signAndBroadcast(
+        const resBeforeLimit = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
           [
             {
@@ -374,7 +365,7 @@ describe('Neutron / IBC transfer', () => {
             amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
           },
         );
-        expect(resBefroreLimit.code).toEqual(0);
+        expect(resBeforeLimit.code).toEqual(0);
       });
 
       test('check that weird IBC denom is uatom indeed', async () => {
@@ -436,11 +427,11 @@ describe('Neutron / IBC transfer', () => {
     });
 
     // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params.
-    // ibc send afterwards should work because rate-limiting MW action is completely removed from the ibc stack
+    // ibc send afterward should work because rate-limiting MW action is completely removed from the ibc stack
     describe('Remove RL contract from neutron', () => {
-      const proposalId = 2;
+      let proposalId: number;
       test('create proposal', async () => {
-        await daoMember1.submitUpdateParamsRateLimitProposal(
+        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
           chainManagerAddress,
           'Proposal #2',
           'Param change proposal. Remove rate limit contract',
@@ -459,8 +450,8 @@ describe('Neutron / IBC transfer', () => {
       test('execute passed proposal', async () => {
         await daoMember1.executeProposalWithAttempts(proposalId);
       });
-      // and here we just tests if ibc send works
-      test('perform IBC send after removig of contract: should be fine', async () => {
+      // and here we just test if ibc send works
+      test('perform IBC send after removing contract: should be fine', async () => {
         const res = await neutronClient.signAndBroadcast(
           [
             {

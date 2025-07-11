@@ -14,7 +14,7 @@ import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { ParameterChangeProposal } from '@neutron-org/neutronjs/cosmos/params/v1beta1/params';
 import { MsgSubmitProposalLegacy } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/tx';
-import { DeliverTxResponse, SigningStargateClient } from '@cosmjs/stargate';
+import { DeliverTxResponse } from '@cosmjs/stargate';
 import { QueryClientImpl as UpgradeQuerier } from '@neutron-org/neutronjs/cosmos/upgrade/v1beta1/query.rpc.Query';
 import { QueryClientImpl as IbcClientQuerier } from '@neutron-org/neutronjs/ibc/core/client/v1/query.rpc.Query';
 import { QueryClientImpl as WasmQueryClient } from '@neutron-org/neutronjs/cosmwasm/wasm/v1/query.rpc.Query';
@@ -23,14 +23,14 @@ import { QueryClientImpl as InterchainTxQueryClient } from '@neutron-org/neutron
 import { QueryClientImpl as InterchainAccountsQueryClient } from '@neutron-org/neutronjs/ibc/applications/interchain_accounts/host/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { neutronTypes } from '../../helpers/registry_types';
 import config from '../../config.json';
 
 describe('Neutron / Governance', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let daoMember1: DaoMember;
   let daoMember2: DaoMember;
   let daoMember3: DaoMember;
@@ -50,12 +50,9 @@ describe('Neutron / Governance', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -70,12 +67,11 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
 
-    const neutronWallet2 = await testState.nextWallet('neutron');
-    const neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
+    const neutronWallet2 = await testState.nextNeutronWallet();
+    const neutronClient2 = await NeutronTestClient.connectWithSigner(
+      neutronWallet2,
     );
+
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
@@ -83,12 +79,11 @@ describe('Neutron / Governance', () => {
       NEUTRON_DENOM,
     );
 
-    const neutronWallet3 = await testState.nextWallet('neutron');
-    const neutronClient3 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet3.directwallet,
-      neutronWallet3.address,
+    const neutronWallet3 = await testState.nextNeutronWallet();
+    const neutronClient3 = await NeutronTestClient.connectWithSigner(
+      neutronWallet3,
     );
+
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,
@@ -149,7 +144,7 @@ describe('Neutron / Governance', () => {
     test('bond from wallet 2', async () => {
       await daoMember2.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
+        async () => await mainDao.queryVotingPower(daoMember2.user),
         async (response) => response.power == 1000000000,
         20,
       );
@@ -157,7 +152,7 @@ describe('Neutron / Governance', () => {
     test('bond from wallet 3 ', async () => {
       await daoMember3.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
+        async () => await mainDao.queryVotingPower(daoMember3.user),
         async (response) => response.power == 1000000000,
         20,
       );
@@ -919,7 +914,7 @@ describe('Neutron / Governance', () => {
       );
       expect(queryResult.funds).toEqual([]);
 
-      // check that we get increment after waiting > period blocks
+      // check that we get incremented after waiting > period blocks
       const beforeCount = queryResult.count;
       expect(beforeCount).toBeGreaterThan(0);
 
@@ -1193,13 +1188,14 @@ describe('Neutron / Governance', () => {
 
   describe('check that only admin can create valid proposals', () => {
     test('submit admin proposal from non-admin addr, should fail', async () => {
+      // use secp256k1 wallet since it's hard to sign MsgSubmitProposalLegacy in amino encoding automatically
+      const customWallet = await testState.nextSecp256k1SignNeutronWallet();
+      const customClient = await NeutronTestClient.connectWithSigner(
+        customWallet,
+      );
       const res = await msgSendDirectProposal(
-        daoMember1.user,
-        await SigningStargateClient.connectWithSigner(
-          testState.rpcNeutron,
-          neutronWallet.directwallet,
-          { registry: new Registry(neutronTypes) },
-        ),
+        customClient.sender,
+        customClient,
         new Registry(neutronTypes),
         'icahost',
         'HostEnabled',
@@ -1221,7 +1217,7 @@ type TestArgResponse = {
 // TODO: description?
 const msgSendDirectProposal = async (
   signer: string,
-  client: SigningStargateClient,
+  client: NeutronTestClient,
   registry: Registry,
   subspace: string,
   key: string,
@@ -1242,6 +1238,7 @@ const msgSendDirectProposal = async (
       },
     ],
   };
+
   const val: MsgSubmitProposalLegacy = {
     content: {
       typeUrl: '/cosmos.params.v1beta1.ParameterChangeProposal',
@@ -1256,5 +1253,5 @@ const msgSendDirectProposal = async (
     typeUrl: MsgSubmitProposalLegacy.typeUrl,
     value: val,
   };
-  return await client.signAndBroadcast(signer, [msg], fee);
+  return await client.client.signAndBroadcast(signer, [msg], fee);
 };
