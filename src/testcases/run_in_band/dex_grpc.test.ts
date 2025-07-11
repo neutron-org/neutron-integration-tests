@@ -76,6 +76,8 @@ describe('Neutron / dex module (grpc contract)', () => {
                 {
                   disable_autoswap: true,
                   fail_tx_on_bel: false,
+                  swap_on_deposit: false,
+                  swap_on_deposit_slop_tolerance_bps: 1000,
                 },
               ],
             },
@@ -99,6 +101,8 @@ describe('Neutron / dex module (grpc contract)', () => {
               {
                 disable_autoswap: true,
                 fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
               },
             ],
           },
@@ -371,6 +375,8 @@ describe('Neutron / dex module (grpc contract)', () => {
                 {
                   disable_autoswap: true,
                   fail_tx_on_bel: false,
+                  swap_on_deposit: false,
+                  swap_on_deposit_slop_tolerance_bps: 100,
                 },
               ],
             },
@@ -669,7 +675,14 @@ describe('Neutron / dex module (grpc contract)', () => {
             amounts_b: ['0'],
             tick_indexes_a_to_b: ['0'],
             fees: ['1'],
-            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+            options: [
+              {
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
+              },
+            ],
           },
         },
       });
@@ -689,7 +702,14 @@ describe('Neutron / dex module (grpc contract)', () => {
             amounts_b: ['100'],
             tick_indexes_a_to_b: ['0'],
             fees: ['1'],
-            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+            options: [
+              {
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
+              },
+            ],
           },
         },
       });
