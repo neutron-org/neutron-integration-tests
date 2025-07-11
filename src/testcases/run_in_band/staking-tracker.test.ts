@@ -105,7 +105,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
   describe('Staking tracker', () => {
     test('removed validator gets removed from the tracker contract', async () => {
-      const wallet = await testState.nextWallet('neutron');
+      const wallet = await testState.nextSecp256k1SignNeutronWallet();
       const msgCreateValidator = MsgCreateValidator.fromPartial({
         description: {
           moniker: 'test_val',
@@ -138,11 +138,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
           denom: NEUTRON_DENOM,
         },
       });
-      const client = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        wallet.directwallet,
-        wallet.address,
-      );
+      const client = await NeutronTestClient.connectWithSigner(wallet);
       const fee = {
         gas: '5000000',
         amount: [{ denom: NEUTRON_DENOM, amount: '12500' }],
