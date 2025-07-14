@@ -279,6 +279,7 @@ describe('Neutron / Parameters', () => {
               },
             ],
           },
+          fee_enabled: true,
         }),
         '1000',
       );
