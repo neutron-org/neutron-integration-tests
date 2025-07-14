@@ -503,7 +503,7 @@ describe('Neutron / Interchain TXs', () => {
           expect(+balance.amount).toEqual(contractBalanceBefore);
         });
 
-        test('relayer balance should not change', async () => {
+        test('relayer must not receive fees', async () => {
           const balanceAfter = await neutronClient.getBalance(
             IBC_RELAYER_NEUTRON_ADDRESS,
             NEUTRON_DENOM,
@@ -590,7 +590,7 @@ describe('Neutron / Interchain TXs', () => {
           expect(+balance.amount).toEqual(contractBalanceBefore);
         });
 
-        test('relayer balance should not change', async () => {
+        test('relayer must not receive fees', async () => {
           const balanceAfter = await neutronClient.getBalance(
             IBC_RELAYER_NEUTRON_ADDRESS,
             NEUTRON_DENOM,
