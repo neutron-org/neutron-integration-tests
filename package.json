@@ -48,9 +48,9 @@
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
     "@confio/relayer": "^0.12.0",
-    "@cosmjs/cosmwasm-stargate": "^0.32.4",
-    "@cosmjs/stargate": "0.32.4",
-    "@cosmjs/tendermint-rpc": "^0.32.4",
+    "@cosmjs/cosmwasm-stargate": "^0.34.0",
+    "@cosmjs/stargate": "0.34.0",
+    "@cosmjs/tendermint-rpc": "^0.34.0",
     "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#8fcf06090c9591557fd149944cdc6d493d2728f6",
     "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#ea67672b7b76f96dd6bb2a085f8ceb2f6ada43ac",
     "@noble/secp256k1": "^2.2.3",
