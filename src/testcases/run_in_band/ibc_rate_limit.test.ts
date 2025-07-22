@@ -188,10 +188,12 @@ describe('Neutron / IBC transfer', () => {
       test('set payer fees', async () => {
         const res = await neutronClient.execute(ibcContract, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '2333',
-            recv_fee: '0',
-            timeout_fee: '2666',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: '2333',
+              recv_fee: '0',
+              timeout_fee: '2666',
+            },
           },
         });
         expect(res.code).toEqual(0);
