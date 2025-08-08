@@ -15,7 +15,7 @@ RUN echo "obscure canal because tomorrow tribe sibling describe satoshi kiwi upg
 
 
 
-FROM debian:buster
+FROM debian:bookworm
 RUN apt update && apt install ca-certificates curl -y && apt-get clean
 ADD ["https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.x86_64.so","https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.aarch64.so","/lib/"]
 COPY --from=app run.sh .
