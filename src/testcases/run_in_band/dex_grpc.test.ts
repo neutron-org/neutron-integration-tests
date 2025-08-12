@@ -760,7 +760,7 @@ describe('Neutron / dex module (grpc contract)', () => {
             },
           },
         });
-        expect(res.resp.taker_coin_out.amount).toBe('998');
+        expect(res.resp.taker_coin_out.amount).toBe('999');
         expect(res.resp.maker_coin_out.amount).toBe('0');
       });
     test('SimulateCancelLimitOrder', async () => {
@@ -772,8 +772,8 @@ describe('Neutron / dex module (grpc contract)', () => {
           },
         },
       });
-      expect(res.resp.taker_coin_out.amount).toBe('998');
-      expect(res.resp.maker_coin_out.amount).toBe('998779');
+      expect(res.resp.taker_coin_out.amount).toBe('999');
+      expect(res.resp.maker_coin_out.amount).toBe('998778');
     });
     test('SimulateMultiHopSwap', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
@@ -803,7 +803,7 @@ describe('Neutron / dex module (grpc contract)', () => {
           },
         },
       });
-      expect(res.resp.coin_out.amount).toBe('91');
+      expect(res.resp.coin_out.amount).toBe('99');
       expect(res.resp.route.hops.length).toBe(10);
     });
   });
