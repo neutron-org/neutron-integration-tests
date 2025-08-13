@@ -36,6 +36,8 @@ build-hermes-2:
 build-relayer-2:
 		docker build -t neutron-org/neutron-query-relayer-2 $(APP_DIR)/neutron-query-relayer
 
+build-all-2: build-gaia-2 build-neutron-2 build-hermes-2 build-relayer-2 build-slinky
+
 start-cosmopark-2:
 		cosmopark start config.json
 
