@@ -12,7 +12,7 @@ import {
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { setupSubDaoTimelockSet } from '../../helpers/dao';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   MsgBurn,
   MsgChangeAdmin,
@@ -78,7 +78,7 @@ function unpackDenom(
 
 describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
 
   let neutronWallet: Wallet;
   let subDao: Dao;
@@ -94,12 +94,8 @@ describe('Neutron / Tokenfactory', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     // Setup subdao with update tokenfactory params
     const neutronRpcClient = await testState.rpcClient('neutron');
     osmosisQuerier = await createOsmosisClient({
@@ -117,7 +113,7 @@ describe('Neutron / Tokenfactory', () => {
       daoCoreAddress,
     );
 
-    securityDaoWallet = await testState.nextWallet('neutron');
+    securityDaoWallet = await testState.nextNeutronWallet();
     securityDaoAddr = securityDaoWallet.address;
 
     mainDao = new Dao(neutronClient.client, daoContracts);
@@ -299,14 +295,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
-              mintToAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -406,14 +401,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
-              mintToAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -431,14 +425,13 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgBurn.typeUrl,
-            value: MsgBurn.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '100',
               },
-              burnFromAddress: '',
-            }),
+            },
           },
         ],
         fee,
@@ -531,14 +524,14 @@ describe('Neutron / Tokenfactory', () => {
         [
           {
             typeUrl: MsgMint.typeUrl,
-            value: MsgMint.fromPartial({
+            value: {
               sender: neutronWallet.address,
               amount: {
                 denom: newTokenDenom,
                 amount: '10000',
               },
               mintToAddress: neutronWallet.address,
-            }),
+            },
           },
         ],
         fee,
@@ -750,7 +743,7 @@ describe('Neutron / Tokenfactory', () => {
     });
 
     test('burn coins from different wallet', async () => {
-      const wallet2 = await testState.nextWallet('neutron');
+      const wallet2 = await testState.nextNeutronWallet();
 
       const mintedToDifferentWallet = 100;
       const toBurn = 50;

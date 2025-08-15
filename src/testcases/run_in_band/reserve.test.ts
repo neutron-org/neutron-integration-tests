@@ -3,7 +3,7 @@ import { inject } from 'vitest';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { getNeutronDAOCore } from '@neutron-org/neutronjsplus/dist/dao';
 import { QueryClientImpl as FeeburnerQueryClient } from '@neutron-org/neutronjs/neutron/feeburner/query.rpc.Query';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
@@ -12,8 +12,8 @@ import config from '../../config.json';
 
 describe('Neutron / Treasury', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
   let neutronWallet2: Wallet;
   let mainDaoWallet: Wallet;
   let securityDaoWallet: Wallet;
@@ -28,24 +28,18 @@ describe('Neutron / Treasury', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
+
+    mainDaoWallet = testState.wallets.neutron.demo1Secp256k1;
+
+    neutronClient = await NeutronTestClient.connectWithSigner(mainDaoWallet);
+
     neutronWallet2 = testState.wallets.neutron.demo2;
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
-    mainDaoWallet = testState.wallets.neutron.demo1;
-
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      mainDaoWallet.directwallet,
-      mainDaoWallet.address,
-    );
     securityDaoWallet = testState.wallets.neutron.icq;
     holder1Wallet = testState.wallets.neutron.demo2;
-    holder2Wallet = testState.wallets.neutron.ibc;
+    holder2Wallet = await testState.nextNeutronWallet();
     mainDaoAddr = mainDaoWallet.address;
     securityDaoAddr = securityDaoWallet.address;
     holder1Addr = holder1Wallet.address;
@@ -267,7 +261,7 @@ describe('Neutron / Treasury', () => {
 
         expect(
           parseInt(afterStats.total_processed_burned_coins) -
-            parseInt(reserveStats.total_processed_burned_coins),
+          parseInt(reserveStats.total_processed_burned_coins),
         ).toEqual(4_294_967_295);
 
         const burnedCoins = await getBurnedCoinsAmount(feeburnerQuerier);
@@ -372,11 +366,10 @@ describe('Neutron / Treasury', () => {
           expect.objectContaining({
             total_distributed: '42014',
             total_reserved: `${158053 + parseInt(reserveStats.total_reserved)}`,
-            total_processed_burned_coins: `${
-              parseInt(burnedCoinsAfter || '0') -
+            total_processed_burned_coins: `${parseInt(burnedCoinsAfter || '0') -
               parseInt(burnedCoinsBefore || '0') +
               parseInt(reserveStats.total_processed_burned_coins)
-            }`,
+              }`,
           }),
         );
       });
@@ -590,7 +583,7 @@ describe('Neutron / Treasury', () => {
 });
 
 const setupDSC = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   mainDaoAddress: string,
   securityDaoAddress: string,
 ) => {
@@ -616,7 +609,7 @@ interface ReserveStats {
  * normalizeReserveBurnedCoins simulates fee burning via send tx. After normalization amount of burned coins equals to 7500.
  */
 const normalizeReserveBurnedCoins = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   reserveAddress: string,
   feeburnerQuerier: FeeburnerQueryClient,
 ): Promise<ReserveStats> => {
@@ -669,7 +662,7 @@ const getBurnedCoinsAmount = async (
 };
 
 const setupReserve = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   opts: {
     mainDaoAddress: string;
     distributionRate: string;
@@ -700,7 +693,7 @@ const setupReserve = async (
  * @param actionCheck is called after unpausing to make sure the executable action worked.
  */
 async function testExecControl(
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   testingContract: string,
   execAction: () => Promise<number | undefined>,
   actionCheck: () => Promise<void>,

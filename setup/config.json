@@ -18,6 +18,20 @@
         "100000000",
         "10000000"
       ],
+      "accounts": [
+        {
+          "address": "neutron165cyjk6ujhjy3cyxkj2wdqw3fj3k69kqkaqnrm",
+          "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
+        },
+        {
+          "address": "neutron1lx5vlcwz78zp4g24qne4mrsutvkkh5ffj674q5",
+          "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
+        },
+        {
+          "address": "neutron1m2arw2gnr5n3n0g2yg40y6qzj0lclw9jxuth9e",
+          "balance": "100000000000000uibcatom,100000000000000uibcusdc,100000000000000"
+        }
+      ],
       "upload": [
         "../contracts",
         "../contracts_thirdparty",

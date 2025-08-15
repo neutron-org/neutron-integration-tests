@@ -85,6 +85,7 @@ export const NEUTRON_REST = process.env.NODE1_URL || 'http://localhost:1317';
 export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1318';
 export const ICQ_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 export const GAIA_CONNECTION = 'connection-0';
+export const WALLETS_SIGN_METHOD = process.env.WALLETS_SIGN_METHOD || 'random';
 
 export const STAKING_VAULT =
   'neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg';

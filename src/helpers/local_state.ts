@@ -4,21 +4,19 @@ import {
   ProtobufRpcClient,
   QueryClient,
 } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { HdPath, stringToPath } from '@cosmjs/crypto';
+import { OfflineSigner } from '@cosmjs/proto-signing';
 import { RunnerTestSuite } from 'vitest';
 import { connectComet } from '@cosmjs/tendermint-rpc';
 import {
-  COSMOS_PREFIX,
   GAIA_CONNECTION,
   GAIA_REST,
   GAIA_RPC,
   ICQ_WEB_HOST,
-  NEUTRON_PREFIX,
   NEUTRON_REST,
   NEUTRON_RPC,
+  WALLETS_SIGN_METHOD,
 } from './constants';
-import { Wallet } from './wallet';
+import { GaiaWallet, Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
 import { GasPrice } from '@cosmjs/stargate/build/fee';
 
@@ -27,7 +25,7 @@ const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
   wallets: {
-    cosmos: Record<string, Wallet>;
+    cosmos: Record<string, GaiaWallet>;
     neutron: Record<string, Wallet>;
   };
   icqWebHost: string;
@@ -61,38 +59,49 @@ export class LocalState {
   ) {
     this.rpcNeutron = NEUTRON_RPC;
     this.rpcGaia = GAIA_RPC;
-
     this.restNeutron = NEUTRON_REST;
     this.restGaia = GAIA_REST;
-
     this.icqWebHost = ICQ_WEB_HOST;
-
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
 
   protected async init() {
-    if (this.suite) {
-      this.testFilePosition = await testFilePosition(this.suite);
-    } else {
-      this.testFilePosition = 0;
-    }
-
+    // We do not pass suite in run_in_band tests which are non-parallel.
+    // In such tests, we do not care about overlapping with other tests, so we can set the index to 0.
+    this.testFilePosition = this.suite ? await testFilePosition(this.suite) : 0;
     this.wallets = {
-      cosmos: await getGenesisWallets(COSMOS_PREFIX, this.config),
-      neutron: await getGenesisWallets(NEUTRON_PREFIX, this.config),
+      cosmos: await getGenesisGaiaWallets(this.config),
+      neutron: await getGenesisNeutronWallets(this.config),
     };
   }
 
-  // Returns new wallet for a given `network`.
+  // Returns new wallet for neutron network.
+  // Depending on WALLETS_SIGN_METHOD it can be a randomized signature wallet, or deterministic one.
   // The wallet is prefunded in a globalSetup.
   // That way we can safely use these wallets in a parallel tests
-  // (no sequence overlapping problem when using same wallets in parallel since they're all unique).
-  async nextWallet(network: string): Promise<Wallet> {
+  // (avoids the sequence overlapping problem when using the same wallets in parallel since they're all unique).
+  async nextNeutronWallet(): Promise<Wallet> {
+    return this.nextNeutronWalletWithSigner(signMethod());
+  }
+
+  // Returns new wallet for neutron network with secp256k1 signature method.
+  // Helpful when some functions cannot use eip191 sign due to not using Eip191CosmwasmClient inside
+  async nextSecp256k1SignNeutronWallet(): Promise<Wallet> {
+    return this.nextNeutronWalletWithSigner('secp256k1');
+  }
+
+  async nextGaiaWallet(): Promise<GaiaWallet> {
+    const nextWalletIndex = await this.getAndUpdateNextWalletIndex('cosmos');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    return GaiaWallet.fromMnemonic(mnemonic);
+  }
+
+  async getAndUpdateNextWalletIndex(network: string): Promise<number> {
     const currentOffsetInTestFile = this.walletIndexes[network];
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
         'cannot give next wallet: current offset is greater than ' +
-          WALLETS_PER_TEST_FILE,
+        WALLETS_PER_TEST_FILE,
       );
     }
     const nextWalletIndex =
@@ -100,7 +109,7 @@ export class LocalState {
 
     this.walletIndexes[network] = currentOffsetInTestFile + 1;
 
-    return mnemonicToWallet(this.mnemonics[nextWalletIndex], network);
+    return nextWalletIndex;
   }
 
   async neutronRpcClient() {
@@ -127,15 +136,15 @@ export class LocalState {
     }
   }
 
-  // Creates an IBC relayer between neutron and gaia
+  // Creates an IBC relayer between neutron and gaia.
   // This relayer can be used to manually relay packets
-  // since hermes don't have manual relay.
+  // since hermes does not have a manual relay.
   async relayerLink(): Promise<Link> {
-    const neutronWallet = await this.nextWallet('neutron');
-    const gaiaWallet = await this.nextWallet('cosmos');
+    const neutronWallet = await this.nextSecp256k1SignNeutronWallet();
+    const gaiaWallet = await this.nextGaiaWallet();
     const neutronIbcClient = await IbcClient.connectWithSigner(
       this.rpcNeutron,
-      neutronWallet.directwallet,
+      neutronWallet.signer as OfflineSigner,
       neutronWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05untrn'),
@@ -145,7 +154,7 @@ export class LocalState {
     );
     const gaiaIbcClient = await IbcClient.connectWithSigner(
       this.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       gaiaWallet.address,
       {
         gasPrice: GasPrice.fromString('0.05uatom'),
@@ -161,47 +170,15 @@ export class LocalState {
       GAIA_CONNECTION,
     );
   }
+
+  private async nextNeutronWalletWithSigner(
+    signerKind: string,
+  ): Promise<Wallet> {
+    const nextWalletIndex = await this.getAndUpdateNextWalletIndex('neutron');
+    const mnemonic = this.mnemonics[nextWalletIndex];
+    return Wallet.fromMnemonic(mnemonic, signerKind);
+  }
 }
-
-export const mnemonicToWallet = async (
-  mnemonic: string,
-  addrPrefix: string,
-): Promise<Wallet> => {
-  const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-    prefix: addrPrefix,
-  });
-  const account = (await directwallet.getAccounts())[0];
-  const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
-    mnemonic,
-    {
-      prefix: addrPrefix + 'valoper',
-    },
-  );
-  const accountValoper = (await directwalletValoper.getAccounts())[0];
-  return new Wallet(addrPrefix, directwallet, account, accountValoper);
-};
-
-export const mnemonicWithAccountToWallet = async (
-  mnemonic: string,
-  addrPrefix: string,
-  accountIndex: number,
-): Promise<Wallet> => {
-  const hdPath: HdPath = stringToPath(`m/44'/118'/${accountIndex}'/0/0`);
-  const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-    prefix: addrPrefix,
-    hdPaths: [hdPath],
-  });
-  const account = (await directwallet.getAccounts())[0];
-  const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
-    mnemonic,
-    {
-      prefix: addrPrefix + 'valoper',
-      hdPaths: [hdPath],
-    },
-  );
-  const accountValoper = (await directwalletValoper.getAccounts())[0];
-  return new Wallet(addrPrefix, directwallet, account, accountValoper);
-};
 
 async function testFilePosition(s: RunnerTestSuite): Promise<number> {
   const filepath = s.file.filepath.trim();
@@ -241,13 +218,33 @@ async function listFilenamesInDir(dir: string): Promise<string[]> {
   return res.sort();
 }
 
-const getGenesisWallets = async (
-  prefix: string,
+const getGenesisNeutronWallets = async (
   config: any,
 ): Promise<Record<string, Wallet>> => ({
-  val1: await mnemonicWithAccountToWallet(config.VAL_MNEMONIC_1, prefix, 1),
-  demo1: await mnemonicToWallet(config.DEMO_MNEMONIC_1, prefix),
-  demo2: await mnemonicToWallet(config.DEMO_MNEMONIC_2, prefix),
-  icq: await mnemonicToWallet(config.ICQ_MNEMONIC, prefix),
-  ibc: await mnemonicToWallet(config.IBC_MNEMONIC, prefix),
+  val1: await Wallet.fromMnemonicWithAccount(config.VAL_MNEMONIC_1, 1),
+  val2: await Wallet.fromMnemonicWithAccount(config.VAL_MNEMONIC_1, 2),
+  // some built in contracts need specified admin, and that is demo1 with secp256k1 sign pubkey
+  demo1Secp256k1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1),
+  demo1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1, signMethod()),
+  demo2: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_2, signMethod()),
+  icq: await Wallet.fromMnemonic(config.ICQ_MNEMONIC, signMethod()),
+  ibc: await Wallet.fromMnemonic(config.IBC_MNEMONIC, signMethod()),
 });
+
+const getGenesisGaiaWallets = async (
+  config: any,
+): Promise<Record<string, GaiaWallet>> => ({
+  val1: await GaiaWallet.fromMnemonic(config.VAL_MNEMONIC_1),
+  demo1: await GaiaWallet.fromMnemonic(config.DEMO_MNEMONIC_1),
+  demo2: await GaiaWallet.fromMnemonic(config.DEMO_MNEMONIC_2),
+  icq: await GaiaWallet.fromMnemonic(config.ICQ_MNEMONIC),
+  ibc: await GaiaWallet.fromMnemonic(config.IBC_MNEMONIC),
+});
+
+export function signMethod() {
+  if (WALLETS_SIGN_METHOD === 'random') {
+    return Math.random() < 0.5 ? 'eip191' : 'secp256k1';
+  } else {
+    return WALLETS_SIGN_METHOD;
+  }
+}

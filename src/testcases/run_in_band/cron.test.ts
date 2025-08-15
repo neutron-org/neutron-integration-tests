@@ -12,13 +12,13 @@ import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 
 describe('Neutron / Cron', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let mainDao: Dao;
   let daoMember: DaoMember;
 
@@ -30,12 +30,8 @@ describe('Neutron / Cron', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,

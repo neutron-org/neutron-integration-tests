@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import { getBlockResults } from '../../helpers/misc';
 import {
@@ -17,7 +17,7 @@ import {
 import { QueryClientImpl as RevenueQueryClient } from '@neutron-org/neutronjs/neutron/revenue/query.rpc.Query';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { execSync } from 'child_process';
@@ -31,10 +31,6 @@ import { QueryPaymentInfoResponse } from '@neutron-org/neutronjs/neutron/revenue
 import { Params as RevenueModuleParams } from '@neutron-org/neutronjs/neutron/revenue/params';
 import { EventAttribute } from '@neutron-org/neutronjs/tendermint/abci/types';
 import { Coin, parseCoins } from '@cosmjs/proto-signing';
-
-BigInt.prototype.toJSON = function () {
-  return Number(this);
-};
 
 const VALIDATOR_CONTAINER = 'main-neutron_val2-1';
 const ORACLE_CONTAINER = 'main-oracle-2-1';
@@ -58,7 +54,7 @@ const REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH = 40;
 // duration of a short absence simulation of a validator
 const ABSENCE_SIM_SHORT = Math.ceil(
   REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH /
-    REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
+  REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
 );
 // duration of a medium absence simulation of a validator
 const ABSENCE_SIM_MEDIUM = Math.ceil(
@@ -94,7 +90,7 @@ const REVENUE_CASES = [
 describe('Neutron / Revenue', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let chainManagerAddress: string;
   let mainDao: Dao;
   let daoMember: DaoMember;
@@ -104,12 +100,8 @@ describe('Neutron / Revenue', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = testState.wallets.neutron.demo1;
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -259,7 +251,7 @@ describe('Neutron / Revenue', () => {
 
     test('wait the slinky to get up and running', async () => {
       let tries = 0;
-      for (;;) {
+      for (; ;) {
         tries++;
         if (tries > 120) {
           throw new Error("slinky couldn't provide NTRN price in 2 minutes");
@@ -574,7 +566,7 @@ describe('Neutron / Revenue', () => {
         Math.floor(
           (+val1Revenue.revenue_amount.amount * // take val1 revenue as 100%
             val2Revenue.in_active_valset_for_blocks_in_period) /
-            REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
+          REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH,
         ),
       );
     });
@@ -645,11 +637,11 @@ describe('Neutron / Revenue', () => {
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
           +paymentInfo.baseRevenueAmount.amount *
-            val1Events.effective_period_progress *
-            0.99,
+          val1Events.effective_period_progress *
+          0.99,
           +paymentInfo.baseRevenueAmount.amount *
-            val1Events.effective_period_progress *
-            1.01,
+          val1Events.effective_period_progress *
+          1.01,
         );
       });
 
@@ -664,11 +656,11 @@ describe('Neutron / Revenue', () => {
             Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
-                  .currentPeriodStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                .currentPeriodStartBlock,
+            ) +
+            1,
           );
           expect(
             Number(
@@ -676,11 +668,11 @@ describe('Neutron / Revenue', () => {
             ),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
-                  .currentPeriodStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                .currentPeriodStartBlock,
+            ) +
+            1,
           );
         }
       });
@@ -749,11 +741,11 @@ describe('Neutron / Revenue', () => {
         // allow price fluctuation
         expect(+val1Events.revenue_amount.amount).toBeWithin(
           +paymentInfo.baseRevenueAmount.amount *
-            val1Events.effective_period_progress *
-            0.99,
+          val1Events.effective_period_progress *
+          0.99,
           +paymentInfo.baseRevenueAmount.amount *
-            val1Events.effective_period_progress *
-            1.01,
+          val1Events.effective_period_progress *
+          1.01,
         );
       });
 
@@ -768,11 +760,11 @@ describe('Neutron / Revenue', () => {
             Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.monthlyPaymentSchedule
-                  .currentMonthStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.monthlyPaymentSchedule
+                .currentMonthStartBlock,
+            ) +
+            1,
           );
           expect(
             Number(
@@ -780,11 +772,11 @@ describe('Neutron / Revenue', () => {
             ),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.monthlyPaymentSchedule
-                  .currentMonthStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.monthlyPaymentSchedule
+                .currentMonthStartBlock,
+            ) +
+            1,
           );
         }
       });
@@ -846,11 +838,11 @@ describe('Neutron / Revenue', () => {
           // allow price fluctuation
           expect(+val1Events.revenue_amount.amount).toBeWithin(
             +paymentInfo.baseRevenueAmount.amount *
-              val1Events.effective_period_progress *
-              0.99,
+            val1Events.effective_period_progress *
+            0.99,
             +paymentInfo.baseRevenueAmount.amount *
-              val1Events.effective_period_progress *
-              1.01,
+            val1Events.effective_period_progress *
+            1.01,
           );
           break;
         }
@@ -943,11 +935,11 @@ describe('Neutron / Revenue', () => {
             Number(valsState.stats[i].validatorInfo.commitedBlocksInPeriod),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
-                  .currentPeriodStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                .currentPeriodStartBlock,
+            ) +
+            1,
           );
           expect(
             Number(
@@ -955,11 +947,11 @@ describe('Neutron / Revenue', () => {
             ),
           ).lte(
             height -
-              Number(
-                paymentInfo.paymentSchedule.blockBasedPaymentSchedule
-                  .currentPeriodStartBlock,
-              ) +
-              1,
+            Number(
+              paymentInfo.paymentSchedule.blockBasedPaymentSchedule
+                .currentPeriodStartBlock,
+            ) +
+            1,
           );
         }
       });
@@ -968,7 +960,7 @@ describe('Neutron / Revenue', () => {
 });
 
 async function submitRevenueParamsProposal(
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   revenueQuerier: RevenueQueryClient,
   daoMember: DaoMember,
   chainManagerAddress: string,
@@ -1074,7 +1066,7 @@ payment schedule to be configured. Returns the block height of the next payment 
  */
 async function waitForNextPaymentPeriod(
   revenueQuerier: RevenueQueryClient,
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
 ): Promise<number> {
   const paymentInfo = await revenueQuerier.paymentInfo();
   const ppStartBlock =

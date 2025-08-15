@@ -1,16 +1,12 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
   STAKING_TRACKER,
   STAKING_VAULT,
-  VAL_MNEMONIC_1,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import {
-  LocalState,
-  mnemonicWithAccountToWallet,
-} from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import {
@@ -39,9 +35,9 @@ describe('Neutron / Staking Vault', () => {
   let validatorWallet1: Wallet;
   let validatorWallet2: Wallet;
 
-  let daoWalletClient: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
-  let neutronClient3: SigningNeutronClient;
+  let daoWalletClient: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
+  let neutronClient3: NeutronTestClient;
 
   let validatorAddr1: string;
   let validatorAddr2: string;
@@ -58,12 +54,8 @@ describe('Neutron / Staking Vault', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    daoWallet = testState.wallets.neutron.demo1;
-    daoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      daoWallet.directwallet,
-      daoWallet.address,
-    );
+    daoWallet = await testState.nextNeutronWallet();
+    daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       daoWalletClient,
@@ -79,12 +71,8 @@ describe('Neutron / Staking Vault', () => {
     );
     await daoMember1.bondFunds('1000000000');
 
-    neutronWallet2 = await testState.nextWallet('neutron');
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
+    neutronWallet2 = await testState.nextNeutronWallet();
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
     daoMember2 = new DaoMember(
       mainDao,
       neutronClient2.client,
@@ -92,12 +80,8 @@ describe('Neutron / Staking Vault', () => {
       NEUTRON_DENOM,
     );
 
-    neutronWallet3 = await testState.nextWallet('neutron');
-    neutronClient3 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet3.directwallet,
-      neutronWallet3.address,
-    );
+    neutronWallet3 = await testState.nextNeutronWallet();
+    neutronClient3 = await NeutronTestClient.connectWithSigner(neutronWallet3);
     daoMember3 = new DaoMember(
       mainDao,
       neutronClient3.client,
@@ -105,18 +89,10 @@ describe('Neutron / Staking Vault', () => {
       NEUTRON_DENOM,
     );
 
-    validatorWallet1 = await mnemonicWithAccountToWallet(
-      VAL_MNEMONIC_1,
-      'neutron',
-      1,
-    );
+    validatorWallet1 = testState.wallets.neutron.val1;
     validatorAddr1 = validatorWallet1.valAddress;
 
-    validatorWallet2 = await mnemonicWithAccountToWallet(
-      VAL_MNEMONIC_1,
-      'neutron',
-      2,
-    );
+    validatorWallet2 = testState.wallets.neutron.val2;
     validatorAddr2 = validatorWallet2.valAddress;
 
     const neutronQuerier = await createNeutronClient({
@@ -125,8 +101,10 @@ describe('Neutron / Staking Vault', () => {
     const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
     chainManagerAddress = admins.admins[0];
 
+    const admin = testState.wallets.neutron.demo1Secp256k1;
+    const adminClient = await NeutronTestClient.connectWithSigner(admin);
     process.env.PAUSE_REWARDS === '1' &&
-      (await pauseRewardsContract(daoWalletClient));
+      (await pauseRewardsContract(adminClient));
   });
 
   describe('Delegate tokens to multiple validators', () => {

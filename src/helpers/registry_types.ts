@@ -14,6 +14,7 @@ import {
   MsgSetBeforeSendHook,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
 import { MsgAuctionBid } from '@neutron-org/neutronjs/sdk/auction/v1/tx';
+import { MsgCreateValidator } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
 
 // TODO: use all types from @neutron-org/neutronjs library
 export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
@@ -39,6 +40,8 @@ export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
   [ParameterChangeProposal.typeUrl, ParameterChangeProposal as any],
   // revenue
   [MsgFundTreasury.typeUrl, MsgFundTreasury as any],
-  // shasling
+  // slashing
   [MsgUnjail.typeUrl, MsgUnjail],
+  // staking
+  [MsgCreateValidator.typeUrl, MsgCreateValidator as any],
 ];
