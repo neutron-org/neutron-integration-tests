@@ -165,7 +165,7 @@ describe('Neutron / Staking Vault', () => {
           {
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.500000000000000000',
-            signed_blocks_window: '10',
+            signed_blocks_window: '30',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
           },
@@ -269,12 +269,12 @@ describe('Neutron / Staking Vault', () => {
         proposalId = await submitUpdateParamsSlashingProposal(
           daoMember1,
           chainManagerAddress,
-          'Proposal #1',
+          'Proposal #2',
           'Param change proposal. Update slashing params',
           {
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.400000000000000000',
-            signed_blocks_window: '8',
+            signed_blocks_window: '35',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
           },
