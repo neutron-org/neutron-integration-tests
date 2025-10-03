@@ -585,7 +585,7 @@ describe('Neutron / dex module (grpc contract)', () => {
       await neutronClient.queryContractSmart(contractAddress, {
         get_inactive_limit_order_tranche: {
           pair_id: 'uibcusdc<>untrn',
-          tick_index: 19991,
+          tick_index: 19992,
           token_in: 'untrn',
           tranche_key: inactiveTrancheKey,
         },
