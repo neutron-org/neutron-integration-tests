@@ -269,7 +269,7 @@ describe('Neutron / Staking Vault', () => {
         proposalId = await submitUpdateParamsSlashingProposal(
           daoMember1,
           chainManagerAddress,
-          'Proposal #1',
+          'Proposal #2',
           'Param change proposal. Update slashing params',
           {
             downtime_jail_duration: '3s',

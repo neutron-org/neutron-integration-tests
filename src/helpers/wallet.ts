@@ -3,6 +3,7 @@ import {
   DirectSecp256k1HdWallet,
   OfflineSigner,
 } from '@cosmjs/proto-signing';
+import { HdPath, stringToPath } from '@cosmjs/crypto';
 import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191_signer';
 import { COSMOS_PREFIX, NEUTRON_PREFIX } from './constants';
 import { FakeMetaMaskEip191Signer } from './fake_eip191_signer';
@@ -49,6 +50,31 @@ export class Wallet {
     );
     const accountValoper = (await directwalletValoper.getAccounts())[0];
     return new Wallet(signer, account, signerKind, accountValoper);
+  }
+
+  public static async fromMnemonicWithAccount(
+    mnemonic: string,
+    accountIndex: number,
+  ): Promise<Wallet> {
+    const hdPath: HdPath = stringToPath(`m/44'/118'/${accountIndex}'/0/0`);
+    const signer = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      {
+        hdPaths: [hdPath],
+        prefix: NEUTRON_PREFIX,
+      },
+    );
+
+    const account = (await signer.getAccounts())[0];
+    const directwalletValoper = await DirectSecp256k1HdWallet.fromMnemonic(
+      mnemonic,
+      {
+        hdPaths: [hdPath],
+        prefix: NEUTRON_PREFIX + 'valoper',
+      },
+    );
+    const accountValoper = (await directwalletValoper.getAccounts())[0];
+    return new Wallet(signer, account, 'secp256k1', accountValoper);
   }
 }
 
