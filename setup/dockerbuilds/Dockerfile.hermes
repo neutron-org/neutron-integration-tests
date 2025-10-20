@@ -1,17 +1,15 @@
 FROM ubuntu:24.04
-COPY ./hermes/ /app/network/hermes/
+ARG HERMES_VERSION=v1.10.4
 WORKDIR /app
 RUN apt-get update && apt-get install -y wget && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
     PLATFORM=`uname -a | awk '{print $(NF-1)}'` && \
-    VERSION=v1.10.4 && \
+    VERSION=${HERMES_VERSION} && \
     TARNAME="hermes-${VERSION}-${PLATFORM}-unknown-linux-gnu.tar.gz" && \
     wget "https://github.com/informalsystems/hermes/releases/download/${VERSION}/${TARNAME}" && \
     tar -xf "$TARNAME" && \
     mv ./hermes /usr/local/bin/ && \
     rm -rf "$TARNAME"
 
-CMD /app/network/hermes/restore-keys.sh && \
-    /app/network/hermes/create-conn.sh && \
-    hermes --config /app/network/hermes/config.toml create channel --a-chain test-1 --a-connection connection-0 --a-port transfer --b-port transfer && \
-    sleep 20 && \
-    /app/network/hermes/start.sh
+ENTRYPOINT ["hermes", "start"]

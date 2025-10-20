@@ -124,7 +124,7 @@ describe('Neutron / Staking Rewards', () => {
           {
             downtime_jail_duration: '3s',
             min_signed_per_window: '0.500000000000000000',
-            signed_blocks_window: '30',
+            signed_blocks_window: '10',
             slash_fraction_double_sign: '0.010000000000000000',
             slash_fraction_downtime: '0.100000000000000000',
           },
@@ -276,7 +276,7 @@ describe('Neutron / Staking Rewards', () => {
           validatorSecondClient,
           neutronClient1,
           stakingQuerier,
-          validatorSecondary.valAddress,
+          validatorWeakAddr,
           validatorStrongAddr,
           validatorSecondary.address,
           12,

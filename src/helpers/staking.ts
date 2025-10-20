@@ -102,7 +102,7 @@ export const getBondedTokens = async (
 };
 
 export const getTrackedValidators = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   stakingTrackerAddr: string,
   limit = 1000,
 ): Promise<any> => {
@@ -216,9 +216,6 @@ export const simulateSlashingAndJailing = async (
   delegatorAddr: string,
   missedBlocks = 10, // Default to slashing threshold
 ) => {
-  // Check if validator has been slashed
-  let validatorInfo = await stakingQuerier.validator({ validatorAddr });
-
   // Check if the network has enough voting power to continue producing blocks
   const bondedValidators = await stakingQuerier.validators({
     status: 'BOND_STATUS_BONDED',
@@ -257,8 +254,7 @@ export const simulateSlashingAndJailing = async (
 
   await waitBlocks(2, neutronClient);
 
-  // Re-check validator status
-  validatorInfo = await stakingQuerier.validator({ validatorAddr });
+  const validatorInfo = await stakingQuerier.validator({ validatorAddr });
 
   return validatorInfo.validator.status;
 };

@@ -1,7 +1,7 @@
 version: "3"
 services:
   neutron_val1:
-    image: neutron-node-2
+    image: neutron-node
     command:
       - start
       - --home=/opt
@@ -18,7 +18,7 @@ services:
       - 1317:1317
       - 9090:9090
   neutron_val2:
-    image: neutron-node-2
+    image: neutron-node
     command:
       - start
       - --home=/opt
@@ -31,7 +31,7 @@ services:
     volumes:
       - neutron_val2:/opt
   gaia_val1:
-    image: gaia-node-2
+    image: gaia-node
     command:
       - start
       - --home=/opt
@@ -48,7 +48,7 @@ services:
       - 127.0.0.1:1318:1317
       - 127.0.0.1:9091:9090
   relayer_hermes0:
-    image: hermes-2:1.10.4
+    image: hermes:1.10.4
     command:
       - -c
       - /root/start.sh
@@ -60,7 +60,7 @@ services:
       - neutron_val1
       - gaia_val1
   relayer_neutron1:
-    image: neutron-org/neutron-query-relayer-2
+    image: neutron-org/neutron-query-relayer
     entrypoint:
       - ./run.sh
     depends_on:
@@ -69,7 +69,7 @@ services:
     volumes:
       - neutron_val1:/data
     environment:
-      - NODE=neutron_val1
+      - NODE=gaia_val1
       - LOGGER_LEVEL=debug
       - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron
       - RELAYER_NEUTRON_CHAIN_RPC_ADDR=tcp://neutron_val1:26657

@@ -5,7 +5,7 @@
       "binary": "neutrond",
       "chain_id": "test-1",
       "denom": "untrn",
-      "image": "neutron-node-2",
+      "image": "neutron-node",
       "prefix": "neutron",
       "trace": true,
       "public": true,
@@ -17,6 +17,10 @@
       "validators_stake": [
         "100000000",
         "10000000"
+      ],
+      "oracle_addresses": [
+        "oracle-1:8080",
+        "oracle-2:8080"
       ],
       "accounts": [
         {
@@ -119,23 +123,22 @@
         "optimistic-execution-enabled": true,
         "telemetry.enabled": true,
         "telemetry.prometheus-retention-time": 1000,
-        "api.enable": "true",
-        "api.swagger": "true",
+        "api.enable": true,
+        "api.swagger": true,
         "api.address": "tcp://0.0.0.0:1317",
         "api.enabled-unsafe-cors": true,
-        "grpc.enable": "true",
+        "grpc.enable": true,
         "grpc.address": "0.0.0.0:9090",
         "oracle.enabled": true,
-        "oracle.oracle_address": "oracle:8080",
         "oracle.client_timeout": "300ms",
-        "rosetta.enable": "true"
+        "rosetta.enable": true
       }
     },
     "gaia": {
       "binary": "gaiad",
       "chain_id": "test-2",
       "denom": "uatom",
-      "image": "gaia-node-2",
+      "image": "gaia-node",
       "prefix": "cosmos",
       "trace": true,
       "validators": 1,
@@ -243,7 +246,7 @@
           "gaia"
         ]
       ],
-      "image": "hermes-2:1.10.4",
+      "image": "hermes:1.10.4",
       "log_level": "trace",
       "binary": "hermes",
       "config": {
@@ -277,7 +280,7 @@
         "neutron",
         "gaia"
       ],
-      "image": "neutron-org/neutron-query-relayer-2",
+      "image": "neutron-org/neutron-query-relayer",
       "log_level": "debug",
       "binary": "neutron-query-relayer",
       "mnemonic": "obscure canal because tomorrow tribe sibling describe satoshi kiwi upgrade bless empty math trend erosion oblige donate label birth chronic hazard ensure wreck shine",

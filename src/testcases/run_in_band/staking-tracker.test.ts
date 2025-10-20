@@ -554,7 +554,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         validatorSecondClient,
         neutronClient1,
         stakingQuerier,
-        validatorSecondWallet.valAddress,
+        validatorWeakAddr,
         validatorStrongAddr,
         validatorSecondWallet.address,
         16,
