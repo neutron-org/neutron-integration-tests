@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "vitest --run src/testcases/parallel --bail 1 --reporter=basic",
-    "test:run_in_band": "yarn test:ibc_transfer && yarn test:tokenomics && yarn test:feemarket && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:slinky && yarn test:chain_manager && yarn test:tokenfactory && yarn test:cron && yarn test:dex_grpc && yarn test:staking-tracker && yarn test:staking-tracker-with-rewards-on-pause && yarn test:staking-rewards && yarn test:staking-vault && yarn test:staking-vault-with-rewards-on-pause && yarn test:revenue",
+    "test:run_in_band": "yarn test:ibc_transfer && yarn test:tokenomics && yarn test:feemarket && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:slinky && yarn test:chain_manager && yarn test:tokenfactory && yarn test:coinfactory && yarn test:cron && yarn test:dex_grpc && yarn test:staking-tracker && yarn test:staking-tracker-with-rewards-on-pause && yarn test:staking-rewards && yarn test:staking-vault && yarn test:staking-vault-with-rewards-on-pause && yarn test:revenue",
     "test:ibc_transfer": "vitest --run src/testcases/run_in_band/ibc_transfer --bail 1",
     "test:slinky": "vitest --run src/testcases/run_in_band/slinky --bail 1",
     "test:cron": "vitest --run src/testcases/run_in_band/cron --bail 1",
