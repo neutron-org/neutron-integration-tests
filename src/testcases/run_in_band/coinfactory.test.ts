@@ -641,7 +641,7 @@ describe('Neutron / Tokenfactory', () => {
     let codeId: number;
 
     test('setup contract', async () => {
-      codeId = await neutronClient.upload(CONTRACTS.TOKENFACTORY);
+      codeId = await neutronClient.upload(CONTRACTS.COINFACTORY);
       expect(codeId).toBeGreaterThan(0);
 
       contractAddress = await neutronClient.instantiate(codeId, {});
