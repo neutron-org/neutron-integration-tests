@@ -294,7 +294,7 @@ describe('Neutron / Fee Market', () => {
       const fees = Math.floor(
         +requiredGas * baseGasPrice * priceAdjustment,
       ).toString();
-      // 1100msgs consume ~27m gas
+      // 1100msgs consume more than 50% gas
       try {
         await neutronClient.signAndBroadcastSync(
           new Array(1100).fill(msgSend),
