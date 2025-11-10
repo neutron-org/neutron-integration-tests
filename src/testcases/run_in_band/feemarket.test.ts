@@ -294,10 +294,10 @@ describe('Neutron / Fee Market', () => {
       const fees = Math.floor(
         +requiredGas * baseGasPrice * priceAdjustment,
       ).toString();
-      // 1200msgs consume ~27m gas
+      // 1100msgs consume more than 50% gas
       try {
         await neutronClient.signAndBroadcastSync(
-          new Array(1200).fill(msgSend),
+          new Array(1100).fill(msgSend),
           {
             gas: requiredGas,
             amount: [{ denom: NEUTRON_DENOM, amount: fees }],
@@ -305,6 +305,7 @@ describe('Neutron / Fee Market', () => {
         );
       } catch (e) {
         // do nothing if called with the same sequence
+        console.log(e);
       }
       await neutronClient.waitBlocks(1);
     }

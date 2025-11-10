@@ -148,8 +148,8 @@ async function fundWallets(
     value: value,
   };
   const fee = {
-    gas: '50000000',
-    amount: [{ denom: feeDenom, amount: '125000' }],
+    gas: '60000000',
+    amount: [{ denom: feeDenom, amount: '150000' }],
   };
   const result = await richguy.signAndBroadcast(richguyAddress, [msg], fee, '');
   const resultTx = await richguy.getTx(result.transactionHash);

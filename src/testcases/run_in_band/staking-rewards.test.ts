@@ -137,12 +137,19 @@ describe('Neutron / Staking Rewards', () => {
     });
     describe('ClaimRewards', () => {
       test('send tokens to the rewards pool', async () => {
-        const res = await neutronClient2.sendTokens(STAKING_REWARDS, [
+        const res = await neutronClient2.sendTokens(
+          STAKING_REWARDS,
+          [
+            {
+              denom: NEUTRON_DENOM,
+              amount: '8000000000',
+            },
+          ],
           {
-            denom: NEUTRON_DENOM,
-            amount: '8000000000',
+            gas: '200000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '1000' }],
           },
-        ]);
+        );
         expect(res.code).toEqual(0);
       });
       test('save vals and delegate to them', async () => {
