@@ -1,4 +1,7 @@
-import { updateTokenfactoryParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import {
+  updateCoinfactoryParamsProposal,
+  updateTokenfactoryParamsProposal
+} from '@neutron-org/neutronjsplus/dist/proposal';
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
@@ -19,17 +22,17 @@ import {
   MsgCreateDenom,
   MsgMint,
   MsgSetBeforeSendHook,
-} from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+} from '@neutron-org/neutronjs/neutron/coinfactory/v1beta1/tx';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
-import { createRPCQueryClient as createOsmosisClient } from '@neutron-org/neutronjs/osmosis/rpc.query';
-import { OsmosisQuerier } from '@neutron-org/neutronjs/querier_types';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import {NeutronQuerier} from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/query';
+import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/neutron/coinfactory/v1beta1/query';
 import { CONTRACTS } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 
-async function whitelistTokenfactoryHook(
+async function whitelistCoinfactoryHook(
   chainManagerAddress: string,
   subDao: Dao,
   subdaoMember1: DaoMember,
@@ -38,9 +41,9 @@ async function whitelistTokenfactoryHook(
 ) {
   const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
     chainManagerAddress,
-    'whitelist TF hook proposal',
-    'whitelist tokenfactory hook. Will pass',
-    updateTokenfactoryParamsProposal({
+    'whitelist CF hook proposal',
+    'whitelist coinfactory hook. Will pass',
+    updateCoinfactoryParamsProposal({
       denom_creation_fee: [],
       denom_creation_gas_consume: 0,
       fee_collector_address: '',
@@ -65,9 +68,9 @@ async function whitelistTokenfactoryHook(
 function unpackDenom(
   fullDenom: string,
 ): { creator: string; subdenom: string } | null {
-  const prefix = 'factory/';
+  const prefix = 'coinfactory.';
   if (fullDenom.startsWith(prefix)) {
-    const parts = fullDenom.substring(prefix.length).split('/');
+    const parts = fullDenom.substring(prefix.length).split('.');
     if (parts.length === 2) {
       const [creator, subdenom] = parts;
       return { creator, subdenom };
@@ -88,7 +91,7 @@ describe('Neutron / Tokenfactory', () => {
   let securityDaoWallet: Wallet;
   let securityDaoAddr: string;
   let fee: any;
-  let osmosisQuerier: OsmosisQuerier;
+  let neutronQuerier: NeutronQuerier;
   let bankQuerier: BankQueryClient;
   let chainManagerAddress: string;
 
@@ -98,7 +101,7 @@ describe('Neutron / Tokenfactory', () => {
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     // Setup subdao with update tokenfactory params
     const neutronRpcClient = await testState.rpcClient('neutron');
-    osmosisQuerier = await createOsmosisClient({
+    neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
     });
 
@@ -195,18 +198,7 @@ describe('Neutron / Tokenfactory', () => {
         {
           add_strategy: {
             address: subDao.contracts.core.address,
-            strategy: {
-              allow_only: [
-                {
-                  update_tokenfactory_params_permission: {
-                    denom_creation_fee: true,
-                    denom_creation_gas_consume: true,
-                    fee_collector_address: true,
-                    whitelisted_hooks: true,
-                  },
-                },
-              ],
-            },
+            strategy: 'allow_all',
           },
         },
         '1000',
@@ -225,7 +217,7 @@ describe('Neutron / Tokenfactory', () => {
 
   test('tokenfactory module is added', async () => {
     const paramsPresent =
-      await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
+      await neutronQuerier.neutron.coinfactory.v1beta1.params();
     expect(paramsPresent).toBeTruthy();
   });
 
@@ -254,16 +246,16 @@ describe('Neutron / Tokenfactory', () => {
       );
 
       expect(newTokenDenom).toEqual(
-        `factory/${neutronWallet.address}/${denom}`,
+        `coinfactory.${neutronWallet.address}.${denom}`,
       );
 
       const denomsAfter =
-        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomsFromCreator({
+        await neutronQuerier.neutron.coinfactory.v1beta1.denomsFromCreator({
           creator: neutronWallet.address,
         });
 
       expect(denomsAfter.denoms).toContainEqual(
-        `factory/${neutronWallet.address}/${denom}`,
+        `coinfactory.${neutronWallet.address}.${denom}`,
       );
     });
 
@@ -340,7 +332,7 @@ describe('Neutron / Tokenfactory', () => {
       );
       const unpackedDenom = unpackDenom(newTokenDenom);
       const authorityMetadataBefore =
-        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
+        await neutronQuerier.neutron.coinfactory.v1beta1.denomAuthorityMetadata(
           { subdenom: unpackedDenom.subdenom, creator: unpackedDenom.creator },
         );
 
@@ -366,7 +358,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(changeAdminRes.code).toEqual(0);
 
       const authorityMetadataAfter: QueryDenomAuthorityMetadataResponse =
-        await osmosisQuerier.osmosis.tokenfactory.v1beta1.denomAuthorityMetadata(
+        await neutronQuerier.neutron.coinfactory.v1beta1.denomAuthorityMetadata(
           { subdenom: unpackedDenom.subdenom, creator: unpackedDenom.creator },
         );
 
@@ -570,7 +562,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(queryTrack.track.received).toEqual(false);
       expect(queryBlock.block.received).toEqual(false);
 
-      await whitelistTokenfactoryHook(
+      await whitelistCoinfactoryHook(
         chainManagerAddress,
         subDao,
         subdaoMember1,
@@ -595,8 +587,7 @@ describe('Neutron / Tokenfactory', () => {
 
       const unpackedDenom = unpackDenom(newTokenDenom);
       const hookAfter =
-        await osmosisQuerier.osmosis.tokenfactory.v1beta1.beforeSendHookAddress(
-          {
+        await neutronQuerier.neutron.coinfactory.v1beta1.beforeSendHookAddress({
             creator: unpackedDenom.creator,
             subdenom: unpackedDenom.subdenom,
           },
@@ -650,7 +641,7 @@ describe('Neutron / Tokenfactory', () => {
     let codeId: number;
 
     test('setup contract', async () => {
-      codeId = await neutronClient.upload(CONTRACTS.TOKENFACTORY);
+      codeId = await neutronClient.upload(CONTRACTS.COINFACTORY);
       expect(codeId).toBeGreaterThan(0);
 
       contractAddress = await neutronClient.instantiate(codeId, {});
@@ -802,7 +793,7 @@ describe('Neutron / Tokenfactory', () => {
       expect(res.admin).toEqual(contractAddress);
     });
     test('set_before_send_hook', async () => {
-      await whitelistTokenfactoryHook(
+      await whitelistCoinfactoryHook(
         chainManagerAddress,
         subDao,
         subdaoMember1,

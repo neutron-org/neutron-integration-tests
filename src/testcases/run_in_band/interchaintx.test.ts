@@ -6,11 +6,12 @@ import { Registry } from '@cosmjs/proto-signing';
 import {
   CONTRACTS,
   COSMOS_DENOM,
+  IBC_RELAYER_NEUTRON_ADDRESS,
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { LocalState } from '../../helpers/local_state';
-import { RunnerTestSuite, inject } from 'vitest';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
+import { RunnerTestSuite, inject, afterAll } from 'vitest';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import {
   QueryClientImpl as StakingQueryClient,
@@ -22,7 +23,7 @@ import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractma
 import { getWithAttempts } from '../../helpers/misc';
 import { QueryClientImpl as ContractManagerQuery } from '@neutron-org/neutronjs/neutron/contractmanager/query.rpc.Query';
 
-import { Wallet } from '../../helpers/wallet';
+import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import {
   AcknowledgementResult,
   cleanAckResults,
@@ -38,6 +39,15 @@ import {
   Order,
   State,
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
+import {
+  Dao,
+  DaoMember,
+  getDaoContracts,
+  getNeutronDAOCore,
+} from '@neutron-org/neutronjsplus/dist/dao';
+import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
+import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
+import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -49,10 +59,10 @@ describe('Neutron / Interchain TXs', () => {
   let ibcQuerier: IbcQueryClient;
   let contractManagerQuerier: ContractManagerQuery;
 
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let gaiaClient: SigningStargateClient;
   let neutronWallet: Wallet;
-  let gaiaWallet: Wallet;
+  let gaiaWallet: GaiaWallet;
 
   let link: Link;
 
@@ -64,17 +74,13 @@ describe('Neutron / Interchain TXs', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
-    gaiaWallet = await testState.nextWallet('cosmos');
+    gaiaWallet = await testState.nextGaiaWallet();
     gaiaClient = await SigningStargateClient.connectWithSigner(
       testState.rpcGaia,
-      gaiaWallet.directwallet,
+      gaiaWallet.signer,
       { registry: new Registry(defaultRegistryTypes) },
     );
 
@@ -218,10 +224,12 @@ describe('Neutron / Interchain TXs', () => {
       test('set payer fees', async () => {
         const res = await neutronClient.execute(contractAddress, {
           set_fees: {
-            denom: NEUTRON_DENOM,
-            ack_fee: '2000',
-            recv_fee: '0',
-            timeout_fee: '2000',
+            fees: {
+              denom: NEUTRON_DENOM,
+              ack_fee: '2000',
+              recv_fee: '0',
+              timeout_fee: '2000',
+            },
           },
         });
         expect(res.code).toEqual(0);
@@ -323,6 +331,279 @@ describe('Neutron / Interchain TXs', () => {
       });
     });
 
+    describe('Send Interchain TX with fees disabled', () => {
+      let daoMember: DaoMember;
+      let dao: Dao;
+      let neutronQuerier: NeutronQuerier;
+      let chainManagerAddress: string;
+
+      let contractBalanceBefore: number;
+      let relayerBalanceBefore: number;
+
+      beforeAll(async () => {
+        const neutronRpcClient = await testState.rpcClient('neutron');
+
+        const daoCoreAddress = await getNeutronDAOCore(
+          neutronClient,
+          neutronRpcClient,
+        );
+        const daoContracts = await getDaoContracts(
+          neutronClient,
+          daoCoreAddress,
+        );
+
+        neutronQuerier = await createNeutronClient({
+          rpcEndpoint: testState.rpcNeutron,
+        });
+        const admins =
+          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
+        chainManagerAddress = admins.admins[0];
+
+        dao = new Dao(neutronClient, daoContracts);
+        daoMember = new DaoMember(
+          dao,
+          neutronClient.client,
+          neutronWallet.address,
+          NEUTRON_DENOM,
+        );
+        await daoMember.bondFunds('1000000000');
+
+        // disable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal update feerefunder params',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: false,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+
+        const feerefunderParams =
+          await neutronQuerier.neutron.feerefunder.params({});
+        expect(feerefunderParams.params.feeEnabled).toBeFalse();
+
+        const balance = await neutronClient.getBalance(
+          IBC_RELAYER_NEUTRON_ADDRESS,
+          NEUTRON_DENOM,
+        );
+        relayerBalanceBefore = +(balance.amount || '0');
+
+        const balance2 = await neutronClient.getBalance(
+          contractAddress,
+          NEUTRON_DENOM,
+        );
+        contractBalanceBefore = +(balance2.amount || '0');
+      });
+
+      afterAll(async () => {
+        // enable fees
+        const proposalId =
+          await daoMember.submitUpdateParamsFeerefunderProposal(
+            chainManagerAddress,
+            'Proposal #4',
+            'Feerefunder update params proposal',
+            updateFeerefunderParamsProposal({
+              min_fee: {
+                recv_fee: [],
+                ack_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+                timeout_fee: [
+                  {
+                    amount: '1000',
+                    denom: NEUTRON_DENOM,
+                  },
+                ],
+              },
+              fee_enabled: true,
+            }),
+            '1000',
+          );
+        await daoMember.voteYes(proposalId);
+        await dao.checkPassedProposal(proposalId);
+        await daoMember.executeProposalWithAttempts(proposalId);
+
+        const feerefunderParams =
+          await neutronQuerier.neutron.feerefunder.params({});
+        expect(feerefunderParams.params.feeEnabled).toBeTrue();
+      });
+
+      describe('Fees disabled does not send fees even if specified', () => {
+        test('delegate from first ICA', async () => {
+          const res = await neutronClient.execute(contractAddress, {
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.valAddress,
+              amount: '1000',
+              denom: COSMOS_DENOM,
+            },
+          });
+          expect(res.code).toEqual(0);
+          const sequenceId = getSequenceId(res);
+          await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
+          const ackRes = await getAck(
+            neutronClient,
+            contractAddress,
+            icaId1,
+            sequenceId,
+          );
+          expect(ackRes).toMatchObject<AcknowledgementResult>({
+            success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
+          });
+        });
+        test('check validator state', async () => {
+          const res1 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
+            gaiaClient,
+            () =>
+              gaiaStakingQuerier.DelegatorDelegations({
+                delegatorAddr: icaAddress1,
+              }),
+            async (res) => res.delegationResponses?.length == 1,
+          );
+          expect(res1.delegationResponses).toEqual([
+            {
+              balance: { amount: '2000', denom: COSMOS_DENOM },
+              delegation: {
+                delegatorAddress: icaAddress1,
+                shares: '2000000000000000000000',
+                validatorAddress:
+                  'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+              },
+            },
+          ]);
+        });
+        test('contract balance should not change', async () => {
+          const balance = await neutronClient.getBalance(
+            contractAddress,
+            NEUTRON_DENOM,
+          );
+          expect(+balance.amount).toEqual(contractBalanceBefore);
+        });
+
+        test('relayer must not receive fees', async () => {
+          const balanceAfter = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          // relayer balance changes only because of gas fees
+          expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(
+            0,
+            4000,
+          );
+        });
+      });
+
+      describe('Fees disabled allow for empty fees', async () => {
+        beforeAll(async () => {
+          const res = await neutronClient.execute(contractAddress, {
+            set_fees: {
+              fees: null,
+            },
+          });
+          expect(res.code).toEqual(0);
+        });
+        afterAll(async () => {
+          const res = await neutronClient.execute(contractAddress, {
+            set_fees: {
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '2000',
+                recv_fee: '0',
+                timeout_fee: '2000',
+              },
+            },
+          });
+          expect(res.code).toEqual(0);
+        });
+
+        test('delegate from first ICA', async () => {
+          const res = await neutronClient.execute(contractAddress, {
+            delegate: {
+              interchain_account_id: icaId1,
+              validator: testState.wallets.cosmos.val1.valAddress,
+              amount: '1000',
+              denom: COSMOS_DENOM,
+            },
+          });
+          expect(res.code).toEqual(0);
+          const sequenceId = getSequenceId(res);
+          await waitForAck(neutronClient, contractAddress, icaId1, sequenceId);
+          const ackRes = await getAck(
+            neutronClient,
+            contractAddress,
+            icaId1,
+            sequenceId,
+          );
+          expect(ackRes).toMatchObject<AcknowledgementResult>({
+            success: ['/cosmos.staking.v1beta1.MsgDelegateResponse'],
+          });
+        });
+        test('check validator state', async () => {
+          const res1 = await getWithAttempts<QueryDelegatorDelegationsResponse>(
+            gaiaClient,
+            () =>
+              gaiaStakingQuerier.DelegatorDelegations({
+                delegatorAddr: icaAddress1,
+              }),
+            async (res) => res.delegationResponses?.length == 1,
+          );
+          expect(res1.delegationResponses).toEqual([
+            {
+              balance: { amount: '3000', denom: COSMOS_DENOM },
+              delegation: {
+                delegatorAddress: icaAddress1,
+                shares: '3000000000000000000000',
+                validatorAddress:
+                  'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
+              },
+            },
+          ]);
+        });
+        test('contract balance should not change', async () => {
+          const balance = await neutronClient.getBalance(
+            contractAddress,
+            NEUTRON_DENOM,
+          );
+          expect(+balance.amount).toEqual(contractBalanceBefore);
+        });
+
+        test('relayer must not receive fees', async () => {
+          const balanceAfter = await neutronClient.getBalance(
+            IBC_RELAYER_NEUTRON_ADDRESS,
+            NEUTRON_DENOM,
+          );
+          // relayer balance changes only because of gas fees
+          expect(relayerBalanceBefore - +balanceAfter.amount).toBeWithin(
+            0,
+            4000,
+          );
+        });
+      });
+    });
+
     describe('DOUBLE ACK - Send Interchain TX', () => {
       test('delegate from first ICA', async () => {
         // it will delegate two times of passed amount - first from contract call, and second from successful sudo IBC response
@@ -365,10 +646,10 @@ describe('Neutron / Interchain TXs', () => {
         );
         expect(res1.delegationResponses).toEqual([
           {
-            balance: { amount: '2000', denom: COSMOS_DENOM },
+            balance: { amount: '4000', denom: COSMOS_DENOM },
             delegation: {
               delegatorAddress: icaAddress1,
-              shares: '2000000000000000000000',
+              shares: '4000000000000000000000',
               validatorAddress:
                 'cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn',
             },
@@ -423,7 +704,7 @@ describe('Neutron / Interchain TXs', () => {
           undelegate: {
             interchain_account_id: icaId1,
             validator: testState.wallets.cosmos.val1.valAddress,
-            amount: '1000',
+            amount: '3000',
             denom: COSMOS_DENOM,
           },
         });
@@ -516,14 +797,17 @@ describe('Neutron / Interchain TXs', () => {
       });
       describe('zero fee', () => {
         beforeAll(async () => {
-          await neutronClient.execute(contractAddress, {
+          const res = await neutronClient.execute(contractAddress, {
             set_fees: {
-              denom: NEUTRON_DENOM,
-              ack_fee: '0',
-              recv_fee: '0',
-              timeout_fee: '0',
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '0',
+                recv_fee: '0',
+                timeout_fee: '0',
+              },
             },
           });
+          expect(res.code).toEqual(0);
         });
         test('delegate with zero fee', async () => {
           await expect(
@@ -540,24 +824,30 @@ describe('Neutron / Interchain TXs', () => {
       });
       describe('insufficient funds for fee', () => {
         beforeAll(async () => {
-          await neutronClient.execute(contractAddress, {
+          const res = await neutronClient.execute(contractAddress, {
             set_fees: {
-              denom: NEUTRON_DENOM,
-              ack_fee: '9999999999',
-              recv_fee: '0',
-              timeout_fee: '9999999999',
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '9999999999',
+                recv_fee: '0',
+                timeout_fee: '9999999999',
+              },
             },
           });
+          expect(res.code).toEqual(0);
         });
         afterAll(async () => {
-          await neutronClient.execute(contractAddress, {
+          const res = await neutronClient.execute(contractAddress, {
             set_fees: {
-              denom: NEUTRON_DENOM,
-              ack_fee: '2000',
-              recv_fee: '0',
-              timeout_fee: '2000',
+              fees: {
+                denom: NEUTRON_DENOM,
+                ack_fee: '2000',
+                recv_fee: '0',
+                timeout_fee: '2000',
+              },
             },
           });
+          expect(res.code).toEqual(0);
         });
         test('delegate with zero fee', async () => {
           await expect(

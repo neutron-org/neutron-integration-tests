@@ -13,7 +13,15 @@ import {
   MsgMint,
   MsgSetBeforeSendHook,
 } from '@neutron-org/neutronjs/osmosis/tokenfactory/v1beta1/tx';
+import {
+  MsgBurn as MsgBurn2,
+  MsgChangeAdmin as MsgChangeAdmin2,
+  MsgCreateDenom as MsgCreateDenom2,
+  MsgMint as MsgMint2,
+  MsgSetBeforeSendHook as MsgSetBeforeSendHook2,
+} from '@neutron-org/neutronjs/neutron/coinfactory/v1beta1/tx';
 import { MsgAuctionBid } from '@neutron-org/neutronjs/sdk/auction/v1/tx';
+import { MsgCreateValidator } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
 
 // TODO: use all types from @neutron-org/neutronjs library
 export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
@@ -27,6 +35,12 @@ export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
   [MsgBurn.typeUrl, MsgBurn as any],
   [MsgChangeAdmin.typeUrl, MsgChangeAdmin as any],
   [MsgSetBeforeSendHook.typeUrl, MsgSetBeforeSendHook as any],
+  // coinfactory
+  [MsgMint2.typeUrl, MsgMint2 as any],
+  [MsgCreateDenom2.typeUrl, MsgCreateDenom2 as any],
+  [MsgBurn2.typeUrl, MsgBurn2 as any],
+  [MsgChangeAdmin2.typeUrl, MsgChangeAdmin2 as any],
+  [MsgSetBeforeSendHook2.typeUrl, MsgSetBeforeSendHook2 as any],
   // interchainqueries
   [
     MsgRemoveInterchainQueryRequest.typeUrl,
@@ -39,6 +53,8 @@ export const neutronTypes: ReadonlyArray<[string, GeneratedType]> = [
   [ParameterChangeProposal.typeUrl, ParameterChangeProposal as any],
   // revenue
   [MsgFundTreasury.typeUrl, MsgFundTreasury as any],
-  // shasling
+  // slashing
   [MsgUnjail.typeUrl, MsgUnjail],
+  // staking
+  [MsgCreateValidator.typeUrl, MsgCreateValidator as any],
 ];

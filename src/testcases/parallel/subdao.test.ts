@@ -13,7 +13,7 @@ import {
 } from '@neutron-org/neutronjsplus/dist/proposal';
 import { deployNeutronDao, setupSubDaoTimelockSet } from '../../helpers/dao';
 import { LocalState } from '../../helpers/local_state';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
 import { TimelockConfig } from '@neutron-org/neutronjsplus/dist/dao_types';
@@ -23,8 +23,8 @@ describe('Neutron / Subdao', () => {
   let testState: LocalState;
   let neutronWallet1: Wallet;
   let neutronWallet2: Wallet;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
   let subdaoMember1: DaoMember;
   let subdaoMember2: DaoMember;
   let mainDaoMember: DaoMember;
@@ -35,26 +35,18 @@ describe('Neutron / Subdao', () => {
   let subDao: Dao;
   let mainDao: Dao;
   let adminQuery: AdminQueryClient;
-  let chainManagerAddress;
+  let chainManagerAddress: string;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet1 = await testState.nextWallet('neutron');
-    securityDaoWallet = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    securityDaoWallet = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
     demo1Addr = neutronWallet1.address;
     demo2Addr = neutronWallet2.address;
     securityDaoAddr = securityDaoWallet.address;
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.directwallet,
-      neutronWallet1.address,
-    );
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     const daoContracts = await deployNeutronDao(
       neutronWallet1.address,
@@ -1144,7 +1136,7 @@ describe('Neutron / Subdao', () => {
 });
 
 async function overruleTimelockedProposalMock(
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   member: DaoMember,
   proposalId: number,
   customModule = 'single',
