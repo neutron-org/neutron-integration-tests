@@ -18,16 +18,18 @@ import {
 } from './constants';
 import { GaiaWallet, Wallet } from './wallet';
 import { IbcClient, Link } from '@confio/relayer';
-import { GasPrice } from '@cosmjs/stargate/build/fee';
+import { GasPrice } from '@cosmjs/stargate';
+
+type Network = 'cosmos' | 'neutron';
 
 // limit of wallets precreated for one test
-const WALLETS_PER_TEST_FILE = 20;
+const WALLETS_PER_TEST_FILE = 2;
 
 export class LocalState {
   wallets: {
     cosmos: Record<string, GaiaWallet>;
     neutron: Record<string, Wallet>;
-  };
+  } = { cosmos: {}, neutron: {} };
   icqWebHost: string;
 
   rpcNeutron: string;
@@ -40,7 +42,7 @@ export class LocalState {
     neutron: number;
     cosmos: number;
   };
-  testFilePosition: number;
+  testFilePosition = 0;
 
   static async create(
     config: any,
@@ -93,10 +95,15 @@ export class LocalState {
   async nextGaiaWallet(): Promise<GaiaWallet> {
     const nextWalletIndex = await this.getAndUpdateNextWalletIndex('cosmos');
     const mnemonic = this.mnemonics[nextWalletIndex];
+    if (!mnemonic) {
+      throw new Error(
+        'Gaia mnemonic not found. Probably overflow on total amounts of mnemonics generated.',
+      );
+    }
     return GaiaWallet.fromMnemonic(mnemonic);
   }
 
-  async getAndUpdateNextWalletIndex(network: string): Promise<number> {
+  async getAndUpdateNextWalletIndex(network: Network): Promise<number> {
     const currentOffsetInTestFile = this.walletIndexes[network];
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
@@ -176,6 +183,11 @@ export class LocalState {
   ): Promise<Wallet> {
     const nextWalletIndex = await this.getAndUpdateNextWalletIndex('neutron');
     const mnemonic = this.mnemonics[nextWalletIndex];
+    if (!mnemonic) {
+      throw new Error(
+        'Gaia mnemonic not found. Probably overflow on total amounts of mnemonics generated.',
+      );
+    }
     return Wallet.fromMnemonic(mnemonic, signerKind);
   }
 }
@@ -183,7 +195,13 @@ export class LocalState {
 async function testFilePosition(s: RunnerTestSuite): Promise<number> {
   const filepath = s.file.filepath.trim();
   const splitted = filepath.split('/');
-  const filename = splitted.pop().trim();
+  const poppedFilepath = splitted.pop();
+  if (!poppedFilepath) {
+    throw new Error(
+      'incorrect file paths in testFilePosition, cannot split it',
+    );
+  }
+  const filename = poppedFilepath.trim();
   const dir = splitted.join('/');
 
   return testFilePositionForName(dir, filename);
@@ -204,7 +222,7 @@ async function testFilePositionForName(
 }
 
 async function listFilenamesInDir(dir: string): Promise<string[]> {
-  const res = [];
+  const res: string[] = [];
   try {
     const files = await fs.readdir(dir, { withFileTypes: true });
     files.forEach((file) => {

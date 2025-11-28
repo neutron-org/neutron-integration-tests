@@ -10,7 +10,7 @@ import path from 'path';
 import { Coin, EncodeObject, Registry } from '@cosmjs/proto-signing';
 import { CONTRACTS_PATH } from './setup';
 import { CometClient, connectComet } from '@cosmjs/tendermint-rpc';
-import { GasPrice } from '@cosmjs/stargate/build/fee';
+import { GasPrice } from '@cosmjs/stargate';
 import {
   waitBlocks,
   getWithAttempts,
@@ -29,7 +29,7 @@ import {
   DirectSignerAdapter,
   Eip191SignerAdapter,
 } from '@neutron-org/neutronjsplus/dist/signer_adapters';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing/build/signer';
+import { OfflineDirectSigner } from '@cosmjs/proto-signing';
 
 // SigningNeutronClient simplifies tests operations for
 // storing, instantiating, migrating, executing contracts, executing transactions,
@@ -158,7 +158,13 @@ export class NeutronTestClient extends CosmWasmClient {
       '',
       funds,
     );
-    return await this.client.getTx(res.transactionHash);
+    const resTx = await this.client.getTx(res.transactionHash);
+
+    if (resTx === null) {
+      return Promise.reject('no transaction found');
+    }
+
+    return resTx;
   }
 
   async signAndBroadcast(

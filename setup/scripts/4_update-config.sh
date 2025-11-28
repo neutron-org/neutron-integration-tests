@@ -17,6 +17,7 @@ NODE1=$(neutrond --home ./data/test-1/node-1/ tendermint show-node-id)
 
 for i in `seq 1 ${NODES}`; do
   sed -i -e 's/timeout_commit = "5s"/timeout_commit = "1s"/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+  sed -i -e 's/max_open_connections = 3/max_open_connections = 0/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/index_all_keys = false/index_all_keys = true/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/enable = false/enable = true/g' "${CHAIN_DIR}/node-${i}/config/app.toml"

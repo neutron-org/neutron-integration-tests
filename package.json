@@ -40,26 +40,26 @@
     "test:staking-vault-with-rewards-on-pause": "PAUSE_REWARDS=1 vitest --run src/testcases/run_in_band/staking-vault.test.ts --bail 1",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
-    "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
     "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || { tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
-    "build:tsrelayer": "[ -d './node_modules/@confio/relayer/build' ] || { tsc --noEmitOnError false -p ./node_modules/@confio/relayer/tsconfig.json || true; cp -R ./node_modules/@confio/relayer/build/* ./node_modules/@confio/relayer/ ; }",
+    "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
+    "build:tsrelayer": "[ -d './node_modules/@confio/relayer/dist' ] || tsc -p ./node_modules/@confio/relayer/tsconfig.json",
     "postinstall": "yarn build:tsrelayer && yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#1195752a2abdba004ab0383b49c4e200f48c60f4",
-    "@cosmjs/cosmwasm-stargate": "^0.32.4",
-    "@cosmjs/stargate": "0.32.4",
-    "@cosmjs/tendermint-rpc": "^0.32.4",
-    "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#736add2d9774e0dad6ff048d226eb47ce9c3fc0e",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#eaa0d8324bf91b1ec4d3b5c54d6be6c0db318ff5",
+    "@cosmjs/cosmwasm-stargate": "^0.37.0",
+    "@cosmjs/stargate": "^0.37.0",
+    "@cosmjs/tendermint-rpc": "^0.37.0",
+    "@cosmjs/proto-signing": "^0.37.0",
+    "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#93cd905535c52ebb370aa11b7a3e17adc51b47a8",
+    "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#f10cc4e64fe44af5deb722747f27215869f9b4f9",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#9f12ae925e2c947378e2766c4402251a9a3f3475",
     "@noble/secp256k1": "^2.2.3",
     "@types/lodash": "^4.14.182",
-    "axios": "1.6.0",
+    "axios": "1.12.0",
     "commander": "^10.0.0",
-    "cosmjs-types": "^0.9.0",
     "date-fns": "^2.16.1",
     "ethers": "^6.13.5",
     "express": "^4.18.2",
@@ -87,7 +87,8 @@
     "ts-node": "^9.1.1",
     "tslint": "^5.20.1",
     "typescript": "^5.1.6",
-    "vitest": "^2.0.1"
+    "vitest": "^2.0.1",
+    "pako": "^2.1.0"
   },
   "lint-staged": {
     "./**/src/**/*.{ts,tsx}": [
@@ -98,6 +99,9 @@
     ]
   },
   "engines": {
-    "node": ">=20.0"
+    "node": ">=22.0"
+  },
+  "resolutions": {
+    "@scure/base": "^1.1.1"
   }
 }
