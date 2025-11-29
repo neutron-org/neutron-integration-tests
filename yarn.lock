@@ -806,9 +806,9 @@
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.6.0.tgz#ec6cd237440700bc23ca23087f513c75508958b0"
   integrity sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==
 
-"@confio/relayer@https://github.com/neutron-org/ts-relayer.git#93cd905535c52ebb370aa11b7a3e17adc51b47a8":
+"@confio/relayer@https://github.com/neutron-org/ts-relayer.git#06d09bc1168d2da38d7bdac7ba71434d4c42324d":
   version "0.13.0"
-  resolved "https://github.com/neutron-org/ts-relayer.git#93cd905535c52ebb370aa11b7a3e17adc51b47a8"
+  resolved "https://github.com/neutron-org/ts-relayer.git#06d09bc1168d2da38d7bdac7ba71434d4c42324d"
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.37.0"
     "@cosmjs/crypto" "^0.37.0"

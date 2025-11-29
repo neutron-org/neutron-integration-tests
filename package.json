@@ -54,7 +54,7 @@
     "@cosmjs/stargate": "^0.37.0",
     "@cosmjs/tendermint-rpc": "^0.37.0",
     "@cosmjs/proto-signing": "^0.37.0",
-    "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#93cd905535c52ebb370aa11b7a3e17adc51b47a8",
+    "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#06d09bc1168d2da38d7bdac7ba71434d4c42324d",
     "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#d16ed304f502e4accf945bb3b9c0edd3aaf9d24a",
     "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#58eecfc3968f1954752d086b77a21fcb4fe31962",
     "@noble/secp256k1": "^2.2.3",
