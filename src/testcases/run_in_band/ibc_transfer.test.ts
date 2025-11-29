@@ -3,11 +3,11 @@ import { RunnerTestSuite, inject, describe, afterAll, beforeAll } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { MsgTransfer as GaiaMsgTransfer } from 'cosmjs-types/ibc/applications/transfer/v1/tx';
-import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx';
+import { MsgTransfer as NeutronMsgTransfer } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/tx.js';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
-import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query';
-import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
-import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
+import { QueryFailuresResponse } from '@neutron-org/neutronjs/neutron/contractmanager/query.js';
+import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query.js';
+import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query.js';
 import {
   COSMOS_DENOM,
   IBC_RELAYER_NEUTRON_ADDRESS,
@@ -183,6 +183,9 @@ describe('Neutron / IBC transfer', () => {
         const res = await ibcQuerier.denom({
           hash: '27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         });
+        if (!res) {
+          throw new Error('Unable to find denom ibc');
+        }
         expect(res.denom.base).toEqual(COSMOS_DENOM);
       });
       test('set payer fees', async () => {

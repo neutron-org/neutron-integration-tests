@@ -7,6 +7,7 @@
     "test": "yarn test:parallel && yarn test:run_in_band",
     "test:parallel": "vitest --run src/testcases/parallel --bail 1 --reporter=basic",
     "test:run_in_band": "yarn test:ibc_transfer && yarn test:tokenomics && yarn test:globalfee && yarn test:interchaintx && yarn test:interchain_kv_query && yarn test:interchain_tx_query_plain && yarn test:ibc_hooks && yarn test:float && yarn test:parameters && yarn test:slinky && yarn test:chain_manager && yarn test:tokenfactory && yarn test:coinfactory && yarn test:cron && yarn test:dex_grpc && yarn test:staking-tracker && yarn test:staking-tracker-with-rewards-on-pause && yarn test:staking-rewards && yarn test:staking-vault && yarn test:staking-vault-with-rewards-on-pause && yarn test:revenue && yarn test:feemarket",
+    "test:simple": "vitest --run src/testcases/run_in_band/simple --bail 1",
     "test:ibc_transfer": "vitest --run src/testcases/run_in_band/ibc_transfer --bail 1",
     "test:slinky": "vitest --run src/testcases/run_in_band/slinky --bail 1",
     "test:cron": "vitest --run src/testcases/run_in_band/cron --bail 1",
@@ -40,9 +41,9 @@
     "test:staking-vault-with-rewards-on-pause": "PAUSE_REWARDS=1 vitest --run src/testcases/run_in_band/staking-vault.test.ts --bail 1",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
-    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/dist' ] || { tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
+    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/build' ] || { yarn tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
     "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
-    "build:tsrelayer": "[ -d './node_modules/@confio/relayer/dist' ] || tsc -p ./node_modules/@confio/relayer/tsconfig.json",
+    "build:tsrelayer": "[ -d './node_modules/@confio/relayer/dist' ] || tsc -p ./tsconfig.relayer.json",
     "postinstall": "yarn build:tsrelayer && yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",
@@ -54,8 +55,8 @@
     "@cosmjs/tendermint-rpc": "^0.37.0",
     "@cosmjs/proto-signing": "^0.37.0",
     "@confio/relayer": "https://github.com/neutron-org/ts-relayer.git#93cd905535c52ebb370aa11b7a3e17adc51b47a8",
-    "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#f10cc4e64fe44af5deb722747f27215869f9b4f9",
-    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#9f12ae925e2c947378e2766c4402251a9a3f3475",
+    "@neutron-org/neutronjs": "https://github.com/neutron-org/neutronjs.git#d16ed304f502e4accf945bb3b9c0edd3aaf9d24a",
+    "@neutron-org/neutronjsplus": "https://github.com/neutron-org/neutronjsplus.git#58eecfc3968f1954752d086b77a21fcb4fe31962",
     "@noble/secp256k1": "^2.2.3",
     "@types/lodash": "^4.14.182",
     "axios": "1.12.0",
@@ -68,7 +69,8 @@
     "long": "^5.2.1",
     "merkletreejs": "^0.3.9",
     "sinon": "^18.0.0",
-    "yesno": "^0.4.0"
+    "yesno": "^0.4.0",
+    "cosmjs-types": "^0.11.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.20.2",

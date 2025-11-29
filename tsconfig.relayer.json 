@@ -1,0 +1,4 @@
+ {
+    "extends": "./node_modules/@confio/relayer/tsconfig.json",
+    "exclude": ["./node_modules/@confio/relayer/src/**/*.spec.ts"]
+  }
