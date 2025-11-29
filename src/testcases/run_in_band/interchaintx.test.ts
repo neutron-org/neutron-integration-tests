@@ -33,7 +33,7 @@ import {
   waitForAck,
 } from '../../helpers/interchaintxs';
 import { execSync } from 'child_process';
-import { Link } from '@confio/relayer/build';
+import { Link } from '@confio/relayer';
 import config from '../../config.json';
 import {
   Order,
