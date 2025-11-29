@@ -858,6 +858,8 @@ set_genesis_param_jq ".app_state.feemarket.params.max_learning_rate" "\"0.5\""  
 set_genesis_param_jq ".app_state.feemarket.params.enabled" "$FEEMARKET_ENABLED"                           # feemarket
 set_genesis_param_jq ".app_state.feemarket.params.distribute_fees" "true"                                 # feemarket
 set_genesis_param_jq ".app_state.feemarket.state.base_gas_price" "\"0.0025\""                             # feemarket
+set_genesis_param_jq ".app_state.consensus.params.block.max_bytes" "22020096"   # consensus
+set_genesis_param_jq ".app_state.consensus.params.block.max_gas" "-1"           # consensus
 set_genesis_param_jq ".app_state.harpoon.hook_subscriptions" "[
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 1},
                                                                {\"contract_addresses\": ["\"$NEUTRON_STAKING_TRACKER_CONTRACT_ADDRESS\""], \"hook_type\": 3},

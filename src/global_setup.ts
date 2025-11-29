@@ -7,6 +7,7 @@ import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
 import ch from 'child_process';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   COSMOS_DENOM,
   COSMOS_PREFIX,
@@ -24,7 +25,7 @@ import { ACC_PATH, ethToNeutronBechAddress } from './helpers/metamask_emulator';
 
 let teardownHappened = false;
 
-const MNEMONICS_COUNT = 100;
+const MNEMONICS_COUNT = 1000;
 
 export default async function ({ provide }: GlobalSetupContext) {
   console.log('global setup started');
@@ -91,11 +92,6 @@ async function fundWallets(
     config.DEMO_MNEMONIC_1,
     { prefix: prefix },
   );
-  const richguy = await SigningStargateClient.connectWithSigner(
-    rpc,
-    richguyWallet,
-    { registry: new Registry(defaultRegistryTypes) },
-  );
 
   console.log('before richguyWallet.get accounts');
   const richguyAddress = (await richguyWallet.getAccounts())[0].address;
@@ -104,7 +100,7 @@ async function fundWallets(
   const poorAmount = '10000000000';
 
   let outputs: Output[] = [];
-  const BATCH_SIZE = 100;
+  const BATCH_SIZE = 1000;
 
   console.log('before outputs');
   // Process mnemonics in batches to avoid overwhelming the system
@@ -151,7 +147,7 @@ async function fundWallets(
   }
 
   // Split outputs into batches and send multiple MsgMultiSend transactions
-  const MULTISEND_BATCH_SIZE = 100;
+  const MULTISEND_BATCH_SIZE = 1000;
   const totalBatches = Math.ceil(outputs.length / MULTISEND_BATCH_SIZE);
 
   for (
@@ -159,6 +155,13 @@ async function fundWallets(
     batchIdx < outputs.length;
     batchIdx += MULTISEND_BATCH_SIZE
   ) {
+    // Recreate client for each batch to avoid connection reuse issues
+    const richguy = await SigningStargateClient.connectWithSigner(
+      rpc,
+      richguyWallet,
+      { registry: new Registry(defaultRegistryTypes) },
+    );
+
     const batchOutputs = outputs.slice(
       batchIdx,
       batchIdx + MULTISEND_BATCH_SIZE,
@@ -208,6 +211,14 @@ async function fundWallets(
         'could not setup test wallets; rawLog = ' +
         JSON.stringify(resultTx.rawLog)
       );
+    }
+
+    // Disconnect client and wait before next batch to avoid connection issues
+    richguy.disconnect();
+
+    // Wait 3 seconds between batches to let the RPC server recover
+    if (batchIdx + MULTISEND_BATCH_SIZE < outputs.length) {
+      await waitSeconds(3);
     }
   }
 }

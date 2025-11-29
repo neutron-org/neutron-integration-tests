@@ -20,6 +20,15 @@ for i in `seq 1 ${NODES}`; do
   sed -i -e 's/max_open_connections = 3/max_open_connections = 0/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/timeout_propose = "3s"/timeout_propose = "1s"/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
   sed -i -e 's/index_all_keys = false/index_all_keys = true/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+
+  # Increase RPC max body bytes for large transactions/responses
+  sed -i -e 's/max_body_bytes = [0-9]*/max_body_bytes = 10000000/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+  sed -i -e 's/max_header_bytes = [0-9]*/max_header_bytes = 2048576/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+
+  # Increase gRPC max message sizes
+  sed -i -e 's/max-recv-msg-size = "[0-9]*"/max-recv-msg-size = "2147483647"/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
+  sed -i -e 's/max-send-msg-size = "[0-9]*"/max-send-msg-size = "2147483647"/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
+
   sed -i -e 's/enable = false/enable = true/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
   sed -i -e 's/swagger = false/swagger = true/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
   sed -i -e "s/minimum-gas-prices = \"\"/minimum-gas-prices = \"0.0025$STAKEDENOM,0.0025ibc\/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2\"/g" "${CHAIN_DIR}/node-${i}/config/app.toml"
