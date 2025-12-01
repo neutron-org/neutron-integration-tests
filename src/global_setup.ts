@@ -145,105 +145,100 @@ async function fundWallets(
     outputs = outputs.concat(ethDerivedOutputs);
   }
 
-  // Split outputs into batches and send multiple MsgMultiSend transactions
-  const MULTISEND_BATCH_SIZE = 500;
-  const totalBatches = Math.ceil(outputs.length / MULTISEND_BATCH_SIZE);
+  // Send single MsgMultiSend transaction with all outputs
+  // Add retry logic to handle connection closure issues
+  let richguy: SigningStargateClient | null = null;
+  let connectRetries = 0;
+  const maxRetries = 3;
 
-  for (
-    let batchIdx = 0;
-    batchIdx < outputs.length;
-    batchIdx += MULTISEND_BATCH_SIZE
-  ) {
-    // Recreate client for each batch to avoid connection reuse issues
-    // Add retry logic to handle connection closure issues
-    let richguy: SigningStargateClient | null = null;
-    let retries = 0;
-    const maxRetries = 3;
-
-    while (retries < maxRetries && !richguy) {
-      try {
-        richguy = await SigningStargateClient.connectWithSigner(
-          rpc,
-          richguyWallet,
-          { registry: new Registry(defaultRegistryTypes) },
-        );
-      } catch (error) {
-        retries++;
-        console.log(
-          `Connection attempt ${retries}/${maxRetries} failed, retrying...`,
-        );
-        if (retries < maxRetries) {
-          await waitSeconds(2);
-        } else {
-          throw error;
-        }
+  console.log('Connecting to RPC...');
+  while (connectRetries < maxRetries && !richguy) {
+    try {
+      richguy = await SigningStargateClient.connectWithSigner(
+        rpc,
+        richguyWallet,
+        { registry: new Registry(defaultRegistryTypes) },
+      );
+    } catch (error) {
+      connectRetries++;
+      console.log(
+        `Connection attempt ${connectRetries}/${maxRetries} failed, retrying...`,
+      );
+      if (connectRetries < maxRetries) {
+        await waitSeconds(2);
+      } else {
+        throw error;
       }
     }
+  }
 
-    if (!richguy) {
-      throw new Error('Failed to connect to RPC after retries');
-    }
+  if (!richguy) {
+    throw new Error('Failed to connect to RPC after retries');
+  }
 
-    const batchOutputs = outputs.slice(
-      batchIdx,
-      batchIdx + MULTISEND_BATCH_SIZE,
-    );
-    const batchAmount = +poorAmount * batchOutputs.length;
+  const totalAmount = +poorAmount * outputs.length;
 
-    const inputs: Input[] = [
-      {
-        address: richguyAddress,
-        coins: [{ denom: denom, amount: batchAmount.toString() }],
-      },
-    ];
-    const value: MsgMultiSend = {
-      inputs,
-      outputs: batchOutputs,
-    };
-    const msg: any = {
-      typeUrl: MsgMultiSend.typeUrl,
-      value: value,
-    };
-    const fee = {
-      gas: '60000000',
-      amount: [{ denom: feeDenom, amount: '150000' }],
-    };
+  const inputs: Input[] = [
+    {
+      address: richguyAddress,
+      coins: [{ denom: denom, amount: totalAmount.toString() }],
+    },
+  ];
+  const value: MsgMultiSend = {
+    inputs,
+    outputs: outputs,
+  };
+  const msg: any = {
+    typeUrl: MsgMultiSend.typeUrl,
+    value: value,
+  };
+  const fee = {
+    gas: '60000000',
+    amount: [{ denom: feeDenom, amount: '150000' }],
+  };
 
-    console.log(
-      `Sending MsgMultiSend batch ${
-        batchIdx / MULTISEND_BATCH_SIZE + 1
-      }/${totalBatches}`,
-    );
-    const result = await richguy.signAndBroadcast(
-      richguyAddress,
-      [msg],
-      fee,
-      '',
-    );
-    console.log(
-      `Broadcast complete for batch ${batchIdx / MULTISEND_BATCH_SIZE + 1}`,
-    );
+  console.log(`Sending MsgMultiSend with ${outputs.length} outputs...`);
 
-    const resultTx = await richguy.getTx(result.transactionHash);
-    if (resultTx == null) {
-      throw new Error('could not get MsgMultiSend tx from richguy');
-    }
-    if (resultTx.code !== 0) {
-      throw (
-        'could not setup test wallets; rawLog = ' +
-        JSON.stringify(resultTx.rawLog)
+  // Add retry logic for signAndBroadcast
+  let result;
+  let broadcastRetries = 0;
+  while (broadcastRetries < maxRetries) {
+    try {
+      result = await richguy.signAndBroadcast(
+        richguyAddress,
+        [msg],
+        fee,
+        '',
       );
-    }
-
-    // Disconnect client and wait before next batch to avoid connection issues
-    richguy.disconnect();
-
-    // Wait 5 seconds between batches to let the RPC server recover and connections to fully close
-    if (batchIdx + MULTISEND_BATCH_SIZE < outputs.length) {
-      console.log('Waiting 5 seconds before next batch...');
-      await waitSeconds(5);
+      break; // Success, exit retry loop
+    } catch (error) {
+      broadcastRetries++;
+      console.log(
+        `Broadcast attempt ${broadcastRetries}/${maxRetries} failed, retrying...`,
+      );
+      if (broadcastRetries < maxRetries) {
+        await waitSeconds(2);
+      } else {
+        throw error;
+      }
     }
   }
+
+  console.log('Broadcast complete');
+
+  const resultTx = await richguy.getTx(result.transactionHash);
+  if (resultTx == null) {
+    throw new Error('could not get MsgMultiSend tx from richguy');
+  }
+  if (resultTx.code !== 0) {
+    throw (
+      'could not setup test wallets; rawLog = ' +
+      JSON.stringify(resultTx.rawLog)
+    );
+  }
+
+  // Disconnect client
+  richguy.disconnect();
 }
 
 // You can also extend `ProvidedContext` type
