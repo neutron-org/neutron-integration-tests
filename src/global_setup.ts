@@ -25,7 +25,7 @@ import { ACC_PATH, ethToNeutronBechAddress } from './helpers/metamask_emulator';
 
 let teardownHappened = false;
 
-const MNEMONICS_COUNT = 1000;
+const PREFUNDED_WALLETS_COUNT = 1000;
 
 export default async function ({ provide }: GlobalSetupContext) {
   console.log('global setup started');
@@ -37,7 +37,7 @@ export default async function ({ provide }: GlobalSetupContext) {
 
   // generate lots of mnemonics for test wallets
   const mnemonics: string[] = [];
-  for (let i = 0; i < MNEMONICS_COUNT; i++) {
+  for (let i = 0; i < PREFUNDED_WALLETS_COUNT; i++) {
     mnemonics.push(generateMnemonic());
   }
 
@@ -100,30 +100,29 @@ async function fundWallets(
   const poorAmount = '10000000000';
 
   let outputs: Output[] = [];
-  const BATCH_SIZE = 1000;
 
   console.log('before outputs');
-  // Process mnemonics in batches to avoid overwhelming the system
-  for (let i = 0; i < mnemonics.length; i += BATCH_SIZE) {
-    const batch = mnemonics.slice(i, i + BATCH_SIZE);
-    const values: Promise<Output>[] = batch.map((mnemonic) =>
-      DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-        prefix: prefix,
-      })
-        .then((directwallet) => directwallet.getAccounts())
-        .then((accounts) => accounts[0])
-        .then((account) => ({
-          address: account.address,
-          coins: [{ denom: denom, amount: poorAmount }],
-        })),
-    );
-    const batchOutputs = await Promise.all(values);
-    outputs.push(...batchOutputs);
-    console.log(
-      `Processed batch ${i / BATCH_SIZE + 1}/${Math.ceil(
-        mnemonics.length / BATCH_SIZE,
-      )}`,
-    );
+  // Process mnemonics sequentially with small delays to avoid overwhelming the system
+  const LOG_INTERVAL = 100;
+  for (let i = 0; i < mnemonics.length; i++) {
+    const mnemonic = mnemonics[i];
+    const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+      prefix: prefix,
+    });
+    const accounts = await directwallet.getAccounts();
+    const account = accounts[0];
+    const output: Output = {
+      address: account.address,
+      coins: [{ denom: denom, amount: poorAmount }],
+    };
+    outputs.push(output);
+
+    // Log progress and add small delay every 100 wallets to let system breathe
+    if ((i + 1) % LOG_INTERVAL === 0) {
+      console.log(`Processed ${i + 1}/${mnemonics.length} mnemonics`);
+      // Small delay to prevent connection pool exhaustion
+      await waitSeconds(0.5);
+    }
   }
   console.log('after outputs');
 
@@ -147,7 +146,7 @@ async function fundWallets(
   }
 
   // Split outputs into batches and send multiple MsgMultiSend transactions
-  const MULTISEND_BATCH_SIZE = 1000;
+  const MULTISEND_BATCH_SIZE = 500;
   const totalBatches = Math.ceil(outputs.length / MULTISEND_BATCH_SIZE);
 
   for (
@@ -156,11 +155,34 @@ async function fundWallets(
     batchIdx += MULTISEND_BATCH_SIZE
   ) {
     // Recreate client for each batch to avoid connection reuse issues
-    const richguy = await SigningStargateClient.connectWithSigner(
-      rpc,
-      richguyWallet,
-      { registry: new Registry(defaultRegistryTypes) },
-    );
+    // Add retry logic to handle connection closure issues
+    let richguy: SigningStargateClient | null = null;
+    let retries = 0;
+    const maxRetries = 3;
+
+    while (retries < maxRetries && !richguy) {
+      try {
+        richguy = await SigningStargateClient.connectWithSigner(
+          rpc,
+          richguyWallet,
+          { registry: new Registry(defaultRegistryTypes) },
+        );
+      } catch (error) {
+        retries++;
+        console.log(
+          `Connection attempt ${retries}/${maxRetries} failed, retrying...`,
+        );
+        if (retries < maxRetries) {
+          await waitSeconds(2);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (!richguy) {
+      throw new Error('Failed to connect to RPC after retries');
+    }
 
     const batchOutputs = outputs.slice(
       batchIdx,
@@ -216,9 +238,10 @@ async function fundWallets(
     // Disconnect client and wait before next batch to avoid connection issues
     richguy.disconnect();
 
-    // Wait 3 seconds between batches to let the RPC server recover
+    // Wait 5 seconds between batches to let the RPC server recover and connections to fully close
     if (batchIdx + MULTISEND_BATCH_SIZE < outputs.length) {
-      await waitSeconds(3);
+      console.log('Waiting 5 seconds before next batch...');
+      await waitSeconds(5);
     }
   }
 }

@@ -22,8 +22,8 @@ for i in `seq 1 ${NODES}`; do
   sed -i -e 's/index_all_keys = false/index_all_keys = true/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
 
   # Increase RPC max body bytes for large transactions/responses
-  sed -i -e 's/max_body_bytes = [0-9]*/max_body_bytes = 10000000/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
-  sed -i -e 's/max_header_bytes = [0-9]*/max_header_bytes = 2048576/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+  sed -i -e 's/max_body_bytes = [0-9]*/max_body_bytes = 100000000/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
+  sed -i -e 's/max_header_bytes = [0-9]*/max_header_bytes = 10485760/g' "${CHAIN_DIR}/node-${i}/config/config.toml"
 
   # Increase gRPC max message sizes
   sed -i -e 's/max-recv-msg-size = "[0-9]*"/max-recv-msg-size = "2147483647"/g' "${CHAIN_DIR}/node-${i}/config/app.toml"
