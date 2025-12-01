@@ -162,7 +162,9 @@ describe('Neutron / Grpc Queries', () => {
           hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         },
       });
-      expect(res.denom.trace).toBe('transfer/channel-0');
+      expect(res.denom.trace).toEqual([
+        { port_id: 'transfer', channel_id: 'channel-0' },
+      ]);
       expect(res.denom.base).toBe(COSMOS_DENOM);
     });
 
