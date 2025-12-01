@@ -6,7 +6,7 @@ import { pathToString, stringToPath } from '@cosmjs/crypto';
 import { MsgMultiSend } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/tx';
 import { GlobalSetupContext } from 'vitest/node';
 import { Input, Output } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/bank';
-import ch from 'child_process';
+import { execSync } from 'child_process';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   COSMOS_DENOM,
@@ -68,9 +68,9 @@ export default async function ({ provide }: GlobalSetupContext) {
       throw new Error('teardown called twice');
     }
     if (!process.env.NO_DOCKER) {
-      ch.execSync(`cd setup && make stop-cosmopark`);
+      execSync(`cd setup && make stop-cosmopark`);
       // this is a hack to make sure everything (volumes, etc.) was deleted after the previous test run (very important in case of run-in-band tests)
-      ch.execSync(`cd setup && make stop-cosmopark`);
+      execSync(`cd setup && make stop-cosmopark`);
     }
     teardownHappened = true;
   };
