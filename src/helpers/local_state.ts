@@ -23,7 +23,7 @@ import { GasPrice } from '@cosmjs/stargate';
 type Network = 'cosmos' | 'neutron';
 
 // limit of wallets precreated for one test
-const WALLETS_PER_TEST_FILE = 2;
+const WALLETS_PER_TEST_FILE = 20;
 
 export class LocalState {
   wallets: {

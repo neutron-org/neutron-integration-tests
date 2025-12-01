@@ -28,7 +28,6 @@ let teardownHappened = false;
 const PREFUNDED_WALLETS_COUNT = 1000;
 
 export default async function ({ provide }: GlobalSetupContext) {
-  console.log('global setup started');
   const host1 = process.env.NODE1_URL || 'http://localhost:1317';
   const host2 = process.env.NODE2_URL || 'http://localhost:1316';
   if (!process.env.NO_DOCKER) {
