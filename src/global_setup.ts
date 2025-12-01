@@ -41,7 +41,6 @@ export default async function ({ provide }: GlobalSetupContext) {
     mnemonics.push(generateMnemonic());
   }
 
-  console.log('fund wallets');
   const denomsToFund = [NEUTRON_DENOM, IBC_ATOM_DENOM, IBC_USDC_DENOM];
   for (let i = 0; i < denomsToFund.length; i++) {
     await fundWallets(
@@ -52,7 +51,6 @@ export default async function ({ provide }: GlobalSetupContext) {
       denomsToFund[i],
     );
   }
-  console.log('fund wallets: gaia');
 
   await fundWallets(
     mnemonics,
@@ -66,7 +64,6 @@ export default async function ({ provide }: GlobalSetupContext) {
   provide('mnemonics', mnemonics);
 
   return async () => {
-    console.log('on teardown');
     if (teardownHappened) {
       throw new Error('teardown called twice');
     }
@@ -87,29 +84,50 @@ async function fundWallets(
   feeDenom: string,
   denom: string,
 ): Promise<void> {
-  console.log('fund wallets: denom=' + denom);
   const richguyWallet = await DirectSecp256k1HdWallet.fromMnemonic(
     config.DEMO_MNEMONIC_1,
     { prefix: prefix },
   );
 
-  console.log('before richguyWallet.get accounts');
   const richguyAddress = (await richguyWallet.getAccounts())[0].address;
-  console.log('after richguyWallet.get accounts');
   // amount to be transferred to each new wallet
   const poorAmount = '10000000000';
 
   let outputs: Output[] = [];
 
-  console.log('before outputs');
   // Process mnemonics sequentially with small delays to avoid overwhelming the system
   const LOG_INTERVAL = 100;
+  const maxRetries = 3; // Used for all retry logic in this function
+
   for (let i = 0; i < mnemonics.length; i++) {
     const mnemonic = mnemonics[i];
     const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
       prefix: prefix,
     });
-    const accounts = await directwallet.getAccounts();
+
+    // Get accounts with retry logic
+    let accounts = null;
+    let retries = 0;
+    while (retries < maxRetries && !accounts) {
+      try {
+        accounts = await directwallet.getAccounts();
+      } catch (error) {
+        retries++;
+        console.log(
+          `getAccounts attempt ${retries}/${maxRetries} for wallet ${i} failed, retrying...`,
+        );
+        if (retries < maxRetries) {
+          await waitSeconds(1);
+        } else {
+          throw error;
+        }
+      }
+    }
+
+    if (!accounts) {
+      throw new Error(`Failed to get accounts for wallet ${i} after retries`);
+    }
+
     const account = accounts[0];
     const output: Output = {
       address: account.address,
@@ -119,12 +137,10 @@ async function fundWallets(
 
     // Log progress and add small delay every 100 wallets to let system breathe
     if ((i + 1) % LOG_INTERVAL === 0) {
-      console.log(`Processed ${i + 1}/${mnemonics.length} mnemonics`);
       // Small delay to prevent connection pool exhaustion
       await waitSeconds(0.5);
     }
   }
-  console.log('after outputs');
 
   if (prefix === NEUTRON_PREFIX) {
     // fund both addresses derived from ethereum and cosmos-sdk for a given mnemonic.
@@ -149,9 +165,7 @@ async function fundWallets(
   // Add retry logic to handle connection closure issues
   let richguy: SigningStargateClient | null = null;
   let connectRetries = 0;
-  const maxRetries = 3;
 
-  console.log('Connecting to RPC...');
   while (connectRetries < maxRetries && !richguy) {
     try {
       richguy = await SigningStargateClient.connectWithSigner(
@@ -197,19 +211,12 @@ async function fundWallets(
     amount: [{ denom: feeDenom, amount: '150000' }],
   };
 
-  console.log(`Sending MsgMultiSend with ${outputs.length} outputs...`);
-
   // Add retry logic for signAndBroadcast
   let result;
   let broadcastRetries = 0;
   while (broadcastRetries < maxRetries) {
     try {
-      result = await richguy.signAndBroadcast(
-        richguyAddress,
-        [msg],
-        fee,
-        '',
-      );
+      result = await richguy.signAndBroadcast(richguyAddress, [msg], fee, '');
       break; // Success, exit retry loop
     } catch (error) {
       broadcastRetries++;
@@ -223,8 +230,6 @@ async function fundWallets(
       }
     }
   }
-
-  console.log('Broadcast complete');
 
   const resultTx = await richguy.getTx(result.transactionHash);
   if (resultTx == null) {
