@@ -156,14 +156,14 @@ describe('Neutron / Grpc Queries', () => {
       expect(res.account.address).toBe(neutronWallet.address);
     });
 
-    test.skip('transfer denom trace should work', async () => {
+    test('transfer denom should work', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
-        transfer_denom_trace: {
+        transfer_denom: {
           hash: 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2',
         },
       });
-      expect(res.denom_trace.path).toBe('transfer/channel-0');
-      expect(res.denom_trace.base_denom).toBe(COSMOS_DENOM);
+      expect(res.denom.trace).toBe('transfer/channel-0');
+      expect(res.denom.base).toBe(COSMOS_DENOM);
     });
 
     test('transfer escrow address should work', async () => {

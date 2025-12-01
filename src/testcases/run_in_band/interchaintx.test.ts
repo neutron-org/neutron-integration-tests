@@ -1319,11 +1319,7 @@ describe('Neutron / Interchain TXs', () => {
         const channel = (await ibcQuerier.channels({})).channels.find(
           (c) => c.ordering === Order.ORDER_UNORDERED,
         );
-        if (!channel) {
-          expect(channel).not.toBeEmpty();
-        } else {
-          expect(channel.state).toEqual(State.STATE_OPEN);
-        }
+        expect(channel.state).toEqual(State.STATE_OPEN);
       });
 
       test('delegate after the timeout on unordered channel should work as channel should still be open', async () => {

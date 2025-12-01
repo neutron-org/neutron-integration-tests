@@ -80,11 +80,11 @@ export const CONTRACTS = {
 
 export const NEUTRON_PREFIX = process.env.NEUTRON_ADDRESS_PREFIX || 'neutron';
 export const COSMOS_PREFIX = process.env.COSMOS_ADDRESS_PREFIX || 'cosmos';
-export const NEUTRON_RPC = process.env.NODE1_RPC || 'http://127.0.0.1:26657';
-export const GAIA_RPC = process.env.NODE2_RPC || 'http://127.0.0.1:16657';
-export const NEUTRON_REST = process.env.NODE1_URL || 'http://127.0.0.1:1317';
-export const GAIA_REST = process.env.NODE2_URL || 'http://127.0.0.1:1316';
-export const IBC_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://127.0.0.1:9999';
+export const NEUTRON_RPC = process.env.NODE1_RPC || 'http://localhost:26657';
+export const GAIA_RPC = process.env.NODE2_RPC || 'http://localhost:16657';
+export const NEUTRON_REST = process.env.NODE1_URL || 'http://localhost:1317';
+export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1316';
+export const IBC_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 export const GAIA_CONNECTION = 'connection-0';
 export const WALLETS_SIGN_METHOD = process.env.WALLETS_SIGN_METHOD || 'random';
 

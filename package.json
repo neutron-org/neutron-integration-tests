@@ -40,9 +40,9 @@
     "test:staking-vault-with-rewards-on-pause": "PAUSE_REWARDS=1 vitest --run src/testcases/run_in_band/staking-vault.test.ts --bail 1",
     "lint": "eslint ./src",
     "fmt": "eslint ./src --fix",
-    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/build' ] || { yarn tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
     "build:neutronjsplus": "[ -d './node_modules/@neutron-org/neutronjsplus/dist' ] || tsc -p ./node_modules/@neutron-org/neutronjsplus/tsconfig.json",
     "build:tsrelayer": "[ -d './node_modules/@confio/relayer/dist' ] || tsc -p ./tsconfig.relayer.json",
+    "build:neutronjs": "[ -d './node_modules/@neutron-org/neutronjs/build' ] || { yarn tsc -p ./node_modules/@neutron-org/neutronjs/tsconfig.json && cp -R ./node_modules/@neutron-org/neutronjs/build/* ./node_modules/@neutron-org/neutronjs/ ; }",
     "postinstall": "yarn build:tsrelayer && yarn build:neutronjs && yarn build:neutronjsplus"
   },
   "author": "Neutron",

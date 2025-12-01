@@ -161,7 +161,9 @@ export class NeutronTestClient extends CosmWasmClient {
     const resTx = await this.client.getTx(res.transactionHash);
 
     if (resTx === null) {
-      return Promise.reject('no transaction found');
+      return Promise.reject(
+        'no transaction found with hash=' + res.transactionHash,
+      );
     }
 
     return resTx;

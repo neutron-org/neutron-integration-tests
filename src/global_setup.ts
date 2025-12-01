@@ -94,21 +94,23 @@ async function fundWallets(
 
   let outputs: Output[] = [];
 
-  // Process mnemonics sequentially with small delays to avoid overwhelming the system
-  const LOG_INTERVAL = 100;
-  const maxRetries = 3; // Used for all retry logic in this function
+  // due to some unexpected errors during setup, there is retry logic on exceptions
+  // related issue: https://github.com/nodejs/undici/issues/3492
+  const maxRetries = 3;
 
   for (let i = 0; i < mnemonics.length; i++) {
-    const mnemonic = mnemonics[i];
-    const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
-      prefix: prefix,
-    });
-
     // Get accounts with retry logic
     let accounts = null;
     let retries = 0;
     while (retries < maxRetries && !accounts) {
+      const mnemonic = mnemonics[i];
       try {
+        const directwallet = await DirectSecp256k1HdWallet.fromMnemonic(
+          mnemonic,
+          {
+            prefix: prefix,
+          },
+        );
         accounts = await directwallet.getAccounts();
       } catch (error) {
         retries++;
@@ -133,12 +135,6 @@ async function fundWallets(
       coins: [{ denom: denom, amount: poorAmount }],
     };
     outputs.push(output);
-
-    // Log progress and add small delay every 100 wallets to let system breathe
-    if ((i + 1) % LOG_INTERVAL === 0) {
-      // Small delay to prevent connection pool exhaustion
-      await waitSeconds(0.5);
-    }
   }
 
   if (prefix === NEUTRON_PREFIX) {
@@ -178,7 +174,7 @@ async function fundWallets(
         `Connection attempt ${connectRetries}/${maxRetries} failed, retrying...`,
       );
       if (connectRetries < maxRetries) {
-        await waitSeconds(2);
+        await waitSeconds(1);
       } else {
         throw error;
       }
@@ -199,7 +195,7 @@ async function fundWallets(
   ];
   const value: MsgMultiSend = {
     inputs,
-    outputs: outputs,
+    outputs,
   };
   const msg: any = {
     typeUrl: MsgMultiSend.typeUrl,
@@ -223,7 +219,7 @@ async function fundWallets(
         `Broadcast attempt ${broadcastRetries}/${maxRetries} failed, retrying...`,
       );
       if (broadcastRetries < maxRetries) {
-        await waitSeconds(2);
+        await waitSeconds(1);
       } else {
         throw error;
       }
