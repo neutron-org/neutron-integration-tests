@@ -2,6 +2,25 @@
   "extends": "./node_modules/@confio/relayer/tsconfig.json",
   "exclude": ["./node_modules/@confio/relayer/src/**/*.spec.ts"],
   "compilerOptions": {
+    "module": "NodeNext",
+    "target": "ESNext",
+    "lib": ["esnext"],
+    "moduleResolution": "NodeNext",
+    "resolvePackageJsonExports": false,
+    "incremental": true,
+    "tsBuildInfoFile": "dist/.tsbuildinfo",
+    "inlineSourceMap": true,
+    "declaration": true,
+    "outDir": "./node_modules/@confio/relayer/dist",
+    "rootDir": "./node_modules/@confio/relayer/src",
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "pretty": true,
     "skipLibCheck": true
   }
 }
