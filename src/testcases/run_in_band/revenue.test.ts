@@ -134,7 +134,7 @@ describe('Neutron / Revenue', () => {
             amount: [
               {
                 denom: NEUTRON_DENOM,
-                amount: (900_000_000_000_000).toString(),
+                amount: (90_000_000_000_000).toString(),
               },
             ],
           },
