@@ -1,6 +1,6 @@
 import { AccountData } from '@cosmjs/proto-signing';
 import { MetaMaskEmulator } from './metamask_emulator';
-import { serializeSignDoc, StdSignDoc } from '@cosmjs/amino/build/signdoc';
+import { serializeSignDoc, StdSignDoc } from '@cosmjs/amino';
 import { Buffer } from 'buffer';
 import { Eip191Signer } from '@neutron-org/neutronjsplus/dist/eip191_signer';
 

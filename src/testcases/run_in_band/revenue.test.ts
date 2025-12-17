@@ -573,7 +573,7 @@ describe('Neutron / Revenue', () => {
   });
 
   describe('change params proposals', () => {
-    describe('block->block payment shedule change', () => {
+    describe('block->block payment schedule change', () => {
       const blocksPerPeriod =
         REVENUE_PARAM_BLOCK_BASED_PAYMENT_SCHEDULE_WIDTH + 10;
       let height: number;
@@ -1078,7 +1078,7 @@ async function waitForNextPaymentPeriod(
 
   for (let tries = 0; ; tries++) {
     if (tries > blocksPerPeriod * 1.5) {
-      throw new Error("next paymen period didn't start meaningful in time");
+      throw new Error("next payment period didn't start in time");
     }
 
     const newPaymentInfo = await revenueQuerier.paymentInfo();
