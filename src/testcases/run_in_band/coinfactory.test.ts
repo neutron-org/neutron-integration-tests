@@ -1,6 +1,4 @@
-import {
-  updateCoinfactoryParamsProposal,
-} from '@neutron-org/neutronjsplus/dist/proposal';
+import { updateCoinfactoryParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
