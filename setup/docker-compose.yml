@@ -84,7 +84,7 @@ services:
       - "neutron-node"
       - "gaia-node"
     ports:
-      - 9999:9999
+      - "9999:9999"
     environment:
       - NODE=gaia-node
       - RELAYER_NEUTRON_CHAIN_CHAIN_PREFIX=neutron

@@ -1,9 +1,8 @@
 import { AccountData } from '@cosmjs/proto-signing';
 import { ethers } from 'ethers';
 import { bech32, BytesCoder, hex, utf8 } from '@scure/base';
-import { pathToString } from '@cosmjs/crypto';
+import { pathToString, stringToPath } from '@cosmjs/crypto';
 import * as secp256k1 from '@noble/secp256k1';
-import { stringToPath } from '@cosmjs/crypto/build/slip10';
 // eslint-disable-next-line camelcase
 import { keccak_256 } from '@noble/hashes/sha3';
 
