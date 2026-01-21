@@ -261,7 +261,7 @@ describe('Neutron / Treasury', () => {
 
         expect(
           parseInt(afterStats.total_processed_burned_coins) -
-            parseInt(reserveStats.total_processed_burned_coins),
+          parseInt(reserveStats.total_processed_burned_coins),
         ).toEqual(4_294_967_295);
 
         const burnedCoins = await getBurnedCoinsAmount(feeburnerQuerier);
@@ -366,11 +366,10 @@ describe('Neutron / Treasury', () => {
           expect.objectContaining({
             total_distributed: '42014',
             total_reserved: `${158053 + parseInt(reserveStats.total_reserved)}`,
-            total_processed_burned_coins: `${
-              parseInt(burnedCoinsAfter || '0') -
+            total_processed_burned_coins: `${parseInt(burnedCoinsAfter || '0') -
               parseInt(burnedCoinsBefore || '0') +
               parseInt(reserveStats.total_processed_burned_coins)
-            }`,
+              }`,
           }),
         );
       });

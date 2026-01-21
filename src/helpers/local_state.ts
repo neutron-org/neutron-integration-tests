@@ -11,7 +11,7 @@ import {
   GAIA_CONNECTION,
   GAIA_REST,
   GAIA_RPC,
-  IBC_WEB_HOST,
+  ICQ_WEB_HOST,
   NEUTRON_REST,
   NEUTRON_RPC,
   WALLETS_SIGN_METHOD,
@@ -61,7 +61,7 @@ export class LocalState {
     this.rpcGaia = GAIA_RPC;
     this.restNeutron = NEUTRON_REST;
     this.restGaia = GAIA_REST;
-    this.icqWebHost = IBC_WEB_HOST;
+    this.icqWebHost = ICQ_WEB_HOST;
     this.walletIndexes = { neutron: 0, cosmos: 0 };
   }
 
@@ -101,7 +101,7 @@ export class LocalState {
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
         'cannot give next wallet: current offset is greater than ' +
-          WALLETS_PER_TEST_FILE,
+        WALLETS_PER_TEST_FILE,
       );
     }
     const nextWalletIndex =
@@ -221,15 +221,14 @@ async function listFilenamesInDir(dir: string): Promise<string[]> {
 const getGenesisNeutronWallets = async (
   config: any,
 ): Promise<Record<string, Wallet>> => ({
-  val1: await Wallet.fromMnemonic(config.VAL_MNEMONIC_1),
-  val2: await Wallet.fromMnemonic(config.VAL_MNEMONIC_2),
+  val1: await Wallet.fromMnemonicWithAccount(config.VAL_MNEMONIC_1, 1),
+  val2: await Wallet.fromMnemonicWithAccount(config.VAL_MNEMONIC_1, 2),
   // some built in contracts need specified admin, and that is demo1 with secp256k1 sign pubkey
   demo1Secp256k1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1),
   demo1: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_1, signMethod()),
   demo2: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_2, signMethod()),
-  icq: await Wallet.fromMnemonic(config.DEMO_MNEMONIC_3, signMethod()),
-  rly1: await Wallet.fromMnemonic(config.RLY_MNEMONIC_1, signMethod()),
-  rly2: await Wallet.fromMnemonic(config.RLY_MNEMONIC_2, signMethod()),
+  icq: await Wallet.fromMnemonic(config.ICQ_MNEMONIC, signMethod()),
+  ibc: await Wallet.fromMnemonic(config.IBC_MNEMONIC, signMethod()),
 });
 
 const getGenesisGaiaWallets = async (
@@ -238,9 +237,8 @@ const getGenesisGaiaWallets = async (
   val1: await GaiaWallet.fromMnemonic(config.VAL_MNEMONIC_1),
   demo1: await GaiaWallet.fromMnemonic(config.DEMO_MNEMONIC_1),
   demo2: await GaiaWallet.fromMnemonic(config.DEMO_MNEMONIC_2),
-  icq: await GaiaWallet.fromMnemonic(config.DEMO_MNEMONIC_3),
-  rly1: await GaiaWallet.fromMnemonic(config.RLY_MNEMONIC_1),
-  rly2: await GaiaWallet.fromMnemonic(config.RLY_MNEMONIC_2),
+  icq: await GaiaWallet.fromMnemonic(config.ICQ_MNEMONIC),
+  ibc: await GaiaWallet.fromMnemonic(config.IBC_MNEMONIC),
 });
 
 export function signMethod() {

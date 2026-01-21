@@ -55,7 +55,7 @@ describe('Neutron / IBC transfer', () => {
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
 
-    neutronWallet = testState.wallets.neutron.demo1;
+    neutronWallet = testState.wallets.neutron.demo1Secp256k1;
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     neutronWallet2 = await testState.nextNeutronWallet();
     neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
@@ -115,7 +115,7 @@ describe('Neutron / IBC transfer', () => {
       await daoMember1.bondFunds('1000000000');
       await neutronClient.getWithAttempts(
         async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 1000000000,
+        async (response) => response.power == 1000001000,
         20,
       );
     });
@@ -342,6 +342,11 @@ describe('Neutron / IBC transfer', () => {
     });
     describe('with limit, Gaia -> Neutron', () => {
       test('send some atoms to neutron chain', async () => {
+        const balanceBefore = await bankQuerier.balance({
+          address: neutronWallet.address,
+          denom: UATOM_IBC_TO_NEUTRON_DENOM,
+        })
+
         const resBeforeLimit = await gaiaClient.signAndBroadcast(
           gaiaWallet.address,
           [
@@ -366,6 +371,16 @@ describe('Neutron / IBC transfer', () => {
           },
         );
         expect(resBeforeLimit.code).toEqual(0);
+
+        // make sure tx is completed successfully
+        await neutronClient.getWithAttempts(
+          async () => await bankQuerier.balance({
+            address: neutronWallet.address,
+            denom: UATOM_IBC_TO_NEUTRON_DENOM,
+          }),
+          async (response) => +response.balance.amount != +balanceBefore.balance.amount,
+          10,
+        );
       });
 
       test('check that weird IBC denom is uatom indeed', async () => {

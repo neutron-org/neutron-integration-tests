@@ -22,20 +22,16 @@ RUN go mod download
 
 RUN LEDGER_ENABLED=true LINK_STATICALLY=true BUILD_TAGS=muslc make build
 RUN echo "Ensuring binary is statically linked ..."  \
-    && file /src/app/build/gaiad | grep "statically linked"
+  && file /src/app/build/gaiad | grep "statically linked"
 
 FROM alpine:latest
-WORKDIR /opt/node/
-COPY --from=setup . setup/
 ARG BINARY
 COPY --from=builder /src/app/build/${BINARY:-gaiad} /usr/local/bin/
 
-ENV PACKAGES="jq"
+ENV PACKAGES="build-base jq bash"
 RUN apk add --no-cache $PACKAGES
 
 EXPOSE 26656 26657 1317 9090
 USER 0
 
-CMD sh /opt/node/setup/init.sh && \
-  sh /opt/node/setup/init-gaiad.sh && \
-  sh /opt/node/setup/start.sh
+ENTRYPOINT ["gaiad"]

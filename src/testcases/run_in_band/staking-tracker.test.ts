@@ -73,8 +73,9 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
     neutronWallet1 = await testState.nextNeutronWallet();
     neutronWallet2 = await testState.nextNeutronWallet();
-    validatorSecondWallet = testState.wallets.neutron.val2;
+
     validatorPrimaryWallet = testState.wallets.neutron.val1;
+    validatorSecondWallet = testState.wallets.neutron.val2;
 
     neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
 
@@ -553,7 +554,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
         validatorSecondClient,
         neutronClient1,
         stakingQuerier,
-        validatorSecondWallet.valAddress,
+        validatorWeakAddr,
         validatorStrongAddr,
         validatorSecondWallet.address,
         16,

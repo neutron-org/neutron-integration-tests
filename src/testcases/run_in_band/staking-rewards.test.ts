@@ -212,7 +212,7 @@ describe('Neutron / Staking Rewards', () => {
       // slash
       // wait blocks
       // claim again
-      // calculate rate per block (rate of accruing rewards should be less because lf slashing)
+      // calculate rate per block (rate of accruing rewards should be less because of slashing)
       test('claim rewards works as a user', async () => {
         const balanceBeforeDelegate = await bankQuerier.balance({
           address: claimRecipient,
@@ -283,13 +283,13 @@ describe('Neutron / Staking Rewards', () => {
           validatorSecondClient,
           neutronClient1,
           stakingQuerier,
-          validatorSecondary.valAddress,
+          validatorWeakAddr,
           validatorStrongAddr,
           validatorSecondary.address,
           12,
         );
 
-        for (;;) {
+        for (; ;) {
           const val = await stakingQuerier.validator({
             validatorAddr: validatorWeakAddr,
           });
