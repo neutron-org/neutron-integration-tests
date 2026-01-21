@@ -14,7 +14,7 @@ build-relayer:
 		@docker buildx build --load --build-context app=$(APP_DIR)/neutron-query-relayer -t neutron-org/neutron-query-relayer -f dockerbuilds/Dockerfile.queryrelayer . --no-cache
 
 build-slinky:
-		@docker buildx build --load --build-context app=https://github.com/skip-mev/slinky.git#v1.2.0 -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
+		@docker buildx build --load --build-context app=https://github.com/neutron-org/connect.git#fix/mexc-provider -t skip-mev/slinky-e2e-oracle -f dockerbuilds/Dockerfile.slinky .
 
 build-all: build-gaia build-neutron build-hermes build-relayer build-slinky
 
