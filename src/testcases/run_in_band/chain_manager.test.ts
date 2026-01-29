@@ -26,14 +26,14 @@ import { QueryClientImpl as UpgradeQueryClient } from '@neutron-org/neutronjs/co
 import { QueryClientImpl as DexQueryClient } from '@neutron-org/neutronjs/neutron/dex/query.rpc.Query';
 import { QueryClientImpl as DynamicfeesQueryClient } from '@neutron-org/neutronjs/neutron/dynamicfees/v1/query.rpc.Query';
 import { QueryClientImpl as GlobalfeeQueryClient } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { Wallet } from '../../helpers/wallet';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
 describe('Neutron / Chain Manager', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let subdaoMember1: DaoMember;
   let mainDaoMember: DaoMember;
   let securityDaoAddr: string;
@@ -49,13 +49,9 @@ describe('Neutron / Chain Manager', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    const neutronWallet = await testState.nextWallet('neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
-    const securityDaoWallet = await testState.nextWallet('neutron');
+    const neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    const securityDaoWallet = await testState.nextNeutronWallet();
     securityDaoAddr = securityDaoWallet.address;
     const neutronRpcClient = await testState.rpcClient('neutron');
     const daoCoreAddress = await getNeutronDAOCore(
@@ -108,7 +104,7 @@ describe('Neutron / Chain Manager', () => {
 
   // We need to do this because the real main dao has a super long voting period.
   // In the subdao tests, a new set of dao contracts was deployed with a smaller
-  // period, but feels like an overkill here.
+  // period, but feels like overkill here.
   describe('Change the overrule proposal voting period', () => {
     let proposalId: number;
     test('create proposal', async () => {
@@ -515,14 +511,12 @@ describe('Neutron / Chain Manager', () => {
   });
 
   describe('ALLOW_ONLY: CRON add schedule / remove schedule', () => {
-    let cronAccessClient: SigningNeutronClient;
+    let cronAccessClient: NeutronTestClient;
     let cronAccessWallet: Wallet;
     beforeAll(async () => {
-      cronAccessWallet = await testState.nextWallet('neutron');
-      cronAccessClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        cronAccessWallet.directwallet,
-        cronAccessWallet.address,
+      cronAccessWallet = await testState.nextNeutronWallet();
+      cronAccessClient = await NeutronTestClient.connectWithSigner(
+        cronAccessWallet,
       );
     });
 
@@ -579,7 +573,7 @@ describe('Neutron / Chain Manager', () => {
                     msg: JSON.stringify({}),
                   },
                 ],
-                execution_stage: 0,
+                execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
               }),
             ],
           },
@@ -619,37 +613,31 @@ describe('Neutron / Chain Manager', () => {
 
   describe('ALLOW_ONLY: software upgrade', () => {
     // only upgrade permission
-    let upgradeOnlyClient: SigningNeutronClient;
+    let upgradeOnlyClient: NeutronTestClient;
     let upgradeOnlyWallet: Wallet;
 
     // only cancel upgrade permission
-    let cancelUpgradeOnlyClient: SigningNeutronClient;
+    let cancelUpgradeOnlyClient: NeutronTestClient;
     let cancelUpgradeOnlyWallet: Wallet;
 
     // upgrade and cancel upgrade permissions
-    let fullUpgradeAccessClient: SigningNeutronClient;
+    let fullUpgradeAccessClient: NeutronTestClient;
     let fullUpgradeAccessWallet: Wallet;
 
     beforeAll(async () => {
-      upgradeOnlyWallet = await testState.nextWallet('neutron');
-      upgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        upgradeOnlyWallet.directwallet,
-        upgradeOnlyWallet.address,
+      upgradeOnlyWallet = await testState.nextNeutronWallet();
+      upgradeOnlyClient = await NeutronTestClient.connectWithSigner(
+        upgradeOnlyWallet,
       );
 
-      cancelUpgradeOnlyWallet = await testState.nextWallet('neutron');
-      cancelUpgradeOnlyClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        cancelUpgradeOnlyWallet.directwallet,
-        cancelUpgradeOnlyWallet.address,
+      cancelUpgradeOnlyWallet = await testState.nextNeutronWallet();
+      cancelUpgradeOnlyClient = await NeutronTestClient.connectWithSigner(
+        cancelUpgradeOnlyWallet,
       );
 
-      fullUpgradeAccessWallet = await testState.nextWallet('neutron');
-      fullUpgradeAccessClient = await SigningNeutronClient.connectWithSigner(
-        testState.rpcNeutron,
-        fullUpgradeAccessWallet.directwallet,
-        fullUpgradeAccessWallet.address,
+      fullUpgradeAccessWallet = await testState.nextNeutronWallet();
+      fullUpgradeAccessClient = await NeutronTestClient.connectWithSigner(
+        fullUpgradeAccessWallet,
       );
     });
 

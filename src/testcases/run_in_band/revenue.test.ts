@@ -1,5 +1,5 @@
 import '@neutron-org/neutronjsplus';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import { getBlockResults } from '../../helpers/misc';
 import {
@@ -17,7 +17,7 @@ import {
 import { QueryClientImpl as RevenueQueryClient } from '@neutron-org/neutronjs/neutron/revenue/query.rpc.Query';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import { execSync } from 'child_process';
@@ -31,10 +31,6 @@ import { QueryPaymentInfoResponse } from '@neutron-org/neutronjs/neutron/revenue
 import { Params as RevenueModuleParams } from '@neutron-org/neutronjs/neutron/revenue/params';
 import { EventAttribute } from '@neutron-org/neutronjs/tendermint/abci/types';
 import { Coin, parseCoins } from '@cosmjs/proto-signing';
-
-BigInt.prototype.toJSON = function () {
-  return Number(this);
-};
 
 const VALIDATOR_CONTAINER = 'neutron-node-1';
 const ORACLE_CONTAINER = 'setup-oracle-1-1';
@@ -94,7 +90,7 @@ const REVENUE_CASES = [
 describe('Neutron / Revenue', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let chainManagerAddress: string;
   let mainDao: Dao;
   let daoMember: DaoMember;
@@ -104,12 +100,8 @@ describe('Neutron / Revenue', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = await mnemonicToWallet(config.DEMO_MNEMONIC_1, 'neutron');
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = testState.wallets.neutron.demo1;
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -142,7 +134,7 @@ describe('Neutron / Revenue', () => {
             amount: [
               {
                 denom: NEUTRON_DENOM,
-                amount: (900_000_000_000).toString(),
+                amount: (90_000_000_000_000).toString(),
               },
             ],
           },
@@ -968,7 +960,7 @@ describe('Neutron / Revenue', () => {
 });
 
 async function submitRevenueParamsProposal(
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
   revenueQuerier: RevenueQueryClient,
   daoMember: DaoMember,
   chainManagerAddress: string,
@@ -1074,7 +1066,7 @@ payment schedule to be configured. Returns the block height of the next payment 
  */
 async function waitForNextPaymentPeriod(
   revenueQuerier: RevenueQueryClient,
-  neutronClient: SigningNeutronClient,
+  neutronClient: NeutronTestClient,
 ): Promise<number> {
   const paymentInfo = await revenueQuerier.paymentInfo();
   const ppStartBlock =

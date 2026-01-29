@@ -54,6 +54,7 @@ export const CONTRACTS = {
   VESTING_INVESTORS: 'vesting_investors.wasm',
   INVESTORS_VESTING_VAULT: 'investors_vesting_vault.wasm',
   TOKENFACTORY: 'tokenfactory.wasm',
+  COINFACTORY: 'coinfactory.wasm',
   BEFORE_SEND_HOOK_TEST: 'before_send_hook_test.wasm',
   // https://github.com/CosmWasm/cosmwasm/tree/main/contracts/floaty
   FLOATY: '../contracts_thirdparty/floaty_2.0.wasm',
@@ -85,6 +86,7 @@ export const NEUTRON_REST = process.env.NODE1_URL || 'http://localhost:1317';
 export const GAIA_REST = process.env.NODE2_URL || 'http://localhost:1316';
 export const IBC_WEB_HOST = process.env.ICQ_WEB_HOST || 'http://localhost:9999';
 export const GAIA_CONNECTION = 'connection-0';
+export const WALLETS_SIGN_METHOD = process.env.WALLETS_SIGN_METHOD || 'random';
 
 export const STAKING_VAULT =
   'neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg';

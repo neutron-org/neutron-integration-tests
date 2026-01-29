@@ -12,7 +12,7 @@ import { RunnerTestSuite, inject } from 'vitest';
 
 import { QueryClientImpl as FeemarketQueryClient } from '@neutron-org/neutronjs/feemarket/feemarket/v1/query.rpc.Query';
 import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 
 import config from '../../config.json';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
@@ -21,7 +21,7 @@ import { Wallet } from '../../helpers/wallet';
 describe('Neutron / Fee Market', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let daoMember: DaoMember;
   let mainDao: Dao;
   let feemarketQuerier: FeemarketQueryClient;
@@ -31,12 +31,8 @@ describe('Neutron / Fee Market', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     const neutronRpcClient = await testState.neutronRpcClient();
 
-    neutronWallet = testState.wallets.neutron.demo1;
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
 
     const daoCoreAddress = await getNeutronDAOCore(
       neutronClient,
@@ -298,17 +294,18 @@ describe('Neutron / Fee Market', () => {
       const fees = Math.floor(
         +requiredGas * baseGasPrice * priceAdjustment,
       ).toString();
-      // 1200msgs consume ~27m gas
+      // 1100msgs consume more than 50% gas
       try {
         await neutronClient.signAndBroadcastSync(
-          new Array(1200).fill(msgSend),
+          new Array(1100).fill(msgSend),
           {
             gas: requiredGas,
             amount: [{ denom: NEUTRON_DENOM, amount: fees }],
           },
         );
       } catch (e) {
-        // do nothing if called with same sequence
+        // do nothing if called with the same sequence
+        console.log(e);
       }
       await neutronClient.waitBlocks(1);
     }

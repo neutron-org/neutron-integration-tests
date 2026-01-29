@@ -2,7 +2,7 @@ import { RunnerTestSuite, inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import config from '../../config.json';
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { LimitOrderType } from '../../helpers/dex';
@@ -17,7 +17,7 @@ import {
 
 describe('Neutron / dex module (grpc contract)', () => {
   let testState: LocalState;
-  let neutronClient: SigningNeutronClient;
+  let neutronClient: NeutronTestClient;
   let neutronWallet: Wallet;
   let contractAddress: string;
   let activeTrancheKey: string;
@@ -26,12 +26,8 @@ describe('Neutron / dex module (grpc contract)', () => {
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
-    neutronWallet = testState.wallets.neutron.demo1;
-    neutronClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet.directwallet,
-      neutronWallet.address,
-    );
+    neutronWallet = await testState.nextNeutronWallet();
+    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
   });
 
   describe('Instantiate dex grpc contract', () => {
@@ -80,6 +76,8 @@ describe('Neutron / dex module (grpc contract)', () => {
                 {
                   disable_autoswap: true,
                   fail_tx_on_bel: false,
+                  swap_on_deposit: false,
+                  swap_on_deposit_slop_tolerance_bps: 1000,
                 },
               ],
             },
@@ -103,6 +101,8 @@ describe('Neutron / dex module (grpc contract)', () => {
               {
                 disable_autoswap: true,
                 fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
               },
             ],
           },
@@ -375,6 +375,8 @@ describe('Neutron / dex module (grpc contract)', () => {
                 {
                   disable_autoswap: true,
                   fail_tx_on_bel: false,
+                  swap_on_deposit: false,
+                  swap_on_deposit_slop_tolerance_bps: 100,
                 },
               ],
             },
@@ -583,7 +585,7 @@ describe('Neutron / dex module (grpc contract)', () => {
       await neutronClient.queryContractSmart(contractAddress, {
         get_inactive_limit_order_tranche: {
           pair_id: 'uibcusdc<>untrn',
-          tick_index: 19991,
+          tick_index: 19992,
           token_in: 'untrn',
           tranche_key: inactiveTrancheKey,
         },
@@ -673,7 +675,14 @@ describe('Neutron / dex module (grpc contract)', () => {
             amounts_b: ['0'],
             tick_indexes_a_to_b: ['0'],
             fees: ['1'],
-            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+            options: [
+              {
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
+              },
+            ],
           },
         },
       });
@@ -693,7 +702,14 @@ describe('Neutron / dex module (grpc contract)', () => {
             amounts_b: ['100'],
             tick_indexes_a_to_b: ['0'],
             fees: ['1'],
-            options: [{ disable_autoswap: true, fail_tx_on_bel: false }],
+            options: [
+              {
+                disable_autoswap: true,
+                fail_tx_on_bel: false,
+                swap_on_deposit: false,
+                swap_on_deposit_slop_tolerance_bps: 1000,
+              },
+            ],
           },
         },
       });
@@ -744,7 +760,7 @@ describe('Neutron / dex module (grpc contract)', () => {
             },
           },
         });
-        expect(res.resp.taker_coin_out.amount).toBe('998');
+        expect(res.resp.taker_coin_out.amount).toBe('999');
         expect(res.resp.maker_coin_out.amount).toBe('0');
       });
     test('SimulateCancelLimitOrder', async () => {
@@ -756,8 +772,8 @@ describe('Neutron / dex module (grpc contract)', () => {
           },
         },
       });
-      expect(res.resp.taker_coin_out.amount).toBe('998');
-      expect(res.resp.maker_coin_out.amount).toBe('998779');
+      expect(res.resp.taker_coin_out.amount).toBe('999');
+      expect(res.resp.maker_coin_out.amount).toBe('998778');
     });
     test('SimulateMultiHopSwap', async () => {
       const res = await neutronClient.queryContractSmart(contractAddress, {
@@ -787,7 +803,7 @@ describe('Neutron / dex module (grpc contract)', () => {
           },
         },
       });
-      expect(res.resp.coin_out.amount).toBe('91');
+      expect(res.resp.coin_out.amount).toBe('99');
       expect(res.resp.route.hops.length).toBe(10);
     });
   });

@@ -1,17 +1,20 @@
-import { SigningNeutronClient } from '../../helpers/signing_neutron_client';
+import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
 import {
   NEUTRON_DENOM,
   STAKING_TRACKER,
   STAKING_VAULT,
-  VAL_MNEMONIC_1,
-  VAL_MNEMONIC_2,
 } from '../../helpers/constants';
 import { expect, inject, RunnerTestSuite } from 'vitest';
-import { LocalState, mnemonicToWallet } from '../../helpers/local_state';
+import { LocalState } from '../../helpers/local_state';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
+import {
+  PubKey,
+  PubKey as CosmosCryptoEd25519Pubkey,
+} from 'cosmjs-types/cosmos/crypto/ed25519/keys';
+
 import {
   Dao,
   DaoMember,
@@ -24,6 +27,7 @@ import {
   delegateTokens,
   getBondedTokens,
   getTrackedStakeInfo,
+  getTrackedValidators,
   getVaultVPInfo,
   pauseRewardsContract,
   redelegateTokens,
@@ -32,15 +36,17 @@ import {
   submitUpdateParamsSlashingProposal,
   undelegateTokens,
 } from '../../helpers/staking';
+import { MsgCreateValidator } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/tx';
+import { bytesFromBase64 } from 'cosmjs-types/helpers';
 
 describe('Neutron / Staking Tracker - Extended Scenarios', () => {
   let testState: LocalState;
-  let neutronClient1: SigningNeutronClient;
-  let neutronClient2: SigningNeutronClient;
-  let validatorSecondClient: SigningNeutronClient;
-  let validatorPrimaryClient: SigningNeutronClient;
+  let neutronClient1: NeutronTestClient;
+  let neutronClient2: NeutronTestClient;
+  let validatorSecondClient: NeutronTestClient;
+  let validatorPrimaryClient: NeutronTestClient;
 
-  let daoWalletClient: SigningNeutronClient;
+  let daoWalletClient: NeutronTestClient;
   let daoWallet: Wallet;
 
   let neutronWallet1: Wallet;
@@ -49,7 +55,7 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
 
   // weak is the validator with drastically less bonded tokens
   let validatorWeakAddr: string;
-  // strong is validator that controls ~90% of bonded tokens at the beginning
+  // strong is the validator that controls ~90% of bonded tokens at the beginning
   let validatorStrongAddr: string;
   let validatorSecondWallet: Wallet;
   let validatorPrimaryWallet: Wallet;
@@ -65,53 +71,119 @@ describe('Neutron / Staking Tracker - Extended Scenarios', () => {
     const mnemonics = inject('mnemonics');
     testState = await LocalState.create(config, mnemonics, suite);
 
-    neutronWallet1 = await testState.nextWallet('neutron');
-    neutronWallet2 = await testState.nextWallet('neutron');
-    validatorSecondWallet = await mnemonicToWallet(VAL_MNEMONIC_2, 'neutron');
-    validatorPrimaryWallet = await mnemonicToWallet(VAL_MNEMONIC_1, 'neutron');
+    neutronWallet1 = await testState.nextNeutronWallet();
+    neutronWallet2 = await testState.nextNeutronWallet();
+    validatorSecondWallet = testState.wallets.neutron.val2;
+    validatorPrimaryWallet = testState.wallets.neutron.val1;
 
-    neutronClient1 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet1.directwallet,
-      neutronWallet1.address,
-    );
+    neutronClient1 = await NeutronTestClient.connectWithSigner(neutronWallet1);
 
-    neutronClient2 = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      neutronWallet2.directwallet,
-      neutronWallet2.address,
-    );
+    neutronClient2 = await NeutronTestClient.connectWithSigner(neutronWallet2);
 
     // This is the client for validator that could be disabled during testrun
-    validatorSecondClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorSecondWallet.directwallet,
-      validatorSecondWallet.address,
+    validatorSecondClient = await NeutronTestClient.connectWithSigner(
+      validatorSecondWallet,
     );
 
     // This is client for validator that should work ALWAYS bc it's only one that exposes ports
     // In the state it is validator #2, so this naming is only for clients
-    validatorPrimaryClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      validatorPrimaryWallet.directwallet,
-      validatorPrimaryWallet.address,
+    validatorPrimaryClient = await NeutronTestClient.connectWithSigner(
+      validatorPrimaryWallet,
     );
 
     daoWallet = testState.wallets.neutron.demo1;
-    daoWalletClient = await SigningNeutronClient.connectWithSigner(
-      testState.rpcNeutron,
-      daoWallet.directwallet,
-      daoWallet.address,
-    );
+    daoWalletClient = await NeutronTestClient.connectWithSigner(daoWallet);
 
     const neutronRpcClient = await testState.neutronRpcClient();
     stakingQuerier = new StakingQueryClient(neutronRpcClient);
 
+    const admin = testState.wallets.neutron.demo1Secp256k1;
+    const adminClient = await NeutronTestClient.connectWithSigner(admin);
     process.env.PAUSE_REWARDS === '1' &&
-      (await pauseRewardsContract(daoWalletClient));
+      (await pauseRewardsContract(adminClient));
   });
 
   describe('Staking tracker', () => {
+    test('removed validator gets removed from the tracker contract', async () => {
+      const wallet = await testState.nextSecp256k1SignNeutronWallet();
+      const msgCreateValidator = MsgCreateValidator.fromPartial({
+        description: {
+          moniker: 'test_val',
+          identity: 'test_val',
+          website: '',
+          securityContact: '',
+          details: '',
+        },
+        commission: {
+          rate: '0.070000000000000000',
+          maxRate: '1.000000000000000000',
+          maxChangeRate: '0.010000000000000000',
+        },
+        minSelfDelegation: '1',
+        validatorAddress: wallet.valAddress,
+        pubkey: {
+          typeUrl: PubKey.typeUrl,
+          value: Uint8Array.from(
+            CosmosCryptoEd25519Pubkey.encode(
+              CosmosCryptoEd25519Pubkey.fromPartial({
+                key: bytesFromBase64(
+                  'ZQ2K/Bp26WWVRFO+km3YyYFGu8fu65ICR/u0Q6Mqn3U=',
+                ),
+              }),
+            ).finish(),
+          ),
+        },
+        value: {
+          amount: '1',
+          denom: NEUTRON_DENOM,
+        },
+      });
+      const client = await NeutronTestClient.connectWithSigner(wallet);
+      const fee = {
+        gas: '5000000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '12500' }],
+      };
+      await client.signAndBroadcastSync(
+        [
+          {
+            typeUrl: MsgCreateValidator.typeUrl,
+            value: msgCreateValidator,
+          },
+        ],
+        fee,
+      );
+      await client.waitBlocks(1);
+
+      const trackingValidatorsBefore = await getTrackedValidators(
+        client,
+        STAKING_TRACKER,
+      );
+      const moduleValidatorsBefore = await stakingQuerier.validators({
+        status: '',
+      });
+      expect(trackingValidatorsBefore.length).toEqual(
+        moduleValidatorsBefore.validators.length,
+      );
+      const beforeLength = trackingValidatorsBefore.length;
+
+      // undelegate all tokens
+      await undelegateTokens(client, wallet.address, wallet.valAddress, '1');
+
+      await client.waitBlocks(1);
+
+      const trackingValidatorsAfter = await getTrackedValidators(
+        client,
+        STAKING_TRACKER,
+      );
+      const moduleValidatorsAfter = await stakingQuerier.validators({
+        status: '',
+      });
+      expect(trackingValidatorsAfter.length).toEqual(
+        moduleValidatorsAfter.validators.length,
+      );
+      expect(trackingValidatorsAfter.length).toEqual(beforeLength - 1);
+    });
+
     describe('Slashing params', () => {
       let mainDao: Dao;
       let daoMember1: DaoMember;
