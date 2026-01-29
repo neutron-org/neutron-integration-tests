@@ -212,6 +212,7 @@ describe('Neutron / Parameters', () => {
         ]);
         expect(paramsAfter.params.denomCreationFee).toHaveLength(1);
         expect(paramsAfter.params.denomCreationGasConsume).toEqual(100000n);
+        expect(paramsAfter.params.trackBeforeSendGasLimit).toEqual(400_000n);
       });
     });
   });
