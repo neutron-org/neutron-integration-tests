@@ -170,6 +170,7 @@ describe('Neutron / Parameters', () => {
           denom_creation_fee: [{ denom: NEUTRON_DENOM, amount: '1' }],
           denom_creation_gas_consume: 100000,
           whitelisted_hooks: [],
+          track_before_send_gas_limit: 400_000,
         }),
         '1000',
       );
@@ -211,6 +212,7 @@ describe('Neutron / Parameters', () => {
         ]);
         expect(paramsAfter.params.denomCreationFee).toHaveLength(1);
         expect(paramsAfter.params.denomCreationGasConsume).toEqual(100000n);
+        expect(paramsAfter.params.trackBeforeSendGasLimit).toEqual(400_000n);
       });
     });
   });

@@ -306,6 +306,7 @@ describe('Neutron / Chain Manager', () => {
               denom_creator: 'neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2',
             },
           ],
+          track_before_send_gas_limit: 100_000,
         }),
         '1000',
       );
