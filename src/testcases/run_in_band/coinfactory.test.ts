@@ -1,7 +1,4 @@
-import {
-  updateCoinfactoryParamsProposal,
-  updateTokenfactoryParamsProposal
-} from '@neutron-org/neutronjsplus/dist/proposal';
+import { updateCoinfactoryParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
@@ -25,7 +22,7 @@ import {
 } from '@neutron-org/neutronjs/neutron/coinfactory/v1beta1/tx';
 import { QueryClientImpl as BankQueryClient } from '@neutron-org/neutronjs/cosmos/bank/v1beta1/query.rpc.Query';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
-import {NeutronQuerier} from '@neutron-org/neutronjs/querier_types';
+import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/neutron/coinfactory/v1beta1/query';
 import { CONTRACTS } from '../../helpers/constants';
@@ -588,10 +585,9 @@ describe('Neutron / Tokenfactory', () => {
       const unpackedDenom = unpackDenom(newTokenDenom);
       const hookAfter =
         await neutronQuerier.neutron.coinfactory.v1beta1.beforeSendHookAddress({
-            creator: unpackedDenom.creator,
-            subdenom: unpackedDenom.subdenom,
-          },
-        );
+          creator: unpackedDenom.creator,
+          subdenom: unpackedDenom.subdenom,
+        });
       expect(hookAfter.contractAddr).toEqual(contractAddress);
 
       const res = await neutronClient.sendTokens(
