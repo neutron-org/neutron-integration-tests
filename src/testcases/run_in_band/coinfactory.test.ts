@@ -35,6 +35,7 @@ async function whitelistCoinfactoryHook(
   subdaoMember1: DaoMember,
   codeID: number,
   denomCreator: string,
+  trackBeforeSendGasLimit: number,
 ) {
   const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
     chainManagerAddress,
@@ -50,6 +51,7 @@ async function whitelistCoinfactoryHook(
           denom_creator: denomCreator,
         },
       ],
+      track_before_send_gas_limit: trackBeforeSendGasLimit,
     }),
     '1000',
   );
@@ -477,7 +479,7 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res2.code).toEqual(14); // "beforeSendHook is not whitelisted"
     });
-    test('create denom, set before send hook', async () => {
+    test('create denom, set before send hook. track exeed gas limit of 1', async () => {
       const codeId = await neutronClient.upload(
         CONTRACTS.BEFORE_SEND_HOOK_TEST,
       );
@@ -559,15 +561,18 @@ describe('Neutron / Tokenfactory', () => {
       expect(queryTrack.track.received).toEqual(false);
       expect(queryBlock.block.received).toEqual(false);
 
+      // We set the gas limit to 1 to ensure that it is taken into account when executing the hook.
+      // No hook will successfully execute with such a low limit.
       await whitelistCoinfactoryHook(
         chainManagerAddress,
         subDao,
         subdaoMember1,
         codeId,
         neutronWallet.address,
+        1,
       );
 
-      const res1 = await neutronClient.signAndBroadcast(
+      let res1 = await neutronClient.signAndBroadcast(
         [
           {
             typeUrl: MsgSetBeforeSendHook.typeUrl,
@@ -582,15 +587,15 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res1.code).toBe(0);
 
-      const unpackedDenom = unpackDenom(newTokenDenom);
-      const hookAfter =
+      let unpackedDenom = unpackDenom(newTokenDenom);
+      let hookAfter =
         await neutronQuerier.neutron.coinfactory.v1beta1.beforeSendHookAddress({
           creator: unpackedDenom.creator,
           subdenom: unpackedDenom.subdenom,
         });
       expect(hookAfter.contractAddr).toEqual(contractAddress);
 
-      const res = await neutronClient.sendTokens(
+      let res = await neutronClient.sendTokens(
         contractAddress,
         [{ denom: newTokenDenom, amount: '1' }],
         {
@@ -600,14 +605,14 @@ describe('Neutron / Tokenfactory', () => {
       );
       expect(res.code).toEqual(0);
 
-      const contractBalanceAfter = parseInt(
+      let contractBalanceAfter = parseInt(
         (await neutronClient.getBalance(contractAddress, newTokenDenom)).amount,
         10,
       );
 
       expect(contractBalanceAfter).toEqual(667);
 
-      const balanceAfter = parseInt(
+      let balanceAfter = parseInt(
         (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
           .amount,
         10,
@@ -623,6 +628,77 @@ describe('Neutron / Tokenfactory', () => {
         sudo_result_track_before: {},
       });
 
+      // We make sure that the track hook was not executed.
+      expect(queryTrack.track.received).toEqual(false);
+      expect(queryBlock.block.received).toEqual(true);
+
+      // set the gas limit to 500,000.
+      await whitelistCoinfactoryHook(
+        chainManagerAddress,
+        subDao,
+        subdaoMember1,
+        codeId,
+        neutronWallet.address,
+        500_000,
+      );
+
+      res1 = await neutronClient.signAndBroadcast(
+        [
+          {
+            typeUrl: MsgSetBeforeSendHook.typeUrl,
+            value: MsgSetBeforeSendHook.fromPartial({
+              sender: neutronWallet.address,
+              denom: newTokenDenom,
+              contractAddr: contractAddress,
+            }),
+          },
+        ],
+        fee,
+      );
+      expect(res1.code).toBe(0);
+
+      unpackedDenom = unpackDenom(newTokenDenom);
+      hookAfter =
+        await neutronQuerier.neutron.coinfactory.v1beta1.beforeSendHookAddress({
+          creator: unpackedDenom.creator,
+          subdenom: unpackedDenom.subdenom,
+        });
+      expect(hookAfter.contractAddr).toEqual(contractAddress);
+
+      res = await neutronClient.sendTokens(
+        contractAddress,
+        [{ denom: newTokenDenom, amount: '1' }],
+        {
+          gas: '700000',
+          amount: [{ denom: NEUTRON_DENOM, amount: '2000' }],
+        },
+      );
+      expect(res.code).toEqual(0);
+
+      contractBalanceAfter = parseInt(
+        (await neutronClient.getBalance(contractAddress, newTokenDenom)).amount,
+        10,
+      );
+
+      expect(contractBalanceAfter).toEqual(668);
+
+      balanceAfter = parseInt(
+        (await neutronClient.getBalance(neutronWallet.address, newTokenDenom))
+          .amount,
+        10,
+      );
+
+      expect(balanceAfter).toEqual(9332);
+
+      queryBlock = await neutronClient.queryContractSmart(contractAddress, {
+        sudo_result_block_before: {},
+      });
+
+      queryTrack = await neutronClient.queryContractSmart(contractAddress, {
+        sudo_result_track_before: {},
+      });
+
+      // We make sure that the track hook executed.
       expect(queryTrack.track.received).toEqual(true);
       expect(queryBlock.block.received).toEqual(true);
     });
@@ -795,6 +871,7 @@ describe('Neutron / Tokenfactory', () => {
         subdaoMember1,
         codeId,
         contractAddress,
+        500_000,
       );
 
       await neutronClient.execute(contractAddress, {

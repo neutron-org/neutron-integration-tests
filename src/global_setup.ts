@@ -202,8 +202,8 @@ async function fundWallets(
     value: value,
   };
   const fee = {
-    gas: '60000000',
-    amount: [{ denom: feeDenom, amount: '150000' }],
+    gas: '70000000',
+    amount: [{ denom: feeDenom, amount: '180000' }],
   };
 
   // Add retry logic for signAndBroadcast
