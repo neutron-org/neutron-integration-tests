@@ -33,7 +33,7 @@ import {
   waitForAck,
 } from '../../helpers/interchaintxs';
 import { execSync } from 'child_process';
-import { Link } from '@confio/relayer/build';
+import { Link } from '@confio/relayer';
 import config from '../../config.json';
 import {
   Order,
@@ -48,6 +48,7 @@ import {
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
+import { PacketWithMetadata } from '@confio/relayer/src/lib/endpoint';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -790,7 +791,7 @@ describe('Neutron / Interchain TXs', () => {
             },
           });
           rawLog = res.rawLog;
-        } catch (e) {
+        } catch (e: any) {
           rawLog = e.message;
         }
         expect(rawLog.includes('no active channel for this owner'));
@@ -1342,7 +1343,7 @@ describe('Neutron / Interchain TXs', () => {
 
       test('try two delegates with first one when relayer is paused, so only second delegate passed through', async () => {
         // We pause hermes container, so that we can use manual relaying of the packets.
-        // That needed in order to ack ibc packets in backwards order
+        // That needed to ack ibc packets in backwards order
         execSync('docker pause setup-hermes-1');
 
         const res1 = await neutronClient.execute(contractAddress, {
@@ -1377,7 +1378,8 @@ describe('Neutron / Interchain TXs', () => {
           '100',
         );
 
-        const pendingPackets = await link.getPendingPackets('A');
+        const pendingPackets: PacketWithMetadata[] =
+          await link.getPendingPackets('A');
 
         // relay lastPacket
         const lastPacket = pendingPackets.find(
@@ -1393,7 +1395,7 @@ describe('Neutron / Interchain TXs', () => {
           100,
         );
 
-        // should be delegated 100 + 400 (lastPacket) coins after relaying last packet
+        // should be delegated 100 + 400 (lastPacket) coins after relaying lastPacket
         const delegationsQ2 = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: unorderedIcaAddress,
         });
@@ -1416,7 +1418,7 @@ describe('Neutron / Interchain TXs', () => {
           100,
         );
 
-        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying last packet
+        // should be delegated 100 + 400 + 200 (lastPacket + firstPacket) coins after relaying the last packet
         const delegationsQ3 = await gaiaStakingQuerier.DelegatorDelegations({
           delegatorAddr: unorderedIcaAddress,
         });
