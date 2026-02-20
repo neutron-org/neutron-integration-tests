@@ -1051,7 +1051,7 @@ describe('Neutron / Governance', () => {
     test('execute passed proposal', async () => {
       await daoMember1.executeProposalWithAttempts(proposalId, {
         gas: '120000000',
-        amount: [{ denom: NEUTRON_DENOM, amount: '250000' }],
+        amount: [{ denom: NEUTRON_DENOM, amount: '300000' }],
       });
     });
   });
