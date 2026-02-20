@@ -783,7 +783,10 @@ describe('Neutron / Governance', () => {
       await mainDao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await daoMember1.executeProposalWithAttempts(proposalId);
+      await daoMember1.executeProposalWithAttempts(proposalId, {
+        gas: '8000000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '30000' }],
+      });
     });
     test('check that codes were pinned', async () => {
       const res = await wasmQuerier.pinnedCodes();
@@ -809,7 +812,10 @@ describe('Neutron / Governance', () => {
       await mainDao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await daoMember1.executeProposalWithAttempts(proposalId);
+      await daoMember1.executeProposalWithAttempts(proposalId, {
+        gas: '8000000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '30000' }],
+      });
     });
     test('check that codes were unpinned', async () => {
       const res = await wasmQuerier.pinnedCodes();
@@ -1043,7 +1049,10 @@ describe('Neutron / Governance', () => {
       await mainDao.checkPassedProposal(proposalId);
     });
     test('execute passed proposal', async () => {
-      await daoMember1.executeProposalWithAttempts(proposalId);
+      await daoMember1.executeProposalWithAttempts(proposalId, {
+        gas: '120000000',
+        amount: [{ denom: NEUTRON_DENOM, amount: '250000' }],
+      });
     });
   });
 
