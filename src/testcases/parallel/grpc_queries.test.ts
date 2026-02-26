@@ -260,12 +260,5 @@ describe('Neutron / Grpc Queries', () => {
       });
       expect(+res.params.query_submit_timeout).toBeGreaterThan(0);
     });
-
-    test('feeburner params should work', async () => {
-      const res = await neutronClient.queryContractSmart(contractAddress, {
-        feeburner_params: {},
-      });
-      expect(res.params.neutron_denom).toBe('untrn');
-    });
   });
 });

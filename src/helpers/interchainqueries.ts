@@ -12,7 +12,7 @@ import {
   CosmWasmClient,
   SigningCosmWasmClient,
 } from '@cosmjs/cosmwasm-stargate';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
+import { waitBlocks, waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { ProtobufRpcClient, SigningStargateClient } from '@cosmjs/stargate';
 import { getWithAttempts } from './misc';
 import axios, { AxiosResponse } from 'axios';
@@ -20,47 +20,71 @@ import { NeutronTestClient } from './neutron_test_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
-import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
+import {
+  MsgRemoveInterchainQueryRequest,
+  MsgUpdateParams,
+} from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
+import { Params } from '@neutron-org/neutronjs/neutron/interchainqueries/params';
 import { SigningNeutronClient } from '@neutron-org/neutronjsplus/dist/signing_neutron_client';
+import { expect } from 'vitest';
+import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from './gov';
+import { Wallet } from './wallet';
+
+const GOV_MODULE_ADDRESS =
+  'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 export const executeUpdateInterchainQueriesParams = async (
-  chainManagerAddress: string,
+  govClient: NeutronTestClient,
+  govWallet: Wallet,
   interchainQueriesQuerier: InterchainqQuerier,
-  mainDao: Dao,
-  daoMember: DaoMember,
   maxKvQueryKeysCount?: number,
   maxTransactionsFilters?: number,
 ) => {
   const params = (await interchainQueriesQuerier.params()).params;
-  if (maxKvQueryKeysCount != undefined) {
-    params.maxKvQueryKeysCount = BigInt(maxKvQueryKeysCount);
-  }
+  const newParams: Params = {
+    ...params,
+    querySubmitTimeout: params.querySubmitTimeout,
+    queryDeposit: params.queryDeposit,
+    txQueryRemovalLimit: params.txQueryRemovalLimit,
+    maxKvQueryKeysCount:
+      maxKvQueryKeysCount != undefined
+        ? BigInt(maxKvQueryKeysCount)
+        : params.maxKvQueryKeysCount,
+    maxTransactionsFilters:
+      maxTransactionsFilters != undefined
+        ? BigInt(maxTransactionsFilters)
+        : params.maxTransactionsFilters,
+  };
 
-  if (maxTransactionsFilters != undefined) {
-    params.maxTransactionsFilters = BigInt(maxTransactionsFilters);
-  }
-
-  const proposalId =
-    await daoMember.submitUpdateParamsInterchainqueriesProposal(
-      chainManagerAddress,
-      'Change Proposal - InterchainQueriesParams',
-      'Param change proposal. It will change enabled params of interchainquries module.',
+  const res = await executeMsgSubmitProposalV1(
+    govClient,
+    govWallet,
+    'Change Proposal - InterchainQueriesParams',
+    'Param change proposal. It will change enabled params of interchainqueries module.',
+    '',
+    [
       {
-        query_submit_timeout: Number(params.querySubmitTimeout),
-        query_deposit: params.queryDeposit,
-        tx_query_removal_limit: Number(params.txQueryRemovalLimit),
-        max_kv_query_keys_count: Number(params.maxKvQueryKeysCount),
-        max_transactions_filters: Number(params.maxTransactionsFilters),
+        typeUrl: MsgUpdateParams.typeUrl,
+        value: MsgUpdateParams.encode(
+          MsgUpdateParams.fromPartial({
+            authority: GOV_MODULE_ADDRESS,
+            params: newParams,
+          }),
+        ).finish(),
       },
-      '1000',
-    );
-
-  await daoMember.voteYes(proposalId, 'single', {
-    gas: '4000000',
-    amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
-  });
-  await mainDao.checkPassedProposal(proposalId);
-  await daoMember.executeProposalWithAttempts(proposalId);
+    ],
+    [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+    true,
+    { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+  );
+  expect(res.code).toEqual(0);
+  const proposalId = parseInt(
+    getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '0',
+    10,
+  );
+  const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+  expect(voteRes.code).toEqual(0);
+  await waitSeconds(15);
 };
 
 export const getKvCallbackStatus = async (
@@ -412,6 +436,7 @@ export const validateBalanceQuery = async (
 
   const balances = await bankQuerier.AllBalances({
     address: address,
+    resolveDenom: false,
   });
 
   expect(filterIBCDenoms(res.balances.coins)).toEqual(

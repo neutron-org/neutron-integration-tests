@@ -1,28 +1,25 @@
 import '@neutron-org/neutronjsplus';
 import { inject } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/slinky/oracle/v1/query.rpc.Query';
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
+import { delegateTokens } from '../../helpers/staking';
+import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { MsgCreateMarkets } from '@neutron-org/neutronjs/slinky/marketmap/v1/tx';
+const GOV_MODULE_ADDRESS = "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5"
 
 describe('Neutron / Slinky', () => {
   let testState: LocalState;
-  let daoMember1: DaoMember;
-  let mainDao: Dao;
   let neutronWallet: Wallet;
   let neutronClient: NeutronTestClient;
+  let govWallet: Wallet;
+  let govClient: NeutronTestClient;
   let chainManagerAddress: string;
-  let adminQuery: AdminQueryClient;
   let oracleQuery: OracleQueryClient;
 
   let proposalId: number;
@@ -34,32 +31,16 @@ describe('Neutron / Slinky', () => {
     testState = await LocalState.create(config, inject('mnemonics'));
     neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    govWallet = await testState.nextSecp256k1SignNeutronWallet();
+    govClient = await NeutronTestClient.connectWithSigner(govWallet);
     const neutronRpcClient = await testState.rpcClient('neutron');
-    const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient,
-      neutronRpcClient,
-    );
-    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
-    mainDao = new Dao(neutronClient, daoContracts);
-    daoMember1 = new DaoMember(
-      mainDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
-    adminQuery = new AdminQueryClient(await testState.rpcClient('neutron'));
-    chainManagerAddress = (await adminQuery.admins()).admins[0];
     oracleQuery = new OracleQueryClient(neutronRpcClient);
   });
 
-  describe('prepare: bond funds', () => {
-    test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('1000000000');
-      await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 1000000000,
-        20,
-      );
+  describe('prepare: delegate funds', () => {
+    test('delegate from wallet 1', async () => {
+      const govRes = await delegateTokens(govClient, govWallet.address, testState.wallets.neutron.val1.valAddress, '5000000000');
+      expect(govRes.code).toEqual(0);
     });
   });
 
@@ -87,49 +68,45 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
-      proposalId = await daoMember1.submitCreateMarketMap(
-        chainManagerAddress,
-        'Proposal for update marketmap',
-        'Add new marketmap with currency pair to set last_updated field',
-        [
-          {
-            ticker: {
-              currency_pair: {
-                Base: 'DROP',
-                Quote: 'USD',
-              },
-              decimals: 8,
-              min_provider_count: 1,
-              enabled: true,
-              metadata_JSON: '',
-            },
-            provider_configs: [
-              {
-                name: 'kraken_api',
-                off_chain_ticker: 'DROPUSD',
-                invert: false,
-                metadata_JSON: '{}',
-              },
-            ],
-          },
-        ],
+      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal for update marketmap', 'Add new marketmap with currency pair to set last_updated field', '', [
+        {
+          typeUrl: MsgCreateMarkets.typeUrl,
+          value: MsgCreateMarkets.encode(
+            MsgCreateMarkets.fromJSON({
+              authority: GOV_MODULE_ADDRESS,
+              createMarkets: [
+                {
+                  ticker: {
+                    currencyPair: {
+                      base: 'DROP',
+                      quote: 'USD',
+                    },
+                    decimals: 8,
+                    minProviderCount: 1,
+                    enabled: true,
+                    metadataJSON: '',
+                  },
+                  providerConfigs: [
+                    {
+                      name: 'kraken_api',
+                      offChainTicker: 'DROPUSD',
+                      invert: false,
+                      metadataJSON: '{}',
+                    },
+                  ],
+                }],
+            })).finish(),
+        }],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
-    });
-
-    describe('vote for proposal', () => {
-      test('vote YES', async () => {
-        await daoMember1.voteYes(proposalId);
-      });
-    });
-
-    describe('execute proposal', () => {
-      test('check if proposal is passed', async () => {
-        await neutronClient.waitBlocks(5);
-        await mainDao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
-        await daoMember1.executeProposalWithAttempts(proposalId);
-      });
+      expect(res.code).toEqual(0);
+      proposalId = 1;
+      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      expect(res1.code).toEqual(0);
+      // wait 15 seconds to allow the proposal to be processed
+      await waitSeconds(15);
     });
   });
 
@@ -241,7 +218,7 @@ describe('Neutron / Slinky', () => {
       expect(res).toBeDefined();
       expect(res.params.admin).toBeDefined();
       expect(res.params.market_authorities[0]).toEqual(
-        'neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z',
+        GOV_MODULE_ADDRESS,
       );
     });
   });

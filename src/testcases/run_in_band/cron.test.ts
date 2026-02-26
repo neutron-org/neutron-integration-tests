@@ -2,27 +2,25 @@ import '@neutron-org/neutronjsplus';
 import { LocalState } from '../../helpers/local_state';
 import { Wallet } from '../../helpers/wallet';
 import { CONTRACTS } from '../../helpers/constants';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
 import { RunnerTestSuite, inject } from 'vitest';
 import { NEUTRON_DENOM } from '../../helpers/constants';
 import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutron/cron/query.rpc.Query';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
+import { delegateTokens } from '../../helpers/staking';
+import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import { MsgAddSchedule, MsgRemoveSchedule } from '@neutron-org/neutronjs/neutron/cron/tx';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+
+const GOV_MODULE_ADDRESS = "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5"
 
 describe('Neutron / Cron', () => {
   let testState: LocalState;
   let neutronWallet: Wallet;
   let neutronClient: NeutronTestClient;
-  let mainDao: Dao;
-  let daoMember: DaoMember;
+  let govWallet: Wallet;
+  let govClient: NeutronTestClient;
 
-  let chainManagerAddress: string;
   let contractAddress: string;
   let proposalId: number;
 
@@ -32,23 +30,9 @@ describe('Neutron / Cron', () => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
+    govWallet = await testState.nextSecp256k1SignNeutronWallet();
+    govClient = await NeutronTestClient.connectWithSigner(govWallet);
     const neutronRpcClient = await testState.neutronRpcClient();
-    const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient,
-      neutronRpcClient,
-    ); // add assert for some addresses
-    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
-    mainDao = new Dao(neutronClient, daoContracts);
-    daoMember = new DaoMember(
-      mainDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
-
-    const queryClient = new AdminQueryClient(neutronRpcClient);
-    const admins = await queryClient.admins();
-    chainManagerAddress = admins.admins[0];
 
     cronQuerier = new CronQueryClient(neutronRpcClient);
   });
@@ -64,59 +48,44 @@ describe('Neutron / Cron', () => {
     });
   });
 
-  describe('prepare: bond funds', () => {
-    test('bond from wallet', async () => {
-      await daoMember.bondFunds('1000000000');
-      await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember.user),
-        async (response) => response.power == 1000000000,
-        20,
-      );
-    });
-  });
-
-  describe('send a bit funds to core contracts', () => {
-    test('send funds from wallet', async () => {
-      const res = await neutronClient.sendTokens(
-        mainDao.contracts.core.address,
-        [
-          {
-            denom: NEUTRON_DENOM,
-            amount: '1000',
-          },
-        ],
-        {
-          gas: '4000000',
-          amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
-        },
-      );
-      expect(res.code).toEqual(0);
+  describe('prepare: delegate funds', () => {
+    test('delegate from wallet', async () => {
+      const govRes = await delegateTokens(govClient, govWallet.address, testState.wallets.neutron.val1.valAddress, '5000000000');
+      expect(govRes.code).toEqual(0);
     });
   });
 
   describe('create proposal #1', () => {
     test('add schedule #1', async () => {
-      proposalId = await daoMember.submitAddSchedule(
-        chainManagerAddress,
-        'Proposal #1',
-        '',
-        '1000',
+      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #1', 'Proposal summary #1', '', [
         {
-          name: 'schedule1',
-          period: 5,
-          msgs: [
-            {
-              contract: contractAddress,
-              msg: '{"add_begin_blocker_schedule": {"name": "schedule1"}}',
-            },
-          ],
-          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+          typeUrl: '/neutron.cron.MsgAddSchedule',
+          value: MsgAddSchedule.encode(
+            MsgAddSchedule.fromJSON({
+              authority: GOV_MODULE_ADDRESS,
+              name: 'schedule1',
+              period: 5,
+              msgs: [
+                {
+                  contract: contractAddress,
+                  msg: '{"add_begin_blocker_schedule": {"name": "schedule1"}}',
+                },
+              ],
+              executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+            }),
+          ).finish(),
         },
+      ],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
-
-      await daoMember.voteYes(proposalId);
-      await mainDao.checkPassedProposal(proposalId);
-      await daoMember.executeProposalWithAttempts(proposalId);
+      expect(res.code).toEqual(0);
+      proposalId = 1;
+      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      expect(res1.code).toEqual(0);
+      // wait 15 seconds to allow the proposal to be processed
+      await waitSeconds(15);
     });
 
     test('check that schedule was added', async () => {
@@ -141,19 +110,27 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #2', () => {
     test('remove schedule #1', async () => {
-      proposalId = await daoMember.submitRemoveSchedule(
-        chainManagerAddress,
-        'Proposal #2',
-        '',
-        '1000',
+      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #2', 'Proposal summary #2', '', [
         {
-          name: 'schedule1',
+          typeUrl: '/neutron.cron.MsgRemoveSchedule',
+          value: MsgRemoveSchedule.encode(
+            MsgRemoveSchedule.fromJSON({
+              authority: GOV_MODULE_ADDRESS,
+              name: 'schedule1',
+            }),
+          ).finish(),
         },
+      ],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
-
-      await daoMember.voteYes(proposalId);
-      await mainDao.checkPassedProposal(proposalId);
-      await daoMember.executeProposalWithAttempts(proposalId);
+      expect(res.code).toEqual(0);
+      proposalId = 2;
+      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      expect(res1.code).toEqual(0);
+      // wait 15 seconds to allow the proposal to be processed
+      await waitSeconds(15);
     });
 
     test('check that schedule was removed', async () => {
@@ -188,35 +165,43 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #3', () => {
     test('add schedule #2', async () => {
-      proposalId = await daoMember.submitAddSchedule(
-        chainManagerAddress,
-        'Proposal #3',
-        '',
-        '1000',
+      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #3', 'Proposal summary #3', '', [
         {
-          name: 'schedule2',
-          period: 5,
-          msgs: [
-            {
-              contract: contractAddress,
-              msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
-            },
-            {
-              contract: contractAddress,
-              msg: '{"unknown_msg": {"name": "schedule2"}}',
-            },
-            {
-              contract: contractAddress,
-              msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
-            },
-          ],
-          execution_stage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+          typeUrl: '/neutron.cron.MsgAddSchedule',
+          value: MsgAddSchedule.encode(
+            MsgAddSchedule.fromJSON({
+              authority: GOV_MODULE_ADDRESS,
+              name: 'schedule2',
+              period: 5,
+              msgs: [
+                {
+                  contract: contractAddress,
+                  msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
+                },
+                {
+                  contract: contractAddress,
+                  msg: '{"unknown_msg": {"name": "schedule2"}}',
+                },
+                {
+                  contract: contractAddress,
+                  msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
+                },
+              ],
+              executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+            }),
+          ).finish(),
         },
+      ],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
-
-      await daoMember.voteYes(proposalId);
-      await mainDao.checkPassedProposal(proposalId);
-      await daoMember.executeProposalWithAttempts(proposalId);
+      expect(res.code).toEqual(0);
+      proposalId = 3;
+      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      expect(res1.code).toEqual(0);
+      // wait 15 seconds to allow the proposal to be processed
+      await waitSeconds(15);
     });
 
     test('check that schedule was added', async () => {
@@ -242,35 +227,43 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #4', () => {
     test('add schedule #3', async () => {
-      proposalId = await daoMember.submitAddSchedule(
-        chainManagerAddress,
-        'Proposal #4',
-        '',
-        '1000',
+      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #4', 'Proposal summary #4', '', [
         {
-          name: 'shedule3',
-          period: 5,
-          msgs: [
-            {
-              contract: contractAddress,
-              msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-            },
-            {
-              contract: contractAddress,
-              msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-            },
-            {
-              contract: contractAddress,
-              msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-            },
-          ],
-          execution_stage: 'EXECUTION_STAGE_END_BLOCKER',
+          typeUrl: '/neutron.cron.MsgAddSchedule',
+          value: MsgAddSchedule.encode(
+            MsgAddSchedule.fromJSON({
+              authority: GOV_MODULE_ADDRESS,
+              name: 'schedule3',
+              period: 5,
+              msgs: [
+                {
+                  contract: contractAddress,
+                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                },
+                {
+                  contract: contractAddress,
+                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                },
+                {
+                  contract: contractAddress,
+                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                },
+              ],
+              executionStage: 'EXECUTION_STAGE_END_BLOCKER',
+            }),
+          ).finish(),
         },
+      ],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
-
-      await daoMember.voteYes(proposalId);
-      await mainDao.checkPassedProposal(proposalId);
-      await daoMember.executeProposalWithAttempts(proposalId);
+      expect(res.code).toEqual(0);
+      proposalId = 4;
+      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      expect(res1.code).toEqual(0);
+      // wait 15 seconds to allow the proposal to be processed
+      await waitSeconds(15);
     });
 
     test('check that schedule was added', async () => {
