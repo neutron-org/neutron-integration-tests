@@ -33,7 +33,7 @@ import {
   waitForAck,
 } from '../../helpers/interchaintxs';
 import { execSync } from 'child_process';
-import { Link } from '@confio/relayer';
+import { Link } from '@neutron-org/relayer';
 import config from '../../config.json';
 import {
   Order,
@@ -48,7 +48,7 @@ import {
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { PacketWithMetadata } from '@confio/relayer/src/lib/endpoint';
+import { PacketWithMetadata } from '@neutron-org/relayer/build/lib/endpoint';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;

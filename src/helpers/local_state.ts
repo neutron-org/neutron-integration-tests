@@ -17,7 +17,7 @@ import {
   WALLETS_SIGN_METHOD,
 } from './constants';
 import { GaiaWallet, Wallet } from './wallet';
-import { IbcClient, Link } from '@confio/relayer';
+import { IbcClient, Link } from '@neutron-org/relayer';
 import { GasPrice } from '@cosmjs/stargate';
 
 type Network = 'cosmos' | 'neutron';
@@ -108,7 +108,7 @@ export class LocalState {
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
         'cannot give next wallet: current offset is greater than ' +
-          WALLETS_PER_TEST_FILE,
+        WALLETS_PER_TEST_FILE,
       );
     }
     const nextWalletIndex =

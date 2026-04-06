@@ -1,7 +1,7 @@
 import { NeutronTestClient } from './neutron_test_client';
 import { JsonObject } from '@cosmjs/cosmwasm-stargate';
-import { Link } from '@confio/relayer';
-import { PacketWithMetadata } from '@confio/relayer/dist/lib/endpoint';
+import { Link } from '@neutron-org/relayer';
+import { PacketWithMetadata } from '@neutron-org/relayer/build/lib/endpoint';
 
 export type AcknowledgementResult =
   | { success: string[] }
