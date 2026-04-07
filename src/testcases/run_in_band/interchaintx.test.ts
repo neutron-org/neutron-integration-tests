@@ -48,7 +48,7 @@ import {
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import { PacketWithMetadata } from '@neutron-org/relayer/build/lib/endpoint';
+import { PacketWithMetadata } from '@neutron-org/relayer/dist/lib/endpoint';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;

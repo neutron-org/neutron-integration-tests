@@ -45,7 +45,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.18.6",
-    "@neutron-org/relayer": "0.12.1",
+    "@neutron-org/relayer": "0.13.1-rc0",
     "@cosmjs/cosmwasm-stargate": "^0.37.0",
     "@cosmjs/proto-signing": "^0.37.0",
     "@cosmjs/stargate": "^0.37.0",
