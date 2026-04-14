@@ -1171,22 +1171,22 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@neutron-org/neutronjs@5.0.0-rc0":
-  version "5.0.0-rc0"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-5.0.0-rc0.tgz#339a7bdd0a20a6445d9ccdf8cd47f2b0368bfba0"
-  integrity sha512-U4sn9VDYD785TZ/ekNpAVrJmGdFiIF3znMdP4Sz+5UJB59nen8NiIoknbdY+IFJqlWN8bW4mR959cigjMIVL4g==
+"@neutron-org/neutronjs@10.3.0-fix.1":
+  version "10.3.0-fix.1"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjs/-/neutronjs-10.3.0-fix.1.tgz#c39daabcf98a20a95e4f07de5b4c984729df2c82"
+  integrity sha512-8ck8LlIN9Sf8qaSJspJ72ToNSFXJXZHI0AO5Pw3n50Ejrn6KHdHdkvOO05bhQ6Ubqa79sWd4EtofQfiJ+PagLA==
   dependencies:
     protobufjs "^7.5.4"
 
-"@neutron-org/neutronjsplus@1.0.0-rc0":
-  version "1.0.0-rc0"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-1.0.0-rc0.tgz#ab1bc4aee1807d4d46a5aad77f6eefa3009c0efd"
-  integrity sha512-Ir7SS5zOoQ627qu2FMfMAAQSAR/gMxJGeHbgJfpv+6Kt60e/wNfx9ymmTnOJlnTV9YYSxnlq7MNCtCnGgYrcEg==
+"@neutron-org/neutronjsplus@1.0.0-rc.3":
+  version "1.0.0-rc.3"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-1.0.0-rc.3.tgz#9182eb59dea97e2d93b7c1a0933f6e90e33258a8"
+  integrity sha512-7nC/hTfpWfbDV+A1gQ+MMaMxz5zJ6oLJEdYR5wu5i24YzIiHNdCbR7EUcQIaA/c/nBzBxgkI6l34Q4r2vvtD+w==
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.37.0"
     "@cosmjs/proto-signing" "^0.37.0"
     "@cosmjs/stargate" "0.37.0"
-    "@neutron-org/neutronjs" "5.0.0-rc0"
+    "@neutron-org/neutronjs" "10.3.0-fix.1"
     "@types/pako" "^1.0.1"
     axios "1.12.0"
     bip39 "^3.1.0"
