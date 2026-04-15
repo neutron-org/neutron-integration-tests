@@ -108,7 +108,7 @@ export class LocalState {
     if (currentOffsetInTestFile >= WALLETS_PER_TEST_FILE) {
       return Promise.reject(
         'cannot give next wallet: current offset is greater than ' +
-        WALLETS_PER_TEST_FILE,
+          WALLETS_PER_TEST_FILE,
       );
     }
     const nextWalletIndex =
