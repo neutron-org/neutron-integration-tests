@@ -1178,10 +1178,10 @@
   dependencies:
     protobufjs "^7.5.4"
 
-"@neutron-org/neutronjsplus@1.0.0-rc.3":
-  version "1.0.0-rc.3"
-  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-1.0.0-rc.3.tgz#9182eb59dea97e2d93b7c1a0933f6e90e33258a8"
-  integrity sha512-7nC/hTfpWfbDV+A1gQ+MMaMxz5zJ6oLJEdYR5wu5i24YzIiHNdCbR7EUcQIaA/c/nBzBxgkI6l34Q4r2vvtD+w==
+"@neutron-org/neutronjsplus@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@neutron-org/neutronjsplus/-/neutronjsplus-1.0.0.tgz#875d78972bfd1cb11a6d9d4733167a15bc309fad"
+  integrity sha512-v91kMDx/Y9b2Yqh9SriYqDqn4CAVI4J6g3+apopEO3bDK59i+OZQH7WhYl5CVevZWhAXrgrHT7wIUCRcfob4vw==
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.37.0"
     "@cosmjs/proto-signing" "^0.37.0"
@@ -1194,10 +1194,10 @@
     merkletreejs "^0.3.9"
     pako "^2.1.0"
 
-"@neutron-org/relayer@0.13.1-rc0":
-  version "0.13.1-rc0"
-  resolved "https://registry.yarnpkg.com/@neutron-org/relayer/-/relayer-0.13.1-rc0.tgz#ade6bf1d9303d87de7bb18186974e21099c73815"
-  integrity sha512-J9j1zXVs4ONbmjksDp+/2Np+hj6bIdls05wW1j86Bu4wUs2daNA2fM+WbUGCdAV6l8/UjSBO5X19341kXUOGFw==
+"@neutron-org/relayer@0.13.1":
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/@neutron-org/relayer/-/relayer-0.13.1.tgz#02675fff8a2b8d07f713b337c30e442629e24ce0"
+  integrity sha512-UW4QzzUTAYLJvB3JL6A5UlYoU9elfYfOiuvWID8V++3+d6w0ILsw02sRlBDowe2e4QI+XX5VDxrwU7CZJisRoQ==
   dependencies:
     "@cosmjs/cosmwasm-stargate" "^0.37.0"
     "@cosmjs/crypto" "^0.37.0"
