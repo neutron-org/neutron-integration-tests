@@ -10,13 +10,14 @@ import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { Registry } from '@cosmjs/proto-signing';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
 import {
-  executeUpdateInterchainQueriesParams,
   getRegisteredQuery,
   queryRecipientTxs,
   queryTransfersNumber,
   registerTransfersQuery,
+  submitInterchainQueriesParamsGovProposal,
   waitForTransfersAmount,
 } from '../../helpers/interchainqueries';
+import { Params as InterchainQueriesParams } from '@neutron-org/neutronjs/neutron/interchainqueries/params';
 import {
   CONTRACTS,
   COSMOS_DENOM,
@@ -129,8 +130,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.query_type).toEqual('tx');
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr1 +
-        '"}]',
+          watchedAddr1 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
       expect(query.update_period).toEqual(query1UpdatePeriod.toString());
@@ -155,7 +156,10 @@ describe('Neutron / Interchain TX Query', () => {
 
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr1, resolveDenom: false });
+      balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr1,
+        resolveDenom: false,
+      });
       expect(balances.balances).toEqual([
         {
           amount: addr1ExpectedBalance.toString(),
@@ -293,8 +297,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.query_type).toEqual('tx');
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr2 +
-        '"}]',
+          watchedAddr2 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
       expect(query.update_period).toEqual(query2UpdatePeriod.toString());
@@ -362,8 +366,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.query_type).toEqual('tx');
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr3 +
-        '"}]',
+          watchedAddr3 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
       expect(query.update_period).toEqual(query3UpdatePeriod.toString());
@@ -387,7 +391,10 @@ describe('Neutron / Interchain TX Query', () => {
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr3, resolveDenom: false });
+      balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr3,
+        resolveDenom: false,
+      });
       expect(balances.balances).toEqual([
         {
           amount: addr3ExpectedBalance.toString(),
@@ -677,7 +684,10 @@ describe('Neutron / Interchain TX Query', () => {
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr5, resolveDenom: false });
+      balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr5,
+        resolveDenom: false,
+      });
       expect(balances.balances).toEqual([
         {
           amount: addr5ExpectedBalance.toString(),
@@ -694,8 +704,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.query_type).toEqual('tx');
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr4 +
-        '"}]',
+          watchedAddr4 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
       expect(query.update_period).toEqual(query4UpdatePeriod.toString());
@@ -707,8 +717,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.query_type).toEqual('tx');
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        watchedAddr5 +
-        '"}]',
+          watchedAddr5 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
       expect(query.update_period).toEqual(query5UpdatePeriod.toString());
@@ -732,7 +742,10 @@ describe('Neutron / Interchain TX Query', () => {
       );
       expectedIncomingTransfers++;
       expect(res.code).toEqual(0);
-      balances = await bankQuerierGaia.AllBalances({ address: watchedAddr4, resolveDenom: false });
+      balances = await bankQuerierGaia.AllBalances({
+        address: watchedAddr4,
+        resolveDenom: false,
+      });
       expect(balances.balances).toEqual([
         {
           amount: addr4ExpectedBalance.toString(),
@@ -816,12 +829,17 @@ describe('Neutron / Interchain TX Query', () => {
     });
 
     test('Should pass. register filter with 50 keys after a proposal', async () => {
-      await executeUpdateInterchainQueriesParams(
+      const { params: icqParamsForTxFilters } =
+        await interchainqQuerier.params();
+      await submitInterchainQueriesParamsGovProposal(
         govClient,
         govWallet,
-        interchainqQuerier,
-        undefined,
-        50,
+        'Change Proposal - InterchainQueriesParams',
+        'Param change proposal. It will change enabled params of interchainqueries module.',
+        InterchainQueriesParams.fromPartial({
+          ...icqParamsForTxFilters,
+          maxTransactionsFilters: 50n,
+        }),
       );
 
       await registerTransfersQuery(
@@ -934,8 +952,8 @@ describe('Neutron / Interchain TX Query', () => {
       expect(query.update_period).toEqual(query3UpdatePeriod.toString());
       expect(query.transactions_filter).toEqual(
         '[{"field":"transfer.recipient","op":"Eq","value":"' +
-        newWatchedAddr5 +
-        '"}]',
+          newWatchedAddr5 +
+          '"}]',
       );
       expect(query.connection_id).toEqual(connectionId);
     });

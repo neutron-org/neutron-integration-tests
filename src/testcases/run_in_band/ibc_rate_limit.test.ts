@@ -15,12 +15,13 @@ import {
 import { SigningStargateClient } from '@cosmjs/stargate';
 import config from '../../config.json';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
-import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import { GaiaWallet, Wallet } from '../../helpers/wallet';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { BinaryWriter } from '@neutron-org/neutronjs/binary';
@@ -67,7 +68,6 @@ describe('Neutron / IBC transfer', () => {
   let ibcContract: string;
 
   let bankQuerier: BankQueryClient;
-  let neutronQuerier: NeutronQuerier;
   let ibcQuerier: IbcQueryClient;
   let mintQuerier: MintQueryClient;
 
@@ -92,9 +92,6 @@ describe('Neutron / IBC transfer', () => {
     govWallet = await testState.nextSecp256k1SignNeutronWallet();
     govClient = await NeutronTestClient.connectWithSigner(govWallet);
     bankQuerier = new BankQueryClient(neutronRpcClient);
-    neutronQuerier = await createNeutronClient({
-      rpcEndpoint: testState.rpcNeutron,
-    });
     ibcQuerier = new IbcQueryClient(neutronRpcClient);
     mintQuerier = new MintQueryClient(neutronRpcClient);
   });
@@ -142,7 +139,11 @@ describe('Neutron / IBC transfer', () => {
         getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
         10,
       );
-      const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const voteRes = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(voteRes.code).toEqual(0);
       await waitSeconds(15);
     });
@@ -218,19 +219,30 @@ describe('Neutron / IBC transfer', () => {
           [
             {
               typeUrl: '/neutron.ibcratelimit.v1beta1.MsgUpdateParams',
-              value: encodeIbcRateLimitMsgUpdateParams(GOV_MODULE_ADDRESS, rlContract),
+              value: encodeIbcRateLimitMsgUpdateParams(
+                GOV_MODULE_ADDRESS,
+                rlContract,
+              ),
             },
           ],
           [{ denom: NEUTRON_DENOM, amount: '60000000' }],
           true,
-          { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
         );
         expect(res.code).toEqual(0);
         const proposalId = parseInt(
-          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
           10,
         );
-        const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
         expect(voteRes.code).toEqual(0);
         await waitSeconds(15);
       });
@@ -509,14 +521,22 @@ describe('Neutron / IBC transfer', () => {
           ],
           [{ denom: NEUTRON_DENOM, amount: '60000000' }],
           true,
-          { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
         );
         expect(res.code).toEqual(0);
         const proposalId = parseInt(
-          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '2',
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '2',
           10,
         );
-        const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
         expect(voteRes.code).toEqual(0);
         await waitSeconds(15);
       });

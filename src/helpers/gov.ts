@@ -10,16 +10,17 @@ import {
   MsgSubmitProposal,
   MsgVote,
 } from '@neutron-org/neutronjs/cosmos/gov/v1beta1/tx';
-import {
-  MsgSubmitProposal as MsgSubmitProposalV1,
-} from '@neutron-org/neutronjs/cosmos/gov/v1/tx';
+import { MsgSubmitProposal as MsgSubmitProposalV1 } from '@neutron-org/neutronjs/cosmos/gov/v1/tx';
 import { COSMOS_DENOM, NEUTRON_DENOM } from './constants';
-import { DeliverTxResponse, SigningStargateClient, StdFee } from '@cosmjs/stargate';
+import {
+  DeliverTxResponse,
+  SigningStargateClient,
+  StdFee,
+} from '@cosmjs/stargate';
 import { GaiaWallet, Wallet } from './wallet';
 import { NeutronTestClient } from './neutron_test_client';
 import { Coin } from 'cosmjs-types/cosmos/base/v1beta1/coin';
 import { Any } from 'cosmjs-types/google/protobuf/any';
-import { EncodeObject } from '@cosmjs/proto-signing';
 
 export const executeMsgDelegate = async (
   client: SigningStargateClient,
@@ -31,7 +32,10 @@ export const executeMsgDelegate = async (
   const msgDelegate: MsgDelegate = {
     delegatorAddress: wallet.address,
     validatorAddress,
-    amount: typeof amount === 'string' ? { denom: COSMOS_DENOM, amount: amount } : amount,
+    amount:
+      typeof amount === 'string'
+        ? { denom: COSMOS_DENOM, amount: amount }
+        : amount,
   };
   const msg = { typeUrl: MsgDelegate.typeUrl, value: msgDelegate };
   return await client.signAndBroadcast(wallet.address, [msg], fee);
@@ -42,18 +46,24 @@ export const executeMsgUndelegate = async (
   wallet: GaiaWallet,
   validatorAddress: string,
   amount: string | Coin,
-  fee: StdFee | 'auto' | number = { gas: '500000', amount: [{ denom: COSMOS_DENOM, amount: '5000' }] },
+  fee: StdFee | 'auto' | number = {
+    gas: '500000',
+    amount: [{ denom: COSMOS_DENOM, amount: '5000' }],
+  },
 ): Promise<DeliverTxResponse> => {
   const msgUndelegate: MsgUndelegate = {
     delegatorAddress: wallet.address,
     validatorAddress,
-    amount: typeof amount === 'string' ? { denom: COSMOS_DENOM, amount: amount } : amount,
+    amount:
+      typeof amount === 'string'
+        ? { denom: COSMOS_DENOM, amount: amount }
+        : amount,
   };
   const msg = { typeUrl: MsgUndelegate.typeUrl, value: msgUndelegate };
   const res = await client.signAndBroadcast(
     wallet instanceof NeutronTestClient ? wallet.sender : wallet.address,
     [msg],
-    fee
+    fee,
   );
 
   return res;
@@ -97,7 +107,10 @@ export const executeMsgSubmitProposalV1 = async (
   messages: Any[],
   initialDeposit: Coin[],
   expedited: boolean,
-  fee: StdFee | 'auto' | number = { gas: '5000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+  fee: StdFee | 'auto' | number = {
+    gas: '5000000',
+    amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+  },
 ): Promise<DeliverTxResponse> => {
   const msgSubmitProposal: MsgSubmitProposalV1 = {
     proposer: wallet.address,
@@ -108,7 +121,10 @@ export const executeMsgSubmitProposalV1 = async (
     summary: summary,
     expedited: expedited,
   };
-  const msg = { typeUrl: MsgSubmitProposalV1.typeUrl, value: msgSubmitProposal };
+  const msg = {
+    typeUrl: MsgSubmitProposalV1.typeUrl,
+    value: msgSubmitProposal,
+  };
   console.log(msg);
   return await client.signAndBroadcast([msg], fee);
 };
@@ -117,7 +133,10 @@ export const executeMsgVote = async (
   client: SigningStargateClient,
   wallet: GaiaWallet,
   proposalId: number,
-  fee: StdFee | 'auto' | number = { gas: '500000', amount: [{ denom: COSMOS_DENOM, amount: '5000' }] },
+  fee: StdFee | 'auto' | number = {
+    gas: '500000',
+    amount: [{ denom: COSMOS_DENOM, amount: '5000' }],
+  },
 ): Promise<DeliverTxResponse> => {
   const msgVote: MsgVote = {
     voter: wallet.address,
@@ -129,12 +148,14 @@ export const executeMsgVote = async (
   return await client.signAndBroadcast(wallet.address, [msg], fee);
 };
 
-
 export const executeMsgVoteNeutron = async (
   client: NeutronTestClient,
   wallet: Wallet,
   proposalId: number,
-  fee: StdFee | 'auto' | number = { gas: '500000', amount: [{ denom: NEUTRON_DENOM, amount: '5000' }] },
+  fee: StdFee | 'auto' | number = {
+    gas: '500000',
+    amount: [{ denom: NEUTRON_DENOM, amount: '5000' }],
+  },
 ): Promise<DeliverTxResponse> => {
   const msgVote: MsgVote = {
     voter: wallet.address,

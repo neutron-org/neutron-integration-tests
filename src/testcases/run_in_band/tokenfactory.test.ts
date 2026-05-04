@@ -20,7 +20,10 @@ import { CONTRACTS } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { BinaryWriter } from '@neutron-org/neutronjs/binary';
 import { Params } from '@neutron-org/neutronjs/osmosis/tokenfactory/params';
 

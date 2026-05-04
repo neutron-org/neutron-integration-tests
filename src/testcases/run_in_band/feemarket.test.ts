@@ -15,7 +15,10 @@ import config from '../../config.json';
 import { IBC_ATOM_DENOM, NEUTRON_DENOM } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 
 const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
@@ -110,7 +113,11 @@ describe('Neutron / Fee Market', () => {
       getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
       10,
     );
-    const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+    const voteRes = await executeMsgVoteNeutron(
+      govClient,
+      govWallet,
+      proposalId,
+    );
     expect(voteRes.code).toEqual(0);
     await waitSeconds(15);
 
@@ -149,7 +156,11 @@ describe('Neutron / Fee Market', () => {
       getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
       10,
     );
-    const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+    const voteRes = await executeMsgVoteNeutron(
+      govClient,
+      govWallet,
+      proposalId,
+    );
     expect(voteRes.code).toEqual(0);
     await waitSeconds(15);
 
@@ -202,9 +213,14 @@ describe('Neutron / Fee Market', () => {
 
     // 5 ntrn per ATOM, gives atom gas price 5 times lower,  0.0005 IBC_ATOM_DENOM and 0.0025 NTRN
 
-    await executeChangeGasPrices(govClient, govWallet, 'dynamicfees gasprices', {
-      ntrnPrices: [{ denom: IBC_ATOM_DENOM, amount: '5' }],
-    });
+    await executeChangeGasPrices(
+      govClient,
+      govWallet,
+      'dynamicfees gasprices',
+      {
+        ntrnPrices: [{ denom: IBC_ATOM_DENOM, amount: '5' }],
+      },
+    );
 
     await expect(
       neutronClient.sendTokens(

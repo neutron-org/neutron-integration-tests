@@ -1,10 +1,6 @@
 import { NeutronTestClient } from './neutron_test_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
-import {
-  NEUTRON_DENOM,
-  SECOND_VALIDATOR_CONTAINER,
-  STAKING_REWARDS,
-} from './constants';
+import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
@@ -260,7 +256,6 @@ export const simulateSlashingAndJailing = async (
   return validatorInfo.validator.status;
 };
 
-
 export type Duration = string;
 
 export type ParamsSlashingInfo = {
@@ -279,9 +274,6 @@ export type RemoveFromBlacklistInfo = {
   addresses: string[];
 };
 
-
-
-
 export type ParamsStakingInfo = {
   unbonding_time: Duration;
   max_validators: string;
@@ -289,4 +281,3 @@ export type ParamsStakingInfo = {
   historical_entries: string;
   bond_denom: string;
 };
-

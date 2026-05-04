@@ -1,7 +1,6 @@
 import {
-  acceptInterchainqueriesParamsChangeProposal,
-  executeUpdateInterchainQueriesParams,
   filterIBCDenoms,
+  submitInterchainQueriesParamsGovProposal,
 } from '../../helpers/interchainqueries';
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
@@ -50,6 +49,7 @@ import {
   NEUTRON_DENOM,
 } from '../../helpers/constants';
 import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
+import { Params as InterchainQueriesParams } from '@neutron-org/neutronjs/neutron/interchainqueries/params';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
 import { QueryClientImpl as SlashingQuerier } from 'cosmjs-types/cosmos/slashing/v1beta1/query';
 import config from '../../config.json';
@@ -58,7 +58,6 @@ import { GaiaWallet, Wallet } from '../../helpers/wallet';
 (BigInt.prototype as any).toJSON = function () {
   return this.toString();
 };
-
 
 describe('Neutron / Interchain KV Query', () => {
   const connectionId = 'connection-0';
@@ -244,12 +243,16 @@ describe('Neutron / Interchain KV Query', () => {
             },
           }),
         ).rejects.toThrowError(/keys count cannot be more than 32/);
-        await executeUpdateInterchainQueriesParams(
+        const { params: icqParamsBefore } = await interchainqQuerier.params();
+        await submitInterchainQueriesParamsGovProposal(
           govClient,
           govWallet,
-          interchainqQuerier,
-          10,
-          undefined,
+          'Change Proposal - InterchainQueriesParams',
+          'Param change proposal. It will change enabled params of interchainqueries module.',
+          InterchainQueriesParams.fromPartial({
+            ...icqParamsBefore,
+            maxKvQueryKeysCount: 10n,
+          }),
         );
         await expect(
           neutronClient.execute(contractAddress, {
@@ -322,12 +325,17 @@ describe('Neutron / Interchain KV Query', () => {
       });
 
       test('register icq #6: 100 keys', async () => {
-        await executeUpdateInterchainQueriesParams(
+        const { params: icqParamsFor100Keys } =
+          await interchainqQuerier.params();
+        await submitInterchainQueriesParamsGovProposal(
           govClient,
           govWallet,
-          interchainqQuerier,
-          100,
-          undefined,
+          'Change Proposal - InterchainQueriesParams',
+          'Param change proposal. It will change enabled params of interchainqueries module.',
+          InterchainQueriesParams.fromPartial({
+            ...icqParamsFor100Keys,
+            maxKvQueryKeysCount: 100n,
+          }),
         );
         await registerBalancesQuery(
           neutronClient,
@@ -543,7 +551,7 @@ describe('Neutron / Interchain KV Query', () => {
         {
           gas: '200000',
           amount: [{ denom: COSMOS_DENOM, amount: '1000' }],
-        }
+        },
       );
       await waitForICQResultWithRemoteHeight(
         neutronClient,
@@ -730,8 +738,7 @@ describe('Neutron / Interchain KV Query', () => {
         );
       });
 
-      // FIXME: fix update params
-      test.skip('should change new query params based on governance proposal', async () => {
+      test('should change new query params based on governance proposal', async () => {
         // Get old query params
         const registeredQueryBeforeParamChange = await getRegisteredQuery(
           neutronClient,
@@ -741,14 +748,16 @@ describe('Neutron / Interchain KV Query', () => {
 
         const querySubmitTimeoutParam = 1;
 
-        await acceptInterchainqueriesParamsChangeProposal(
-          neutronWallet.address,
-          neutronClient.client,
-          neutronRpcClient,
+        const { params: icqParamsTimeout } = await interchainqQuerier.params();
+        await submitInterchainQueriesParamsGovProposal(
+          govClient,
+          govWallet,
           'Change query_submit_timeout parameter of the interchainqueries module',
           'Change query_submit_timeout parameter of the interchainqueries module',
-          'QuerySubmitTimeout',
-          `"${querySubmitTimeoutParam.toString()}"`,
+          InterchainQueriesParams.fromPartial({
+            ...icqParamsTimeout,
+            querySubmitTimeout: BigInt(querySubmitTimeoutParam),
+          }),
         );
 
         const queryDepositParam: Coin[] = [
@@ -758,14 +767,16 @@ describe('Neutron / Interchain KV Query', () => {
           },
         ];
 
-        await acceptInterchainqueriesParamsChangeProposal(
-          neutronWallet.address,
-          neutronClient.client,
-          neutronRpcClient,
+        const { params: icqParamsDeposit } = await interchainqQuerier.params();
+        await submitInterchainQueriesParamsGovProposal(
+          govClient,
+          govWallet,
           'Change query_deposit parameter of the interchainqueries module',
           'Change query_deposit parameter of the interchainqueries module',
-          'QueryDeposit',
-          JSON.stringify(queryDepositParam),
+          InterchainQueriesParams.fromPartial({
+            ...icqParamsDeposit,
+            queryDeposit: queryDepositParam,
+          }),
         );
 
         const queryId = await registerBalancesQuery(
@@ -794,7 +805,7 @@ describe('Neutron / Interchain KV Query', () => {
           queryDepositParam,
         );
         expect(interchainQueriesParams.params.querySubmitTimeout).toEqual(
-          querySubmitTimeoutParam.toString(),
+          BigInt(querySubmitTimeoutParam),
         );
 
         // Get old query params after param change proposal
@@ -838,7 +849,7 @@ describe('Neutron / Interchain KV Query', () => {
           async (response) =>
             +response.last_submitted_result_local_height > 0 &&
             +response.last_submitted_result_local_height + 5 <
-            (await neutronClient.getHeight()),
+              (await neutronClient.getHeight()),
           20,
         );
 
@@ -867,7 +878,7 @@ describe('Neutron / Interchain KV Query', () => {
             return (
               balances[0].denom === beforeBalances[0].denom &&
               parseInt(balances[0].amount || '0') >
-              parseInt(beforeBalances[0].amount || '0')
+                parseInt(beforeBalances[0].amount || '0')
             );
           },
 
@@ -1198,10 +1209,9 @@ describe('Neutron / Interchain KV Query', () => {
         {
           gas: '400000',
           amount: [{ denom: COSMOS_DENOM, amount: '2000' }],
-        }
-
+        },
       );
-      expect(res.code).toEqual(0)
+      expect(res.code).toEqual(0);
       const res2 = await executeMsgUndelegate(
         gaiaClient,
         gaiaWallet,
@@ -1210,10 +1220,10 @@ describe('Neutron / Interchain KV Query', () => {
         {
           gas: '400000',
           amount: [{ denom: COSMOS_DENOM, amount: '2000' }],
-        }
+        },
       );
-      console.log(JSON.stringify(res2))
-      expect(res2.code).toEqual(0)
+      console.log(JSON.stringify(res2));
+      expect(res2.code).toEqual(0);
       // Top up contract address before running query
       await neutronClient.sendTokens(
         contractAddress,

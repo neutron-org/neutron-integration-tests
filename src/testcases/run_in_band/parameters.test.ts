@@ -10,12 +10,14 @@ import {
   NeutronQuerier,
   OsmosisQuerier,
 } from '@neutron-org/neutronjs/querier_types';
-import { ProtobufRpcClient } from '@cosmjs/stargate';
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { delegateTokens } from '../../helpers/staking';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
@@ -39,7 +41,10 @@ import { Duration } from '@neutron-org/neutronjs/google/protobuf/duration';
 const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 const PROPOSAL_DEPOSIT = [{ denom: NEUTRON_DENOM, amount: '60000000' }];
-const PROPOSAL_FEE = { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] };
+const PROPOSAL_FEE = {
+  gas: '4000000',
+  amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+};
 
 function encodeTokenfactoryMsgUpdateParams(
   authority: string,
@@ -52,7 +57,10 @@ function encodeTokenfactoryMsgUpdateParams(
 ): Uint8Array {
   const writer = BinaryWriter.create();
   if (authority !== '') writer.uint32(10).string(authority);
-  TokenfactoryParams.encode(TokenfactoryParams.fromPartial(params), writer.uint32(18).fork()).ldelim();
+  TokenfactoryParams.encode(
+    TokenfactoryParams.fromPartial(params),
+    writer.uint32(18).fork(),
+  ).ldelim();
   return writer.finish();
 }
 
@@ -88,12 +96,8 @@ async function submitGovProposal(
 describe('Neutron / Parameters', () => {
   let testState: LocalState;
 
-  let neutronWallet: Wallet;
-  let neutronClient: NeutronTestClient;
   let govWallet: Wallet;
   let govClient: NeutronTestClient;
-
-  let neutronRpcClient: ProtobufRpcClient;
 
   let neutronQuerier: NeutronQuerier;
   let ibcQuerier: IbcQuerier;
@@ -102,11 +106,8 @@ describe('Neutron / Parameters', () => {
 
   beforeAll(async () => {
     testState = await LocalState.create(config, inject('mnemonics'));
-    neutronWallet = await testState.nextNeutronWallet();
-    neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
     govWallet = await testState.nextSecp256k1SignNeutronWallet();
     govClient = await NeutronTestClient.connectWithSigner(govWallet);
-    neutronRpcClient = await testState.rpcClient('neutron');
 
     neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
@@ -157,7 +158,8 @@ describe('Neutron / Parameters', () => {
     });
 
     test('check if params changed after proposal execution', async () => {
-      const paramsAfter = await neutronQuerier.neutron.interchainqueries.params();
+      const paramsAfter =
+        await neutronQuerier.neutron.interchainqueries.params();
       expect(paramsAfter.params.querySubmitTimeout).toEqual(30n);
       expect(paramsAfter.params.txQueryRemovalLimit).toEqual(20n);
       expect(paramsAfter.params.maxKvQueryKeysCount).toEqual(10n);
@@ -187,7 +189,8 @@ describe('Neutron / Parameters', () => {
     });
 
     test('check if params changed after proposal execution', async () => {
-      const paramsAfter = await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
+      const paramsAfter =
+        await osmosisQuerier.osmosis.tokenfactory.v1beta1.params();
       expect(paramsAfter.params.denomCreationFee).toEqual([
         { denom: 'untrn', amount: '1' },
       ]);
@@ -298,7 +301,8 @@ describe('Neutron / Parameters', () => {
 
   describe('Interchaintxs params proposal', () => {
     test('submit, vote and execute proposal', async () => {
-      const currentParams = await neutronQuerier.neutron.interchaintxs.v1.params();
+      const currentParams =
+        await neutronQuerier.neutron.interchaintxs.v1.params();
       await submitGovProposal(
         govClient,
         govWallet,
@@ -322,7 +326,8 @@ describe('Neutron / Parameters', () => {
     });
 
     test('check if params changed after proposal execution', async () => {
-      const paramsAfter = await neutronQuerier.neutron.interchaintxs.v1.params();
+      const paramsAfter =
+        await neutronQuerier.neutron.interchaintxs.v1.params();
       expect(paramsAfter.params.msgSubmitTxMaxMessages).toEqual(11n);
     });
   });

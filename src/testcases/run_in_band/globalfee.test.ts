@@ -8,7 +8,10 @@ import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import { NEUTRON_DENOM } from '@neutron-org/neutronjsplus/dist/constants';
 import { Wallet } from '../../helpers/wallet';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { MsgUpdateParams as GlobalfeeMsgUpdateParams } from '@neutron-org/neutronjs/gaia/globalfee/v1beta1/tx';
@@ -18,7 +21,10 @@ import { RunnerTestSuite } from 'vitest';
 const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 const PROPOSAL_DEPOSIT = [{ denom: NEUTRON_DENOM, amount: '60000000' }];
-const PROPOSAL_FEE = { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '40000' }] };
+const PROPOSAL_FEE = {
+  gas: '4000000',
+  amount: [{ denom: NEUTRON_DENOM, amount: '40000' }],
+};
 
 describe('Neutron / Global Fee', () => {
   let testState: LocalState;
@@ -68,7 +74,8 @@ describe('Neutron / Global Fee', () => {
       }));
     }
     if (maxTotalBypassMinFeesGasUsage == null) {
-      maxTotalBypassMinFeesGasUsage = res.params.maxTotalBypassMinFeeMsgGasUsage;
+      maxTotalBypassMinFeesGasUsage =
+        res.params.maxTotalBypassMinFeeMsgGasUsage;
     }
 
     const msgRes = await executeMsgSubmitProposalV1(
@@ -101,7 +108,11 @@ describe('Neutron / Global Fee', () => {
       getEventAttribute(msgRes.events, 'submit_proposal', 'proposal_id') || '1',
       10,
     );
-    const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+    const voteRes = await executeMsgVoteNeutron(
+      govClient,
+      govWallet,
+      proposalId,
+    );
     expect(voteRes.code).toEqual(0);
     await waitSeconds(15);
 

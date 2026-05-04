@@ -20,18 +20,24 @@ import { CONTRACTS } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { BinaryWriter } from '@neutron-org/neutronjs/binary';
 import { Params } from '@neutron-org/neutronjs/neutron/coinfactory/params';
 
 const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
-function encodeCoinfactoryMsgUpdateParams(authority: string, params: {
-  denomCreationFee: { denom: string; amount: string }[];
-  denomCreationGasConsume?: bigint;
-  feeCollectorAddress: string;
-  whitelistedHooks: { codeId: bigint; denomCreator: string }[];
-}): Uint8Array {
+function encodeCoinfactoryMsgUpdateParams(
+  authority: string,
+  params: {
+    denomCreationFee: { denom: string; amount: string }[];
+    denomCreationGasConsume?: bigint;
+    feeCollectorAddress: string;
+    whitelistedHooks: { codeId: bigint; denomCreator: string }[];
+  },
+): Uint8Array {
   const writer = BinaryWriter.create();
   if (authority !== '') writer.uint32(10).string(authority);
   Params.encode(Params.fromPartial(params), writer.uint32(18).fork()).ldelim();

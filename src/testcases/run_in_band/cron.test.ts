@@ -8,11 +8,17 @@ import { QueryClientImpl as CronQueryClient } from '@neutron-org/neutronjs/neutr
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
-import { MsgAddSchedule, MsgRemoveSchedule } from '@neutron-org/neutronjs/neutron/cron/tx';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
+import {
+  MsgAddSchedule,
+  MsgRemoveSchedule,
+} from '@neutron-org/neutronjs/neutron/cron/tx';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 
-const GOV_MODULE_ADDRESS = "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5"
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 describe('Neutron / Cron', () => {
   let testState: LocalState;
@@ -50,39 +56,54 @@ describe('Neutron / Cron', () => {
 
   describe('prepare: delegate funds', () => {
     test('delegate from wallet', async () => {
-      const govRes = await delegateTokens(govClient, govWallet.address, testState.wallets.neutron.val1.valAddress, '5000000000');
+      const govRes = await delegateTokens(
+        govClient,
+        govWallet.address,
+        testState.wallets.neutron.val1.valAddress,
+        '5000000000',
+      );
       expect(govRes.code).toEqual(0);
     });
   });
 
   describe('create proposal #1', () => {
     test('add schedule #1', async () => {
-      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #1', 'Proposal summary #1', '', [
-        {
-          typeUrl: '/neutron.cron.MsgAddSchedule',
-          value: MsgAddSchedule.encode(
-            MsgAddSchedule.fromJSON({
-              authority: GOV_MODULE_ADDRESS,
-              name: 'schedule1',
-              period: 5,
-              msgs: [
-                {
-                  contract: contractAddress,
-                  msg: '{"add_begin_blocker_schedule": {"name": "schedule1"}}',
-                },
-              ],
-              executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
-            }),
-          ).finish(),
-        },
-      ],
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Proposal #1',
+        'Proposal summary #1',
+        '',
+        [
+          {
+            typeUrl: '/neutron.cron.MsgAddSchedule',
+            value: MsgAddSchedule.encode(
+              MsgAddSchedule.fromJSON({
+                authority: GOV_MODULE_ADDRESS,
+                name: 'schedule1',
+                period: 5,
+                msgs: [
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_begin_blocker_schedule": {"name": "schedule1"}}',
+                  },
+                ],
+                executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+              }),
+            ).finish(),
+          },
+        ],
         [{ denom: NEUTRON_DENOM, amount: '60000000' }],
         true,
         { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
       expect(res.code).toEqual(0);
       proposalId = 1;
-      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const res1 = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(res1.code).toEqual(0);
       // wait 15 seconds to allow the proposal to be processed
       await waitSeconds(15);
@@ -110,24 +131,34 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #2', () => {
     test('remove schedule #1', async () => {
-      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #2', 'Proposal summary #2', '', [
-        {
-          typeUrl: '/neutron.cron.MsgRemoveSchedule',
-          value: MsgRemoveSchedule.encode(
-            MsgRemoveSchedule.fromJSON({
-              authority: GOV_MODULE_ADDRESS,
-              name: 'schedule1',
-            }),
-          ).finish(),
-        },
-      ],
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Proposal #2',
+        'Proposal summary #2',
+        '',
+        [
+          {
+            typeUrl: '/neutron.cron.MsgRemoveSchedule',
+            value: MsgRemoveSchedule.encode(
+              MsgRemoveSchedule.fromJSON({
+                authority: GOV_MODULE_ADDRESS,
+                name: 'schedule1',
+              }),
+            ).finish(),
+          },
+        ],
         [{ denom: NEUTRON_DENOM, amount: '60000000' }],
         true,
         { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
       expect(res.code).toEqual(0);
       proposalId = 2;
-      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const res1 = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(res1.code).toEqual(0);
       // wait 15 seconds to allow the proposal to be processed
       await waitSeconds(15);
@@ -165,40 +196,50 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #3', () => {
     test('add schedule #2', async () => {
-      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #3', 'Proposal summary #3', '', [
-        {
-          typeUrl: '/neutron.cron.MsgAddSchedule',
-          value: MsgAddSchedule.encode(
-            MsgAddSchedule.fromJSON({
-              authority: GOV_MODULE_ADDRESS,
-              name: 'schedule2',
-              period: 5,
-              msgs: [
-                {
-                  contract: contractAddress,
-                  msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
-                },
-                {
-                  contract: contractAddress,
-                  msg: '{"unknown_msg": {"name": "schedule2"}}',
-                },
-                {
-                  contract: contractAddress,
-                  msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
-                },
-              ],
-              executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
-            }),
-          ).finish(),
-        },
-      ],
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Proposal #3',
+        'Proposal summary #3',
+        '',
+        [
+          {
+            typeUrl: '/neutron.cron.MsgAddSchedule',
+            value: MsgAddSchedule.encode(
+              MsgAddSchedule.fromJSON({
+                authority: GOV_MODULE_ADDRESS,
+                name: 'schedule2',
+                period: 5,
+                msgs: [
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
+                  },
+                  {
+                    contract: contractAddress,
+                    msg: '{"unknown_msg": {"name": "schedule2"}}',
+                  },
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_begin_blocker_schedule": {"name": "schedule2"}}',
+                  },
+                ],
+                executionStage: 'EXECUTION_STAGE_BEGIN_BLOCKER',
+              }),
+            ).finish(),
+          },
+        ],
         [{ denom: NEUTRON_DENOM, amount: '60000000' }],
         true,
         { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
       expect(res.code).toEqual(0);
       proposalId = 3;
-      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const res1 = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(res1.code).toEqual(0);
       // wait 15 seconds to allow the proposal to be processed
       await waitSeconds(15);
@@ -227,40 +268,50 @@ describe('Neutron / Cron', () => {
 
   describe('create proposal #4', () => {
     test('add schedule #3', async () => {
-      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal #4', 'Proposal summary #4', '', [
-        {
-          typeUrl: '/neutron.cron.MsgAddSchedule',
-          value: MsgAddSchedule.encode(
-            MsgAddSchedule.fromJSON({
-              authority: GOV_MODULE_ADDRESS,
-              name: 'schedule3',
-              period: 5,
-              msgs: [
-                {
-                  contract: contractAddress,
-                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-                },
-                {
-                  contract: contractAddress,
-                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-                },
-                {
-                  contract: contractAddress,
-                  msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
-                },
-              ],
-              executionStage: 'EXECUTION_STAGE_END_BLOCKER',
-            }),
-          ).finish(),
-        },
-      ],
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Proposal #4',
+        'Proposal summary #4',
+        '',
+        [
+          {
+            typeUrl: '/neutron.cron.MsgAddSchedule',
+            value: MsgAddSchedule.encode(
+              MsgAddSchedule.fromJSON({
+                authority: GOV_MODULE_ADDRESS,
+                name: 'schedule3',
+                period: 5,
+                msgs: [
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                  },
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                  },
+                  {
+                    contract: contractAddress,
+                    msg: '{"add_end_blocker_schedule": {"name": "schedule3"}}',
+                  },
+                ],
+                executionStage: 'EXECUTION_STAGE_END_BLOCKER',
+              }),
+            ).finish(),
+          },
+        ],
         [{ denom: NEUTRON_DENOM, amount: '60000000' }],
         true,
         { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
       expect(res.code).toEqual(0);
       proposalId = 4;
-      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const res1 = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(res1.code).toEqual(0);
       // wait 15 seconds to allow the proposal to be processed
       await waitSeconds(15);

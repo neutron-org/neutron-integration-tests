@@ -44,7 +44,10 @@ import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutro
 import { PacketWithMetadata } from '@confio/relayer/src/lib/endpoint';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { delegateTokens } from '../../helpers/staking';
 import { MsgUpdateParams } from '@neutron-org/neutronjs/neutron/feerefunder/tx';
 import { Params } from '@neutron-org/neutronjs/neutron/feerefunder/params';
@@ -382,14 +385,22 @@ describe('Neutron / Interchain TXs', () => {
           ],
           [{ denom: NEUTRON_DENOM, amount: '60000000' }],
           true,
-          { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
         );
         expect(res.code).toEqual(0);
         const proposalId = parseInt(
-          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
           10,
         );
-        const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
         expect(voteRes.code).toEqual(0);
         await waitSeconds(15);
 
@@ -438,14 +449,22 @@ describe('Neutron / Interchain TXs', () => {
           ],
           [{ denom: NEUTRON_DENOM, amount: '60000000' }],
           true,
-          { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
         );
         expect(res.code).toEqual(0);
         const proposalId = parseInt(
-          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
           10,
         );
-        const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
         expect(voteRes.code).toEqual(0);
         await waitSeconds(15);
 

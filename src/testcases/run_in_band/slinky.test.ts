@@ -8,10 +8,13 @@ import { QueryClientImpl as OracleQueryClient } from '@neutron-org/neutronjs/sli
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import config from '../../config.json';
 import { delegateTokens } from '../../helpers/staking';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { MsgCreateMarkets } from '@neutron-org/neutronjs/slinky/marketmap/v1/tx';
-const GOV_MODULE_ADDRESS = "neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5"
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 describe('Neutron / Slinky', () => {
   let testState: LocalState;
@@ -19,7 +22,6 @@ describe('Neutron / Slinky', () => {
   let neutronClient: NeutronTestClient;
   let govWallet: Wallet;
   let govClient: NeutronTestClient;
-  let chainManagerAddress: string;
   let oracleQuery: OracleQueryClient;
 
   let proposalId: number;
@@ -39,7 +41,12 @@ describe('Neutron / Slinky', () => {
 
   describe('prepare: delegate funds', () => {
     test('delegate from wallet 1', async () => {
-      const govRes = await delegateTokens(govClient, govWallet.address, testState.wallets.neutron.val1.valAddress, '5000000000');
+      const govRes = await delegateTokens(
+        govClient,
+        govWallet.address,
+        testState.wallets.neutron.val1.valAddress,
+        '5000000000',
+      );
       expect(govRes.code).toEqual(0);
     });
   });
@@ -68,42 +75,55 @@ describe('Neutron / Slinky', () => {
 
   describe('submit proposal', () => {
     test('create proposal', async () => {
-      const res = await executeMsgSubmitProposalV1(govClient, govWallet, 'Proposal for update marketmap', 'Add new marketmap with currency pair to set last_updated field', '', [
-        {
-          typeUrl: MsgCreateMarkets.typeUrl,
-          value: MsgCreateMarkets.encode(
-            MsgCreateMarkets.fromJSON({
-              authority: GOV_MODULE_ADDRESS,
-              createMarkets: [
-                {
-                  ticker: {
-                    currencyPair: {
-                      base: 'DROP',
-                      quote: 'USD',
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Proposal for update marketmap',
+        'Add new marketmap with currency pair to set last_updated field',
+        '',
+        [
+          {
+            typeUrl: MsgCreateMarkets.typeUrl,
+            value: MsgCreateMarkets.encode(
+              MsgCreateMarkets.fromJSON({
+                authority: GOV_MODULE_ADDRESS,
+                createMarkets: [
+                  {
+                    ticker: {
+                      currencyPair: {
+                        base: 'DROP',
+                        quote: 'USD',
+                      },
+                      decimals: 8,
+                      minProviderCount: 1,
+                      enabled: true,
+                      metadataJSON: '',
                     },
-                    decimals: 8,
-                    minProviderCount: 1,
-                    enabled: true,
-                    metadataJSON: '',
+                    providerConfigs: [
+                      {
+                        name: 'kraken_api',
+                        offChainTicker: 'DROPUSD',
+                        invert: false,
+                        metadataJSON: '{}',
+                      },
+                    ],
                   },
-                  providerConfigs: [
-                    {
-                      name: 'kraken_api',
-                      offChainTicker: 'DROPUSD',
-                      invert: false,
-                      metadataJSON: '{}',
-                    },
-                  ],
-                }],
-            })).finish(),
-        }],
+                ],
+              }),
+            ).finish(),
+          },
+        ],
         [{ denom: NEUTRON_DENOM, amount: '60000000' }],
         true,
         { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
       );
       expect(res.code).toEqual(0);
       proposalId = 1;
-      const res1 = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+      const res1 = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
       expect(res1.code).toEqual(0);
       // wait 15 seconds to allow the proposal to be processed
       await waitSeconds(15);
@@ -217,9 +237,7 @@ describe('Neutron / Slinky', () => {
       });
       expect(res).toBeDefined();
       expect(res.params.admin).toBeDefined();
-      expect(res.params.market_authorities[0]).toEqual(
-        GOV_MODULE_ADDRESS,
-      );
+      expect(res.params.market_authorities[0]).toEqual(GOV_MODULE_ADDRESS);
     });
   });
 });

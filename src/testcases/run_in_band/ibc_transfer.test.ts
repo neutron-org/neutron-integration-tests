@@ -25,11 +25,13 @@ import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { MsgUpdateParams } from '@neutron-org/neutronjs/neutron/feerefunder/tx';
-import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from '../../helpers/gov';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
 import { delegateTokens } from '../../helpers/staking';
 
-const GOV_MODULE_ADDRESS =
-  'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 const TRANSFER_CHANNEL = 'channel-0';
 const IBC_TOKEN_DENOM =
   'ibc/4E41ED8F3DCAEA15F4D6ADC6EDD7C04A676160735C9710B904B7BF53525B56D6';
