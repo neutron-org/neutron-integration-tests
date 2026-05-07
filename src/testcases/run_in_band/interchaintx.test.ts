@@ -41,7 +41,6 @@ import {
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
-import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { PacketWithMetadata } from '@neutron-org/relayer/dist/lib/endpoint';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
