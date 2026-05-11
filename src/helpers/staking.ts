@@ -1,17 +1,10 @@
 import { NeutronTestClient } from './neutron_test_client';
 import { DeliverTxResponse } from '@cosmjs/stargate';
-import {
-  NEUTRON_DENOM,
-  SECOND_VALIDATOR_CONTAINER,
-  STAKING_REWARDS,
-} from './constants';
+import { NEUTRON_DENOM, SECOND_VALIDATOR_CONTAINER } from './constants';
 import { expect } from 'vitest';
 import { QueryClientImpl as StakingQueryClient } from '@neutron-org/neutronjs/cosmos/staking/v1beta1/query.rpc.Query';
 import { execSync } from 'child_process';
 import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { DaoMember } from '@neutron-org/neutronjsplus/dist/dao';
-import { chainManagerWrapper } from '@neutron-org/neutronjsplus/dist/proposal';
-import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
 
 export type StakeInfo = {
   height: number;
@@ -102,7 +95,7 @@ export const getBondedTokens = async (
 };
 
 export const getTrackedValidators = async (
-  client: SigningNeutronClient,
+  client: NeutronTestClient,
   stakingTrackerAddr: string,
   limit = 1000,
 ): Promise<any> => {
@@ -263,41 +256,6 @@ export const simulateSlashingAndJailing = async (
   return validatorInfo.validator.status;
 };
 
-// TODO: use from neutronjsplus
-/**
- * submitUpdateParamsSlashingProposal creates proposal which changes params of slashing module.
- */
-export const submitUpdateParamsSlashingProposal = async (
-  dao: DaoMember,
-  chainManagerAddress: string,
-  title: string,
-  description: string,
-  params: ParamsSlashingInfo,
-  amount: string,
-): Promise<number> => {
-  const message = chainManagerWrapper(chainManagerAddress, {
-    custom: {
-      submit_admin_proposal: {
-        admin_proposal: {
-          proposal_execute_message: {
-            message: JSON.stringify({
-              '@type': '/cosmos.slashing.v1beta1.MsgUpdateParams',
-              authority: ADMIN_MODULE_ADDRESS,
-              params,
-            }),
-          },
-        },
-      },
-    },
-  });
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [message],
-    amount,
-  );
-};
-
 export type Duration = string;
 
 export type ParamsSlashingInfo = {
@@ -316,112 +274,10 @@ export type RemoveFromBlacklistInfo = {
   addresses: string[];
 };
 
-// TODO: use from neutronjsplus
-export const submitAddToBlacklistProposal = async (
-  dao: DaoMember,
-  contractAddress: string,
-  title: string,
-  description: string,
-  blacklist: AddToBlacklistInfo,
-  deposit: string,
-): Promise<number> => {
-  const wasmMessage = {
-    wasm: {
-      execute: {
-        contract_addr: contractAddress,
-        msg: Buffer.from(
-          JSON.stringify({
-            add_to_blacklist: blacklist,
-          }),
-        ).toString('base64'),
-        funds: [],
-      },
-    },
-  };
-
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [wasmMessage],
-    deposit,
-  );
-};
-
-// TODO: use from neutronjsplus
-export const submitRemoveFromBlacklistProposal = async (
-  dao: DaoMember,
-  contractAddress: string,
-  title: string,
-  description: string,
-  blacklist: RemoveFromBlacklistInfo,
-  deposit: string,
-): Promise<number> => {
-  const wasmMessage = {
-    wasm: {
-      execute: {
-        contract_addr: contractAddress,
-        msg: Buffer.from(
-          JSON.stringify({
-            remove_from_blacklist: blacklist,
-          }),
-        ).toString('base64'),
-        funds: [],
-      },
-    },
-  };
-
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [wasmMessage],
-    deposit,
-  );
-};
-
 export type ParamsStakingInfo = {
   unbonding_time: Duration;
   max_validators: string;
   max_entries: string;
   historical_entries: string;
   bond_denom: string;
-};
-
-export const submitUpdateParamsStakingProposal = async (
-  dao: DaoMember,
-  chainManagerAddress: string,
-  title: string,
-  description: string,
-  params: ParamsStakingInfo,
-  amount: string,
-): Promise<number> => {
-  const message = chainManagerWrapper(chainManagerAddress, {
-    custom: {
-      submit_admin_proposal: {
-        admin_proposal: {
-          proposal_execute_message: {
-            message: JSON.stringify({
-              '@type': '/cosmos.staking.v1beta1.MsgUpdateParams',
-              authority: ADMIN_MODULE_ADDRESS,
-              params,
-            }),
-          },
-        },
-      },
-    },
-  });
-
-  return await dao.submitSingleChoiceProposal(
-    title,
-    description,
-    [message],
-    amount,
-  );
-};
-
-export const pauseRewardsContract = async (client: NeutronTestClient) => {
-  const res = await client.execute(STAKING_REWARDS, {
-    pause: {},
-  });
-  console.log(res.rawLog);
-  expect(res.code).toEqual(0);
 };

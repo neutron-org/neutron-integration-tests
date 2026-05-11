@@ -1,3 +1,4 @@
+import '@neutron-org/neutronjsplus';
 import { Registry } from '@cosmjs/proto-signing';
 import { RunnerTestSuite, inject, expect } from 'vitest';
 import { LocalState } from '../../helpers/local_state';
@@ -13,17 +14,39 @@ import {
 } from '../../helpers/constants';
 import { SigningStargateClient } from '@cosmjs/stargate';
 import config from '../../config.json';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
 import { ADMIN_MODULE_ADDRESS } from '@neutron-org/neutronjsplus/dist/constants';
-import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
-import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { QueryClientImpl as IbcQueryClient } from '@neutron-org/neutronjs/ibc/applications/transfer/v1/query.rpc.Query';
 import { GaiaWallet, Wallet } from '../../helpers/wallet';
+import { delegateTokens } from '../../helpers/staking';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
+import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { BinaryWriter } from '@neutron-org/neutronjs/binary';
+import { Params as IbcRateLimitParams } from '@neutron-org/neutronjs/neutron/ibcratelimit/v1beta1/params';
+import { MsgUpdateParams as MintMsgUpdateParams } from '@neutron-org/neutronjs/cosmos/mint/v1beta1/tx';
+import { Params as MintParams } from '@neutron-org/neutronjs/cosmos/mint/v1beta1/mint';
+import { QueryClientImpl as MintQueryClient } from '@neutron-org/neutronjs/cosmos/mint/v1beta1/query.rpc.Query';
+
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
+function encodeIbcRateLimitMsgUpdateParams(
+  authority: string,
+  contractAddress: string,
+): Uint8Array {
+  const writer = BinaryWriter.create();
+  if (authority !== '') writer.uint32(10).string(authority);
+  IbcRateLimitParams.encode(
+    IbcRateLimitParams.fromPartial({ contractAddress }),
+    writer.uint32(18).fork(),
+  ).ldelim();
+  return writer.finish();
+}
 
 const TRANSFER_CHANNEL = 'channel-0';
 const UATOM_IBC_TO_NEUTRON_DENOM =
@@ -38,17 +61,15 @@ describe('Neutron / IBC transfer', () => {
   let neutronWallet: Wallet;
   let neutronWallet2: Wallet;
   let gaiaWallet: GaiaWallet;
-
-  let daoMember1: DaoMember;
-  let mainDao: Dao;
-  let chainManagerAddress: string;
+  let govWallet: Wallet;
+  let govClient: NeutronTestClient;
 
   let rlContract: string;
   let ibcContract: string;
 
   let bankQuerier: BankQueryClient;
-  let neutronQuerier: NeutronQuerier;
   let ibcQuerier: IbcQueryClient;
+  let mintQuerier: MintQueryClient;
 
   let amount: string;
 
@@ -68,25 +89,64 @@ describe('Neutron / IBC transfer', () => {
 
     const neutronRpcClient = await testState.neutronRpcClient();
 
-    const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient,
-      neutronRpcClient,
-    ); // add assert for some addresses
-    const daoContracts = await getDaoContracts(neutronClient, daoCoreAddress);
-    mainDao = new Dao(neutronClient, daoContracts);
-    daoMember1 = new DaoMember(
-      mainDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
+    govWallet = await testState.nextSecp256k1SignNeutronWallet();
+    govClient = await NeutronTestClient.connectWithSigner(govWallet);
     bankQuerier = new BankQueryClient(neutronRpcClient);
-    neutronQuerier = await createNeutronClient({
-      rpcEndpoint: testState.rpcNeutron,
-    });
-    const admins = await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
-    chainManagerAddress = admins.admins[0];
     ibcQuerier = new IbcQueryClient(neutronRpcClient);
+    mintQuerier = new MintQueryClient(neutronRpcClient);
+  });
+
+  describe('Mint module: set mint_denom to fakeuntrn', () => {
+    test('delegate from gov wallet', async () => {
+      const govRes = await delegateTokens(
+        govClient,
+        govWallet.address,
+        testState.wallets.neutron.val1.valAddress,
+        '5000000000',
+      );
+      expect(govRes.code).toEqual(0);
+    });
+
+    test('submit, vote and execute proposal to set mint_denom to fakeuntrn', async () => {
+      const currentParams = await mintQuerier.params();
+      const newParams = MintParams.fromPartial({
+        ...currentParams.params,
+        mintDenom: 'fakeuntrn',
+      });
+      const res = await executeMsgSubmitProposalV1(
+        govClient,
+        govWallet,
+        'Mint params: mint_denom to fakeuntrn',
+        'Change mint module mint_denom from untrn to fakeuntrn so UNTRN supply is fixed for IBC rate limit tests',
+        '',
+        [
+          {
+            typeUrl: MintMsgUpdateParams.typeUrl,
+            value: MintMsgUpdateParams.encode(
+              MintMsgUpdateParams.fromPartial({
+                authority: GOV_MODULE_ADDRESS,
+                params: newParams,
+              }),
+            ).finish(),
+          },
+        ],
+        [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+        true,
+        { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
+      );
+      expect(res.code).toEqual(0);
+      const proposalId = parseInt(
+        getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
+        10,
+      );
+      const voteRes = await executeMsgVoteNeutron(
+        govClient,
+        govWallet,
+        proposalId,
+      );
+      expect(voteRes.code).toEqual(0);
+      await waitSeconds(15);
+    });
   });
 
   describe('Contracts', () => {
@@ -111,13 +171,14 @@ describe('Neutron / IBC transfer', () => {
   });
 
   describe('prepare: test IBC transfer and set RL contract addr to neutron', () => {
-    test('bond form wallet 1', async () => {
-      await daoMember1.bondFunds('1000000000');
-      await neutronClient.getWithAttempts(
-        async () => await mainDao.queryVotingPower(daoMember1.user),
-        async (response) => response.power == 1000000000,
-        20,
+    test('delegate from gov wallet', async () => {
+      const govRes = await delegateTokens(
+        govClient,
+        govWallet.address,
+        testState.wallets.neutron.val1.valAddress,
+        '5000000000',
       );
+      expect(govRes.code).toEqual(0);
     });
 
     test('IBC transfer without any limits', async () => {
@@ -148,26 +209,42 @@ describe('Neutron / IBC transfer', () => {
     });
 
     describe('IBC rate limit params proposal', () => {
-      let proposalId: number;
-      test('create proposal', async () => {
-        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
-          chainManagerAddress,
+      test('submit, vote and execute proposal to set RL contract', async () => {
+        const res = await executeMsgSubmitProposalV1(
+          govClient,
+          govWallet,
           'Proposal #1',
           'Param change proposal. Setup IBC rate limit contract',
+          '',
+          [
+            {
+              typeUrl: '/neutron.ibcratelimit.v1beta1.MsgUpdateParams',
+              value: encodeIbcRateLimitMsgUpdateParams(
+                GOV_MODULE_ADDRESS,
+                rlContract,
+              ),
+            },
+          ],
+          [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+          true,
           {
-            contract_address: rlContract,
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
           },
-          '1000',
         );
-      });
-      test('vote YES', async () => {
-        await daoMember1.voteYes(proposalId);
-      });
-      test('check if proposal is passed', async () => {
-        await mainDao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
-        await daoMember1.executeProposalWithAttempts(proposalId);
+        expect(res.code).toEqual(0);
+        const proposalId = parseInt(
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
+          10,
+        );
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
+        expect(voteRes.code).toEqual(0);
+        await waitSeconds(15);
       });
     });
   });
@@ -429,26 +506,39 @@ describe('Neutron / IBC transfer', () => {
     // Note: we haven't unset the limit afterwards, instead we've removed rate limiting contract from params.
     // ibc send afterward should work because rate-limiting MW action is completely removed from the ibc stack
     describe('Remove RL contract from neutron', () => {
-      let proposalId: number;
-      test('create proposal', async () => {
-        proposalId = await daoMember1.submitUpdateParamsRateLimitProposal(
-          chainManagerAddress,
+      test('submit, vote and execute proposal to remove RL contract', async () => {
+        const res = await executeMsgSubmitProposalV1(
+          govClient,
+          govWallet,
           'Proposal #2',
           'Param change proposal. Remove rate limit contract',
+          '',
+          [
+            {
+              typeUrl: '/neutron.ibcratelimit.v1beta1.MsgUpdateParams',
+              value: encodeIbcRateLimitMsgUpdateParams(GOV_MODULE_ADDRESS, ''),
+            },
+          ],
+          [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+          true,
           {
-            contract_address: '',
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
           },
-          '1000',
         );
-      });
-      test('vote YES', async () => {
-        await daoMember1.voteYes(proposalId);
-      });
-      test('check if proposal is passed', async () => {
-        await mainDao.checkPassedProposal(proposalId);
-      });
-      test('execute passed proposal', async () => {
-        await daoMember1.executeProposalWithAttempts(proposalId);
+        expect(res.code).toEqual(0);
+        const proposalId = parseInt(
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '2',
+          10,
+        );
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
+        expect(voteRes.code).toEqual(0);
+        await waitSeconds(15);
       });
       // and here we just test if ibc send works
       test('perform IBC send after removing contract: should be fine', async () => {

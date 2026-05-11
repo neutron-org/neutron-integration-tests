@@ -39,16 +39,20 @@ import {
   Order,
   State,
 } from '@neutron-org/neutronjs/ibc/core/channel/v1/channel';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
 import { NeutronQuerier } from '@neutron-org/neutronjs/querier_types';
 import { createRPCQueryClient as createNeutronClient } from '@neutron-org/neutronjs/neutron/rpc.query';
-import { updateFeerefunderParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import { PacketWithMetadata } from '@neutron-org/relayer/dist/lib/endpoint';
+import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
+import { delegateTokens } from '../../helpers/staking';
+import { MsgUpdateParams } from '@neutron-org/neutronjs/neutron/feerefunder/tx';
+import { Params } from '@neutron-org/neutronjs/neutron/feerefunder/params';
+
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
 describe('Neutron / Interchain TXs', () => {
   let testState: LocalState;
@@ -333,71 +337,72 @@ describe('Neutron / Interchain TXs', () => {
     });
 
     describe('Send Interchain TX with fees disabled', () => {
-      let daoMember: DaoMember;
-      let dao: Dao;
+      let govWallet: Wallet;
+      let govClient: NeutronTestClient;
       let neutronQuerier: NeutronQuerier;
-      let chainManagerAddress: string;
 
       let contractBalanceBefore: number;
       let relayerBalanceBefore: number;
 
       beforeAll(async () => {
-        const neutronRpcClient = await testState.rpcClient('neutron');
-
-        const daoCoreAddress = await getNeutronDAOCore(
-          neutronClient,
-          neutronRpcClient,
-        );
-        const daoContracts = await getDaoContracts(
-          neutronClient,
-          daoCoreAddress,
+        govWallet = await testState.nextSecp256k1SignNeutronWallet();
+        govClient = await NeutronTestClient.connectWithSigner(govWallet);
+        await delegateTokens(
+          govClient,
+          govWallet.address,
+          testState.wallets.neutron.val1.valAddress,
+          '5000000000',
         );
 
         neutronQuerier = await createNeutronClient({
           rpcEndpoint: testState.rpcNeutron,
         });
-        const admins =
-          await neutronQuerier.cosmos.adminmodule.adminmodule.admins();
-        chainManagerAddress = admins.admins[0];
-
-        dao = new Dao(neutronClient, daoContracts);
-        daoMember = new DaoMember(
-          dao,
-          neutronClient.client,
-          neutronWallet.address,
-          NEUTRON_DENOM,
-        );
-        await daoMember.bondFunds('1000000000');
 
         // disable fees
-        const proposalId =
-          await daoMember.submitUpdateParamsFeerefunderProposal(
-            chainManagerAddress,
-            'Proposal update feerefunder params',
-            'Feerefunder update params proposal',
-            updateFeerefunderParamsProposal({
-              min_fee: {
-                recv_fee: [],
-                ack_fee: [
-                  {
-                    amount: '1000',
-                    denom: NEUTRON_DENOM,
-                  },
-                ],
-                timeout_fee: [
-                  {
-                    amount: '1000',
-                    denom: NEUTRON_DENOM,
-                  },
-                ],
-              },
-              fee_enabled: false,
-            }),
-            '1000',
-          );
-        await daoMember.voteYes(proposalId);
-        await dao.checkPassedProposal(proposalId);
-        await daoMember.executeProposalWithAttempts(proposalId);
+        const res = await executeMsgSubmitProposalV1(
+          govClient,
+          govWallet,
+          'Proposal update feerefunder params',
+          'Feerefunder update params proposal',
+          '',
+          [
+            {
+              typeUrl: MsgUpdateParams.typeUrl,
+              value: MsgUpdateParams.encode(
+                MsgUpdateParams.fromPartial({
+                  authority: GOV_MODULE_ADDRESS,
+                  params: Params.fromPartial({
+                    minFee: {
+                      recvFee: [],
+                      ackFee: [{ amount: '1000', denom: NEUTRON_DENOM }],
+                      timeoutFee: [{ amount: '1000', denom: NEUTRON_DENOM }],
+                    },
+                    feeEnabled: false,
+                  }),
+                }),
+              ).finish(),
+            },
+          ],
+          [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+          true,
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
+        );
+        expect(res.code).toEqual(0);
+        const proposalId = parseInt(
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
+          10,
+        );
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
+        expect(voteRes.code).toEqual(0);
+        await waitSeconds(15);
 
         const feerefunderParams =
           await neutronQuerier.neutron.feerefunder.params({});
@@ -418,34 +423,50 @@ describe('Neutron / Interchain TXs', () => {
 
       afterAll(async () => {
         // enable fees
-        const proposalId =
-          await daoMember.submitUpdateParamsFeerefunderProposal(
-            chainManagerAddress,
-            'Proposal #4',
-            'Feerefunder update params proposal',
-            updateFeerefunderParamsProposal({
-              min_fee: {
-                recv_fee: [],
-                ack_fee: [
-                  {
-                    amount: '1000',
-                    denom: NEUTRON_DENOM,
-                  },
-                ],
-                timeout_fee: [
-                  {
-                    amount: '1000',
-                    denom: NEUTRON_DENOM,
-                  },
-                ],
-              },
-              fee_enabled: true,
-            }),
-            '1000',
-          );
-        await daoMember.voteYes(proposalId);
-        await dao.checkPassedProposal(proposalId);
-        await daoMember.executeProposalWithAttempts(proposalId);
+        const res = await executeMsgSubmitProposalV1(
+          govClient,
+          govWallet,
+          'Proposal #4',
+          'Feerefunder update params proposal',
+          '',
+          [
+            {
+              typeUrl: MsgUpdateParams.typeUrl,
+              value: MsgUpdateParams.encode(
+                MsgUpdateParams.fromPartial({
+                  authority: GOV_MODULE_ADDRESS,
+                  params: Params.fromPartial({
+                    minFee: {
+                      recvFee: [],
+                      ackFee: [{ amount: '1000', denom: NEUTRON_DENOM }],
+                      timeoutFee: [{ amount: '1000', denom: NEUTRON_DENOM }],
+                    },
+                    feeEnabled: true,
+                  }),
+                }),
+              ).finish(),
+            },
+          ],
+          [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+          true,
+          {
+            gas: '4000000',
+            amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+          },
+        );
+        expect(res.code).toEqual(0);
+        const proposalId = parseInt(
+          getEventAttribute(res.events, 'submit_proposal', 'proposal_id') ||
+            '1',
+          10,
+        );
+        const voteRes = await executeMsgVoteNeutron(
+          govClient,
+          govWallet,
+          proposalId,
+        );
+        expect(voteRes.code).toEqual(0);
+        await waitSeconds(15);
 
         const feerefunderParams =
           await neutronQuerier.neutron.feerefunder.params({});

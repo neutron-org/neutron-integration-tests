@@ -1,66 +1,70 @@
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
-import { QueryClientImpl as InterchainqQuerier } from '@neutron-org/neutronjs/neutron/interchainqueries/query.rpc.Query';
-import { paramChangeProposal } from '@neutron-org/neutronjsplus/dist/proposal';
-import {
-  CosmWasmClient,
-  SigningCosmWasmClient,
-} from '@cosmjs/cosmwasm-stargate';
-import { waitBlocks } from '@neutron-org/neutronjsplus/dist/wait';
-import { ProtobufRpcClient, SigningStargateClient } from '@cosmjs/stargate';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
+import { SigningStargateClient } from '@cosmjs/stargate';
 import { getWithAttempts } from './misc';
 import axios, { AxiosResponse } from 'axios';
 import { NeutronTestClient } from './neutron_test_client';
 import { IBC_ATOM_DENOM, IBC_USDC_DENOM, NEUTRON_DENOM } from './constants';
 import { Coin } from '@neutron-org/neutronjs/cosmos/base/v1beta1/coin';
 import { QueryClientImpl as BankQuerier } from 'cosmjs-types/cosmos/bank/v1beta1/query';
-import { MsgRemoveInterchainQueryRequest } from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
-import { SigningNeutronClient } from '@neutron-org/neutronjsplus/dist/signing_neutron_client';
+import {
+  MsgRemoveInterchainQueryRequest,
+  MsgUpdateParams,
+} from '@neutron-org/neutronjs/neutron/interchainqueries/tx';
+import { Params } from '@neutron-org/neutronjs/neutron/interchainqueries/params';
+import { expect } from 'vitest';
+import { executeMsgSubmitProposalV1, executeMsgVoteNeutron } from './gov';
+import { Wallet } from './wallet';
 
-export const executeUpdateInterchainQueriesParams = async (
-  chainManagerAddress: string,
-  interchainQueriesQuerier: InterchainqQuerier,
-  mainDao: Dao,
-  daoMember: DaoMember,
-  maxKvQueryKeysCount?: number,
-  maxTransactionsFilters?: number,
-) => {
-  const params = (await interchainQueriesQuerier.params()).params;
-  if (maxKvQueryKeysCount != undefined) {
-    params.maxKvQueryKeysCount = BigInt(maxKvQueryKeysCount);
-  }
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
 
-  if (maxTransactionsFilters != undefined) {
-    params.maxTransactionsFilters = BigInt(maxTransactionsFilters);
-  }
+const ICQ_PARAMS_GOV_DEPOSIT = [{ denom: NEUTRON_DENOM, amount: '60000000' }];
+const ICQ_PARAMS_GOV_FEE = {
+  gas: '4000000',
+  amount: [{ denom: NEUTRON_DENOM, amount: '10000' }],
+};
 
-  const proposalId =
-    await daoMember.submitUpdateParamsInterchainqueriesProposal(
-      chainManagerAddress,
-      'Change Proposal - InterchainQueriesParams',
-      'Param change proposal. It will change enabled params of interchainquries module.',
+/**
+ * Submits and passes via x/gov a full interchainqueries module params update (`MsgUpdateParams`).
+ * Callers supply the final `params` object in full (typically `Params.fromPartial({ ...await querier.params().params, ... })` in tests).
+ */
+export const submitInterchainQueriesParamsGovProposal = async (
+  govClient: NeutronTestClient,
+  govWallet: Wallet,
+  title: string,
+  summary: string,
+  params: Params,
+): Promise<void> => {
+  const res = await executeMsgSubmitProposalV1(
+    govClient,
+    govWallet,
+    title,
+    summary,
+    '',
+    [
       {
-        query_submit_timeout: Number(params.querySubmitTimeout),
-        query_deposit: params.queryDeposit,
-        tx_query_removal_limit: Number(params.txQueryRemovalLimit),
-        max_kv_query_keys_count: Number(params.maxKvQueryKeysCount),
-        max_transactions_filters: Number(params.maxTransactionsFilters),
+        typeUrl: MsgUpdateParams.typeUrl,
+        value: MsgUpdateParams.encode(
+          MsgUpdateParams.fromPartial({
+            authority: GOV_MODULE_ADDRESS,
+            params,
+          }),
+        ).finish(),
       },
-      '1000',
-    );
-
-  await daoMember.voteYes(proposalId, 'single', {
-    gas: '4000000',
-    amount: [{ denom: NEUTRON_DENOM, amount: '100000' }],
-  });
-  await mainDao.checkPassedProposal(proposalId);
-  await daoMember.executeProposalWithAttempts(proposalId);
+    ],
+    ICQ_PARAMS_GOV_DEPOSIT,
+    true,
+    ICQ_PARAMS_GOV_FEE,
+  );
+  expect(res.code).toEqual(0);
+  const proposalId = parseInt(
+    getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '0',
+    10,
+  );
+  const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+  expect(voteRes.code).toEqual(0);
+  await waitSeconds(15);
 };
 
 export const getKvCallbackStatus = async (
@@ -273,76 +277,6 @@ export const registerUnbondingDelegationsQuery = async (
   return queryId;
 };
 
-export const acceptInterchainqueriesParamsChangeProposal = async (
-  user: string,
-  client: SigningNeutronClient | SigningCosmWasmClient,
-  rpcClient: ProtobufRpcClient,
-  title: string,
-  description: string,
-  key: string,
-  value: string,
-) => {
-  const daoCoreAddress = await getNeutronDAOCore(client, rpcClient);
-  const daoContracts = await getDaoContracts(client, daoCoreAddress);
-  const dao = new Dao(client, daoContracts);
-  const daoMember = new DaoMember(dao, client, user, NEUTRON_DENOM);
-
-  const queryClient = new AdminQueryClient(rpcClient);
-  const admins = await queryClient.admins();
-  const chainManagerAddress = admins.admins[0];
-  const message = paramChangeProposal(
-    {
-      title,
-      description,
-      subspace: 'interchainqueries',
-      key,
-      value,
-    },
-    chainManagerAddress,
-  );
-  await makeSingleChoiceProposalPass(
-    client,
-    dao,
-    [daoMember],
-    title,
-    description,
-    [message],
-    '1000',
-  );
-};
-
-// TODO: move somewhere
-// TODO: move to neutron-integration-tests dao helpers
-const makeSingleChoiceProposalPass = async (
-  client: CosmWasmClient,
-  dao: Dao,
-  loyalVoters: DaoMember[],
-  title: string,
-  description: string,
-  msgs: any[],
-  deposit: string,
-) => {
-  const proposalId = await loyalVoters[0].submitSingleChoiceProposal(
-    title,
-    description,
-    msgs,
-    deposit,
-  );
-  await waitBlocks(1, client);
-
-  for (const voter of loyalVoters) {
-    await voter.voteYes(proposalId);
-  }
-  await loyalVoters[0].executeProposal(proposalId);
-
-  await getWithAttempts(
-    client,
-    async () => await dao.queryProposal(proposalId),
-    async (response) => response.proposal.status === 'executed',
-    20,
-  );
-};
-
 export const removeQuery = async (
   client: NeutronTestClient,
   contractAddress: string,
@@ -412,6 +346,7 @@ export const validateBalanceQuery = async (
 
   const balances = await bankQuerier.AllBalances({
     address: address,
+    resolveDenom: false,
   });
 
   expect(filterIBCDenoms(res.balances.coins)).toEqual(

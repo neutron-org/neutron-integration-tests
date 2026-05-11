@@ -1,17 +1,8 @@
-import { updateCoinfactoryParamsProposal } from '@neutron-org/neutronjsplus/dist/proposal';
 import '@neutron-org/neutronjsplus';
 import { getEventAttribute } from '@neutron-org/neutronjsplus/dist/cosmos';
 import { LocalState } from '../../helpers/local_state';
 import { RunnerTestSuite, inject } from 'vitest';
-import {
-  Dao,
-  DaoMember,
-  getDaoContracts,
-  getNeutronDAOCore,
-} from '@neutron-org/neutronjsplus/dist/dao';
 import { waitSeconds } from '@neutron-org/neutronjsplus/dist/wait';
-import { setupSubDaoTimelockSet } from '../../helpers/dao';
-import { QueryClientImpl as AdminQueryClient } from '@neutron-org/neutronjs/cosmos/adminmodule/adminmodule/query.rpc.Query';
 import { NeutronTestClient } from '../../helpers/neutron_test_client';
 import {
   MsgBurn,
@@ -28,38 +19,66 @@ import { QueryDenomAuthorityMetadataResponse } from '@neutron-org/neutronjs/neut
 import { CONTRACTS } from '../../helpers/constants';
 import { Wallet } from '../../helpers/wallet';
 import config from '../../config.json';
+import { delegateTokens } from '../../helpers/staking';
+import {
+  executeMsgSubmitProposalV1,
+  executeMsgVoteNeutron,
+} from '../../helpers/gov';
+import { BinaryWriter } from '@neutron-org/neutronjs/binary';
+import { Params } from '@neutron-org/neutronjs/neutron/coinfactory/params';
+
+const GOV_MODULE_ADDRESS = 'neutron10d07y265gmmuvt4z0w9aw880jnsr700j7a68v5';
+
+function encodeCoinfactoryMsgUpdateParams(
+  authority: string,
+  params: {
+    denomCreationFee: { denom: string; amount: string }[];
+    denomCreationGasConsume?: bigint;
+    feeCollectorAddress: string;
+    whitelistedHooks: { codeId: bigint; denomCreator: string }[];
+  },
+): Uint8Array {
+  const writer = BinaryWriter.create();
+  if (authority !== '') writer.uint32(10).string(authority);
+  Params.encode(Params.fromPartial(params), writer.uint32(18).fork()).ldelim();
+  return writer.finish();
+}
 
 async function whitelistCoinfactoryHook(
-  chainManagerAddress: string,
-  subDao: Dao,
-  subdaoMember1: DaoMember,
+  govClient: NeutronTestClient,
+  govWallet: Wallet,
   codeID: number,
   denomCreator: string,
 ) {
-  const proposalId = await subdaoMember1.submitUpdateParamsTokenfactoryProposal(
-    chainManagerAddress,
+  const res = await executeMsgSubmitProposalV1(
+    govClient,
+    govWallet,
     'whitelist CF hook proposal',
     'whitelist coinfactory hook. Will pass',
-    updateCoinfactoryParamsProposal({
-      denom_creation_fee: [],
-      denom_creation_gas_consume: 0,
-      fee_collector_address: '',
-      whitelisted_hooks: [
-        {
-          code_id: codeID,
-          denom_creator: denomCreator,
-        },
-      ],
-    }),
-    '1000',
+    '',
+    [
+      {
+        typeUrl: '/neutron.coinfactory.v1beta1.MsgUpdateParams',
+        value: encodeCoinfactoryMsgUpdateParams(GOV_MODULE_ADDRESS, {
+          denomCreationFee: [],
+          denomCreationGasConsume: BigInt(0),
+          feeCollectorAddress: '',
+          whitelistedHooks: [{ codeId: BigInt(codeID), denomCreator }],
+        }),
+      },
+    ],
+    [{ denom: NEUTRON_DENOM, amount: '60000000' }],
+    true,
+    { gas: '4000000', amount: [{ denom: NEUTRON_DENOM, amount: '10000' }] },
   );
-
-  await subdaoMember1.supportAndExecuteProposal(proposalId);
-  await waitSeconds(10);
-  await subdaoMember1.executeTimelockedProposal(proposalId);
-  const timelockedProp = await subDao.getTimelockedProposal(proposalId);
-  expect(timelockedProp.id).toEqual(proposalId);
-  expect(timelockedProp.status).toEqual('executed');
+  expect(res.code).toEqual(0);
+  const proposalId = parseInt(
+    getEventAttribute(res.events, 'submit_proposal', 'proposal_id') || '1',
+    10,
+  );
+  const voteRes = await executeMsgVoteNeutron(govClient, govWallet, proposalId);
+  expect(voteRes.code).toEqual(0);
+  await waitSeconds(15);
 }
 
 function unpackDenom(
@@ -79,132 +98,32 @@ function unpackDenom(
 describe('Neutron / Tokenfactory', () => {
   let testState: LocalState;
   let neutronClient: NeutronTestClient;
-
   let neutronWallet: Wallet;
-  let subDao: Dao;
-  let mainDao: Dao;
-  let subdaoMember1: DaoMember;
-  let mainDaoMember: DaoMember;
-  let securityDaoWallet: Wallet;
-  let securityDaoAddr: string;
-  let fee: any;
+  let govWallet: Wallet;
+  let govClient: NeutronTestClient;
+  let fee: { gas: string; amount: { denom: string; amount: string }[] };
   let neutronQuerier: NeutronQuerier;
   let bankQuerier: BankQueryClient;
-  let chainManagerAddress: string;
 
   beforeAll(async (suite: RunnerTestSuite) => {
     testState = await LocalState.create(config, inject('mnemonics'), suite);
     neutronWallet = await testState.nextNeutronWallet();
     neutronClient = await NeutronTestClient.connectWithSigner(neutronWallet);
-    // Setup subdao with update tokenfactory params
+    govWallet = await testState.nextSecp256k1SignNeutronWallet();
+    govClient = await NeutronTestClient.connectWithSigner(govWallet);
     const neutronRpcClient = await testState.rpcClient('neutron');
     neutronQuerier = await createNeutronClient({
       rpcEndpoint: testState.rpcNeutron,
     });
-
     bankQuerier = new BankQueryClient(neutronRpcClient);
-    const daoCoreAddress = await getNeutronDAOCore(
-      neutronClient.client,
-      neutronRpcClient,
+
+    const govDelegateRes = await delegateTokens(
+      govClient,
+      govWallet.address,
+      testState.wallets.neutron.val1.valAddress,
+      '5000000000',
     );
-
-    const daoContracts = await getDaoContracts(
-      neutronClient.client,
-      daoCoreAddress,
-    );
-
-    securityDaoWallet = await testState.nextNeutronWallet();
-    securityDaoAddr = securityDaoWallet.address;
-
-    mainDao = new Dao(neutronClient.client, daoContracts);
-    mainDaoMember = new DaoMember(
-      mainDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
-    await mainDaoMember.bondFunds('1000000000');
-
-    subDao = await setupSubDaoTimelockSet(
-      neutronWallet.address,
-      neutronClient,
-      mainDao.contracts.core.address,
-      securityDaoAddr,
-      true,
-    );
-
-    subdaoMember1 = new DaoMember(
-      subDao,
-      neutronClient.client,
-      neutronWallet.address,
-      NEUTRON_DENOM,
-    );
-    const queryClient = new AdminQueryClient(neutronRpcClient);
-    const admins = await queryClient.admins();
-    chainManagerAddress = admins.admins[0];
-
-    // shorten subdao voting period
-    const currentOverruleProposalConfig =
-      await neutronClient.queryContractSmart(
-        mainDao.contracts.proposals['overrule'].address,
-        {
-          config: {},
-        },
-      );
-    currentOverruleProposalConfig['max_voting_period']['time'] = 5;
-    const proposalId = await mainDaoMember.submitSingleChoiceProposal(
-      'Proposal',
-      'Update the max voting period. It will pass',
-      [
-        {
-          wasm: {
-            execute: {
-              contract_addr: mainDao.contracts.proposals['overrule'].address,
-              msg: Buffer.from(
-                JSON.stringify({
-                  update_config: {
-                    threshold: currentOverruleProposalConfig['threshold'],
-                    max_voting_period:
-                      currentOverruleProposalConfig['max_voting_period'],
-                    allow_revoting:
-                      currentOverruleProposalConfig['allow_revoting'],
-                    dao: currentOverruleProposalConfig['dao'],
-                    close_proposal_on_execution_failure:
-                      currentOverruleProposalConfig[
-                        'close_proposal_on_execution_failure'
-                      ],
-                  },
-                }),
-              ).toString('base64'),
-              funds: [],
-            },
-          },
-        },
-      ],
-      '1000',
-    );
-    await mainDaoMember.voteYes(proposalId);
-    await mainDao.checkPassedProposal(proposalId);
-    await mainDaoMember.executeProposalWithAttempts(proposalId);
-
-    const proposalId2 =
-      await mainDaoMember.submitAddChainManagerStrategyProposal(
-        chainManagerAddress,
-        'Proposal #1',
-        'Add strategy proposal. It will pass',
-        {
-          add_strategy: {
-            address: subDao.contracts.core.address,
-            strategy: 'allow_all',
-          },
-        },
-        '1000',
-      );
-
-    await mainDaoMember.voteYes(proposalId2);
-    await mainDao.checkPassedProposal(proposalId2);
-    await waitSeconds(10);
-    await mainDaoMember.executeProposalWithAttempts(proposalId2);
+    expect(govDelegateRes.code).toEqual(0);
 
     fee = {
       gas: '200000',
@@ -560,9 +479,8 @@ describe('Neutron / Tokenfactory', () => {
       expect(queryBlock.block.received).toEqual(false);
 
       await whitelistCoinfactoryHook(
-        chainManagerAddress,
-        subDao,
-        subdaoMember1,
+        govClient,
+        govWallet,
         codeId,
         neutronWallet.address,
       );
@@ -790,9 +708,8 @@ describe('Neutron / Tokenfactory', () => {
     });
     test('set_before_send_hook', async () => {
       await whitelistCoinfactoryHook(
-        chainManagerAddress,
-        subDao,
-        subdaoMember1,
+        govClient,
+        govWallet,
         codeId,
         contractAddress,
       );
